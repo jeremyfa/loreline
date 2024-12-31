@@ -1,0 +1,8 @@
+--class-path src
+--class-path cli
+--main loreline.Cli
+--neko loreline.n
+
+--next
+
+--cmd neko loreline.n play test/Test.lor

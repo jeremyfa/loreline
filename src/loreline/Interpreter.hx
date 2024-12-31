@@ -1,0 +1,1108 @@
+package loreline;
+
+import loreline.Lexer;
+import loreline.Node;
+
+/**
+ * Runtime value type supported by the interpreter
+ */
+enum RuntimeValue {
+
+    RNull;
+    RNumber(v:Float);
+    RBoolean(v:Bool);
+    RString(v:String);
+    RArray(v:Array<RuntimeValue>);
+    RObject(v:Map<String, RuntimeValue>);
+
+}
+
+/**
+ * A state during the runtime execution of a loreline script
+ */
+class RuntimeState {
+
+    /**
+     * If set to a value > 0, that means this state is temporary and linked to a scope.
+     * Everytime we are entering a new node, we are entering a new scope identified by a unique integer value.
+     * When exiting that scope, the related states are destroyed
+     */
+    public var scope:Int = -1;
+
+    /**
+     * Fields of this state
+     */
+    public final fields:Map<String, RuntimeValue> = new Map();
+
+    public function new() {}
+
+}
+
+/**
+ * Runtime state variant specifically used for character states
+ */
+class RuntimeCharacter extends RuntimeState {
+
+    public function new() {
+        super();
+    }
+
+}
+
+enum RuntimeAccess {
+
+    FieldAccess(pos:Position, obj:RuntimeValue, name:String);
+
+    ArrayAccess(pos:Position, array:Array<RuntimeValue>, index:Int);
+
+    CharacterAccess(pos:Position, name:String);
+
+}
+
+/**
+ * Everytime we are entering a new node, we are entering a new scope identified with a unique integer value.
+ * When exiting that scope, the related temporary states associated to it are destroyed
+ */
+@:structInit
+class Scope {
+
+    /**
+     * The scope id, a unique integer value in the stack
+     */
+    public var id:Int = -1;
+
+    /**
+     * The parent beat where this scope is located. Can be either
+     * a top level beat or a nested beat
+     */
+    public var beat:NBeatDecl;
+
+    /**
+     * The node where this scope is attached
+     */
+    public var node:AstNode;
+
+    /**
+     * The nested beat declarations, if any, found in this scope
+     */
+    public var beats:Map<String, NBeatDecl> = null;
+
+    /**
+     * The temporary state associated with this scope, if any
+     */
+    public var state:RuntimeState = null;
+
+}
+
+@:structInit
+class TextTag {
+    public var closing:Bool;
+    public var value:String;
+    public var offset:Int;
+}
+
+class EvalNext {
+    public var sync:Bool = true;
+    public var cb:()->Void = null;
+    public function new() {}
+}
+
+@:structInit
+class ChoiceOption {
+    public var text:String;
+    public var tags:Array<TextTag>;
+    public var enabled:Bool;
+}
+
+/**
+ * Handler type for text output with callback
+ */
+typedef DialogueHandler = (character:String, text:String, tags:Array<TextTag>, callback:()->Void)->Void;
+
+/**
+ * Handler type for choice presentation with callback
+ */
+typedef ChoiceHandler = (options:Array<ChoiceOption>, callback:(index:Int)->Void)->Void;
+
+/**
+ * Handler type to be called when the execution finishes
+ */
+typedef FinishHandler = ()->Void;
+
+/**
+ * Runtime error during script execution
+ */
+class RuntimeError extends Error {
+
+}
+
+/**
+ * Main interpreter class for Loreline scripts
+ */
+class Interpreter {
+
+    /**
+     * The script being executed
+     */
+    final script:Script;
+
+    /**
+     * User-defined dialogue handler,
+     * which takes care of displaying the dialogues.
+     */
+    final handleDialogue:DialogueHandler;
+
+    /**
+     * User-defined choice handler,
+     * which takes care of displaying the choices and
+     * providing a response to the interpreter.
+     */
+    final handleChoice:ChoiceHandler;
+
+    /**
+     * User-defined finish handler,
+     * which is called when the current execution has finished
+     */
+    final handleFinish:FinishHandler;
+
+    /**
+     * The top level state, which is shared across the whole script execution.
+     */
+    final topLevelState:RuntimeState = new RuntimeState();
+
+    /**
+     * Top level characters can be referenced and their state
+     * can also be modified from anywhere in the script.
+     */
+    final topLevelCharacters:Map<String, RuntimeCharacter> = new Map();
+
+    /**
+     * All the top level beats available, by beat name (their identifier in the script)
+     */
+    final topLevelBeats:Map<String, NBeatDecl> = new Map();
+
+    /**
+     * States associated to a specific node id. These are persistent, like the tope level state,
+     * but are only available from where they have been declared and the sub-scopes.
+     * If some state fields already existed in a parent scope, the parent ones will be shadowed by the child ones.
+     */
+    final nodeStates:Map<Int, RuntimeState> = new Map();
+
+    /**
+     * Characters associated to a specific node id. These are persistent, like the tope level characters,
+     * but are only available from where they have been declared and the sub-scopes.
+     * When using a character name identical to one used in a parent node, it will extend the existing
+     * character with those new fields, within that scope and the sub-scopes. If some fields already
+     * existed in a parent scope, the parent ones will be shadowed by the child ones.
+     */
+    final nodeCharacters:Map<Int, RuntimeCharacter> = new Map();
+
+    /**
+     * The current execution stack, which consists of scopes added on top of one another.
+     * Each scope can have its own local beats and temporary states.
+     */
+    final stack:Array<Scope> = [];
+
+    /**
+     * Current scope associated with current execution state
+     */
+    var currentScope(get,never):Scope;
+    function get_currentScope():Scope {
+        return stack.length > 0 ? stack[stack.length - 1] : null;
+    }
+
+    /**
+     * The next scope id to assign when pushing a new scope.
+     * Everytime we reset the stack, this counter is also reset.
+     */
+    var nextScopeId:Int = 1;
+
+    /**
+     * List of pending callbacks that should be run synchronously
+     */
+    var syncCallbacks:Array<()->Void> = [];
+
+    /**
+     * Internal flag to know if we are currently flushing sync callbacks
+     * (to prevent unexpected recursive flushs).
+     */
+    var flushing:Bool = false;
+
+    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler) {
+
+        this.script = script;
+        this.handleDialogue = handleDialogue;
+        this.handleChoice = handleChoice;
+        this.handleFinish = handleFinish;
+
+        // Build beat lookup map
+        for (decl in script.declarations) {
+            if (decl is NBeatDecl) {
+                // Add beat
+                final beat:NBeatDecl = cast decl;
+                topLevelBeats.set(beat.name, beat);
+            }
+        }
+
+    }
+
+    /**
+     * Starts script execution from the beginning or a specific beat
+     */
+    public function start(?beatName:String) {
+
+        // Initialize global state from declarations
+        for (decl in script.declarations) {
+            if (decl is NStateDecl) {
+                final state = cast(decl, NStateDecl);
+                initializeTopLevelState(state);
+            }
+        }
+
+        // Start execution
+        var resolvedBeat:NBeatDecl = null;
+        if (beatName != null) {
+            resolvedBeat = topLevelBeats.get(beatName);
+            if (resolvedBeat == null) {
+                throw new RuntimeError('Beat $beatName not found', script.pos);
+            }
+        } else {
+            // Find first beat
+            for (decl in script.declarations) {
+                if (decl is NBeatDecl) {
+                    resolvedBeat = cast decl;
+                    break;
+                }
+            }
+            if (resolvedBeat == null) {
+                throw new RuntimeError("No beats found in script", script.pos);
+            }
+        }
+        transitionToBeat(resolvedBeat);
+        flush();
+
+    }
+
+    function wrapNext(cb:()->Void):EvalNext {
+
+        final wrapped = new EvalNext();
+
+        wrapped.sync = true;
+
+        wrapped.cb = () -> {
+            if (wrapped.sync) {
+                if (syncCallbacks == null) {
+                    syncCallbacks = [];
+                }
+                syncCallbacks.push(wrapped.cb);
+            }
+            else {
+                cb();
+                flush();
+                wrapped.cb = null;
+            }
+        };
+
+        return wrapped;
+
+    }
+
+    function flush() {
+
+        if (flushing) return;
+        flushing = true;
+
+        if (syncCallbacks != null) {
+            while (syncCallbacks.length > 0) {
+
+                // Flush next synchronous callback to execute,
+                // and allow to stack new callbacks that may
+                // be triggered from that parent callback
+                var cb = syncCallbacks.shift();
+                var prevSyncCallbacks = syncCallbacks;
+                syncCallbacks = null;
+
+                cb();
+
+                // If new callbacks were added during execution,
+                // they get prepended to the existing queue
+                if (syncCallbacks != null) {
+                    for (i in 0...syncCallbacks.length) {
+                        prevSyncCallbacks.unshift(syncCallbacks[i]);
+                    }
+                }
+                syncCallbacks = prevSyncCallbacks;
+            }
+        }
+
+        flushing = false;
+
+    }
+
+    function pop():Bool {
+
+        if (stack.length > 0) {
+            stack.pop();
+            return true;
+        }
+
+        return false;
+
+    }
+
+    function push(scope:Scope):Void {
+
+        scope.id = nextScopeId++;
+        stack.push(scope);
+
+    }
+
+    function initializeTopLevelState(state:NStateDecl) {
+
+        // Top level states cannot be temporary
+        if (state.temporary) {
+            throw new RuntimeError('Top level temporary states are not allowed', state.pos);
+        }
+
+        // Evaluate state values
+        for (field in (state.fields.value:Array<NObjectField>)) {
+            topLevelState.fields.set(field.name, evaluateExpression(field.value));
+        }
+
+    }
+
+    function initializeTopLevelCharacter(character:NCharacterDecl) {
+
+        // Look for duplicate entries
+        if (topLevelCharacters.exists(character.name)) {
+            throw new RuntimeError('Duplicate top level character: ${character.name}', character.pos);
+        }
+
+        // Create new character state
+        final characterState = new RuntimeCharacter();
+        topLevelCharacters.set(character.name, characterState);
+
+        // Evaluate character properties
+        for (field in character.properties) {
+            characterState.fields.set(field.name, evaluateExpression(field.value));
+        }
+
+    }
+
+
+    function initializeState(state:NStateDecl, scope:Scope) {
+
+        var runtimeState:RuntimeState = null;
+        if (state.temporary) {
+            if (scope.state == null) {
+                scope.state = new RuntimeState();
+            }
+            runtimeState = scope.state;
+        }
+        else {
+            runtimeState = nodeStates.get(scope.node.id);
+            if (runtimeState == null) {
+                runtimeState = new RuntimeState();
+                nodeStates.set(scope.node.id, runtimeState);
+            }
+        }
+
+        // Evaluate state values
+        for (field in (state.fields.value:Array<NObjectField>)) {
+            runtimeState.fields.set(field.name, evaluateExpression(field.value));
+        }
+
+    }
+
+    function finish():Void {
+
+        if (handleFinish != null) {
+            handleFinish();
+        }
+
+    }
+
+    function transitionToBeat(beat:NBeatDecl) {
+
+        // Clear stack and temporary states
+        while (pop()) {};
+
+        // Reset scope id
+        nextScopeId = 1;
+
+        // Run beat
+        final done = wrapNext(finish);
+        evalBeatRun(beat, done.cb);
+        done.sync = false;
+
+    }
+
+    function evalNode(node:AstNode, next:()->Void) {
+
+        switch (Type.getClass(node)) {
+
+            case NBeatDecl:
+                evalBeatDecl(cast node, next);
+            case NStateDecl:
+                evalState(cast node, next);
+            case NTextStatement:
+                evalText(cast node, next);
+            case NDialogueStatement:
+                evalDialogue(cast node, next);
+            case NChoiceStatement:
+                evalChoice(cast node, next);
+            case NChoiceOption:
+                evalChoiceOption(cast node, next);
+            case NIfStatement:
+                evalIf(cast node, next);
+            case NAssignment:
+                evalAssignment(cast node, next);
+
+            case NTransition:
+                // When evaluating transition, we discard the
+                // `next` callback because we are starting a new stack
+                evalTransition(cast node);
+
+            case _:
+                throw new RuntimeError('Unsupported node type: ${Type.getClassName(Type.getClass(node))}', node.pos);
+        }
+
+    }
+
+    function evalBeatDecl(beat:NBeatDecl, next:()->Void) {
+
+        // Add beat to current scope.
+        // It will be available as long as we don't leave that scope
+
+        if (currentScope.beats == null) {
+            currentScope.beats = new Map();
+        }
+        else if (currentScope.beats.exists(beat.name)) {
+            throw new RuntimeError('Duplicate beat with name: ${beat.name}', beat.pos);
+        }
+
+        currentScope.beats.set(beat.name, beat);
+
+    }
+
+    function evalBeatRun(beat:NBeatDecl, next:()->Void) {
+
+        // Push new scope
+        push({
+            beat: beat,
+            node: beat
+        });
+
+        // Then iterate through each direct child node in the beat
+        var index = 0;
+        var moveNext:()->Void = null;
+        moveNext = () -> {
+
+            // Check if we still have a node to evaluate
+            if (index < beat.body.length) {
+
+                // Yes, do it
+                final childNode = beat.body[index];
+                index++;
+                final done = wrapNext(moveNext);
+                evalNode(childNode, done.cb);
+                done.sync = false;
+
+            }
+            else {
+
+                // We are done, pop beat scope
+                // and finish that beat evaluation
+                pop();
+                next();
+            }
+
+        }
+
+        // Start evaluating the beat
+        moveNext();
+
+    }
+
+    function evalNodeBody(node:AstNode, body:Array<AstNode>, next:()->Void) {
+
+        // Push new scope
+        push({
+            beat: currentScope.beat,
+            node: node
+        });
+
+        // Then iterate through each child node in the body
+        var index = 0;
+        var moveNext:()->Void = null;
+        moveNext = () -> {
+
+            // Check if we still have a node to evaluate
+            if (index < body.length) {
+
+                // Yes, do it
+                final childNode = body[index];
+                index++;
+                final done = wrapNext(moveNext);
+                evalNode(childNode, done.cb);
+                done.sync = false;
+
+            }
+            else {
+
+                // We are done, pop node scope
+                // and finish that node body evaluation
+                pop();
+                next();
+            }
+
+        }
+
+        // Start evaluating the body
+        moveNext();
+
+    }
+
+    function evalState(state:NStateDecl, next:()->Void) {
+
+        // This will initialize the state if it's temporary
+        // or the first time we encounter it, if it is a persistent one
+        initializeState(
+            state,
+            currentScope
+        );
+
+        next();
+
+    }
+
+    function evalText(text:NTextStatement, next:()->Void) {
+
+        // First evaluate the content from the given text
+        final content = evaluateString(text.content);
+
+        // Then call the user-defined dialogue handler.
+        // The execution will be "paused" until the callback
+        // is called, either synchronously or asynchronously
+        handleDialogue(null, content.text, content.tags, next);
+
+    }
+
+    function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
+
+        // First evaluate the content from the given dialogue
+        final content = evaluateString(dialogue.content);
+
+        // Then call the user-defined dialogue handler.
+        // The execution will be "paused" until the callback
+        // is called, either synchronously or asynchronously
+        handleDialogue(dialogue.character, content.text, content.tags, next);
+
+    }
+
+    function evalChoice(choice:NChoiceStatement, next:()->Void) {
+
+        // Compute choice contents
+        final options:Array<ChoiceOption> = [];
+        for (option in choice.options) {
+            final enabled = option.condition == null || evaluateExpression(option.condition).match(RBoolean(true));
+            final content = evaluateString(option.text);
+            options.push({
+                text: content.text,
+                tags: content.tags,
+                enabled: enabled
+            });
+        }
+
+        // Then call the user-defined choice handler.
+        // The execution will be "paused" until the callback
+        // is called, either synchronously or asynchronously
+        handleChoice(options, function(index) {
+
+            if (index >= 0 && index < choice.options.length) {
+                // Evaluate the chosen option
+                evalChoiceOption(choice.options[index], next);
+            }
+            else {
+                // Choice is invalid. In that situation, we suppose
+                // the choice was cancelable and just continue evaluation
+                next();
+            }
+
+        });
+
+    }
+
+    function evalChoiceOption(option:NChoiceOption, next:()->Void) {
+
+        // Evaluate child nodes of this choice option.
+        // Child nodes will be evaluated in a child scope associated
+        // with this options node
+        evalNodeBody(option, option.body, next);
+
+    }
+
+    function evalIf(ifStmt:NIfStatement, next:()->Void) {
+
+        final condition = evaluateExpression(ifStmt.condition);
+
+        final isTrue = switch condition {
+
+            case RNull: false;
+            case RNumber(v): v != 0;
+            case RBoolean(v): v == true;
+            case RString(v): v != null && v.length > 0;
+            case RArray(v): v != null && v.length > 0;
+            case RObject(v): v != null && Lambda.count(v) > 0;
+
+        }
+
+        final branch = isTrue ? ifStmt.thenBranch : ifStmt.elseBranch;
+
+        if (branch != null && branch.body.length > 0) {
+            evalNodeBody(branch, branch.body, next);
+        }
+        else {
+            next();
+        }
+
+    }
+
+    function evalAssignment(assign:NAssignment, next:()->Void) {
+
+        final target = resolveAssignmentTarget(assign.target);
+        final value = evaluateExpression(assign.value);
+
+        final currentValue = switch (assign.op) {
+            case OpAssign: value;
+            case OpPlusAssign: performOperation(OpPlus, readAccess(target), value);
+            case OpMinusAssign: performOperation(OpMinus, readAccess(target), value);
+            case OpMultiplyAssign: performOperation(OpMultiply, readAccess(target), value);
+            case OpDivideAssign: performOperation(OpDivide, readAccess(target), value);
+            case _: throw new RuntimeError('Invalid assignment operator', assign.pos);
+        }
+
+        writeAccess(target, currentValue);
+
+        next();
+
+    }
+
+    function evalTransition(transition:NTransition) {
+
+        trace('EVAL TRANSITION $transition');
+
+        final beatName = transition.target;
+        var resolvedBeat:NBeatDecl = null;
+
+        // Look for matching beat in scopes recursively
+        var i = stack.length - 1;
+        while (i >= 0) {
+            final scope = stack[i];
+            if (scope.beats != null && scope.beats.exists(beatName)) {
+                resolvedBeat = scope.beats.get(beatName);
+                break;
+            }
+            i--;
+        }
+
+        // If no beat was found, look at top level beats
+        if (resolvedBeat == null) {
+            if (topLevelBeats.exists(transition.target)) {
+                resolvedBeat = topLevelBeats.get(beatName);
+            }
+        }
+
+        // If still nothing found, not good...
+        if (resolvedBeat == null) {
+            throw new RuntimeError('Beat $beatName not found', script.pos);
+        }
+
+        // Beat found, let's go!
+        transitionToBeat(resolvedBeat);
+
+    }
+
+    function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
+        final buf = new StringBuf();
+        final tags:Array<TextTag> = [];
+        var offset = 0;
+
+        for (part in str.parts) {
+            switch (part.type) {
+                case Raw(text):
+                    offset += text.length;
+                    buf.add(text);
+
+                case Expr(expr):
+                    final value = evaluateExpression(expr);
+                    final text = valueToString(value);
+                    offset += text.length;
+                    buf.add(text);
+
+                case Tag(closing, expr):
+                    tags.push({
+                        closing: closing,
+                        value: evaluateString(expr).text,
+                        offset: offset
+                    });
+            }
+        }
+
+        return {
+            text: buf.toString(),
+            tags: tags
+        };
+
+    }
+
+    function evaluateExpression(expr:NExpression):RuntimeValue {
+
+        return switch (Type.getClass(expr)) {
+
+            case NLiteral:
+                final lit:NLiteral = cast expr;
+                switch (lit.type) {
+                    case Number: RNumber(lit.value);
+                    case Boolean: RBoolean(lit.value);
+                    case Null: RNull;
+                    case Array:
+                        RArray([
+                            for (elem in (lit.value:Array<Dynamic>))
+                                evaluateExpression(elem)
+                        ]);
+                    case Object:
+                        final obj = new Map<String, RuntimeValue>();
+                        for (field in (lit.value:Array<NObjectField>)) {
+                            obj.set(field.name, evaluateExpression(field.value));
+                        }
+                        RObject(obj);
+                }
+
+            case NStringLiteral:
+                RString(evaluateString(cast expr).text);
+
+            case NAccess:
+                final access:NAccess = cast expr;
+                readAccess(resolveAccess(access.target, access.name));
+
+            case NArrayAccess:
+                final arrAccess:NArrayAccess = cast expr;
+                final target = evaluateExpression(arrAccess.target);
+                final index = evaluateExpression(arrAccess.index);
+
+                switch [target, index] {
+                    case [RArray(arr), RNumber(idx)]:
+                        final i = Std.int(idx);
+                        if (i >= 0 && i < arr.length) {
+                            arr[i];
+                        } else {
+                            throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
+                        }
+                    case _:
+                        throw new RuntimeError('Invalid array access', arrAccess.pos);
+                }
+
+            case NBinary:
+                final bin:NBinary = cast expr;
+                final left = evaluateExpression(bin.left);
+                final right = evaluateExpression(bin.right);
+                performOperation(bin.op, left, right);
+
+            case NUnary:
+                final un:NUnary = cast expr;
+                final operand = evaluateExpression(un.operand);
+                switch [un.op, operand] {
+                    case [OpMinus, RNumber(n)]: RNumber(-n);
+                    case [OpNot, RBoolean(b)]: RBoolean(!b);
+                    case _: throw new RuntimeError('Invalid unary operation', un.pos);
+                }
+
+            case NCall:
+                final call:NCall = cast expr;
+                switch (evaluateExpression(call.target)) {
+                    case RObject(obj) if (obj.exists("__function")):
+                        callFunction(obj, [for (arg in call.args) evaluateExpression(arg)]);
+                    case _:
+                        throw new RuntimeError('Invalid function call', call.pos);
+                }
+
+            case _:
+                throw new RuntimeError('Unsupported expression type: ${Type.getClassName(Type.getClass(expr))}', expr.pos);
+        }
+
+    }
+
+    function readAccess(access:RuntimeAccess):RuntimeValue {
+
+        return switch access {
+            case FieldAccess(pos, obj, name):
+                switch obj {
+
+                    case RArray(v) if (name == 'length'):
+                        RNumber(v.length);
+
+                    case RObject(v):
+                        v.get(name) ?? RNull;
+
+                    case _:
+                        throw new RuntimeError('Invalid field read access "$name" in value of type ${access.getName()}', pos);
+                }
+
+            case ArrayAccess(pos, array, index):
+                array[index] ?? RNull;
+
+            case CharacterAccess(pos, name):
+                if (topLevelCharacters.exists(name)) {
+                    RObject(topLevelCharacters.get(name).fields);
+                }
+                else {
+                    throw new RuntimeError('Character not found: $name', pos);
+                }
+
+        }
+
+    }
+
+    function writeAccess(access:RuntimeAccess, value:RuntimeValue):Void {
+
+        switch access {
+            case FieldAccess(pos, obj, name):
+                switch obj {
+
+                    case RObject(v):
+                        v.set(name, value);
+
+                    case _:
+                        throw new RuntimeError('Invalid field write access "$name" in value of type ${access.getName()}', pos);
+                }
+
+            case ArrayAccess(pos, array, index):
+                array[index] = value;
+
+            case CharacterAccess(pos, name):
+                throw new RuntimeError('Cannot overwrite character: $name', pos);
+
+        }
+
+    }
+
+    function resolveAssignmentTarget(target:NExpression):RuntimeAccess {
+
+        return switch (Type.getClass(target)) {
+
+            case NAccess:
+                final access:NAccess = cast target;
+                resolveAccess(access.target, access.name);
+
+            case NArrayAccess:
+                final arrAccess:NArrayAccess = cast target;
+                final target = evaluateExpression(arrAccess.target);
+                final index = evaluateExpression(arrAccess.index);
+
+                switch [target, index] {
+                    case [RArray(arr), RNumber(idx)]:
+                        final i = Std.int(idx);
+                        ArrayAccess(arrAccess.pos, arr, i);
+                    case _:
+                        throw new RuntimeError('Invalid array access target', arrAccess.pos);
+                }
+
+            case _:
+                throw new RuntimeError('Invalid assignment target', target.pos);
+        }
+
+    }
+
+    function resolveAccess(?target:NExpression, name:String):RuntimeAccess {
+
+        if (target != null) {
+            return FieldAccess(target.pos, evaluateExpression(target), name);
+        }
+
+        // Iterate through scopes to identify a matching state field or character name
+        var i = stack.length - 1;
+        while (i >= 0) {
+            final scope = stack[i];
+
+            // Check temporary state
+            if (scope.state != null) {
+                if (scope.state.fields.exists(name)) {
+                    return FieldAccess(
+                        currentScope?.node?.pos ?? script.pos,
+                        RObject(scope.state.fields),
+                        name
+                    );
+                }
+            }
+
+            i--;
+        }
+
+        // Look for state fields
+        if (topLevelState.fields.exists(name)) {
+            return FieldAccess(
+                currentScope?.node?.pos ?? script.pos,
+                RObject(topLevelState.fields),
+                name
+            );
+        }
+
+        // Look for characters
+        if (topLevelCharacters.exists(name)) {
+            return FieldAccess(
+                currentScope?.node?.pos ?? script.pos,
+                RObject(topLevelState.fields),
+                name
+            );
+        }
+
+        throw new RuntimeError('Undefined variable: $name', currentScope?.node?.pos ?? script.pos);
+    }
+
+    function performOperation(op:TokenType, left:RuntimeValue, right:RuntimeValue):RuntimeValue {
+
+        return switch [op, left, right] {
+
+            case [OpPlus, RNumber(a), RNumber(b)]: RNumber(a + b);
+            case [OpMinus, RNumber(a), RNumber(b)]: RNumber(a - b);
+            case [OpMultiply, RNumber(a), RNumber(b)]: RNumber(a * b);
+            case [OpDivide, RNumber(a), RNumber(b)]:
+                if (b == 0) throw new RuntimeError('Division by zero', currentScope?.node?.pos ?? script.pos);
+                RNumber(a / b);
+
+            case [OpEquals, _, _]: RBoolean(valuesEqual(left, right));
+            case [OpNotEquals, _, _]: RBoolean(!valuesEqual(left, right));
+
+            case [OpGreater, RNumber(a), RNumber(b)]: RBoolean(a > b);
+            case [OpGreaterEq, RNumber(a), RNumber(b)]: RBoolean(a >= b);
+            case [OpLess, RNumber(a), RNumber(b)]: RBoolean(a < b);
+            case [OpLessEq, RNumber(a), RNumber(b)]: RBoolean(a <= b);
+
+            case [OpAnd, RBoolean(a), RBoolean(b)]: RBoolean(a && b);
+            case [OpOr, RBoolean(a), RBoolean(b)]: RBoolean(a || b);
+
+            case _: throw new RuntimeError('Invalid operation: $op', currentScope?.node?.pos ?? script.pos);
+        }
+
+    }
+
+    function valuesEqual(a:RuntimeValue, b:RuntimeValue):Bool {
+
+        return switch [a, b] {
+
+            case [RNull, RNull]: true;
+
+            case [RNumber(a), RNumber(b)]: a == b;
+
+            case [RBoolean(a), RBoolean(b)]: a == b;
+
+            case [RString(a), RString(b)]: a == b;
+
+            case [RArray(a), RArray(b)]:
+                if (a.length != b.length) return false;
+                for (i in 0...a.length) {
+                    if (!valuesEqual(a[i], b[i])) return false;
+                }
+                true;
+
+            case [RObject(a), RObject(b)]:
+                var keysA = [for (k in a.keys()) k];
+                var keysB = [for (k in b.keys()) k];
+                if (keysA.length != keysB.length) return false;
+                for (k in keysA) {
+                    if (!b.exists(k) || !valuesEqual(a.get(k), b.get(k))) return false;
+                }
+                true;
+
+            case _: false;
+        }
+
+    }
+
+    function valueToString(value:RuntimeValue):String {
+
+        return switch value {
+
+            case RNull: "null";
+
+            case RNumber(n): Std.string(n);
+
+            case RBoolean(b): b ? "true" : "false";
+
+            case RString(s): s;
+
+            case RArray(arr): '[${[for (v in arr) valueToString(v)].join(", ")}]';
+
+            case RObject(obj):
+                '{${[for (k => v in obj) '$k: ${valueToString(v)}'].join(", ")}}';
+        }
+
+    }
+
+    function callFunction(func:Map<String, RuntimeValue>, args:Array<RuntimeValue>):RuntimeValue {
+
+        throw new RuntimeError('Function calls not yet implemented', currentScope?.node?.pos ?? script.pos);
+
+    }
+
+    function serializeValue(value:RuntimeValue):Dynamic {
+
+        return switch value {
+
+            case RNull: null;
+
+            case RNumber(n): n;
+
+            case RBoolean(b): b;
+
+            case RString(s): s;
+
+            case RArray(arr): [for (v in arr) serializeValue(v)];
+
+            case RObject(obj): {
+                final result = {};
+                for (k => v in obj) {
+                    Reflect.setField(result, k, serializeValue(v));
+                }
+                result;
+            }
+
+            case _: {
+                throw 'Cannot serialize value: $value';
+            }
+        }
+
+    }
+
+    function deserializeValue(value:Dynamic):RuntimeValue {
+
+        return if (value == null) {
+            RNull;
+        }
+        else if (Std.isOfType(value, Float) || Std.isOfType(value, Int)) {
+            RNumber(Std.parseFloat(Std.string(value)));
+        }
+        else if (Std.isOfType(value, Bool)) {
+            RBoolean(value);
+        }
+        else if (Std.isOfType(value, String)) {
+            RString(value);
+        }
+        else if (Std.isOfType(value, Array)) {
+            RArray([for (v in (value : Array<Dynamic>)) deserializeValue(v)]);
+        }
+        else if (Reflect.isObject(value)) {
+            final obj = new Map<String, RuntimeValue>();
+            for (field in Reflect.fields(value)) {
+                obj.set(field, deserializeValue(Reflect.field(value, field)));
+            }
+            RObject(obj);
+        }
+        else {
+            throw 'Cannot deserialize value: $value';
+        }
+
+    }
+
+}

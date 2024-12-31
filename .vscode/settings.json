@@ -1,0 +1,12 @@
+{
+    "window.title": "${activeEditorShort} — Loreline",
+    "search.exclude": {
+        "**/.git": true,
+        "**/node_modules": true,
+        "**/tmp": true,
+        "writing/**": true
+    },
+    "files.associations": {
+        "*.lor": "loreline"
+    }
+}

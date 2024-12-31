@@ -1,0 +1,12 @@
+{
+    "name": "loreline",
+    "url" : "https://github.com/jeremyfa/loreline/",
+    "license": "MIT",
+    "tags": ["narrative", "language", "fiction", "writing"],
+    "description": "Open-source scripting language for writing interactive fictions",
+    "version": "0.1.0",
+    "classPath": "src/",
+    "releasenote": "Not actually published yet, soon!",
+    "contributors": ["jeremyfa"],
+    "dependencies": {}
+  }
