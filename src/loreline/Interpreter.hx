@@ -1,21 +1,8 @@
 package loreline;
 
+import haxe.ds.StringMap;
 import loreline.Lexer;
 import loreline.Node;
-
-/**
- * Runtime value type supported by the interpreter
- */
-enum RuntimeValue {
-
-    RNull;
-    RNumber(v:Float);
-    RBoolean(v:Bool);
-    RString(v:String);
-    RArray(v:Array<RuntimeValue>);
-    RObject(v:Map<String, RuntimeValue>);
-
-}
 
 /**
  * A state during the runtime execution of a loreline script
@@ -32,9 +19,11 @@ class RuntimeState {
     /**
      * Fields of this state
      */
-    public final fields:Map<String, RuntimeValue> = new Map();
+    public final fields:Any;
 
-    public function new() {}
+    public function new(?fields:Any) {
+        this.fields = fields ?? new Map<String,Any>();
+    }
 
 }
 
@@ -51,9 +40,9 @@ class RuntimeCharacter extends RuntimeState {
 
 enum RuntimeAccess {
 
-    FieldAccess(pos:Position, obj:RuntimeValue, name:String);
+    FieldAccess(pos:Position, obj:Any, name:String);
 
-    ArrayAccess(pos:Position, array:Array<RuntimeValue>, index:Int);
+    ArrayAccess(pos:Position, array:Array<Any>, index:Int);
 
     CharacterAccess(pos:Position, name:String);
 
@@ -375,7 +364,7 @@ class Interpreter {
 
         // Evaluate state values
         for (field in (state.fields.value:Array<NObjectField>)) {
-            topLevelState.fields.set(field.name, evaluateExpression(field.value));
+            setField(topLevelState.fields, field.name, evaluateExpression(field.value));
         }
 
     }
@@ -405,7 +394,7 @@ class Interpreter {
 
         // Evaluate character properties
         for (field in character.properties) {
-            characterState.fields.set(field.name, evaluateExpression(field.value));
+            setField(characterState.fields, field.name, evaluateExpression(field.value));
         }
 
     }
@@ -430,7 +419,7 @@ class Interpreter {
 
         // Evaluate state values
         for (field in (state.fields.value:Array<NObjectField>)) {
-            runtimeState.fields.set(field.name, evaluateExpression(field.value));
+            setField(runtimeState.fields, field.name, evaluateExpression(field.value));
         }
 
     }
@@ -635,7 +624,7 @@ class Interpreter {
         // Compute choice contents
         final options:Array<ChoiceOption> = [];
         for (option in choice.options) {
-            final enabled = option.condition == null || evaluateExpression(option.condition).match(RBoolean(true));
+            final enabled = option.condition == null || evaluateCondition(option.condition);
             final content = evaluateString(option.text);
             options.push({
                 text: content.text,
@@ -676,18 +665,7 @@ class Interpreter {
     function evalIf(ifStmt:NIfStatement, next:()->Void) {
         debug('eval if');
 
-        final condition = evaluateExpression(ifStmt.condition);
-
-        final isTrue = switch condition {
-
-            case RNull: false;
-            case RNumber(v): v != 0;
-            case RBoolean(v): v == true;
-            case RString(v): v != null && v.length > 0;
-            case RArray(v): v != null && v.length > 0;
-            case RObject(v): v != null && Lambda.count(v) > 0;
-
-        }
+        final isTrue = evaluateCondition(ifStmt.condition);
 
         final branch = isTrue ? ifStmt.thenBranch : ifStmt.elseBranch;
 
@@ -788,31 +766,43 @@ class Interpreter {
 
     }
 
-    function evaluateExpression(expr:NExpression):RuntimeValue {
+    function evaluateCondition(expr:NExpression):Bool {
+
+        final value:Any = evaluateExpression(expr);
+
+        return if (value is String) {
+            (value:String).length > 0;
+        }
+        else if (value is Array) {
+            (value:Array<Any>).length > 0;
+        }
+        else {
+            (value:Dynamic) == true;
+        }
+
+    }
+
+    function evaluateExpression(expr:NExpression):Any {
 
         return switch (Type.getClass(expr)) {
 
             case NLiteral:
                 final lit:NLiteral = cast expr;
                 switch (lit.type) {
-                    case Number: RNumber(lit.value);
-                    case Boolean: RBoolean(lit.value);
-                    case Null: RNull;
+                    case Number, Boolean, Null: lit.value;
                     case Array:
-                        RArray([
-                            for (elem in (lit.value:Array<Dynamic>))
-                                evaluateExpression(elem)
-                        ]);
+                        [for (elem in (lit.value:Array<Dynamic>)) evaluateExpression(elem)];
                     case Object:
-                        final obj = new Map<String, RuntimeValue>();
+                        final obj = new Map<String, Any>();
                         for (field in (lit.value:Array<NObjectField>)) {
                             obj.set(field.name, evaluateExpression(field.value));
                         }
-                        RObject(obj);
+                        obj;
                 }
 
             case NStringLiteral:
-                RString(evaluateString(cast expr).text);
+                final str:NStringLiteral = cast expr;
+                evaluateString(str).text;
 
             case NAccess:
                 final access:NAccess = cast expr;
@@ -824,16 +814,17 @@ class Interpreter {
                 final target = evaluateExpression(arrAccess.target);
                 final index = evaluateExpression(arrAccess.index);
 
-                switch [target, index] {
-                    case [RArray(arr), RNumber(idx)]:
-                        final i = Std.int(idx);
-                        if (i >= 0 && i < arr.length) {
-                            arr[i];
-                        } else {
-                            throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
-                        }
-                    case _:
-                        throw new RuntimeError('Invalid array access', arrAccess.pos);
+                if (target is Array && (index is Int || index is Float)) {
+                    final i:Int = Std.int(index);
+                    final arr:Array<Any> = target;
+                    if (i >= 0 && i < arr.length) {
+                        arr[i];
+                    } else {
+                        throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
+                    }
+                }
+                else {
+                    throw new RuntimeError('Invalid array access', arrAccess.pos);
                 }
 
             case NBinary:
@@ -844,20 +835,32 @@ class Interpreter {
 
             case NUnary:
                 final un:NUnary = cast expr;
-                final operand = evaluateExpression(un.operand);
-                switch [un.op, operand] {
-                    case [OpMinus, RNumber(n)]: RNumber(-n);
-                    case [OpNot, RBoolean(b)]: RBoolean(!b);
+                final operand:Any = evaluateExpression(un.operand);
+                switch un.op {
+                    case OpMinus if (operand is Int): {
+                        final v:Int = operand;
+                        -v;
+                    }
+                    case OpMinus if (operand is Float): {
+                        final v:Float = operand;
+                        -v;
+                    }
+                    case OpNot if (operand is Bool): {
+                        final v:Bool = operand;
+                        !v;
+                    }
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
                 }
 
             case NCall:
+                // TODO: this doesn't seem correct
                 final call:NCall = cast expr;
-                switch (evaluateExpression(call.target)) {
-                    case RObject(obj) if (obj.exists("__function")):
-                        callFunction(obj, [for (arg in call.args) evaluateExpression(arg)]);
-                    case _:
-                        throw new RuntimeError('Invalid function call', call.pos);
+                final target = evaluateExpression(call.target);
+                if (Reflect.hasField(target, "__function")) {
+                    callFunction(target, [for (arg in call.args) evaluateExpression(arg)]);
+                }
+                else {
+                    throw new RuntimeError('Invalid function call', call.pos);
                 }
 
             case _:
@@ -866,28 +869,19 @@ class Interpreter {
 
     }
 
-    function readAccess(access:RuntimeAccess):RuntimeValue {
+    function readAccess(access:RuntimeAccess):Any {
 
         return switch access {
+
             case FieldAccess(pos, obj, name):
-                switch obj {
-
-                    case RArray(v) if (name == 'length'):
-                        RNumber(v.length);
-
-                    case RObject(v):
-                        v.get(name) ?? RNull;
-
-                    case _:
-                        throw new RuntimeError('Invalid field read access "$name" in value of type ${obj.getName()}', pos);
-                }
+                getField(obj, name);
 
             case ArrayAccess(pos, array, index):
-                array[index] ?? RNull;
+                array[index];
 
             case CharacterAccess(pos, name):
                 if (topLevelCharacters.exists(name)) {
-                    RObject(topLevelCharacters.get(name).fields);
+                    topLevelCharacters.get(name).fields;
                 }
                 else {
                     throw new RuntimeError('Character not found: $name', pos);
@@ -897,18 +891,11 @@ class Interpreter {
 
     }
 
-    function writeAccess(access:RuntimeAccess, value:RuntimeValue):Void {
+    function writeAccess(access:RuntimeAccess, value:Any):Void {
 
         switch access {
             case FieldAccess(pos, obj, name):
-                switch obj {
-
-                    case RObject(v):
-                        v.set(name, value);
-
-                    case _:
-                        throw new RuntimeError('Invalid field write access "$name" in value of type ${access.getName()}', pos);
-                }
+                setField(obj, name, value);
 
             case ArrayAccess(pos, array, index):
                 array[index] = value;
@@ -933,12 +920,13 @@ class Interpreter {
                 final target = evaluateExpression(arrAccess.target);
                 final index = evaluateExpression(arrAccess.index);
 
-                switch [target, index] {
-                    case [RArray(arr), RNumber(idx)]:
-                        final i = Std.int(idx);
-                        ArrayAccess(arrAccess.pos, arr, i);
-                    case _:
-                        throw new RuntimeError('Invalid array access target', arrAccess.pos);
+                if (target is Array && (index is Int || index is Float)) {
+                    final i:Int = Std.int(index);
+                    final arr:Array<Any> = target;
+                    ArrayAccess(arrAccess.pos, arr, i);
+                }
+                else {
+                    throw new RuntimeError('Invalid array access target', arrAccess.pos);
                 }
 
             case _:
@@ -961,10 +949,10 @@ class Interpreter {
 
             // Check temporary state
             if (scope.state != null) {
-                if (scope.state.fields.exists(name)) {
+                if (fieldExists(scope.state.fields, name)) {
                     return FieldAccess(
                         currentScope?.node?.pos ?? script.pos,
-                        RObject(scope.state.fields),
+                        scope.state.fields,
                         name
                     );
                 }
@@ -974,10 +962,10 @@ class Interpreter {
         }
 
         // Look for state fields
-        if (topLevelState.fields.exists(name)) {
+        if (fieldExists(topLevelState.fields, name)) {
             return FieldAccess(
                 currentScope?.node?.pos ?? script.pos,
-                RObject(topLevelState.fields),
+                topLevelState.fields,
                 name
             );
         }
@@ -991,150 +979,84 @@ class Interpreter {
         }
 
         throw new RuntimeError('Undefined variable: $name', currentScope?.node?.pos ?? script.pos);
-    }
-
-    function performOperation(op:TokenType, left:RuntimeValue, right:RuntimeValue):RuntimeValue {
-
-        return switch [op, left, right] {
-
-            case [OpPlus, RNumber(a), RNumber(b)]: RNumber(a + b);
-            case [OpMinus, RNumber(a), RNumber(b)]: RNumber(a - b);
-            case [OpMultiply, RNumber(a), RNumber(b)]: RNumber(a * b);
-            case [OpDivide, RNumber(a), RNumber(b)]:
-                if (b == 0) throw new RuntimeError('Division by zero', currentScope?.node?.pos ?? script.pos);
-                RNumber(a / b);
-
-            case [OpEquals, _, _]: RBoolean(valuesEqual(left, right));
-            case [OpNotEquals, _, _]: RBoolean(!valuesEqual(left, right));
-
-            case [OpGreater, RNumber(a), RNumber(b)]: RBoolean(a > b);
-            case [OpGreaterEq, RNumber(a), RNumber(b)]: RBoolean(a >= b);
-            case [OpLess, RNumber(a), RNumber(b)]: RBoolean(a < b);
-            case [OpLessEq, RNumber(a), RNumber(b)]: RBoolean(a <= b);
-
-            case [OpAnd, RBoolean(a), RBoolean(b)]: RBoolean(a && b);
-            case [OpOr, RBoolean(a), RBoolean(b)]: RBoolean(a || b);
-
-            case _: throw new RuntimeError('Invalid operation: $op', currentScope?.node?.pos ?? script.pos);
-        }
 
     }
 
-    function valuesEqual(a:RuntimeValue, b:RuntimeValue):Bool {
+    function getField(fields:Any, name:String):Any {
 
-        return switch [a, b] {
-
-            case [RNull, RNull]: true;
-
-            case [RNumber(a), RNumber(b)]: a == b;
-
-            case [RBoolean(a), RBoolean(b)]: a == b;
-
-            case [RString(a), RString(b)]: a == b;
-
-            case [RArray(a), RArray(b)]:
-                if (a.length != b.length) return false;
-                for (i in 0...a.length) {
-                    if (!valuesEqual(a[i], b[i])) return false;
-                }
-                true;
-
-            case [RObject(a), RObject(b)]:
-                var keysA = [for (k in a.keys()) k];
-                var keysB = [for (k in b.keys()) k];
-                if (keysA.length != keysB.length) return false;
-                for (k in keysA) {
-                    if (!b.exists(k) || !valuesEqual(a.get(k), b.get(k))) return false;
-                }
-                true;
-
-            case _: false;
+        return if (fields is Fields) {
+            (cast fields:Fields).lorelineGet(name);
         }
-
-    }
-
-    function valueToString(value:RuntimeValue):String {
-
-        return switch value {
-
-            case RNull: "null";
-
-            case RNumber(n): Std.string(n);
-
-            case RBoolean(b): b ? "true" : "false";
-
-            case RString(s): s;
-
-            case RArray(arr): '[${[for (v in arr) valueToString(v)].join(", ")}]';
-
-            case RObject(obj):
-                '{${[for (k => v in obj) '$k: ${valueToString(v)}'].join(", ")}}';
-        }
-
-    }
-
-    function callFunction(func:Map<String, RuntimeValue>, args:Array<RuntimeValue>):RuntimeValue {
-
-        throw new RuntimeError('Function calls not yet implemented', currentScope?.node?.pos ?? script.pos);
-
-    }
-
-    function serializeValue(value:RuntimeValue):Dynamic {
-
-        return switch value {
-
-            case RNull: null;
-
-            case RNumber(n): n;
-
-            case RBoolean(b): b;
-
-            case RString(s): s;
-
-            case RArray(arr): [for (v in arr) serializeValue(v)];
-
-            case RObject(obj): {
-                final result = {};
-                for (k => v in obj) {
-                    Reflect.setField(result, k, serializeValue(v));
-                }
-                result;
-            }
-
-            case _: {
-                throw 'Cannot serialize value: $value';
-            }
-        }
-
-    }
-
-    function deserializeValue(value:Dynamic):RuntimeValue {
-
-        return if (value == null) {
-            RNull;
-        }
-        else if (Std.isOfType(value, Float) || Std.isOfType(value, Int)) {
-            RNumber(Std.parseFloat(Std.string(value)));
-        }
-        else if (Std.isOfType(value, Bool)) {
-            RBoolean(value);
-        }
-        else if (Std.isOfType(value, String)) {
-            RString(value);
-        }
-        else if (Std.isOfType(value, Array)) {
-            RArray([for (v in (value : Array<Dynamic>)) deserializeValue(v)]);
-        }
-        else if (Reflect.isObject(value)) {
-            final obj = new Map<String, RuntimeValue>();
-            for (field in Reflect.fields(value)) {
-                obj.set(field, deserializeValue(Reflect.field(value, field)));
-            }
-            RObject(obj);
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).get(name);
         }
         else {
-            throw 'Cannot deserialize value: $value';
+            Reflect.getProperty(fields, name);
         }
+
+    }
+
+    function setField(fields:Any, name:String, value:Any):Void {
+
+        if (fields is Fields) {
+            (cast fields:Fields).lorelineSet(name, value);
+        }
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).set(name, value);
+        }
+        else {
+            Reflect.setProperty(fields, name, value);
+        }
+
+    }
+
+    function fieldExists(fields:Any, name:String):Bool {
+
+        return if (fields is Fields) {
+            (cast fields:Fields).lorelineExists(name);
+        }
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).exists(name);
+        }
+        else {
+            Reflect.hasField(fields, name);
+        }
+
+    }
+
+    function performOperation(op:TokenType, left:Dynamic, right:Dynamic):Any {
+
+        return switch op {
+            case OpPlus: left + right;
+            case OpMinus: left - right;
+            case OpMultiply: left * right;
+            case OpDivide:
+                if (right == 0) throw new RuntimeError('Division by zero', currentScope?.node?.pos ?? script.pos);
+                left / right;
+            case OpEquals: left == right;
+            case OpNotEquals: left != right;
+            case OpGreater: left > right;
+            case OpGreaterEq: left >= right;
+            case OpLess: left < right;
+            case OpLessEq: left <= right;
+            case OpAnd: left && right;
+            case OpOr: left || right;
+
+            case _:
+                throw new RuntimeError('Invalid operation: $op', currentScope?.node?.pos ?? script.pos);
+        }
+
+    }
+
+    function valueToString(value:Any):String {
+
+        return Std.string(value);
+
+    }
+
+    function callFunction(func:Any, args:Array<Any>):Any {
+
+        throw new RuntimeError('Function calls not yet implemented', currentScope?.node?.pos ?? script.pos);
 
     }
 
