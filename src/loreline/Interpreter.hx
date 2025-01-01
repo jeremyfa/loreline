@@ -240,7 +240,16 @@ class Interpreter {
             if (decl is NBeatDecl) {
                 // Add beat
                 final beat:NBeatDecl = cast decl;
-                topLevelBeats.set(beat.name, beat);
+                initializeTopLevelBeat(beat);
+            }
+        }
+
+        // Build character lookup map
+        for (decl in script.declarations) {
+            if (decl is NCharacterDecl) {
+                // Add NCharacterDecl
+                final character:NCharacterDecl = cast decl;
+                initializeTopLevelCharacter(character);
             }
         }
 
@@ -371,6 +380,18 @@ class Interpreter {
 
     }
 
+    function initializeTopLevelBeat(beat:NBeatDecl) {
+
+        // Look for duplicate entries
+        if (topLevelBeats.exists(beat.name)) {
+            throw new RuntimeError('Duplicate top level beat: ${beat.name}', beat.pos);
+        }
+
+        // Create new beat entry in mapping
+        topLevelBeats.set(beat.name, beat);
+
+    }
+
     function initializeTopLevelCharacter(character:NCharacterDecl) {
 
         // Look for duplicate entries
@@ -444,7 +465,7 @@ class Interpreter {
             case NBeatDecl:
                 evalBeatDecl(cast node, next);
             case NStateDecl:
-                evalState(cast node, next);
+                evalStateDecl(cast node, next);
             case NTextStatement:
                 evalText(cast node, next);
             case NDialogueStatement:
@@ -470,6 +491,7 @@ class Interpreter {
     }
 
     function evalBeatDecl(beat:NBeatDecl, next:()->Void) {
+        debug('eval beat decl name=${beat.name}');
 
         // Add beat to current scope.
         // It will be available as long as we don't leave that scope
@@ -483,9 +505,12 @@ class Interpreter {
 
         currentScope.beats.set(beat.name, beat);
 
+        next();
+
     }
 
     function evalBeatRun(beat:NBeatDecl, next:()->Void) {
+        debug('eval beat run name=${beat.name}');
 
         // Push new scope
         push({
@@ -525,6 +550,7 @@ class Interpreter {
     }
 
     function evalNodeBody(node:AstNode, body:Array<AstNode>, next:()->Void) {
+        debug('eval node body length=${body.length}');
 
         // Push new scope
         push({
@@ -563,7 +589,8 @@ class Interpreter {
 
     }
 
-    function evalState(state:NStateDecl, next:()->Void) {
+    function evalStateDecl(state:NStateDecl, next:()->Void) {
+        debug('eval state decl fields=${[for (field in (state.fields.value:Array<NObjectField>)) field.name].join(',')}');
 
         // This will initialize the state if it's temporary
         // or the first time we encounter it, if it is a persistent one
@@ -577,6 +604,7 @@ class Interpreter {
     }
 
     function evalText(text:NTextStatement, next:()->Void) {
+        debug('eval text content=${text.content}');
 
         // First evaluate the content from the given text
         final content = evaluateString(text.content);
@@ -589,6 +617,7 @@ class Interpreter {
     }
 
     function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
+        debug('eval dialogue content=${dialogue.content}');
 
         // First evaluate the content from the given dialogue
         final content = evaluateString(dialogue.content);
@@ -601,6 +630,7 @@ class Interpreter {
     }
 
     function evalChoice(choice:NChoiceStatement, next:()->Void) {
+        debug('eval choice length=${choice.options.length}');
 
         // Compute choice contents
         final options:Array<ChoiceOption> = [];
@@ -634,6 +664,7 @@ class Interpreter {
     }
 
     function evalChoiceOption(option:NChoiceOption, next:()->Void) {
+        debug('eval choice option=${option.text}');
 
         // Evaluate child nodes of this choice option.
         // Child nodes will be evaluated in a child scope associated
@@ -643,6 +674,7 @@ class Interpreter {
     }
 
     function evalIf(ifStmt:NIfStatement, next:()->Void) {
+        debug('eval if');
 
         final condition = evaluateExpression(ifStmt.condition);
 
@@ -669,6 +701,7 @@ class Interpreter {
     }
 
     function evalAssignment(assign:NAssignment, next:()->Void) {
+        debug('eval assign');
 
         final target = resolveAssignmentTarget(assign.target);
         final value = evaluateExpression(assign.value);
@@ -689,8 +722,7 @@ class Interpreter {
     }
 
     function evalTransition(transition:NTransition) {
-
-        trace('EVAL TRANSITION $transition');
+        debug('eval transition target=${transition.target}');
 
         final beatName = transition.target;
         var resolvedBeat:NBeatDecl = null;
@@ -784,7 +816,8 @@ class Interpreter {
 
             case NAccess:
                 final access:NAccess = cast expr;
-                readAccess(resolveAccess(access.target, access.name));
+                final resolved = resolveAccess(access.target, access.name);
+                readAccess(resolved);
 
             case NArrayAccess:
                 final arrAccess:NArrayAccess = cast expr;
@@ -846,7 +879,7 @@ class Interpreter {
                         v.get(name) ?? RNull;
 
                     case _:
-                        throw new RuntimeError('Invalid field read access "$name" in value of type ${access.getName()}', pos);
+                        throw new RuntimeError('Invalid field read access "$name" in value of type ${obj.getName()}', pos);
                 }
 
             case ArrayAccess(pos, array, index):
@@ -917,7 +950,8 @@ class Interpreter {
     function resolveAccess(?target:NExpression, name:String):RuntimeAccess {
 
         if (target != null) {
-            return FieldAccess(target.pos, evaluateExpression(target), name);
+            final evaluated = evaluateExpression(target);
+            return FieldAccess(target.pos, evaluated, name);
         }
 
         // Iterate through scopes to identify a matching state field or character name
@@ -950,9 +984,8 @@ class Interpreter {
 
         // Look for characters
         if (topLevelCharacters.exists(name)) {
-            return FieldAccess(
+            return CharacterAccess(
                 currentScope?.node?.pos ?? script.pos,
-                RObject(topLevelState.fields),
                 name
             );
         }
@@ -1104,5 +1137,15 @@ class Interpreter {
         }
 
     }
+
+    #if loreline_debug_interpreter
+    public static dynamic function debug(message:String, ?pos:haxe.PosInfos) {
+        trace(message);
+    }
+    #else
+    macro static function debug(expr:haxe.macro.Expr) {
+        return macro null;
+    }
+    #end
 
 }

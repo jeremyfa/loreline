@@ -1,17 +1,24 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "haxe",
-			"args": "active configuration",
-			"problemMatcher": [
-				"haxe-fake"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"label": "haxe: active configuration"
-		}
-	]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "run",
+                "play",
+                "test/Test.lor",
+                "--debug",
+                "-Dloreline_debug_interpreter"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "▶︎ Test (Debug)"
+        }
+    ],
+    "displayName": "▶︎ Test (Debug)",
+    "description": "loreline play test/Test.lor --debug -Dloreline_debug_interpreter",
+    "chooserIndex": 1
 }

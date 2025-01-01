@@ -3,6 +3,10 @@
 --main loreline.Cli
 --neko loreline.n
 
---next
+# --next
 
---cmd neko loreline.n play test/Test.lor
+# --library hxnodejs
+# --class-path src
+# --class-path cli
+# --main loreline.Cli
+# --js loreline.js

@@ -8,5 +8,8 @@
     },
     "files.associations": {
         "*.lor": "loreline"
-    }
+    },
+    "haxe.configurations": [
+        ["build.hxml", "-D", "completion", "-D", "loreline_debug_interpreter"],
+    ]
 }

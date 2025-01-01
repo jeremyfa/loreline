@@ -1,5 +1,7 @@
 package loreline;
 
+import haxe.CallStack;
+
 /**
  * Represents an error.
  */
@@ -16,6 +18,11 @@ class Error {
     public var pos:Position;
 
     /**
+     * The call stack of this error
+     */
+    public var stack:Array<StackItem>;
+
+    /**
      * Creates a new lexer error.
      * @param message The error message
      * @param pos The position where the error occurred
@@ -23,6 +30,7 @@ class Error {
     public function new(message:String, pos:Position) {
         this.message = message;
         this.pos = pos;
+        this.stack = CallStack.callStack();
     }
 
     /**

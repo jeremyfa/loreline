@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+
+const { spawn } = require('child_process');
+
+async function command(command, args = []) {
+    const childProcess = spawn(command, args, {
+        stdio: 'inherit'
+    });
+
+    return new Promise((resolve, reject) => {
+        childProcess.on('error', reject);
+        childProcess.on('close', (code) => {
+            if (code === 0) resolve();
+            else reject(new Error(`Command failed with code ${code}`));
+        });
+    });
+}
+
+// Example usage with async/await
+async function main() {
+
+    process.chdir(__dirname);
+    let rawArgs = process.argv.slice(2);
+
+    let haxeBuildArgs = ['build.hxml'];
+    let lorelineArgs = [];
+
+    let i = 0;
+    while (i < rawArgs.length) {
+        if (rawArgs[i].startsWith('-D')) {
+            haxeBuildArgs.push('-D');
+            haxeBuildArgs.push(rawArgs[i].substring(2));
+        }
+        else if (rawArgs[i] == '--debug') {
+            haxeBuildArgs.push('--debug');
+        }
+        else {
+            lorelineArgs.push(rawArgs[i]);
+        }
+        i++;
+    }
+
+    await command('haxe', haxeBuildArgs);
+    await command('neko', ['loreline.n'].concat(lorelineArgs));
+    //await command('node', ['loreline.js'].concat(process.argv.slice(2)));
+
+}
+
+(async () => {
+    try {
+        await main();
+    } catch (error) {
+        console.error(error);
+    }
+})();

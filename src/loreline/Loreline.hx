@@ -11,8 +11,7 @@ class Loreline {
      * Parse the given loreline script content and
      * returns the resulting script AST
      * @param input The input script as text. Must be a valid loreline script (`.lor` format)
-     * @throws parseErrors if the parsing failed (`Array<ParseError>`).
-     * @throws lexerError if the lexing failed (`LexerError`).
+     * @throws error if the lexing or parsing failed (`loreline.Error`)
      * @return The parsed script AST
      */
     public static function parse(input:String):Script {
@@ -24,7 +23,7 @@ class Loreline {
         final parseErrors = parser.getErrors();
 
         if (parseErrors != null && parseErrors.length > 0) {
-            throw [].concat(parseErrors);
+            throw parseErrors[0];
         }
 
         return result;
