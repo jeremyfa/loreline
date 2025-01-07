@@ -1,0 +1,607 @@
+
+state {
+    specialBeans: 8
+    rushHour: false
+}
+
+character barista {
+    name: Barista
+    friendship: 0
+}
+
+character doctor {
+    name: Dr. Bean
+}
+
+character sarah {
+    name: Sarah
+    present: false
+}
+
+character james {
+    name: James
+    present: false
+}
+
+character player {
+    consumedCoffees: 0
+    cafeVisits: 0
+    jitters: false
+    energy: 0
+}
+
+beat EnterCoffeeShop {
+
+    rushHour = chance(4)
+
+    if (rushHour) {
+        The café is bustling with activity, a line stretching to the door.
+
+        barista: <stressed> Thanks for your patience with the rush!
+    }
+    else if (player.cafeVisits > 0) {
+        if (chance(2)) {
+            The scent of dark roasted beans swirls through the air as you step again into your favorite café.
+        }
+        else {
+            The familiar whir and hiss of the espresso machine welcomes you back to your beloved café.
+        }
+    }
+    else {
+        The aroma of freshly ground coffee beans fills the air as you enter your favorite café.
+    }
+
+    if (!sarah.present && chance(2)) {
+        sarah.present = true
+        $sarah sits at her usual corner table, working on her laptop.
+    }
+
+    if (!james.present && chance(2)) {
+        james.present = true
+        $james reads a book by the window, his usual green tea in hand.
+    }
+
+    -> CoffeeShop
+}
+
+beat CoffeeShop {
+
+    if (player.cafeVisits > 0) {
+        if (chance(2)) {
+            You are back near the coffee shop counter.
+        }
+        else {
+            The barista sees you approaching him again.
+        }
+    }
+
+    player.cafeVisits += 1
+
+    if (player.consumedCoffees == 0) {
+        barista: <friendly> Ready for your first coffee of the day?
+    }
+    else if (player.consumedCoffees > 3) {
+        barista: <concerned> Again? That's quite a lot of coffee today...
+
+        if (sarah.present && james.present) {
+            james: <whisper> Should we say something?
+            sarah: I'm texting $doctor...
+        }
+    }
+    else {
+        barista: <cheerful> Need another boost?
+    }
+
+    choice {
+
+        Order espresso {
+
+            player.consumedCoffees += 1
+            player.energy += 2
+
+            the rich, concentrated shot of espresso gives you an immediate boost.
+
+            if (player.consumedCoffees > 2) {
+                if (sarah.present) {
+                    sarah: if you are <concerned> Another espresso? Really?
+                }
+
+                if (james.present) {
+                    james: <thoughtful> That's pretty strong stuff.
+                }
+            }
+
+            -> ProcessCoffeeEffects
+        }
+
+        Order special Ethiopian blend if (specialBeans > 0) {
+
+            specialBeans -= 1
+            player.consumedCoffees += 1
+            player.energy += 2
+            barista.friendship += 2
+
+            if (sarah.present) {
+                if (chance(2)) {
+                    sarah: <curious> Oh, that smells amazing! Maybe I'll try that next.
+                }
+                else {
+                    sarah: <curious> This aroma is incredible! You'll have to tell me how it tastes.
+                }
+            }
+
+            if (james.present) {
+                if (chance(2)) {
+                    james: <interested> Ethiopian Yirgacheffe? Excellent choice!
+                }
+                else {
+                    james: <interested> They managed to get beans from the Sidamo region? Impressive.
+                }
+             }
+
+            -> ProcessCoffeeEffects
+        }
+
+        Order cappuccino if (!rushHour) {
+
+            player.consumedCoffees += 1
+            player.energy += 1
+            barista.friendship += 1
+
+            barista: <proud> Look at the latte art I made for you!
+
+            -> ProcessCoffeeEffects
+        }
+
+        Order decaf if (player.jitters) {
+
+            barista: <relieved> Good choice! Let's calm those jitters.
+            player.jitters = false
+
+            -> RelaxingMoment
+        }
+
+        Join $sarah if (sarah.present) {
+            -> SarahChat
+        }
+
+        Join $james if (james.present) {
+            -> JamesChat
+        }
+
+        Leave shop if (player.consumedCoffees > 0) {
+            -> EndDay
+        }
+    }
+}
+
+beat ProcessCoffeeEffects {
+
+    if (player.consumedCoffees > 5) {
+        player.jitters = true
+        -> CoffeeMadness
+    }
+    else if (player.consumedCoffees > 3) {
+        player.jitters = true
+        -> HighCaffeine
+    }
+    else {
+        -> ProductiveMoment
+    }
+}
+
+beat ProductiveMoment {
+
+    if (chance(4)) {
+        The coffee kicks in: you feel invincible.
+    }
+    else if (chance(3)) {
+        The caffeine does its work: new energy pulses through your veins.
+    }
+    else if (chance(2)) {
+        The coffee works its magic, and you feel ready to tackle anything.
+    }
+    else {
+        The drink does its job: a wave of energy washes over you.
+    }
+
+    choice {
+
+        Work on your laptop {
+
+            Your fingers fly across the keyboard with caffeinated precision.
+
+            if (sarah.present && james.present) {
+                sarah.present = false
+                james.present = false
+                Your friends leave while you're absorbed in work.
+            }
+            else if (sarah.present) {
+                sarah.present = false
+                $sarah leaves while you're absorbed in work.
+            }
+            else if (james.present) {
+                james.present = false
+                $james leaves while you're absorbed in work.
+            }
+
+            -> CoffeeShop
+        }
+
+        Chat with barista if (barista.friendship >= 1 && !rushHour) {
+            barista: <friendly> Want to learn about our special coffee beans?
+            barista.friendship += 1
+            -> BaristaChat
+        }
+
+        Join $sarah if (sarah.present) {
+            -> SarahChat
+        }
+
+        Join $james if (james.present) {
+            -> JamesChat
+        }
+
+        Take a walk {
+            The combination of coffee and fresh air feels amazing.
+            After a while, time to go back to the café.
+            sarah.present = false
+            james.present = false
+            -> EnterCoffeeShop
+        }
+    }
+}
+
+beat HighCaffeine {
+
+    Your hands are starting to shake slightly, and everything seems VERY interesting.
+
+    if (player.jitters) {
+        The room seems to be vibrating... or is that just you?
+    }
+
+    if (sarah.present) {
+        sarah: <worried> Maybe you should slow down...
+    }
+
+    if (james.present) {
+        james: <concerned> Want to try some calming tea instead?
+    }
+
+    choice {
+
+        Try to calm down {
+            -> RelaxingMoment
+        }
+
+        DRINK MORE COFFEE {
+            player.consumedCoffees += 1
+            player.energy += 3
+            -> CoffeeMadness
+        }
+
+        Talk really fast to barista {
+            barista: <amused> Maybe switch to water for a bit?
+            -> DecisionTime
+        }
+    }
+}
+
+beat CoffeeMadness {
+
+    Time becomes meaningless. You can taste colors and see sounds.
+
+    if (sarah.present && james.present) {
+        sarah.present = false
+        james.present = false
+        Your friends quickly text $doctor about your concerning behavior.
+    }
+    else if (sarah.present || james.present) {
+        sarah.present = false
+        james.present = false
+        Your friend quickly text $doctor about your concerning behavior.
+    }
+
+    doctor: <worried> That's way too much caffeine! Let's get you checked out.
+
+    choice {
+
+        Accept medical help {
+            -> DoctorsVisit
+        }
+
+        MUST DRINK MORE if (player.consumedCoffees < 8) {
+            player.consumedCoffees += 1
+            -> CoffeeOverdrive
+        }
+
+    }
+}
+
+beat CoffeeOverdrive {
+
+    You have achieved coffee enlightenment. You can now see through time and space.
+
+    doctor: <stern> This is an intervention.
+
+    -> DoctorsVisit
+}
+
+beat DoctorsVisit {
+
+    doctor: <professional> Let's talk about moderating your coffee intake...
+
+    player.jitters = false
+    player.energy = 0
+
+    choice {
+
+        Promise to drink less {
+            doctor: <pleased> Good choice. Start with decaf tomorrow.
+            -> EndDay
+        }
+
+        Sneak out to get more coffee {
+            doctor: <exasperated> I saw that coming...
+            rushHour = !rushHour
+            -> CoffeeShop
+        }
+    }
+}
+
+beat RelaxingMoment {
+
+    You take deep breaths and feel your heart rate slowly returning to normal.
+
+    if (sarah.present && james.present) {
+        Your friends seem relieved to see you calming down.
+    }
+    else if (sarah.present || james.present) {
+        Your friend seem relieved to see you calming down.
+    }
+
+    player.jitters = false
+    player.energy -= 1
+
+    choice {
+
+        Stay in coffee shop {
+            -> CoffeeShop
+        }
+
+        Call it a day {
+            -> EndDay
+        }
+    }
+}
+
+beat BaristaChat {
+
+    if (specialBeans > 0) {
+        barista: <enthusiastic> Our Ethiopian beans are amazing! We've only got $specialBeans portions left.
+    }
+    else {
+        barista: <apologetic> We're out of our special beans for today, but our house blend is great too!
+    }
+
+    choice {
+
+        Learn about coffee brewing {
+            barista.friendship += 1
+            barista: <excited> Let me show you our pour-over technique!
+            -> CoffeeShop
+        }
+
+        Order their recommendation {
+            player.consumedCoffees += 1
+            player.energy += 2
+            -> ProcessCoffeeEffects
+        }
+    }
+}
+
+beat SarahChat {
+
+    if (player.jitters) {
+        if (chance(2)) {
+            sarah: <concerned> Maybe slow down on the caffeine?
+        }
+        else {
+            sarah: <concerned> Don't you think you should slow down on the caffeine?
+        }
+    }
+    else {
+        if (chance(2)) {
+            sarah: <delighted> Well, look who's here! Can't stay long, but it's great running into you.
+        }
+        else {
+            sarah: <friendly> Ah, so nice to see you! I need to head back to the office soon, but I've got time for a quick break.
+        }
+    }
+
+    choice {
+
+        Chat about work {
+            sarah.present = false
+            You quickly catch up about your respective projects. $sarah glances at her watch.
+            sarah: <rushed> I really need to go, my meeting starts in ten minutes!
+            -> CoffeeShop
+        }
+
+        Get another coffee if (player.consumedCoffees > 0) {
+            if (chance(2)) {
+                sarah: <amused> This coffee shop really has something special for you, doesn't it?
+            }
+            else {
+                sarah: <amused> Looks like you found your headquarters!
+            }
+            -> CoffeeShop
+        }
+
+        Order a first coffee if (player.consumedCoffees == 0) {
+            -> CoffeeShop
+        }
+
+        Talk about the special coffee if (specialBeans > 0) {
+            sarah: <patient> That's... fascinating. Really.
+            You launch into a long discussion about those famous Ethiopian beans.
+            -> CoffeeShop
+        }
+    }
+}
+
+beat JamesChat {
+
+    if (player.jitters) {
+        if (chance(2)) {
+            james: <concerned> You seem a bit wired.
+        }
+        else {
+            james: <worried> That's quite a caffeine buzz you've got there.
+        }
+    }
+    else {
+        if (chance(2)) {
+            james: <calm> Taking a break from the caffeine?
+        }
+        else {
+            james: <peaceful> Enjoying the atmosphere without the extra espresso today?
+        }
+    }
+
+    choice {
+        Chat about books {
+            james.present = false
+            if (chance(2)) {
+                You discuss $james's current read, a fascinating book about tea ceremonies around the world.
+                james: <enthusiastic> We should continue this conversation later!
+            }
+            else {
+                You lose track of time discussing $james's latest literary discovery until he glances at his watch.
+                james: <apologetic> Oh, I should get going. Great chat though!
+            }
+            -> CoffeeShop
+        }
+
+        Order another coffee if (player.consumedCoffees > 0) {
+            if (chance(2)) {
+                james: <diplomatic> Have you tried their herbal tea? It's quite remarkable.
+            }
+            else {
+                james: <gentle> Their chamomile blend is actually quite amazing, you know.
+            }
+            -> CoffeeShop
+        }
+
+        Order a coffee first if (player.consumedCoffees == 0) {
+            -> CoffeeShop
+        }
+
+        Discuss coffee origins if (specialBeans > 0) {
+            if (chance(2)) {
+                james: <interested> The cultural history of coffee is fascinating.
+                You have a nice conversation with $james about coffee origins.
+            }
+            else {
+                james: <passionate> Did you know coffee was first discovered by Ethiopian goat herders?
+                You share an engaging discussion about coffee's journey through history.
+            }
+            -> CoffeeShop
+        }
+    }
+}
+
+beat DecisionTime {
+
+    Maybe it's time to make some choices about your coffee consumption.
+
+    if (sarah.present && james.present) {
+        Your friends watch expectantly, hoping you'll make a sensible choice.
+    }
+    else if (sarah.present) {
+        $sarah watches expectantly, waiting for you decision.
+    }
+    else if (james.present) {
+        $james watches expectantly, hoping you'll make the right choice.
+    }
+
+    choice {
+
+        Switch to decaf {
+
+            player.jitters = false
+
+            if (sarah.present) {
+                sarah: <relieved> Good choice!
+            }
+
+            if (james.present) {
+                james: <approving> Finally.
+            }
+
+            -> RelaxingMoment
+        }
+
+        Power through if (player.consumedCoffees < 6) {
+
+            if (sarah.present && james.present) {
+                Your friends exchange worried glances.
+            }
+            else if (sarah.present) {
+                $sarah seems a bit worried.
+            }
+            else if (james.present) {
+                $james look like he doesn't approve.
+            }
+
+            -> CoffeeShop
+        }
+
+        Go home and rest {
+
+            sarah.present = false
+            james.present = false
+
+            -> EndDay
+        }
+    }
+}
+
+beat EndDay {
+
+    if (barista.friendship > 2) {
+        barista: <friendly> See you tomorrow! I'll save your favorite cup!
+    }
+
+    if (sarah.present || james.present) {
+
+        if (player.consumedCoffees > 4) {
+
+            if (sarah.present && james.present) {
+                Your friends make you promise to take it easier tomorrow.
+            }
+            else if (sarah.present) {
+                $sarah make you promise to take it easier tomorrow.
+            }
+            else if (james.present) {
+                $james make you promise to take it easier tomorrow.
+            }
+        }
+        else if (sarah.present && james.present) {
+            You say goodbye to your friends and head out.
+        }
+        else {
+            You say goodbye to your friend and head out.
+        }
+    }
+
+    if (player.consumedCoffees > 6) {
+        You lie awake all night, contemplating the mysteries of the universe.
+    }
+    else if (player.consumedCoffees > 3) {
+        You crash hard and sleep like a rock.
+    }
+    else {
+        You end your day feeling pretty good about your coffee choices.
+    }
+}

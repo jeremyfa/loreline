@@ -1,0 +1,17 @@
+The warm aroma of coffee fills the café.
+
+barista: Hi there! How are you doing today?
+
+choice {
+    Having a great day {
+        barista: Wonderful! Coffee will make it even better.
+    }
+
+    Need caffeine... {
+        barista: Say no more! Let me help with that.
+    }
+
+    Your name is Alex, right? {
+        barista: Oh, I didn't expect you'd remember it!
+    }
+}

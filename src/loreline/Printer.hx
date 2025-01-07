@@ -243,7 +243,7 @@ class Printer {
                 printBinary(cast node);
             case NUnary:
                 printUnary(cast node);
-            case NAssignment:
+            case NAssign:
                 printAssignment(cast node);
             case _:
                 throw 'Unsupported node type: ${Type.getClassName(Type.getClass(node))}';
@@ -259,7 +259,8 @@ class Printer {
             for (comment in node.leadingComments) {
                 if (comment.multiline) {
                     writeln('/*${comment.content}*/');
-                } else {
+                }
+                else {
                     writeln('//${comment.content}');
                 }
             }
@@ -278,7 +279,8 @@ class Printer {
                 }
                 if (comment.multiline) {
                     write('/*${comment.content}*/ ');
-                } else {
+                }
+                else {
                     writeln('//${comment.content}');
                 }
             }
@@ -445,7 +447,8 @@ class Printer {
                 write(' ');
                 printNode(option.body[0]);
                 if (_beginLine == 0) writeln();
-            } else {
+            }
+            else {
                 writeln(' {');
                 indent();
                 for (node in option.body) {
@@ -458,7 +461,8 @@ class Printer {
                 writeln();
                 writeln('}');
             }
-        } else {
+        }
+        else {
             writeln();
         }
     }
@@ -667,7 +671,7 @@ class Printer {
      * Prints an assignment expression (a = b, a += b).
      * @param assign Assignment node to print
      */
-    function printAssignment(assign:NAssignment) {
+    function printAssignment(assign:NAssign) {
         printLeadingComments(assign);
         printNode(assign.target);
         printTrailingComments(assign);
@@ -679,7 +683,7 @@ class Printer {
      * Prints an expression wrapped in parentheses.
      * @param expr Expression to wrap in parentheses
      */
-    function printParenExpression(expr:NExpression) {
+    function printParenExpression(expr:NExpr) {
         write('(');
         if (expr is NBinary) {
             printBinary(cast expr, true);
@@ -707,6 +711,7 @@ class Printer {
             case OpMinus: "-";
             case OpMultiply: "*";
             case OpDivide: "/";
+            case OpModulo: "%";
             case OpEquals: "==";
             case OpNotEquals: "!=";
             case OpGreater: ">";

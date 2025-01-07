@@ -32,9 +32,13 @@ class Cli {
 
     var errorInStdOut:Bool = false;
 
-    var typeDelay:Float = 0.005;
+    var typeDelay:Float = 0.0075;
 
-    var options:CliOptions = {};
+    var sentenceDelay:Float = 0.5;
+
+    var showDisabled:Bool = false;
+
+    var lastCharacter:String = null;
 
     function new() {
 
@@ -45,7 +49,18 @@ class Cli {
         };
         #end
 
-        final args = Sys.args();
+        final args = [].concat(Sys.args());
+
+        var i = 2;
+        while (i < args.length) {
+            if (args[i] == '--show-disabled') {
+                showDisabled = true;
+                args.splice(i, 1);
+            }
+            else {
+                i++;
+            }
+        }
 
         if (args.length >= 1) {
             switch args[0] {
@@ -98,6 +113,9 @@ class Cli {
             if (e is Error) {
                 printStackTrace(false, (e:Error).stack);
             }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
             fail(e, file);
         }
 
@@ -113,6 +131,7 @@ class Cli {
 
         try {
             final content = File.getContent(file);
+
             final script = Loreline.parse(content);
 
             errorInStdOut = true;
@@ -120,7 +139,9 @@ class Cli {
                 script,
                 handleDialogue,
                 handleChoice,
-                () -> {}
+                _ -> {
+                    // Finished script execution
+                }
             );
         }
         catch (e:Any) {
@@ -128,17 +149,33 @@ class Cli {
             if (e is Error) {
                 printStackTrace(false, (e:Error).stack);
             }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
             #end
             fail(e, file);
         }
 
     }
 
-    function handleDialogue(character:String, text:String, tags:Array<TextTag>, callback:()->Void):Void {
+    function handleDialogue(interpreter:Interpreter, character:String, text:String, tags:Array<TextTag>, callback:()->Void):Void {
 
         if (character != null) {
+
+            character = interpreter.getCharacterField(character, 'name') ?? character;
+
+            var tagItems = [];
+            for (tag in tags) {
+                if (tag.offset == 0 && !tag.closing) {
+                    tagItems.push(("<" + tag.value + ">").cyan());
+                }
+            }
+            var tagItemsText = "";
+            if (tagItems.length > 0) {
+                tagItemsText = tagItems.join("") + " ";
+            }
             type(
-                " " + (character + ":").cyan().bold() + " " + text.green()
+                " " + (character + ":").cyan().bold() + " " + tagItemsText + text.green()
             );
         }
         else {
@@ -147,25 +184,31 @@ class Cli {
             );
         }
 
+        lastCharacter = character;
+
         print('');
+        if (sentenceDelay > 0) {
+            Sys.sleep(sentenceDelay);
+        }
 
         callback();
 
     }
 
-    function handleChoice(options:Array<ChoiceOption>, callback:(index:Int)->Void):Void {
+    function handleChoice(interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void):Void {
+
+        lastCharacter = null;
 
         var index = 1;
         for (opt in options) {
-
             if (opt.enabled) {
                 type(" " + '$index.'.yellow() + " " + opt.text);
+                index++;
             }
-            else {
+            else if (showDisabled) {
                 type((" " + '$index.' + " " + opt.text).gray());
+                index++;
             }
-
-            index++;
         }
 
         print('');
@@ -173,13 +216,19 @@ class Cli {
         do {
             Sys.stdout().writeString(" " + ">".yellow() + " ");
             final input = Std.parseInt(Sys.stdin().readLine());
-
-            if (input != null && input > 0 && input <= options.length) {
-                final opt = options[input-1];
-                if (opt.enabled) {
-                    print('');
-                    callback(input - 1);
-                    break;
+            if (input != null) {
+                var index = 1;
+                var i = 0;
+                for (opt in options) {
+                    if (opt.enabled || showDisabled) {
+                        if (input == index) {
+                            print('');
+                            callback(i);
+                            return;
+                        }
+                        index++;
+                    }
+                    i++;
                 }
             }
         }
@@ -278,7 +327,8 @@ class Cli {
                     #end
                     combinedAnsi += nextSeq;
                     nextPos = nextMatch.pos + nextMatch.len;
-                } else {
+                }
+                else {
                     break;
                 }
             }
@@ -291,7 +341,8 @@ class Cli {
                 result.push(combinedAnsi + text.charAt(nextPos));
                 #end
                 lastMatchEnd = nextPos + 1;
-            } else {
+            }
+            else {
                 // Handle case where ANSI sequence is at the end
                 result.push(combinedAnsi);
                 lastMatchEnd = nextPos;
@@ -401,6 +452,8 @@ class Cli {
     }
 
     function stackItemToString(item:StackItem):String {
+        static final pattern = ~/loreline\.([a-zA-Z]+)(?:\.[a-zA-Z]+)*::/;
+
         var str:String = "";
         switch (item) {
             case CFunction:
@@ -413,6 +466,14 @@ class Cli {
                     str += ' ';
                 }
                 str += file;
+                if (pattern.match(file)) {
+                    var name = pattern.matched(1);
+                    name = switch name {
+                        case 'ParseError': 'Parser';
+                        case _: name;
+                    }
+                    str += ' src/loreline/' + name + '.hx';
+                }
                 #if (!cpp || HXCPP_STACK_LINE)
                 str += ":";
                 str += line;

@@ -46,6 +46,8 @@ enum RuntimeAccess {
 
     CharacterAccess(pos:Position, name:String);
 
+    FunctionAccess(pos:Position, name:String);
+
 }
 
 /**
@@ -106,17 +108,17 @@ class ChoiceOption {
 /**
  * Handler type for text output with callback
  */
-typedef DialogueHandler = (character:String, text:String, tags:Array<TextTag>, callback:()->Void)->Void;
+typedef DialogueHandler = (interpreter:Interpreter, character:String, text:String, tags:Array<TextTag>, callback:()->Void)->Void;
 
 /**
  * Handler type for choice presentation with callback
  */
-typedef ChoiceHandler = (options:Array<ChoiceOption>, callback:(index:Int)->Void)->Void;
+typedef ChoiceHandler = (interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void)->Void;
 
 /**
  * Handler type to be called when the execution finishes
  */
-typedef FinishHandler = ()->Void;
+typedef FinishHandler = (interpreter:Interpreter)->Void;
 
 /**
  * Runtime error during script execution
@@ -171,7 +173,7 @@ class Interpreter {
     final topLevelBeats:Map<String, NBeatDecl> = new Map();
 
     /**
-     * States associated to a specific node id. These are persistent, like the tope level state,
+     * States associated to a specific node id. These are persistent, like the top level state,
      * but are only available from where they have been declared and the sub-scopes.
      * If some state fields already existed in a parent scope, the parent ones will be shadowed by the child ones.
      */
@@ -185,6 +187,11 @@ class Interpreter {
      * existed in a parent scope, the parent ones will be shadowed by the child ones.
      */
     final nodeCharacters:Map<Int, RuntimeCharacter> = new Map();
+
+    /**
+     * Top level function available by default in this script
+     */
+    final topLevelFunctions:Map<String, Any> = new Map();
 
     /**
      * The current execution stack, which consists of scopes added on top of one another.
@@ -217,7 +224,12 @@ class Interpreter {
      */
     var flushing:Bool = false;
 
-    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler) {
+    /**
+     * Keep track of which callback is the one that would trigger finish
+     */
+    var finishTrigger:EvalNext = null;
+
+    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, ?functions:Map<String,Any>) {
 
         this.script = script;
         this.handleDialogue = handleDialogue;
@@ -242,6 +254,98 @@ class Interpreter {
             }
         }
 
+        // Build default function
+        initializeTopLevelFunctions(functions);
+
+    }
+
+    final cycleByNode:Map<Int,Int> = new Map();
+
+    function initializeTopLevelFunctions(functions:Map<String,Any>) {
+
+        topLevelFunctions.set('random', (min:Int, max:Int) -> {
+            return Math.floor(min + Math.random() * (max + 1 - min));
+        });
+
+        topLevelFunctions.set('chance', (n:Int) -> {
+            return Math.floor(Math.random() * n) == 0;
+        });
+
+        topLevelFunctions.set('wait', (seconds:Float) -> {
+            return new Async(done -> {
+                #if sys
+                Sys.sleep(seconds);
+                done();
+                #else
+                done();
+                #end
+            });
+        });
+
+        if (functions != null) {
+            for (key => func in functions) {
+                topLevelFunctions.set(key, func);
+            }
+        }
+
+    }
+
+    public function getCharacter(name:String):Any {
+
+        return topLevelCharacters.get(name)?.fields;
+
+    }
+
+    public function getCharacterField(character:String, name:String):Any {
+
+        final fields = topLevelCharacters.get(character)?.fields;
+        if (fields != null) {
+            return getField(fields, name);
+        }
+        return null;
+
+    }
+
+    public function getField(fields:Any, name:String):Any {
+
+        return if (fields is Fields) {
+            (cast fields:Fields).lorelineGet(name);
+        }
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).get(name);
+        }
+        else {
+            Reflect.getProperty(fields, name);
+        }
+
+    }
+
+    public function setField(fields:Any, name:String, value:Any):Void {
+
+        if (fields is Fields) {
+            (cast fields:Fields).lorelineSet(name, value);
+        }
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).set(name, value);
+        }
+        else {
+            Reflect.setProperty(fields, name, value);
+        }
+
+    }
+
+    public function fieldExists(fields:Any, name:String):Bool {
+
+        return if (fields is Fields) {
+            (cast fields:Fields).lorelineExists(name);
+        }
+        else if (fields is StringMap) {
+            (cast fields:StringMap<Any>).exists(name);
+        }
+        else {
+            Reflect.hasField(fields, name);
+        }
+
     }
 
     /**
@@ -264,14 +368,29 @@ class Interpreter {
             if (resolvedBeat == null) {
                 throw new RuntimeError('Beat $beatName not found', script.pos);
             }
-        } else {
-            // Find first beat
+        }
+        else {
+            // Check if there is an implicit beat named "_"
             for (decl in script.declarations) {
                 if (decl is NBeatDecl) {
-                    resolvedBeat = cast decl;
+                    final beat:NBeatDecl = cast decl;
+                    if (beat.name == "_") {
+                        resolvedBeat = beat;
+                    }
                     break;
                 }
             }
+
+            if (resolvedBeat == null) {
+                // Find first beat if there is no "_"
+                for (decl in script.declarations) {
+                    if (decl is NBeatDecl) {
+                        resolvedBeat = cast decl;
+                        break;
+                    }
+                }
+            }
+
             if (resolvedBeat == null) {
                 throw new RuntimeError("No beats found in script", script.pos);
             }
@@ -298,6 +417,9 @@ class Interpreter {
                 cb();
                 flush();
                 wrapped.cb = null;
+                if (finishTrigger == wrapped) {
+                    finish();
+                }
             }
         };
 
@@ -426,8 +548,10 @@ class Interpreter {
 
     function finish():Void {
 
+        finishTrigger = null;
+
         if (handleFinish != null) {
-            handleFinish();
+            handleFinish(this);
         }
 
     }
@@ -442,6 +566,11 @@ class Interpreter {
 
         // Run beat
         final done = wrapNext(finish);
+
+        // We now consider that finishing this beat
+        // execution chain is the finish trigger
+        finishTrigger = done;
+
         evalBeatRun(beat, done.cb);
         done.sync = false;
 
@@ -465,8 +594,10 @@ class Interpreter {
                 evalChoiceOption(cast node, next);
             case NIfStatement:
                 evalIf(cast node, next);
-            case NAssignment:
+            case NAssign:
                 evalAssignment(cast node, next);
+            case NCall:
+                evalCall(cast node, next);
 
             case NTransition:
                 // When evaluating transition, we discard the
@@ -601,7 +732,7 @@ class Interpreter {
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleDialogue(null, content.text, content.tags, next);
+        handleDialogue(this, null, content.text, content.tags, next);
 
     }
 
@@ -614,7 +745,7 @@ class Interpreter {
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleDialogue(dialogue.character, content.text, content.tags, next);
+        handleDialogue(this, dialogue.character, content.text, content.tags, next);
 
     }
 
@@ -636,7 +767,7 @@ class Interpreter {
         // Then call the user-defined choice handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleChoice(options, function(index) {
+        handleChoice(this, options, function(index) {
 
             if (index >= 0 && index < choice.options.length) {
                 // Evaluate the chosen option
@@ -678,7 +809,7 @@ class Interpreter {
 
     }
 
-    function evalAssignment(assign:NAssignment, next:()->Void) {
+    function evalAssignment(assign:NAssign, next:()->Void) {
         debug('eval assign');
 
         final target = resolveAssignmentTarget(assign.target);
@@ -699,10 +830,54 @@ class Interpreter {
 
     }
 
+    function evalCall(call:NCall, next:()->Void) {
+
+        // If target is a simple identifier, it might be a nested beat call
+        if (call.target is NAccess) {
+            final access:NAccess = cast call.target;
+            if (access.target == null) {
+                // Look for matching beat in current scope and parent scopes
+                var beatName = access.name;
+                var resolvedBeat:NBeatDecl = null;
+
+                // Search through scopes from innermost to outermost
+                var i = stack.length - 1;
+                while (i >= 0) {
+                    final scope = stack[i];
+                    if (scope.beats != null && scope.beats.exists(beatName)) {
+                        resolvedBeat = scope.beats.get(beatName);
+                        break;
+                    }
+                    i--;
+                }
+
+                // If not found in scopes, check top level beats
+                if (resolvedBeat == null && topLevelBeats.exists(beatName)) {
+                    resolvedBeat = topLevelBeats.get(beatName);
+                }
+
+                // If beat found, evaluate it
+                if (resolvedBeat != null) {
+                    evalBeatRun(resolvedBeat, next);
+                    return;
+                }
+            }
+        }
+
+        // In other situations, try a regular function call
+        evaluateFunctionCall(call, next);
+
+    }
+
     function evalTransition(transition:NTransition) {
         debug('eval transition target=${transition.target}');
 
         final beatName = transition.target;
+        if (beatName == ".") {
+            finish();
+            return;
+        }
+
         var resolvedBeat:NBeatDecl = null;
 
         // Look for matching beat in scopes recursively
@@ -745,10 +920,33 @@ class Interpreter {
                     buf.add(text);
 
                 case Expr(expr):
-                    final value = evaluateExpression(expr);
-                    final text = valueToString(value);
-                    offset += text.length;
-                    buf.add(text);
+
+                    if (expr is NAccess) {
+                        // When providing a character object,
+                        // implicitly read the character's `name` field
+                        final access:NAccess = cast expr;
+                        final resolved = resolveAccess(access, access.target, access.name);
+                        switch resolved {
+                            case CharacterAccess(_, name):
+                                final characterFields = evaluateExpression(expr);
+                                final value = getField(characterFields, 'name') ?? name;
+                                final text = valueToString(value);
+                                offset += text.length;
+                                buf.add(text);
+
+                            case _:
+                                final value = evaluateExpression(expr);
+                                final text = valueToString(value);
+                                offset += text.length;
+                                buf.add(text);
+                        }
+                    }
+                    else {
+                        final value = evaluateExpression(expr);
+                        final text = valueToString(value);
+                        offset += text.length;
+                        buf.add(text);
+                    }
 
                 case Tag(closing, expr):
                     tags.push({
@@ -766,7 +964,7 @@ class Interpreter {
 
     }
 
-    function evaluateCondition(expr:NExpression):Bool {
+    function evaluateCondition(expr:NExpr):Bool {
 
         final value:Any = evaluateExpression(expr);
 
@@ -782,7 +980,74 @@ class Interpreter {
 
     }
 
-    function evaluateExpression(expr:NExpression):Any {
+    function evaluateFunctionCall(call:NCall, next:()->Void):Any {
+
+        // If target is a simple identifier, it might be a nested beat call
+        if (call.target is NAccess) {
+            final access:NAccess = cast call.target;
+            if (access.target == null) {
+                // Handle standalone function calls
+                final target = evaluateExpression(call.target);
+                if (target != null) {
+                    if (Reflect.isFunction(target)) {
+                        final args = [for (arg in call.args) evaluateExpression(arg)];
+                        final result:Any = Reflect.callMethod(null, target, args);
+                        if (result != null && result is Async) {
+                            if (next == null) {
+                                throw new RuntimeError(
+                                    'Cannot call async function in expression',
+                                    call.pos
+                                );
+                            }
+                            else {
+                                final asyncResult:Async = cast result;
+                                asyncResult.func(next);
+                            }
+                        }
+                        else if (next != null) {
+                            next();
+                        }
+                        return result;
+                    }
+                }
+
+            }
+            else {
+                // Handle method calls (obj.method())
+                final obj = evaluateExpression(access.target);
+                final method = Reflect.getProperty(obj, access.name);
+                if (Reflect.isFunction(method)) {
+                    final args = [for (arg in call.args) evaluateExpression(arg)];
+                    final result:Any = Reflect.callMethod(obj, method, args);
+                    if (result != null && result is Async) {
+                        if (next == null) {
+                            throw new RuntimeError(
+                                'Cannot call async function in expression',
+                                call.pos
+                            );
+                        }
+                        else {
+                            final asyncResult:Async = cast result;
+                            asyncResult.func(next);
+                        }
+                    }
+                    else if (next != null) {
+                        next();
+                    }
+                    return result;
+                }
+            }
+        }
+
+        // If we get here, the call target was invalid
+        throw new RuntimeError(
+            'Invalid call target: ${Type.getClassName(Type.getClass(call.target))}',
+            call.pos
+        );
+
+    }
+
+    function evaluateExpression(expr:NExpr):Any {
 
         return switch (Type.getClass(expr)) {
 
@@ -806,7 +1071,7 @@ class Interpreter {
 
             case NAccess:
                 final access:NAccess = cast expr;
-                final resolved = resolveAccess(access.target, access.name);
+                final resolved = resolveAccess(access, access.target, access.name);
                 readAccess(resolved);
 
             case NArrayAccess:
@@ -819,7 +1084,8 @@ class Interpreter {
                     final arr:Array<Any> = target;
                     if (i >= 0 && i < arr.length) {
                         arr[i];
-                    } else {
+                    }
+                    else {
                         throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
                     }
                 }
@@ -853,15 +1119,7 @@ class Interpreter {
                 }
 
             case NCall:
-                // TODO: this doesn't seem correct
-                final call:NCall = cast expr;
-                final target = evaluateExpression(call.target);
-                if (Reflect.hasField(target, "__function")) {
-                    callFunction(target, [for (arg in call.args) evaluateExpression(arg)]);
-                }
-                else {
-                    throw new RuntimeError('Invalid function call', call.pos);
-                }
+                evaluateFunctionCall(cast expr, null);
 
             case _:
                 throw new RuntimeError('Unsupported expression type: ${Type.getClassName(Type.getClass(expr))}', expr.pos);
@@ -887,6 +1145,14 @@ class Interpreter {
                     throw new RuntimeError('Character not found: $name', pos);
                 }
 
+            case FunctionAccess(pos, name):
+                if (topLevelFunctions.exists(name)) {
+                    topLevelFunctions.get(name);
+                }
+                else {
+                    throw new RuntimeError('Function not found: $name', pos);
+                }
+
         }
 
     }
@@ -903,17 +1169,20 @@ class Interpreter {
             case CharacterAccess(pos, name):
                 throw new RuntimeError('Cannot overwrite character: $name', pos);
 
+            case FunctionAccess(pos, name):
+                throw new RuntimeError('Cannot overwrite function: $name', pos);
+
         }
 
     }
 
-    function resolveAssignmentTarget(target:NExpression):RuntimeAccess {
+    function resolveAssignmentTarget(target:NExpr):RuntimeAccess {
 
         return switch (Type.getClass(target)) {
 
             case NAccess:
                 final access:NAccess = cast target;
-                resolveAccess(access.target, access.name);
+                resolveAccess(access, access.target, access.name);
 
             case NArrayAccess:
                 final arrAccess:NArrayAccess = cast target;
@@ -935,7 +1204,7 @@ class Interpreter {
 
     }
 
-    function resolveAccess(?target:NExpression, name:String):RuntimeAccess {
+    function resolveAccess(access:NAccess, ?target:NExpr, name:String):RuntimeAccess {
 
         if (target != null) {
             final evaluated = evaluateExpression(target);
@@ -951,7 +1220,7 @@ class Interpreter {
             if (scope.state != null) {
                 if (fieldExists(scope.state.fields, name)) {
                     return FieldAccess(
-                        currentScope?.node?.pos ?? script.pos,
+                        access?.pos ?? currentScope?.node?.pos ?? script.pos,
                         scope.state.fields,
                         name
                     );
@@ -964,7 +1233,7 @@ class Interpreter {
         // Look for state fields
         if (fieldExists(topLevelState.fields, name)) {
             return FieldAccess(
-                currentScope?.node?.pos ?? script.pos,
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
                 topLevelState.fields,
                 name
             );
@@ -973,54 +1242,20 @@ class Interpreter {
         // Look for characters
         if (topLevelCharacters.exists(name)) {
             return CharacterAccess(
-                currentScope?.node?.pos ?? script.pos,
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
                 name
             );
         }
 
-        throw new RuntimeError('Undefined variable: $name', currentScope?.node?.pos ?? script.pos);
-
-    }
-
-    function getField(fields:Any, name:String):Any {
-
-        return if (fields is Fields) {
-            (cast fields:Fields).lorelineGet(name);
-        }
-        else if (fields is StringMap) {
-            (cast fields:StringMap<Any>).get(name);
-        }
-        else {
-            Reflect.getProperty(fields, name);
+        // Look for functions
+        if (topLevelFunctions.exists(name)) {
+            return FunctionAccess(
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                name
+            );
         }
 
-    }
-
-    function setField(fields:Any, name:String, value:Any):Void {
-
-        if (fields is Fields) {
-            (cast fields:Fields).lorelineSet(name, value);
-        }
-        else if (fields is StringMap) {
-            (cast fields:StringMap<Any>).set(name, value);
-        }
-        else {
-            Reflect.setProperty(fields, name, value);
-        }
-
-    }
-
-    function fieldExists(fields:Any, name:String):Bool {
-
-        return if (fields is Fields) {
-            (cast fields:Fields).lorelineExists(name);
-        }
-        else if (fields is StringMap) {
-            (cast fields:StringMap<Any>).exists(name);
-        }
-        else {
-            Reflect.hasField(fields, name);
-        }
+        throw new RuntimeError('Undefined variable: $name', access?.pos ?? currentScope?.node?.pos ?? script.pos);
 
     }
 
@@ -1033,6 +1268,7 @@ class Interpreter {
             case OpDivide:
                 if (right == 0) throw new RuntimeError('Division by zero', currentScope?.node?.pos ?? script.pos);
                 left / right;
+            case OpModulo: left % right;
             case OpEquals: left == right;
             case OpNotEquals: left != right;
             case OpGreater: left > right;
@@ -1051,12 +1287,6 @@ class Interpreter {
     function valueToString(value:Any):String {
 
         return Std.string(value);
-
-    }
-
-    function callFunction(func:Any, args:Array<Any>):Any {
-
-        throw new RuntimeError('Function calls not yet implemented', currentScope?.node?.pos ?? script.pos);
 
     }
 

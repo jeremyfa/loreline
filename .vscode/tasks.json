@@ -7,18 +7,16 @@
             "args": [
                 "run",
                 "play",
-                "test/Test.lor",
-                "--debug",
-                "-Dloreline_debug_interpreter"
+                "test/CoffeeShop.lor"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "label": "▶︎ Test (Debug)"
+            "label": "▶︎ CoffeeShop.lor"
         }
     ],
-    "displayName": "▶︎ Test (Debug)",
-    "description": "loreline play test/Test.lor --debug -Dloreline_debug_interpreter",
-    "chooserIndex": 1
+    "displayName": "▶︎ CoffeeShop.lor",
+    "description": "loreline play test/CoffeeShop.lor",
+    "chooserIndex": 0
 }

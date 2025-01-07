@@ -40,9 +40,8 @@ async function main() {
         i++;
     }
 
-    await command('haxe', haxeBuildArgs);
-    await command('neko', ['loreline.n'].concat(lorelineArgs));
-    //await command('node', ['loreline.js'].concat(process.argv.slice(2)));
+    await command('haxe', ['--neko', 'run.n'].concat(haxeBuildArgs));
+    await command('neko', ['run.n'].concat(lorelineArgs));
 
 }
 

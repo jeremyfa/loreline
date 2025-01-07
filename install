@@ -1,0 +1,180 @@
+#!/usr/bin/env node
+
+const { spawn, execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+async function command(cmd, args, options) {
+    if (args == null) args = [];
+    if (options == null) options = {};
+    if (options.cwd == null) options.cwd = process.cwd();
+
+    if (process.platform == 'win32') {
+        options.shell = cmd.endsWith('.exe') ? false : true;
+        args = [].concat(args);
+        for (let i = 0; i < args.length; i++) {
+            args[i] = '"' + args[i].replace(/"/g, '""') + '"';
+        }
+    }
+
+    console.log('\n> ' + cmd + ' ' + args.join(' '));
+
+    return new Promise((resolve, reject) => {
+        const child = spawn(cmd, args, {
+            stdio: 'inherit',
+            cwd: options.cwd,
+            env: process.env,
+            shell: options.shell
+        });
+
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Child process exited with code ${code}`));
+            } else {
+                resolve(code);
+            }
+        });
+
+        child.on('error', (error) => {
+            reject(error);
+        });
+    });
+}
+
+function isLinuxArm64() {
+    try {
+        const arch = execSync('uname -m').toString().trim();
+        return arch == 'aarch64';
+    } catch (error) {
+        console.error('Error detecting architecture:', error);
+        return null;
+    }
+}
+
+// Example usage with async/await
+async function main() {
+
+    process.chdir(__dirname);
+    let rawArgs = process.argv.slice(2);
+
+    let haxeBuildArgs = ['build.hxml'];
+    let buildCpp = rawArgs.indexOf('--cpp') != -1;
+    let debug = false;
+
+    let i = 0;
+    while (i < rawArgs.length) {
+        if (rawArgs[i].startsWith('-D')) {
+            haxeBuildArgs.push('-D');
+            haxeBuildArgs.push(rawArgs[i].substring(2));
+        }
+        else if (rawArgs[i] == '--debug') {
+            debug = true;
+            haxeBuildArgs.push('--debug');
+        }
+        i++;
+    }
+
+    if (buildCpp) {
+
+        let haxeBuildCppArgs = [
+            '--cpp', 'build',
+            '-D', 'HXCPP_DEBUG_LINK',
+            '-D', 'HXCPP_STACK_LINE',
+            '-D', 'HXCPP_STACK_TRACE',
+            '-D', 'HXCPP_CHECK_POINTER',
+            '-D', 'HXCPP_CPP11',
+            '-D', 'safeMode'
+        ];
+
+        if (process.platform == 'darwin') {
+            console.log('Build loreline for mac');
+
+            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                '-D', 'mac', '-D', 'mac_arm64', '-D', 'no-compilation'
+            ]));
+            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            if (debug) {
+                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-arm64'));
+            }
+            else {
+                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'build/loreline-arm64'));
+            }
+
+            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                '-D', 'mac', '-D', 'mac_x86_64', '-D', 'no-compilation'
+            ]));
+            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            if (debug) {
+                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-x86_64'));
+            }
+            else {
+                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'build/loreline-x86_64'));
+            }
+
+            if (fs.existsSync(path.join(__dirname, 'loreline'))) {
+                fs.unlinkSync(path.join(__dirname, 'loreline'));
+            }
+
+            await command('lipo', [
+                '-create', 'loreline-arm64', 'loreline-x86_64',
+                '-output', '../loreline'
+            ], { cwd: path.join(__dirname, 'build') });
+        }
+        else if (process.platform == 'win32') {
+            console.log("Build loreline for windows");
+
+            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                '-D', 'windows', '-D', 'no-compilation'
+            ]));
+
+            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+
+            if (fs.existsSync(path.join(__dirname, 'loreline.exe'))) {
+                fs.unlinkSync(path.join(__dirname, 'loreline.exe'));
+            }
+
+            if (debug) {
+                fs.renameSync(path.join(__dirname, 'build/Cli-debug.exe'), path.join(__dirname, 'loreline.exe'));
+            }
+            else {
+                fs.renameSync(path.join(__dirname, 'build/Cli.exe'), path.join(__dirname, 'loreline.exe'));
+            }
+        }
+        else {
+            console.log("Build loreline for linux");
+
+            if (isLinuxArm64()) {
+                await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                    '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_arm64'
+                ]));
+                await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            }
+            else {
+                await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                    '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_x86_64'
+                ]));
+                await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            }
+
+            if (fs.existsSync(path.join(__dirname, 'loreline'))) {
+                fs.unlinkSync(path.join(__dirname, 'loreline'));
+            }
+
+            if (debug) {
+                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'loreline'));
+            }
+            else {
+                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'loreline'));
+            }
+        }
+    }
+
+}
+
+(async () => {
+    try {
+        await main();
+    } catch (error) {
+        console.error(error);
+    }
+})();

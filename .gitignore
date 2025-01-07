@@ -1,1 +1,7 @@
 .DS_Store
+/loreline.js
+/loreline.js.map
+/build
+/node_modules
+/loreline
+/loreline.exe

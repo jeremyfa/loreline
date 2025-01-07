@@ -40,6 +40,9 @@ class Parser {
     /** Node id counter, to ensure each parsed node has a unique integer-typed id */
     var nextNodeId:Int;
 
+    /** Root beat, when adding narrative flow directly at the script root */
+    var rootBeat:NBeatDecl;
+
     /**
      * Creates a new Parser instance.
      * @param tokens Array of tokens to parse
@@ -52,6 +55,8 @@ class Parser {
         this.lastTokenEnd = new Position(1, 1, 0);
         this.lastLineBreak = null;
         this.lineBreakAfterToken = false;
+        this.nextNodeId = 0;
+        this.rootBeat = null;
     }
 
     /**
@@ -194,7 +199,10 @@ class Parser {
 
         while (!isAtEnd()) {
             try {
-                nodes.push(parseNode(true));
+                final node = parseNode(true);
+                if (node != null) {
+                    nodes.push(node);
+                }
                 while (match(LineBreak)) {} // Skip line breaks between top-level nodes
             } catch (e:ParseError) {
                 if (errors == null) errors = [];
@@ -236,25 +244,51 @@ class Parser {
             throw new ParseError("Unexpected end of file", tokens[current].pos);
         }
 
+        inline function ensureInBeat(node:AstNode):AstNode {
+            return topLevel ? wrapInRootBeat(node) : node;
+        }
+
         return switch (tokens[current].type) {
             case KwImport: parseImport();
             case KwState: parseStateDecl(false);
-            case KwNew if (!topLevel):
+            case KwNew:
                 advance();
                 if (!check(KwState)) {
                     throw new ParseError("Expected 'state' after 'new'", tokens[current].pos);
                 }
-                parseStateDecl(true);
+                ensureInBeat(parseStateDecl(true));
             case KwBeat: parseBeatDecl();
-            case KwCharacter: parseCharacterDecl();
-            case LString(_) if (!topLevel): parseTextStatement();
-            case Identifier(_) if (!topLevel && peek().type == Colon): parseDialogueStatement();
-            case Identifier(_) if (!topLevel): parseIdentifierStatement();
-            case KwChoice if (!topLevel): parseChoiceStatement();
-            case KwIf if (!topLevel): parseIfStatement();
-            case Arrow if (!topLevel): parseTransition();
-            case _: throw new ParseError('Unexpected token: ${tokens[current].type}', tokens[current].pos);
+            case KwCharacter if (topLevel): parseCharacterDecl();
+            case LString(_, _, _): ensureInBeat(parseTextStatement());
+            case Identifier(_) if (peek().type == Colon): ensureInBeat(parseDialogueStatement());
+            case Identifier(_) | LNumber(_) | LBoolean(_) |
+                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot: parseExpressionStatement();
+            case KwChoice: ensureInBeat(parseChoiceStatement());
+            case KwIf: ensureInBeat(parseIfStatement());
+            case Arrow: ensureInBeat(parseTransition());
+            case _:
+                throw new ParseError('Unexpected token: ${tokens[current].type}', tokens[current].pos);
         }
+    }
+
+    function wrapInRootBeat(node:AstNode):Null<NBeatDecl> {
+
+        var body:Array<AstNode>;
+        var result = null;
+        if (rootBeat == null) {
+            final startPos = tokens[current].pos;
+            body = [];
+            rootBeat = new NBeatDecl(nextNodeId++, startPos, "_", body);
+            result = rootBeat;
+        }
+        else {
+            body = rootBeat.body;
+        }
+
+        body.push(node);
+
+        return result;
+
     }
 
     /**
@@ -305,35 +339,6 @@ class Parser {
     }
 
     /**
-     * Parses statements that begin with an identifier.
-     * Handles assignments, (beat) calls, and other identifier-based expressions.
-     * @return Parsed node
-     */
-    function parseIdentifierStatement():AstNode {
-        final startPos = tokens[current].pos;
-        final name = expectIdentifier();
-
-        // Handle assignments
-        if (match(OpAssign) || match(OpPlusAssign) || match(OpMinusAssign) ||
-            match(OpMultiplyAssign) || match(OpDivideAssign)) {
-            final op = previous().type;
-            final assignment = attachComments(new NAssignment(
-                nextNodeId++,
-                startPos,
-                null,
-                op,
-                null
-            ));
-            assignment.target = attachComments(makeAccess(startPos, null, name));
-            assignment.value = parseExpression();
-            return assignment;
-        }
-
-        return parseIdentifierExpression(startPos, name);
-
-    }
-
-    /**
      * Parses a block of statements enclosed in braces.
      * @return Array of parsed statement nodes
      */
@@ -349,15 +354,9 @@ class Parser {
 
             // Parse statement
             try {
-                // Check for string literals first
-                if (checkString()) {
-                    statements.push(parseTextStatement());
-                } else if (isExpressionStart()) {
-                    statements.push(parseExpressionStatement());
-                } else {
-                    statements.push(parseNode());
-                }
+                statements.push(parseNode());
             } catch (e:ParseError) {
+                if (errors == null) errors = [];
                 errors.push(e);
                 synchronize();
                 if (check(RBrace)) break;
@@ -438,7 +437,8 @@ class Parser {
                 case _:
                     if (braceLevel == 1) {
                         beatNode.body.push(parseNode());
-                    } else {
+                    }
+                    else {
                         advance();
                     }
             }
@@ -545,11 +545,13 @@ class Parser {
         // Parse option body
         if (check(LBrace)) {
             choiceOption.body = parseStatementBlock();
-        } else if (!check(RBrace)) {  // If not end of choice
+        }
+        else if (!check(RBrace)) {  // If not end of choice
             // Handle single statement bodies
             if (checkString()) {
                 choiceOption.body = [parseTextStatement()];
-            } else {
+            }
+            else {
                 choiceOption.body = [parseNode()];
             }
         }
@@ -580,7 +582,7 @@ class Parser {
         if (match(OpAssign) || match(OpPlusAssign) || match(OpMinusAssign) ||
             match(OpMultiplyAssign) || match(OpDivideAssign)) {
             final op = previous().type;
-            final assignment = attachComments(new NAssignment(nextNodeId++, expr.pos, expr, op, null));
+            final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
             assignment.value = parseExpression();
             return assignment;
         }
@@ -659,7 +661,7 @@ class Parser {
      * Parses an expression, including assignments.
      * @return Expression node
      */
-    function parseExpression():NExpression {
+    function parseExpression():NExpr {
         final expr = parseLogicalOr();
 
         // Handle assignments if present
@@ -667,7 +669,7 @@ class Parser {
             check(OpMultiplyAssign) || check(OpDivideAssign)) {
             final op = tokens[current].type;
             advance();
-            final assignment = attachComments(new NAssignment(nextNodeId++, expr.pos, expr, op, null));
+            final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
             assignment.value = parseExpression();
             return assignment;
         }
@@ -679,7 +681,7 @@ class Parser {
      * Parses logical OR expressions (expr || expr).
      * @return Expression node
      */
-    function parseLogicalOr():NExpression {
+    function parseLogicalOr():NExpr {
         var expr = parseLogicalAnd();
 
         while (match(OpOr)) {
@@ -696,7 +698,7 @@ class Parser {
      * Parses logical AND expressions (expr && expr).
      * @return Expression node
      */
-    function parseLogicalAnd():NExpression {
+    function parseLogicalAnd():NExpr {
         var expr = parseEquality();
 
         while (match(OpAnd)) {
@@ -713,7 +715,7 @@ class Parser {
      * Parses equality expressions (expr == expr, expr != expr).
      * @return Expression node
      */
-    function parseEquality():NExpression {
+    function parseEquality():NExpr {
         var expr = parseComparison();
 
         while (match(OpEquals) || match(OpNotEquals)) {
@@ -730,7 +732,7 @@ class Parser {
      * Parses comparison expressions (>, >=, <, <=).
      * @return Expression node
      */
-    function parseComparison():NExpression {
+    function parseComparison():NExpr {
         var expr = parseAdditive();
 
         while (match(OpGreater) || match(OpGreaterEq) || match(OpLess) || match(OpLessEq)) {
@@ -747,7 +749,7 @@ class Parser {
      * Parses additive expressions (+ and -).
      * @return Expression node
      */
-    function parseAdditive():NExpression {
+    function parseAdditive():NExpr {
         var expr = parseMultiplicative();
 
         while (match(OpPlus) || match(OpMinus)) {
@@ -764,10 +766,10 @@ class Parser {
      * Parses multiplicative expressions (* and /).
      * @return Expression node
      */
-    function parseMultiplicative():NExpression {
+    function parseMultiplicative():NExpr {
         var expr = parseUnary();
 
-        while (match(OpMultiply) || match(OpDivide)) {
+        while (match(OpMultiply) || match(OpDivide) || match(OpModulo)) {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseUnary();
@@ -781,7 +783,7 @@ class Parser {
      * Parses unary expressions (!expr, -expr).
      * @return Expression node
      */
-    function parseUnary():NExpression {
+    function parseUnary():NExpr {
         if (match(OpNot) || match(OpMinus)) {
             final op = previous().type;
             final unary = attachComments(new NUnary(nextNodeId++, tokens[current].pos, op, null));
@@ -796,7 +798,7 @@ class Parser {
      * Parses primary expressions (literals, identifiers, parenthesized expressions).
      * @return Expression node
      */
-    function parsePrimary():NExpression {
+    function parsePrimary():NExpr {
         final startPos = tokens[current].pos;
 
         return switch (tokens[current].type) {
@@ -846,7 +848,7 @@ class Parser {
         final parts = new Array<NStringPart>();
 
         switch (tokens[current].type) {
-            case LString(content, attachments):
+            case LString(quotes, content, attachments):
                 var currentPos = 0;
 
                 // Handle simple strings without attachments
@@ -857,10 +859,10 @@ class Parser {
                     final partId = nextNodeId++;
                     parts.push(new NStringPart(partId, partPos, Raw(content)));
                     advance();
-                    return attachComments(new NStringLiteral(literalId, startPos, parts));
+                    return attachComments(new NStringLiteral(literalId, startPos, quotes, parts));
                 }
 
-                final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, startPos, parts));
+                final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, startPos, quotes, parts));
 
                 // Process string with attachments (interpolations and tags)
                 for (i in 0...attachments.length) {
@@ -911,6 +913,7 @@ class Parser {
                                 start,
                                 length,
                                 content,
+                                quotes,
                                 attachments
                             ));
 
@@ -951,7 +954,8 @@ class Parser {
             if (content.charCodeAt(i) == "\n".code) {
                 line++;
                 column = 1;
-            } else {
+            }
+            else {
                 column++;
             }
         }
@@ -966,7 +970,7 @@ class Parser {
      * @param name Identifier name
      * @return Access expression node
      */
-    function makeAccess(pos:Position, target:Null<NExpression>, name:String):NAccess {
+    function makeAccess(pos:Position, target:Null<NExpr>, name:String):NAccess {
         if (pos.length == 0 && name != null && name.length > 0) {
             pos = new Position(
                 pos.line, pos.column, pos.offset,
@@ -995,11 +999,11 @@ class Parser {
             throw new ParseError("Empty interpolation", pos);
         }
 
-        var expr:NExpression = null;
+        var expr:NExpr = null;
 
         // Handle simple field access interpolation ($identifier)
         if (!braces && tokens.length > 0) {
-            var target:Null<NExpression> = null;
+            var target:Null<NExpr> = null;
             var prevIsDot:Bool = false;
             for (i in 0...tokens.length) {
                 switch (tokens[i].type) {
@@ -1050,7 +1054,7 @@ class Parser {
      * @param attachments Array of string attachments
      * @return StringPart representing the tag
      */
-    function parseStringTag(closing:Bool, start:Int, length:Int, content:String, attachments:Array<LStringAttachment>):NStringPart {
+    function parseStringTag(closing:Bool, start:Int, length:Int, content:String, quotes:Quotes, attachments:Array<LStringAttachment>):NStringPart {
         final pos = makeStringPartPosition(tokens[current].pos, content, start);
         pos.length = length;
 
@@ -1089,6 +1093,7 @@ class Parser {
                 attachComments(new NStringLiteral(
                     literalId,
                     partPos,
+                    quotes,
                     [new NStringPart(partId, partPos, Raw(content.substr(innerStart, innerLength)))]
                 ))
             ));
@@ -1096,7 +1101,7 @@ class Parser {
 
         // Process tag with interpolations
         final parts = new Array<NStringPart>();
-        final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, pos, parts));
+        final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, pos, quotes, parts));
         var currentPos = innerStart;
 
         // Process each attachment within tag bounds
@@ -1154,22 +1159,25 @@ class Parser {
      * @param name Initial identifier name
      * @return Expression node
      */
-    function parseIdentifierExpression(startPos:Position, name:String):NExpression {
-        var expr:NExpression = attachComments(makeAccess(startPos, null, name));
+    function parseIdentifierExpression(startPos:Position, name:String):NExpr {
+        var expr:NExpr = attachComments(makeAccess(startPos, null, name));
 
         // Parse chained accesses (., [], and ())
         while (true) {
             if (match(Dot)) {
                 final prop = expectIdentifier();
                 expr = attachComments(makeAccess(startPos, expr, prop));
-            } else if (match(LBracket)) {
+            }
+            else if (match(LBracket)) {
                 final index = parseExpression();
                 expect(RBracket);
                 expr = attachComments(new NArrayAccess(nextNodeId++, startPos, expr, index));
-            } else if (match(LParen)) {
+            }
+            else if (match(LParen)) {
                 final args = parseCallArguments();
                 expr = attachComments(new NCall(nextNodeId++, startPos, expr, args));
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -1181,7 +1189,7 @@ class Parser {
      * Parses array literals ([expr, expr, ...]).
      * @return Expression node for array literal
      */
-    function parseArrayLiteral():NExpression {
+    function parseArrayLiteral():NExpr {
         final startPos = tokens[current].pos;
         final elements = [];
         final literal = new NLiteral(nextNodeId++, startPos, elements, Array);
@@ -1229,7 +1237,7 @@ class Parser {
      * Parses object literals ({key: value, ...}).
      * @return Expression node for object literal
      */
-    function parseObjectLiteral():NExpression {
+    function parseObjectLiteral():NExpr {
         final startPos = tokens[current].pos;
         final fields = [];
         final literal = new NLiteral(nextNodeId++, startPos, fields, Object);
@@ -1279,7 +1287,7 @@ class Parser {
      * Parses function call arguments.
      * @return Array of argument expression nodes
      */
-    function parseCallArguments():Array<NExpression> {
+    function parseCallArguments():Array<NExpr> {
         final args = [];
         if (!check(RParen)) {
             do {
@@ -1296,7 +1304,7 @@ class Parser {
      * Parses a parenthesized expression.
      * @return Expression node
      */
-    function parseParenExpression():NExpression {
+    function parseParenExpression():NExpr {
         expect(LParen);
         final expr = parseExpression();
         expect(RParen);
@@ -1401,28 +1409,32 @@ class Parser {
      * @return The node with attached else comments
      */
     function attachElseComments<T:NIfStatement>(node:T, elseToken:Token):T {
-        final nodeStart = elseToken.pos;
-        final remainingComments = [];
 
-        for (comment in pendingComments) {
-            if (comment.pos.line < nodeStart.line) {
-                if (node.elseLeadingComments == null) {
-                    node.elseLeadingComments = [];
+        if (pendingComments != null) {
+            final nodeStart = elseToken.pos;
+            final remainingComments = [];
+
+            for (comment in pendingComments) {
+                if (comment.pos.line < nodeStart.line) {
+                    if (node.elseLeadingComments == null) {
+                        node.elseLeadingComments = [];
+                    }
+                    node.elseLeadingComments.push(comment);
                 }
-                node.elseLeadingComments.push(comment);
-            }
-            else if (comment.pos.line == nodeStart.line) {
-                if (node.elseTrailingComments == null) {
-                    node.elseTrailingComments = [];
+                else if (comment.pos.line == nodeStart.line) {
+                    if (node.elseTrailingComments == null) {
+                        node.elseTrailingComments = [];
+                    }
+                    node.elseTrailingComments.push(comment);
                 }
-                node.elseTrailingComments.push(comment);
+                else {
+                    remainingComments.push(comment);
+                }
             }
-            else {
-                remainingComments.push(comment);
-            }
+
+            pendingComments = remainingComments;
         }
 
-        pendingComments = remainingComments;
         return node;
     }
 

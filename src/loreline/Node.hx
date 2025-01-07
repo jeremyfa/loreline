@@ -161,7 +161,7 @@ class AstNode extends Node {
 /**
  * Base class for all expression nodes in the AST.
  */
-class NExpression extends AstNode {
+class NExpr extends AstNode {
 
     /**
      * Converts the expression node to a JSON representation.
@@ -238,7 +238,7 @@ class NObjectField extends AstNode {
     /**
      * Value expression of the field.
      */
-    public var value:NExpression;
+    public var value:NExpr;
 
     /**
      * Creates a new object field node.
@@ -248,7 +248,7 @@ class NObjectField extends AstNode {
      * @param leadingComments Optional comments before the field
      * @param trailingComments Optional comments after the field
      */
-    public function new(id:Int, pos:Position, name:String, value:NExpression, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, name:String, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.value = value;
@@ -397,7 +397,7 @@ enum StringPartType {
     /**
      * Interpolated expression (${...} or $identifier).
      */
-    Expr(expr:NExpression);
+    Expr(expr:NExpr);
 
     /**
      * Text formatting tag (<tag> or </tag>).
@@ -409,7 +409,7 @@ enum StringPartType {
 /**
  * Represents a string part that can appear in string literals.
  */
-class NStringPart extends NExpression {
+class NStringPart extends NExpr {
 
     /**
      * The type of string part
@@ -466,11 +466,16 @@ class NStringPart extends NExpression {
 /**
  * Represents a string literal in the AST, supporting interpolation and tags.
  */
-class NStringLiteral extends NExpression {
+class NStringLiteral extends NExpr {
     /**
      * Array of parts that make up this string literal.
      */
     public var parts:Array<NStringPart>;
+
+    /**
+     * The type of quotes used for this string literal
+     */
+    public var quotes:Quotes;
 
     /**
      * Creates a new string literal node.
@@ -479,7 +484,7 @@ class NStringLiteral extends NExpression {
      * @param leadingComments Optional comments before the string
      * @param trailingComments Optional comments after the string
      */
-    public function new(id:Int, pos:Position, parts:Array<NStringPart>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, quotes:Quotes, parts:Array<NStringPart>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.parts = parts;
     }
@@ -506,6 +511,10 @@ class NStringLiteral extends NExpression {
             for (part in parts) part.toJson()
         ];
         json.parts = parts;
+        json.quotes = switch quotes {
+            case Unquoted: "Unquoted";
+            case DoubleQuotes: "DoubleQuotes";
+        }
         return json;
     }
 
@@ -657,7 +666,7 @@ class NChoiceOption extends AstNode {
     /**
      * Optional condition that must be true for this option to be available.
      */
-    public var condition:Null<NExpression>;
+    public var condition:Null<NExpr>;
 
     /**
      * Array of nodes to execute when this option is chosen.
@@ -673,7 +682,7 @@ class NChoiceOption extends AstNode {
      * @param leadingComments Optional comments before the option
      * @param trailingComments Optional comments after the option
      */
-    public function new(id:Int, pos:Position, text:NStringLiteral, condition:Null<NExpression>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, text:NStringLiteral, condition:Null<NExpr>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.text = text;
         this.condition = condition;
@@ -762,7 +771,7 @@ class NIfStatement extends AstNode {
     /**
      * The condition to evaluate.
      */
-    public var condition:NExpression;
+    public var condition:NExpr;
 
     /**
      * Array of nodes to execute if condition is true.
@@ -795,7 +804,7 @@ class NIfStatement extends AstNode {
      * @param elseLeadingComments Optional comments before the else
      * @param elseTrailingComments Optional comments after the else
      */
-    public function new(id:Int, pos:Position, condition:NExpression, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, condition:NExpr, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.condition = condition;
         this.thenBranch = thenBranch;
@@ -861,16 +870,16 @@ class NIfStatement extends AstNode {
 /**
  * Represents a function call expression in the AST.
  */
-class NCall extends NExpression {
+class NCall extends NExpr {
     /**
      * The expression being called.
      */
-    public var target:NExpression;
+    public var target:NExpr;
 
     /**
      * Array of argument expressions passed to the call.
      */
-    public var args:Array<NExpression>;
+    public var args:Array<NExpr>;
 
     /**
      * Creates a new call expression node.
@@ -880,7 +889,7 @@ class NCall extends NExpression {
      * @param leadingComments Optional comments before the call
      * @param trailingComments Optional comments after the call
      */
-    public function new(id:Int, pos:Position, target:NExpression, args:Array<NExpression>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, target:NExpr, args:Array<NExpr>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.args = args;
@@ -949,7 +958,7 @@ class NTransition extends AstNode {
 /**
  * Represents literal values in the AST (numbers, booleans, arrays, objects).
  */
-class NLiteral extends NExpression {
+class NLiteral extends NExpr {
     /**
      * The literal value.
      */
@@ -986,7 +995,8 @@ class NLiteral extends NExpression {
                 json.value = [for (elem in (value:Array<Dynamic>)) {
                     if (Std.isOfType(elem, Node)) {
                         (elem:Node).toJson();
-                    } else {
+                    }
+                    else {
                         elem;
                     }
                 }];
@@ -1023,11 +1033,11 @@ enum LiteralType {
 /**
  * Represents a field access expression (obj.field).
  */
-class NAccess extends NExpression {
+class NAccess extends NExpr {
     /**
      * Optional target object being accessed.
      */
-    public var target:Null<NExpression>;
+    public var target:Null<NExpr>;
 
     /**
      * Name of the accessed field.
@@ -1042,7 +1052,7 @@ class NAccess extends NExpression {
      * @param leadingComments Optional comments before the access
      * @param trailingComments Optional comments after the access
      */
-    public function new(id:Int, pos:Position, target:Null<NExpression>, name:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, target:Null<NExpr>, name:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.name = name;
@@ -1072,11 +1082,11 @@ class NAccess extends NExpression {
 /**
  * Represents an assignment expression (a = b, a += b, etc).
  */
-class NAssignment extends NExpression {
+class NAssign extends NExpr {
     /**
      * Target expression being assigned to.
      */
-    public var target:NExpression;
+    public var target:NExpr;
 
     /**
      * Assignment operator type.
@@ -1086,7 +1096,7 @@ class NAssignment extends NExpression {
     /**
      * Value being assigned.
      */
-    public var value:NExpression;
+    public var value:NExpr;
 
     /**
      * Creates a new assignment node.
@@ -1097,7 +1107,7 @@ class NAssignment extends NExpression {
      * @param leadingComments Optional comments before the assignment
      * @param trailingComments Optional comments after the assignment
      */
-    public function new(id:Int, pos:Position, target:NExpression, op:TokenType, value:NExpression, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, target:NExpr, op:TokenType, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.op = op;
@@ -1134,16 +1144,16 @@ class NAssignment extends NExpression {
 /**
  * Represents an array access expression (array[index]).
  */
-class NArrayAccess extends NExpression {
+class NArrayAccess extends NExpr {
     /**
      * Target array being accessed.
      */
-    public var target:NExpression;
+    public var target:NExpr;
 
     /**
      * Index expression.
      */
-    public var index:NExpression;
+    public var index:NExpr;
 
     /**
      * Creates a new array access node.
@@ -1153,7 +1163,7 @@ class NArrayAccess extends NExpression {
      * @param leadingComments Optional comments before the access
      * @param trailingComments Optional comments after the access
      */
-    public function new(id:Int, pos:Position, target:NExpression, index:NExpression, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, target:NExpr, index:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.index = index;
@@ -1188,11 +1198,11 @@ class NArrayAccess extends NExpression {
 /**
  * Represents a binary operation expression (a + b, a && b, etc).
  */
-class NBinary extends NExpression {
+class NBinary extends NExpr {
     /**
      * Left operand expression.
      */
-    public var left:NExpression;
+    public var left:NExpr;
 
     /**
      * Operator type.
@@ -1202,7 +1212,7 @@ class NBinary extends NExpression {
     /**
      * Right operand expression.
      */
-    public var right:NExpression;
+    public var right:NExpr;
 
     /**
      * Creates a new binary operation node.
@@ -1213,7 +1223,7 @@ class NBinary extends NExpression {
      * @param leadingComments Optional comments before the operation
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:Int, pos:Position, left:NExpression, op:TokenType, right:NExpression, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, left:NExpr, op:TokenType, right:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.left = left;
         this.op = op;
@@ -1250,7 +1260,7 @@ class NBinary extends NExpression {
 /**
  * Represents a unary operation expression (!x, -x, etc).
  */
-class NUnary extends NExpression {
+class NUnary extends NExpr {
     /**
      * Operator type.
      */
@@ -1259,7 +1269,7 @@ class NUnary extends NExpression {
     /**
      * Operand expression.
      */
-    public var operand:NExpression;
+    public var operand:NExpr;
 
     /**
      * Creates a new unary operation node.
@@ -1269,7 +1279,7 @@ class NUnary extends NExpression {
      * @param leadingComments Optional comments before
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:Int, pos:Position, op:TokenType, operand:NExpression, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, op:TokenType, operand:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.op = op;
         this.operand = operand;

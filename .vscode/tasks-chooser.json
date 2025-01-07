@@ -2,21 +2,57 @@
     "selectDescription": "Select task",
     "items": [
         {
-            "displayName": "▶︎ Test",
+            "displayName": "▶︎ CoffeeShop.lor",
             "type": "shell",
-            "description": "loreline play test/Test.lor",
+            "description": "loreline play test/CoffeeShop.lor",
             "command": "node",
             "args": [
-                "run", "play", "test/Test.lor"
+                "run", "play", "test/CoffeeShop.lor"
             ]
         },
         {
-            "displayName": "▶︎ Test (Debug)",
+            "displayName": "▶︎ CoffeeShop.lor (Debug)",
             "type": "shell",
-            "description": "loreline play test/Test.lor --debug -Dloreline_debug_interpreter",
+            "description": "loreline play test/CoffeeShop.lor --debug -Dloreline_debug_interpreter",
             "command": "node",
             "args": [
-                "run", "play", "test/Test.lor", "--debug", "-Dloreline_debug_interpreter"
+                "--enable-source-maps", "run", "play", "test/CoffeeShop.lor", "--debug", "-Dloreline_debug_interpreter"
+            ]
+        },
+        {
+            "displayName": "▶︎ CoffeeShop.fr.lor",
+            "type": "shell",
+            "description": "loreline play test/CoffeeShop.fr.lor",
+            "command": "node",
+            "args": [
+                "run", "play", "test/CoffeeShop.fr.lor"
+            ]
+        },
+        {
+            "displayName": "▶︎ CoffeeShop.fr.lor (Debug)",
+            "type": "shell",
+            "description": "loreline play test/CoffeeShop.fr.lor --debug -Dloreline_debug_interpreter",
+            "command": "node",
+            "args": [
+                "--enable-source-maps", "run", "play", "test/CoffeeShop.fr.lor", "--debug", "-Dloreline_debug_interpreter"
+            ]
+        },
+        {
+            "displayName": "▶︎ Minimal.lor",
+            "type": "shell",
+            "description": "loreline play test/Minimal.lor",
+            "command": "node",
+            "args": [
+                "run", "play", "test/Minimal.lor"
+            ]
+        },
+        {
+            "displayName": "▶︎ Minimal.lor (Debug)",
+            "type": "shell",
+            "description": "loreline play test/Minimal.lor --debug -Dloreline_debug_interpreter",
+            "command": "node",
+            "args": [
+                "--enable-source-maps", "run", "play", "test/Minimal.lor", "--debug", "-Dloreline_debug_interpreter"
             ]
         }
     ],
