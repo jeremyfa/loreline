@@ -3,6 +3,7 @@ package loreline;
 import haxe.CallStack.StackItem;
 import haxe.CallStack;
 import haxe.Json;
+import haxe.io.Path;
 import loreline.Error;
 import loreline.Interpreter;
 import sys.FileSystem;
@@ -50,6 +51,10 @@ class Cli {
         #end
 
         final args = [].concat(Sys.args());
+
+        #if neko
+        Sys.setCwd(args.pop());
+        #end
 
         var i = 2;
         while (i < args.length) {
