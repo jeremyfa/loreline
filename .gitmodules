@@ -1,0 +1,6 @@
+[submodule "git/haxe-binary"]
+	path = git/haxe-binary
+	url = https://github.com/ceramic-engine/haxe-binary.git
+[submodule "git/hxcpp"]
+	path = git/hxcpp
+	url = https://github.com/ceramic-engine/hxcpp.git

@@ -57,6 +57,9 @@ async function main() {
     process.chdir(__dirname);
     let rawArgs = process.argv.slice(2);
 
+    var haxelib = process.platform == 'win32' ? 'haxelib.cmd' : './haxelib';
+    var haxe = process.platform == 'win32' ? 'haxe.cmd' : './haxe';
+
     let haxeBuildArgs = ['build.hxml'];
     let buildCpp = rawArgs.indexOf('--cpp') != -1;
     let debug = false;
@@ -74,6 +77,13 @@ async function main() {
         i++;
     }
 
+    // Install dependencies
+    var haxelibRepoPath = path.join(__dirname, '.haxelib');
+    if (!fs.existsSync(haxelibRepoPath)) {
+        fs.mkdirSync(haxelibRepoPath);
+    }
+    await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
+
     if (buildCpp) {
 
         let haxeBuildCppArgs = [
@@ -89,10 +99,10 @@ async function main() {
         if (process.platform == 'darwin') {
             console.log('Build loreline for mac');
 
-            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+            await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                 '-D', 'mac', '-D', 'mac_arm64', '-D', 'no-compilation'
             ]));
-            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
             if (debug) {
                 fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-arm64'));
             }
@@ -100,10 +110,10 @@ async function main() {
                 fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'build/loreline-arm64'));
             }
 
-            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+            await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                 '-D', 'mac', '-D', 'mac_x86_64', '-D', 'no-compilation'
             ]));
-            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
             if (debug) {
                 fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-x86_64'));
             }
@@ -123,11 +133,15 @@ async function main() {
         else if (process.platform == 'win32') {
             console.log("Build loreline for windows");
 
-            await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+            await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                 '-D', 'windows', '-D', 'no-compilation'
             ]));
 
-            await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+
+            let haxelibCmd = fs.readFileSync(path.join(__dirname, 'haxelib.cmd'), 'utf8');
+            haxelibCmd = haxelibCmd.split('/git/').join('/../git/');
+            fs.writeFileSync(path.join(__dirname, 'build', 'haxelib.cmd'), haxelibCmd);
 
             if (fs.existsSync(path.join(__dirname, 'loreline.exe'))) {
                 fs.unlinkSync(path.join(__dirname, 'loreline.exe'));
@@ -144,16 +158,16 @@ async function main() {
             console.log("Build loreline for linux");
 
             if (isLinuxArm64()) {
-                await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                     '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_arm64'
                 ]));
-                await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+                await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
             }
             else {
-                await command('haxe', haxeBuildCppArgs.concat(haxeBuildArgs).concat([
+                await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                     '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_x86_64'
                 ]));
-                await command('haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+                await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
             }
 
             if (fs.existsSync(path.join(__dirname, 'loreline'))) {
