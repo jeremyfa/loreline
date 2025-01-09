@@ -23,9 +23,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Download haxe
-        run: git clone
-
       - name: Setup Haxe
         working-directory: .
         run: |
@@ -118,7 +115,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install
+          node ./install --cpp
 
       - name: Run loreline
         working-directory: .
@@ -191,7 +188,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install
+          node ./install --cpp
 
       - name: Run loreline
         working-directory: .
@@ -279,7 +276,7 @@ jobs:
               && ldconfig /usr/local/lib
 
           # Build loreline
-          RUN node ./install
+          RUN node ./install --cpp
 
           # Run loreline
           RUN ./loreline

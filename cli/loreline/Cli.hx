@@ -31,6 +31,15 @@ class Cli {
         new Cli();
     }
 
+    public static function lorelineVersion():String {
+        #if !cppia
+        static final fullVersion = '${CliMacros.lorelineVersion()}-${CliMacros.gitCommitShortHash()}';
+        return fullVersion;
+        #else
+        return null;
+        #end
+    }
+
     var errorInStdOut:Bool = false;
 
     var typeDelay:Float = 0.0075;
@@ -53,7 +62,9 @@ class Cli {
         final args = [].concat(Sys.args());
 
         #if neko
-        Sys.setCwd(args.pop());
+        if (args.length > 0 && FileSystem.exists(args[args.length-1]) && FileSystem.isDirectory(args[args.length-1])) {
+            Sys.setCwd(args.pop());
+        }
         #end
 
         var i = 2;
@@ -69,16 +80,22 @@ class Cli {
 
         if (args.length >= 1) {
             switch args[0] {
+
+                case 'version':
+                    print('v' + lorelineVersion());
+
                 case 'play':
                     if (args.length >= 2)
                         play(args[1]);
                     else
                         fail('Missing file argument');
+
                 case 'json':
                     if (args.length >= 2)
                         json(args[1]);
                     else
                         fail('Missing file argument');
+
                 case _:
                     help();
             }
@@ -92,7 +109,7 @@ class Cli {
     function help() {
 
         print("  _                _ _            ".green());
-        print(" | | ___  _ __ ___| (_)_ __   ___ ".green());
+        print((" | | ___  _ __ ___| (_)_ __   ___   v" + lorelineVersion()).green());
         print(" | |/ _ \\| '__/ _ \\ | | '_ \\ / _ \\".green());
         print(" | | (_) | | |  __/ | | | | |  __/".green());
         print(" |_|\\___/|_|  \\___|_|_|_| |_|\\___|".green());

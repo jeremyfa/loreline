@@ -41,7 +41,7 @@ async function main() {
     }
 
     await command('haxe', ['--neko', 'run.n'].concat(haxeBuildArgs));
-    await command('neko', ['run.n'].concat(lorelineArgs));
+    await command('neko', ['run.n'].concat(lorelineArgs).concat([__dirname]));
 
 }
 
