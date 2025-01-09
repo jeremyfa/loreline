@@ -56,7 +56,7 @@ jobs:
           $ZIP_COMPRESS = $(Convert-Path .)
           $ZIP_INCLUDE = "loreline.exe"
           $ZIP_DESTINATION = 'loreline-windows.zip'
-          $ZIP_FILES = Get-ChildItem -Path $ZIP_COMPRESS -Include $ZIP_INCLUDE
+          $ZIP_FILES = Get-ChildItem -Path $ZIP_COMPRESS -Filter $ZIP_INCLUDE
           Compress-Archive -Path $ZIP_FILES -DestinationPath $ZIP_DESTINATION -CompressionLevel Optimal
 
       - name: Upload Files
