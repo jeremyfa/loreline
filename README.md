@@ -337,11 +337,15 @@ This syntax guide covered the main features of Loreline, but there's always more
 
 Happy writing!
 
-# Testing Loreline scripts
+# Write and play Loreline scripts
 
-Loreline scripts are written into `.lor` files. See [CoffeeShop.lor](/test/CoffeeShop.lor) and [Minimal.lor](/test/Minimal.lor) as examples.
+Loreline scripts are written in `.lor` files. See [CoffeeShop.lor](/test/CoffeeShop.lor) and [Minimal.lor](/test/Minimal.lor) as examples.
 
-## Using the command line interface
+You can write these with any text editor, but the best option is using [Visual Studio Code](https://code.visualstudio.com/) along with the [Loreline Extension](https://marketplace.visualstudio.com/items?itemName=jeremyfa.loreline). This will make your editor support syntax highlighting of `.lor` files, which makes the content much more readable and easy to work with:
+
+![Minimal example, syntax highlighted in VSCode](/minimal-screenshot.png)
+
+## Test using the command line interface
 
 ### Using official binary
 
@@ -363,7 +367,7 @@ haxelib install loreline
 haxelib run loreline play story.lor
 ```
 
-## Embedding loreline files in your game or application
+## Embed loreline files in your game or application
 
 Loreline runtime is written with the [Haxe programming language](https://haxe.org), so it can be transpiled to many target languages such as Javascript, C++, C#, Java bytecode, PHP, Python...
 
