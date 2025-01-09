@@ -358,17 +358,3 @@ jobs:
             loreline-mac.zip
             loreline-linux-x86_64.zip
             loreline-linux-arm64.zip
-
-  generate-api-docs:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [create-release]
-    runs-on: ubuntu-22.04
-    steps:
-
-      - name: Dispatch event
-        uses: loreline-engine/repository-dispatch@v1
-        with:
-          token: ${{ secrets.PAT_PUBLIC }}
-          repository: loreline-engine/api-docs
-          event-type: deploy-api-docs
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
