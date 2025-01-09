@@ -137,11 +137,11 @@ async function main() {
                 '-D', 'windows', '-D', 'no-compilation'
             ]));
 
-            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
-
             let haxelibCmd = fs.readFileSync(path.join(__dirname, 'haxelib.cmd'), 'utf8');
             haxelibCmd = haxelibCmd.split('/git/').join('/../git/');
             fs.writeFileSync(path.join(__dirname, 'build', 'haxelib.cmd'), haxelibCmd);
+
+            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
 
             if (fs.existsSync(path.join(__dirname, 'loreline.exe'))) {
                 fs.unlinkSync(path.join(__dirname, 'loreline.exe'));
