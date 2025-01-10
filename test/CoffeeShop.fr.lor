@@ -243,7 +243,7 @@ beat ProductiveMoment {
 
         Faire un tour dehors {
             La combinaison du café et de l'air frais vous fait un bien fou.
-            Après un moment, il est temps de retourné au café.
+            Après un moment, il est temps de retourner au café.
             sarah.present = false
             james.present = false
             -> EnterCoffeeShop
