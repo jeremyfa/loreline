@@ -36,51 +36,64 @@ Although you can write right at the beginning of a Loreline script, as your stor
 
 ```lor
 beat EnterCafe {
-    The morning sun streams through the café windows.
-    The aroma of freshly ground coffee fills the air.
+    The morning sun streams through the café windows as you step inside.
+
+    barista: <friendly> Welcome! I don't think I've seen you here before.
 
     choice {
-        Approach the counter {
-            -> PlaceOrder
+        Just looking around {
+            barista: Take your time! I'm here when you're ready.
+            -> ExploreMenu
         }
 
-        Look around first {
-            -> ExploreSpace
+        Actually, I could use some coffee {
+            barista: <happy> You're in the right place!
+            -> TakeOrder
         }
     }
 }
 
-beat ExploreSpace {
-    A cozy seating area invites you to stay awhile.
-    Students and remote workers tap away at their laptops.
+beat ExploreMenu {
+    Beside you, a regular customer sips her drink contentedly.
+
+    sarah: Their lattes are amazing. I come here every morning.
+
+    barista: <cheerful> Sarah's right! Want to try one?
 
     choice {
-        Head to the counter {
-            -> PlaceOrder
+        Sure, I'll have what she's having {
+            sarah: <pleased> Good choice!
+            -> TakeOrder
         }
 
-        Leave for now {
-            -> ExitCafe
+        What else do you recommend? {
+            -> TakeOrder
         }
     }
 }
 
-beat PlaceOrder {
-    The display case of pastries catches your eye as you approach.
+beat TakeOrder {
+    barista: So, what can I get started for you?
 
     choice {
-        Order coffee {
-            -> CoffeeOptions
+        A latte sounds perfect {
+            barista: <excited> Coming right up! I'll make it special for your first visit.
+
+            sarah: <smile> You won't regret it.
+            -> EndVisit
         }
 
-        Order tea {
-            -> TeaOptions
-        }
-
-        Step back {
-            -> ExploreSpace
+        Just a regular coffee today {
+            barista: Sometimes the classics are the best choice!
+            -> EndVisit
         }
     }
+}
+
+beat EndVisit {
+    You find a cozy spot to enjoy your drink.
+
+    sarah: <friendly> Hope to see you around more often!
 }
 ```
 
@@ -98,7 +111,7 @@ character barista {
 }
 
 character customer {
-    name: "Sam"
+    name: Sam
     visits: 0
     favoriteDrink: null
 }
@@ -166,14 +179,14 @@ beat CoffeeTasting {
     // These values reset every time we enter CoffeeTasting
     new state {
         cupsTasted: 0
-        currentRoast: "light"
+        currentRoast: light
         enjoymentLevel: 5
     }
 
     choice {
         Try another sip if (cupsTasted < 3) {
             cupsTasted += 1
-            "Interesting notes in this one..."
+            Interesting notes in this one...
         }
 
         Finish tasting {
@@ -241,7 +254,7 @@ beat CheckInventory {
 }
 ```
 
-Characters can also be referenced by their name property:
+Characters can also be referenced by their identifier, which will display their `name` property:
 
 ```lor
 beat CloseShop {
