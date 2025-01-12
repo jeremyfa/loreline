@@ -328,7 +328,9 @@ class Lexer {
         "new" => TokenType.KwNew,
         "true" => TokenType.LBoolean(true),
         "false" => TokenType.LBoolean(false),
-        "null" => TokenType.LNull
+        "null" => TokenType.LNull,
+        "and" => TokenType.OpAnd,
+        "or" => TokenType.OpOr
     ];
 
     /**
@@ -973,6 +975,16 @@ class Lexer {
                     return true;
                 }
                 c = input.charCodeAt(pos);
+            }
+
+            // Check for and delimiter
+            if (c == "a".code && input.charCodeAt(pos + 1) == "n".code && input.charCodeAt(pos + 2) == "d".code && !isIdentifierStart(input.charCodeAt(pos + 3))) {
+                return true;
+            }
+
+            // Check for or delimiter
+            if (c == "o".code && input.charCodeAt(pos + 1) == "r".code && !isIdentifierStart(input.charCodeAt(pos + 2))) {
+                return true;
             }
 
             // Check for various delimiters typical from if condition
