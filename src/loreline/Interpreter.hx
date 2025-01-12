@@ -1,5 +1,6 @@
 package loreline;
 
+import Type.ValueType;
 import haxe.ds.StringMap;
 import loreline.Lexer;
 import loreline.Node;
@@ -261,14 +262,22 @@ class Interpreter {
 
     final cycleByNode:Map<Int,Int> = new Map();
 
+    var _random:Random = null;
+    function random():Float {
+        if (_random == null) {
+            _random = new Random();
+        }
+        return _random.next();
+    }
+
     function initializeTopLevelFunctions(functions:Map<String,Any>) {
 
         topLevelFunctions.set('random', (min:Int, max:Int) -> {
-            return Math.floor(min + Math.random() * (max + 1 - min));
+            return Math.floor(min + random() * (max + 1 - min));
         });
 
         topLevelFunctions.set('chance', (n:Int) -> {
-            return Math.floor(Math.random() * n) == 0;
+            return Math.floor(random() * n) == 0;
         });
 
         topLevelFunctions.set('wait', (seconds:Float) -> {
@@ -817,10 +826,10 @@ class Interpreter {
 
         final currentValue = switch (assign.op) {
             case OpAssign: value;
-            case OpPlusAssign: performOperation(OpPlus, readAccess(target), value);
-            case OpMinusAssign: performOperation(OpMinus, readAccess(target), value);
-            case OpMultiplyAssign: performOperation(OpMultiply, readAccess(target), value);
-            case OpDivideAssign: performOperation(OpDivide, readAccess(target), value);
+            case OpPlusAssign: performOperation(OpPlus, readAccess(target), value, assign.pos);
+            case OpMinusAssign: performOperation(OpMinus, readAccess(target), value, assign.pos);
+            case OpMultiplyAssign: performOperation(OpMultiply, readAccess(target), value, assign.pos);
+            case OpDivideAssign: performOperation(OpDivide, readAccess(target), value, assign.pos);
             case _: throw new RuntimeError('Invalid assignment operator', assign.pos);
         }
 
@@ -1097,7 +1106,7 @@ class Interpreter {
                 final bin:NBinary = cast expr;
                 final left = evaluateExpression(bin.left);
                 final right = evaluateExpression(bin.right);
-                performOperation(bin.op, left, right);
+                performOperation(bin.op, left, right, bin.pos);
 
             case NUnary:
                 final un:NUnary = cast expr;
@@ -1259,29 +1268,107 @@ class Interpreter {
 
     }
 
-    function performOperation(op:TokenType, left:Dynamic, right:Dynamic):Any {
+    /**
+     * Helper for getting human-readable type names in errors
+     */
+    function getTypeName(t:ValueType):String {
+        return switch t {
+            case TNull: "Null";
+            case TInt: "Int";
+            case TFloat: "Float";
+            case TBool: "Bool";
+            case TObject: "Object";
+            case TFunction: "Function";
+            case TClass(c): Type.getClassName(c);
+            case TEnum(e): Type.getEnumName(e);
+            case TUnknown: "Unknown";
+        }
+    }
+
+    function performOperation(op:TokenType, left:Dynamic, right:Dynamic, pos:Position):Any {
+        // Get precise runtime types
+        final leftType = Type.typeof(left);
+        final rightType = Type.typeof(right);
 
         return switch op {
-            case OpPlus: left + right;
-            case OpMinus: left - right;
-            case OpMultiply: left * right;
-            case OpDivide:
-                if (right == 0) throw new RuntimeError('Division by zero', currentScope?.node?.pos ?? script.pos);
-                left / right;
-            case OpModulo: left % right;
-            case OpEquals: left == right;
-            case OpNotEquals: left != right;
-            case OpGreater: left > right;
-            case OpGreaterEq: left >= right;
-            case OpLess: left < right;
-            case OpLessEq: left <= right;
-            case OpAnd: left && right;
-            case OpOr: left || right;
+            case OpPlus:
+                switch [leftType, rightType] {
+                    // Number + Number
+                    case [TInt | TFloat, TInt | TFloat]:
+                        Std.parseFloat(Std.string(left)) + Std.parseFloat(Std.string(right));
+                    // String + Any (allows string concatenation)
+                    case [TClass(String), _] | [_, TClass(String)]:
+                        Std.string(left) + Std.string(right);
+                    case _:
+                        throw new RuntimeError('Cannot add ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                }
+
+            case OpMinus | OpMultiply | OpDivide | OpModulo:
+                switch [leftType, rightType] {
+                    case [TInt | TFloat, TInt | TFloat]:
+                        final leftNum = Std.parseFloat(Std.string(left));
+                        final rightNum = Std.parseFloat(Std.string(right));
+                        switch op {
+                            case OpMinus: leftNum - rightNum;
+                            case OpMultiply: leftNum * rightNum;
+                            case OpDivide:
+                                if (rightNum == 0) throw new RuntimeError('Division by zero', pos ?? currentScope?.node?.pos ?? script.pos);
+                                leftNum / rightNum;
+                            case OpModulo:
+                                if (rightNum == 0) throw new RuntimeError('Modulo by zero', pos ?? currentScope?.node?.pos ?? script.pos);
+                                leftNum % rightNum;
+                            case _: throw "Unreachable";
+                        }
+                    case _:
+                        final opName = switch op {
+                            case OpMinus: "subtract";
+                            case OpMultiply: "multiply";
+                            case OpDivide: "divide";
+                            case OpModulo: "modulo";
+                            case _: "perform operation on";
+                        }
+                        throw new RuntimeError('Cannot ${opName} ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                }
+
+            case OpEquals | OpNotEquals:
+                // Allow comparison between any types
+                switch op {
+                    case OpEquals: left == right;
+                    case OpNotEquals: left != right;
+                    case _: throw "Unreachable";
+                }
+
+            case OpGreater | OpGreaterEq | OpLess | OpLessEq:
+                switch [leftType, rightType] {
+                    case [TInt | TFloat, TInt | TFloat]:
+                        final leftNum = Std.parseFloat(Std.string(left));
+                        final rightNum = Std.parseFloat(Std.string(right));
+                        switch op {
+                            case OpGreater: leftNum > rightNum;
+                            case OpGreaterEq: leftNum >= rightNum;
+                            case OpLess: leftNum < rightNum;
+                            case OpLessEq: leftNum <= rightNum;
+                            case _: throw "Unreachable";
+                        }
+                    case _:
+                        throw new RuntimeError('Cannot compare ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                }
+
+            case OpAnd | OpOr:
+                switch [leftType, rightType] {
+                    case [TBool, TBool]:
+                        switch op {
+                            case OpAnd: left && right;
+                            case OpOr: left || right;
+                            case _: throw "Unreachable";
+                        }
+                    case _:
+                        throw new RuntimeError('Cannot perform logical operation on ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                }
 
             case _:
-                throw new RuntimeError('Invalid operation: $op', currentScope?.node?.pos ?? script.pos);
+                throw new RuntimeError('Invalid operation: $op', pos ?? currentScope?.node?.pos ?? script.pos);
         }
-
     }
 
     function valueToString(value:Any):String {

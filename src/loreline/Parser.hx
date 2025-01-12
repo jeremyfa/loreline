@@ -343,14 +343,15 @@ class Parser {
      * @return Array of parsed statement nodes
      */
     function parseStatementBlock():Array<AstNode> {
-        expect(LBrace);
+
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
         final statements:Array<AstNode> = [];
 
-        while (!check(RBrace) && !isAtEnd()) {
+        while (!check(blockEnd) && !isAtEnd()) {
             // Handle line breaks and comments
-            while (match(LineBreak)) {}
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
 
-            if (check(RBrace)) break;
+            if (check(blockEnd)) break;
 
             // Parse statement
             try {
@@ -359,13 +360,13 @@ class Parser {
                 if (errors == null) errors = [];
                 errors.push(e);
                 synchronize();
-                if (check(RBrace)) break;
+                if (check(blockEnd)) break;
             }
 
-            while (match(LineBreak)) {}
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         }
 
-        expect(RBrace);
+        expect(blockEnd);
         return statements;
     }
 
@@ -379,7 +380,7 @@ class Parser {
         final stateNode = new NStateDecl(nextNodeId++, startPos, temporary, null);
 
         expect(KwState);
-        while (match(LineBreak)) {} // Optional breaks before {
+        while (match(LineBreak)) {}
 
         attachComments(stateNode);
 
@@ -417,48 +418,97 @@ class Parser {
         expect(KwBeat);
         beatNode.name = expectIdentifier();
 
-        while (match(LineBreak)) {} // Optional before block
-        expect(LBrace);
-        while (match(LineBreak)) {} // Optional after {
-
-        var braceLevel = 1;
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
 
         attachComments(beatNode);
 
-        // Parse beat body with proper brace level tracking
-        while (!isAtEnd() && braceLevel > 0) {
-            switch (tokens[current].type) {
-                case RBrace:
-                    braceLevel--;
-                    if (braceLevel > 0) advance();
-                case LBrace:
-                    braceLevel++;
-                    advance();
-                case _:
-                    if (braceLevel == 1) {
-                        beatNode.body.push(parseNode());
-                    }
-                    else {
-                        advance();
-                    }
-            }
+        // Parse character properties
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+            beatNode.body.push(parseNode());
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         }
 
-        expect(RBrace);
+        while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        expect(blockEnd);
+
         return beatNode;
     }
 
-    /**
-     * Checks if the current token begins a block construct.
-     * @return True if current token starts a block
-     */
-    function isBlockStart():Bool {
-        return switch (tokens[current].type) {
-            case KwIf | KwChoice | Arrow: true;
-            case Identifier(_):
-                peek().type == Arrow;
-            case _: false;
+    function checkBlockStart():Bool {
+
+        var indentToken:Token = null;
+        var braceToken:Token = null;
+        var numIndents = 0;
+        var i = 0;
+        while (current + i < tokens.length) {
+            final token = tokens[current + i];
+            i++;
+
+            if (token.type == LineBreak) continue;
+            if (token.type == Indent) {
+                numIndents++;
+                indentToken = token;
+                continue;
+            }
+            if (token.type == LBrace) {
+                if (braceToken == null) {
+                    braceToken = token;
+                }
+                continue;
+            }
+            break;
         }
+
+        if (braceToken != null) {
+            return true;
+        }
+        else if (indentToken != null) {
+            if (numIndents > 1) {
+                throw new ParseError('Invalid indentation level', indentToken.pos);
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+
+    function parseBlockStart():Token {
+
+        var indentToken:Token = null;
+        var braceToken:Token = null;
+        var numIndents = 0;
+        while (true) {
+            if (match(LineBreak)) continue;
+            if (match(Indent)) {
+                numIndents++;
+                indentToken = previous();
+                continue;
+            }
+            if (match(LBrace)) {
+                if (braceToken == null) {
+                    braceToken = previous();
+                }
+                continue;
+            }
+            break;
+        }
+
+        if (braceToken != null) {
+            return braceToken;
+        }
+        else if (indentToken != null) {
+            if (numIndents > 1) {
+                throw new ParseError('Invalid indentation level', indentToken.pos);
+            }
+            return indentToken;
+        }
+        else {
+            throw new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', tokens[current].pos);
+        }
+
     }
 
     /**
@@ -472,20 +522,19 @@ class Parser {
         expect(KwCharacter);
         characterNode.name = expectIdentifier();
 
-        while (match(LineBreak)) {} // Optional before block
-        expect(LBrace);
-        while (match(LineBreak)) {} // Optional after {
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
 
         attachComments(characterNode);
 
         // Parse character properties
-        while (!check(RBrace) && !isAtEnd()) {
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
             characterNode.properties.push(parseObjectField());
-            while (match(LineBreak)) {} // Optional between fields
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         }
 
-        while (match(LineBreak)) {} // Optional before }
-        expect(RBrace);
+        while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        expect(blockEnd);
 
         return characterNode;
     }
@@ -510,20 +559,19 @@ class Parser {
         final choiceNode = new NChoiceStatement(nextNodeId++, startPos, []);
 
         expect(KwChoice);
-        while (match(LineBreak)) {}
 
-        expect(LBrace);
-        while (match(LineBreak)) {}
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
 
         attachComments(choiceNode);
 
         // Parse choice options
-        while (!check(RBrace) && !isAtEnd()) {
-            choiceNode.options.push(parseChoiceOption());
-            while (match(LineBreak)) {}
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+            choiceNode.options.push(parseChoiceOption(blockEnd));
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         }
 
-        expect(RBrace);
+        expect(blockEnd);
 
         return choiceNode;
     }
@@ -532,28 +580,22 @@ class Parser {
      * Parses a single choice option with its condition and consequences.
      * @return Choice option node
      */
-    function parseChoiceOption():NChoiceOption {
+    function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
         final startPos = tokens[current].pos;
         final choiceOption = attachComments(new NChoiceOption(nextNodeId++, startPos, null, null, []));
         choiceOption.text = parseStringLiteral();
 
         // Parse optional condition
         if (match(KwIf)) {
-            choiceOption.condition = parseParenExpression();
+            choiceOption.condition = parseConditionExpression();
         }
 
         // Parse option body
-        if (check(LBrace)) {
+        if (checkBlockStart()) {
             choiceOption.body = parseStatementBlock();
         }
-        else if (!check(RBrace)) {  // If not end of choice
-            // Handle single statement bodies
-            if (checkString()) {
-                choiceOption.body = [parseTextStatement()];
-            }
-            else {
-                choiceOption.body = [parseNode()];
-            }
+        else if (!check(blockEnd)) {  // If not end of choice
+            choiceOption.body = [parseNode()];
         }
 
         return choiceOption;
@@ -612,7 +654,7 @@ class Parser {
         final ifNode = new NIfStatement(nextNodeId++, startPos, null, null, null);
 
         expect(KwIf);
-        ifNode.condition = parseParenExpression();
+        ifNode.condition = parseConditionExpression();
 
         while (match(LineBreak)) {}
         attachComments(ifNode);
@@ -621,7 +663,6 @@ class Parser {
         ifNode.thenBranch.body = parseStatementBlock();
 
         // Handle optional else clause
-        var elseBranch:Null<Array<AstNode>> = null;
         var elseToken = tokens[current];
         if (elseToken.type == KwElse) {
             advance();
@@ -934,7 +975,7 @@ class Parser {
                 return stringLiteral;
 
             case _:
-                throw new ParseError("Expected string", tokens[current].pos);
+                throw new ParseError('Expected string, got ${tokens[current].type}', tokens[current].pos);
         }
     }
 
@@ -1242,34 +1283,33 @@ class Parser {
         final fields = [];
         final literal = new NLiteral(nextNodeId++, startPos, fields, Object);
 
-        expect(LBrace);
-        while (match(LineBreak)) {} // Optional breaks after {
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
 
         attachComments(literal);
 
         var needsSeparator = false;
 
-        while (!check(RBrace) && !isAtEnd()) {
+        while (!check(blockEnd) && !isAtEnd()) {
             // Handle separators between fields
             if (needsSeparator) {
-                while (match(LineBreak)) {
+                while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {
                     needsSeparator = false;
                 }
                 if (match(Comma)) {
                     needsSeparator = false;
                 }
             }
-            while (match(LineBreak)) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {
                 needsSeparator = false;
             }
 
-            if (!check(RBrace) && needsSeparator) {
+            if (!check(blockEnd) && needsSeparator) {
                 throw new ParseError("Expected comma or line break between fields", tokens[current].pos);
             }
 
-            while (match(LineBreak)) {}
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
 
-            if (!check(RBrace)) {
+            if (!check(blockEnd)) {
                 fields.push(parseObjectField());
             }
 
@@ -1277,8 +1317,8 @@ class Parser {
             needsSeparator = (prev.type != Colon && prev.type != LineBreak);
         }
 
-        while (match(LineBreak)) {}
-        expect(RBrace);
+        while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        expect(blockEnd);
 
         return literal;
     }
@@ -1301,13 +1341,13 @@ class Parser {
     }
 
     /**
-     * Parses a parenthesized expression.
+     * Parses a condition expression.
      * @return Expression node
      */
-    function parseParenExpression():NExpr {
-        expect(LParen);
+    function parseConditionExpression():NExpr {
+        final hasParen = match(LParen);
         final expr = parseExpression();
-        expect(RParen);
+        if (hasParen) expect(RParen);
         return expr;
     }
 
@@ -1342,7 +1382,7 @@ class Parser {
         if (check(type)) {
             return advance();
         }
-        throw new ParseError('Expected ${type}, got ${tokens[current].type}', tokens[current].pos);
+        throw new ParseError('Expected ${type}, got ${isAtEnd() ? 'EoF' : Std.string(tokens[current].type)}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
     }
 
     /**
@@ -1356,7 +1396,7 @@ class Parser {
                 advance();
                 name;
             case _:
-                throw new ParseError('Expected identifier', tokens[current].pos);
+                throw new ParseError('Expected identifier, got ${tokens[current].type}', tokens[current].pos);
         }
     }
 

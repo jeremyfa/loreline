@@ -132,12 +132,15 @@ class Cli {
             print(Json.stringify(script.toJson(), null, '  '));
         }
         catch (e:Any) {
+            #if debug
             if (e is Error) {
                 printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
             }
             else {
                 printStackTrace(false, CallStack.exceptionStack());
             }
+            #end
             fail(e, file);
         }
 
@@ -170,6 +173,7 @@ class Cli {
             #if debug
             if (e is Error) {
                 printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
             }
             else {
                 printStackTrace(false, CallStack.exceptionStack());

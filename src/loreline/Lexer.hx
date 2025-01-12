@@ -34,6 +34,32 @@ enum LStringAttachment {
 
 }
 
+enum abstract TokenStackType(Int) {
+
+    var ChoiceBrace;
+
+    var ChoiceIndent;
+
+    var StateBrace;
+
+    var StateIndent;
+
+    var CharacterBrace;
+
+    var CharacterIndent;
+
+    var BeatBrace;
+
+    var BeatIndent;
+
+    var Brace;
+
+    var Indent;
+
+    var Bracket;
+
+}
+
 /**
  * Represents the different types of tokens that can be produced by the lexer.
  */
@@ -134,6 +160,11 @@ enum TokenType {
     /** Multi-line comment */
     CommentMultiLine(content:String);
 
+    /** Increase indentation level */
+    Indent;
+    /** Decrease indentation level */
+    Unindent;
+
     /** Line break token */
     LineBreak;
 
@@ -164,6 +195,8 @@ class TokenTypeHelpers {
             case [RParen, RParen]: true;
             case [LBracket, LBracket]: true;
             case [RBracket, RBracket]: true;
+            case [Indent, Indent]: true;
+            case [Unindent, Unindent]: true;
             case [LineBreak, LineBreak]: true;
             case [KwState, KwState]: true;
             case [KwBeat, KwBeat]: true;
@@ -223,6 +256,18 @@ class TokenTypeHelpers {
     public static function isIdentifier(a:TokenType):Bool {
         return switch a {
             case Identifier(_): true;
+            case _: false;
+        }
+    }
+
+    /**
+     * Checks if a token is a block start
+     * @param a Token type to check
+     * @return Whether the token type is a block start
+     */
+    public static function isBlockStart(a:TokenType):Bool {
+        return switch a {
+            case KwState | KwBeat | KwCharacter | KwChoice | KwIf: true;
             case _: false;
         }
     }
@@ -335,13 +380,13 @@ class Lexer {
      * A stack to keep track of whether we are inside a `beat` or a `state`/`character` block.
      * Depending on that, the rules for reading unquoted string tokens are different.
      */
-    var stack:Array<TokenType>;
+    var stack:Array<TokenStackType>;
 
     /**
      * The token type that will be added to the `stack`
      * next time we find a `LBrace` token
      */
-    var nextBlock:TokenType;
+    var nextBlock:TokenStackType;
 
     /**
      * When higher than zero, that means only strictly
@@ -350,6 +395,21 @@ class Lexer {
      * used to handle interpolated values in strings
      */
     var strictExprs:Int;
+
+    /** Current indentation level (number of spaces/tabs) */
+    var indentLevel:Int = 0;
+
+    /** Stack of indentation levels */
+    var indentStack:Array<Int> = [];
+
+    /** Queue of generated indentation tokens */
+    var indentTokens:Array<Token> = [];
+
+    /** The indentation size (e.g., 4 spaces or 1 tab) */
+    var indentSize:Int = 4;
+
+    /** Whether tabs are allowed for indentation */
+    var allowTabs:Bool = true;
 
     /**
      * Creates a new lexer for the given input.
@@ -372,9 +432,12 @@ class Lexer {
         this.startColumn = 1;
         this.previous = null;
         this.stack = [];
-        this.nextBlock = LBrace;
+        this.nextBlock = Brace;
         this.tokenized = null;
         this.strictExprs = 0;
+        this.indentLevel = 0;
+        this.indentStack = [0];
+        this.indentTokens = [];
     }
 
     /**
@@ -386,24 +449,56 @@ class Lexer {
         this.tokenized = tokens;
         while (true) {
             final token = nextToken();
+
+            // Handle EOF
+            if (token.type == Eof) {
+                // Generate any remaining unindents
+                if (indentStack.length > 1) {
+                    var count = indentStack.length - 1;
+                    for (_ in 0...count) {
+                        tokens.push(makeToken(Unindent));
+                    }
+                }
+                break;
+            }
+
             tokens.push(token);
 
             switch token.type {
-                case KwState | KwCharacter | KwBeat | KwChoice:
-                    nextBlock = token.type;
+                case KwState:
+                    nextBlock = StateIndent;
+                case KwCharacter:
+                    nextBlock = CharacterIndent;
+                case KwBeat:
+                    nextBlock = BeatIndent;
+                case KwChoice:
+                    nextBlock = ChoiceIndent;
                 case LBrace:
-                    stack.push(nextBlock);
-                    nextBlock = LBrace;
+                    stack.push(switch nextBlock {
+                        case ChoiceBrace | ChoiceIndent: ChoiceBrace;
+                        case StateBrace | StateIndent: StateBrace;
+                        case CharacterBrace | CharacterIndent: CharacterBrace;
+                        case BeatBrace | BeatIndent: BeatIndent;
+                        case Brace | Indent | Bracket: Brace;
+                    });
+                    nextBlock = Brace;
+                case Indent:
+                    stack.push(switch nextBlock {
+                        case ChoiceBrace | ChoiceIndent: ChoiceIndent;
+                        case StateBrace | StateIndent: StateIndent;
+                        case CharacterBrace | CharacterIndent: CharacterIndent;
+                        case BeatBrace | BeatIndent: BeatIndent;
+                        case Brace | Indent | Bracket: Indent;
+                    });
+                    nextBlock = Brace;
                 case LBracket:
-                    stack.push(LBracket);
-                    nextBlock = LBrace;
-                case RBrace | RBracket:
+                    stack.push(Bracket);
+                    nextBlock = Brace;
+                case RBrace | Unindent | RBracket:
                     stack.pop();
-                    nextBlock = LBrace;
+                    nextBlock = Brace;
                 case _:
             }
-
-            if (token.type == Eof) break;
         }
         return tokens;
     }
@@ -414,6 +509,11 @@ class Lexer {
      * @throws LexerError if invalid input is encountered
      */
     public function nextToken():Token {
+        // Check for queued indentation tokens first
+        if (indentTokens.length > 0) {
+            return indentTokens.shift();
+        }
+
         skipWhitespace();
 
         if (pos >= length) {
@@ -425,7 +525,24 @@ class Lexer {
         final c = input.charCodeAt(pos);
 
         if (c == "\n".code || c == "\r".code) {
-            return readLineBreak();
+            final lineBreakToken = readLineBreak();
+
+            // After a line break, check for indentation changes
+            var currentIndent = countIndentation();
+
+            if (currentIndent > indentStack[indentStack.length - 1]) {
+                // Indent - just check that it's more than previous level
+                indentStack.push(currentIndent);
+                indentTokens.push(makeToken(Indent));
+            } else if (currentIndent < indentStack[indentStack.length - 1]) {
+                // Unindent - pop until we find a matching or lower level
+                while (indentStack.length > 0 && currentIndent < indentStack[indentStack.length - 1]) {
+                    indentStack.pop();
+                    indentTokens.push(makeToken(Unindent));
+                }
+            }
+
+            return lineBreakToken;
         }
 
         final startPos = makePosition();
@@ -565,6 +682,32 @@ class Lexer {
 
     }
 
+    function countIndentation():Int {
+        var pos = this.pos;
+        var spaces = 0;
+
+        // Count spaces/tabs
+        while (pos < length) {
+            final c = input.charCodeAt(pos);
+            if (c == " ".code) {
+                spaces++;
+            } else if (c == "\t".code) {
+                spaces += 4; // Treat each tab as 4 spaces
+            } else {
+                break;
+            }
+            pos++;
+        }
+
+        // Check if line is empty or only whitespace
+        if (pos >= length || input.charCodeAt(pos) == "\n".code || input.charCodeAt(pos) == "\r".code) {
+            // Return previous indentation level for empty lines
+            return indentStack[indentStack.length - 1];
+        }
+
+        return spaces;
+    }
+
     /**
      * Returns the token type of the parent block.
      * @return The token type of the parent block or KwBeat if at top level
@@ -573,35 +716,22 @@ class Lexer {
 
         var i = stack.length - 1;
         while (i >= 0) {
-            if (stack[i] != LBrace && stack[i] != LBracket) {
-                if (stack[i] == KwChoice && i < stack.length - 1) {
-                    return KwBeat;
-                }
-                return stack[i];
+            if (stack[i] != Brace && stack[i] != Indent && stack[i] != Bracket) {
+                return switch stack[i] {
+                    case ChoiceBrace | ChoiceIndent: KwBeat;
+                    case StateBrace | StateIndent: KwState;
+                    case CharacterBrace | CharacterIndent: KwCharacter;
+                    case BeatBrace | BeatIndent: KwBeat;
+                    case Brace: LBrace;
+                    case Indent: Indent;
+                    case Bracket: LBracket;
+                };
             }
             i--;
         }
 
         // Assume top level is like being in a beat
         return KwBeat;
-
-    }
-
-    /**
-     * Checks if currently in a parent bracket block.
-     * @return True if inside brackets, false otherwise
-     */
-    function inParentBrackets():Bool {
-
-        var i = stack.length - 1;
-        while (i >= 0) {
-            if (stack[i] != LBrace) {
-                return stack[i] == LBracket;
-            }
-            i--;
-        }
-
-        return false;
 
     }
 
@@ -683,55 +813,235 @@ class Lexer {
     }
 
     /**
+     * Helper function to skip whitespace and comments
+     */
+    function skipWhitespaceAndComments(pos:Int):Int {
+        final startPos = pos;
+        var foundContent = false;
+        while (pos < input.length) {
+            // Skip whitespace
+            while (pos < input.length && (input.charCodeAt(pos) == " ".code || input.charCodeAt(pos) == "\t".code)) {
+                pos++;
+                foundContent = true;
+            }
+
+            // Check for comments
+            if (pos < input.length - 1) {
+                if (input.charCodeAt(pos) == "/".code) {
+                    if (input.charCodeAt(pos + 1) == "/".code) {
+                        // Single line comment - invalid in single line
+                        pos = startPos;
+                        return pos;
+                    }
+                    else if (input.charCodeAt(pos + 1) == "*".code) {
+                        // Multi-line comment
+                        pos += 2;
+                        foundContent = true;
+                        var commentClosed = false;
+                        while (pos < input.length - 1) {
+                            if (input.charCodeAt(pos) == "*".code && input.charCodeAt(pos + 1) == "/".code) {
+                                pos += 2;
+                                commentClosed = true;
+                                break;
+                            }
+                            pos++;
+                        }
+                        if (!commentClosed) {
+                            pos = startPos;
+                            return pos;
+                        }
+                        continue;
+                    }
+                }
+            }
+            break;
+        }
+        return foundContent ? pos : startPos;
+    }
+
+    /**
      * Returns whether the input at the given position is the start of an if condition.
      * @param pos Position to check from
      * @return True if an if condition starts at the position, false otherwise
      */
     function isIfStart(pos:Int):Bool {
-
+        // Check "if" literal first
         if (input.charCodeAt(pos) != "i".code) return false;
         pos++;
 
         if (input.charCodeAt(pos) != "f".code) return false;
         pos++;
 
-        final len = input.length;
-        var inComment = false;
-        var matchesIf = false;
+        // Save initial position to restore it later
+        var startPos = pos;
 
-        while (pos < len) {
-            var c = input.charCodeAt(pos);
-            var cc = pos < input.length - 1 ? input.charCodeAt(pos+1) : 0;
+        // Helper function to read identifier
+        inline function readIdent():Bool {
+            var result = true;
 
-            if (inComment) {
-                if (c == "*".code && cc == "/".code) {
-                    inComment = false;
-                    pos += 2;
-                }
-                else {
-                    pos++;
-                }
+            if (pos >= input.length) {
+                result = false;
             }
             else {
-                if (c == "/".code && cc == "*".code) {
-                    inComment = true;
-                    pos += 2;
-                }
-                else if (isWhitespace(c)) {
-                    pos++;
-                }
-                else if (c == "(".code) {
-                    matchesIf = true;
-                    break;
+                var c = input.charCodeAt(pos);
+
+                // First char must be letter or underscore
+                if (!isIdentifierStart(c)) {
+                    result = false;
                 }
                 else {
-                    break;
+                    pos++;
+
+                    // Continue reading identifier chars
+                    while (pos < input.length) {
+                        c = input.charCodeAt(pos);
+                        if (!isIdentifierPart(c)) break;
+                        pos++;
+                    }
                 }
+            }
+
+            return result;
+        }
+
+        pos = skipWhitespaceAndComments(pos);
+
+        // Handle optional ! for negation
+        if (pos < input.length && input.charCodeAt(pos) == "!".code) {
+            pos++;
+            pos = skipWhitespaceAndComments(pos);
+        }
+
+        // If directly followed with (, that's a valid if
+        if (input.charCodeAt(pos) == "(".code) {
+            return true;
+        }
+
+        // If "if" is directly followed by an identifier start, that's not a if
+        if (pos == startPos && isIdentifierStart(input.charCodeAt(startPos))) {
+            return false;
+        }
+
+        // Must start with identifier or opening parenthesis
+        if (pos >= input.length || !isIdentifierStart(input.charCodeAt(pos))) {
+            return false;
+        }
+
+        while (pos < input.length) {
+            if (input.charCodeAt(pos) == "(".code) {
+                // Function call
+                return true;
+            } else {
+                if (!readIdent()) {
+                    return false;
+                }
+            }
+
+            pos = skipWhitespaceAndComments(pos);
+            if (pos >= input.length) {
+                return true;
+            }
+
+            var c = input.charCodeAt(pos);
+
+            // Handle dot access
+            if (c == ".".code) {
+                pos++;
+                pos = skipWhitespaceAndComments(pos);
+                if (!readIdent()) {
+                    return false;
+                }
+                pos = skipWhitespaceAndComments(pos);
+                if (pos >= input.length) {
+                    return true;
+                }
+                c = input.charCodeAt(pos);
+            }
+
+            // Handle bracket access
+            if (c == "[".code) {
+                pos++;
+                var bracketLevel = 1;
+                while (pos < input.length && bracketLevel > 0) {
+                    c = input.charCodeAt(pos);
+                    if (c == "[".code) bracketLevel++;
+                    if (c == "]".code) bracketLevel--;
+                    pos++;
+                }
+                pos = skipWhitespaceAndComments(pos);
+                if (pos >= input.length) {
+                    return true;
+                }
+                c = input.charCodeAt(pos);
+            }
+
+            // Check for various delimiters typical from if condition
+            if (c == "(".code || c == "&".code || c == "|".code || ((input.charCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (input.charCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
+                return true;
+            }
+
+            // If we're at end or newline, it's valid
+            if (c == "\n".code || c == "\r".code || pos >= input.length) {
+                pos = startPos;
+                return true;
+            }
+
+            // Any other character invalidates it
+            return false;
+        }
+
+        // If we get here, we're at end of input
+        return true;
+    }
+
+    /**
+     * Returns whether the input at the given position is a valid transition start.
+     * A valid transition consists of "->" followed by an identifier, with optional
+     * whitespace and comments in between. Nothing but whitespace and comments can
+     * follow the identifier.
+     * @param pos Position to check from
+     * @return True if a valid transition starts at the position, false otherwise
+     */
+    function isTransitionStart(pos:Int):Bool {
+        // Save initial position to restore it later
+        var startPos = pos;
+
+        // Check for ->
+        if (input.charCodeAt(pos) != "-".code || pos >= input.length - 1 || input.charCodeAt(pos + 1) != ">".code) {
+            return false;
+        }
+        pos += 2;
+
+        // Skip whitespace and comments between -> and identifier
+        pos = skipWhitespaceAndComments(pos);
+
+        // Read identifier
+        if (pos >= input.length || !isIdentifierStart(input.charCodeAt(pos))) {
+            pos = startPos;
+            return false;
+        }
+
+        // Move past identifier
+        pos++;
+        while (pos < input.length && isIdentifierPart(input.charCodeAt(pos))) {
+            pos++;
+        }
+
+        // Skip any trailing comments
+        pos = skipWhitespaceAndComments(pos);
+
+        // Check that we're at end of line, end of input, or only have whitespace/comments left
+        if (pos < input.length) {
+            var c = input.charCodeAt(pos);
+            if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
+                pos = startPos;
+                return false;
             }
         }
 
-        return matchesIf;
-
+        // Restore original position and return success
+        pos = startPos;
+        return true;
     }
 
     /**
@@ -743,13 +1053,6 @@ class Lexer {
 
         // Save initial position to restore it later
         var startPos = pos;
-
-        // Helper function to skip whitespace
-        inline function skipWhitespaces() {
-            while (pos < input.length && (input.charCodeAt(pos) == " ".code || input.charCodeAt(pos) == "\t".code)) {
-                pos++;
-            }
-        }
 
         // Helper function to read identifier
         inline function readIdent():Bool {
@@ -788,7 +1091,7 @@ class Lexer {
 
         // Keep reading segments until we find opening parenthesis
         while (pos < input.length) {
-            skipWhitespaces();
+            pos = skipWhitespaceAndComments(pos);
 
             if (pos >= input.length) {
                 pos = startPos;
@@ -806,7 +1109,7 @@ class Lexer {
             // Handle dot access
             if (c == ".".code) {
                 pos++;
-                skipWhitespaces();
+                pos = skipWhitespaceAndComments(pos);
                 if (!readIdent()) {
                     pos = startPos;
                     return false;
@@ -829,6 +1132,104 @@ class Lexer {
             }
 
             // Any other character means this isn't a call
+            pos = startPos;
+            return false;
+        }
+
+        pos = startPos;
+        return false;
+
+    }
+
+    /**
+     * Returns whether the input at the given position is the start of an assignment.
+     * @param pos Position to check from
+     * @return True if an assignment starts at the position, false otherwise
+     */
+    function isAssignStart(pos:Int):Bool {
+
+        // Save initial position to restore it later
+        var startPos = pos;
+
+        // Helper function to read identifier
+        inline function readIdent():Bool {
+            var result = true;
+
+            if (pos >= input.length) {
+                result = false;
+            }
+            else {
+                var c = input.charCodeAt(pos);
+
+                // First char must be letter or underscore
+                if (!isIdentifierStart(c)) {
+                    result = false;
+                }
+                else {
+                    pos++;
+
+                    // Continue reading identifier chars
+                    while (pos < input.length) {
+                        c = input.charCodeAt(pos);
+                        if (!isIdentifierPart(c)) break;
+                        pos++;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        // Must start with identifier
+        if (!readIdent()) {
+            pos = startPos;
+            return false;
+        }
+
+        // Keep reading segments until we find opening parenthesis
+        while (pos < input.length) {
+            pos = skipWhitespaceAndComments(pos);
+
+            if (pos >= input.length) {
+                pos = startPos;
+                return false;
+            }
+
+            var c = input.charCodeAt(pos);
+
+            // Found assign operator
+            if (c == "=".code ||
+                (input.charCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
+                pos = startPos;
+                return true;
+            }
+
+            // Handle dot access
+            if (c == ".".code) {
+                pos++;
+                pos = skipWhitespaceAndComments(pos);
+                if (!readIdent()) {
+                    pos = startPos;
+                    return false;
+                }
+                continue;
+            }
+
+            // Handle bracket access
+            if (c == "[".code) {
+                // Skip everything until closing bracket
+                pos++;
+                while (pos < input.length) {
+                    if (input.charCodeAt(pos) == "]".code) {
+                        pos++;
+                        break;
+                    }
+                    pos++;
+                }
+                continue;
+            }
+
+            // Any other character means this isn't an assign
             pos = startPos;
             return false;
         }
@@ -866,7 +1267,7 @@ class Lexer {
         while (i >= 0) {
             final token = tokenized[i];
 
-            if (!token.type.isComment() && token.type != LineBreak) {
+            if (!token.type.isComment() && token.type != LineBreak && token.type != Indent && token.type != Unindent) {
                 return (token.type == Colon && i > 0 && tokenized[i-1].type.isIdentifier());
             }
 
@@ -883,7 +1284,11 @@ class Lexer {
      */
     function isInsideBrackets():Bool {
 
-        return stack.length > 0 && stack[stack.length-1] == LBracket;
+        var i = stack.length - 1;
+        while (i >= 0 && stack[stack.length-1] == Indent) {
+            i--;
+        }
+        return i >= 0 && stack[i] == Bracket;
 
     }
 
@@ -898,7 +1303,7 @@ class Lexer {
         var i = tokenized.length - 1;
         while (i >= 0) {
             final token = tokenized[i];
-            if (token.type.isComment()) {
+            if (token.type.isComment() || token.type == Indent || token.type == Unindent) {
                 i--;
             }
             else if (!foundLabel && token.type == Colon) {
@@ -935,7 +1340,7 @@ class Lexer {
         while (i >= 0) {
             final token = tokenized[i];
 
-            if (token.type.isComment()) {
+            if (token.type.isComment() || token.type == Indent || token.type == Unindent) {
                 i--;
             }
             else if (token.type == LineBreak) {
@@ -1003,6 +1408,7 @@ class Lexer {
      * @return Token if an unquoted string was read, null otherwise
      */
     function tryReadUnquotedString():Null<Token> {
+
         // Skip in strict expression area
         if (strictExprs > 0) return null;
 
@@ -1032,14 +1438,14 @@ class Lexer {
         // Check what is the parent block
         final parent = parentBlockType();
 
-        // Skip if parent is not a beat, character, state or choice
-        if (parent != KwBeat && parent != KwState && parent != KwCharacter && parent != KwChoice) {
+        // Skip if parent is not a beat, character, state
+        if (parent != KwBeat && parent != KwState && parent != KwCharacter) {
             return null;
         }
 
         // Skip if this is a condition start or call start, in a beat block
         if (parent == KwBeat) {
-            if (isIfStart(pos) || isCallStart(pos)) {
+            if (isIfStart(pos) || isCallStart(pos) || isAssignStart(pos)) {
                 return null;
             }
         }
@@ -1050,11 +1456,9 @@ class Lexer {
         // -=
         // *=
         // /=
-        // ->
         if (parent == KwBeat) {
             if (c == "=".code ||
-                (cc == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code)) ||
-                (cc == ">".code && (c == "-".code))) {
+                (cc == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
                 return null;
             }
         }
@@ -1073,6 +1477,9 @@ class Lexer {
         // By default, tags are not allowed unless inside beat content
         var allowTags = (parent == KwBeat);
 
+        // Tells whether we are reading a dialogue text or not
+        var isDialogue = false;
+
         // If inside a character or state block,
         // Only allow unquoted strings after labels (someKey: ...)
         // or inside array brackets
@@ -1084,25 +1491,22 @@ class Lexer {
             }
         }
 
-        // If inside a choice,
-        // Only allow unquoted strings preceded by
-        // white spaces or comments in current line
-        else if (parent == KwChoice) {
-
-            // Skip if not starting line
-            if (!followsOnlyWhitespacesOrCommentsInLine()) {
-                return null;
-            }
-        }
-
         // If inside a beat,
         // Only allow unquoted strings after labels (someKey: ...) starting the line
         // or if only preceded by white spaces or comments in current line
         else if (parent == KwBeat) {
 
             // Skip if not after a label or starting line
-            if (!followsOnlyLabelOrCommentsInLine() && !followsOnlyWhitespacesOrCommentsInLine()) {
+            isDialogue = followsOnlyLabelOrCommentsInLine();
+            if (!isDialogue && !followsOnlyWhitespacesOrCommentsInLine()) {
                 return null;
+            }
+
+            if (!isDialogue) {
+                // When not in dialogue, in beat, forbid starting with arrow
+                if (cc == ">".code && (c == "-".code)) {
+                    return null;
+                }
             }
         }
 
@@ -1153,17 +1557,15 @@ class Lexer {
                 break;
             }
             // Check for trailing if
-            else if (tagStart == -1 && parent == KwChoice && c == "i".code && input.charCodeAt(pos+1) == "f".code && isIfStart(pos)) {
+            else if (tagStart == -1 && parent == KwBeat && c == "i".code && input.charCodeAt(pos+1) == "f".code && isIfStart(pos)) {
                 break;
             }
             // Check for comment start
             else if (tagStart == -1 && (c == "/".code && pos < length - 1 && (input.charCodeAt(pos+1) == "/".code || input.charCodeAt(pos+1) == "*".code))) {
                 break;
             }
-            // No assign in beats
-            else if (tagStart == -1 && parent == KwBeat && (c == "=".code ||
-                (input.charCodeAt(pos+1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code)))) {
-                valid = false;
+            // Check for arrow start
+            else if (tagStart == -1 && c == "-".code && pos < length - 1 && input.charCodeAt(pos+1) == ">".code && isTransitionStart(pos)) {
                 break;
             }
             else if (allowTags && c == "<".code) {
@@ -1443,6 +1845,9 @@ class Lexer {
             if (token.type == LineBreak) {
                 currentLine++;
                 currentColumn = 1;
+            }
+            else if (token.type == Indent || token.type == Unindent) {
+                // Ignore
             }
             else {
                 var tokenLength = switch (token.type) {
