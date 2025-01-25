@@ -1,6 +1,7 @@
 package loreline;
 
 using StringTools;
+using loreline.Utf8;
 
 /**
  * Represents an error that occurred during lexical analysis.
@@ -127,10 +128,10 @@ enum TokenType {
     OpGreaterEq;
     /** Less than or equal operator (<=) */
     OpLessEq;
-    /** Logical AND operator (&&) */
-    OpAnd;
-    /** Logical OR operator (||) */
-    OpOr;
+    /** Logical AND operator (&& / and) */
+    OpAnd(word:Bool);
+    /** Logical OR operator (|| / or) */
+    OpOr(word:Bool);
     /** Logical NOT operator (!) */
     OpNot;
 
@@ -221,8 +222,8 @@ class TokenTypeHelpers {
             case [OpLess, OpLess]: true;
             case [OpGreaterEq, OpGreaterEq]: true;
             case [OpLessEq, OpLessEq]: true;
-            case [OpAnd, OpAnd]: true;
-            case [OpOr, OpOr]: true;
+            case [OpAnd(_), OpAnd(_)]: true;
+            case [OpOr(_), OpOr(_)]: true;
             case [OpNot, OpNot]: true;
             case [LNull, LNull]: true;
             case [Identifier(n1), Identifier(n2)]: n1 == n2;
@@ -329,8 +330,8 @@ class Lexer {
         "true" => TokenType.LBoolean(true),
         "false" => TokenType.LBoolean(false),
         "null" => TokenType.LNull,
-        "and" => TokenType.OpAnd,
-        "or" => TokenType.OpOr
+        "and" => TokenType.OpAnd(true),
+        "or" => TokenType.OpOr(true)
     ];
 
     /**
@@ -419,7 +420,7 @@ class Lexer {
      */
     public function new(input:String) {
         this.input = input;
-        this.length = input.length;
+        this.length = input.uLength();
         reset();
     }
 
@@ -524,7 +525,7 @@ class Lexer {
 
         startLine = line;
         startColumn = column;
-        final c = input.charCodeAt(pos);
+        final c = input.uCharCodeAt(pos);
 
         if (c == "\n".code || c == "\r".code) {
             final lineBreakToken = readLineBreak();
@@ -621,7 +622,7 @@ class Lexer {
                     case "&".code:
                         if (peek() == "&".code) {
                             advance(2);
-                            makeToken(OpAnd, startPos);
+                            makeToken(OpAnd(false), startPos);
                         }
                         else {
                             advance();
@@ -631,7 +632,7 @@ class Lexer {
                     case "|".code:
                         if (peek() == "|".code) {
                             advance(2);
-                            makeToken(OpOr, startPos);
+                            makeToken(OpOr(false), startPos);
                         }
                         else {
                             advance();
@@ -690,7 +691,7 @@ class Lexer {
 
         // Count spaces/tabs
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
             if (c == " ".code) {
                 spaces++;
             } else if (c == "\t".code) {
@@ -702,7 +703,7 @@ class Lexer {
         }
 
         // Check if line is empty or only whitespace
-        if (pos >= length || input.charCodeAt(pos) == "\n".code || input.charCodeAt(pos) == "\r".code) {
+        if (pos >= length || input.uCharCodeAt(pos) == "\n".code || input.uCharCodeAt(pos) == "\r".code) {
             // Return previous indentation level for empty lines
             return indentStack[indentStack.length - 1];
         }
@@ -760,9 +761,9 @@ class Lexer {
      */
     function readLineBreak():Token {
         final start = makePosition();
-        if (input.charCodeAt(pos) == "\r".code) {
+        if (input.uCharCodeAt(pos) == "\r".code) {
             advance();
-            if (pos < length && input.charCodeAt(pos) == "\n".code) {
+            if (pos < length && input.uCharCodeAt(pos) == "\n".code) {
                 advance();
             }
         }
@@ -788,12 +789,12 @@ class Lexer {
      */
     function matchIdentifier(pos:Int):Null<String> {
         // Handle empty strings first
-        if (input.length == 0) {
+        if (input.uLength() == 0) {
             return null;
         }
 
         // Check if the first character is a valid identifier start
-        var firstChar = input.charCodeAt(pos + 0);
+        var firstChar = input.uCharCodeAt(pos + 0);
         if (!isIdentifierStart(firstChar)) {
             return null;
         }
@@ -803,15 +804,15 @@ class Lexer {
 
         // Check subsequent characters until we find an invalid one
         // or reach the end of the string
-        while (identifierLength < input.length) {
-            if (!isIdentifierPart(input.charCodeAt(pos + identifierLength))) {
+        while (identifierLength < input.uLength()) {
+            if (!isIdentifierPart(input.uCharCodeAt(pos + identifierLength))) {
                 break;
             }
             identifierLength++;
         }
 
         // Return the substring that contains our identifier
-        return input.substr(pos, identifierLength);
+        return input.uSubstr(pos, identifierLength);
     }
 
     /**
@@ -820,28 +821,28 @@ class Lexer {
     function skipWhitespaceAndComments(pos:Int):Int {
         final startPos = pos;
         var foundContent = false;
-        while (pos < input.length) {
+        while (pos < input.uLength()) {
             // Skip whitespace
-            while (pos < input.length && (input.charCodeAt(pos) == " ".code || input.charCodeAt(pos) == "\t".code)) {
+            while (pos < input.uLength() && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code)) {
                 pos++;
                 foundContent = true;
             }
 
             // Check for comments
-            if (pos < input.length - 1) {
-                if (input.charCodeAt(pos) == "/".code) {
-                    if (input.charCodeAt(pos + 1) == "/".code) {
+            if (pos < input.uLength() - 1) {
+                if (input.uCharCodeAt(pos) == "/".code) {
+                    if (input.uCharCodeAt(pos + 1) == "/".code) {
                         // Single line comment - invalid in single line
                         pos = startPos;
                         return pos;
                     }
-                    else if (input.charCodeAt(pos + 1) == "*".code) {
+                    else if (input.uCharCodeAt(pos + 1) == "*".code) {
                         // Multi-line comment
                         pos += 2;
                         foundContent = true;
                         var commentClosed = false;
-                        while (pos < input.length - 1) {
-                            if (input.charCodeAt(pos) == "*".code && input.charCodeAt(pos + 1) == "/".code) {
+                        while (pos < input.uLength() - 1) {
+                            if (input.uCharCodeAt(pos) == "*".code && input.uCharCodeAt(pos + 1) == "/".code) {
                                 pos += 2;
                                 commentClosed = true;
                                 break;
@@ -867,11 +868,13 @@ class Lexer {
      * @return True if an if condition starts at the position, false otherwise
      */
     function isIfStart(pos:Int):Bool {
+        pos = skipWhitespaceAndComments(pos);
+
         // Check "if" literal first
-        if (input.charCodeAt(pos) != "i".code) return false;
+        if (input.uCharCodeAt(pos) != "i".code) return false;
         pos++;
 
-        if (input.charCodeAt(pos) != "f".code) return false;
+        if (input.uCharCodeAt(pos) != "f".code) return false;
         pos++;
 
         // Save initial position to restore it later
@@ -881,11 +884,11 @@ class Lexer {
         inline function readIdent():Bool {
             var result = true;
 
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 result = false;
             }
             else {
-                var c = input.charCodeAt(pos);
+                var c = input.uCharCodeAt(pos);
 
                 // First char must be letter or underscore
                 if (!isIdentifierStart(c)) {
@@ -895,8 +898,8 @@ class Lexer {
                     pos++;
 
                     // Continue reading identifier chars
-                    while (pos < input.length) {
-                        c = input.charCodeAt(pos);
+                    while (pos < input.uLength()) {
+                        c = input.uCharCodeAt(pos);
                         if (!isIdentifierPart(c)) break;
                         pos++;
                     }
@@ -909,28 +912,28 @@ class Lexer {
         pos = skipWhitespaceAndComments(pos);
 
         // Handle optional ! for negation
-        if (pos < input.length && input.charCodeAt(pos) == "!".code) {
+        if (pos < input.uLength() && input.uCharCodeAt(pos) == "!".code) {
             pos++;
             pos = skipWhitespaceAndComments(pos);
         }
 
         // If directly followed with (, that's a valid if
-        if (input.charCodeAt(pos) == "(".code) {
+        if (input.uCharCodeAt(pos) == "(".code) {
             return true;
         }
 
-        // If "if" is directly followed by an identifier start, that's not a if
-        if (pos == startPos && isIdentifierStart(input.charCodeAt(startPos))) {
+        // If "if" is directly followed by an identifier start (without space), that's not a if
+        if (pos == startPos && isIdentifierStart(input.uCharCodeAt(startPos))) {
             return false;
         }
 
         // Must start with identifier or opening parenthesis
-        if (pos >= input.length || !isIdentifierStart(input.charCodeAt(pos))) {
+        if (pos >= input.uLength() || !isIdentifierStart(input.uCharCodeAt(pos))) {
             return false;
         }
 
-        while (pos < input.length) {
-            if (input.charCodeAt(pos) == "(".code) {
+        while (pos < input.uLength()) {
+            if (input.uCharCodeAt(pos) == "(".code) {
                 // Function call
                 return true;
             } else {
@@ -940,11 +943,11 @@ class Lexer {
             }
 
             pos = skipWhitespaceAndComments(pos);
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 return true;
             }
 
-            var c = input.charCodeAt(pos);
+            var c = input.uCharCodeAt(pos);
 
             // Handle dot access
             if (c == ".".code) {
@@ -954,46 +957,46 @@ class Lexer {
                     return false;
                 }
                 pos = skipWhitespaceAndComments(pos);
-                if (pos >= input.length) {
+                if (pos >= input.uLength()) {
                     return true;
                 }
-                c = input.charCodeAt(pos);
+                c = input.uCharCodeAt(pos);
             }
 
             // Handle bracket access
             if (c == "[".code) {
                 pos++;
                 var bracketLevel = 1;
-                while (pos < input.length && bracketLevel > 0) {
-                    c = input.charCodeAt(pos);
+                while (pos < input.uLength() && bracketLevel > 0) {
+                    c = input.uCharCodeAt(pos);
                     if (c == "[".code) bracketLevel++;
                     if (c == "]".code) bracketLevel--;
                     pos++;
                 }
                 pos = skipWhitespaceAndComments(pos);
-                if (pos >= input.length) {
+                if (pos >= input.uLength()) {
                     return true;
                 }
-                c = input.charCodeAt(pos);
+                c = input.uCharCodeAt(pos);
             }
 
             // Check for and delimiter
-            if (c == "a".code && input.charCodeAt(pos + 1) == "n".code && input.charCodeAt(pos + 2) == "d".code && !isIdentifierStart(input.charCodeAt(pos + 3))) {
+            if (c == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && !isIdentifierStart(input.uCharCodeAt(pos + 3))) {
                 return true;
             }
 
             // Check for or delimiter
-            if (c == "o".code && input.charCodeAt(pos + 1) == "r".code && !isIdentifierStart(input.charCodeAt(pos + 2))) {
+            if (c == "o".code && input.uCharCodeAt(pos + 1) == "r".code && !isIdentifierStart(input.uCharCodeAt(pos + 2))) {
                 return true;
             }
 
             // Check for various delimiters typical from if condition
-            if (c == "(".code || c == "&".code || c == "|".code || ((input.charCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (input.charCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
+            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
                 return true;
             }
 
             // If we're at end or newline, it's valid
-            if (c == "\n".code || c == "\r".code || pos >= input.length) {
+            if (c == "\n".code || c == "\r".code || pos >= input.uLength()) {
                 pos = startPos;
                 return true;
             }
@@ -1019,7 +1022,7 @@ class Lexer {
         var startPos = pos;
 
         // Check for ->
-        if (input.charCodeAt(pos) != "-".code || pos >= input.length - 1 || input.charCodeAt(pos + 1) != ">".code) {
+        if (input.uCharCodeAt(pos) != "-".code || pos >= input.uLength() - 1 || input.uCharCodeAt(pos + 1) != ">".code) {
             return false;
         }
         pos += 2;
@@ -1028,14 +1031,14 @@ class Lexer {
         pos = skipWhitespaceAndComments(pos);
 
         // Read identifier
-        if (pos >= input.length || !isIdentifierStart(input.charCodeAt(pos))) {
+        if (pos >= input.uLength() || !isIdentifierStart(input.uCharCodeAt(pos))) {
             pos = startPos;
             return false;
         }
 
         // Move past identifier
         pos++;
-        while (pos < input.length && isIdentifierPart(input.charCodeAt(pos))) {
+        while (pos < input.uLength() && isIdentifierPart(input.uCharCodeAt(pos))) {
             pos++;
         }
 
@@ -1043,8 +1046,8 @@ class Lexer {
         pos = skipWhitespaceAndComments(pos);
 
         // Check that we're at end of line, end of input, or only have whitespace/comments left
-        if (pos < input.length) {
-            var c = input.charCodeAt(pos);
+        if (pos < input.uLength()) {
+            var c = input.uCharCodeAt(pos);
             if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
                 pos = startPos;
                 return false;
@@ -1070,11 +1073,11 @@ class Lexer {
         inline function readIdent():Bool {
             var result = true;
 
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 result = false;
             }
             else {
-                var c = input.charCodeAt(pos);
+                var c = input.uCharCodeAt(pos);
 
                 // First char must be letter or underscore
                 if (!isIdentifierStart(c)) {
@@ -1084,8 +1087,8 @@ class Lexer {
                     pos++;
 
                     // Continue reading identifier chars
-                    while (pos < input.length) {
-                        c = input.charCodeAt(pos);
+                    while (pos < input.uLength()) {
+                        c = input.uCharCodeAt(pos);
                         if (!isIdentifierPart(c)) break;
                         pos++;
                     }
@@ -1102,15 +1105,15 @@ class Lexer {
         }
 
         // Keep reading segments until we find opening parenthesis
-        while (pos < input.length) {
+        while (pos < input.uLength()) {
             pos = skipWhitespaceAndComments(pos);
 
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 pos = startPos;
                 return false;
             }
 
-            var c = input.charCodeAt(pos);
+            var c = input.uCharCodeAt(pos);
 
             // Found opening parenthesis - success!
             if (c == "(".code) {
@@ -1133,8 +1136,8 @@ class Lexer {
             if (c == "[".code) {
                 // Skip everything until closing bracket
                 pos++;
-                while (pos < input.length) {
-                    if (input.charCodeAt(pos) == "]".code) {
+                while (pos < input.uLength()) {
+                    if (input.uCharCodeAt(pos) == "]".code) {
                         pos++;
                         break;
                     }
@@ -1167,11 +1170,11 @@ class Lexer {
         inline function readIdent():Bool {
             var result = true;
 
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 result = false;
             }
             else {
-                var c = input.charCodeAt(pos);
+                var c = input.uCharCodeAt(pos);
 
                 // First char must be letter or underscore
                 if (!isIdentifierStart(c)) {
@@ -1181,8 +1184,8 @@ class Lexer {
                     pos++;
 
                     // Continue reading identifier chars
-                    while (pos < input.length) {
-                        c = input.charCodeAt(pos);
+                    while (pos < input.uLength()) {
+                        c = input.uCharCodeAt(pos);
                         if (!isIdentifierPart(c)) break;
                         pos++;
                     }
@@ -1199,19 +1202,19 @@ class Lexer {
         }
 
         // Keep reading segments until we find opening parenthesis
-        while (pos < input.length) {
+        while (pos < input.uLength()) {
             pos = skipWhitespaceAndComments(pos);
 
-            if (pos >= input.length) {
+            if (pos >= input.uLength()) {
                 pos = startPos;
                 return false;
             }
 
-            var c = input.charCodeAt(pos);
+            var c = input.uCharCodeAt(pos);
 
             // Found assign operator
             if (c == "=".code ||
-                (input.charCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
+                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
                 pos = startPos;
                 return true;
             }
@@ -1231,8 +1234,8 @@ class Lexer {
             if (c == "[".code) {
                 // Skip everything until closing bracket
                 pos++;
-                while (pos < input.length) {
-                    if (input.charCodeAt(pos) == "]".code) {
+                while (pos < input.uLength()) {
+                    if (input.uCharCodeAt(pos) == "]".code) {
                         pos++;
                         break;
                     }
@@ -1260,12 +1263,12 @@ class Lexer {
     function isColon(pos:Int, skipWhitespaces:Bool = true):Bool {
 
         if (skipWhitespaces) {
-            while (pos < input.length && (input.charCodeAt(pos) == " ".code || input.charCodeAt(pos) == "\t".code)) {
+            while (pos < input.uLength() && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code)) {
                 pos++;
             }
         }
 
-        return pos < input.length && input.charCodeAt(pos) == ":".code;
+        return pos < input.uLength() && input.uCharCodeAt(pos) == ":".code;
 
     }
 
@@ -1379,9 +1382,9 @@ class Lexer {
 
         for (i in 0...str.length) {
             var found = false;
-            var code = str.charCodeAt(i);
+            var code = str.uCharCodeAt(i);
             for (j in 0...specialChars.length) {
-                if (code == specialChars.charCodeAt(j)) {
+                if (code == specialChars.uCharCodeAt(j)) {
                     found = true;
                     break;
                 }
@@ -1400,15 +1403,15 @@ class Lexer {
      */
     function isNumber(input:String):Bool {
         var pos:Int = 0;
-        var length = input.length;
+        var length = input.uLength();
 
-        while (pos < length && isDigit(input.charCodeAt(pos))) {
+        while (pos < length && isDigit(input.uCharCodeAt(pos))) {
             pos++;
         }
 
-        if (pos < length && input.charCodeAt(pos) == ".".code && pos + 1 < length && isDigit(input.charCodeAt(pos + 1))) {
+        if (pos < length && input.uCharCodeAt(pos) == ".".code && pos + 1 < length && isDigit(input.uCharCodeAt(pos + 1))) {
             pos++;
-            while (pos < length && isDigit(input.charCodeAt(pos))) pos++;
+            while (pos < length && isDigit(input.uCharCodeAt(pos))) pos++;
         }
 
         return pos == length;
@@ -1425,12 +1428,12 @@ class Lexer {
         if (strictExprs > 0) return null;
 
         // Look ahead to validate if this could be an unquoted string start
-        final c = input.charCodeAt(pos);
+        final c = input.uCharCodeAt(pos);
         final cc = peek();
 
         // Skip if it's a comment
         if (c == "/".code && pos < length - 1) {
-            final next = input.charCodeAt(pos + 1);
+            final next = input.uCharCodeAt(pos + 1);
             if (next == "/".code || next == "*".code) return null;
         }
 
@@ -1524,7 +1527,7 @@ class Lexer {
 
         // If we get here, we can start reading the unquoted string
         final start = makePosition();
-        final buf = new StringBuf();
+        final buf = new loreline.Utf8.Utf8Buf();
         final attachments = new Array<LStringAttachment>();
 
         final startLine = line;
@@ -1540,7 +1543,7 @@ class Lexer {
         var hasContent = false;
 
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
             final isSpace = isWhitespace(c);
 
             if (!hasContent) {
@@ -1560,7 +1563,7 @@ class Lexer {
                 escaped = true;
                 advance();
             }
-            else if (tagStart == -1 && isSpace && !hasContent) {
+            else if (tagStart == -1 && isSpace && !hasContent && attachments.length == 0) {
                 // Skip leading white spaces
                 advance();
             }
@@ -1569,26 +1572,26 @@ class Lexer {
                 break;
             }
             // Check for trailing if
-            else if (tagStart == -1 && parent == KwBeat && c == "i".code && input.charCodeAt(pos+1) == "f".code && isIfStart(pos)) {
+            else if (tagStart == -1 && parent == KwBeat && isIfStart(pos)) {
                 break;
             }
             // Check for comment start
-            else if (tagStart == -1 && (c == "/".code && pos < length - 1 && (input.charCodeAt(pos+1) == "/".code || input.charCodeAt(pos+1) == "*".code))) {
+            else if (tagStart == -1 && (c == "/".code && pos < length - 1 && (input.uCharCodeAt(pos+1) == "/".code || input.uCharCodeAt(pos+1) == "*".code))) {
                 break;
             }
             // Check for arrow start
-            else if (tagStart == -1 && c == "-".code && pos < length - 1 && input.charCodeAt(pos+1) == ">".code && isTransitionStart(pos)) {
+            else if (tagStart == -1 && c == "-".code && pos < length - 1 && input.uCharCodeAt(pos+1) == ">".code && isTransitionStart(pos)) {
                 break;
             }
             else if (allowTags && c == "<".code) {
                 if (tagStart != -1) {
                     error("Unexpected < inside tag");
                 }
-                final nextChar = pos + 1 < length ? input.charCodeAt(pos + 1) : 0;
+                final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
-                    final nameStart = input.charCodeAt(checkPos);
+                    final nameStart = input.uCharCodeAt(checkPos);
                     if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
@@ -1616,7 +1619,7 @@ class Lexer {
                     advance();
                     currentColumn++;
 
-                    if (input.charCodeAt(pos) == "{".code) {
+                    if (input.uCharCodeAt(pos) == "{".code) {
                         advance();
                         currentColumn++;
 
@@ -1625,15 +1628,15 @@ class Lexer {
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(true, tagStart != -1, tokens, interpStart, interpLength));
 
-                        buf.add(input.substr(tokenStartPos, interpLength));
+                        buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
-                    else if (isIdentifierStart(input.charCodeAt(pos))) {
+                    else if (isIdentifierStart(input.uCharCodeAt(pos))) {
                         final interpPos = new Position(interpLine, interpColumn + 1, pos);
                         final tokens = readFieldAccessInterpolation(interpPos);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, tokens, interpStart, interpLength));
 
-                        buf.add(input.substr(tokenStartPos, interpLength));
+                        buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
                     else {
                         error("Expected identifier or { after $");
@@ -1661,7 +1664,7 @@ class Lexer {
         // If we found valid content, return the string token
         if (valid) {
             final content = buf.toString().rtrim();
-            if (content.length > 0 && hasNonSpecialChar(content) && !isNumber(content)) {
+            if (content.uLength() > 0 && hasNonSpecialChar(content) && !isNumber(content)) {
                 attachments.sort(compareAttachments);
 
                 return makeToken(LString(
@@ -1688,7 +1691,7 @@ class Lexer {
      */
     function readString(stringStart:Position):Token {
         advance(); // Skip opening quote
-        final buf = new StringBuf();
+        final buf = new loreline.Utf8.Utf8Buf();
         final attachments = new Array<LStringAttachment>();
         var escaped = false;
         var tagStart = -1;
@@ -1700,7 +1703,7 @@ class Lexer {
         var allowTags = (parentBlockType() == KwBeat);
 
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
 
             if (escaped) {
                 buf.addChar("\\".code);
@@ -1726,11 +1729,11 @@ class Lexer {
                 if (tagStart != -1) {
                     error("Unexpected < inside tag");
                 }
-                final nextChar = pos + 1 < length ? input.charCodeAt(pos + 1) : 0;
+                final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
-                    final nameStart = input.charCodeAt(checkPos);
+                    final nameStart = input.uCharCodeAt(checkPos);
                     if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
@@ -1758,7 +1761,7 @@ class Lexer {
                     advance();
                     currentColumn++;
 
-                    if (input.charCodeAt(pos) == "{".code) {
+                    if (input.uCharCodeAt(pos) == "{".code) {
                         advance();
                         currentColumn++;
 
@@ -1767,15 +1770,15 @@ class Lexer {
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(true, tagStart != -1, tokens, interpStart, interpLength));
 
-                        buf.add(input.substr(tokenStartPos, interpLength));
+                        buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
-                    else if (isIdentifierStart(input.charCodeAt(pos))) {
+                    else if (isIdentifierStart(input.uCharCodeAt(pos))) {
                         final interpPos = new Position(interpLine, interpColumn + 1, pos);
                         final tokens = readFieldAccessInterpolation(interpPos);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, tokens, interpStart, interpLength));
 
-                        buf.add(input.substr(tokenStartPos, interpLength));
+                        buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
                     else {
                         error("Expected identifier or { after $");
@@ -1837,21 +1840,19 @@ class Lexer {
         var currentLine = interpStart.line;
 
         while (pos < length && braceLevel > 0) {
-            if (input.charCodeAt(pos) == "}".code && --braceLevel == 0) {
+            if (input.uCharCodeAt(pos) == "}".code && --braceLevel == 0) {
                 advance();
                 break;
             }
 
-            if (input.charCodeAt(pos) == '"'.code) {
+            if (input.uCharCodeAt(pos) == '"'.code) {
                 final stringPos = new Position(currentLine, currentColumn, pos);
                 tokens.push(readString(stringPos));
                 currentColumn += (pos - stringPos.offset);
                 continue;
             }
 
-            final tokenStart = new Position(currentLine, currentColumn, pos);
             final token = nextToken();
-            token.pos = tokenStart;
             tokens.push(token);
 
             if (token.type == LineBreak) {
@@ -1863,9 +1864,9 @@ class Lexer {
             }
             else {
                 var tokenLength = switch (token.type) {
-                    case Identifier(name): name.length;
-                    case LString(q, s, _): s.length + (q != Unquoted ? 2 : 0);
-                    case LNumber(n): Std.string(n).length;
+                    case Identifier(name): name.uLength();
+                    case LString(q, s, _): s.uLength() + (q != Unquoted ? 2 : 0);
+                    case LNumber(n): Std.string(n).uLength();
                     case _: 1;
                 }
                 currentColumn += tokenLength;
@@ -1921,16 +1922,16 @@ class Lexer {
     function readFieldAccessInterpolation(stringStart:Position):Array<Token> {
         final tokens = new Array<Token>();
 
-        if (!isIdentifierStart(input.charCodeAt(pos))) {
+        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
             error("Expected identifier in field access");
         }
         tokens.push(readIdentifierTokenInInterpolation(stringStart));
 
-        while (pos < length - 1 && input.charCodeAt(pos) == ".".code && isIdentifierStart(input.charCodeAt(pos + 1))) {
+        while (pos < length - 1 && input.uCharCodeAt(pos) == ".".code && isIdentifierStart(input.uCharCodeAt(pos + 1))) {
             final dotPos = makePositionRelativeTo(stringStart);
             advance();
 
-            if (pos >= length || !isIdentifierStart(input.charCodeAt(pos))) {
+            if (pos >= length || !isIdentifierStart(input.uCharCodeAt(pos))) {
                 break;
             }
             tokens.push(new Token(Dot, dotPos));
@@ -1950,12 +1951,12 @@ class Lexer {
         final startOffset = pos;
 
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
             if (!isIdentifierPart(c)) break;
             advance();
         }
 
-        final name = input.substr(startOffset, pos - startOffset);
+        final name = input.uSubstr(startOffset, pos - startOffset);
         final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
         return new Token(
             tokenType,
@@ -1974,7 +1975,7 @@ class Lexer {
         var i = stringStart.offset;
 
         while (i < pos) {
-            if (input.charCodeAt(i) == "\n".code) {
+            if (input.uCharCodeAt(i) == "\n".code) {
                 line++;
                 column = 1;
             }
@@ -1997,12 +1998,12 @@ class Lexer {
         final contentStart = pos;
 
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
             if (c == "\n".code || c == "\r".code) break;
             advance();
         }
 
-        return makeToken(CommentLine(input.substr(contentStart, pos - contentStart)), start);
+        return makeToken(CommentLine(input.uSubstr(contentStart, pos - contentStart)), start);
     }
 
     /**
@@ -2017,16 +2018,16 @@ class Lexer {
         var nestLevel = 1;
 
         while (pos < length && nestLevel > 0) {
-            if (input.charCodeAt(pos) == "*".code && peek() == "/".code) {
+            if (input.uCharCodeAt(pos) == "*".code && peek() == "/".code) {
                 nestLevel--;
                 if (nestLevel == 0) {
-                    final content = input.substr(contentStart, pos - contentStart);
+                    final content = input.uSubstr(contentStart, pos - contentStart);
                     advance(2);
                     return makeToken(CommentMultiLine(content), start);
                 }
                 advance(2);
             }
-            else if (input.charCodeAt(pos) == "/".code && peek() == "*".code) {
+            else if (input.uCharCodeAt(pos) == "/".code && peek() == "*".code) {
                 nestLevel++;
                 advance(2);
             }
@@ -2047,16 +2048,16 @@ class Lexer {
         final start = makePosition();
         final startPos = pos;
 
-        while (pos < length && isDigit(input.charCodeAt(pos))) {
+        while (pos < length && isDigit(input.uCharCodeAt(pos))) {
             advance();
         }
 
-        if (pos < length && input.charCodeAt(pos) == ".".code && pos + 1 < length && isDigit(input.charCodeAt(pos + 1))) {
+        if (pos < length && input.uCharCodeAt(pos) == ".".code && pos + 1 < length && isDigit(input.uCharCodeAt(pos + 1))) {
             advance();
-            while (pos < length && isDigit(input.charCodeAt(pos))) advance();
+            while (pos < length && isDigit(input.uCharCodeAt(pos))) advance();
         }
 
-        return makeToken(LNumber(Std.parseFloat(input.substr(startPos, pos - startPos))), start);
+        return makeToken(LNumber(Std.parseFloat(input.uSubstr(startPos, pos - startPos))), start);
     }
 
     /**
@@ -2068,12 +2069,12 @@ class Lexer {
         final startPos = pos;
 
         while (pos < length) {
-            final c = input.charCodeAt(pos);
+            final c = input.uCharCodeAt(pos);
             if (!isIdentifierPart(c)) break;
             advance();
         }
 
-        final word = input.substr(startPos, pos - startPos);
+        final word = input.uSubstr(startPos, pos - startPos);
         final tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
         return makeToken(
             tokenType,
@@ -2109,7 +2110,7 @@ class Lexer {
      */
     inline function advance(count:Int = 1) {
         while (count-- > 0 && pos < length) {
-            if (input.charCodeAt(pos) == "\n".code) {
+            if (input.uCharCodeAt(pos) == "\n".code) {
                 line++;
                 column = 1;
             }
@@ -2126,7 +2127,7 @@ class Lexer {
      * @return Character code at the offset position, or 0 if beyond input length
      */
     inline function peek(offset:Int = 1):Int {
-        return pos + offset < length ? input.charCodeAt(pos + offset) : 0;
+        return pos + offset < length ? input.uCharCodeAt(pos + offset) : 0;
     }
 
     /**
@@ -2143,7 +2144,7 @@ class Lexer {
      */
     function skipWhitespace() {
         while (pos < length) {
-            switch (input.charCodeAt(pos)) {
+            switch (input.uCharCodeAt(pos)) {
                 case " ".code | "\t".code:
                     advance();
                 case _:

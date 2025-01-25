@@ -3,6 +3,8 @@ package loreline;
 import loreline.Lexer;
 import loreline.Node;
 
+using loreline.Utf8;
+
 /**
  * Represents a parsing error with position information.
  */
@@ -57,6 +59,12 @@ class Parser {
         this.lineBreakAfterToken = false;
         this.nextNodeId = 0;
         this.rootBeat = null;
+
+        trace('--');
+        for (token in tokens) {
+            trace(token.toString());
+        }
+        trace('--');
     }
 
     /**
@@ -111,12 +119,12 @@ class Parser {
                 switch (tokens[current].type) {
                     case CommentLine(content):
                         if (pendingComments == null) pendingComments = [];
-                        pendingComments.push(new Comment(nextNodeId++, tokens[current].pos, content, false));
+                        pendingComments.push(new Comment(nextNodeId++, currentPos(), content, false));
                     case CommentMultiLine(content):
                         if (pendingComments == null) pendingComments = [];
-                        pendingComments.push(new Comment(nextNodeId++, tokens[current].pos, content, true));
+                        pendingComments.push(new Comment(nextNodeId++, currentPos(), content, true));
                     case LineBreak:
-                        lastLineBreak = tokens[current].pos;
+                        lastLineBreak = currentPos();
                         lineBreakAfterToken = true;
                     case _:
                 }
@@ -132,6 +140,45 @@ class Parser {
      */
     function previous():Token {
         return tokens[current - 1];
+    }
+
+    /**
+     * Gets the previously consumed token that was an identifier.
+     * @return The previous token that was an identifier
+     */
+    function prevIdentifier():Token {
+        var n = current - 1;
+        while (n >= 0) {
+            switch tokens[n].type {
+                case Identifier(_):
+                    return tokens[n];
+                case _:
+            }
+            n--;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the previously consumed token that was not a white space or comment.
+     * @return The previous token that was an identifier
+     */
+    function prevNonWhitespaceOrComment():Token {
+        var n = current - 1;
+        while (n >= 0) {
+            switch tokens[n].type {
+                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                    // Skip
+                case _:
+                    return tokens[n];
+            }
+            n--;
+        }
+        return null;
+    }
+
+    function currentPos():Position {
+        return tokens[current]?.pos ?? new Position(1, 1, 0, 0);
     }
 
     /**
@@ -193,7 +240,7 @@ class Parser {
             nextNodeId = 1;
         }
 
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final nodes = [];
         final script = new Script(nextNodeId++, startPos, nodes);
 
@@ -228,7 +275,7 @@ class Parser {
             if (isComment(tokens[current].type)) {
                 pendingComments.push(new Comment(
                     nextNodeId++,
-                    tokens[current].pos,
+                    currentPos(),
                     switch(tokens[current].type) {
                         case CommentLine(content): content;
                         case CommentMultiLine(content): content;
@@ -238,10 +285,13 @@ class Parser {
                 ));
             }
             advance();
+            if (isAtEnd()) {
+                throw new ParseError("Unexpected end of file", currentPos());
+            }
         }
 
         if (isAtEnd()) {
-            throw new ParseError("Unexpected end of file", tokens[current].pos);
+            throw new ParseError("Unexpected end of file", currentPos());
         }
 
         inline function ensureInBeat(node:AstNode):AstNode {
@@ -254,7 +304,7 @@ class Parser {
             case KwNew:
                 advance();
                 if (!check(KwState)) {
-                    throw new ParseError("Expected 'state' after 'new'", tokens[current].pos);
+                    throw new ParseError("Expected 'state' after 'new'", currentPos());
                 }
                 ensureInBeat(parseStateDecl(true));
             case KwBeat: parseBeatDecl();
@@ -267,7 +317,7 @@ class Parser {
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
             case _:
-                throw new ParseError('Unexpected token: ${tokens[current].type}', tokens[current].pos);
+                throw new ParseError('Unexpected token: ${tokens[current].type}', currentPos());
         }
     }
 
@@ -276,7 +326,7 @@ class Parser {
         var body:Array<AstNode>;
         var result = null;
         if (rootBeat == null) {
-            final startPos = tokens[current].pos;
+            final startPos = currentPos();
             body = [];
             rootBeat = new NBeatDecl(nextNodeId++, startPos, "_", body);
             result = rootBeat;
@@ -296,14 +346,14 @@ class Parser {
      * @return Import statement node
      */
     function parseImport():NImport {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final imp = new NImport(nextNodeId++, startPos, null);
 
         expect(KwImport);
 
         final path = switch tokens[current].type {
             case LString(s, _): s;
-            case _: throw new ParseError("Expected string literal for import path", tokens[current].pos);
+            case _: throw new ParseError("Expected string literal for import path", currentPos());
         }
 
         advance();
@@ -318,13 +368,13 @@ class Parser {
      * @return Dialogue statement node
      */
     function parseDialogueStatement():NDialogueStatement {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final dialogue = new NDialogueStatement(nextNodeId++, startPos, null, null);
 
         // Parse character name
         dialogue.character = switch (tokens[current].type) {
             case Identifier(name): name;
-            case _: throw new ParseError("Expected character name", tokens[current].pos);
+            case _: throw new ParseError("Expected character name", currentPos());
         };
         advance(); // Move past identifier
 
@@ -335,6 +385,9 @@ class Parser {
         // Parse dialogue content
         dialogue.content = parseStringLiteral();
 
+        // Update position
+        dialogue.pos = dialogue.pos.extendedTo(dialogue.content.pos);
+
         return dialogue;
     }
 
@@ -342,10 +395,9 @@ class Parser {
      * Parses a block of statements enclosed in braces.
      * @return Array of parsed statement nodes
      */
-    function parseStatementBlock():Array<AstNode> {
+    function parseStatementBlock(statements:Array<AstNode>):BlockStyle {
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
-        final statements:Array<AstNode> = [];
 
         while (!check(blockEnd) && !isAtEnd()) {
             // Handle line breaks and comments
@@ -367,7 +419,9 @@ class Parser {
         }
 
         expect(blockEnd);
-        return statements;
+
+        return (blockEnd == RBrace) ? Braces : Plain;
+
     }
 
     /**
@@ -376,7 +430,7 @@ class Parser {
      * @return State declaration node
      */
     function parseStateDecl(temporary:Bool):NStateDecl {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final stateNode = new NStateDecl(nextNodeId++, startPos, temporary, null);
 
         expect(KwState);
@@ -387,6 +441,8 @@ class Parser {
         // Parse state fields
         stateNode.fields = cast(parseObjectLiteral(), NLiteral);
 
+        stateNode.pos = stateNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
         return stateNode;
     }
 
@@ -395,7 +451,7 @@ class Parser {
      * @return Object field node
      */
     function parseObjectField():NObjectField {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final name = expectIdentifier();
         final objectField = new NObjectField(nextNodeId++, startPos, name, null);
 
@@ -412,13 +468,17 @@ class Parser {
      * @return Beat declaration node
      */
     function parseBeatDecl():NBeatDecl {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final beatNode = new NBeatDecl(nextNodeId++, startPos, null, [], []);
 
         expect(KwBeat);
+        beatNode.pos = startPos.extendedTo(currentPos());
+        // final namePos = currentPos();
+        // beatNode.pos.length += namePos.offset + namePos.length - (beatNode.pos.offset + beatNode.pos.length);
         beatNode.name = expectIdentifier();
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        beatNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(beatNode);
 
@@ -431,6 +491,8 @@ class Parser {
 
         while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         expect(blockEnd);
+
+        beatNode.pos = beatNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return beatNode;
     }
@@ -506,7 +568,7 @@ class Parser {
             return indentToken;
         }
         else {
-            throw new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', tokens[current].pos);
+            throw new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', currentPos());
         }
 
     }
@@ -516,13 +578,14 @@ class Parser {
      * @return Character declaration node
      */
     function parseCharacterDecl():NCharacterDecl {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final characterNode = new NCharacterDecl(nextNodeId++, startPos, null, []);
 
         expect(KwCharacter);
         characterNode.name = expectIdentifier();
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        characterNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(characterNode);
 
@@ -536,6 +599,8 @@ class Parser {
         while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         expect(blockEnd);
 
+        characterNode.pos = characterNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
         return characterNode;
     }
 
@@ -544,7 +609,7 @@ class Parser {
      * @return Text statement node
      */
     function parseTextStatement():NTextStatement {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final statement = attachComments(new NTextStatement(nextNodeId++, startPos, null));
         statement.content = parseStringLiteral();
         return statement;
@@ -555,12 +620,13 @@ class Parser {
      * @return Choice statement node
      */
     function parseChoiceStatement():NChoiceStatement {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final choiceNode = new NChoiceStatement(nextNodeId++, startPos, []);
 
         expect(KwChoice);
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        choiceNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(choiceNode);
 
@@ -573,6 +639,9 @@ class Parser {
 
         expect(blockEnd);
 
+        // Update statement position to wrap all its sub expressions
+        choiceNode.pos = choiceNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
         return choiceNode;
     }
 
@@ -581,7 +650,7 @@ class Parser {
      * @return Choice option node
      */
     function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final choiceOption = attachComments(new NChoiceOption(nextNodeId++, startPos, null, null, []));
         choiceOption.text = parseStringLiteral();
 
@@ -592,11 +661,15 @@ class Parser {
 
         // Parse option body
         if (checkBlockStart()) {
-            choiceOption.body = parseStatementBlock();
+            choiceOption.body = [];
+            choiceOption.style = parseStatementBlock(choiceOption.body);
         }
         else if (!check(blockEnd)) {  // If not end of choice
             choiceOption.body = [parseNode()];
+            choiceOption.style = Plain;
         }
+
+        choiceOption.pos = choiceOption.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return choiceOption;
     }
@@ -626,6 +699,7 @@ class Parser {
             final op = previous().type;
             final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
             assignment.value = parseExpression();
+            assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
             return assignment;
         }
 
@@ -650,7 +724,7 @@ class Parser {
      * @return If statement node
      */
     function parseIfStatement():NIfStatement {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final ifNode = new NIfStatement(nextNodeId++, startPos, null, null, null);
 
         expect(KwIf);
@@ -659,24 +733,30 @@ class Parser {
         while (match(LineBreak)) {}
         attachComments(ifNode);
 
-        ifNode.thenBranch = new NBlock(nextNodeId++, tokens[current].pos, null);
-        ifNode.thenBranch.body = parseStatementBlock();
+        ifNode.thenBranch = new NBlock(nextNodeId++, currentPos(), null);
+        ifNode.thenBranch.body = [];
+        ifNode.thenBranch.style = parseStatementBlock(ifNode.thenBranch.body);
 
         // Handle optional else clause
         var elseToken = tokens[current];
-        if (elseToken.type == KwElse) {
+        if (elseToken != null && elseToken.type == KwElse) {
             advance();
             while (match(LineBreak)) {}
             attachElseComments(ifNode, elseToken);
             if (check(KwIf)) {
-                ifNode.elseBranch = new NBlock(nextNodeId++, tokens[current].pos, null);
+                ifNode.elseBranch = new NBlock(nextNodeId++, currentPos(), null);
                 ifNode.elseBranch.body = [parseIfStatement()];
+                ifNode.elseBranch.style = Plain;
             }
             else {
-                ifNode.elseBranch = new NBlock(nextNodeId++, tokens[current].pos, null);
-                ifNode.elseBranch.body = parseStatementBlock();
+                ifNode.elseBranch = new NBlock(nextNodeId++, currentPos(), null);
+                ifNode.elseBranch.body = [];
+                ifNode.elseBranch.style = parseStatementBlock(ifNode.elseBranch.body);
             }
         }
+
+        // Update statement position to wrap all its sub expressions
+        ifNode.pos = ifNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return ifNode;
     }
@@ -686,16 +766,16 @@ class Parser {
      * @return Transition node
      */
     function parseTransition():NTransition {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         expect(Arrow);
 
-        // Handle "end of stream" (->.)
+        // Handle "end of stream" (-> .)
         if (match(Dot)) {
-            return attachComments(new NTransition(nextNodeId++, startPos, "."));
+            return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), "."));
         }
 
         final target = expectIdentifier();
-        return attachComments(new NTransition(nextNodeId++, startPos, target));
+        return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), target));
     }
 
     /**
@@ -712,6 +792,7 @@ class Parser {
             advance();
             final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
             assignment.value = parseExpression();
+            assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
             return assignment;
         }
 
@@ -725,10 +806,11 @@ class Parser {
     function parseLogicalOr():NExpr {
         var expr = parseLogicalAnd();
 
-        while (match(OpOr)) {
+        while (match(OpOr(false))) {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseLogicalAnd();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -742,10 +824,11 @@ class Parser {
     function parseLogicalAnd():NExpr {
         var expr = parseEquality();
 
-        while (match(OpAnd)) {
+        while (match(OpAnd(false))) {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseEquality();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -763,6 +846,7 @@ class Parser {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseComparison();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -780,6 +864,7 @@ class Parser {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseAdditive();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -797,6 +882,7 @@ class Parser {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseMultiplicative();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -814,6 +900,7 @@ class Parser {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
             binary.right = parseUnary();
+            binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
         }
 
@@ -827,8 +914,9 @@ class Parser {
     function parseUnary():NExpr {
         if (match(OpNot) || match(OpMinus)) {
             final op = previous().type;
-            final unary = attachComments(new NUnary(nextNodeId++, tokens[current].pos, op, null));
+            final unary = attachComments(new NUnary(nextNodeId++, previous().pos, op, null));
             unary.operand = parseUnary();
+            unary.pos = unary.pos.extendedTo(unary.operand.pos);
             return unary;
         }
 
@@ -840,7 +928,7 @@ class Parser {
      * @return Expression node
      */
     function parsePrimary():NExpr {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
 
         return switch (tokens[current].type) {
             case LString(_, _):
@@ -875,7 +963,7 @@ class Parser {
                 expr;
 
             case _:
-                throw new ParseError("Unexpected token in expression", tokens[current].pos);
+                throw new ParseError("Unexpected token in expression", currentPos());
         }
     }
 
@@ -885,11 +973,18 @@ class Parser {
      * @return String literal node
      */
     function parseStringLiteral():NStringLiteral {
-        final startPos = tokens[current].pos;
+        final stringLiteralPos = currentPos();
         final parts = new Array<NStringPart>();
 
         switch (tokens[current].type) {
             case LString(quotes, content, attachments):
+                final startPos = if (quotes != Unquoted) {
+                    stringLiteralPos.withOffset(content, 1, stringLiteralPos.length - 2);
+                }
+                else {
+                    stringLiteralPos;
+                }
+
                 var currentPos = 0;
 
                 // Handle simple strings without attachments
@@ -900,10 +995,10 @@ class Parser {
                     final partId = nextNodeId++;
                     parts.push(new NStringPart(partId, partPos, Raw(content)));
                     advance();
-                    return attachComments(new NStringLiteral(literalId, startPos, quotes, parts));
+                    return attachComments(new NStringLiteral(literalId, stringLiteralPos, quotes, parts));
                 }
 
-                final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, startPos, quotes, parts));
+                final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, stringLiteralPos, quotes, parts));
 
                 // Process string with attachments (interpolations and tags)
                 for (i in 0...attachments.length) {
@@ -918,7 +1013,7 @@ class Parser {
                                 final partPos = makeStringPartPosition(startPos, content, currentPos);
                                 partPos.length = start - currentPos;
                                 parts.push(new NStringPart(nextNodeId++, partPos, Raw(
-                                    content.substr(currentPos, start - currentPos)
+                                    content.uSubstr(currentPos, start - currentPos)
                                 )));
                             }
 
@@ -944,7 +1039,7 @@ class Parser {
                                 final partPos = makeStringPartPosition(startPos, content, currentPos);
                                 partPos.length = start - currentPos;
                                 parts.push(new NStringPart(nextNodeId++, partPos, Raw(
-                                    content.substr(currentPos, start - currentPos)
+                                    content.uSubstr(currentPos, start - currentPos)
                                 )));
                             }
 
@@ -963,11 +1058,11 @@ class Parser {
                 }
 
                 // Add remaining text after last attachment
-                if (currentPos < content.length) {
+                if (currentPos < content.uLength()) {
                     final partPos = makeStringPartPosition(startPos, content, currentPos);
-                    partPos.length = content.length - currentPos;
+                    partPos.length = content.uLength() - currentPos;
                     parts.push(new NStringPart(nextNodeId++, partPos, Raw(
-                        content.substr(currentPos)
+                        content.uSubstr(currentPos)
                     )));
                 }
 
@@ -975,13 +1070,13 @@ class Parser {
                 return stringLiteral;
 
             case _:
-                throw new ParseError('Expected string, got ${tokens[current].type}', tokens[current].pos);
+                throw new ParseError('Expected string, got ${tokens[current].type}', currentPos());
         }
     }
 
     /**
      * Creates a Position object for a part of a string literal.
-     * @param stringStart Starting position of the entire string
+     * @param stringStart Starting position of the entire string content
      * @param content String content
      * @param offset Offset within the string
      * @return Position object for the string part
@@ -992,7 +1087,7 @@ class Parser {
 
         // Track line and column numbers
         for (i in 0...offset) {
-            if (content.charCodeAt(i) == "\n".code) {
+            if (content.uCharCodeAt(i) == "\n".code) {
                 line++;
                 column = 1;
             }
@@ -1011,12 +1106,28 @@ class Parser {
      * @param name Identifier name
      * @return Access expression node
      */
-    function makeAccess(pos:Position, target:Null<NExpr>, name:String):NAccess {
-        if (pos.length == 0 && name != null && name.length > 0) {
-            pos = new Position(
-                pos.line, pos.column, pos.offset,
-                name.length
-            );
+    function makeAccess(pos:Position, target:Null<NExpr>, name:String, namePos:Position):NAccess {
+        if (name != null && name.uLength() > 0) {
+            if (target != null) {
+                if (namePos != null) {
+                    pos = new Position(
+                        target.pos.line, target.pos.column, target.pos.offset,
+                        namePos.offset + name.uLength() - target.pos.offset
+                    );
+                }
+                else {
+                    throw new ParseError("Invalid access (missing name position)", pos);
+                }
+            }
+            else if (pos.length == 0) {
+                pos = new Position(
+                    pos.line, pos.column, pos.offset,
+                    namePos?.length ?? name.uLength()
+                );
+            }
+        }
+        else {
+            throw new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos);
         }
 
         return new NAccess(nextNodeId++, pos, target, name);
@@ -1050,10 +1161,10 @@ class Parser {
                 switch (tokens[i].type) {
                     case Identifier(name):
                         if (target == null) {
-                            target = attachComments(makeAccess(tokens[i].pos, null, name));
+                            target = attachComments(makeAccess(tokens[i].pos, null, name, null));
                         }
                         else if (prevIsDot) {
-                            target = attachComments(makeAccess(tokens[i].pos, target, name));
+                            target = attachComments(makeAccess(tokens[i].pos, target, name, tokens[i].pos));
                         }
                         else {
                             throw new ParseError("Missing dot in simple interpolation", tokens[i].pos);
@@ -1070,7 +1181,9 @@ class Parser {
         // Handle complex interpolation with braces (${expression})
         else {
             final tempParser = new Parser(tokens);
+            tempParser.nextNodeId = nextNodeId;
             expr = tempParser.parseExpression();
+            nextNodeId = tempParser.nextNodeId;
 
             if (!tempParser.isAtEnd()) {
                 throw new ParseError("Unexpected tokens after interpolation expression", tempParser.tokens[tempParser.current].pos);
@@ -1096,8 +1209,12 @@ class Parser {
      * @return StringPart representing the tag
      */
     function parseStringTag(closing:Bool, start:Int, length:Int, content:String, quotes:Quotes, attachments:Array<LStringAttachment>):NStringPart {
-        final pos = makeStringPartPosition(tokens[current].pos, content, start);
+        var pos = makeStringPartPosition(currentPos(), content, start);
         pos.length = length;
+
+        if (quotes != Unquoted) {
+            pos = pos.withOffset(content, 1, pos.length);
+        }
 
         // Calculate tag content boundaries
         final offsetStart = (closing ? 2 : 1);
@@ -1134,15 +1251,15 @@ class Parser {
                 attachComments(new NStringLiteral(
                     literalId,
                     partPos,
-                    quotes,
-                    [new NStringPart(partId, partPos, Raw(content.substr(innerStart, innerLength)))]
+                    Unquoted,
+                    [new NStringPart(partId, partPos, Raw(content.uSubstr(innerStart, innerLength)))]
                 ))
             ));
         }
 
         // Process tag with interpolations
         final parts = new Array<NStringPart>();
-        final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, pos, quotes, parts));
+        final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, pos, Unquoted, parts));
         var currentPos = innerStart;
 
         // Process each attachment within tag bounds
@@ -1154,10 +1271,10 @@ class Parser {
                         if (aStart >= innerStart && aEnd <= innerEnd) {
                             // Add raw text before interpolation
                             if (aStart > currentPos) {
-                                final partPos = makeStringPartPosition(pos, content.substr(start), currentPos - start + offsetStart);
+                                final partPos = makeStringPartPosition(pos, content.uSubstr(start), currentPos - start + offsetStart);
                                 partPos.length = aStart - currentPos;
                                 parts.push(new NStringPart(nextNodeId++, partPos, Raw(
-                                    content.substr(currentPos, aStart - currentPos)
+                                    content.uSubstr(currentPos, aStart - currentPos)
                                 )));
                             }
 
@@ -1181,10 +1298,10 @@ class Parser {
 
         // Add remaining raw text
         if (currentPos < innerEnd) {
-            final partPos = makeStringPartPosition(pos, content.substr(start), currentPos - start + offsetStart);
+            final partPos = makeStringPartPosition(pos, content.uSubstr(start), currentPos - start + offsetStart);
             partPos.length = (innerStart + innerEnd) - currentPos;
             parts.push(new NStringPart(nextNodeId++, partPos, Raw(
-                content.substr(currentPos, innerEnd - currentPos)
+                content.uSubstr(currentPos, innerEnd - currentPos)
             )));
         }
 
@@ -1201,22 +1318,22 @@ class Parser {
      * @return Expression node
      */
     function parseIdentifierExpression(startPos:Position, name:String):NExpr {
-        var expr:NExpr = attachComments(makeAccess(startPos, null, name));
+        var expr:NExpr = attachComments(makeAccess(startPos, null, name, null));
 
         // Parse chained accesses (., [], and ())
         while (true) {
             if (match(Dot)) {
                 final prop = expectIdentifier();
-                expr = attachComments(makeAccess(startPos, expr, prop));
+                expr = attachComments(makeAccess(startPos, expr, prop, prevIdentifier().pos));
             }
             else if (match(LBracket)) {
                 final index = parseExpression();
                 expect(RBracket);
-                expr = attachComments(new NArrayAccess(nextNodeId++, startPos, expr, index));
+                expr = attachComments(new NArrayAccess(nextNodeId++, startPos.extendedTo(previous().pos), expr, index));
             }
             else if (match(LParen)) {
                 final args = parseCallArguments();
-                expr = attachComments(new NCall(nextNodeId++, startPos, expr, args));
+                expr = attachComments(new NCall(nextNodeId++, startPos.extendedTo(previous().pos), expr, args));
             }
             else {
                 break;
@@ -1231,7 +1348,7 @@ class Parser {
      * @return Expression node for array literal
      */
     function parseArrayLiteral():NExpr {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final elements = [];
         final literal = new NLiteral(nextNodeId++, startPos, elements, Array);
         expect(LBracket);
@@ -1255,7 +1372,7 @@ class Parser {
             }
 
             if (!check(RBracket) && needsSeparator) {
-                throw new ParseError("Expected comma or line break between elements", tokens[current].pos);
+                throw new ParseError("Expected comma or line break between elements", currentPos());
             }
 
             while (match(LineBreak)) {}
@@ -1279,11 +1396,12 @@ class Parser {
      * @return Expression node for object literal
      */
     function parseObjectLiteral():NExpr {
-        final startPos = tokens[current].pos;
+        final startPos = currentPos();
         final fields = [];
-        final literal = new NLiteral(nextNodeId++, startPos, fields, Object);
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        final style:BlockStyle = (blockEnd == RBrace) ? Braces : Plain;
+        final literal = new NLiteral(nextNodeId++, startPos, fields, Object(style));
 
         attachComments(literal);
 
@@ -1304,7 +1422,7 @@ class Parser {
             }
 
             if (!check(blockEnd) && needsSeparator) {
-                throw new ParseError("Expected comma or line break between fields", tokens[current].pos);
+                throw new ParseError("Expected comma or line break between fields", currentPos());
             }
 
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
@@ -1396,7 +1514,7 @@ class Parser {
                 advance();
                 name;
             case _:
-                throw new ParseError('Expected identifier, got ${tokens[current].type}', tokens[current].pos);
+                throw new ParseError('Expected identifier, got ${tokens[current].type}', currentPos());
         }
     }
 

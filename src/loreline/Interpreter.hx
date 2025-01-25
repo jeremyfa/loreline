@@ -5,6 +5,10 @@ import haxe.ds.StringMap;
 import loreline.Lexer;
 import loreline.Node;
 
+using StringTools;
+using loreline.Utf8;
+
+
 /**
  * A state during the runtime execution of a loreline script
  */
@@ -56,7 +60,7 @@ enum RuntimeAccess {
  * When exiting that scope, the related temporary states associated to it are destroyed
  */
 @:structInit
-class Scope {
+class RuntimeScope {
 
     /**
      * The scope id, a unique integer value in the stack
@@ -198,13 +202,13 @@ class Interpreter {
      * The current execution stack, which consists of scopes added on top of one another.
      * Each scope can have its own local beats and temporary states.
      */
-    final stack:Array<Scope> = [];
+    final stack:Array<RuntimeScope> = [];
 
     /**
      * Current scope associated with current execution state
      */
-    var currentScope(get,never):Scope;
-    function get_currentScope():Scope {
+    var currentScope(get,never):RuntimeScope;
+    function get_currentScope():RuntimeScope {
         return stack.length > 0 ? stack[stack.length - 1] : null;
     }
 
@@ -479,7 +483,7 @@ class Interpreter {
 
     }
 
-    function push(scope:Scope):Void {
+    function push(scope:RuntimeScope):Void {
 
         scope.id = nextScopeId++;
         stack.push(scope);
@@ -531,7 +535,7 @@ class Interpreter {
     }
 
 
-    function initializeState(state:NStateDecl, scope:Scope) {
+    function initializeState(state:NStateDecl, scope:RuntimeScope) {
 
         var runtimeState:RuntimeState = null;
         if (state.temporary) {
@@ -918,18 +922,27 @@ class Interpreter {
     }
 
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
-        final buf = new StringBuf();
+        final buf = new loreline.Utf8.Utf8Buf();
         final tags:Array<TextTag> = [];
         var offset = 0;
 
-        for (part in str.parts) {
+        var keepWhitespace = (str.quotes != Unquoted);
+
+        for (i in 0...str.parts.length) {
+            final part = str.parts[i];
+
             switch (part.type) {
                 case Raw(text):
-                    offset += text.length;
+                    if (!keepWhitespace) {
+                        text = text.ltrim();
+                    }
+                    final len = text.uLength();
+                    if (len > 0) keepWhitespace = false;
+                    offset += len;
                     buf.add(text);
 
                 case Expr(expr):
-
+                    keepWhitespace = false;
                     if (expr is NAccess) {
                         // When providing a character object,
                         // implicitly read the character's `name` field
@@ -940,20 +953,20 @@ class Interpreter {
                                 final characterFields = evaluateExpression(expr);
                                 final value = getField(characterFields, 'name') ?? name;
                                 final text = valueToString(value);
-                                offset += text.length;
+                                offset += text.uLength();
                                 buf.add(text);
 
                             case _:
                                 final value = evaluateExpression(expr);
                                 final text = valueToString(value);
-                                offset += text.length;
+                                offset += text.uLength();
                                 buf.add(text);
                         }
                     }
                     else {
                         final value = evaluateExpression(expr);
                         final text = valueToString(value);
-                        offset += text.length;
+                        offset += text.uLength();
                         buf.add(text);
                     }
 
@@ -1066,7 +1079,7 @@ class Interpreter {
                     case Number, Boolean, Null: lit.value;
                     case Array:
                         [for (elem in (lit.value:Array<Dynamic>)) evaluateExpression(elem)];
-                    case Object:
+                    case Object(_):
                         final obj = new Map<String, Any>();
                         for (field in (lit.value:Array<NObjectField>)) {
                             obj.set(field.name, evaluateExpression(field.value));
@@ -1354,12 +1367,12 @@ class Interpreter {
                         throw new RuntimeError('Cannot compare ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
                 }
 
-            case OpAnd | OpOr:
+            case OpAnd(_) | OpOr(_):
                 switch [leftType, rightType] {
                     case [TBool, TBool]:
                         switch op {
-                            case OpAnd: left && right;
-                            case OpOr: left || right;
+                            case OpAnd(_): left && right;
+                            case OpOr(_): left || right;
                             case _: throw "Unreachable";
                         }
                     case _:

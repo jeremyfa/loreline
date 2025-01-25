@@ -1,4 +1,4 @@
-package loreline;
+package loreline.cli;
 
 import haxe.CallStack.StackItem;
 import haxe.CallStack;
@@ -6,11 +6,12 @@ import haxe.Json;
 import haxe.io.Path;
 import loreline.Error;
 import loreline.Interpreter;
+import loreline.Lens;
 import sys.FileSystem;
 import sys.io.File;
 
 using StringTools;
-using loreline.Colors;
+using loreline.cli.CliColors;
 
 enum CliCommand {
 
@@ -42,7 +43,7 @@ class Cli {
 
     var errorInStdOut:Bool = false;
 
-    var typeDelay:Float = 0.0075;
+    var typeDelay:Float = 0.0075;//#if eval 0 #else 0.0075 #end;
 
     var sentenceDelay:Float = 0.5;
 
@@ -397,9 +398,11 @@ class Cli {
                 Sys.sleep(delay);
             }
             Sys.stdout().writeString('\n');
+            Sys.stdout().flush();
         }
         else {
             print(str);
+            Sys.stdout().flush();
         }
     }
 
@@ -442,7 +445,7 @@ class Cli {
 
     function printStackTrace(returnOnly:Bool = false, ?stack:Array<StackItem>):String {
 
-        var result = new StringBuf();
+        var result = new loreline.Utf8.Utf8Buf();
 
         inline function print(data:Dynamic) {
             if (!returnOnly) {

@@ -1,6 +1,6 @@
-package loreline;
+package loreline.cli;
 
-class Colors {
+class CliColors {
 
     public static var enabled:Bool = true;
 

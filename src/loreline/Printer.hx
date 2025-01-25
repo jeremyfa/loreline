@@ -3,6 +3,8 @@ package loreline;
 import loreline.Lexer;
 import loreline.Node;
 
+using loreline.Utf8;
+
 /**
  * A code printer that converts AST nodes back into formatted Loreline source code.
  * Handles indentation, newlines, and pretty-printing of all node types.
@@ -45,6 +47,11 @@ class Printer {
     final _newline:String;
 
     /**
+     * Set to `false` to ignore comments.
+     */
+    public var enableComments:Bool = true;
+
+    /**
      * Creates a new code printer with customizable formatting options.
      * @param indent String used for each level of indentation (default: 4 spaces)
      * @param newline String used for line breaks (default: \n)
@@ -77,16 +84,16 @@ class Printer {
      * @return This printer instance for chaining
      */
     public function write(s:String) {
-        if (s.length > 0) {
+        if (s.uLength() > 0) {
             if (_beginLine > 0) {
                 tab();
                 _beginLine = 0;
             }
             _buf.add(s);
-            _lastChar = s.charCodeAt(s.length - 1);
-            var i = s.length - 1;
+            _lastChar = s.uCharCodeAt(s.uLength() - 1);
+            var i = s.uLength() - 1;
             while (i >= 0) {
-                final c = s.charCodeAt(i);
+                final c = s.uCharCodeAt(i);
                 if (c != ' '.code && c != '\n'.code && c != '\r'.code && c != '\t'.code) {
                     _lastVisibleChar = c;
                     break;
@@ -180,7 +187,7 @@ class Printer {
      */
     public inline function clear() {
         _level = 0;
-        _buf = new StringBuf();
+        _buf = new loreline.Utf8.Utf8Buf();
     }
 
     /**
@@ -255,7 +262,7 @@ class Printer {
      * @param node Node with potential comments
      */
     function printLeadingComments(node:AstNode) {
-        if (node.leadingComments != null) {
+        if (enableComments && node.leadingComments != null) {
             for (comment in node.leadingComments) {
                 if (comment.multiline) {
                     writeln('/*${comment.content}*/');
@@ -272,7 +279,7 @@ class Printer {
      * @param node Node with potential comments
      */
     function printTrailingComments(node:AstNode) {
-        if (node.trailingComments != null) {
+        if (enableComments && node.trailingComments != null) {
             for (comment in node.trailingComments) {
                 if (_lastChar != ' '.code && _beginLine == 0) {
                     write(' ');
@@ -523,7 +530,8 @@ class Printer {
      * @param str String literal to print
      * @param surroundWithQuotes Whether to add quotation marks
      */
-    function printStringLiteral(str:NStringLiteral, surroundWithQuotes:Bool = true) {
+    function printStringLiteral(str:NStringLiteral) {
+        final surroundWithQuotes = (str.quotes == DoubleQuotes);
         if (surroundWithQuotes) {
             printLeadingComments(str);
             write('"');
@@ -540,7 +548,7 @@ class Printer {
                     if (needsBraces) write('}');
                 case Tag(closing, content):
                     write(closing ? '</' : '<');
-                    printStringLiteral(content, false);
+                    printStringLiteral(content);
                     write('>');
             }
         }
@@ -572,7 +580,7 @@ class Printer {
                     printNode(elem);
                 }
                 write(']');
-            case Object:
+            case Object(_):
                 writeln('{');
                 indent();
                 var first = true;
@@ -647,7 +655,10 @@ class Printer {
      */
     function printBinary(binary:NBinary, skipParen:Bool = false) {
         printLeadingComments(binary);
-        final needsParens = !skipParen && binary.op.match(OpAnd | OpOr);
+        final needsParens = !skipParen && switch binary.op {
+            case OpAnd(word) | OpOr(word): true;
+            case _: false;
+        };
         if (needsParens) write('(');
         printNode(binary.left);
         write(' ${getOperator(binary.op)} ');
@@ -718,8 +729,10 @@ class Printer {
             case OpLess: "<";
             case OpGreaterEq: ">=";
             case OpLessEq: "<=";
-            case OpAnd: "&&";
-            case OpOr: "||";
+            case OpAnd(false): "&&";
+            case OpOr(false): "||";
+            case OpAnd(true): "and";
+            case OpOr(true): "or";
             case OpNot: "!";
             case _: throw 'Unsupported operator: $op';
         }

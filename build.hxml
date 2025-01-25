@@ -1,3 +1,2 @@
 --class-path src
---class-path cli
---main loreline.Cli
+--main loreline.cli.Cli

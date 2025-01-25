@@ -1,4 +1,4 @@
-package loreline;
+package loreline.cli;
 
 #if macro
 import haxe.macro.Context;

@@ -292,6 +292,11 @@ class NCharacterDecl extends AstNode {
     public var properties:Array<NObjectField>;
 
     /**
+     * Block style of this character
+     */
+    public var style:BlockStyle;
+
+    /**
      * Creates a new character declaration node.
      * @param pos Position in source where this character appears
      * @param name Name of the character
@@ -303,6 +308,7 @@ class NCharacterDecl extends AstNode {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.properties = properties;
+        this.style = Plain;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -325,6 +331,7 @@ class NCharacterDecl extends AstNode {
         final json = super.toJson();
         json.name = name;
         json.properties = [for (prop in properties) prop.toJson()];
+        json.style = style.toString();
         return json;
     }
 
@@ -346,6 +353,11 @@ class NBeatDecl extends AstNode {
     public var body:Array<AstNode>;
 
     /**
+     * Block style of this beat
+     */
+    public var style:BlockStyle;
+
+    /**
      * Creates a new beat declaration node.
      * @param pos Position in source where this beat appears
      * @param name Name of the beat
@@ -357,6 +369,7 @@ class NBeatDecl extends AstNode {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.body = body;
+        this.style = Plain;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -379,6 +392,7 @@ class NBeatDecl extends AstNode {
         final json = super.toJson();
         json.name = name;
         json.body = [for (node in body) node.toJson()];
+        json.style = style.toString();
         return json;
     }
 
@@ -403,6 +417,21 @@ enum StringPartType {
      * Text formatting tag (<tag> or </tag>).
      */
     Tag(closing:Bool, expr:NStringLiteral);
+
+}
+
+enum abstract BlockStyle(Int) {
+
+    var Plain = 0;
+
+    var Braces = 1;
+
+    public function toString() {
+        return switch abstract {
+            case Plain: "Plain";
+            case Braces: "Braces";
+        }
+    }
 
 }
 
@@ -487,6 +516,7 @@ class NStringLiteral extends NExpr {
     public function new(id:Int, pos:Position, quotes:Quotes, parts:Array<NStringPart>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.parts = parts;
+        this.quotes = quotes;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -511,10 +541,7 @@ class NStringLiteral extends NExpr {
             for (part in parts) part.toJson()
         ];
         json.parts = parts;
-        json.quotes = switch quotes {
-            case Unquoted: "Unquoted";
-            case DoubleQuotes: "DoubleQuotes";
-        }
+        json.quotes = quotes.toString();
         return json;
     }
 
@@ -620,6 +647,11 @@ class NChoiceStatement extends AstNode {
     public var options:Array<NChoiceOption>;
 
     /**
+     * The block style of the choice statement
+     */
+    public var style:BlockStyle;
+
+    /**
      * Creates a new choice statement node.
      * @param pos Position in source where this choice appears
      * @param options Array of available choice options
@@ -629,6 +661,7 @@ class NChoiceStatement extends AstNode {
     public function new(id:Int, pos:Position, options:Array<NChoiceOption>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.options = options;
+        this.style = Plain;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -650,6 +683,7 @@ class NChoiceStatement extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.options = [for (option in options) option.toJson()];
+        json.style = style.toString();
         return json;
     }
 }
@@ -674,6 +708,11 @@ class NChoiceOption extends AstNode {
     public var body:Array<AstNode>;
 
     /**
+     * The block style of the body
+     */
+    public var style:BlockStyle;
+
+    /**
      * Creates a new choice option node.
      * @param pos Position in source where this option appears
      * @param text String literal containing the option text
@@ -687,21 +726,26 @@ class NChoiceOption extends AstNode {
         this.text = text;
         this.condition = condition;
         this.body = body;
+        this.style = Plain;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
-        if (condition != null) {
-            handleNode(condition, this);
-            condition.each(handleNode);
-        }
         if (body != null) {
             for (i in 0...body.length) {
                 final child = body[i];
                 handleNode(child, this);
                 child.each(handleNode);
             }
+        }
+        if (text != null) {
+            handleNode(text, this);
+            text.each(handleNode);
+        }
+        if (condition != null) {
+            handleNode(condition, this);
+            condition.each(handleNode);
         }
     }
 
@@ -714,6 +758,7 @@ class NChoiceOption extends AstNode {
         json.text = text.toJson();
         if (condition != null) json.condition = condition.toJson();
         json.body = [for (node in body) node.toJson()];
+        json.style = style.toString();
         return json;
     }
 }
@@ -729,6 +774,11 @@ class NBlock extends AstNode {
     public var body:Array<AstNode>;
 
     /**
+     * The block style of the body.
+     */
+    public var style:BlockStyle;
+
+    /**
      * Creates a new block node.
      * @param pos Position in source where this beat appears
      * @param body Array of nodes comprising the block's content
@@ -738,6 +788,7 @@ class NBlock extends AstNode {
     public function new(id:Int, pos:Position, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.body = body;
+        this.style = Plain;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -759,6 +810,7 @@ class NBlock extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.body = [for (node in body) node.toJson()];
+        json.style = style.toString();
         return json;
     }
 
@@ -850,8 +902,10 @@ class NIfStatement extends AstNode {
         final json = super.toJson();
         json.condition = condition.toJson();
         json.thenBranch = [for (node in thenBranch.body) node.toJson()];
+        json.thenStyle = thenBranch.style.toString();
         if (elseBranch != null) {
             json.elseBranch = [for (node in elseBranch.body) node.toJson()];
+            json.elseStyle = elseBranch.style.toString();
             if ((elseLeadingComments != null && elseLeadingComments.length > 0) || (elseTrailingComments != null && elseTrailingComments.length > 0)) {
                 final comments:Dynamic = json.comments ?? {};
                 if (elseLeadingComments != null && elseLeadingComments.length > 0) {
@@ -1000,13 +1054,14 @@ class NLiteral extends NExpr {
                         elem;
                     }
                 }];
-            case Object:
+            case Object(style):
                 if (value != null) {
                     json.value = [for (field in (value:Array<NObjectField>)) field.toJson()];
                 }
                 else {
                     json.value = [];
                 }
+                json.style = style.toString();
             case _:
                 json.value = value;
         }
@@ -1027,7 +1082,7 @@ enum LiteralType {
     /** Array literal */
     Array;
     /** Object literal */
-    Object;
+    Object(style:BlockStyle);
 }
 
 /**
