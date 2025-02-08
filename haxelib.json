@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing"],
     "description": "Open-source scripting language for writing interactive fictions",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "classPath": "src/",
-    "releasenote": "More flexible syntax: optional braces and parenthesis, `and`, `or` keywords...",
+    "releasenote": "Many improvement to the language, support for code completion",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
