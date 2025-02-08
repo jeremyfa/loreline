@@ -248,8 +248,6 @@ beat CoffeeMadness
     james.present = false
     Your friend quickly text $doctor about your concerning behavior.
 
-  sarah.present
-
   doctor: <worried> That's way too much caffeine! Let's get you checked out.
 
   choice

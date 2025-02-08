@@ -9,19 +9,15 @@ The warm aroma of coffee fills the café.
 
 barista: Hi there! How are you doing today?
 
-choice {
-    Having a great day {
-        barista: Wonderful! Coffee will make it even better.
-    }
+choice
+  Having a great day
+    barista: Wonderful! Coffee will make it even better.
 
-    Need caffeine... {
-        barista: Say no more! Let me help with that.
-    }
+  Need caffeine...
+    barista: Say no more! Let me help with that.
 
-    Your name is Alex, right? {
-        barista: Oh, I didn't expect you'd remember it!
-    }
-}
+  Your name is Alex, right?
+    barista: Oh, I didn't expect you'd remember it!
 ```
 
 Even if you've never seen such script before, you can probably understand what it does: it describes a scene in a café and gives the player choices that lead to different outcomes.
@@ -35,66 +31,53 @@ Let's explore how Loreline helps you create interactive stories. We'll start wit
 Although you can write right at the beginning of a Loreline script, as your story becomes more complex, you'll want to organize it better. That's where Loreline "beats" come into play - sections that contain related scenes or moments. Think of beats as chapters or scenes in your story:
 
 ```lor
-beat EnterCafe {
-    The morning sun streams through the café windows as you step inside.
+beat EnterCafe
+  The morning sun streams through the café windows as you step inside.
 
-    barista: <friendly> Welcome! I don't think I've seen you here before.
+  barista: <friendly> Welcome! I don't think I've seen you here before.
 
-    choice {
-        Just looking around {
-            barista: Take your time! I'm here when you're ready.
-            -> ExploreMenu
-        }
+  choice
+    Just looking around
+      barista: Take your time! I'm here when you're ready.
+      -> ExploreMenu
 
-        Actually, I could use some coffee {
-            barista: <happy> You're in the right place!
-            -> TakeOrder
-        }
-    }
-}
+    Actually, I could use some coffee
+      barista: <happy> You're in the right place!
+      -> TakeOrder
 
-beat ExploreMenu {
-    Beside you, a regular customer sips her drink contentedly.
+beat ExploreMenu
+  Beside you, a regular customer sips her drink contentedly.
 
-    sarah: Their lattes are amazing. I come here every morning.
+  sarah: Their lattes are amazing. I come here every morning.
 
-    barista: <cheerful> Sarah's right! Want to try one?
+  barista: <cheerful> Sarah's right! Want to try one?
 
-    choice {
-        Sure, I'll have what she's having {
-            sarah: <pleased> Good choice!
-            -> TakeOrder
-        }
+  choice
+    Sure, I'll have what she's having
+      sarah: <pleased> Good choice!
+      -> TakeOrder
 
-        What else do you recommend? {
-            -> TakeOrder
-        }
-    }
-}
+    What else do you recommend?
+      -> TakeOrder
 
-beat TakeOrder {
-    barista: So, what can I get started for you?
+beat TakeOrder
+  barista: So, what can I get started for you?
 
-    choice {
-        A latte sounds perfect {
-            barista: <excited> Coming right up! I'll make it special for your first visit.
+  choice
+    A latte sounds perfect
+      barista: <excited> Coming right up! I'll make it special for your first visit.
 
-            sarah: <smile> You won't regret it.
-            -> EndVisit
-        }
+      sarah: <smile> You won't regret it.
+      -> EndVisit
 
-        Just a regular coffee today {
-            barista: Sometimes the classics are the best choice!
-            -> EndVisit
-        }
-    }
-}
+    Just a regular coffee today
+      barista: Sometimes the classics are the best choice!
+      -> EndVisit
 
-beat EndVisit {
-    You find a cozy spot to enjoy your drink.
+beat EndVisit
+  You find a cozy spot to enjoy your drink.
 
-    sarah: <friendly> Hope to see you around more often!
-}
+  sarah: <friendly> Hope to see you around more often!
 ```
 
 The arrow syntax (`->`) lets you move between beats, creating a branching storyline. Each beat can have its own narrative flow, choices, and consequences.
@@ -104,17 +87,15 @@ The arrow syntax (`->`) lets you move between beats, creating a branching storyl
 When writing dialogue, you can define your characters along with their properties:
 
 ```lor
-character barista {
-    name: Alex
-    friendship: 0    // Track relationship with player
-    shiftStarted: true
-}
+character barista
+  name: Alex
+  friendship: 0  // Track relationship with player
+  shiftStarted: true
 
-character customer {
-    name: Sam
-    visits: 0
-    favoriteDrink: null
-}
+character customer
+  name: Sam
+  visits: 0
+  favoriteDrink: null
 ```
 
 Once defined, characters can speak using a simple syntax - their identifier, followed by a colon:
@@ -155,19 +136,18 @@ Interactive stories need to remember choices and track progress. Loreline uses s
 Persistent state remains throughout your story:
 
 ```lor
-state {
-    coffeeBeans: 100   // Track inventory
-    rushHour: false    // Is it busy?
-    dayNumber: 1       // Which day of the story
-}
+state
+  coffeeBeans: 100   // Track inventory
+  rushHour: false  // Is it busy?
+  dayNumber: 1     // Which day of the story
 ```
 
 You can change these values as your story progresses:
 
 ```lor
-coffeeBeans -= 10    // Use some beans
-rushHour = true      // Start rush hour
-dayNumber += 1       // Move to next day
+coffeeBeans -= 10  // Use some beans
+rushHour = true    // Start rush hour
+dayNumber += 1     // Move to next day
 ```
 
 ### Temporary state
@@ -175,25 +155,20 @@ dayNumber += 1       // Move to next day
 Sometimes you want state that only exists within a specific beat. Use the `new` keyword to create temporary state that resets each time you enter the beat:
 
 ```lor
-beat CoffeeTasting {
-    // These values reset every time we enter CoffeeTasting
-    new state {
-        cupsTasted: 0
-        currentRoast: light
-        enjoymentLevel: 5
-    }
+beat CoffeeTasting
+  // These values reset every time we enter CoffeeTasting
+  new state
+    cupsTasted: 0
+    currentRoast: light
+    enjoymentLevel: 5
 
-    choice {
-        Try another sip if (cupsTasted < 3) {
-            cupsTasted += 1
-            Interesting notes in this one...
-        }
+  choice
+    Try another sip if cupsTasted < 3
+      cupsTasted += 1
+      Interesting notes in this one...
 
-        Finish tasting {
-            -> OrderDrink
-        }
-    }
-}
+    Finish tasting
+      -> OrderDrink
 ```
 
 In this example, `cupsTasted`, `currentRoast`, and `enjoymentLevel` reset to their initial values every time the player enters the CoffeeTasting beat.
@@ -203,44 +178,35 @@ In this example, `cupsTasted`, `currentRoast`, and `enjoymentLevel` reset to the
 The heart of interactive fiction is letting readers make choices:
 
 ```lor
-beat OrderDrink {
-    choice {
-        Order a cappuccino {
-            coffeeBeans -= 15
-            barista: <happy> One cappuccino coming right up!
-            -> PrepareDrink
-        }
+beat OrderDrink
+  choice
+    Order a cappuccino
+      coffeeBeans -= 15
+      barista: <happy> One cappuccino coming right up!
+      -> PrepareDrink
 
-        Ask about tea options {
-            barista: We have a lovely selection of green and herbal teas.
-            -> TeaMenu
-        }
+    Ask about tea options
+      barista: We have a lovely selection of green and herbal teas.
+      -> TeaMenu
 
-        Just browse the menu {
-            You take your time reading through the extensive drink list.
-            -> DrinkMenu
-        }
-    }
-}
+    Just browse the menu
+      You take your time reading through the extensive drink list.
+      -> DrinkMenu
 ```
 
 Choices can be conditional - only available when certain conditions are met:
 
 ```lor
-beat SpecialMenu {
-    choice {
-        Order special roast if (coffeeBeans >= 20) {
-            coffeeBeans -= 20
-            barista: Excellent choice! Our Ethiopian blend is amazing.
-            -> PrepareDrink
-        }
+beat SpecialMenu
+  choice
+    Order special roast if coffeeBeans >= 20
+      coffeeBeans -= 20
+      barista: Excellent choice! Our Ethiopian blend is amazing.
+      -> PrepareDrink
 
-        Chat with barista if (barista.friendship > 2) {
-            barista: <friendly> Want to hear about my coffee journey?
-            -> BaristaChat
-        }
-    }
-}
+    Chat with barista if barista.friendship > 2
+      barista: <friendly> Want to hear about my coffee journey?
+      -> BaristaChat
 ```
 
 ## Dynamic text
@@ -248,19 +214,17 @@ beat SpecialMenu {
 Make your text responsive to the game state using the `$` symbol for variable interpolation:
 
 ```lor
-beat CheckInventory {
-    barista: We have $coffeeBeans beans left in stock.
-    Your total comes to ${price * quantity} dollars.
-}
+beat CheckInventory
+  barista: We have $coffeeBeans beans left in stock.
+  Your total comes to ${price * quantity} dollars.
 ```
 
 Characters can also be referenced by their identifier, which will display their `name` property:
 
 ```lor
-beat CloseShop {
-    $barista begins cleaning up for the day.    // Will show "Alex begins cleaning up for the day"
-    $customer waves goodbye as they leave.      // Will show "Sam waves goodbye as they leave"
-}
+beat CloseShop
+  $barista begins cleaning up for the day.  // Will show "Alex begins cleaning up for the day"
+  $customer waves goodbye as they leave.    // Will show "Sam waves goodbye as they leave"
 ```
 
 ## Comments and organization
@@ -273,9 +237,8 @@ customer.visits += 1
 
 /* Check if we should
    trigger the special event */
-if (customer.visits > 10) {
-    -> LoyaltyReward
-}
+if customer.visits > 10
+  -> LoyaltyReward
 ```
 
 ## Advanced features
@@ -283,67 +246,54 @@ if (customer.visits > 10) {
 Here's a complex example putting multiple features together:
 
 ```lor
-beat CoffeeTasting {
-    new state {
-        cupsTasted: 0
-        favoriteRoast: null
-        lastImpression: ""
-    }
+beat CoffeeTasting
 
-    barista: <enthusiastic> Ready to explore our new roasts?
+  state
+    cupsTasted: 0
+    favoriteRoast: null
+    lastImpression: ""
 
-    choice {
-        Try light roast if (cupsTasted < 3) {
-            cupsTasted += 1
-            lastImpression = "bright and citrusy"
+  barista: <enthusiastic> Ready to explore our new roasts?
 
-            The bright, citrusy notes dance on your tongue.
+  choice
+    Try light roast if cupsTasted < 3
+      cupsTasted += 1
+      lastImpression = bright and citrusy
 
-            if (chance(3)) { // 1 in 3 chance
-                favoriteRoast = "light"
-                barista: <happy> I see that spark in your eyes!
-                -> DiscussTaste
-            }
-        }
+      The bright, citrusy notes dance on your tongue.
 
-        Try medium roast if (cupsTasted < 3) {
-            cupsTasted += 1
-            lastImpression = "nutty and balanced"
+      if chance(3) // 1 in 3 chance
+        favoriteRoast = light
+        barista: <happy> I see that spark in your eyes!
+        -> DiscussTaste
 
-            A pleasant nuttiness fills your mouth.
-            -> DiscussTaste
-        }
+    Try medium roast if cupsTasted < 3
+      cupsTasted += 1
+      lastImpression = "nutty and balanced"
 
-        Discuss coffee origins if (barista.friendship > 1) {
-            barista: <passionate> Let me tell you about our farmers...
-            -> CoffeeOrigins
-        }
+      A pleasant nuttiness fills your mouth.
+      -> DiscussTaste
 
-        Finish tasting if (cupsTasted > 0) {
-            if (favoriteRoast != null) {
-                -> OrderFavorite
-            }
-            else {
-                -> RegularOrder
-            }
-        }
-    }
-}
+    Discuss coffee origins if barista.friendship > 1
+      barista: <passionate> Let me tell you about our farmers...
+      -> CoffeeOrigins
 
-beat DiscussTaste {
-    barista: What do you think about the $lastImpression notes?
+    Finish tasting if cupsTasted > 0
+      if favoriteRoast != null
+        -> OrderFavorite
+      else
+        -> RegularOrder
 
-    choice {
-        Express enthusiasm {
-            barista.friendship += 1
-            -> CoffeeTasting
-        }
+beat DiscussTaste
+  barista: What do you think about the $lastImpression notes?
 
-        Nod politely {
-            -> CoffeeTasting
-        }
-    }
-}
+  choice
+    Express enthusiasm
+      barista.friendship += 1
+      -> CoffeeTasting
+
+    Nod politely
+      -> CoffeeTasting
 ```
 
 This syntax guide covered the main features of Loreline, but there's always more to discover as you write your own stories. Experiment with different combinations of these features to create rich narratives.
@@ -357,6 +307,10 @@ Loreline scripts are written in `.lor` files. See [CoffeeShop.lor](/test/CoffeeS
 You can write these with any text editor, but the best option is using [Visual Studio Code](https://code.visualstudio.com/) along with the [Loreline Extension](https://marketplace.visualstudio.com/items?itemName=jeremyfa.loreline). This will make your editor support syntax highlighting of `.lor` files, which makes the content much more readable and easy to work with:
 
 ![Minimal example, syntax highlighted in VSCode](/minimal-screenshot.png)
+
+It will also provide code completion and additional info from your script:
+
+![Example of Hover information in VSCode](/hover-screenshot.png)
 
 ## Test using the command line interface
 
@@ -397,34 +351,34 @@ final script = Loreline.parse(content);
 
 // Play the story
 Loreline.play(
-    script,
+  script,
 
-    // Called to display a text
-    (_, character, text, tag, done) -> {
-        if (character != null) {
-            Sys.println(character + ': ' + text);
-        }
-        else {
-            Sys.println(text);
-        }
-        done(); // Call done() when finished
-    },
-
-    // Called to prompt a choice
-    (_, options, callback) -> {
-        for (i in 0...options.length) {
-            Sys.println((i + 1) + '. ' + options[i].text);
-        }
-
-        // Let the user make a choice
-        final choice:Int = ...;
-        callback(choice); // Call back with the choice index
-    },
-
-    // Called when the execution has finished
-    _ -> {
-        // Finished script execution
+  // Called to display a text
+  (_, character, text, tag, done) -> {
+    if (character != null) {
+      Sys.println(character + ': ' + text);
     }
+    else {
+      Sys.println(text);
+    }
+    done(); // Call done() when finished
+  },
+
+  // Called to prompt a choice
+  (_, options, callback) -> {
+    for (i in 0...options.length) {
+      Sys.println((i + 1) + '. ' + options[i].text);
+    }
+
+    // Let the user make a choice
+    final choice:Int = ...;
+    callback(choice); // Call back with the choice index
+  },
+
+  // Called when the execution has finished
+  _ -> {
+    // Finished script execution
+  }
 );
 ```
 
