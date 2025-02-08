@@ -5,6 +5,10 @@ import loreline.Node;
 
 using loreline.Utf8;
 
+// TODO:
+// This printer is expected to print valid loreline code,
+// but it doesn't take into account the code style yet.
+
 /**
  * A code printer that converts AST nodes back into formatted Loreline source code.
  * Handles indentation, newlines, and pretty-printing of all node types.
@@ -328,7 +332,7 @@ class Printer {
         writeln('{');
         indent();
         var first = true;
-        for (field in (state.fields.value:Array<NObjectField>)) {
+        for (field in state.fields) {
             if (!first) {
                 if (_beginLine == 0) {
                     writeln();
@@ -357,7 +361,7 @@ class Printer {
         printTrailingComments(char);
         writeln('{');
         indent();
-        for (prop in char.properties) {
+        for (prop in char.fields) {
             printLeadingComments(prop);
             write('${prop.name}: ');
             printTrailingComments(prop);

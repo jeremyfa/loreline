@@ -185,30 +185,51 @@ class NStateDecl extends AstNode {
     public var temporary:Bool;
 
     /**
-     * The fields declared in this state.
+     * Fields defined for this state.
      */
-    public var fields:NLiteral;
+    public var fields:Array<NObjectField>;
+
+    /**
+     * Block style of this state
+     */
+    public var style:BlockStyle;
 
     /**
      * Creates a new state declaration node.
      * @param pos Position in source where this state appears
      * @param temporary Whether this is a temporary state
-     * @param fields The fields contained in this state
+     * @param fields Array of property definitions
      * @param leadingComments Optional comments before the state
      * @param trailingComments Optional comments after the state
      */
-    public function new(id:Int, pos:Position, temporary:Bool, fields:NLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, temporary:Bool, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.temporary = temporary;
         this.fields = fields;
+        this.style = Plain;
+    }
+
+    public function get(name:String):NExpr {
+
+        for (field in fields) {
+            if (field.name == name) {
+                return field.value;
+            }
+        }
+
+        return null;
+
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
         if (fields != null) {
-            handleNode(fields, this);
-            fields.each(handleNode);
+            for (i in 0...fields.length) {
+                final child = fields[i];
+                handleNode(child, this);
+                child.each(handleNode);
+            }
         }
     }
 
@@ -219,7 +240,8 @@ class NStateDecl extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.temporary = temporary;
-        json.fields = fields.toJson();
+        json.fields = [for (prop in fields) prop.toJson()];
+        json.style = style.toString();
         return json;
     }
 
@@ -287,9 +309,14 @@ class NCharacterDecl extends AstNode {
     public var name:String;
 
     /**
-     * Properties defined for this character.
+     * Position of the name part.
      */
-    public var properties:Array<NObjectField>;
+    public var namePos:Position;
+
+    /**
+     * Fields defined for this character.
+     */
+    public var fields:Array<NObjectField>;
 
     /**
      * Block style of this character
@@ -300,23 +327,36 @@ class NCharacterDecl extends AstNode {
      * Creates a new character declaration node.
      * @param pos Position in source where this character appears
      * @param name Name of the character
-     * @param properties Array of property definitions
+     * @param fields Array of property definitions
      * @param leadingComments Optional comments before the character
      * @param trailingComments Optional comments after the character
      */
-    public function new(id:Int, pos:Position, name:String, properties:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, name:String, namePos:Position, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
-        this.properties = properties;
+        this.namePos = namePos;
+        this.fields = fields;
         this.style = Plain;
+    }
+
+    public function get(name:String):NExpr {
+
+        for (field in fields) {
+            if (field.name == name) {
+                return field.value;
+            }
+        }
+
+        return null;
+
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
-        if (properties != null) {
-            for (i in 0...properties.length) {
-                final child = properties[i];
+        if (fields != null) {
+            for (i in 0...fields.length) {
+                final child = fields[i];
                 handleNode(child, this);
                 child.each(handleNode);
             }
@@ -330,7 +370,8 @@ class NCharacterDecl extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.name = name;
-        json.properties = [for (prop in properties) prop.toJson()];
+        json.namePos = namePos.toJson();
+        json.fields = [for (prop in fields) prop.toJson()];
         json.style = style.toString();
         return json;
     }
@@ -598,6 +639,11 @@ class NDialogueStatement extends AstNode {
     public var character:String;
 
     /**
+     * Position of the character label
+     */
+    public var characterPos:Position;
+
+    /**
      * Content of the dialogue.
      */
     public var content:NStringLiteral;
@@ -606,13 +652,15 @@ class NDialogueStatement extends AstNode {
      * Creates a new dialogue statement node.
      * @param pos Position in source where this dialogue appears
      * @param character Name of the speaking character
+     * @param characterPos  Position of the character label
      * @param content String literal containing the dialogue text
      * @param leadingComments Optional comments before the dialogue
      * @param trailingComments Optional comments after the dialogue
      */
-    public function new(id:Int, pos:Position, character:String, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, character:String, characterPos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.character = character;
+        this.characterPos = characterPos;
         this.content = content;
     }
 
@@ -632,6 +680,7 @@ class NDialogueStatement extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.character = character;
+        json.characterPos = characterPos.toJson();
         json.content = content.toJson();
         return json;
     }
@@ -987,15 +1036,22 @@ class NTransition extends AstNode {
     public var target:String;
 
     /**
+     * Position of the target part of the transition
+     */
+    public var targetPos:Position;
+
+    /**
      * Creates a new transition node.
      * @param pos Position in source where this transition appears
      * @param target Name of the target beat
+     * @param targetPos Position of the target part of the transition
      * @param leadingComments Optional comments before the transition
      * @param trailingComments Optional comments after the transition
      */
-    public function new(id:Int, pos:Position, target:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:Int, pos:Position, target:String, targetPos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
+        this.targetPos = targetPos;
     }
 
     /**
@@ -1005,6 +1061,7 @@ class NTransition extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.target = target;
+        json.targetPos = targetPos.toJson();
         return json;
     }
 }
@@ -1037,13 +1094,39 @@ class NLiteral extends NExpr {
         this.type = type;
     }
 
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        switch (type) {
+            case Array:
+                for (elem in (value:Array<Dynamic>)) {
+                    if (Std.isOfType(elem, Node)) {
+                        final node:Node = cast elem;
+                        handleNode(node, this);
+                        node.each(handleNode);
+                    }
+                }
+            case Object(style):
+                if (value != null) {
+                    for (field in (value:Array<NObjectField>)) {
+                        if (Std.isOfType(field.value, Node)) {
+                            final node:Node = cast field.value;
+                            handleNode(node, this);
+                            node.each(handleNode);
+                        }
+                    }
+                }
+            case Boolean | Null | Number:
+        }
+    }
+
     /**
      * Converts the literal to a JSON representation.
      * @return Dynamic object containing literal data
      */
     public override function toJson():Dynamic {
         final json = super.toJson();
-        json.literalType = Std.string(type);
+        json.literalType = type.getName();
         switch (type) {
             case Array:
                 json.value = [for (elem in (value:Array<Dynamic>)) {
@@ -1062,11 +1145,12 @@ class NLiteral extends NExpr {
                     json.value = [];
                 }
                 json.style = style.toString();
-            case _:
+            case Boolean | Null | Number:
                 json.value = value;
         }
         return json;
     }
+
 }
 
 /**

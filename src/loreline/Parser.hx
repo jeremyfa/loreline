@@ -59,12 +59,6 @@ class Parser {
         this.lineBreakAfterToken = false;
         this.nextNodeId = 0;
         this.rootBeat = null;
-
-        trace('--');
-        for (token in tokens) {
-            trace(token.toString());
-        }
-        trace('--');
     }
 
     /**
@@ -92,15 +86,6 @@ class Parser {
      */
     function peekType():TokenType {
         return peek().type;
-    }
-
-    /**
-     * Checks if the next sequence of tokens forms a transition.
-     * @return True if a transition follows
-     */
-    function isTransitionAhead():Bool {
-        return peek().type == Arrow ||
-               (peek().type.match(Identifier(_)) && peekNext().type == Arrow);
     }
 
     /**
@@ -143,6 +128,21 @@ class Parser {
     }
 
     /**
+     * Gets the previously consumed token.
+     * @return The previous token
+     */
+    function prevWithType(type:TokenType):Token {
+        var n = current - 1;
+        while (n >= 0) {
+            if (tokens[n].type.equals(type)) {
+                return tokens[n];
+            }
+            n--;
+        }
+        return null;
+    }
+
+    /**
      * Gets the previously consumed token that was an identifier.
      * @return The previous token that was an identifier
      */
@@ -161,7 +161,7 @@ class Parser {
 
     /**
      * Gets the previously consumed token that was not a white space or comment.
-     * @return The previous token that was an identifier
+     * @return The previous token that is not a white space or comment
      */
     function prevNonWhitespaceOrComment():Token {
         var n = current - 1;
@@ -173,6 +173,42 @@ class Parser {
                     return tokens[n];
             }
             n--;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the next token that is not a white space or comment.
+     * @return The next token that is not a white space or comment
+     */
+    function nextNonWhitespaceOrComment():Token {
+        var n = current;
+        while (n < tokens.length) {
+            switch tokens[n].type {
+                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                    // Skip
+                case _:
+                    return tokens[n];
+            }
+            n++;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the next token that is not a line break or comment.
+     * @return The next token that is not a line break or comment
+     */
+    function nextNonLineBreakOrComment():Token {
+        var n = current;
+        while (n < tokens.length) {
+            switch tokens[n].type {
+                case CommentLine(_) | CommentMultiLine(_) | LineBreak:
+                    // Skip
+                case _:
+                    return tokens[n];
+            }
+            n++;
         }
         return null;
     }
@@ -252,8 +288,7 @@ class Parser {
                 }
                 while (match(LineBreak)) {} // Skip line breaks between top-level nodes
             } catch (e:ParseError) {
-                if (errors == null) errors = [];
-                errors.push(e);
+                addError(e);
                 synchronize();
             }
         }
@@ -369,13 +404,14 @@ class Parser {
      */
     function parseDialogueStatement():NDialogueStatement {
         final startPos = currentPos();
-        final dialogue = new NDialogueStatement(nextNodeId++, startPos, null, null);
+        final dialogue = new NDialogueStatement(nextNodeId++, startPos, null, null, null);
 
         // Parse character name
         dialogue.character = switch (tokens[current].type) {
             case Identifier(name): name;
             case _: throw new ParseError("Expected character name", currentPos());
         };
+        dialogue.characterPos = tokens[current].pos;
         advance(); // Move past identifier
 
         expect(Colon); // Move past colon
@@ -431,15 +467,24 @@ class Parser {
      */
     function parseStateDecl(temporary:Bool):NStateDecl {
         final startPos = currentPos();
-        final stateNode = new NStateDecl(nextNodeId++, startPos, temporary, null);
+        final stateNode = new NStateDecl(nextNodeId++, startPos, temporary, []);
 
         expect(KwState);
-        while (match(LineBreak)) {}
+
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        stateNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(stateNode);
 
-        // Parse state fields
-        stateNode.fields = cast(parseObjectLiteral(), NLiteral);
+        // Parse character fields
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+            stateNode.fields.push(parseObjectField());
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        }
+
+        while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        expect(blockEnd);
 
         stateNode.pos = stateNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
@@ -458,7 +503,13 @@ class Parser {
         expect(Colon);
         attachComments(objectField);
 
-        objectField.value = parseExpression();
+        if (checkBlockStart()) {
+            objectField.value = parseObjectLiteral();
+        }
+        else {
+            objectField.value = parseExpression();
+        }
+        objectField.pos = objectField.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return objectField;
     }
@@ -477,12 +528,13 @@ class Parser {
         // beatNode.pos.length += namePos.offset + namePos.length - (beatNode.pos.offset + beatNode.pos.length);
         beatNode.name = expectIdentifier();
 
-        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        final blockStart = parseBlockStart();
+        final blockEnd:TokenType = blockStart.type == Indent ? Unindent : RBrace;
         beatNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(beatNode);
 
-        // Parse character properties
+        // Parse character fields
         while (!check(blockEnd) && !isAtEnd()) {
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
             beatNode.body.push(parseNode());
@@ -542,16 +594,16 @@ class Parser {
         var indentToken:Token = null;
         var braceToken:Token = null;
         var numIndents = 0;
-        while (true) {
+        while (!isAtEnd()) {
             if (match(LineBreak)) continue;
             if (match(Indent)) {
                 numIndents++;
-                indentToken = previous();
+                indentToken = prevWithType(Indent);
                 continue;
             }
             if (match(LBrace)) {
                 if (braceToken == null) {
-                    braceToken = previous();
+                    braceToken = prevWithType(LBrace);
                 }
                 continue;
             }
@@ -568,31 +620,33 @@ class Parser {
             return indentToken;
         }
         else {
-            throw new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', currentPos());
+            addError(new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', currentPos()));
+            return new Token(Indent, currentPos());
         }
 
     }
 
     /**
-     * Parses a character declaration with its properties.
+     * Parses a character declaration with its fields.
      * @return Character declaration node
      */
     function parseCharacterDecl():NCharacterDecl {
         final startPos = currentPos();
-        final characterNode = new NCharacterDecl(nextNodeId++, startPos, null, []);
+        final characterNode = new NCharacterDecl(nextNodeId++, startPos, null, null, []);
 
         expect(KwCharacter);
         characterNode.name = expectIdentifier();
+        characterNode.namePos = prevNonWhitespaceOrComment().pos;
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
         characterNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
         attachComments(characterNode);
 
-        // Parse character properties
+        // Parse character fields
         while (!check(blockEnd) && !isAtEnd()) {
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
-            characterNode.properties.push(parseObjectField());
+            characterNode.fields.push(parseObjectField());
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         }
 
@@ -771,11 +825,11 @@ class Parser {
 
         // Handle "end of stream" (-> .)
         if (match(Dot)) {
-            return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), "."));
+            return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), ".", prevNonWhitespaceOrComment().pos));
         }
 
         final target = expectIdentifier();
-        return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), target));
+        return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
     }
 
     /**
@@ -783,20 +837,28 @@ class Parser {
      * @return Expression node
      */
     function parseExpression():NExpr {
-        final expr = parseLogicalOr();
+        try {
+            final expr = parseLogicalOr();
 
-        // Handle assignments if present
-        if (check(OpAssign) || check(OpPlusAssign) || check(OpMinusAssign) ||
-            check(OpMultiplyAssign) || check(OpDivideAssign)) {
-            final op = tokens[current].type;
-            advance();
-            final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
-            assignment.value = parseExpression();
-            assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
-            return assignment;
+            // Handle assignments if present
+            if (check(OpAssign) || check(OpPlusAssign) || check(OpMinusAssign) ||
+                check(OpMultiplyAssign) || check(OpDivideAssign)) {
+                final op = tokens[current].type;
+                advance();
+                final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
+                assignment.value = parseExpression();
+                assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
+                return assignment;
+            }
+
+            return expr;
         }
-
-        return expr;
+        catch (e:Any) {
+            if (e is ParseError) {
+                addError(cast e);
+            }
+            return new NLiteral(nextNodeId++, currentPos(), null, Null);
+        }
     }
 
     /**
@@ -1107,7 +1169,10 @@ class Parser {
      * @return Access expression node
      */
     function makeAccess(pos:Position, target:Null<NExpr>, name:String, namePos:Position):NAccess {
-        if (name != null && name.uLength() > 0) {
+        if (name != null) {
+            if (name.uLength() == 0) {
+                addError(new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos));
+            }
             if (target != null) {
                 if (namePos != null) {
                     pos = new Position(
@@ -1126,9 +1191,6 @@ class Parser {
                 );
             }
         }
-        else {
-            throw new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos);
-        }
 
         return new NAccess(nextNodeId++, pos, target, name);
     }
@@ -1144,11 +1206,12 @@ class Parser {
      * @return string part representing the interpolation
      */
     function parseStringInterpolation(braces:Bool, inTag:Bool, tokens:Array<Token>, start:Int, length:Int, content:String):NStringPart {
-        final pos = makeStringPartPosition(tokens[0].pos, content, start);
+        final pos = makeStringPartPosition(tokens[0]?.pos ?? currentPos(), content, start);
         pos.length = length;
 
         if (tokens.length == 0) {
-            throw new ParseError("Empty interpolation", pos);
+            addError(new ParseError("Empty interpolation", tokens[0]?.pos ?? currentPos()));
+            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
         }
 
         var expr:NExpr = null;
@@ -1156,26 +1219,148 @@ class Parser {
         // Handle simple field access interpolation ($identifier)
         if (!braces && tokens.length > 0) {
             var target:Null<NExpr> = null;
-            var prevIsDot:Bool = false;
-            for (i in 0...tokens.length) {
-                switch (tokens[i].type) {
+            var i = 0;
+            var prevIsDot = false;
+
+            while (i < tokens.length) {
+                final token = tokens[i];
+                i++;
+
+                switch (token.type) {
                     case Identifier(name):
                         if (target == null) {
-                            target = attachComments(makeAccess(tokens[i].pos, null, name, null));
+                            target = attachComments(makeAccess(token.pos, null, name, null));
                         }
                         else if (prevIsDot) {
-                            target = attachComments(makeAccess(tokens[i].pos, target, name, tokens[i].pos));
+                            target = attachComments(makeAccess(token.pos, target, name, token.pos));
                         }
                         else {
-                            throw new ParseError("Missing dot in simple interpolation", tokens[i].pos);
+                            addError(new ParseError("Missing dot in field access", token.pos));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
                         prevIsDot = false;
+
+                    case LBracket:
+                        // Handle array access: read until matching RBracket
+                        if (target == null) {
+                            addError(new ParseError("Array access without target", token.pos));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        }
+
+                        final arrayStart = token.pos;
+                        final arrayTokens = [];
+                        var bracketLevel = 1;
+                        var lastRBracket = null;
+
+                        while (i < tokens.length && bracketLevel > 0) {
+                            final t = tokens[i];
+                            i++;
+
+                            switch (t.type) {
+                                case LBracket:
+                                    bracketLevel++;
+                                    arrayTokens.push(t);
+                                case RBracket:
+                                    bracketLevel--;
+                                    if (bracketLevel > 0) {
+                                        arrayTokens.push(t);
+                                    }
+                                    lastRBracket = t;
+                                case _:
+                                    arrayTokens.push(t);
+                            }
+                        }
+
+                        if (bracketLevel > 0) {
+                            addError(new ParseError("Unterminated array access", arrayStart));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        }
+
+                        // Parse array index expression
+                        final tempParser = new Parser(arrayTokens);
+                        tempParser.nextNodeId = nextNodeId;
+                        final indexExpr = tempParser.parseExpression();
+                        nextNodeId = tempParser.nextNodeId;
+
+                        // Create array access node
+                        final accessPos = pos.extendedTo(tokens[i-1].pos);
+                        accessPos.length += 1;
+                        target = attachComments(new NArrayAccess(nextNodeId++, accessPos, target, indexExpr));
+                        prevIsDot = false;
+
+                    case LParen:
+                        // Handle function call: read until matching RParen
+                        if (target == null) {
+                            addError(new ParseError("Function call without target", token.pos));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        }
+
+                        final callStart = token.pos;
+                        final argTokens = [];
+                        var currentArgTokens = [];
+                        var parenLevel = 1;
+
+                        while (i < tokens.length && parenLevel > 0) {
+                            final t = tokens[i];
+                            i++;
+
+                            switch (t.type) {
+                                case LParen:
+                                    parenLevel++;
+                                    currentArgTokens.push(t);
+                                case RParen:
+                                    parenLevel--;
+                                    if (parenLevel > 0) {
+                                        currentArgTokens.push(t);
+                                    }
+                                    else if (currentArgTokens.length > 0) {
+                                        argTokens.push(currentArgTokens);
+                                    }
+                                case Comma if (parenLevel == 1):
+                                    if (currentArgTokens.length > 0) {
+                                        argTokens.push(currentArgTokens);
+                                        currentArgTokens = [];
+                                    }
+                                case _:
+                                    currentArgTokens.push(t);
+                            }
+                        }
+
+                        if (parenLevel > 0) {
+                            addError(new ParseError("Unterminated function call", callStart));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        }
+
+                        // Parse argument expressions
+                        final args:Array<NExpr> = [];
+                        for (argTokenGroup in argTokens) {
+                            final tempParser = new Parser(argTokenGroup);
+                            tempParser.nextNodeId = nextNodeId;
+                            args.push(tempParser.parseExpression());
+                            nextNodeId = tempParser.nextNodeId;
+                        }
+
+                        // Create call node
+                        target = attachComments(new NCall(nextNodeId++, callStart.extendedTo(tokens[i-1].pos), target, args));
+                        prevIsDot = false;
+
                     case Dot:
+                        if (target == null) {
+                            addError(new ParseError("Leading dot in field access", token.pos));
+                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        }
                         prevIsDot = true;
+
                     case _:
-                        throw new ParseError("Invalid token in simple interpolation", tokens[i].pos);
+                        addError(new ParseError('Unexpected token in field access: ${token.type}', token.pos));
+                        return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
                 }
             }
+
+            if (prevIsDot) {
+                addError(new ParseError("Trailing dot in field access", tokens[tokens.length - 1].pos));
+            }
+
             expr = target;
         }
         // Handle complex interpolation with braces (${expression})
@@ -1186,7 +1371,7 @@ class Parser {
             nextNodeId = tempParser.nextNodeId;
 
             if (!tempParser.isAtEnd()) {
-                throw new ParseError("Unexpected tokens after interpolation expression", tempParser.tokens[tempParser.current].pos);
+                addError(new ParseError("Unexpected tokens after interpolation expression", tempParser.tokens[tempParser.current].pos));
             }
         }
 
@@ -1323,13 +1508,25 @@ class Parser {
         // Parse chained accesses (., [], and ())
         while (true) {
             if (match(Dot)) {
-                final prop = expectIdentifier();
-                expr = attachComments(makeAccess(startPos, expr, prop, prevIdentifier().pos));
+                // Create placeholder identifier if none follows the dot
+                var prop = null;
+                var propPos = currentPos();
+
+                if (checkIdentifier()) {
+                    prop = expectIdentifier();
+                } else {
+                    // Create error for missing identifier but continue parsing
+                    addError(new ParseError("Expected identifier after '.'", currentPos()));
+                    prop = ""; // Empty identifier as placeholder
+                }
+
+                expr = attachComments(makeAccess(startPos, expr, prop, propPos));
             }
             else if (match(LBracket)) {
                 final index = parseExpression();
                 expect(RBracket);
-                expr = attachComments(new NArrayAccess(nextNodeId++, startPos.extendedTo(previous().pos), expr, index));
+                final accessPos = startPos.extendedTo(previous().pos);
+                expr = attachComments(new NArrayAccess(nextNodeId++, accessPos, expr, index));
             }
             else if (match(LParen)) {
                 final args = parseCallArguments();
@@ -1367,7 +1564,7 @@ class Parser {
                     needsSeparator = false;
                 }
             }
-            while (match(LineBreak)) {
+            while (match(LineBreak) || match(Indent) || match(Unindent)) {
                 needsSeparator = false;
             }
 
@@ -1375,7 +1572,7 @@ class Parser {
                 throw new ParseError("Expected comma or line break between elements", currentPos());
             }
 
-            while (match(LineBreak)) {}
+            while (match(LineBreak) || match(Indent) || match(Unindent)) {}
 
             if (!check(RBracket)) {
                 elements.push(parseExpression());
@@ -1385,8 +1582,10 @@ class Parser {
             needsSeparator = (prev.type != Colon && prev.type != LineBreak);
         }
 
-        while (match(LineBreak)) {}
+        while (match(LineBreak) || match(Indent) || match(Unindent)) {}
         expect(RBracket);
+
+        literal.pos = literal.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return literal;
     }
@@ -1401,7 +1600,7 @@ class Parser {
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
         final style:BlockStyle = (blockEnd == RBrace) ? Braces : Plain;
-        final literal = new NLiteral(nextNodeId++, startPos, fields, Object(style));
+        final literal = new NLiteral(nextNodeId++, blockEnd != RBrace ? nextNonWhitespaceOrComment().pos : startPos, fields, Object(style));
 
         attachComments(literal);
 
@@ -1438,6 +1637,8 @@ class Parser {
         while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
         expect(blockEnd);
 
+        literal.pos = literal.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
         return literal;
     }
 
@@ -1464,7 +1665,14 @@ class Parser {
      */
     function parseConditionExpression():NExpr {
         final hasParen = match(LParen);
-        final expr = parseExpression();
+        var expr:NExpr = null;
+        try {
+            expr = parseExpression();
+        }
+        catch (e:ParseError) {
+            addError(e);
+            expr = new NLiteral(nextNodeId++, currentPos(), null, Null);
+        }
         if (hasParen) expect(RParen);
         return expr;
     }
@@ -1500,7 +1708,29 @@ class Parser {
         if (check(type)) {
             return advance();
         }
-        throw new ParseError('Expected ${type}, got ${isAtEnd() ? 'EoF' : Std.string(tokens[current].type)}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+        else {
+            final error = new ParseError('Expected ${type}, got ${isAtEnd() ? 'EoF' : Std.string(tokens[current].type)}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+            switch type {
+                case RBrace | RParen | Unindent:
+                    addError(error);
+                    return new Token(type, currentPos());
+                case _:
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Check if next token is an identifier token.
+     * @return `true` if the next token is an identifier
+     */
+    function checkIdentifier():Bool {
+        return switch (tokens[current].type) {
+            case Identifier(name):
+                true;
+            case _:
+                false;
+        }
     }
 
     /**
@@ -1605,7 +1835,7 @@ class Parser {
 
         while (!isAtEnd()) {
             switch (tokens[current].type) {
-                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwIf:
+                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwIf | Indent:
                     return;
                 case Arrow:
                     advance();
@@ -1631,6 +1861,14 @@ class Parser {
             case RBrace | Arrow | KwElse: false;
             case _: true;
         }
+    }
+
+    function addError(error:ParseError):ParseError {
+        if (errors == null) errors = [];
+        if (!errors.contains(error)) {
+            errors.push(error);
+        }
+        return error;
     }
 
     /**

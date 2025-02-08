@@ -1,5 +1,6 @@
 package loreline.lsp;
 
+import Type as HxType;
 import loreline.Node;
 import loreline.Position;
 import loreline.Printer;
@@ -33,7 +34,7 @@ class SymbolPrinter {
      * @return Array of document symbols
      */
     public function print(node:Node):Array<DocumentSymbol> {
-        return switch Type.getClass(node) {
+        return switch HxType.getClass(node) {
             case Script: printScript(cast node);
             case _: [];
         }
@@ -48,7 +49,7 @@ class SymbolPrinter {
         final symbols:Array<DocumentSymbol> = [];
 
         for (decl in script.declarations) {
-            switch Type.getClass(decl) {
+            switch HxType.getClass(decl) {
                 case NChoiceStatement:
                     symbols.push(printChoice(cast decl));
                 case NIfStatement:
@@ -78,7 +79,7 @@ class SymbolPrinter {
         final children:Array<DocumentSymbol> = [];
 
         for (node in beat.body) {
-            switch Type.getClass(node) {
+            switch HxType.getClass(node) {
                 case NChoiceStatement:
                     children.push(printChoice(cast node));
                 case NIfStatement:
@@ -113,7 +114,7 @@ class SymbolPrinter {
     function printCharacterDecl(char:NCharacterDecl):DocumentSymbol {
         final children:Array<DocumentSymbol> = [];
 
-        for (prop in char.properties) {
+        for (prop in char.fields) {
             children.push({
                 name: prop.name,
                 detail: printValue(prop.value),
@@ -142,7 +143,7 @@ class SymbolPrinter {
      */
     function printStateDecl(state:NStateDecl):DocumentSymbol {
         final children:Array<DocumentSymbol> = [];
-        final fields = state.fields.value;
+        final fields = state.fields;
 
         for (field in (fields:Array<NObjectField>)) {
             children.push({
@@ -191,7 +192,7 @@ class SymbolPrinter {
             };
 
             for (node in option.body) {
-                switch Type.getClass(node) {
+                switch HxType.getClass(node) {
                     case NChoiceStatement:
                         optionSymbol.children.push(printChoice(cast node));
                     case NIfStatement:
@@ -241,7 +242,7 @@ class SymbolPrinter {
         }
 
         if (ifStmt.elseBranch != null && ifStmt.elseBranch.body.length == 1) {
-            if (Type.getClass(ifStmt.elseBranch.body[0]) == NIfStatement) {
+            if (HxType.getClass(ifStmt.elseBranch.body[0]) == NIfStatement) {
                 for (symbol in printIf(cast ifStmt.elseBranch.body[0])) {
                     result.push(symbol);
                 }
@@ -262,7 +263,7 @@ class SymbolPrinter {
         final children:Array<DocumentSymbol> = [];
 
         for (node in block.body) {
-            switch Type.getClass(node) {
+            switch HxType.getClass(node) {
                 case NChoiceStatement:
                     children.push(printChoice(cast node));
                 case NIfStatement:

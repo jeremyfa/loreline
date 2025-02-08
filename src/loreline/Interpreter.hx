@@ -241,26 +241,28 @@ class Interpreter {
         this.handleChoice = handleChoice;
         this.handleFinish = handleFinish;
 
-        // Build beat lookup map
-        for (decl in script.declarations) {
-            if (decl is NBeatDecl) {
-                // Add beat
-                final beat:NBeatDecl = cast decl;
-                initializeTopLevelBeat(beat);
-            }
-        }
-
-        // Build character lookup map
-        for (decl in script.declarations) {
-            if (decl is NCharacterDecl) {
-                // Add NCharacterDecl
-                final character:NCharacterDecl = cast decl;
-                initializeTopLevelCharacter(character);
-            }
-        }
-
         // Build default function
         initializeTopLevelFunctions(functions);
+
+        // Init top level declarations
+        for (decl in script.declarations) {
+            switch Type.getClass(decl) {
+
+                // State
+                case NStateDecl:
+                    initializeTopLevelState(cast decl);
+
+                // Character
+                case NCharacterDecl:
+                    initializeTopLevelCharacter(cast decl);
+
+                // Beat
+                case NBeatDecl:
+                    initializeTopLevelBeat(cast decl);
+
+                case _:
+            }
+        }
 
     }
 
@@ -365,14 +367,6 @@ class Interpreter {
      * Starts script execution from the beginning or a specific beat
      */
     public function start(?beatName:String) {
-
-        // Initialize global state from declarations
-        for (decl in script.declarations) {
-            if (decl is NStateDecl) {
-                final state = cast(decl, NStateDecl);
-                initializeTopLevelState(state);
-            }
-        }
 
         // Start execution
         var resolvedBeat:NBeatDecl = null;
@@ -498,7 +492,7 @@ class Interpreter {
         }
 
         // Evaluate state values
-        for (field in (state.fields.value:Array<NObjectField>)) {
+        for (field in state.fields) {
             setField(topLevelState.fields, field.name, evaluateExpression(field.value));
         }
 
@@ -527,8 +521,8 @@ class Interpreter {
         final characterState = new RuntimeCharacter();
         topLevelCharacters.set(character.name, characterState);
 
-        // Evaluate character properties
-        for (field in character.properties) {
+        // Evaluate character fields
+        for (field in character.fields) {
             setField(characterState.fields, field.name, evaluateExpression(field.value));
         }
 
@@ -553,7 +547,7 @@ class Interpreter {
         }
 
         // Evaluate state values
-        for (field in (state.fields.value:Array<NObjectField>)) {
+        for (field in state.fields) {
             setField(runtimeState.fields, field.name, evaluateExpression(field.value));
         }
 
@@ -624,7 +618,6 @@ class Interpreter {
     }
 
     function evalBeatDecl(beat:NBeatDecl, next:()->Void) {
-        debug('eval beat decl name=${beat.name}');
 
         // Add beat to current scope.
         // It will be available as long as we don't leave that scope
@@ -643,7 +636,6 @@ class Interpreter {
     }
 
     function evalBeatRun(beat:NBeatDecl, next:()->Void) {
-        debug('eval beat run name=${beat.name}');
 
         // Push new scope
         push({
@@ -683,7 +675,6 @@ class Interpreter {
     }
 
     function evalNodeBody(node:AstNode, body:Array<AstNode>, next:()->Void) {
-        debug('eval node body length=${body.length}');
 
         // Push new scope
         push({
@@ -723,7 +714,6 @@ class Interpreter {
     }
 
     function evalStateDecl(state:NStateDecl, next:()->Void) {
-        debug('eval state decl fields=${[for (field in (state.fields.value:Array<NObjectField>)) field.name].join(',')}');
 
         // This will initialize the state if it's temporary
         // or the first time we encounter it, if it is a persistent one
@@ -737,7 +727,6 @@ class Interpreter {
     }
 
     function evalText(text:NTextStatement, next:()->Void) {
-        debug('eval text content=${text.content}');
 
         // First evaluate the content from the given text
         final content = evaluateString(text.content);
@@ -750,7 +739,6 @@ class Interpreter {
     }
 
     function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
-        debug('eval dialogue content=${dialogue.content}');
 
         // First evaluate the content from the given dialogue
         final content = evaluateString(dialogue.content);
@@ -763,7 +751,6 @@ class Interpreter {
     }
 
     function evalChoice(choice:NChoiceStatement, next:()->Void) {
-        debug('eval choice length=${choice.options.length}');
 
         // Compute choice contents
         final options:Array<ChoiceOption> = [];
@@ -797,7 +784,6 @@ class Interpreter {
     }
 
     function evalChoiceOption(option:NChoiceOption, next:()->Void) {
-        debug('eval choice option=${option.text}');
 
         // Evaluate child nodes of this choice option.
         // Child nodes will be evaluated in a child scope associated
@@ -807,7 +793,6 @@ class Interpreter {
     }
 
     function evalIf(ifStmt:NIfStatement, next:()->Void) {
-        debug('eval if');
 
         final isTrue = evaluateCondition(ifStmt.condition);
 
@@ -823,7 +808,6 @@ class Interpreter {
     }
 
     function evalAssignment(assign:NAssign, next:()->Void) {
-        debug('eval assign');
 
         final target = resolveAssignmentTarget(assign.target);
         final value = evaluateExpression(assign.value);
@@ -883,7 +867,6 @@ class Interpreter {
     }
 
     function evalTransition(transition:NTransition) {
-        debug('eval transition target=${transition.target}');
 
         final beatName = transition.target;
         if (beatName == ".") {
@@ -937,12 +920,12 @@ class Interpreter {
                         text = text.ltrim();
                     }
                     final len = text.uLength();
-                    if (len > 0) keepWhitespace = false;
+                    if (len > 0) keepWhitespace = true;
                     offset += len;
                     buf.add(text);
 
                 case Expr(expr):
-                    keepWhitespace = false;
+                    keepWhitespace = true;
                     if (expr is NAccess) {
                         // When providing a character object,
                         // implicitly read the character's `name` field
@@ -1089,7 +1072,19 @@ class Interpreter {
 
             case NStringLiteral:
                 final str:NStringLiteral = cast expr;
-                evaluateString(str).text;
+                if (str.parts.length == 1 && str.quotes == Unquoted) {
+                    switch str.parts[0].type {
+                        case Expr(expr):
+                            // The literal is actually just an unquoted $... interpolation,
+                            // so we can treat it as a normal expression in this context.
+                            evaluateExpression(expr);
+                        case _:
+                            evaluateString(str).text;
+                    }
+                }
+                else {
+                    evaluateString(str).text;
+                }
 
             case NAccess:
                 final access:NAccess = cast expr;
@@ -1110,6 +1105,9 @@ class Interpreter {
                     else {
                         throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
                     }
+                }
+                else if (index is String) {
+                    getField(target, index);
                 }
                 else {
                     throw new RuntimeError('Invalid array access', arrAccess.pos);

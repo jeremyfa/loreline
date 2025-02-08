@@ -17,10 +17,17 @@ class Loreline {
     public static function parse(input:String):Script {
 
         final lexer = new Lexer(input);
-        final parser = new Parser(lexer.tokenize());
+        final tokens = lexer.tokenize();
+        //trace(tokens);
+        final parser = new Parser(tokens);
 
         final result = parser.parse();
+        final lexerErrors = lexer.getErrors();
         final parseErrors = parser.getErrors();
+
+        if (lexerErrors != null && lexerErrors.length > 0) {
+            throw lexerErrors[0];
+        }
 
         if (parseErrors != null && parseErrors.length > 0) {
             throw parseErrors[0];
