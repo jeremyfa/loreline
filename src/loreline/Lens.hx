@@ -620,7 +620,55 @@ class Lens {
             }
         });
 
+        // Traverse AST looking for string literals with tags
+        script.each((node, parent) -> {
+            switch Type.getClass(node) {
+                case NStringLiteral:
+                    processStringLiteral(cast node);
+                case _:
+            }
+        });
+
         return [for (tag in tags.keys()) tag];
+    }
+
+    /**
+     * Count every occurence of tags
+     * @return Map of tag counts
+     */
+    public function countTags():Map<String,Int> {
+        final tags = new Map<String, Int>();
+
+        // Helper to process string literal
+        function processStringLiteral(str:NStringLiteral) {
+            for (part in str.parts) {
+                switch part.type {
+                    case Tag(_, content):
+                        // Check if content is a simple string without interpolation
+                        if (content.parts.length == 1) {
+                            switch content.parts[0].type {
+                                case Raw(text):
+                                    text = text.trim();
+                                    final prevCount = tags.get(text) ?? 0;
+                                    tags.set(text, prevCount + 1);
+                                case _:
+                            }
+                        }
+                    case _:
+                }
+            }
+        }
+
+        // Traverse AST looking for string literals with tags
+        script.each((node, parent) -> {
+            switch Type.getClass(node) {
+                case NStringLiteral:
+                    processStringLiteral(cast node);
+                case _:
+            }
+        });
+
+        return tags;
     }
 
     /**

@@ -502,7 +502,8 @@ class Server {
                                     detail: "Character property",
                                     insertText: field.name,
                                     insertTextMode: AsIs,
-                                    insertTextFormat: PlainText
+                                    insertTextFormat: PlainText,
+                                    documentation: documentationForNode(field)
                                 });
                             }
                             return items;
@@ -524,7 +525,8 @@ class Server {
                                             detail: "Object field",
                                             insertText: field.name,
                                             insertTextMode: AsIs,
-                                            insertTextFormat: PlainText
+                                            insertTextFormat: PlainText,
+                                            documentation: documentationForNode(field)
                                         });
                                     }
                                     return items;
@@ -582,7 +584,8 @@ class Server {
                     detail: "Character",
                     insertText: character.name,
                     insertTextMode: AsIs,
-                    insertTextFormat: PlainText
+                    insertTextFormat: PlainText,
+                    documentation: documentationForNode(character)
                 });
             }
 
@@ -594,7 +597,8 @@ class Server {
                     detail: "State field",
                     insertText: field.name,
                     insertTextMode: AsIs,
-                    insertTextFormat: PlainText
+                    insertTextFormat: PlainText,
+                    documentation: documentationForNode(field)
                 });
             }
 
@@ -606,7 +610,8 @@ class Server {
                     detail: "Beat",
                     insertText: beat.name,
                     insertTextMode: AsIs,
-                    insertTextFormat: PlainText
+                    insertTextFormat: PlainText,
+                    documentation: documentationForNode(beat)
                 });
             }
 
@@ -685,7 +690,8 @@ class Server {
             items.push({
                 label: field.name,
                 kind: CompletionItemKind.Variable,
-                detail: "State field"
+                detail: "State field",
+                documentation: documentationForNode(field)
             });
         }
 
@@ -694,7 +700,8 @@ class Server {
             items.push({
                 label: character.name,
                 kind: CompletionItemKind.Class,
-                detail: "Character"
+                detail: "Character",
+                documentation: documentationForNode(character)
             });
         }
 
@@ -715,7 +722,8 @@ class Server {
                 detail: "Beat",
                 insertText: (insert ?? '') + beat.name,
                 insertTextMode: AsIs,
-                insertTextFormat: PlainText
+                insertTextFormat: PlainText,
+                documentation: documentationForNode(beat)
             });
         }
 
@@ -727,12 +735,15 @@ class Server {
      */
     function getTagCompletions(lens:Lens):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
+        final counts = lens.countTags();
 
         for (tag in lens.getAllTags()) {
+            final uses = counts.get(tag);
             items.push({
                 label: tag,
                 kind: CompletionItemKind.Enum,
-                detail: "Tag"
+                detail: "Tag",
+                documentation: 'Used $uses time' + (uses == 1 ? '' : 's')
             });
         }
 
@@ -789,7 +800,7 @@ class Server {
                         result.push({
                             targetUri: uri,
                             targetRange: rangeFromLorelinePosition(peekNode.pos, content),
-                            targetSelectionRange: rangeFromLorelinePosition(resolved.pos, content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
                         });
                     }
@@ -805,7 +816,7 @@ class Server {
                         result.push({
                             targetUri: uri,
                             targetRange: rangeFromLorelinePosition(peekNode.pos, content),
-                            targetSelectionRange: rangeFromLorelinePosition(resolved.pos, content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
                         });
                     }
@@ -1085,6 +1096,34 @@ class Server {
         }
 
         return title;
+
+    }
+
+    function documentationForNode(node:AstNode):MarkupContent {
+
+        final description:Array<String> = [];
+
+        if (node.leadingComments != null) {
+            for (comment in node.leadingComments) {
+                description.push(comment.content.trim());
+            }
+        }
+
+        if (node.trailingComments != null) {
+            if (description.length > 0) {
+                description.push('');
+                description.push('---');
+                description.push('');
+            }
+            for (comment in node.trailingComments) {
+                description.push(comment.content.trim());
+            }
+        }
+
+        return {
+            kind: MarkupKind.Markdown,
+            value: description.join('\n')
+        };
 
     }
 
