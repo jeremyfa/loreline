@@ -1230,6 +1230,48 @@ class Lexer {
     }
 
     /**
+     * Returns whether the input at the given position begins with a label pattern (identifier:).
+     * @param pos Position to check from
+     * @return True if a label starts at the position, false otherwise
+     */
+    function isLabelStart(pos:Int):Bool {
+        // Skip any whitespace and comments before looking for label
+        pos = skipWhitespaceAndComments(pos);
+
+        // Check if we have a valid identifier
+        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
+            return false;
+        }
+
+        // Track the initial position
+        var startPos = pos;
+
+        // Read through identifier characters
+        pos++;
+        while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
+            pos++;
+        }
+
+        // Skip whitespace between identifier and colon
+        while (pos < length && isWhitespace(input.uCharCodeAt(pos))) {
+            pos++;
+        }
+
+        // Must end with a colon
+        if (pos >= length || input.uCharCodeAt(pos) != ":".code) {
+            return false;
+        }
+
+        // Verify that what we read as an identifier is not a keyword
+        final word = input.uSubstr(startPos, pos - startPos);
+        if (KEYWORDS.exists(word)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Returns whether the input at the given position is the start of a function or method call.
      * @param pos Position to check from
      * @return True if a function call starts at the position, false otherwise
@@ -1746,7 +1788,7 @@ class Lexer {
 
         // More skip cases
         if (isValue) {
-            if (isCallStart(pos)) {
+            if (isCallStart(pos) || isLabelStart(pos)) {
                 return null;
             }
         }
@@ -1794,12 +1836,12 @@ class Lexer {
         if (isValue) {
             // Skip if not after a label or inside brackets
             if (inBrackets) {
-                if (!followsOnlyWhitespacesOrCommentsInLine() && !isAfterComma() && !isAfterLBracket()) {
+                if (!followsOnlyWhitespacesOrCommentsInLine() && !isAfterComma() && !isAfterLBracket() && !isAfterLabel()) {
                     return null;
                 }
             }
             else {
-                if (!isAssignValue && !isAfterLabel() && !isAfterComma()) {
+                if (!isAssignValue && !isAfterLabel()) {
                     return null;
                 }
             }

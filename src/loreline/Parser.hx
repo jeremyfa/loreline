@@ -66,26 +66,16 @@ class Parser {
      * @return The next token in the stream
      */
     function peek():Token {
-        if (current + 1 >= tokens.length) {
-            return tokens[tokens.length - 1]; // Return EOF token
+        var i = current + 1;
+        while (i < tokens.length) {
+            switch (tokens[i].type) {
+                case CommentLine(_) | CommentMultiLine(_) | LineBreak:
+                    i++;
+                case _:
+                    return tokens[i];
+            }
         }
-        return tokens[current + 1];
-    }
-
-    /**
-     * Looks ahead two tokens without consuming them.
-     * @return Token two positions ahead
-     */
-    function peekNext():Token {
-        return tokens[current + 2];
-    }
-
-    /**
-     * Gets the type of the next token without consuming it.
-     * @return TokenType of the next token
-     */
-    function peekType():TokenType {
-        return peek().type;
+        return tokens[tokens.length - 1]; // Return EOF token
     }
 
     /**
@@ -308,6 +298,9 @@ class Parser {
         // Handle leading comments and line breaks
         while (isComment(tokens[current].type) || tokens[current].type == LineBreak) {
             if (isComment(tokens[current].type)) {
+                if (pendingComments == null) {
+                    pendingComments = [];
+                }
                 pendingComments.push(new Comment(
                     nextNodeId++,
                     currentPos(),
@@ -1009,8 +1002,14 @@ class Parser {
                 attachComments(new NLiteral(nextNodeId++, startPos, null, Null));
 
             case Identifier(name):
-                advance();
-                parseIdentifierExpression(startPos, name);
+                if (peek().type == Colon) {
+                    final fields = [parseObjectField()];
+                    new NLiteral(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), fields, Object(Plain));
+                }
+                else {
+                    advance();
+                    parseIdentifierExpression(startPos, name);
+                }
 
             case LBracket:
                 parseArrayLiteral();
