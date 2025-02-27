@@ -41,6 +41,40 @@ async function command(cmd, args, options) {
     });
 }
 
+function walkDirectory(dir, callback) {
+    // Get the contents of the directory
+    const entries = fs.readdirSync(dir);
+
+    // Iterate through each entry
+    for (const entry of entries) {
+        // Create full path
+        const fullPath = path.join(dir, entry);
+
+        // Get file/directory stats
+        const stats = fs.statSync(fullPath);
+
+        if (stats.isDirectory()) {
+            // Recursively walk through subdirectories
+            walkDirectory(fullPath, callback);
+        } else {
+            // Call the callback with the file path
+            callback(fullPath);
+        }
+    }
+}
+
+function extractCsNamespace(content) {
+    // Match 'namespace' followed by any valid C# namespace characters
+    // Handles optional whitespace and the opening brace
+    const namespaceMatch = content.match(/namespace\s+([\w.]+)\s*{/);
+
+    if (namespaceMatch) {
+        return namespaceMatch[1];
+    }
+
+    return null; // Return null if no namespace found
+}
+
 function isLinuxArm64() {
     try {
         const arch = execSync('uname -m').toString().trim();
@@ -60,8 +94,11 @@ async function main() {
     var haxelib = process.platform == 'win32' ? 'haxelib.cmd' : './haxelib';
     var haxe = process.platform == 'win32' ? 'haxe.cmd' : './haxe';
 
-    let haxeBuildArgs = ['build.hxml'];
+    let haxeBuildArgs = [];
     let buildCpp = rawArgs.indexOf('--cpp') != -1;
+    let buildCs = rawArgs.indexOf('--cs') != -1;
+    let buildCsDll = rawArgs.indexOf('--cs-dll') != -1;
+    let buildJs = rawArgs.indexOf('--js') != -1;
     let debug = false;
 
     let i = 0;
@@ -83,11 +120,13 @@ async function main() {
         fs.mkdirSync(haxelibRepoPath);
     }
     await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
+    await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
 
     if (buildCpp) {
 
         let haxeBuildCppArgs = [
-            '--cpp', 'build',
+            'build-cli.hxml',
+            '--cpp', 'build/cpp',
             '-D', 'HXCPP_DEBUG_LINK',
             '-D', 'HXCPP_STACK_LINE',
             '-D', 'HXCPP_STACK_TRACE',
@@ -102,23 +141,23 @@ async function main() {
             await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                 '-D', 'mac', '-D', 'mac_arm64', '-D', 'no-compilation'
             ]));
-            await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command('../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build', 'cpp') });
             if (debug) {
-                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-arm64'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli-debug'), path.join(__dirname, 'build/cpp/loreline-arm64'));
             }
             else {
-                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'build/loreline-arm64'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli'), path.join(__dirname, 'build/cpp/loreline-arm64'));
             }
 
             await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                 '-D', 'mac', '-D', 'mac_x86_64', '-D', 'no-compilation'
             ]));
-            await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command('../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build', 'cpp') });
             if (debug) {
-                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'build/loreline-x86_64'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli-debug'), path.join(__dirname, 'build/cpp/loreline-x86_64'));
             }
             else {
-                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'build/loreline-x86_64'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli'), path.join(__dirname, 'build/cpp/loreline-x86_64'));
             }
 
             if (fs.existsSync(path.join(__dirname, 'loreline'))) {
@@ -127,8 +166,8 @@ async function main() {
 
             await command('lipo', [
                 '-create', 'loreline-arm64', 'loreline-x86_64',
-                '-output', '../loreline'
-            ], { cwd: path.join(__dirname, 'build') });
+                '-output', '../../loreline'
+            ], { cwd: path.join(__dirname, 'build', 'cpp') });
         }
         else if (process.platform == 'win32') {
             console.log("Build loreline for windows");
@@ -138,20 +177,20 @@ async function main() {
             ]));
 
             let haxelibCmd = fs.readFileSync(path.join(__dirname, 'haxelib.cmd'), 'utf8');
-            haxelibCmd = haxelibCmd.split('/git/').join('/../git/');
-            fs.writeFileSync(path.join(__dirname, 'build', 'haxelib.cmd'), haxelibCmd);
+            haxelibCmd = haxelibCmd.split('/git/').join('/../../git/');
+            fs.writeFileSync(path.join(__dirname, 'build', 'cpp', 'haxelib.cmd'), haxelibCmd);
 
-            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build', 'cpp') });
 
             if (fs.existsSync(path.join(__dirname, 'loreline.exe'))) {
                 fs.unlinkSync(path.join(__dirname, 'loreline.exe'));
             }
 
             if (debug) {
-                fs.renameSync(path.join(__dirname, 'build/Cli-debug.exe'), path.join(__dirname, 'loreline.exe'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli-debug.exe'), path.join(__dirname, 'loreline.exe'));
             }
             else {
-                fs.renameSync(path.join(__dirname, 'build/Cli.exe'), path.join(__dirname, 'loreline.exe'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli.exe'), path.join(__dirname, 'loreline.exe'));
             }
         }
         else {
@@ -161,13 +200,13 @@ async function main() {
                 await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                     '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_arm64'
                 ]));
-                await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+                await command('../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build', 'cpp') });
             }
             else {
                 await command(haxe, haxeBuildCppArgs.concat(haxeBuildArgs).concat([
                     '-D', 'linux', '-D', 'no-compilation', '-D', 'linux_x86_64'
                 ]));
-                await command('../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build') });
+                await command('../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: path.join(__dirname, 'build', 'cpp') });
             }
 
             if (fs.existsSync(path.join(__dirname, 'loreline'))) {
@@ -175,12 +214,126 @@ async function main() {
             }
 
             if (debug) {
-                fs.renameSync(path.join(__dirname, 'build/Cli-debug'), path.join(__dirname, 'loreline'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli-debug'), path.join(__dirname, 'loreline'));
             }
             else {
-                fs.renameSync(path.join(__dirname, 'build/Cli'), path.join(__dirname, 'loreline'));
+                fs.renameSync(path.join(__dirname, 'build/cpp/Cli'), path.join(__dirname, 'loreline'));
             }
         }
+    }
+
+    if (buildCs) {
+        console.log('Export loreline for C#');
+
+        if (fs.existsSync('build/cs/Loreline')) {
+            fs.rmSync('build/cs/Loreline', { recursive: true, force: true });
+        }
+
+        let haxeBuildCsArgs = [
+            '--class-path', 'src',
+            '--cs', 'build/cs',
+            '-D', 'no-compilation',
+            '-D', 'no-root',
+            '-D', 'real-position',
+            '-D', 'loreline_use_cs_types',
+            '--main', 'loreline.lib.Library'
+        ];
+
+        await command(haxe, haxeBuildCsArgs.concat(haxeBuildArgs).concat([]));
+
+        fs.unlinkSync('build/cs/src/loreline/lib/_Library/Library_Fields_.cs');
+        //fs.unlinkSync('build/cs/src/loreline/Loreline.cs');
+        fs.unlinkSync('build/cs/hxcs_build.txt');
+
+        if (fs.existsSync('cs/Loreline/Internal'))
+            fs.rmSync('cs/Loreline/Internal', { recursive: true, force: true });
+        if (fs.existsSync('cs/Loreline/Runtime'))
+            fs.rmSync('cs/Loreline/Runtime', { recursive: true, force: true });
+
+        walkDirectory('build/cs/src', (filePath) => {
+            if (filePath.endsWith('.cs')) {
+                const original = fs.readFileSync(filePath, 'utf8');
+                let content = original;
+
+                // Replace any haxe.X with Loreline.Hx.X (with X capitalized)
+                content = content.replace(
+                    /\bhaxe\.(\w+)\b/g,
+                    (_, identifier) => `Loreline.Internal.${identifier.charAt(0).toUpperCase() + identifier.slice(1)}`
+                );
+
+                content = content.replace(/\bhaxe\b/g, 'Loreline.Internal');
+                content = content.replace(/\bnamespace cs\b/g, 'namespace Loreline.Internal.Cs');
+                content = content.replace(/\bcs.\b/g, 'Loreline.Internal.Cs.');
+                content = content.replace(/\bloreline\b/g, 'Loreline.Runtime');
+                content = content.replace(/\bLoreline\.Internal\./g, 'global::Loreline.Internal.');
+                content = content.replace(/\bnamespace global::Loreline\.Internal\./g, 'namespace Loreline.Internal.');
+                content = content.replace(/\bglobal::global::Loreline\.Internal\./g, 'global::Loreline.Internal.');
+
+                // Disable warnings related to AOT (the code is still expected to work in that
+                // situation because it should not rely on actual C# reflection. Uses FieldLookup instead)
+                content = content.split("#pragma warning disable 109, 114, 219, 429, 168, 162").join("#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060");
+
+                const namespace = extractCsNamespace(content);
+                if (namespace == null) {
+                    throw 'Failed to extract namespace for file: ' + filePath;
+                }
+                const namespaceParts = namespace.split('.');
+
+                let newPath = path.join('cs', namespaceParts[0], namespaceParts[1], path.basename(filePath));
+
+                if (!fs.existsSync(path.dirname(newPath))) {
+                    fs.mkdirSync(path.dirname(newPath), { recursive: true });
+                }
+                if (fs.existsSync(newPath)) {
+                    throw 'File path collision: ' + newPath;
+                }
+                fs.writeFileSync(newPath, content);
+            }
+        });
+
+        fs.rmSync('build/cs/src', { recursive: true, force: true });
+
+        // These identify Loreline
+        const solutionGuid = '60F34EF9-0A9A-47B7-883F-8EC1F188C262';
+        const projectGuid = 'F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4';
+
+        if (buildCsDll) {
+            const csConfig = debug ? 'Debug' : 'Release';
+            const csPlatform = 'netstandard2.1';
+            const dllFiles = [
+                'Loreline.deps.json',
+                'Loreline.dll',
+                'Loreline.pdb',
+                'Loreline.xml'
+            ];
+            for (let name of dllFiles) {
+                if (fs.existsSync('cs/' + name)) {
+                    fs.rmSync('cs/' + name, { recursive: true, force: true });
+                }
+            }
+            await command('dotnet', ['build', '-c', csConfig], { cwd: 'cs' });
+            for (let name of dllFiles) {
+                fs.copyFileSync(
+                    'build/cs/bin/Loreline/' + csConfig + '/' + csPlatform + '/' + name,
+                    'cs/' + name
+                );
+            }
+        }
+
+    }
+
+    if (buildJs) {
+        console.log('Export loreline for Javascript');
+
+        let haxeBuildJsArgs = [
+            '--class-path', 'src',
+            '--js', 'build/loreline.js',
+            '-D', 'js-es=6',
+            '--main', 'loreline.lib.Library'
+        ];
+
+        await command(haxe, haxeBuildJsArgs.concat(haxeBuildArgs).concat([]));
+
     }
 
 }

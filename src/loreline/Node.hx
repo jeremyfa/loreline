@@ -1,6 +1,318 @@
 package loreline;
 
+import haxe.Int64;
+import haxe.ds.StringMap;
 import loreline.Lexer;
+
+enum abstract NodeIdStep(Int) {
+
+    var SECTION = 1;
+
+    var BRANCH = 2;
+
+    var BLOCK = 3;
+
+    var NODE = 4;
+
+}
+
+abstract NodeId(Int64) {
+
+    static inline final OFFSET:Int = 32768;
+
+    static inline final MAX:Int = 65535;
+
+    public static final UNDEFINED:NodeId = new NodeId(0, 0, 0, 0);
+
+    public function new(section:Int, branch:Int, block:Int, node:Int) {
+        if (section < 0 || section > MAX) {
+            throw 'Section value ($section) should be between 0 and $MAX';
+        }
+        if (branch < 0 || branch > MAX) {
+            throw 'Branch value ($branch) should be between 0 and $MAX';
+        }
+        if (block < 0 || block > MAX) {
+            throw 'Block value ($block) should be between 0 and $MAX';
+        }
+        if (node < 0 || node > MAX) {
+            throw 'Node value ($node) should be between 0 and $MAX';
+        }
+        this = Int64.make(
+            packInt32(section - OFFSET, branch - OFFSET), packInt32(block - OFFSET, node - OFFSET)
+        );
+    }
+
+    public static function fromInt64(value:Int64):NodeId {
+        return cast value;
+    }
+
+    public static function fromString(str:String):NodeId {
+        final parts = str.split('.');
+        return new NodeId(
+            Std.parseInt(parts[0]),
+            Std.parseInt(parts[1]),
+            Std.parseInt(parts[2]),
+            Std.parseInt(parts[3])
+        );
+    }
+
+    public static function fromTwoInt32(high:Int, low:Int):NodeId {
+        return fromInt64(Int64.make(high, low));
+    }
+
+    inline static function packInt32(high:Int, low:Int):Int {
+        if (high < 0) high = (high + 65536) & 0xFFFF;
+        if (low < 0) low = (low + 65536) & 0xFFFF;
+        return (high << 16) | (low & 0xFFFF);
+    }
+
+    inline static function int32GetLow(value:Int):Int {
+        var low = value & 0xFFFF;
+        return low >= 32768 ? low - 65536 : low;
+    }
+
+    inline static function int32SetLow(target:Int, value:Int):Int {
+        if (value < 0) value = (value + 65536) & 0xFFFF;
+        return (target & 0xFFFF0000) | value;
+    }
+
+    inline static function int32GetHigh(value:Int):Int {
+        var high = (value >> 16) & 0xFFFF;
+        return high >= 32768 ? high - 65536 : high;
+    }
+
+    inline static function int32SetHigh(target:Int, value:Int):Int {
+        if (value < 0) value = (value + 65536) & 0xFFFF;
+        return (target & 0xFFFF) | (value << 16);
+    }
+
+    public var section(get,set):Int;
+    inline function get_section():Int {
+        return int32GetHigh(this.high) + OFFSET;
+    }
+    inline function set_section(section:Int):Int {
+        this = Int64.make(int32SetHigh(this.high, section - OFFSET), this.low);
+        return section;
+    }
+
+    public var branch(get,set):Int;
+    inline function get_branch():Int {
+        return int32GetLow(this.high) + OFFSET;
+    }
+    inline function set_branch(branch:Int):Int {
+        this = Int64.make(int32SetLow(this.high, branch - OFFSET), this.low);
+        return branch;
+    }
+
+    public var block(get,set):Int;
+    inline function get_block():Int {
+        return int32GetHigh(this.low) + OFFSET;
+    }
+    inline function set_block(block:Int):Int {
+        this = Int64.make(this.high, int32SetHigh(this.low, block - OFFSET));
+        return block;
+    }
+
+    public var node(get,set):Int;
+    inline function get_node():Int {
+        return int32GetLow(this.low) + OFFSET;
+    }
+    inline function set_node(node:Int):Int {
+        this = Int64.make(this.high, int32SetLow(this.low, node - OFFSET));
+        return node;
+    }
+
+    public function nextSection():NodeId {
+        final section = abstract.section;
+        if (section == MAX) {
+            throw 'Node id section overflow';
+        }
+        return new NodeId(
+            section + 1, 0, 0, 0
+        );
+    }
+
+    public function nextBranch():NodeId {
+        final branch = abstract.branch;
+        if (branch == MAX) {
+            return nextSection();
+        }
+        return new NodeId(
+            section, branch + 1, 0, 0
+        );
+    }
+
+    public function nextBlock():NodeId {
+        final block = abstract.block;
+        if (block == MAX) {
+            return nextBranch();
+        }
+        return new NodeId(
+            section, branch, block + 1, 0
+        );
+    }
+
+    public function nextNode():NodeId {
+        final node = abstract.node;
+        if (node == MAX) {
+            return nextBlock();
+        }
+        return new NodeId(
+            section, branch, block, node + 1
+        );
+    }
+
+    inline public function toInt64():Int64 {
+        return this;
+    }
+
+    public function toString():String {
+        return '${get_section()}.${get_branch()}.${get_block()}.${get_node()}';
+    }
+
+    @:op(A == B) static function equals(a:NodeId, b:NodeId):Bool {
+        return a.toInt64() == b.toInt64();
+    }
+
+}
+
+@:allow(loreline.NodeIdMapIterator)
+class NodeIdMap<V> {
+
+    final map:Int64Map<V>;
+
+    inline public function new() {
+        map = new Int64Map<V>();
+    }
+
+    inline public function get(key:NodeId):Null<V> {
+        return map.get(key.toInt64());
+    }
+
+    inline public function set(key:NodeId, value:V):Void {
+        map.set(key.toInt64(), value);
+    }
+
+    inline public function remove(key:NodeId):Void {
+        map.remove(key.toInt64());
+    }
+
+    inline public function exists(key:NodeId):Bool {
+        return map.exists(key.toInt64());
+    }
+
+    inline public function clear() {
+        map.clear();
+    }
+
+    public inline function iterator():NodeIdMapIterator<V> {
+        return new NodeIdMapIterator<V>(map);
+    }
+
+    public inline function keys():NodeIdMapKeyIterator<V> {
+        return new NodeIdMapKeyIterator(map);
+    }
+
+    public inline function keyValueIterator():NodeIdMapKeyValueIterator<V> {
+        return new NodeIdMapKeyValueIterator(map);
+    }
+
+}
+
+typedef NodeIdMapKeyVal<V> = {
+    key:NodeId,
+    value:V
+}
+
+private class NodeIdMapIterator<V> {
+    var map:Int64Map<V>;
+    var index:Int;
+
+    public inline function new(map:Int64Map<V>) {
+        this.map = map;
+        this.index = 0;
+        skipNulls();
+    }
+
+    inline function skipNulls() {
+        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+            index++;
+        }
+    }
+
+    public inline function hasNext():Bool {
+        @:privateAccess return index < map._values.length;
+    }
+
+    public inline function next():V {
+        var v = @:privateAccess map._values[index];
+        index++;
+        skipNulls();
+        return v;
+    }
+}
+
+private class NodeIdMapKeyIterator<V> {
+    var map:Int64Map<V>;
+    var index:Int;
+
+    public inline function new(map:Int64Map<V>) {
+        this.map = map;
+        this.index = 0;
+        skipNulls();
+    }
+
+    inline function skipNulls() {
+        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+            index++;
+        }
+    }
+
+    public inline function hasNext():Bool {
+        @:privateAccess return index < map._values.length;
+    }
+
+    public inline function next():NodeId {
+        @:privateAccess var k1 = map._keys1[index];
+        @:privateAccess var k2 = map._keys2[index];
+        index++;
+        skipNulls();
+        return NodeId.fromTwoInt32(k1, k2);
+    }
+}
+
+private class NodeIdMapKeyValueIterator<V> {
+    var map:Int64Map<V>;
+    var index:Int;
+
+    public inline function new(map:Int64Map<V>) {
+        this.map = map;
+        this.index = 0;
+        skipNulls();
+    }
+
+    inline function skipNulls() {
+        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+            index++;
+        }
+    }
+
+    public inline function hasNext():Bool {
+        @:privateAccess return index < map._values.length;
+    }
+
+    public inline function next():NodeIdMapKeyVal<V> {
+        @:privateAccess var k1 = map._keys1[index];
+        @:privateAccess var k2 = map._keys2[index];
+        @:privateAccess var v = map._values[index];
+        index++;
+        skipNulls();
+        return {
+            key: NodeId.fromTwoInt32(k1, k2),
+            value: v
+        };
+    }
+}
 
 /**
  * Base class for all AST nodes. Contains position information and basic JSON conversion.
@@ -11,7 +323,7 @@ class Node {
      * A unique identifier for this node within the AST, used to distinguish
      * it from other nodes in the script.
      */
-    public var id:Int = -1;
+    public var id:NodeId = NodeId.UNDEFINED;
 
     /**
      * Source code position where this node appears.
@@ -22,9 +334,13 @@ class Node {
      * Creates a new AST node.
      * @param pos Position in source where this node appears
      */
-    public function new(id:Int, pos:Position) {
+    public function new(id:NodeId, pos:Position) {
         this.id = id;
         this.pos = pos;
+    }
+
+    public function type():String {
+        return "node";
     }
 
     /**
@@ -33,8 +349,8 @@ class Node {
      */
     public function toJson():Dynamic {
         return {
-            id: id,
-            type: Type.getClassName(Type.getClass(this)).split(".").pop(),
+            id: id.toString(),
+            type: type(),
             pos: pos.toJson()
         };
     }
@@ -69,10 +385,14 @@ class Comment extends Node {
      * @param content The text content of the comment
      * @param multiline Whether this is a multiline comment
      */
-    public function new(id:Int, pos:Position, content:String, multiline:Bool) {
+    public function new(id:NodeId, pos:Position, content:String, multiline:Bool) {
         super(id, pos);
         this.content = content;
         this.multiline = multiline;
+    }
+
+    override function type():String {
+        return "Comment";
     }
 
     /**
@@ -110,10 +430,14 @@ class AstNode extends Node {
      * @param leadingComments Optional array of comments appearing before the node
      * @param trailingComments Optional array of comments appearing after the node
      */
-    public function new(id:Int, pos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos);
         this.leadingComments = leadingComments;
         this.trailingComments = trailingComments;
+    }
+
+    override function type():String {
+        return "AstNode";
     }
 
     override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -171,6 +495,10 @@ class NExpr extends AstNode {
         return super.toJson();
     }
 
+    override function type():String {
+        return "Expr";
+    }
+
 }
 
 /**
@@ -202,11 +530,15 @@ class NStateDecl extends AstNode {
      * @param leadingComments Optional comments before the state
      * @param trailingComments Optional comments after the state
      */
-    public function new(id:Int, pos:Position, temporary:Bool, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, temporary:Bool, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.temporary = temporary;
         this.fields = fields;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "State";
     }
 
     public function get(name:String):NExpr {
@@ -270,10 +602,14 @@ class NObjectField extends AstNode {
      * @param leadingComments Optional comments before the field
      * @param trailingComments Optional comments after the field
      */
-    public function new(id:Int, pos:Position, name:String, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, name:String, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.value = value;
+    }
+
+    override function type():String {
+        return "Field";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -331,12 +667,16 @@ class NCharacterDecl extends AstNode {
      * @param leadingComments Optional comments before the character
      * @param trailingComments Optional comments after the character
      */
-    public function new(id:Int, pos:Position, name:String, namePos:Position, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, name:String, namePos:Position, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.namePos = namePos;
         this.fields = fields;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "Character";
     }
 
     public function get(name:String):NExpr {
@@ -406,11 +746,15 @@ class NBeatDecl extends AstNode {
      * @param leadingComments Optional comments before the beat
      * @param trailingComments Optional comments after the beat
      */
-    public function new(id:Int, pos:Position, name:String, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, name:String, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.body = body;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "Beat";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -484,7 +828,7 @@ class NStringPart extends NExpr {
     /**
      * The type of string part
      */
-    public var type:StringPartType;
+    public var partType:StringPartType;
 
     /**
      * Creates a new string part node.
@@ -493,15 +837,19 @@ class NStringPart extends NExpr {
      * @param leadingComments Optional comments before the string
      * @param trailingComments Optional comments after the string
      */
-    public function new(id:Int, pos:Position, type:StringPartType, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, partType:StringPartType, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
-        this.type = type;
+        this.partType = partType;
+    }
+
+    override function type():String {
+        return "Part";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
-        switch type {
+        switch partType {
             case Raw(_):
             case Expr(expr) | Tag(_, expr):
                 handleNode(expr, this);
@@ -516,15 +864,15 @@ class NStringPart extends NExpr {
      */
     public override function toJson():Dynamic {
         final json = super.toJson();
-        switch type {
+        switch partType {
             case Raw(text):
-                json.type = "Raw";
+                json.part = "Raw";
                 json.text = text;
             case Expr(expr):
-                json.type = "Expr";
+                json.part = "Expr";
                 json.expression = expr.toJson();
             case Tag(closing, expr):
-                json.type = "Tag";
+                json.part = "Tag";
                 json.closing = closing;
                 json.content = expr.toJson();
         }
@@ -554,10 +902,14 @@ class NStringLiteral extends NExpr {
      * @param leadingComments Optional comments before the string
      * @param trailingComments Optional comments after the string
      */
-    public function new(id:Int, pos:Position, quotes:Quotes, parts:Array<NStringPart>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, quotes:Quotes, parts:Array<NStringPart>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.parts = parts;
         this.quotes = quotes;
+    }
+
+    override function type():String {
+        return "String";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -604,9 +956,13 @@ class NTextStatement extends AstNode {
      * @param leadingComments Optional comments before the text
      * @param trailingComments Optional comments after the text
      */
-    public function new(id:Int, pos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.content = content;
+    }
+
+    override function type():String {
+        return "Text";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -657,11 +1013,15 @@ class NDialogueStatement extends AstNode {
      * @param leadingComments Optional comments before the dialogue
      * @param trailingComments Optional comments after the dialogue
      */
-    public function new(id:Int, pos:Position, character:String, characterPos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, character:String, characterPos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.character = character;
         this.characterPos = characterPos;
         this.content = content;
+    }
+
+    override function type():String {
+        return "Dialogue";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -707,10 +1067,14 @@ class NChoiceStatement extends AstNode {
      * @param leadingComments Optional comments before the choice
      * @param trailingComments Optional comments after the choice
      */
-    public function new(id:Int, pos:Position, options:Array<NChoiceOption>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, options:Array<NChoiceOption>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.options = options;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "Choice";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -770,12 +1134,16 @@ class NChoiceOption extends AstNode {
      * @param leadingComments Optional comments before the option
      * @param trailingComments Optional comments after the option
      */
-    public function new(id:Int, pos:Position, text:NStringLiteral, condition:Null<NExpr>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, text:NStringLiteral, condition:Null<NExpr>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.text = text;
         this.condition = condition;
         this.body = body;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "Option";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -834,10 +1202,14 @@ class NBlock extends AstNode {
      * @param leadingComments Optional comments before the beat
      * @param trailingComments Optional comments after the beat
      */
-    public function new(id:Int, pos:Position, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.body = body;
         this.style = Plain;
+    }
+
+    override function type():String {
+        return "Block";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -905,13 +1277,17 @@ class NIfStatement extends AstNode {
      * @param elseLeadingComments Optional comments before the else
      * @param elseTrailingComments Optional comments after the else
      */
-    public function new(id:Int, pos:Position, condition:NExpr, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, condition:NExpr, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.condition = condition;
         this.thenBranch = thenBranch;
         this.elseBranch = elseBranch;
         this.elseLeadingComments = elseLeadingComments;
         this.elseTrailingComments = elseTrailingComments;
+    }
+
+    override function type():String {
+        return "If";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -992,10 +1368,14 @@ class NCall extends NExpr {
      * @param leadingComments Optional comments before the call
      * @param trailingComments Optional comments after the call
      */
-    public function new(id:Int, pos:Position, target:NExpr, args:Array<NExpr>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, target:NExpr, args:Array<NExpr>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.args = args;
+    }
+
+    override function type():String {
+        return "Call";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1048,10 +1428,14 @@ class NTransition extends AstNode {
      * @param leadingComments Optional comments before the transition
      * @param trailingComments Optional comments after the transition
      */
-    public function new(id:Int, pos:Position, target:String, targetPos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, target:String, targetPos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.targetPos = targetPos;
+    }
+
+    override function type():String {
+        return "Transition";
     }
 
     /**
@@ -1078,7 +1462,7 @@ class NLiteral extends NExpr {
     /**
      * Type of the literal value.
      */
-    public var type:LiteralType;
+    public var literalType:LiteralType;
 
     /**
      * Creates a new literal node.
@@ -1088,16 +1472,20 @@ class NLiteral extends NExpr {
      * @param leadingComments Optional comments before the literal
      * @param trailingComments Optional comments after the literal
      */
-    public function new(id:Int, pos:Position, value:Any, type:LiteralType, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, value:Any, literalType:LiteralType, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.value = value;
-        this.type = type;
+        this.literalType = literalType;
+    }
+
+    override function type():String {
+        return "Literal";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
-        switch (type) {
+        switch literalType {
             case Array:
                 for (elem in (value:Array<Dynamic>)) {
                     if (Std.isOfType(elem, Node)) {
@@ -1126,8 +1514,8 @@ class NLiteral extends NExpr {
      */
     public override function toJson():Dynamic {
         final json = super.toJson();
-        json.literalType = type.getName();
-        switch (type) {
+        json.literal = literalType.getName();
+        switch literalType {
             case Array:
                 json.value = [for (elem in (value:Array<Dynamic>)) {
                     if (Std.isOfType(elem, Node)) {
@@ -1191,10 +1579,14 @@ class NAccess extends NExpr {
      * @param leadingComments Optional comments before the access
      * @param trailingComments Optional comments after the access
      */
-    public function new(id:Int, pos:Position, target:Null<NExpr>, name:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, target:Null<NExpr>, name:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.name = name;
+    }
+
+    override function type():String {
+        return "Access";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1246,11 +1638,15 @@ class NAssign extends NExpr {
      * @param leadingComments Optional comments before the assignment
      * @param trailingComments Optional comments after the assignment
      */
-    public function new(id:Int, pos:Position, target:NExpr, op:TokenType, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, target:NExpr, op:TokenType, value:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.op = op;
         this.value = value;
+    }
+
+    override function type():String {
+        return "Assign";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1302,10 +1698,14 @@ class NArrayAccess extends NExpr {
      * @param leadingComments Optional comments before the access
      * @param trailingComments Optional comments after the access
      */
-    public function new(id:Int, pos:Position, target:NExpr, index:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, target:NExpr, index:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.target = target;
         this.index = index;
+    }
+
+    override function type():String {
+        return "ArrayAccess";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1362,11 +1762,15 @@ class NBinary extends NExpr {
      * @param leadingComments Optional comments before the operation
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:Int, pos:Position, left:NExpr, op:TokenType, right:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, left:NExpr, op:TokenType, right:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.left = left;
         this.op = op;
         this.right = right;
+    }
+
+    override function type():String {
+        return "Binary";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1418,10 +1822,14 @@ class NUnary extends NExpr {
      * @param leadingComments Optional comments before
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:Int, pos:Position, op:TokenType, operand:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, op:TokenType, operand:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.op = op;
         this.operand = operand;
+    }
+
+    override function type():String {
+        return "Unary";
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
@@ -1461,9 +1869,13 @@ class NImport extends AstNode {
      * @param leadingComments Optional comments before
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:Int, pos:Position, path:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, path:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.path = path;
+    }
+
+    override function type():String {
+        return "Import";
     }
 
     public override function toJson():Dynamic {

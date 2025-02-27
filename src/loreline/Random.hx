@@ -40,11 +40,15 @@ class Random {
     inline public function new(seed:Float = -1) {
 
         if (seed < 0) {
+            var now = #if sys Sys.time() #else Date.now().getTime() / 1000.0 #end;
+            seed = now * 1000000;
+            seed += Math.random() * 100000;
             #if sys
-            seed = Sys.time() * 960;
-            #else
-            seed = new Date().getTime() * 960;
+            // Add more entropy on sys targets
+            seed += Sys.cpuTime() * 10000;
             #end
+            // Ensure the seed stays within safe bounds
+            seed = seed % 0x7FFFFFFF;
         }
 
         this.seed = seed;

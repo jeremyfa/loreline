@@ -313,7 +313,7 @@ class Printer {
      * @param script Script node to print
      */
     function printScript(script:Script) {
-        for (decl in script.declarations) {
+        for (decl in script.body) {
             printNode(decl);
         }
     }
@@ -541,7 +541,7 @@ class Printer {
             write('"');
         }
         for (part in str.parts) {
-            switch (part.type) {
+            switch (part.partType) {
                 case Raw(text):
                     write(text);
                 case Expr(expr):
@@ -568,7 +568,7 @@ class Printer {
      */
     function printLiteral(lit:NLiteral) {
         printLeadingComments(lit);
-        switch (lit.type) {
+        switch (lit.literalType) {
             case Number:
                 write(Std.string(lit.value));
             case Boolean:

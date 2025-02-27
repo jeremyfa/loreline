@@ -348,7 +348,7 @@ class Token {
  * The lexical analyzer for the Loreline language.
  * Converts source code text into a sequence of tokens.
  */
-class Lexer {
+@:keep class Lexer {
 
     /**
      * Mapping of keywords to their corresponding token types.
@@ -1188,8 +1188,6 @@ class Lexer {
      * @return True if a valid transition starts at the position, false otherwise
      */
     function isTransitionStart(pos:Int):Bool {
-        // Save initial position to restore it later
-        var startPos = pos;
 
         // Check for ->
         if (input.uCharCodeAt(pos) != "-".code || pos >= this.length - 1 || input.uCharCodeAt(pos + 1) != ">".code) {
@@ -1200,16 +1198,25 @@ class Lexer {
         // Skip whitespace and comments between -> and identifier
         pos = skipWhitespaceAndComments(pos);
 
-        // Read identifier
-        if (pos >= this.length || !isIdentifierStart(input.uCharCodeAt(pos))) {
-            pos = startPos;
+        // Read target
+        if (pos >= this.length) {
             return false;
         }
 
-        // Move past identifier
-        pos++;
-        while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
+        final char = input.uCharCodeAt(pos);
+        if (char == ".".code) {
+            // Move past dot
             pos++;
+        }
+        else if (isIdentifierPart(input.uCharCodeAt(pos))) {
+            // Move past identifier
+            pos++;
+            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
+                pos++;
+            }
+        }
+        else {
+            return false;
         }
 
         // Skip any trailing comments
@@ -1219,13 +1226,11 @@ class Lexer {
         if (pos < this.length) {
             var c = input.uCharCodeAt(pos);
             if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
-                pos = startPos;
                 return false;
             }
         }
 
-        // Restore original position and return success
-        pos = startPos;
+        // Return success
         return true;
     }
 
@@ -1784,6 +1789,7 @@ class Lexer {
         // Whether this is an unquoted string value or not
         final inBrackets = isInsideBrackets();
         final isAssignValue = followsAssignStart();
+        final isAfterLabel = isAfterLabel();
         final isValue = (parent == KwState || parent == KwCharacter || inBrackets || isAssignValue);
 
         // More skip cases
@@ -1793,7 +1799,7 @@ class Lexer {
             }
         }
         else {
-            if (isIdentifierExpressionStart(pos) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos)) {
+            if (!isAfterLabel && (isIdentifierExpressionStart(pos) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos))) {
                 return null;
             }
         }
@@ -1836,12 +1842,12 @@ class Lexer {
         if (isValue) {
             // Skip if not after a label or inside brackets
             if (inBrackets) {
-                if (!followsOnlyWhitespacesOrCommentsInLine() && !isAfterComma() && !isAfterLBracket() && !isAfterLabel()) {
+                if (!isAfterLabel && !followsOnlyWhitespacesOrCommentsInLine() && !isAfterComma() && !isAfterLBracket()) {
                     return null;
                 }
             }
             else {
-                if (!isAssignValue && !isAfterLabel()) {
+                if (!isAssignValue && !isAfterLabel) {
                     return null;
                 }
             }

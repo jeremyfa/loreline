@@ -48,7 +48,7 @@ class SymbolPrinter {
     function printScript(script:Script):Array<DocumentSymbol> {
         final symbols:Array<DocumentSymbol> = [];
 
-        for (decl in script.declarations) {
+        for (decl in script.body) {
             switch HxType.getClass(decl) {
                 case NChoiceStatement:
                     symbols.push(printChoice(cast decl));

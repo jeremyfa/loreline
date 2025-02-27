@@ -1,0 +1,6 @@
+--class-path src
+--main loreline.lib.Library
+--cs out/cs
+--no-output
+-D no-compilation
+-D loreline_use_cs_types

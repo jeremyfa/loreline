@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loreline", "Loreline.csproj", "{F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {F3DEFEF5-8B8F-4D6D-8C2C-1DD7F3E309D4}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+    GlobalSection(ExtensibilityGlobals) = postSolution
+        SolutionGuid = {60F34EF9-0A9A-47B7-883F-8EC1F188C262}
+    EndGlobalSection
+EndGlobal

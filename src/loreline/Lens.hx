@@ -27,13 +27,13 @@ class Lens {
     final script:Script;
 
     /** Map of all nodes by their unique ID */
-    final nodesById:Map<Int, Node> = [];
+    final nodesById:NodeIdMap<Node> = new NodeIdMap();
 
     /** Map of node IDs to their parent nodes */
-    final parentNodes:Map<Int, Node> = [];
+    final parentNodes:NodeIdMap<Node> = new NodeIdMap();
 
     /** Map of node IDs to their child nodes */
-    final childNodes:Map<Int, Array<Node>> = [];
+    final childNodes:NodeIdMap<Array<Node>> = new NodeIdMap();
 
     public function new(script:Script) {
         this.script = script;
@@ -44,7 +44,7 @@ class Lens {
      * Initialize all the lookups and analysis data
      */
     function initialize() {
-        // First pass: Build node maps and collect definitions
+        // Build node maps
         script.each((node, parent) -> {
             // Track nodes by ID
             nodesById.set(node.id, node);
@@ -62,6 +62,10 @@ class Lens {
                 children.push(node);
             }
         });
+    }
+
+    public function getNodeById(id:NodeId):Null<Node> {
+        return nodesById.get(id);
     }
 
     /**
@@ -131,7 +135,7 @@ class Lens {
     }
 
     /**
-     * Gets the parent node of a given node
+     * Gets the first parent node matching the given type
      * @param node Child node
      * @return Parent node or null if none found
      */
@@ -201,12 +205,12 @@ class Lens {
             case NLiteral:
                 final literal:NLiteral = cast targetNode;
                 // Only arrays can be indexed
-                if (literal.type == Array) {
+                if (literal.literalType == Array) {
                     final elements:Array<Dynamic> = cast literal.value;
                     // Try to resolve static numeric indices only
                     if (access.index is NLiteral) {
                         final indexLit:NLiteral = cast access.index;
-                        if (indexLit.type == Number) {
+                        if (indexLit.literalType == Number) {
                             final index:Int = Std.int(indexLit.value);
                             if (index >= 0 && index < elements.length) {
                                 // Get the element at the index if it's a node
@@ -225,12 +229,12 @@ class Lens {
                 final field:NObjectField = cast targetNode;
                 if (field.value is NLiteral) {
                     final literal:NLiteral = cast field.value;
-                    if (literal.type == Array) {
+                    if (literal.literalType == Array) {
                         final elements:Array<Dynamic> = cast literal.value;
                         // Try to resolve static numeric indices only
                         if (access.index is NLiteral) {
                             final indexLit:NLiteral = cast access.index;
-                            if (indexLit.type == Number) {
+                            if (indexLit.literalType == Number) {
                                 final index:Int = Std.int(indexLit.value);
                                 if (index >= 0 && index < elements.length) {
                                     // Get the element at the index if it's a node
@@ -295,7 +299,7 @@ class Lens {
                     case NLiteral:
                         // If target is a literal, check if it is an object
                         final literal:NLiteral = cast targetNode;
-                        switch literal.type {
+                        switch literal.literalType {
                             case Object(style):
                                 final fields:Array<NObjectField> = cast literal.value;
                                 for (field in fields) {
@@ -408,6 +412,36 @@ class Lens {
 
     }
 
+    public function findBeatByPathFromNode(path:String, node:Node):Null<NBeatDecl> {
+
+        final parts = path.split('.');
+
+        var beat = findBeatByNameFromNode(parts[0], node);
+
+        var i = 1;
+        while (beat != null && i < parts.length) {
+            final name = parts[i];
+            var foundBeat = null;
+            traverse(beat, (node, parent) -> {
+                if (node is NBeatDecl) {
+                    final beat:NBeatDecl = cast node;
+                    if (beat.name == name) {
+                        foundBeat = beat;
+                    }
+                    return false;
+                }
+                else {
+                    return foundBeat == null;
+                }
+            });
+            beat = foundBeat;
+            i++;
+        }
+
+        return beat;
+
+    }
+
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
 
         var result:Null<NBeatDecl> = null;
@@ -486,7 +520,7 @@ class Lens {
 
         final result:Array<NCharacterDecl> = [];
 
-        for (node in script.declarations) {
+        for (node in script.body) {
             if (node is NCharacterDecl) {
                 result.push(cast node);
             }
@@ -502,7 +536,7 @@ class Lens {
      */
     public function getVisibleStateFields(fromNode:Node):Array<NObjectField> {
         final fields:Array<NObjectField> = [];
-        final seenFields = new Map<Int, Bool>();
+        final seenFields = new NodeIdMap<Bool>();
 
         // Search through ancestor nodes
         var current = fromNode;
@@ -596,11 +630,11 @@ class Lens {
         // Helper to process string literal
         function processStringLiteral(str:NStringLiteral) {
             for (part in str.parts) {
-                switch part.type {
+                switch part.partType {
                     case Tag(_, content):
                         // Check if content is a simple string without interpolation
                         if (content.parts.length == 1) {
-                            switch content.parts[0].type {
+                            switch content.parts[0].partType {
                                 case Raw(text):
                                     tags.set(text.trim(), true);
                                 case _:
@@ -642,11 +676,11 @@ class Lens {
         // Helper to process string literal
         function processStringLiteral(str:NStringLiteral) {
             for (part in str.parts) {
-                switch part.type {
+                switch part.partType {
                     case Tag(_, content):
                         // Check if content is a simple string without interpolation
                         if (content.parts.length == 1) {
-                            switch content.parts[0].type {
+                            switch content.parts[0].partType {
                                 case Raw(text):
                                     text = text.trim();
                                     final prevCount = tags.get(text) ?? 0;
@@ -695,7 +729,7 @@ class Lens {
      * @return Array of references to reachable beats
      */
     public function findOutboundBeats(beatDecl:NBeatDecl):Array<Reference<NBeatDecl>> {
-        final targetBeats:Map<Int, Reference<NBeatDecl>> = new Map();
+        final targetBeats:NodeIdMap<Reference<NBeatDecl>> = new NodeIdMap();
 
         // Traverse the beat's body looking for transitions and calls
         traverse(beatDecl, (node, parent) -> {
@@ -854,7 +888,7 @@ class Lens {
      * @return Array of references to characters involved in the beat
      */
     public function findBeatCharacters(beatDecl:NBeatDecl):Array<Reference<NCharacterDecl>> {
-        final characters:Map<Int, Reference<NCharacterDecl>> = new Map();
+        final characters:NodeIdMap<Reference<NCharacterDecl>> = new NodeIdMap();
 
         // Traverse beat looking for character usage
         traverse(beatDecl, (node, parent) -> {
@@ -898,7 +932,7 @@ class Lens {
      * @return Array of references to modified character fields
      */
     public function findModifiedCharacterFields(beatDecl:NBeatDecl):Array<Reference<NObjectField>> {
-        final used:Map<Int,Bool> = new Map();
+        final used:NodeIdMap<Bool> = new NodeIdMap();
         final refs:Array<Reference<NObjectField>> = [];
 
         // Traverse the beat's body looking for assignments
@@ -943,7 +977,7 @@ class Lens {
      * @return Array of references to read character fields
      */
     public function findReadCharacterFields(beatDecl:NBeatDecl):Array<Reference<NObjectField>> {
-        final used:Map<Int,Bool> = new Map();
+        final used:NodeIdMap<Bool> = new NodeIdMap();
         final refs:Array<Reference<NObjectField>> = [];
 
         // Traverse the beat's body looking for field reads

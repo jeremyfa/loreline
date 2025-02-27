@@ -354,7 +354,7 @@ Loreline.play(
   script,
 
   // Called to display a text
-  (_, character, text, tag, done) -> {
+  (_, character, text, tags, done) -> {
     if (character != null) {
       Sys.println(character + ': ' + text);
     }

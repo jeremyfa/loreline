@@ -8,3 +8,7 @@
 /loreline.zip
 /.haxelib
 /submit.sh
+/cs/bin
+/cs/obj
+.merge-context
+merged-context.txt

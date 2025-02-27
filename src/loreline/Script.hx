@@ -9,16 +9,17 @@ class Script extends Node {
     /**
      * Array of top-level declarations in the script.
      */
-    public var declarations:Array<AstNode>;
+    public var body:Array<AstNode>;
 
     /**
      * Creates a new script root node.
+     * @param id The node id of this script
      * @param pos Position in source where this script starts
-     * @param declarations Array of top-level declarations
+     * @param body Array of top-level declarations
      */
-    public function new(id:Int, pos:Position, declarations:Array<AstNode>) {
+    public function new(id:NodeId, pos:Position, body:Array<AstNode>) {
         super(id, pos);
-        this.declarations = declarations;
+        this.body = body;
     }
 
     /**
@@ -27,16 +28,16 @@ class Script extends Node {
      */
     public override function toJson():Dynamic {
         final json = super.toJson();
-        json.declarations = [for (decl in declarations) decl.toJson()];
+        json.body = [for (decl in body) decl.toJson()];
         return json;
     }
 
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
-        if (declarations != null) {
-            for (i in 0...declarations.length) {
-                final child = declarations[i];
+        if (body != null) {
+            for (i in 0...body.length) {
+                final child = body[i];
                 handleNode(child, this);
                 child.each(handleNode);
             }

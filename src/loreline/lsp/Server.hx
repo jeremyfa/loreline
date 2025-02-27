@@ -510,7 +510,7 @@ class Server {
 
                         case NLiteral:
                             final literal:NLiteral = cast resolved;
-                            switch literal.type {
+                            switch literal.literalType {
                                 case Number:
                                 case Boolean:
                                 case Null:
@@ -932,12 +932,21 @@ class Server {
             case NChoiceStatement:
                 return makeChoiceHover(cast node, content);
             case NTransition:
-                final beat = lens.findBeatFromTransition(cast node);
-                if (beat != null) {
-                    return makeBeatDeclHover(beat, uri, content, lens, node);
+                final transition:NTransition = cast node;
+                if (transition.target == '.') {
+                    return makeHover(hoverTitle('End'), hoverDescriptionForNode(cast node), content, node);
+                }
+                else if (transition.target == '_') {
+                    return makeHover(hoverTitle('Root'), hoverDescriptionForNode(cast node), content, node);
                 }
                 else {
-                    return makeHover(hoverTitle('Transition'), hoverDescriptionForNode(cast node), content, node);
+                    final beat = lens.findBeatFromTransition(transition);
+                    if (beat != null) {
+                        return makeBeatDeclHover(beat, uri, content, lens, node);
+                    }
+                    else {
+                        return makeHover(hoverTitle('Transition'), hoverDescriptionForNode(cast node), content, node);
+                    }
                 }
             case NObjectField:
                 return makeObjectFieldHover(cast node, content);
@@ -958,7 +967,7 @@ class Server {
 
             case NLiteral:
                 final literal:NLiteral = cast node;
-                switch literal.type {
+                switch literal.literalType {
                     case Number:
                         return makeHover(hoverTitle('Number'), hoverDescriptionForNode(literal), content, literal);
                     case Boolean:
@@ -987,7 +996,7 @@ class Server {
 
                 final stringPart:NStringPart = cast node;
 
-                switch stringPart.type {
+                switch stringPart.partType {
                     case Raw(text):
                     case Expr(expr):
                         return makeNodeHover(lens, uri, content, expr);
@@ -1001,7 +1010,7 @@ class Server {
                     final literalParent = lens.getParentNode(literal);
                     if (literalParent != null && literalParent is NStringPart) {
                         final parentStringPart:NStringPart = cast literalParent;
-                        switch parentStringPart.type {
+                        switch parentStringPart.partType {
                             case Raw(text):
                             case Expr(expr):
                                 return makeNodeHover(lens, uri, content, expr);
@@ -1016,7 +1025,7 @@ class Server {
                             // In unquoted strings, we ignore space between leading tags and actual text
                             var keepWhitespace = true;
                             for (i in 0...partIndex) {
-                                switch literal.parts[i].type {
+                                switch literal.parts[i].partType {
                                     case Raw(text):
                                         if (text.trim().uLength() > 0) {
                                             keepWhitespace = false;
@@ -1029,7 +1038,7 @@ class Server {
                                 }
                             }
                             if (keepWhitespace) {
-                                switch literal.parts[partIndex].type {
+                                switch literal.parts[partIndex].partType {
                                     case Raw(text):
                                         final spaces = text.uLength() - text.ltrim().uLength();
                                         if (spaces > 0) {
@@ -1042,7 +1051,7 @@ class Server {
                     }
                     else if (literal.quotes == DoubleQuotes) {
                         if (literal.parts.length == 1) {
-                            switch literal.parts[0].type {
+                            switch literal.parts[0].partType {
                                 case Raw(text):
                                     return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
                                 case Expr(expr):
@@ -1050,7 +1059,7 @@ class Server {
                             }
                         }
                         else if (partIndex == 0) {
-                            switch literal.parts[0].type {
+                            switch literal.parts[0].partType {
                                 case Raw(text):
                                     return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
                                 case Expr(expr):
@@ -1058,7 +1067,7 @@ class Server {
                             }
                         }
                         else if (partIndex == literal.parts.length - 1) {
-                            switch literal.parts[literal.parts.length - 1].type {
+                            switch literal.parts[literal.parts.length - 1].partType {
                                 case Raw(text):
                                     return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
                                 case Expr(expr):
@@ -1068,7 +1077,7 @@ class Server {
                     }
                 }
 
-                switch stringPart.type {
+                switch stringPart.partType {
                     case Raw(text):
                         return makeHover(hoverTitle('Text'), hoverDescriptionForNode(stringPart), content, stringPart);
                     case Expr(expr):
@@ -1215,7 +1224,7 @@ class Server {
         if (readFields.length > 0 || modifiedFields.length > 0 || characterReadFields.length > 0 || characterModifiedFields.length > 0) {
 
             final stateTargets = [];
-            final usedStateTargets = new Map<Int,Bool>();
+            final usedStateTargets = new NodeIdMap<Bool>();
 
             if (modifiedFields.length > 0) {
                 for (ref in modifiedFields) {
@@ -1240,7 +1249,7 @@ class Server {
             }
 
             final characters = [];
-            final usedCharacters = new Map<Int,Bool>();
+            final usedCharacters = new NodeIdMap<Bool>();
 
             if (characterModifiedFields.length > 0) {
                 for (ref in characterModifiedFields) {
@@ -1265,7 +1274,7 @@ class Server {
             for (character in characters) {
 
                 final characterTargets = [];
-                final usedCharacterTargets = new Map<Int,Bool>();
+                final usedCharacterTargets = new NodeIdMap<Bool>();
 
                 if (characterModifiedFields.length > 0) {
                     for (ref in characterModifiedFields) {

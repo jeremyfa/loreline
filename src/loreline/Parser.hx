@@ -16,7 +16,7 @@ class ParseError extends Error {
  * Parser for the Loreline scripting language.
  * Converts a stream of tokens into an Abstract Syntax Tree (AST).
  */
-class Parser {
+@:keep class Parser {
 
     /** Array of tokens to parse */
     final tokens:Array<Token>;
@@ -39,8 +39,8 @@ class Parser {
     /** Flag indicating if a line break follows the current token */
     var lineBreakAfterToken:Bool;
 
-    /** Node id counter, to ensure each parsed node has a unique integer-typed id */
-    var nextNodeId:Int;
+    /** Node id counter, to ensure each parsed node has a unique id */
+    var currentNodeId:NodeId;
 
     /** Root beat, when adding narrative flow directly at the script root */
     var rootBeat:NBeatDecl;
@@ -57,8 +57,69 @@ class Parser {
         this.lastTokenEnd = new Position(1, 1, 0);
         this.lastLineBreak = null;
         this.lineBreakAfterToken = false;
-        this.nextNodeId = 0;
+        this.currentNodeId = NodeId.UNDEFINED;
         this.rootBeat = null;
+    }
+
+    /**
+     * Main parsing entry point. Parses the entire script into an AST.
+     * @return Root node of the AST
+     */
+    public function parse():Script {
+
+        static var parsing:Bool = false;
+
+        // Reset node ids for this new parsing
+        var rootParsing = !parsing;
+        if (rootParsing) {
+            parsing = true;
+            this.currentNodeId = NodeId.UNDEFINED;
+        }
+
+        final startPos = currentPos();
+        final nodes = [];
+        final script = new Script(nextNodeId(NODE), startPos, nodes);
+
+        while (!isAtEnd()) {
+            try {
+                final node = parseNode(true);
+                if (node != null) {
+                    nodes.push(node);
+                }
+                while (match(LineBreak)) {} // Skip line breaks between top-level nodes
+            } catch (e:ParseError) {
+                addError(e);
+                synchronize();
+            }
+        }
+
+        if (rootParsing) {
+            parsing = false;
+        }
+
+        return script;
+    }
+
+    /**
+     * Gets the array of parsing errors encountered.
+     * @return Array of ParseError objects
+     */
+    public function getErrors():Array<ParseError> {
+        if (errors == null) errors = [];
+        return errors;
+    }
+
+    function nextNodeId(step:NodeIdStep):NodeId {
+
+        currentNodeId = switch step {
+            case SECTION: currentNodeId.nextSection();
+            case BRANCH: currentNodeId.nextBranch();
+            case BLOCK: currentNodeId.nextBlock();
+            case NODE: currentNodeId.nextNode();
+        }
+
+        return currentNodeId;
+
     }
 
     /**
@@ -82,22 +143,22 @@ class Parser {
      * Advances to the next token, handling comments and line breaks.
      * @return The previous token
      */
-    function advance():Token {
+    function advance(advanceLineBreaks:Bool = true):Token {
         final prev = tokens[current];
         if (!isAtEnd()) {
             lastTokenEnd = prev.pos;
             lineBreakAfterToken = false;
 
             // Process comments and line breaks
-            while (!isAtEnd() && tokens[current + 1] != null && (isComment(tokens[current + 1].type) || tokens[current + 1].type == LineBreak)) {
+            while (!isAtEnd() && tokens[current + 1] != null && (isComment(tokens[current + 1].type) || (advanceLineBreaks && tokens[current + 1].type == LineBreak))) {
                 current++;
                 switch (tokens[current].type) {
                     case CommentLine(content):
                         if (pendingComments == null) pendingComments = [];
-                        pendingComments.push(new Comment(nextNodeId++, currentPos(), content, false));
+                        pendingComments.push(new Comment(nextNodeId(NODE), currentPos(), content, false));
                     case CommentMultiLine(content):
                         if (pendingComments == null) pendingComments = [];
-                        pendingComments.push(new Comment(nextNodeId++, currentPos(), content, true));
+                        pendingComments.push(new Comment(nextNodeId(NODE), currentPos(), content, true));
                     case LineBreak:
                         lastLineBreak = currentPos();
                         lineBreakAfterToken = true;
@@ -252,45 +313,6 @@ class Parser {
     }
 
     /**
-     * Main parsing entry point. Parses the entire script into an AST.
-     * @return Root node of the AST
-     */
-    public function parse():Script {
-
-        static var parsing:Bool = false;
-
-        // Reset node ids for this new parsing
-        var rootParsing = !parsing;
-        if (rootParsing) {
-            parsing = true;
-            nextNodeId = 1;
-        }
-
-        final startPos = currentPos();
-        final nodes = [];
-        final script = new Script(nextNodeId++, startPos, nodes);
-
-        while (!isAtEnd()) {
-            try {
-                final node = parseNode(true);
-                if (node != null) {
-                    nodes.push(node);
-                }
-                while (match(LineBreak)) {} // Skip line breaks between top-level nodes
-            } catch (e:ParseError) {
-                addError(e);
-                synchronize();
-            }
-        }
-
-        if (rootParsing) {
-            parsing = false;
-        }
-
-        return script;
-    }
-
-    /**
      * Parses a single node based on the current token.
      * @return Parsed node
      */
@@ -302,7 +324,7 @@ class Parser {
                     pendingComments = [];
                 }
                 pendingComments.push(new Comment(
-                    nextNodeId++,
+                    nextNodeId(NODE),
                     currentPos(),
                     switch(tokens[current].type) {
                         case CommentLine(content): content;
@@ -345,7 +367,9 @@ class Parser {
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
             case _:
-                throw new ParseError('Unexpected token: ${tokens[current].type}', currentPos());
+                addError(new ParseError('Unexpected token: ${tokens[current].type}', currentPos()));
+                advance();
+                new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
     }
 
@@ -356,7 +380,7 @@ class Parser {
         if (rootBeat == null) {
             final startPos = currentPos();
             body = [];
-            rootBeat = new NBeatDecl(nextNodeId++, startPos, "_", body);
+            rootBeat = new NBeatDecl(nextNodeId(SECTION), startPos, "_", body);
             result = rootBeat;
         }
         else {
@@ -375,7 +399,7 @@ class Parser {
      */
     function parseImport():NImport {
         final startPos = currentPos();
-        final imp = new NImport(nextNodeId++, startPos, null);
+        final imp = new NImport(nextNodeId(NODE), startPos, null);
 
         expect(KwImport);
 
@@ -397,7 +421,7 @@ class Parser {
      */
     function parseDialogueStatement():NDialogueStatement {
         final startPos = currentPos();
-        final dialogue = new NDialogueStatement(nextNodeId++, startPos, null, null, null);
+        final dialogue = new NDialogueStatement(nextNodeId(NODE), startPos, null, null, null);
 
         // Parse character name
         dialogue.character = switch (tokens[current].type) {
@@ -460,7 +484,7 @@ class Parser {
      */
     function parseStateDecl(temporary:Bool):NStateDecl {
         final startPos = currentPos();
-        final stateNode = new NStateDecl(nextNodeId++, startPos, temporary, []);
+        final stateNode = new NStateDecl(nextNodeId(BLOCK), startPos, temporary, []);
 
         expect(KwState);
 
@@ -491,7 +515,7 @@ class Parser {
     function parseObjectField():NObjectField {
         final startPos = currentPos();
         final name = expectIdentifier();
-        final objectField = new NObjectField(nextNodeId++, startPos, name, null);
+        final objectField = new NObjectField(nextNodeId(BLOCK), startPos, name, null);
 
         expect(Colon);
         attachComments(objectField);
@@ -513,7 +537,7 @@ class Parser {
      */
     function parseBeatDecl():NBeatDecl {
         final startPos = currentPos();
-        final beatNode = new NBeatDecl(nextNodeId++, startPos, null, [], []);
+        final beatNode = new NBeatDecl(nextNodeId(SECTION), startPos, null, [], []);
 
         expect(KwBeat);
         beatNode.pos = startPos.extendedTo(currentPos());
@@ -625,7 +649,7 @@ class Parser {
      */
     function parseCharacterDecl():NCharacterDecl {
         final startPos = currentPos();
-        final characterNode = new NCharacterDecl(nextNodeId++, startPos, null, null, []);
+        final characterNode = new NCharacterDecl(nextNodeId(BLOCK), startPos, null, null, []);
 
         expect(KwCharacter);
         characterNode.name = expectIdentifier();
@@ -657,7 +681,7 @@ class Parser {
      */
     function parseTextStatement():NTextStatement {
         final startPos = currentPos();
-        final statement = attachComments(new NTextStatement(nextNodeId++, startPos, null));
+        final statement = attachComments(new NTextStatement(nextNodeId(NODE), startPos, null));
         statement.content = parseStringLiteral();
         return statement;
     }
@@ -668,7 +692,7 @@ class Parser {
      */
     function parseChoiceStatement():NChoiceStatement {
         final startPos = currentPos();
-        final choiceNode = new NChoiceStatement(nextNodeId++, startPos, []);
+        final choiceNode = new NChoiceStatement(nextNodeId(BRANCH), startPos, []);
 
         expect(KwChoice);
 
@@ -698,7 +722,7 @@ class Parser {
      */
     function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
         final startPos = currentPos();
-        final choiceOption = attachComments(new NChoiceOption(nextNodeId++, startPos, null, null, []));
+        final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, []));
         choiceOption.text = parseStringLiteral();
 
         // Parse optional condition
@@ -744,7 +768,7 @@ class Parser {
         if (match(OpAssign) || match(OpPlusAssign) || match(OpMinusAssign) ||
             match(OpMultiplyAssign) || match(OpDivideAssign)) {
             final op = previous().type;
-            final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
+            final assignment = attachComments(new NAssign(nextNodeId(NODE), expr.pos, expr, op, null));
             assignment.value = parseExpression();
             assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
             return assignment;
@@ -772,7 +796,7 @@ class Parser {
      */
     function parseIfStatement():NIfStatement {
         final startPos = currentPos();
-        final ifNode = new NIfStatement(nextNodeId++, startPos, null, null, null);
+        final ifNode = new NIfStatement(nextNodeId(NODE), startPos, null, null, null);
 
         expect(KwIf);
         ifNode.condition = parseConditionExpression();
@@ -780,7 +804,7 @@ class Parser {
         while (match(LineBreak)) {}
         attachComments(ifNode);
 
-        ifNode.thenBranch = new NBlock(nextNodeId++, currentPos(), null);
+        ifNode.thenBranch = new NBlock(nextNodeId(BLOCK), currentPos(), null);
         ifNode.thenBranch.body = [];
         ifNode.thenBranch.style = parseStatementBlock(ifNode.thenBranch.body);
 
@@ -791,12 +815,12 @@ class Parser {
             while (match(LineBreak)) {}
             attachElseComments(ifNode, elseToken);
             if (check(KwIf)) {
-                ifNode.elseBranch = new NBlock(nextNodeId++, currentPos(), null);
+                ifNode.elseBranch = new NBlock(nextNodeId(BLOCK), currentPos(), null);
                 ifNode.elseBranch.body = [parseIfStatement()];
                 ifNode.elseBranch.style = Plain;
             }
             else {
-                ifNode.elseBranch = new NBlock(nextNodeId++, currentPos(), null);
+                ifNode.elseBranch = new NBlock(nextNodeId(BLOCK), currentPos(), null);
                 ifNode.elseBranch.body = [];
                 ifNode.elseBranch.style = parseStatementBlock(ifNode.elseBranch.body);
             }
@@ -818,11 +842,11 @@ class Parser {
 
         // Handle "end of stream" (-> .)
         if (match(Dot)) {
-            return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), ".", prevNonWhitespaceOrComment().pos));
+            return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), ".", prevNonWhitespaceOrComment().pos));
         }
 
         final target = expectIdentifier();
-        return attachComments(new NTransition(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
+        return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
     }
 
     /**
@@ -838,7 +862,7 @@ class Parser {
                 check(OpMultiplyAssign) || check(OpDivideAssign)) {
                 final op = tokens[current].type;
                 advance();
-                final assignment = attachComments(new NAssign(nextNodeId++, expr.pos, expr, op, null));
+                final assignment = attachComments(new NAssign(nextNodeId(NODE), expr.pos, expr, op, null));
                 assignment.value = parseExpression();
                 assignment.pos = assignment.pos.extendedTo(assignment.value.pos);
                 return assignment;
@@ -850,7 +874,7 @@ class Parser {
             if (e is ParseError) {
                 addError(cast e);
             }
-            return new NLiteral(nextNodeId++, currentPos(), null, Null);
+            return new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
     }
 
@@ -863,7 +887,7 @@ class Parser {
 
         while (match(OpOr(false))) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseLogicalAnd();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -881,7 +905,7 @@ class Parser {
 
         while (match(OpAnd(false))) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseEquality();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -899,7 +923,7 @@ class Parser {
 
         while (match(OpEquals) || match(OpNotEquals)) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseComparison();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -917,7 +941,7 @@ class Parser {
 
         while (match(OpGreater) || match(OpGreaterEq) || match(OpLess) || match(OpLessEq)) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseAdditive();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -935,7 +959,7 @@ class Parser {
 
         while (match(OpPlus) || match(OpMinus)) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseMultiplicative();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -953,7 +977,7 @@ class Parser {
 
         while (match(OpMultiply) || match(OpDivide) || match(OpModulo)) {
             final op = previous().type;
-            final binary = attachComments(new NBinary(nextNodeId++, expr.pos, expr, op, null));
+            final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseUnary();
             binary.pos = binary.pos.extendedTo(binary.right.pos);
             expr = binary;
@@ -969,7 +993,7 @@ class Parser {
     function parseUnary():NExpr {
         if (match(OpNot) || match(OpMinus)) {
             final op = previous().type;
-            final unary = attachComments(new NUnary(nextNodeId++, previous().pos, op, null));
+            final unary = attachComments(new NUnary(nextNodeId(NODE), previous().pos, op, null));
             unary.operand = parseUnary();
             unary.pos = unary.pos.extendedTo(unary.operand.pos);
             return unary;
@@ -991,20 +1015,20 @@ class Parser {
 
             case LNumber(n):
                 advance();
-                attachComments(new NLiteral(nextNodeId++, startPos, n, Number));
+                attachComments(new NLiteral(nextNodeId(NODE), startPos, n, Number));
 
             case LBoolean(b):
                 advance();
-                attachComments(new NLiteral(nextNodeId++, startPos, b, Boolean));
+                attachComments(new NLiteral(nextNodeId(NODE), startPos, b, Boolean));
 
             case LNull:
                 advance();
-                attachComments(new NLiteral(nextNodeId++, startPos, null, Null));
+                attachComments(new NLiteral(nextNodeId(NODE), startPos, null, Null));
 
             case Identifier(name):
                 if (peek().type == Colon) {
                     final fields = [parseObjectField()];
-                    new NLiteral(nextNodeId++, startPos.extendedTo(prevNonWhitespaceOrComment().pos), fields, Object(Plain));
+                    new NLiteral(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), fields, Object(Plain));
                 }
                 else {
                     advance();
@@ -1052,14 +1076,14 @@ class Parser {
                 if (attachments == null || attachments.length == 0) {
                     final partPos = makeStringPartPosition(startPos, content, 0);
                     partPos.length = startPos.length;
-                    final literalId = nextNodeId++;
-                    final partId = nextNodeId++;
+                    final literalId = nextNodeId(NODE);
+                    final partId = nextNodeId(NODE);
                     parts.push(new NStringPart(partId, partPos, Raw(content)));
                     advance();
                     return attachComments(new NStringLiteral(literalId, stringLiteralPos, quotes, parts));
                 }
 
-                final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, stringLiteralPos, quotes, parts));
+                final stringLiteral = attachComments(new NStringLiteral(nextNodeId(NODE), stringLiteralPos, quotes, parts));
 
                 // Process string with attachments (interpolations and tags)
                 for (i in 0...attachments.length) {
@@ -1073,7 +1097,7 @@ class Parser {
                             if (start > currentPos) {
                                 final partPos = makeStringPartPosition(startPos, content, currentPos);
                                 partPos.length = start - currentPos;
-                                parts.push(new NStringPart(nextNodeId++, partPos, Raw(
+                                parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                                     content.uSubstr(currentPos, start - currentPos)
                                 )));
                             }
@@ -1099,7 +1123,7 @@ class Parser {
                             if (start > currentPos) {
                                 final partPos = makeStringPartPosition(startPos, content, currentPos);
                                 partPos.length = start - currentPos;
-                                parts.push(new NStringPart(nextNodeId++, partPos, Raw(
+                                parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                                     content.uSubstr(currentPos, start - currentPos)
                                 )));
                             }
@@ -1122,7 +1146,7 @@ class Parser {
                 if (currentPos < content.uLength()) {
                     final partPos = makeStringPartPosition(startPos, content, currentPos);
                     partPos.length = content.uLength() - currentPos;
-                    parts.push(new NStringPart(nextNodeId++, partPos, Raw(
+                    parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                         content.uSubstr(currentPos)
                     )));
                 }
@@ -1170,7 +1194,11 @@ class Parser {
     function makeAccess(pos:Position, target:Null<NExpr>, name:String, namePos:Position):NAccess {
         if (name != null) {
             if (name.uLength() == 0) {
-                addError(new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos));
+                if (errors == null || errors.length == 0) {
+                    // No need to log an error here, if we already
+                    // logged one in identifier expression parsing
+                    addError(new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos));
+                }
             }
             if (target != null) {
                 if (namePos != null) {
@@ -1191,7 +1219,7 @@ class Parser {
             }
         }
 
-        return new NAccess(nextNodeId++, pos, target, name);
+        return new NAccess(nextNodeId(NODE), pos, target, name);
     }
 
     /**
@@ -1210,7 +1238,7 @@ class Parser {
 
         if (tokens.length == 0) {
             addError(new ParseError("Empty interpolation", tokens[0]?.pos ?? currentPos()));
-            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
         }
 
         var expr:NExpr = null;
@@ -1235,7 +1263,7 @@ class Parser {
                         }
                         else {
                             addError(new ParseError("Missing dot in field access", token.pos));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
                         prevIsDot = false;
 
@@ -1243,7 +1271,7 @@ class Parser {
                         // Handle array access: read until matching RBracket
                         if (target == null) {
                             addError(new ParseError("Array access without target", token.pos));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
                         final arrayStart = token.pos;
@@ -1272,26 +1300,26 @@ class Parser {
 
                         if (bracketLevel > 0) {
                             addError(new ParseError("Unterminated array access", arrayStart));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
                         // Parse array index expression
                         final tempParser = new Parser(arrayTokens);
-                        tempParser.nextNodeId = nextNodeId;
+                        tempParser.currentNodeId = currentNodeId;
                         final indexExpr = tempParser.parseExpression();
-                        nextNodeId = tempParser.nextNodeId;
+                        currentNodeId = tempParser.currentNodeId;
 
                         // Create array access node
                         final accessPos = pos.extendedTo(tokens[i-1].pos);
                         accessPos.length += 1;
-                        target = attachComments(new NArrayAccess(nextNodeId++, accessPos, target, indexExpr));
+                        target = attachComments(new NArrayAccess(nextNodeId(NODE), accessPos, target, indexExpr));
                         prevIsDot = false;
 
                     case LParen:
                         // Handle function call: read until matching RParen
                         if (target == null) {
                             addError(new ParseError("Function call without target", token.pos));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
                         final callStart = token.pos;
@@ -1327,32 +1355,32 @@ class Parser {
 
                         if (parenLevel > 0) {
                             addError(new ParseError("Unterminated function call", callStart));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
                         // Parse argument expressions
                         final args:Array<NExpr> = [];
                         for (argTokenGroup in argTokens) {
                             final tempParser = new Parser(argTokenGroup);
-                            tempParser.nextNodeId = nextNodeId;
+                            tempParser.currentNodeId = currentNodeId;
                             args.push(tempParser.parseExpression());
-                            nextNodeId = tempParser.nextNodeId;
+                            currentNodeId = tempParser.currentNodeId;
                         }
 
                         // Create call node
-                        target = attachComments(new NCall(nextNodeId++, callStart.extendedTo(tokens[i-1].pos), target, args));
+                        target = attachComments(new NCall(nextNodeId(NODE), callStart.extendedTo(tokens[i-1].pos), target, args));
                         prevIsDot = false;
 
                     case Dot:
                         if (target == null) {
                             addError(new ParseError("Leading dot in field access", token.pos));
-                            return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                            return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
                         prevIsDot = true;
 
                     case _:
                         addError(new ParseError('Unexpected token in field access: ${token.type}', token.pos));
-                        return new NStringPart(nextNodeId++, pos, Expr(new NLiteral(nextNodeId++, tokens[0]?.pos ?? currentPos(), null, Null)));
+                        return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                 }
             }
 
@@ -1365,9 +1393,9 @@ class Parser {
         // Handle complex interpolation with braces (${expression})
         else {
             final tempParser = new Parser(tokens);
-            tempParser.nextNodeId = nextNodeId;
+            tempParser.currentNodeId = currentNodeId;
             expr = tempParser.parseExpression();
-            nextNodeId = tempParser.nextNodeId;
+            currentNodeId = tempParser.currentNodeId;
 
             if (!tempParser.isAtEnd()) {
                 addError(new ParseError("Unexpected tokens after interpolation expression", tempParser.tokens[tempParser.current].pos));
@@ -1380,7 +1408,7 @@ class Parser {
             pos.offset - (braces ? 2 : 0),
             length
         );
-        return new NStringPart(nextNodeId++, partPos, Expr(expr));
+        return new NStringPart(nextNodeId(NODE), partPos, Expr(expr));
     }
 
     /**
@@ -1405,7 +1433,7 @@ class Parser {
         final innerStart = start + offsetStart; // Skip < and optional /
         final innerLength = length - (closing ? 3 : 2); // Account for < > and optional /
         final innerEnd = innerStart + innerLength;
-        final tagId = nextNodeId++;
+        final tagId = nextNodeId(NODE);
 
         // Check for interpolations within tag range
         var hasAttachmentsInRange = false;
@@ -1428,8 +1456,8 @@ class Parser {
         if (!hasAttachmentsInRange) {
             final partPos = makeStringPartPosition(pos, content, innerStart);
             partPos.length = innerLength;
-            final literalId = nextNodeId++;
-            final partId = nextNodeId++;
+            final literalId = nextNodeId(NODE);
+            final partId = nextNodeId(NODE);
             return new NStringPart(tagId, pos, Tag(
                 closing,
                 attachComments(new NStringLiteral(
@@ -1443,7 +1471,7 @@ class Parser {
 
         // Process tag with interpolations
         final parts = new Array<NStringPart>();
-        final stringLiteral = attachComments(new NStringLiteral(nextNodeId++, pos, Unquoted, parts));
+        final stringLiteral = attachComments(new NStringLiteral(nextNodeId(NODE), pos, Unquoted, parts));
         var currentPos = innerStart;
 
         // Process each attachment within tag bounds
@@ -1457,7 +1485,7 @@ class Parser {
                             if (aStart > currentPos) {
                                 final partPos = makeStringPartPosition(pos, content.uSubstr(start), currentPos - start + offsetStart);
                                 partPos.length = aStart - currentPos;
-                                parts.push(new NStringPart(nextNodeId++, partPos, Raw(
+                                parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                                     content.uSubstr(currentPos, aStart - currentPos)
                                 )));
                             }
@@ -1484,7 +1512,7 @@ class Parser {
         if (currentPos < innerEnd) {
             final partPos = makeStringPartPosition(pos, content.uSubstr(start), currentPos - start + offsetStart);
             partPos.length = (innerStart + innerEnd) - currentPos;
-            parts.push(new NStringPart(nextNodeId++, partPos, Raw(
+            parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                 content.uSubstr(currentPos, innerEnd - currentPos)
             )));
         }
@@ -1506,7 +1534,7 @@ class Parser {
 
         // Parse chained accesses (., [], and ())
         while (true) {
-            if (match(Dot)) {
+            if (match(Dot, false)) {
                 // Create placeholder identifier if none follows the dot
                 var prop = null;
                 var propPos = currentPos();
@@ -1525,11 +1553,11 @@ class Parser {
                 final index = parseExpression();
                 expect(RBracket);
                 final accessPos = startPos.extendedTo(previous().pos);
-                expr = attachComments(new NArrayAccess(nextNodeId++, accessPos, expr, index));
+                expr = attachComments(new NArrayAccess(nextNodeId(NODE), accessPos, expr, index));
             }
             else if (match(LParen)) {
                 final args = parseCallArguments();
-                expr = attachComments(new NCall(nextNodeId++, startPos.extendedTo(previous().pos), expr, args));
+                expr = attachComments(new NCall(nextNodeId(NODE), startPos.extendedTo(previous().pos), expr, args));
             }
             else {
                 break;
@@ -1546,7 +1574,7 @@ class Parser {
     function parseArrayLiteral():NExpr {
         final startPos = currentPos();
         final elements = [];
-        final literal = new NLiteral(nextNodeId++, startPos, elements, Array);
+        final literal = new NLiteral(nextNodeId(NODE), startPos, elements, Array);
         expect(LBracket);
 
         attachComments(literal);
@@ -1599,7 +1627,7 @@ class Parser {
 
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
         final style:BlockStyle = (blockEnd == RBrace) ? Braces : Plain;
-        final literal = new NLiteral(nextNodeId++, blockEnd != RBrace ? nextNonWhitespaceOrComment().pos : startPos, fields, Object(style));
+        final literal = new NLiteral(nextNodeId(NODE), blockEnd != RBrace ? nextNonWhitespaceOrComment().pos : startPos, fields, Object(style));
 
         attachComments(literal);
 
@@ -1670,7 +1698,7 @@ class Parser {
         }
         catch (e:ParseError) {
             addError(e);
-            expr = new NLiteral(nextNodeId++, currentPos(), null, Null);
+            expr = new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
         if (hasParen) expect(RParen);
         return expr;
@@ -1681,9 +1709,9 @@ class Parser {
      * @param type TokenType to match
      * @return True if token was matched and consumed
      */
-    function match(type:TokenType):Bool {
+    function match(type:TokenType, advanceLineBreaks:Bool = true):Bool {
         if (check(type)) {
-            advance();
+            advance(advanceLineBreaks);
             return true;
         }
         return false;
@@ -1868,15 +1896,6 @@ class Parser {
             errors.push(error);
         }
         return error;
-    }
-
-    /**
-     * Gets the array of parsing errors encountered.
-     * @return Array of ParseError objects
-     */
-    public function getErrors():Array<ParseError> {
-        if (errors == null) errors = [];
-        return errors;
     }
 
 }

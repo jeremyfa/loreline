@@ -26,6 +26,7 @@ character player
   jitters: false
   energy: 0
 
+// Entering coffee shop
 beat EnterCoffeeShop
 
   rushHour = chance(4)

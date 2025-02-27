@@ -51,6 +51,8 @@ class Cli {
 
     var lastCharacter:String = null;
 
+    var loadedSave:Bool = false;
+
     function new() {
 
         #if loreline_debug_interpreter
@@ -97,6 +99,12 @@ class Cli {
                     else
                         fail('Missing file argument');
 
+                case 'ast':
+                    if (args.length >= 2)
+                        ast(args[1]);
+                    else
+                        fail('Missing file argument');
+
                 case _:
                     help();
             }
@@ -116,7 +124,7 @@ class Cli {
         print(" |_|\\___/|_|  \\___|_|_|_| |_|\\___|".green());
         print("");
         print(" " + "USAGE".bold());
-        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "]".gray() + " " + "story.lor".underline());
+        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "]".gray() + " " + "story.lor".underline());
         print("");
 
     }
@@ -147,6 +155,32 @@ class Cli {
 
     }
 
+    function ast(file:String) {
+
+        if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
+            fail('Invalid file: $file');
+        }
+
+        try {
+            final content = File.getContent(file);
+            final script = Loreline.parse(content);
+            print(new AstPrinter().print(script));
+        }
+        catch (e:Any) {
+            #if debug
+            if (e is Error) {
+                printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
+            }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
+            #end
+            fail(e, file);
+        }
+
+    }
+
     function play(file:String) {
 
         print("");
@@ -161,6 +195,7 @@ class Cli {
             final script = Loreline.parse(content);
 
             errorInStdOut = true;
+
             Loreline.play(
                 script,
                 handleDialogue,

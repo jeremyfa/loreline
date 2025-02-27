@@ -5,10 +5,29 @@ package loreline;
  */
 interface Fields {
 
-    function lorelineGet(key:String):Any;
+    /**
+     * Called when the object has been created from an interpreter
+     */
+    function lorelineCreate(interpreter:Interpreter):Void;
 
-    function lorelineSet(key:String, value:Any):Void;
+    /**
+     * Get the value associated to the given field key
+     */
+    function lorelineGet(interpreter:Interpreter, key:String):Any;
 
-    function lorelineExists(key:String):Bool;
+    /**
+     * Set the value associated to the given field key
+     */
+    function lorelineSet(interpreter:Interpreter, key:String, value:Any):Void;
+
+    /**
+     * Check if a value exists for the given key
+     */
+    function lorelineExists(interpreter:Interpreter, key:String):Bool;
+
+    /**
+     * Get all the fields of this object
+     */
+    function lorelineFields(interpreter:Interpreter):Array<String>;
 
 }
