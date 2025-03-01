@@ -12,3 +12,7 @@
 /cs/obj
 .merge-context
 merged-context.txt
+cs/Loreline.deps.json
+cs/Loreline.dll
+cs/Loreline.pdb
+cs/Loreline.xml
