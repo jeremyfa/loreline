@@ -15,7 +15,7 @@ class CodeToHscript {
     /**
      * List of control flow keywords that may need special handling
      */
-    static final CONTROL_KEYWORDS = ["for", "while", "if", "else", "switch", "do", "try", "catch"];
+    static final CONTROL_KEYWORDS = ["for", "while", "if", "else", "switch", "catch"];
 
     /**
      * Current position in the input string
