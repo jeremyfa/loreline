@@ -85,7 +85,7 @@ beat CoffeeShop
       player.consumedCoffees += 1
       player.energy += 2
 
-      the rich, concentrated shot of espresso gives you an immediate boost.
+      The rich, concentrated shot of espresso gives you an immediate boost.
 
       if player.consumedCoffees > 2
 
@@ -189,6 +189,8 @@ beat ProductiveMoment
       else if james.present
         james.present = false
         $james leaves while you're absorbed in work.
+
+      -> CoffeeShop
 
     Chat with barista if barista.friendship >= 1 and !rushHour
       barista: <friendly> Want to learn about our special coffee beans?

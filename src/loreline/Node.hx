@@ -400,7 +400,7 @@ class Comment extends Node {
      * @return Dynamic object containing comment data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.content = content;
         json.multiline = multiline;
         return json;
@@ -464,7 +464,7 @@ class AstNode extends Node {
      * @return Dynamic object containing node data and associated comments
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
 
         if ((leadingComments != null && leadingComments.length > 0) || (trailingComments != null && trailingComments.length > 0)) {
             final comments:Dynamic = {};
@@ -570,7 +570,7 @@ class NStateDecl extends AstNode {
      * @return Dynamic object containing state data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.temporary = temporary;
         json.fields = [for (prop in fields) prop.toJson()];
         json.style = style.toString();
@@ -626,7 +626,7 @@ class NObjectField extends AstNode {
      * @return Dynamic object containing field data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.name = name;
         json.value = value.toJson();
         return json;
@@ -708,7 +708,7 @@ class NCharacterDecl extends AstNode {
      * @return Dynamic object containing character data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.name = name;
         json.namePos = namePos.toJson();
         json.fields = [for (prop in fields) prop.toJson()];
@@ -774,7 +774,7 @@ class NBeatDecl extends AstNode {
      * @return Dynamic object containing beat data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.name = name;
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();
@@ -863,7 +863,7 @@ class NStringPart extends NExpr {
      * @return Dynamic object containing string part data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         switch partType {
             case Raw(text):
                 json.part = "Raw";
@@ -929,7 +929,7 @@ class NStringLiteral extends NExpr {
      * @return Dynamic object containing string data and its parts
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         final parts:Array<Any> = [
             for (part in parts) part.toJson()
         ];
@@ -979,7 +979,7 @@ class NTextStatement extends AstNode {
      * @return Dynamic object containing text data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.content = content.toJson();
         return json;
     }
@@ -1038,7 +1038,7 @@ class NDialogueStatement extends AstNode {
      * @return Dynamic object containing dialogue data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.character = character;
         json.characterPos = characterPos.toJson();
         json.content = content.toJson();
@@ -1094,7 +1094,7 @@ class NChoiceStatement extends AstNode {
      * @return Dynamic object containing choice data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.options = [for (option in options) option.toJson()];
         json.style = style.toString();
         return json;
@@ -1171,7 +1171,7 @@ class NChoiceOption extends AstNode {
      * @return Dynamic object containing option data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.text = text.toJson();
         if (condition != null) json.condition = condition.toJson();
         json.body = [for (node in body) node.toJson()];
@@ -1229,7 +1229,7 @@ class NBlock extends AstNode {
      * @return Dynamic object containing beat data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();
         return json;
@@ -1324,7 +1324,7 @@ class NIfStatement extends AstNode {
      * @return Dynamic object containing if statement data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.condition = condition.toJson();
         json.thenBranch = [for (node in thenBranch.body) node.toJson()];
         json.thenStyle = thenBranch.style.toString();
@@ -1399,7 +1399,7 @@ class NCall extends NExpr {
      * @return Dynamic object containing call data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.target = target.toJson();
         json.args = [for (arg in args) arg.toJson()];
         return json;
@@ -1443,7 +1443,7 @@ class NTransition extends AstNode {
      * @return Dynamic object containing transition data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.target = target;
         json.targetPos = targetPos.toJson();
         return json;
@@ -1487,11 +1487,13 @@ class NLiteral extends NExpr {
 
         switch literalType {
             case Array:
-                for (elem in (value:Array<Dynamic>)) {
-                    if (Std.isOfType(elem, Node)) {
-                        final node:Node = cast elem;
-                        handleNode(node, this);
-                        node.each(handleNode);
+                if (value != null) {
+                    for (elem in (value:Array<Dynamic>)) {
+                        if (Std.isOfType(elem, Node)) {
+                            final node:Node = cast elem;
+                            handleNode(node, this);
+                            node.each(handleNode);
+                        }
                     }
                 }
             case Object(style):
@@ -1513,18 +1515,20 @@ class NLiteral extends NExpr {
      * @return Dynamic object containing literal data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.literal = literalType.getName();
         switch literalType {
             case Array:
-                json.value = [for (elem in (value:Array<Dynamic>)) {
-                    if (Std.isOfType(elem, Node)) {
-                        (elem:Node).toJson();
-                    }
-                    else {
-                        elem;
-                    }
-                }];
+                if (value != null) {
+                    json.value = [for (elem in (value:Array<Dynamic>)) {
+                        if (Std.isOfType(elem, Node)) {
+                            (elem:Node).toJson();
+                        }
+                        else {
+                            elem;
+                        }
+                    }];
+                }
             case Object(style):
                 if (value != null) {
                     json.value = [for (field in (value:Array<NObjectField>)) field.toJson()];
@@ -1603,7 +1607,7 @@ class NAccess extends NExpr {
      * @return Dynamic object containing access data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         if (target != null) json.target = target.toJson();
         json.name = name;
         return json;
@@ -1668,7 +1672,7 @@ class NAssign extends NExpr {
      * @return Dynamic object containing assignment data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.target = target.toJson();
         json.op = Std.string(op);
         json.value = value.toJson();
@@ -1727,7 +1731,7 @@ class NArrayAccess extends NExpr {
      * @return Dynamic object containing array access data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.target = target.toJson();
         json.index = index.toJson();
         return json;
@@ -1792,7 +1796,7 @@ class NBinary extends NExpr {
      * @return Dynamic object containing operation data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.left = left.toJson();
         json.op = Std.string(op);
         json.right = right.toJson();
@@ -1846,7 +1850,7 @@ class NUnary extends NExpr {
      * @return Dynamic object containing operation data
      */
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.op = Std.string(op);
         json.operand = operand.toJson();
         return json;
@@ -1879,7 +1883,7 @@ class NImport extends AstNode {
     }
 
     public override function toJson():Dynamic {
-        final json = super.toJson();
+        final json:Dynamic = super.toJson();
         json.path = path;
         return json;
     }

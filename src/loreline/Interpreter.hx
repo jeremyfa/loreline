@@ -1804,6 +1804,7 @@ class RuntimeError extends Error {
                 currentScope.head = childNode;
                 index++;
                 final done = wrapNext(moveNext);
+
                 evalNode(childNode, done.cb);
                 done.sync = false;
 
@@ -1914,8 +1915,8 @@ class RuntimeError extends Error {
         // Then call the user-defined choice handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleChoice(this, options, function(index) {
-
+        var index:Int = -1;
+        var choiceCallback = wrapNext(() -> {
             if (index >= 0 && index < choice.options.length) {
                 // Evaluate the chosen option
                 evalChoiceOption(choice.options[index], next);
@@ -1925,8 +1926,12 @@ class RuntimeError extends Error {
                 // the choice was cancelable and just continue evaluation
                 next();
             }
-
         });
+        handleChoice(this, options, function(index_:Int) {
+            index = index_;
+            choiceCallback.cb();
+        });
+        choiceCallback.sync = false;
 
     }
 

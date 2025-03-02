@@ -19,6 +19,7 @@ class Loreline {
      * @throws loreline.Error If the script contains syntax errors or other parsing issues
      */
     public static function parse(input:String):Script {
+
         final lexer = new Lexer(input);
         final tokens = lexer.tokenize();
         final parser = new Parser(tokens);

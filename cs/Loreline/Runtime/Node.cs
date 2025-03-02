@@ -1553,8 +1553,8 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "content", 427265337, this.content));
-			bool __temp_expr2 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.setField(json, "multiline", 504484589, this.multiline));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "content", 427265337, this.content);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "multiline", 504484589, this.multiline);
 			return json;
 		}
 		
@@ -1951,7 +1951,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			bool __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.setField(json, "temporary", 1476741521, this.temporary));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "temporary", 1476741521, this.temporary);
 			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
 			{
 				int _g1 = 0;
@@ -1959,13 +1959,13 @@ namespace Loreline.Runtime {
 				while (( _g1 < _g2.length )) {
 					global::Loreline.Runtime.NObjectField prop = ((global::Loreline.Runtime.NObjectField) (_g2[_g1]) );
 					 ++ _g1;
-					int __temp_expr2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{prop.toJson()}))) );
+					int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{prop.toJson()}))) );
 				}
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr3 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "fields", 9342585, _g)) );
-			string __temp_expr4 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "fields", 9342585, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -2184,7 +2184,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name);
 			global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, this.@value.toJson());
 			return json;
 		}
@@ -2347,7 +2347,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name);
 			global::Loreline.Internal.Lang.Runtime.setField(json, "namePos", 746841097, this.namePos.toJson());
 			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
 			{
@@ -2356,13 +2356,13 @@ namespace Loreline.Runtime {
 				while (( _g1 < _g2.length )) {
 					global::Loreline.Runtime.NObjectField prop = ((global::Loreline.Runtime.NObjectField) (_g2[_g1]) );
 					 ++ _g1;
-					int __temp_expr2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{prop.toJson()}))) );
+					int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{prop.toJson()}))) );
 				}
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr3 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "fields", 9342585, _g)) );
-			string __temp_expr4 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "fields", 9342585, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -2605,7 +2605,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name);
 			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
 			{
 				int _g1 = 0;
@@ -2613,13 +2613,13 @@ namespace Loreline.Runtime {
 				while (( _g1 < _g2.length )) {
 					global::Loreline.Runtime.AstNode node = ((global::Loreline.Runtime.AstNode) (_g2[_g1]) );
 					 ++ _g1;
-					int __temp_expr2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{node.toJson()}))) );
+					int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{node.toJson()}))) );
 				}
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr3 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g)) );
-			string __temp_expr4 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -3092,8 +3092,8 @@ namespace Loreline.Runtime {
 						{
 							string text = ( _g as global::Loreline.Runtime.StringPartType_Raw ).text;
 							{
-								string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Raw"));
-								string __temp_expr2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "text", 1291439277, text));
+								global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Raw");
+								global::Loreline.Internal.Lang.Runtime.setField(json, "text", 1291439277, text);
 							}
 							
 							break;
@@ -3104,7 +3104,7 @@ namespace Loreline.Runtime {
 						{
 							global::Loreline.Runtime.NExpr expr = ( _g as global::Loreline.Runtime.StringPartType_Expr ).expr;
 							{
-								string __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Expr"));
+								global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Expr");
 								global::Loreline.Internal.Lang.Runtime.setField(json, "expression", 782176664, expr.toJson());
 							}
 							
@@ -3117,8 +3117,8 @@ namespace Loreline.Runtime {
 							bool closing = ( _g as global::Loreline.Runtime.StringPartType_Tag ).closing;
 							global::Loreline.Runtime.NStringLiteral expr1 = ( _g as global::Loreline.Runtime.StringPartType_Tag ).expr;
 							{
-								string __temp_expr4 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Tag"));
-								bool __temp_expr5 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.setField(json, "closing", 2032525045, closing));
+								global::Loreline.Internal.Lang.Runtime.setField(json, "part", 1246880755, "Tag");
+								global::Loreline.Internal.Lang.Runtime.setField(json, "closing", 2032525045, closing);
 								global::Loreline.Internal.Lang.Runtime.setField(json, "content", 427265337, expr1.toJson());
 							}
 							
@@ -3266,8 +3266,8 @@ namespace Loreline.Runtime {
 			}
 			
 			global::Loreline.Internal.Root.Array<object> parts = _g;
-			global::Loreline.Internal.Root.Array<object> __temp_expr1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "parts", 1029017888, parts)) ))) );
-			string __temp_expr2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "quotes", 1441575351, global::Loreline.Runtime._Quotes.Quotes_Impl_.toString(this.quotes)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "parts", 1029017888, parts);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "quotes", 1441575351, global::Loreline.Runtime._Quotes.Quotes_Impl_.toString(this.quotes));
 			return json;
 		}
 		
@@ -3554,7 +3554,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "character", 1104272297, this.character));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "character", 1104272297, this.character);
 			global::Loreline.Internal.Lang.Runtime.setField(json, "characterPos", 679160171, this.characterPos.toJson());
 			global::Loreline.Internal.Lang.Runtime.setField(json, "content", 427265337, this.content.toJson());
 			return json;
@@ -3719,8 +3719,8 @@ namespace Loreline.Runtime {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "options", 1610494814, _g)) );
-			string __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "options", 1610494814, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -3931,8 +3931,8 @@ namespace Loreline.Runtime {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g)) );
-			string __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -4150,8 +4150,8 @@ namespace Loreline.Runtime {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g)) );
-			string __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.style));
 			return json;
 		}
 		
@@ -4378,8 +4378,8 @@ namespace Loreline.Runtime {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "thenBranch", 178157919, _g)) );
-			string __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "thenStyle", 1281790228, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.thenBranch.style)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "thenBranch", 178157919, _g);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "thenStyle", 1281790228, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.thenBranch.style));
 			if (( this.elseBranch != null )) {
 				global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
 				{
@@ -4388,13 +4388,13 @@ namespace Loreline.Runtime {
 					while (( _g4 < _g5.length )) {
 						global::Loreline.Runtime.AstNode node1 = ((global::Loreline.Runtime.AstNode) (_g5[_g4]) );
 						 ++ _g4;
-						int __temp_expr4 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g3, "push", 1247875546, new object[]{node1.toJson()}))) );
+						int __temp_expr2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g3, "push", 1247875546, new object[]{node1.toJson()}))) );
 					}
 					
 				}
 				
-				global::Loreline.Internal.Root.Array __temp_expr5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "elseBranch", 1015556155, _g3)) );
-				string __temp_expr6 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "elseStyle", 33649080, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.elseBranch.style)));
+				global::Loreline.Internal.Lang.Runtime.setField(json, "elseBranch", 1015556155, _g3);
+				global::Loreline.Internal.Lang.Runtime.setField(json, "elseStyle", 33649080, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(this.elseBranch.style));
 				if (( ( ( this.elseLeadingComments != null ) && ( this.elseLeadingComments.length > 0 ) ) || ( ( this.elseTrailingComments != null ) && ( this.elseTrailingComments.length > 0 ) ) )) {
 					object tmp = global::Loreline.Internal.Lang.Runtime.getField(json, "comments", 1090165044, true);
 					object comments = ( (( tmp != null )) ? (tmp) : (new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{})) );
@@ -4406,7 +4406,7 @@ namespace Loreline.Runtime {
 							while (( _g7 < _g8.length )) {
 								global::Loreline.Runtime.Comment c = ((global::Loreline.Runtime.Comment) (_g8[_g7]) );
 								 ++ _g7;
-								int __temp_expr7 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g6, "push", 1247875546, new object[]{c.toJson()}))) );
+								int __temp_expr3 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g6, "push", 1247875546, new object[]{c.toJson()}))) );
 							}
 							
 						}
@@ -4422,7 +4422,7 @@ namespace Loreline.Runtime {
 							while (( _g10 < _g11.length )) {
 								global::Loreline.Runtime.Comment c1 = ((global::Loreline.Runtime.Comment) (_g11[_g10]) );
 								 ++ _g10;
-								int __temp_expr8 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g9, "push", 1247875546, new object[]{c1.toJson()}))) );
+								int __temp_expr4 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g9, "push", 1247875546, new object[]{c1.toJson()}))) );
 							}
 							
 						}
@@ -4631,7 +4631,7 @@ namespace Loreline.Runtime {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "args", 1081380189, _g)) );
+			global::Loreline.Internal.Lang.Runtime.setField(json, "args", 1081380189, _g);
 			return json;
 		}
 		
@@ -4751,7 +4751,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "target", 116192081, this.target));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "target", 116192081, this.target);
 			global::Loreline.Internal.Lang.Runtime.setField(json, "targetPos", 1765034691, this.targetPos.toJson());
 			return json;
 		}
@@ -4880,15 +4880,18 @@ namespace Loreline.Runtime {
 						
 						case 3:
 						{
-							int _g1 = 0;
-							global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (((object) (this.@value) )) );
-							while (( _g1 < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(_g2, "length", 520590566, true)) ) )) {
-								object elem = _g2[_g1];
-								 ++ _g1;
-								if (( elem is global::Loreline.Runtime.Node )) {
-									global::Loreline.Runtime.Node node = ((global::Loreline.Runtime.Node) (elem) );
-									handleNode.__hx_invoke2_o(default(double), node, default(double), this);
-									node.each(handleNode);
+							if (( this.@value != null )) {
+								int _g1 = 0;
+								global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (((object) (this.@value) )) );
+								while (( _g1 < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(_g2, "length", 520590566, true)) ) )) {
+									object elem = _g2[_g1];
+									 ++ _g1;
+									if (( elem is global::Loreline.Runtime.Node )) {
+										global::Loreline.Runtime.Node node = ((global::Loreline.Runtime.Node) (elem) );
+										handleNode.__hx_invoke2_o(default(double), node, default(double), this);
+										node.each(handleNode);
+									}
+									
 								}
 								
 							}
@@ -4931,7 +4934,7 @@ namespace Loreline.Runtime {
 		public override object toJson() {
 			unchecked {
 				object json = base.toJson();
-				string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "literal", 337357167, global::Loreline.Internal.Root.Type.enumConstructor(((object) (this.literalType) ))));
+				global::Loreline.Internal.Lang.Runtime.setField(json, "literal", 337357167, global::Loreline.Internal.Root.Type.enumConstructor(((object) (this.literalType) )));
 				{
 					global::Loreline.Runtime.LiteralType _g = this.literalType;
 					switch (_g._hx_index) {
@@ -4939,32 +4942,35 @@ namespace Loreline.Runtime {
 						case 1:
 						case 2:
 						{
-							global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, ((global::Loreline.Internal.Root.Array) (((object) (this.@value) )) ))) );
+							global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, this.@value);
 							break;
 						}
 						
 						
 						case 3:
 						{
-							global::Loreline.Internal.Root.Array _g1 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-							{
-								int _g2 = 0;
-								global::Loreline.Internal.Root.Array _g3 = ((global::Loreline.Internal.Root.Array) (((object) (this.@value) )) );
-								while (( _g2 < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(_g3, "length", 520590566, true)) ) )) {
-									object elem = _g3[_g2];
-									 ++ _g2;
-									if (( elem is global::Loreline.Runtime.Node )) {
-										int __temp_expr4 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g1, "push", 1247875546, new object[]{((global::Loreline.Runtime.Node) (elem) ).toJson()}))) );
-									}
-									else {
-										int __temp_expr3 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g1, "push", 1247875546, new object[]{elem}))) );
+							if (( this.@value != null )) {
+								global::Loreline.Internal.Root.Array _g1 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+								{
+									int _g2 = 0;
+									global::Loreline.Internal.Root.Array _g3 = ((global::Loreline.Internal.Root.Array) (((object) (this.@value) )) );
+									while (( _g2 < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(_g3, "length", 520590566, true)) ) )) {
+										object elem = _g3[_g2];
+										 ++ _g2;
+										if (( elem is global::Loreline.Runtime.Node )) {
+											int __temp_expr2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g1, "push", 1247875546, new object[]{((global::Loreline.Runtime.Node) (elem) ).toJson()}))) );
+										}
+										else {
+											int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g1, "push", 1247875546, new object[]{elem}))) );
+										}
+										
 									}
 									
 								}
 								
+								global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, _g1);
 							}
 							
-							global::Loreline.Internal.Root.Array __temp_expr5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, _g1)) );
 							break;
 						}
 						
@@ -4981,18 +4987,18 @@ namespace Loreline.Runtime {
 										while (( _g5 < _g6.length )) {
 											global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g6[_g5]) );
 											 ++ _g5;
-											int __temp_expr7 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g4, "push", 1247875546, new object[]{field.toJson()}))) );
+											int __temp_expr3 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g4, "push", 1247875546, new object[]{field.toJson()}))) );
 										}
 										
 									}
 									
-									global::Loreline.Internal.Root.Array __temp_expr8 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, _g4)) );
+									global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, _g4);
 								}
 								else {
-									global::Loreline.Internal.Root.Array __temp_expr6 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) );
+									global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, new global::Loreline.Internal.Root.Array<object>(new object[]{}));
 								}
 								
-								string __temp_expr9 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(style)));
+								global::Loreline.Internal.Lang.Runtime.setField(json, "style", 69051697, global::Loreline.Runtime._Node.BlockStyle_Impl_.toString(style));
 							}
 							
 							break;
@@ -5332,7 +5338,7 @@ namespace Loreline.Runtime {
 				global::Loreline.Internal.Lang.Runtime.setField(json, "target", 116192081, this.target.toJson());
 			}
 			
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "name", 1224700491, this.name);
 			return json;
 		}
 		
@@ -5471,7 +5477,7 @@ namespace Loreline.Runtime {
 		public override object toJson() {
 			object json = base.toJson();
 			global::Loreline.Internal.Lang.Runtime.setField(json, "target", 116192081, this.target.toJson());
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op));
 			global::Loreline.Internal.Lang.Runtime.setField(json, "value", 834174833, this.@value.toJson());
 			return json;
 		}
@@ -5761,7 +5767,7 @@ namespace Loreline.Runtime {
 		public override object toJson() {
 			object json = base.toJson();
 			global::Loreline.Internal.Lang.Runtime.setField(json, "left", 1202718727, this.left.toJson());
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op));
 			global::Loreline.Internal.Lang.Runtime.setField(json, "right", 1768164316, this.right.toJson());
 			return json;
 		}
@@ -5906,7 +5912,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op)));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "op", 24865, global::Loreline.Internal.Root.Std.@string(this.op));
 			global::Loreline.Internal.Lang.Runtime.setField(json, "operand", 1122225097, this.operand.toJson());
 			return json;
 		}
@@ -6024,7 +6030,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.setField(json, "path", 1246881189, this.path));
+			global::Loreline.Internal.Lang.Runtime.setField(json, "path", 1246881189, this.path);
 			return json;
 		}
 		
