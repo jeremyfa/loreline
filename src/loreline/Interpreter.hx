@@ -445,6 +445,10 @@ class RuntimeError extends Error {
                 case NBeatDecl:
                     initializeTopLevelBeat(cast decl);
 
+                // Function
+                case NFunctionDecl:
+                    initializeTopLevelFunction(cast decl);
+
                 case _:
             }
         }
@@ -1461,6 +1465,26 @@ class RuntimeError extends Error {
                 topLevelFunctions.set(key, func);
             }
         }
+
+    }
+
+    function initializeTopLevelFunction(func:NFunctionDecl) {
+
+        #if hscript
+        if (func.name != null) {
+            final expr = new CodeToHscript().process(func.code);
+            final parser = new hscript.Parser();
+            final ast = parser.parseString(expr);
+            final interp = new hscript.Interp();
+            final value:Dynamic = interp.execute(ast);
+            topLevelFunctions.set(func.name, value);
+        }
+        else {
+            throw new RuntimeError('Top level function must have a name', func.pos);
+        }
+        #else
+        throw new RuntimeError('Hscript is required to parse this function', func.pos);
+        #end
 
     }
 

@@ -112,6 +112,9 @@ enum TokenType {
     /** New state keyword */
     KwNew;
 
+    /** Function code */
+    Function(name:Null<String>, args:Array<String>, code:String);
+
     /** String literal with optional attachments */
     LString(quotes:Quotes, s:String, ?attachments:Array<LStringAttachment>);
     /** Numeric literal */
@@ -861,7 +864,21 @@ class Token {
     /**
      * Helper function to skip whitespace and comments
      */
-    function skipWhitespaceAndComments(pos:Int):Int {
+    extern inline overload function skipWhitespaceAndComments(pos:Int):Int {
+        return _skipWhitespaceAndComments(pos);
+    }
+
+    /**
+     * Helper function to skip whitespace and comments
+     */
+    extern inline overload function skipWhitespaceAndComments():Void {
+        final newPos = skipWhitespaceAndComments(pos);
+        while (pos < newPos) {
+            advance();
+        }
+    }
+
+    function _skipWhitespaceAndComments(pos:Int):Int {
         final startPos = pos;
         var foundContent = false;
         while (pos < this.length) {
@@ -1819,6 +1836,10 @@ class Token {
 
         var identifier = matchIdentifier(pos);
         if (identifier != null) {
+            if (identifier == 'function') {
+                // Cannot start with function keyword
+                return null;
+            }
             if (!isValue) {
                 // Skip if starting with some keywords
                 if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && KEYWORDS.exists(identifier)) return null;
@@ -2523,11 +2544,276 @@ class Token {
         }
 
         final word = input.uSubstr(startPos, pos - startPos);
+
+        if (word == 'function') {
+            return readFunction(start);
+        }
+
         final tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
         return makeToken(
             tokenType,
             start
         );
+    }
+
+    function readFunction(start:Position):Token {
+        skipWhitespaceAndComments();
+
+        // Read function name if present
+        var name:Null<String> = null;
+        if (isIdentifierStart(input.uCharCodeAt(pos))) {
+            final nameStart = pos;
+            while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
+                advance();
+            }
+            name = input.uSubstr(nameStart, pos - nameStart);
+        }
+
+        skipWhitespaceAndComments();
+
+        // Read parameters
+        if (pos >= length || input.uCharCodeAt(pos) != "(".code) {
+            error('Expected opening parenthesis after function name', true);
+        }
+
+        // Extract the arguments
+        var parenLevel = 0;
+        var args:Array<String> = [];
+
+        // Skip the opening (
+        advance();
+        parenLevel = 1;
+
+        var currentArg = new Utf8Buf();
+        while (pos < length && parenLevel > 0) {
+            final c = input.uCharCodeAt(pos);
+
+            // Handle nested parentheses
+            if (c == "/".code) {
+                final prevPos = pos;
+                skipWhitespaceAndComments();
+                if (pos == prevPos) {
+                    advance();
+                    error('Invalid character "/"', false);
+                }
+            }
+            else if (c == "(".code) {
+                parenLevel++;
+                currentArg.addChar(c);
+                advance();
+
+                skipWhitespaceAndComments();
+            }
+            else if (c == ")".code) {
+                parenLevel--;
+                if (parenLevel > 0) {
+                    currentArg.addChar(c);
+                } else {
+                    // End of arguments, add the last argument if not empty
+                    var argStr = currentArg.toString().trim();
+                    if (argStr.length > 0) {
+                        args.push(argStr);
+                    }
+                }
+                advance();
+
+                skipWhitespaceAndComments();
+            }
+            else if (c == ",".code && parenLevel == 1) {
+                // Argument separator at top level
+                var argStr = currentArg.toString().trim();
+                if (argStr.length > 0) {
+                    args.push(argStr);
+                }
+                currentArg = new Utf8Buf();
+                advance();
+
+                skipWhitespaceAndComments();
+            }
+            else {
+                currentArg.addChar(c);
+                advance();
+            }
+        }
+
+        if (parenLevel > 0) {
+            error('Unclosed parentheses in function declaration', false);
+        }
+
+        skipWhitespaceAndComments();
+
+        // Check if using braces or indentation
+        final usesBraces = pos < length && input.uCharCodeAt(pos) == "{".code;
+
+        if (usesBraces) {
+            // Brace-delimited function body
+            advance(); // Skip opening brace
+            var braceLevel = 1;
+
+            while (pos < length && braceLevel > 0) {
+                final c = input.uCharCodeAt(pos);
+
+                // Handle string literals
+                if (c == "\"".code) {
+                    advance(); // Skip opening quote
+
+                    // Parse string content including possible interpolations
+                    skipQuotedString();
+                    continue;
+                }
+
+                // Handle normal brace counting
+                if (c == "{".code) braceLevel++;
+                else if (c == "}".code) braceLevel--;
+
+                advance();
+            }
+
+            if (braceLevel > 0) {
+                error('Unclosed braces in function body', false);
+            }
+        }
+        else {
+            // Indentation-delimited function body
+            var functionIndentLevel = -1;
+            var currentLine = true;
+
+            // Skip to next line to start indent-based parsing
+            while (pos < length) {
+                final c = input.uCharCodeAt(pos);
+                if (c == "\n".code || c == "\r".code) {
+                    advance();
+                    currentLine = true;
+                    break;
+                }
+                advance();
+            }
+
+            // Read until the indentation level decreases
+            while (pos < length) {
+                if (currentLine) {
+                    // Count indentation level
+                    var indent = 0;
+                    final indentStart = pos;
+
+                    while (pos < length) {
+                        final c = input.uCharCodeAt(pos);
+                        if (c == " ".code) indent++;
+                        else if (c == "\t".code) indent += 4; // Count tab as 4 spaces
+                        else break;
+                        advance();
+                    }
+
+                    // If this is the first line, record the indent level
+                    if (functionIndentLevel == -1 && pos < length && input.uCharCodeAt(pos) != "\n".code && input.uCharCodeAt(pos) != "\r".code) {
+                        functionIndentLevel = indent;
+                    }
+                    // Check if we are done (dedent or empty line at lower indentation)
+                    else if (functionIndentLevel != -1 && indent < functionIndentLevel &&
+                            (pos >= length || (input.uCharCodeAt(pos) != "\n".code && input.uCharCodeAt(pos) != "\r".code))) {
+                        // Rewind position to the start of this line
+                        pos = indentStart;
+                        break;
+                    }
+
+                    currentLine = false;
+                }
+
+                final c = input.uCharCodeAt(pos);
+
+                // Handle string literals
+                if (c == "\"".code) {
+                    skipQuotedString();
+                    continue;
+                }
+
+                // Check for newline to reset line processing
+                if (c == "\n".code || c == "\r".code) {
+                    currentLine = true;
+                }
+
+                advance();
+            }
+        }
+
+        // Extract the function code from the original input
+        final bodyEnd = pos;
+        final code = input.uSubstr(start.offset, bodyEnd - start.offset).rtrim() + "\n";
+
+        // Create token with the function code
+        final token = makeToken(Function(name, args, code), start);
+        token.pos.length = code.uLength();
+        return token;
+    }
+
+    function skipQuotedString():Void {
+        var escaped = false;
+
+        advance(); // Skip opening quote
+
+        while (pos < length) {
+            final c = input.uCharCodeAt(pos);
+
+            if (escaped) {
+                // Handle escape sequence
+                escaped = false;
+                advance();
+            }
+            else if (c == "\\".code) {
+                // Start of escape sequence
+                escaped = true;
+                advance();
+            }
+            else if (c == "\"".code) {
+                // End of string
+                advance(); // Skip closing quote
+                break;
+            }
+            else if (c == "$".code && pos + 1 < length) {
+                // Handle string interpolation
+                advance(); // Skip $
+
+                if (pos < length && input.uCharCodeAt(pos) == "{".code) {
+                    // Complex interpolation ${...}
+                    advance(); // Skip {
+
+                    // Parse interpolation expression with proper nesting
+                    var interpBraceLevel = 1;
+
+                    while (pos < length && interpBraceLevel > 0) {
+                        final ic = input.uCharCodeAt(pos);
+
+                        if (ic == "\"".code) {
+                            // Handle nested strings within interpolation
+                            skipQuotedString(); // Recursively parse the nested string
+                            continue;
+                        }
+                        else if (ic == "{".code) {
+                            interpBraceLevel++;
+                        }
+                        else if (ic == "}".code) {
+                            interpBraceLevel--;
+                        }
+
+                        if (interpBraceLevel > 0 || ic != "}".code) {
+                            advance();
+                        } else {
+                            advance(); // Skip closing }
+                            break;
+                        }
+                    }
+                }
+                else if (isIdentifierStart(input.uCharCodeAt(pos))) {
+                    // Simple identifier interpolation $identifier
+                    while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
+                        advance();
+                    }
+                }
+            }
+            else {
+                advance();
+            }
+        }
     }
 
     /**

@@ -1,2 +1,3 @@
 --class-path src
 --main loreline.cli.Cli
+--library hscript

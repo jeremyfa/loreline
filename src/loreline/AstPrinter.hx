@@ -276,6 +276,23 @@ class AstPrinter {
                         }
                 }
 
+            case NFunctionDecl:
+                final func:NFunctionDecl = cast node;
+                if (func.name != null) {
+                    add(' name="');
+                    add(func.name);
+                    add('"');
+                }
+                add(" args=[" + func.args.join(', ') + "]");
+                addLineBreak();
+                indentLevel++;
+                for (line in func.code.split("\n")) {
+                    indent();
+                    add(line);
+                    addLineBreak();
+                }
+                indentLevel--;
+
             case NLiteral:
                 final literal:NLiteral = cast node;
                 add(" type=");

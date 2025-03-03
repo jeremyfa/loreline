@@ -121,6 +121,7 @@ async function main() {
     }
     await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
     await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
+    await command(haxelib, ['dev', 'hscript', 'git/hscript', '--quiet'], { cwd: __dirname });
 
     if (buildCpp) {
 
@@ -232,6 +233,7 @@ async function main() {
         let haxeBuildCsArgs = [
             '--class-path', 'src',
             '--cs', 'build/cs',
+            '--library', 'hscript',
             '-D', 'no-compilation',
             '-D', 'no-root',
             '-D', 'real-position',
@@ -262,6 +264,7 @@ async function main() {
                 );
 
                 content = content.replace(/\bhaxe\b/g, 'Loreline.Internal');
+                content = content.replace(/\bhscript\b/g, 'Loreline.Internal.Hscript');
                 content = content.replace(/\bnamespace cs\b/g, 'namespace Loreline.Internal.Cs');
                 content = content.replace(/\bcs.\b/g, 'Loreline.Internal.Cs.');
                 content = content.replace(/\bloreline\b/g, 'Loreline.Runtime');
@@ -271,7 +274,7 @@ async function main() {
 
                 // Disable warnings related to AOT (the code is still expected to work in that
                 // situation because it should not rely on actual C# reflection. Uses FieldLookup instead)
-                content = content.split("#pragma warning disable 109, 114, 219, 429, 168, 162").join("#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060");
+                content = content.split("#pragma warning disable 109, 114, 219, 429, 168, 162").join("#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108");
 
                 const namespace = extractCsNamespace(content);
                 if (namespace == null) {

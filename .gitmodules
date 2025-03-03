@@ -7,3 +7,6 @@
 [submodule "git/hxcs"]
 	path = git/hxcs
 	url = https://github.com/HaxeFoundation/hxcs.git
+[submodule "git/hscript"]
+	path = git/hscript
+	url = https://github.com/HaxeFoundation/hscript.git

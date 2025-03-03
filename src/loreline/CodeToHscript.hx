@@ -130,7 +130,7 @@ class CodeToHscript {
 
         processInput();
 
-        return this.output.toString();
+        return this.output.toString().rtrim() + "\n";
     }
 
     /**
@@ -332,8 +332,6 @@ class CodeToHscript {
     function followsWithChar(c:Int, pos:Int):Bool {
         // Skip whitespace, newlines, and comments to check if the next meaningful character is c
         var tempIndex = pos;
-        var tempInComment = false;
-        var tempInString = false;
 
         while (tempIndex < length) {
             final cc = input.uCharCodeAt(tempIndex);
@@ -588,12 +586,12 @@ class CodeToHscript {
             lineOutput = new Utf8Buf();
 
             if (parens == 0 && brackets == 0) {
-                final semicolon = endsOrFollowsWithChar(line, ";".code, index);
                 final indent = nextLineIndentOffset(line, index);
 
                 if (line.trim().length == 0) {
                     // Nothing special to do
-                } else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index)) {
+                }
+                else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index)) {
                     indentLevel += indent;
                     indentStack.push(indentLevel);
 
@@ -602,7 +600,8 @@ class CodeToHscript {
                     posOffsets.push(currentPosOffset);
                     output.addChar("{".code);
                     posOffsets.push(currentPosOffset);
-                } else if (indent < 0 && !endsOrFollowsWithChar(line, "}".code, index)) {
+                }
+                else if (indent < 0 && !endsOrFollowsWithChar(line, "}".code, index)) {
                     if (!endsOrFollowsWithChar(line, ";".code, index)) {
                         currentPosOffset++;
                         output.addChar(";".code);
@@ -624,7 +623,8 @@ class CodeToHscript {
                         output.addChar("}".code);
                         posOffsets.push(currentPosOffset);
                     }
-                } else if (!endsOrFollowsWithChar(line, ";".code, index)) {
+                }
+                else if (indent == 0 && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {
                     currentPosOffset++;
                     output.addChar(";".code);
                     posOffsets.push(currentPosOffset);

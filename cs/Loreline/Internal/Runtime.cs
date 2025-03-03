@@ -9,7 +9,7 @@ namespace Loreline.Internal.Lang{
 
 
 
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Lang {
 	public class Runtime {
 		

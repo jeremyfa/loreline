@@ -1451,6 +1451,61 @@ class NTransition extends AstNode {
 }
 
 /**
+ * Represents a callable function in the AST
+ */
+class NFunctionDecl extends NExpr {
+    /**
+     * The function name (if any)
+     */
+    public var name:Null<String>;
+
+    /**
+     * Argument names
+     */
+    public var args:Array<String>;
+
+    /**
+     * The actual code of the function (including the signature)
+     */
+    public var code:String;
+
+
+    /**
+     * Creates a new function node.
+     * @param pos Position in source where this function appears
+     * @param name The function name (if any)
+     * @param args Argument names
+     * @param code The actual code of the function (including the signature)
+     * @param leadingComments Optional comments before the function
+     * @param trailingComments Optional comments after the function
+     */
+     public function new(id:NodeId, pos:Position, name:Null<String>, args:Array<String>, code:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.name = name;
+        this.args = args;
+        this.code = code;
+    }
+
+    override function type():String {
+        return "Function";
+    }
+
+    /**
+     * Converts the literal to a JSON representation.
+     * @return Dynamic object containing literal data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        if (name != null) {
+            json.name = name;
+        }
+        json.args = [].concat(args);
+        json.code = code;
+        return json;
+    }
+}
+
+/**
  * Represents literal values in the AST (numbers, booleans, arrays, objects).
  */
 class NLiteral extends NExpr {

@@ -366,6 +366,7 @@ class ParseError extends Error {
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
+            case Function(_, _, _): parseFunction();
             case _:
                 addError(new ParseError('Unexpected token: ${tokens[current].type}', currentPos()));
                 advance();
@@ -847,6 +848,23 @@ class ParseError extends Error {
 
         final target = expectIdentifier();
         return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
+    }
+
+    /**
+     * Parses a function definition.
+     * @return Function node
+     */
+    function parseFunction():NFunctionDecl {
+        final startPos = currentPos();
+
+        return switch (tokens[current].type) {
+            case Function(name, args, body):
+                advance();
+                attachComments(new NFunctionDecl(nextNodeId(BLOCK), startPos, name, [].concat(args), body));
+
+            case _:
+                throw new ParseError("Unexpected token in expression", currentPos());
+        }
     }
 
     /**
