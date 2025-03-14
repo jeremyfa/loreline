@@ -1,6 +1,9 @@
 package loreline;
 
+import loreline.Imports;
 import loreline.Interpreter;
+import loreline.Lexer;
+import loreline.Parser;
 
 /**
  * The main public API for Loreline runtime.
@@ -15,25 +18,68 @@ class Loreline {
      * `Script` object can then be passed to methods `play()` or `resume()`.
      *
      * @param input The Loreline script content as a string (`.lor` format)
+     * @param filePath (optional) The file path of the input being parsed. If provided, requires `handleFile` as well.
+     * @param handleFile
+     *          (optional) A file handler to read imports. If that handler is asynchronous, then `parse()` method
+     *          will return null and `callback` argument should be used to get the final script
+     * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously
      * @return The parsed script as an AST `Script` instance
      * @throws loreline.Error If the script contains syntax errors or other parsing issues
      */
-    public static function parse(input:String):Script {
+    public static function parse(input:String, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(script:Script)->Void):Null<Script> {
 
         final lexer = new Lexer(input);
         final tokens = lexer.tokenize();
-        final parser = new Parser(tokens);
 
-        final result = parser.parse();
         final lexerErrors = lexer.getErrors();
-        final parseErrors = parser.getErrors();
-
         if (lexerErrors != null && lexerErrors.length > 0) {
             throw lexerErrors[0];
         }
 
+        var result:Script = null;
+
+        if (filePath != null && handleFile != null) {
+            // File path and file handler provided, which mean we can support
+            // imports, either synchronous or asynchronous
+
+            var imports = new Imports(filePath, tokens, handleFile, (error) -> {
+                throw error;
+            });
+            imports.resolve((hasErrors, resolvedImports) -> {
+
+                final parser = new Parser(tokens, {
+                    rootPath: filePath,
+                    path: filePath,
+                    imports: resolvedImports
+                });
+
+                result = parser.parse();
+                final parseErrors = parser.getErrors();
+
+                if (parseErrors != null && parseErrors.length > 0) {
+                    throw parseErrors[0];
+                }
+
+                if (callback != null) {
+                    callback(result);
+                }
+
+            });
+            return result;
+        }
+
+        // No imports handling, simply parse the input
+        final parser = new Parser(tokens);
+
+        result = parser.parse();
+        final parseErrors = parser.getErrors();
+
         if (parseErrors != null && parseErrors.length > 0) {
             throw parseErrors[0];
+        }
+
+        if (callback != null) {
+            callback(result);
         }
 
         return result;
@@ -60,7 +106,7 @@ class Loreline {
         handleChoice:ChoiceHandler,
         handleFinish:FinishHandler,
         ?beatName:String,
-        ?functions:Map<String,Any>
+        ?options:InterpreterOptions
     ):Interpreter {
 
         final interpreter = new Interpreter(
@@ -68,7 +114,7 @@ class Loreline {
             handleDialogue,
             handleChoice,
             handleFinish,
-            functions
+            options
         );
 
         interpreter.start(beatName);
@@ -98,7 +144,7 @@ class Loreline {
         handleFinish:FinishHandler,
         saveData:SaveData,
         ?beatName:String,
-        ?functions:Map<String,Any>
+        ?options:InterpreterOptions
     ):Interpreter {
 
         final interpreter = new Interpreter(
@@ -106,7 +152,7 @@ class Loreline {
             handleDialogue,
             handleChoice,
             handleFinish,
-            functions
+            options
         );
 
         interpreter.restore(saveData);

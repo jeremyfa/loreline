@@ -46,6 +46,38 @@ class Position {
     }
 
     /**
+     * Creates a Position object by analyzing a string content up to the specified offset.
+     * Calculates the correct line and column numbers based on line breaks in the content.
+     *
+     * @param content The string content to analyze
+     * @param offset The character offset from the start of the content
+     * @param length The length of the position (or 0 if not provided)
+     * @return A new Position object with proper line and column information
+     */
+    public static function fromContentAndIndex(content:String, offset:Int, length:Int = 0):Position {
+        var line = 1;
+        var column = 1;
+        var currentOffset = 0;
+        var len = content.uLength();
+
+        if (offset > len) offset = len;
+        if (offset < 0) offset = 0;
+
+        // Scan through content to calculate line and column
+        while (currentOffset < offset) {
+            if (content.uCharCodeAt(currentOffset) == '\n'.code) {
+                line++;
+                column = 1;
+            } else {
+                column++;
+            }
+            currentOffset++;
+        }
+
+        return new Position(line, column, offset, length);
+    }
+
+    /**
      * Converts the position to a human-readable string representation.
      * Useful for error messages and debugging.
      * @return String in format "(line X col Y)"
@@ -80,7 +112,7 @@ class Position {
      * @param newLength Optional new length for the offset position (default: 0)
      * @return New Position object at the offset location
      */
-    public function withOffset(content:String, additionalOffset:Int, newLength:Int = 0):Position {
+    public function withOffset(content:String, additionalOffset:Int, newLength:Int = 0, contentStart:Int = 0):Position {
         // Handle zero offset
         if (additionalOffset == 0) {
             return new Position(line, column, offset, newLength);
@@ -94,7 +126,7 @@ class Position {
             // Moving forward in the text
             var chars = 0;
             while (chars < additionalOffset) {
-                if (currentOffset < content.uLength() && content.uCharCodeAt(currentOffset) == '\n'.code) {
+                if (currentOffset < (contentStart + content.uLength()) && content.uCharCodeAt(currentOffset - contentStart) == '\n'.code) {
                     currentLine++;
                     currentColumn = 1;
                 } else {
@@ -108,13 +140,13 @@ class Position {
             var chars = 0;
             while (chars > additionalOffset) {
                 currentOffset--;
-                if (currentOffset >= 0 && content.uCharCodeAt(currentOffset) == '\n'.code) {
+                if (currentOffset >= 0 && content.uCharCodeAt(currentOffset - contentStart) == '\n'.code) {
                     currentLine--;
                     // Need to scan backward to find the previous line's length
                     var col = 1;
                     var scanPos = currentOffset - 1;
                     while (scanPos >= 0) {
-                        var c = content.uCharCodeAt(scanPos);
+                        var c = content.uCharCodeAt(scanPos - contentStart);
                         if (c == '\n'.code) break;
                         col++;
                         scanPos--;

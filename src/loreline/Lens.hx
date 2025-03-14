@@ -1,9 +1,12 @@
 package loreline;
 
+import haxe.ds.Either;
+import haxe.io.Path;
 import loreline.Node;
 import loreline.Position;
 
 using StringTools;
+using loreline.Utf8;
 
 class Reference<T:Node> {
 
@@ -17,6 +20,106 @@ class Reference<T:Node> {
     }
 
 }
+
+#if hscript
+
+class FuncHscript {
+
+    public var func(default, null):NFunctionDecl;
+
+    public var codeToHscript(default, null):CodeToHscript;
+
+    public var hscript(default, null):String = null;
+
+    public var expr(default, null):hscript.Expr = null;
+
+    public var error(default, null):loreline.Error = null;
+
+    public function new(func:NFunctionDecl) {
+
+        this.func = func;
+
+        this.codeToHscript = new CodeToHscript();
+
+        try {
+            this.hscript = codeToHscript.process(func.code);
+        }
+        catch (e:Any) {
+            if (e is Error) {
+                this.error = e;
+                this.error.pos = func.pos.withOffset(
+                    codeToHscript.input,
+                    this.error.pos.offset,
+                    this.error.pos.length,
+                    func.pos.offset
+                );
+            }
+            this.hscript = codeToHscript.output.toString();
+        }
+
+        try {
+            final parser = new hscript.Parser();
+            parser.resumeErrors = false;
+            parser.allowJSON = true;
+            parser.allowTypes = true;
+            this.expr = parser.parseString(hscript, func.name ?? '?');
+        }
+        catch (e:Any) {
+            if (this.error == null) {
+                if (e is hscript.Expr.Error) {
+                    final hscriptError:hscript.Expr.Error = cast e;
+                    this.error = new WrappedError(
+                        hscriptError,
+                        switch hscriptError.e {
+                            case EInvalidChar(c): 'Invalid character: $c';
+                            case EUnexpected(s): 'Unexpected: $s';
+                            case EUnterminatedString: 'Unterminated string';
+                            case EUnterminatedComment: 'Unterminated comment';
+                            case EInvalidPreprocessor(msg): 'Invalid preprocessor: $msg';
+                            case EUnknownVariable(v): 'Unknown variable: $v';
+                            case EInvalidIterator(v): 'Invalid iterator: $v';
+                            case EInvalidOp(op): 'Invalid operator: $op';
+                            case EInvalidAccess(f): 'Invalid access: $f';
+                            case ECustom(msg): msg;
+                        },
+                        codeToHscript.toLorelinePos(func.pos, hscriptError.pmin, hscriptError.pmax)
+                    );
+                }
+                else if (e is Error) {
+                    this.error = cast e;
+                    this.error.pos = func.pos.withOffset(
+                        codeToHscript.input,
+                        this.error.pos.offset,
+                        this.error.pos.length,
+                        func.pos.offset
+                    );
+                }
+            }
+
+            try {
+                final parser = new hscript.Parser();
+                parser.resumeErrors = true;
+                parser.allowJSON = true;
+                parser.allowTypes = true;
+                this.expr = parser.parseString(hscript, func.name ?? '?');
+            }
+            catch (e2) {}
+        }
+
+    }
+
+}
+
+@:structInit
+class HscriptCompletion {
+
+    public var locals:Map<String, hscript.Checker.TType> = null;
+
+    public var completion:hscript.Checker.Completion = null;
+
+}
+
+#end
 
 /**
  * Utility class for analyzing Loreline scripts without executing them.
@@ -34,6 +137,10 @@ class Lens {
 
     /** Map of node IDs to their child nodes */
     final childNodes:NodeIdMap<Array<Node>> = new NodeIdMap();
+
+    #if hscript
+    final hscriptFunctions:NodeIdMap<FuncHscript> = new NodeIdMap();
+    #end
 
     public function new(script:Script) {
         this.script = script;
@@ -76,7 +183,7 @@ class Lens {
     public function getNodeAtPosition(pos:Position):Null<Node> {
         var bestMatch:Null<Node> = null;
 
-        script.each((node, parent) -> {
+        script.eachExcludingImported((node, parent) -> {
             final nodePos = node.pos;
             if (nodePos.length > 0 &&
                 nodePos.offset <= pos.offset &&
@@ -98,7 +205,7 @@ class Lens {
         var bestMatch:Null<Node> = null;
         var bestDistance:Int = 999999999;
 
-        script.each((node, parent) -> {
+        script.eachExcludingImported((node, parent) -> {
             final nodePos = node.pos;
             final distance = pos.offset - nodePos.offset;
             if (distance >= 0 && distance < bestDistance) {
@@ -115,12 +222,13 @@ class Lens {
      * @param nodeType Class type to find
      * @return Array of matching nodes
      */
-    public function getNodesOfType<T:Node>(nodeType:Class<T>):Array<T> {
+    public function getNodesOfType<T:Node>(nodeType:Class<T>, includeImported:Bool = false):Array<T> {
         final matches:Array<T> = [];
-        script.each((node, _) -> {
+        traverse(script, (node, parent) -> {
             if (Std.isOfType(node, nodeType)) {
                 matches.push(cast node);
             }
+            return includeImported || node == script || !(node is NImportStatement || node is Script);
         });
         return matches;
     }
@@ -150,36 +258,51 @@ class Lens {
         return null;
     }
 
-    /**
-     * Gets all ancestor nodes of a given node
-     * @param node Starting node
-     * @return Array of ancestor nodes from immediate parent to root
-     */
-    public function getAncestors(node:Node):Array<Node> {
-        final ancestors:Array<Node> = [];
-        var current = node;
-        while (current != null) {
-            current = parentNodes.get(current.id);
-            if (current != null) {
-                ancestors.push(current);
-            }
-        }
-        return ancestors;
+    public function getImportedPaths(rootPath:String):Array<String> {
+
+        final result:Array<String> = [];
+        _getImportedPaths(rootPath, script, result, new Map<String,Bool>());
+        return result;
+
     }
 
-    /**
-     * Finds all nodes that match a predicate function
-     * @param predicate Function that returns true for matching nodes
-     * @return Array of matching nodes
-     */
-    public function findNodes(predicate:(node:Node) -> Bool):Array<Node> {
-        final matches:Array<Node> = [];
-        script.each((node, _) -> {
-            if (predicate(node)) {
-                matches.push(node);
+    function _getImportedPaths(rootPath:String, script:Script, result:Array<String>, used:Map<String,Bool>):Array<String> {
+
+        final rootDir = Path.directory(rootPath);
+
+        if (script == null) {
+            script = this.script;
+        }
+
+        for (node in script.body) {
+            if (node is NImportStatement) {
+                final importNode:NImportStatement = cast node;
+
+                var importPath = importNode.path;
+
+                if (!Path.isAbsolute(importPath)) {
+                    importPath = Path.join([rootDir, importPath]);
+                }
+
+                importPath = Path.normalize(importPath);
+
+                if (!importPath.toLowerCase().endsWith('.lor')) {
+                    importPath += '.lor';
+                }
+
+                if (!used.exists(importPath)) {
+                    used.set(importPath, true);
+                    result.push(importPath);
+
+                    if (importNode.script != null) {
+                        _getImportedPaths(importPath, importNode.script, result, used);
+                    }
+                }
             }
-        });
-        return matches;
+        }
+
+        return result;
+
     }
 
     public function resolveArrayAccess(access:NArrayAccess):Null<Node> {
@@ -362,7 +485,7 @@ class Lens {
                     }
                 }
             }
-            return false;
+            return (node is NImportStatement || node is Script);
         });
         if (stateField != null) {
             return stateField;
@@ -374,10 +497,16 @@ class Lens {
             return characterDecl;
         }
 
-        // 4. Finally, look for a beat declaration
+        // 4. Look for a beat declaration
         final beatDecl = findBeatByNameFromNode(name, access);
         if (beatDecl != null) {
             return beatDecl;
+        }
+
+        // 5. Finally, look for a top-level function declaration
+        final functionDecl = findFunctionByNameFromNode(name, access);
+        if (functionDecl != null) {
+            return functionDecl;
         }
 
         // Nothing found
@@ -475,7 +604,7 @@ class Lens {
                         result = beatDecl;
                     }
                 }
-                return false;
+                return (child is NImportStatement || child is Script);
             });
         }
 
@@ -509,7 +638,26 @@ class Lens {
                     result = characterDecl;
                 }
             }
-            return false;
+            return (child is NImportStatement || child is Script);
+        });
+
+        return result;
+
+    }
+
+    public function findFunctionByNameFromNode(name:String, node:Node):Null<NFunctionDecl> {
+
+        var result:Null<NFunctionDecl> = null;
+
+        // Look at top-level function declarations
+        traverse(script, (child, parent) -> {
+            if (result == null && (child is NFunctionDecl)) {
+                final functionDecl:NFunctionDecl = cast child;
+                if (functionDecl.name == name) {
+                    result = functionDecl;
+                }
+            }
+            return (child is NImportStatement || child is Script);
         });
 
         return result;
@@ -520,8 +668,22 @@ class Lens {
 
         final result:Array<NCharacterDecl> = [];
 
-        for (node in script.body) {
+        for (node in script) {
             if (node is NCharacterDecl) {
+                result.push(cast node);
+            }
+        }
+
+        return result;
+
+    }
+
+    public function getVisibleFunctions():Array<NFunctionDecl> {
+
+        final result:Array<NFunctionDecl> = [];
+
+        for (node in script) {
+            if (node is NFunctionDecl) {
                 result.push(cast node);
             }
         }
@@ -560,7 +722,7 @@ class Lens {
             switch Type.getClass(node) {
                 case NStateDecl:
                     final state:NStateDecl = cast node;
-                    if (parent == script) { // Only consider top-level states
+                    if (parent is Script) { // Only consider top-level states
                         for (field in state.fields) {
                             if (!seenFields.exists(field.id)) {
                                 seenFields.set(field.id, true);
@@ -606,7 +768,7 @@ class Lens {
         script.each((node, parent) -> {
             switch Type.getClass(node) {
                 case NBeatDecl:
-                    if (parent == script) {
+                    if (parent is Script) {
                         final beat:NBeatDecl = cast node;
                         if (!seenBeats.exists(beat.name)) {
                             seenBeats.set(beat.name, true);
@@ -1030,6 +1192,215 @@ class Lens {
                 }
             }
         }
+
+    }
+
+    #if hscript
+
+    public function getFuncHscript(func:NFunctionDecl):FuncHscript {
+
+        final id = func.id;
+
+        var info = hscriptFunctions.get(id);
+
+        if (info == null) {
+            info = new FuncHscript(func);
+            hscriptFunctions.set(id, info);
+        }
+
+        return info;
+
+    }
+
+    public function getHscriptExpr(func:NFunctionDecl, pos:Position):hscript.Expr {
+
+        final info = getFuncHscript(func);
+
+        if (info.expr == null) {
+            return null;
+        }
+
+        final offset = pos.offset - func.pos.offset;
+
+        var bestExpr:hscript.Expr = null;
+
+        var handler:(expr:hscript.Expr)->Void = null;
+        handler = expr -> {
+            if (expr != null) {
+                final min = info.codeToHscript.inputPosFromProcessedPos(expr.pmin);
+                final max = info.codeToHscript.inputPosFromProcessedPos(expr.pmax);
+
+                if (offset >= min && offset <= max) {
+                    bestExpr = expr;
+                }
+
+                hscript.Tools.iter(expr, handler);
+            }
+        };
+        hscript.Tools.iter(info.expr, handler);
+
+        return bestExpr;
+
+    }
+
+    public function resolveHscriptAccess(func:NFunctionDecl, expr:hscript.Expr):Null<Node> {
+
+        switch expr.e {
+
+            case EIdent(name):
+
+                // 1. Look for fields in top-level state declarations
+                var stateField:Null<Node> = null;
+                traverse(script, (node, parent) -> {
+                    if (stateField != null) return false;
+
+                    if (node is NStateDecl) {
+                        final stateDecl:NStateDecl = cast node;
+                        for (field in stateDecl.fields) {
+                            if (field.name == name) {
+                                stateField = field;
+                                return false;
+                            }
+                        }
+                    }
+                    return (node is NImportStatement || node is Script);
+                });
+                if (stateField != null) {
+                    return cast stateField;
+                }
+
+                // 2. Look for a top-level character declaration
+                final characterDecl = findCharacterByNameFromNode(name, func);
+                if (characterDecl != null) {
+                    return cast characterDecl;
+                }
+
+                // 3. Finally, look for a beat declaration
+                final beatDecl = findBeatByNameFromNode(name, func);
+                if (beatDecl != null) {
+                    return cast beatDecl;
+                }
+
+            case EField(e, f):
+                // Recursively resolve the target object
+                var targetNode = if (e != null) {
+                    resolveHscriptAccess(func, e);
+                }
+                else {
+                    null;
+                }
+
+                if (targetNode != null) {
+
+                    if (targetNode is NObjectField) {
+                        targetNode = (cast targetNode:NObjectField).value;
+                    }
+
+                    switch Type.getClass(targetNode) {
+                        case NCharacterDecl:
+                            // If target is a character, look for field in its fields
+                            final characterDecl:NCharacterDecl = cast targetNode;
+                            for (prop in characterDecl.fields) {
+                                if (prop.name == f) {
+                                    return prop;
+                                }
+                            }
+                        case NLiteral:
+                            // If target is a literal, check if it is an object
+                            final literal:NLiteral = cast targetNode;
+                            switch literal.literalType {
+                                case Object(style):
+                                    final fields:Array<NObjectField> = cast literal.value;
+                                    for (field in fields) {
+                                        if (field.name == f) {
+                                            return field;
+                                        }
+                                    }
+                                case _:
+                            }
+                        case _:
+                    }
+                }
+
+            case EArray(e, index):
+                // TODO (but that's not the most useful here)
+
+            case _:
+        }
+
+        return null;
+
+    }
+
+    public function isHscriptExpr(input:Any):Bool {
+
+        return input != null && Reflect.hasField(input, "e") && (Reflect.field(input, "e") is hscript.Expr.ExprDef);
+
+    }
+
+    public function getHscriptCompletion(func:NFunctionDecl, pos:Position):HscriptCompletion {
+
+        final info = getFuncHscript(func);
+
+        final inputPos = pos.offset - func.pos.offset + pos.length;
+        final processedPos = info.codeToHscript.processedPosFromInputPos(inputPos);
+
+        var truncated = info.hscript.uSubstring(0, Std.int(Math.min(processedPos, info.hscript.uLength())));
+
+        var fullLen = truncated.uLength();
+        truncated = truncated.uSubstring(truncated.uIndexOf('{') + 1, fullLen);
+        var truncatedLen = truncated.uLength();
+        var spaces = new Utf8Buf();
+        for (i in 0...(fullLen - truncatedLen)) {
+            spaces.addChar(' '.code);
+        }
+        truncated = spaces.toString() + truncated;
+
+        var completion:hscript.Checker.Completion = null;
+        var checker = new hscript.Checker();
+        try {
+            @:privateAccess {
+                checker.types.parser.allowJSON = true;
+                checker.types.parser.allowTypes = true;
+                checker.types.parser.resumeErrors = true;
+
+                final expr = checker.types.parser.parseString(truncated);
+                checker.check(expr, null, true);
+            }
+        }
+        catch (e:Any) {
+            if (e is hscript.Checker.Completion) {
+                completion = cast e;
+            }
+        }
+        final locals = @:privateAccess checker.locals;
+
+        return {
+            locals: locals,
+            completion: completion
+        };
+
+    }
+
+    #end
+
+    public function resolveAccessInFunction(func:NFunctionDecl, pos:Position):Null<Node> {
+
+        #if hscript
+
+        final info = getFuncHscript(func);
+        if (info.expr == null) {
+            return null;
+        }
+
+        final expr = getHscriptExpr(func, pos);
+        if (expr != null) {
+            return resolveHscriptAccess(func, expr);
+        }
+
+        #end
+
+        return null;
 
     }
 

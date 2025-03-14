@@ -2,6 +2,7 @@ package loreline.lsp;
 
 import Type as HxType;
 import haxe.Json;
+import haxe.io.Path;
 import loreline.Error;
 import loreline.Lexer;
 import loreline.Node;
@@ -22,16 +23,35 @@ class Server {
 
     final RE_ARRAY_ACCESS_BEFORE = ~/(\])((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
 
-    // Map of document URIs to their parsed ASTs
-    final documents:Map<String, Script> = [];
+    /**
+     * Maps document URIs to their parsed ASTs.
+     */
+    final documents:Map<String, Script> = new Map();
 
-    // Map of document URIs to their text content
-    final documentContents:Map<String, String> = [];
+    /**
+     * Maps document URIs to the URIs they are dependent from (importing them).
+     */
+    final documentImports:Map<String, Array<String>> = new Map();
 
-    // Map of document URIs to their diagnostics
-    final documentDiagnostics:Map<String, Array<Diagnostic>> = [];
+    /**
+     * Maps document URIs to their text content.
+     */
+    final documentContents:Map<String, String> = new Map();
 
-    // Client capabilities from initialize request
+    /**
+     * Maps document URIs to their diagnostics.
+     */
+    final documentDiagnostics:Map<String, Array<Diagnostic>> = new Map();
+
+    /**
+     * Maps document URIs that need to be reloaded because some dependencies (imports)
+     * have been modified.
+     */
+    final dirtyDocuments:Map<String, Bool> = new Map();
+
+    /**
+     * Client capabilities received from initialize request.
+     */
     var clientCapabilities:ClientCapabilities;
 
     // Track server state
@@ -48,7 +68,46 @@ class Server {
         // Needs to be replaced by proper handler
     }
 
-    public function new() {}
+    public dynamic function handleFile(path:String, callback:(content:String)->Void):Void {
+
+        final uri = uriFromPath(path);
+        if (documentContents.exists(uri)) {
+            callback(documentContents.get(uri));
+            return;
+        }
+
+        #if (sys || (js && hxnodejs))
+        var content:String = null;
+        try {
+            if (sys.FileSystem.exists(path)) {
+                content = sys.io.File.getContent(path);
+            }
+            setDocumentContent(uri, content);
+        }
+        catch (e:Any) {
+            onLog("Failed to load content at path: " + path + ", " + e);
+        }
+        callback(content);
+        #else
+        onLog("Content loading not supported, cannot load content at path: " + path);
+        callback(null);
+        #end
+
+    }
+
+    final isWindows:Bool;
+
+    public function new() {
+        #if windows
+        isWindows = true;
+        #elseif (js && hxnodejs)
+        isWindows = js.Syntax.code('process.platform === "win32"');
+        #elseif sys
+        isWindows = Sys.systemName() == "Windows";
+        #else
+        isWindows = false;
+        #end
+    }
 
     /**
      * Handle incoming JSON-RPC message
@@ -295,53 +354,264 @@ class Server {
         documentDiagnostics.remove(params.textDocument.uri);
     }
 
+    function setDocument(uri:String, ast:Script) {
+        documents.set(uri, ast);
+        dirtyDocuments.remove(uri);
+    }
+
+    function setDocumentContent(uri:String, content:String) {
+        final previous = documentContents.get(uri);
+        if (previous != content) {
+            documentContents.set(uri, content);
+            markDependentDocumentsDirty(uri);
+        }
+    }
+
+    function markDependentDocumentsDirty(uri:String) {
+
+        for (key => imports in documentImports) {
+            for (i in 0...imports.length) {
+                final imp = imports[i];
+                if (imp == uri) {
+                    dirtyDocuments.set(key, true);
+                    break;
+                }
+            }
+        }
+
+    }
+
     /**
      * Update document content and parse
      */
     function updateDocument(uri:String, content:String, runDiagnostics:Bool = true) {
-        documentContents.set(uri, content);
+        setDocumentContent(uri, content);
 
         if (runDiagnostics) {
             documentDiagnostics.set(uri, []);
 
-            try {
-                // Parse document and update AST
-                final lexer = new Lexer(content);
-                final parser = new Parser(lexer.tokenize());
-                final ast = parser.parse();
-                documents.set(uri, ast);
+            final errors:Array<Any> = [];
 
-                // Check for parser errors
-                final errors = parser.getErrors();
-                if (errors != null && errors.length > 0) {
-                    for (error in errors) {
-                        addDiagnostic(uri, error.pos, error.message, DiagnosticSeverity.Error);
+            fetchAst(uri, content, (lexer, parser, ast) -> {
+                if (ast != null) {
+                    setDocument(uri, ast);
+
+                    // Create lens
+                    final lens = new Lens(ast);
+
+                    // Keep track of document imports
+                    documentImports.set(uri, [for (path in lens.getImportedPaths(pathFromUri(uri))) uriFromPath(path)]);
+
+                    // Check for parser errors
+                    final errors = parser.getErrors();
+                    if (errors != null && errors.length > 0) {
+                        for (error in errors) {
+                            addDiagnostic(uri, error.pos, error.message, DiagnosticSeverity.Error);
+                        }
+                    }
+
+                    // Check for errors in functions
+                    for (func in lens.getNodesOfType(NFunctionDecl, false)) {
+                        final funcHscript = lens.getFuncHscript(func);
+                        if (funcHscript.error != null) {
+                            addDiagnostic(uri, funcHscript.error.pos, funcHscript.error.message, DiagnosticSeverity.Error);
+                        }
+                    }
+
+                    // Look for transitions to unknown beats
+                    for (transition in lens.getNodesOfType(NTransition, false)) {
+                        if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
+                            addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error);
+                        }
+                    }
+
+                    // Check for references to unknown characters in dialogue statements
+                    for (dialogue in lens.getNodesOfType(NDialogueStatement, false)) {
+                        final characterDecl = lens.findCharacterFromDialogue(dialogue);
+                        if (characterDecl == null) {
+                            addDiagnostic(
+                                uri,
+                                dialogue.characterPos,
+                                'Unknown character: ${dialogue.character}',
+                                DiagnosticSeverity.Warning
+                            );
+                        }
+                    }
+
+                    // Add semantic validation
+                    validateDocument(uri, ast);
+                }
+                else {
+                    for (e in errors) {
+                        if (e is Error) {
+                            // Handle lexer/parser errors
+                            final err:Error = cast e;
+                            addDiagnostic(uri, err.pos, err.message, DiagnosticSeverity.Error);
+                        }
+                        else {
+                            // Handle unexpected errors
+                            addDiagnostic(uri, null, Std.string(e), DiagnosticSeverity.Error);
+                        }
                     }
                 }
-
-                // Add semantic validation
-                validateDocument(uri, ast);
-
-            } catch (e:Error) {
-                // Handle lexer/parser errors
-                addDiagnostic(uri, e.pos, e.message, DiagnosticSeverity.Error);
-            } catch (e:Dynamic) {
-                // Handle unexpected errors
-                addDiagnostic(uri, null, Std.string(e), DiagnosticSeverity.Error);
-            }
+            }, e -> errors.push(e));
 
             // Publish diagnostics
             publishDiagnostics(uri);
         } else {
-            try {
-                // Just update AST without diagnostics
-                final lexer = new Lexer(content);
-                final parser = new Parser(lexer.tokenize());
-                documents.set(uri, parser.parse());
-            } catch (_:Dynamic) {
-                // Ignore parsing errors during editing
+            fetchAst(uri, content, (lexer, parser, ast) -> {
+                if (ast != null) {
+                    setDocument(uri, ast);
+                }
+            });
+        }
+    }
+
+    function pathFromUri(uri:String):String {
+        // Remove the protocol part
+        var path = uri;
+
+        // Handle file:// protocol
+        if (uri.startsWith("file://")) {
+            path = uri.uSubstr(7);
+
+            // Handle Windows paths that start with drive letter
+            if (isWindows) {
+                // Windows file URIs look like file:///C:/path/to/file
+                // The first / after file:// should be removed
+                if (path.uCharCodeAt(1) == ":".code && path.uCharCodeAt(0) == "/".code) {
+                    path = path.uSubstr(1);
+                }
             }
         }
+        else {
+            return null;
+        }
+
+        // Decode URL encoding
+        path = StringTools.urlDecode(path);
+
+        // Normalize path
+        path = Path.normalize(path);
+
+        return path;
+    }
+
+    function uriFromPath(path:String):String {
+        // Normalize the path first (handles backslash conversion)
+        var normalizedPath = Path.normalize(path);
+
+        // For Windows, handle drive letters
+        if (isWindows && normalizedPath.charAt(1) == ":") {
+            // Add the extra slash for drive letters (file:///C:/path instead of file://C:/path)
+            return "file:///" + encodePathComponents(normalizedPath);
+        }
+
+        return "file://" + encodePathComponents(normalizedPath);
+    }
+
+    function encodePathComponents(path:String):String {
+        // Split by slashes, encode each component separately, then rejoin
+        var components = path.split("/");
+        for (i in 0...components.length) {
+            // Don't encode drive letters with colon on Windows
+            if (!(isWindows && i == 0 && components[i].length == 2 && components[i].charAt(1) == ":")) {
+                components[i] = StringTools.urlEncode(components[i]);
+            }
+        }
+        return components.join("/");
+    }
+
+    function updateDocumentIfNeeded(uri:String) {
+
+        if (dirtyDocuments.exists(uri)) {
+            handleFile(pathFromUri(uri), content -> {
+                if (content != null) {
+                    updateDocument(uri, content, true);
+                }
+            });
+        }
+
+    }
+
+    function fetchAst(uri:String, content:String, callback:(lexer:Lexer, parser:Parser, ast:Script)->Void, ?handleError:(err:Any)->Void):Null<Script> {
+
+        final lexer = new Lexer(content);
+        final tokens = lexer.tokenize();
+
+        final lexerErrors = lexer.getErrors();
+        if (lexerErrors != null && lexerErrors.length > 0) {
+            if (handleError != null) {
+                handleError(lexerErrors[0]);
+            }
+        }
+
+        if (uri == null || !uri.startsWith('file://')) {
+            callback(null, null, null);
+            return null;
+        }
+        final filePath = pathFromUri(uri);
+
+        var result:Script = null;
+
+        if (filePath != null && handleFile != null) {
+            // File path and file handler provided, which mean we can support
+            // imports, either synchronous or asynchronous
+
+            var imports = new Imports(filePath, tokens, handleFile, handleError);
+            imports.resolve((hasErrors, resolvedImports) -> {
+
+                final parser = new Parser(tokens, {
+                    rootPath: filePath,
+                    path: filePath,
+                    imports: resolvedImports
+                });
+
+                result = parser.parse();
+                final parseErrors = parser.getErrors();
+
+                if (parseErrors != null && parseErrors.length > 0) {
+                    if (handleError != null) {
+                        handleError(parseErrors[0]);
+                    }
+                }
+
+                if (callback != null) {
+                    callback(lexer, parser, result);
+                }
+
+            });
+            return result;
+        }
+
+        // No imports handling, simply parse the input
+        final parser = new Parser(tokens);
+
+        result = parser.parse();
+        final parseErrors = parser.getErrors();
+
+        if (parseErrors != null && parseErrors.length > 0) {
+            if (handleError != null) {
+                handleError(parseErrors[0]);
+            }
+        }
+
+        if (callback != null) {
+            callback(lexer, parser, result);
+        }
+
+        return result;
+
+    }
+
+    function rangesEqual(a:Range, b:Range):Bool {
+
+        if (a.start.line != b.start.line) return false;
+        if (a.start.character != b.start.character) return false;
+        if (a.end.line != b.end.line) return false;
+        if (a.end.character != b.end.character) return false;
+        return true;
+
     }
 
     /**
@@ -362,6 +632,11 @@ class Server {
                 end: {line: 0, character: 0}
             }
         };
+
+        // // Prevent duplicates
+        // for (diag in diagnostics) {
+        //     if (diag.message == message && diag.severity == severity && rangesEqual(diag.range, range)) return;
+        // }
 
         diagnostics.push({
             range: range,
@@ -414,6 +689,8 @@ class Server {
     }):Array<CompletionItem> {
 
         final uri = params.textDocument.uri;
+        updateDocumentIfNeeded(uri);
+
         final ast = documents.get(uri);
         if (ast == null) return [];
 
@@ -433,9 +710,7 @@ class Server {
             switch HxType.getClass(node) {
                 case NStringPart | NStringLiteral | NCharacterDecl | NStateDecl | NLiteral | NObjectField | NAccess | NArrayAccess:
                 case _:
-                    //if (beforeNode != null && beforeNode == lens.getFirstParentOfType(node, HxType.getClass(beforeNode))) {
-                        node = beforeNode;
-                    //}
+                    node = beforeNode;
             }
         }
 
@@ -467,20 +742,62 @@ class Server {
                     prevText = prevText.uSubstr(0, dotIdx);
                     var resolved:Node = null;
                     if (RE_IDENTIFIER_BEFORE.match(prevText)) {
-                        final beforeNode = lens.getNodeAtPosition(lorelinePos.withOffset(content, -RE_IDENTIFIER_BEFORE.matched(0).uLength() - 1));
-                        if (beforeNode == null || !(beforeNode is NAccess)) {
+                        final beforePos = lorelinePos.withOffset(content, -RE_IDENTIFIER_BEFORE.matched(0).uLength() - 1);
+                        final beforeNode = lens.getNodeAtPosition(beforePos);
+                        if (beforeNode == null) {
                             return [];
                         }
-                        final access:NAccess = cast beforeNode;
-                        resolved = lens.resolveAccess(access);
+                        else if (beforeNode is NAccess) {
+                            final access:NAccess = cast beforeNode;
+                            resolved = lens.resolveAccess(access);
+                        }
+                        else if (beforeNode is NFunctionDecl) {
+                            final func:NFunctionDecl = cast beforeNode;
+                            #if hscript
+                            final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
+                            if (hscriptCompletion?.completion != null) {
+                                switch hscriptCompletion.completion.expr.e {
+                                    case EField(e, f):
+                                        switch hscriptCompletion.completion.t {
+                                            case TAnon(fields):
+                                                final items:Array<CompletionItem> = [];
+                                                for (field in fields) {
+                                                    items.push({
+                                                        label: field.name,
+                                                        kind: CompletionItemKind.Field,
+                                                        detail: "Object field",
+                                                        insertText: field.name,
+                                                        insertTextMode: AsIs,
+                                                        insertTextFormat: PlainText,
+                                                        documentation: ''
+                                                    });
+                                                }
+                                                return items;
+                                            case _:
+                                        }
+                                    case _:
+                                }
+                            }
+                            #end
+                            resolved = lens.resolveAccessInFunction(func, beforePos);
+                        }
+                        else {
+                            return [];
+                        }
                     }
                     else if (RE_ARRAY_ACCESS_BEFORE.match(prevText)) {
-                        final beforeNode = lens.getNodeAtPosition(lorelinePos.withOffset(content, -RE_ARRAY_ACCESS_BEFORE.matched(0).uLength() - 1));
-                        if (beforeNode == null || !(beforeNode is NArrayAccess)) {
+                        final beforePos = lorelinePos.withOffset(content, -RE_ARRAY_ACCESS_BEFORE.matched(0).uLength() - 1);
+                        final beforeNode = lens.getNodeAtPosition(beforePos);
+                        if (beforeNode == null) {
                             return [];
                         }
-                        final access:NArrayAccess = cast beforeNode;
-                        resolved = lens.resolveArrayAccess(access);
+                        else if (beforeNode is NArrayAccess) {
+                            final access:NArrayAccess = cast beforeNode;
+                            resolved = lens.resolveArrayAccess(access);
+                        }
+                        else {
+                            return [];
+                        }
                     }
 
                     if (resolved == null) {
@@ -536,9 +853,12 @@ class Server {
                     return [];
 
                 case "$": // Variable interpolation completion
-                    return getVariableCompletions(lens, node);
+                    return getVariableCompletions(lens, node, lorelinePos);
 
                 case "<": // Tag completion
+                    if (node is NFunctionDecl) {
+                        return [];
+                    }
                     return getTagCompletions(lens);
 
                 case "\"": // String completion - no special handling needed
@@ -576,17 +896,25 @@ class Server {
             // Return all available completions for CTRL + Space
             final items:Array<CompletionItem> = [];
 
-            // Add character completions
-            for (character in lens.getVisibleCharacters()) {
-                items.push({
-                    label: character.name,
-                    kind: CompletionItemKind.Struct,
-                    detail: "Character",
-                    insertText: character.name,
-                    insertTextMode: AsIs,
-                    insertTextFormat: PlainText,
-                    documentation: documentationForNode(character)
-                });
+            // Add locals completion (if inside a function)
+            if (node is NFunctionDecl) {
+                final func:NFunctionDecl = cast node;
+                #if hscript
+                final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
+                if (hscriptCompletion?.locals != null) {
+                    for (name => local in hscriptCompletion.locals) {
+                        items.push({
+                            label: name,
+                            kind: CompletionItemKind.Field,
+                            detail: "Local variable",
+                            insertText: name,
+                            insertTextMode: AsIs,
+                            insertTextFormat: PlainText,
+                            documentation: ''
+                        });
+                    }
+                }
+                #end
             }
 
             // Add state field completions
@@ -602,28 +930,36 @@ class Server {
                 });
             }
 
-            // Add beat completions
-            for (beat in lens.getVisibleBeats(node)) {
+            // Add character completions
+            for (character in lens.getVisibleCharacters()) {
                 items.push({
-                    label: beat.name,
-                    kind: CompletionItemKind.Class,
-                    detail: "Beat",
-                    insertText: beat.name,
+                    label: character.name,
+                    kind: CompletionItemKind.Struct,
+                    detail: "Character",
+                    insertText: character.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
-                    documentation: documentationForNode(beat)
+                    documentation: documentationForNode(character)
                 });
             }
 
-            return items;
-        }
+            // Add function completions
+            for (func in lens.getVisibleFunctions()) {
+                if (func.name != null) {
+                    items.push({
+                        label: func.name,
+                        kind: CompletionItemKind.Function,
+                        detail: "Function",
+                        insertText: func.name,
+                        insertTextMode: AsIs,
+                        insertTextFormat: PlainText,
+                        documentation: documentationForNode(func)
+                    });
+                }
+            }
 
-        /*
-        // Handle context-specific completion
-        switch (HxType.getClass(node)) {
-            case NTransition:
-                // Complete beat names after ->
-                final items:Array<CompletionItem> = [];
+            // Add beat completions
+            if (!(node is NFunctionDecl)) {
                 for (beat in lens.getVisibleBeats(node)) {
                     items.push({
                         label: beat.name,
@@ -631,50 +967,14 @@ class Server {
                         detail: "Beat",
                         insertText: beat.name,
                         insertTextMode: AsIs,
-                        insertTextFormat: PlainText
+                        insertTextFormat: PlainText,
+                        documentation: documentationForNode(beat)
                     });
                 }
-                return items;
+            }
 
-            case NDialogueStatement:
-                // Complete character names before :
-                final dialogue:NDialogueStatement = cast node;
-                if (dialogue.character == null || dialogue.character.length == 0) {
-                    final items:Array<CompletionItem> = [];
-                    for (character in lens.getVisibleCharacters()) {
-                        items.push({
-                            label: character.name,
-                            kind: CompletionItemKind.Class,
-                            detail: "Character",
-                            insertText: character.name,
-                            insertTextMode: AsIs,
-                            insertTextFormat: PlainText
-                        });
-                    }
-                    return items;
-                }
-
-            case NStringPart:
-                final stringPart:NStringPart = cast node;
-                switch (stringPart.type) {
-                    case Raw(_):
-                        return []; // No completion in raw text
-                    case Expr(expr):
-                        return getVariableCompletions(lens, expr);
-                    case Tag(closing, content):
-                        return getTagCompletions(lens);
-                }
-
-            case NAccess:
-                final access:NAccess = cast node;
-                if (access.target == null) {
-                    return getVariableCompletions(lens, node);
-                }
-
-            case _:
-                // No specific completion
+            return items;
         }
-        */
 
         return [];
     }
@@ -682,8 +982,29 @@ class Server {
     /**
      * Get completion items for variables in scope
      */
-    function getVariableCompletions(lens:Lens, node:Node):Array<CompletionItem> {
+    function getVariableCompletions(lens:Lens, node:Node, lorelinePos:loreline.Position):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
+
+        // Add locals completion (if inside a function)
+        if (node is NFunctionDecl) {
+            final func:NFunctionDecl = cast node;
+            #if hscript
+            final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
+            if (hscriptCompletion?.locals != null) {
+                for (name => local in hscriptCompletion.locals) {
+                    items.push({
+                        label: name,
+                        kind: CompletionItemKind.Field,
+                        detail: "Local variable",
+                        insertText: name,
+                        insertTextMode: AsIs,
+                        insertTextFormat: PlainText,
+                        documentation: ''
+                    });
+                }
+            }
+            #end
+        }
 
         // Add state fields
         for (field in lens.getVisibleStateFields(node)) {
@@ -703,6 +1024,21 @@ class Server {
                 detail: "Character",
                 documentation: documentationForNode(character)
             });
+        }
+
+        // Add function completions
+        for (func in lens.getVisibleFunctions()) {
+            if (func.name != null) {
+                items.push({
+                    label: func.name,
+                    kind: CompletionItemKind.Function,
+                    detail: "Function",
+                    insertText: func.name,
+                    insertTextMode: AsIs,
+                    insertTextFormat: PlainText,
+                    documentation: documentationForNode(func)
+                });
+            }
         }
 
         return items;
@@ -760,6 +1096,7 @@ class Server {
         final result:Array<LocationLink> = [];
 
         final uri = params.textDocument.uri;
+        updateDocumentIfNeeded(uri);
 
         final ast = documents.get(uri);
         if (ast == null) return result;
@@ -798,7 +1135,7 @@ class Server {
                             case _: resolved;
                         }
                         result.push({
-                            targetUri: uri,
+                            targetUri: resolveNodeUri(uri, resolved, lens),
                             targetRange: rangeFromLorelinePosition(peekNode.pos, content),
                             targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
@@ -814,7 +1151,7 @@ class Server {
                             case _: resolved;
                         }
                         result.push({
-                            targetUri: uri,
+                            targetUri: resolveNodeUri(uri, resolved, lens),
                             targetRange: rangeFromLorelinePosition(peekNode.pos, content),
                             targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
@@ -828,7 +1165,7 @@ class Server {
                         // Create a location link with more detailed targeting
                         result.push({
                             // The document containing the target
-                            targetUri: uri,
+                            targetUri: resolveNodeUri(uri, beatDecl, lens),
                             // Full range of the beat declaration
                             targetRange: rangeFromLorelinePosition(beatDecl.pos, content),
                             // More precise range for the beat name
@@ -844,20 +1181,49 @@ class Server {
                     if (characterDecl != null) {
                         // Create a location link for the character definition
                         result.push({
-                            targetUri: uri,
+                            targetUri: resolveNodeUri(uri, characterDecl, lens),
                             targetRange: rangeFromLorelinePosition(characterDecl.pos, content),
                             targetSelectionRange: firstLineRange(rangeFromLorelinePosition(characterDecl.pos, content), content),
                             originSelectionRange: rangeFromLorelinePosition(dialogue.characterPos, content)
                         });
                     }
+
+                case NImportStatement:
+                    final importNode:NImportStatement = cast node;
+                    result.push({
+                        targetUri: resolveNodeUri(uri, importNode, lens),
+                        targetRange: rangeFromLorelinePosition(new loreline.Position(1, 1, 0, 0), ''),
+                        targetSelectionRange: rangeFromLorelinePosition(new loreline.Position(1, 1, 0, 0), '')
+                    });
             }
         }
 
-        // TODO: Find definitions:
-        // - Go to beat definition from transition
-        // - Go to character definition from dialogue
-        // - Go to variable definition from interpolation
         return result;
+    }
+
+    function resolveNodeUri(uri:String, node:Node, lens:Lens):String {
+        final importNode = node is NImportStatement ? cast node : lens.getFirstParentOfType(node, NImportStatement);
+
+        if (importNode != null) {
+            final rootPath = pathFromUri(uri);
+            if (rootPath != null) {
+                var importPath = importNode.path;
+                if (!Path.isAbsolute(importPath)) {
+                    importPath = Path.join([Path.directory(rootPath), importPath]);
+                }
+
+                importPath = Path.normalize(importPath);
+
+                if (!importPath.toLowerCase().endsWith('.lor')) {
+                    importPath += '.lor';
+                }
+
+                uri = uriFromPath(importPath);
+            }
+        }
+
+        return uri;
+
     }
 
     function makeHover(title:String, description:Array<String>, content:String, node:Node, ?pos:loreline.Position):Hover {
@@ -896,6 +1262,7 @@ class Server {
         position:Position
     }):Null<Hover> {
         final uri = params.textDocument.uri;
+        updateDocumentIfNeeded(uri);
 
         final ast = documents.get(uri);
         if (ast == null) return null;
@@ -907,20 +1274,13 @@ class Server {
         final node = lens.getNodeAtPosition(lorelinePos);
 
         if (node != null) {
-            return makeNodeHover(lens, uri, content, node);
+            return makeNodeHover(lorelinePos, lens, uri, content, node);
         }
 
-        // TODO: Show hover information:
-        // - Beat summary/contents
-        // - Character fields
-        // - Variable type/value
-        // - Tag documentation
         return null;
     }
 
-    function makeNodeHover(lens:Lens, uri:DocumentUri, content:String, node:Node):Null<Hover> {
-
-        onLog(Json.stringify(node.pos.toJson()));
+    function makeNodeHover(lorelinePos:loreline.Position, lens:Lens, uri:DocumentUri, content:String, node:Node):Null<Hover> {
 
         switch HxType.getClass(node) {
             case NBeatDecl:
@@ -931,6 +1291,10 @@ class Server {
                 return makeCharacterDeclHover(cast node, content);
             case NChoiceStatement:
                 return makeChoiceHover(cast node, content);
+            case NImportStatement:
+                return makeImportHover(cast node, content);
+            case NFunctionDecl:
+                return makeFunctionHover(cast node, content, lens, lorelinePos);
             case NTransition:
                 final transition:NTransition = cast node;
                 if (transition.target == '.') {
@@ -984,7 +1348,7 @@ class Server {
             case NIfStatement:
                 return makeHover("**Condition**", null, content, node);
             case NDialogueStatement:
-                return makeDialogueStatementHover(cast node, content);
+                return makeDialogueStatementHover(cast node, content, lens);
             case NStringLiteral | NTextStatement:
                 return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
@@ -999,7 +1363,7 @@ class Server {
                 switch stringPart.partType {
                     case Raw(text):
                     case Expr(expr):
-                        return makeNodeHover(lens, uri, content, expr);
+                        return makeNodeHover(lorelinePos, lens, uri, content, expr);
                     case Tag(closing, expr):
                         return makeHover(hoverTitle('Tag', "&lt;" + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, stringPart);
                 }
@@ -1013,7 +1377,7 @@ class Server {
                         switch parentStringPart.partType {
                             case Raw(text):
                             case Expr(expr):
-                                return makeNodeHover(lens, uri, content, expr);
+                                return makeNodeHover(lorelinePos, lens, uri, content, expr);
                             case Tag(closing, expr):
                                 return makeHover(hoverTitle('Tag', "&lt;" + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, parentStringPart);
                         }
@@ -1371,9 +1735,95 @@ class Server {
 
     }
 
+    function makeFunctionHover(func:NFunctionDecl, content:String, lens:Lens, lorelinePos:loreline.Position):Hover {
+
+        #if hscript
+        var expr = null;
+        try {
+            expr = lens.getHscriptExpr(func, lorelinePos);
+        }
+        catch (e:Dynamic) {}
+        if (expr != null) {
+
+            final codeToHscript = lens.getFuncHscript(func).codeToHscript;
+            final exprPos = codeToHscript.toLorelinePos(func.pos, expr.pmin, expr.pmax);
+
+            // TODO: this is pretty basic for now, could be improved at some point
+            final title = switch expr.e {
+                case EConst(CString(s)): 'String';
+                case EConst(CFloat(f)): 'Number';
+                case EConst(CInt(v)): 'Number';
+                case EConst(c): 'Constant';
+                case EIdent('false'): 'Boolean';
+                case EIdent('true'): 'Boolean';
+                case EIdent('null'): 'Null';
+                case EIdent(v): 'Identifier';
+                case EVar(n, t, e): 'Variable';
+                case EParent(e): 'Parenthesis';
+                case EBlock(e): 'Block';
+                case EField(e, f): 'Field';
+                case EBinop(op, e1, e2): 'Binary operation';
+                case EUnop(op, prefix, e): 'Unary operation';
+                case ECall(e, params): 'Function';
+                case EIf(cond, e1, e2): 'Condition';
+                case EWhile(cond, e): 'Loop';
+                case EFor(v, it, e): 'Iteration';
+                case EBreak: 'Break';
+                case EContinue: 'Continue';
+                case EFunction(args, e, name, ret): 'Function';
+                case EReturn(e): 'Return';
+                case EArray(e, index): 'Array access';
+                case EArrayDecl(e): 'Array';
+                case ENew(cl, params): 'New';
+                case EThrow(e): 'Throw';
+                case ETry(e, v, t, ecatch): 'Try';
+                case EObject(fl): 'Object';
+                case ETernary(cond, e1, e2): 'Ternary operation';
+                case ESwitch(e, cases, defaultExpr): 'Switch';
+                case EDoWhile(cond, e): 'Do... while';
+                case EMeta(name, args, e): 'Metadata';
+                case ECheckType(e, t): 'Type';
+            }
+
+            return makeHover(hoverTitle(title ?? 'Expression'), hoverDescriptionForNode(func), content, func, exprPos);
+        }
+        #end
+
+        return makeFunctionDeclHover(func, content);
+
+    }
+
+    function makeFunctionDeclHover(func:NFunctionDecl, content:String, ?lorelinePos:loreline.Position):Hover {
+
+        var name = null;
+        if (func.name != null) {
+            name = func.name + '(';
+            if (func.args != null) {
+                var first = true;
+                for (arg in func.args) {
+                    if (!first) {
+                        name += ', ';
+                    }
+                    first = false;
+                    name += arg;
+                }
+            }
+            name += ')';
+        }
+
+        return makeHover(hoverTitle('Function', name), hoverDescriptionForNode(func), content, func, lorelinePos);
+
+    }
+
     function makeChoiceHover(choice:NChoiceStatement, content:String):Hover {
 
         return makeHover(hoverTitle('Choice'), hoverDescriptionForNode(choice), content, choice);
+
+    }
+
+    function makeImportHover(importNode:NImportStatement, content:String):Hover {
+
+        return makeHover(hoverTitle('Import'), hoverDescriptionForNode(importNode), content, importNode);
 
     }
 
@@ -1397,6 +1847,9 @@ class Server {
             if (resolved is NCharacterDecl) {
                 return makeCharacterDeclHover(cast resolved, content, access.pos);
             }
+            else if (resolved is NFunctionDecl) {
+                return makeFunctionDeclHover(cast resolved, content, access.pos);
+            }
 
             final parentCharacter = lens.getFirstParentOfType(resolved, NCharacterDecl);
             final parentState = lens.getFirstParentOfType(resolved, NStateDecl);
@@ -1416,7 +1869,7 @@ class Server {
             final parent = lens.getParentNode(access);
 
             if (parent is NCall) {
-                return makeHover(hoverTitle('Function call', access.name + '()'), hoverDescriptionForNode(access), content, access);
+                return makeHover(hoverTitle('Function', access.name + '()'), hoverDescriptionForNode(access), content, access);
             }
             else if (parent is NArrayAccess) {
                 return makeHover(hoverTitle('Array access', access.name + '[]'), hoverDescriptionForNode(access), content, access);
@@ -1436,7 +1889,12 @@ class Server {
 
     }
 
-    function makeDialogueStatementHover(expr:NDialogueStatement, content:String):Hover {
+    function makeDialogueStatementHover(expr:NDialogueStatement, content:String, lens:Lens):Hover {
+
+        final characterDecl = lens.findCharacterFromDialogue(expr);
+        if (characterDecl != null) {
+            return makeHover(hoverTitle('Dialogue', null, characterName(characterDecl)), hoverDescriptionForNode(expr), content, expr);
+        }
 
         return makeHover(hoverTitle('Dialogue'), hoverDescriptionForNode(expr), content, expr);
 
@@ -1465,6 +1923,8 @@ class Server {
     function handleDocumentSymbol(params:{
         textDocument:TextDocumentIdentifier
     }):Array<DocumentSymbol> {
+
+        updateDocumentIfNeeded(params.textDocument.uri);
 
         final ast = documents.get(params.textDocument.uri);
         if (ast == null) return [];

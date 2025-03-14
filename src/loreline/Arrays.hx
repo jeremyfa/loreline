@@ -87,6 +87,18 @@ class Arrays {
         arr.push(value);
     }
 
+    public static function getIterator(array:Any):Iterator<Dynamic> {
+
+        #if cs
+        if (isCsList(array)) {
+            return csListIterator(array, value);
+        }
+        #end
+
+        return (array:Array<Dynamic>).iterator();
+
+    }
+
     #if cs
 
     static function isCsList(array:Any):Bool {
@@ -118,6 +130,36 @@ class Arrays {
         untyped __cs__('list.Add({1})', index, value);
     }
 
+    static function csListIterator(array:Any):Iterator<Dynamic> {
+        return new CSListIterator(array);
+    }
+
     #end
 
 }
+
+#if cs
+class CSListIterator {
+    private var list:Any;
+    private var index:Int;
+    private var length:Int;
+
+    public function new(array:Any) {
+        this.list = array;
+        this.index = 0;
+        // Get the length using the already implemented csListLength method
+        this.length = Arrays.csListLength(array);
+    }
+
+    public function hasNext():Bool {
+        return index < length;
+    }
+
+    public function next():Dynamic {
+        // Use the already implemented csListGet method
+        var value = Arrays.csListGet(list, index);
+        index++;
+        return value;
+    }
+}
+#end

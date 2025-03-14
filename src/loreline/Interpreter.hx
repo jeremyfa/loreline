@@ -300,12 +300,31 @@ class RuntimeError extends Error {
 
 }
 
+@:structInit
+class InterpreterOptions {
+
+    /**
+     * Optional map of additional functions to make available to the script
+     */
+    public var functions:Map<String,Any> = null;
+
+    /**
+     * Tells whether access is strict or not. If set to true,
+     * trying to read or write an undefined variable will throw an error.
+     */
+    public var strictAccess:Bool = false;
+
+}
+
 /**
  * Main interpreter class for Loreline scripts.
  * This class is responsible for executing a parsed Loreline script,
  * managing the runtime state, and interacting with the host application
  * through handler functions.
  */
+#if hscript
+@:allow(loreline.HscriptInterp)
+#end
 @:keep class Interpreter {
 
     /**
@@ -372,6 +391,12 @@ class RuntimeError extends Error {
     final lens:Lens;
 
     /**
+     * Tells whether access is strict or not. If set to true,
+     * trying to read or write an undefined variable will throw an error.
+     */
+    final strictAccess:Bool;
+
+    /**
      * Current scope associated with current execution state.
      */
     var currentScope(get,never):RuntimeScope;
@@ -415,9 +440,9 @@ class RuntimeError extends Error {
      * @param handleDialogue Function to call when displaying dialogue text
      * @param handleChoice Function to call when presenting choices
      * @param handleFinish Function to call when execution finishes
-     * @param functions Optional map of additional functions to make available to the script
+     * @param options Additional options
      */
-    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, ?functions:Map<String,Any>) {
+    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, ?options:InterpreterOptions) {
 
         this.script = script;
         this.handleDialogue = handleDialogue;
@@ -426,11 +451,13 @@ class RuntimeError extends Error {
 
         this.lens = new Lens(script);
 
+        this.strictAccess = options?.strictAccess ?? false;
+
         // Build default function
-        initializeTopLevelFunctions(functions);
+        initializeTopLevelFunctions(options?.functions);
 
         // Init top level declarations
-        for (decl in script.body) {
+        for (decl in script) {
             switch Type.getClass(decl) {
 
                 // State
@@ -474,7 +501,7 @@ class RuntimeError extends Error {
         }
         else {
             // Check if there is an implicit beat named "_"
-            for (decl in script.body) {
+            for (decl in script) {
                 if (decl is NBeatDecl) {
                     final beat:NBeatDecl = cast decl;
                     if (beat.name == "_") {
@@ -486,7 +513,7 @@ class RuntimeError extends Error {
 
             if (resolvedBeat == null) {
                 // Find first beat if there is no "_"
-                for (decl in script.body) {
+                for (decl in script) {
                     if (decl is NBeatDecl) {
                         resolvedBeat = cast decl;
                         break;
@@ -1357,25 +1384,11 @@ class RuntimeError extends Error {
 
         final data = savedFields.fields;
 
-        if (target is Fields) {
-            final fieldMap:Fields = cast target;
+        if (Objects.isFields(target)) {
             for (key in Reflect.fields(data)) {
-                fieldMap.lorelineSet(this, key, restoreValue(Reflect.field(data, key)));
+                Objects.setField(this, target, key, restoreValue(Reflect.field(data, key)));
             }
         }
-        else if (target is StringMap) {
-            final map:StringMap<Any> = cast target;
-            for (key in Reflect.fields(data)) {
-                map.set(key, restoreValue(Reflect.field(data, key)));
-            }
-        }
-        #if cs
-        else if (Objects.isCsDict(target)) {
-            for (key in Reflect.fields(data)) {
-                Objects.setCsDictField(target, key, restoreValue(Reflect.field(data, key)));
-            }
-        }
-        #end
         else {
             // For plain objects
             for (field in Reflect.fields(data)) {
@@ -1470,14 +1483,44 @@ class RuntimeError extends Error {
 
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
+        var list:Array<Dynamic> = [
+          "carrot",
+          1234,
+          null,
+          "potato",
+        ];
+
         #if hscript
         if (func.name != null) {
-            final expr = new CodeToHscript().process(func.code);
-            final parser = new hscript.Parser();
-            final ast = parser.parseString(expr);
-            final interp = new hscript.Interp();
-            final value:Dynamic = interp.execute(ast);
-            topLevelFunctions.set(func.name, value);
+            final codeToHscript = new CodeToHscript();
+            try {
+                final expr = codeToHscript.process(func.code);
+                #if loreline_debug_functions
+                final offsets = @:privateAccess codeToHscript.posOffsets;
+                trace('\n'+func.code);
+                trace('\n'+expr);
+                trace(offsets.length + ' / ' + expr.uLength());
+                trace(offsets.join(" "));
+                var chars = [];
+                var origChars = [];
+                for (i in 0...expr.uLength()) {
+                    chars.push(expr.uCharAt(i).replace("\n", " "));
+                    origChars.push(func.code.uCharAt(i - offsets[i]).replace("\n", " "));
+                }
+                trace(origChars.join(" "));
+                trace(chars.join(" "));
+                #end
+                final parser = new hscript.Parser();
+                parser.allowJSON = true;
+                parser.allowTypes = true;
+                final ast = parser.parseString(expr);
+                final interp = new HscriptInterp(this);
+                final value:Dynamic = interp.execute(ast);
+                topLevelFunctions.set(func.name, value);
+            }
+            catch (e:Any) {
+                throw new RuntimeError('Failed to parse function code: $e', func.pos);
+            }
         }
         else {
             throw new RuntimeError('Top level function must have a name', func.pos);
@@ -2355,23 +2398,35 @@ class RuntimeError extends Error {
                 if (target != null) {
                     if (Reflect.isFunction(target)) {
                         final args = [for (arg in call.args) evaluateExpression(arg)];
-                        final result:Any = Reflect.callMethod(null, target, args);
-                        if (result != null && result is Async) {
-                            if (next == null) {
-                                throw new RuntimeError(
-                                    'Cannot call async function in expression',
-                                    call.pos
-                                );
+                        try {
+                            final result:Any = Reflect.callMethod(null, target, args);
+                            if (result != null && result is Async) {
+                                if (next == null) {
+                                    throw new RuntimeError(
+                                        'Cannot call async function in expression',
+                                        call.pos
+                                    );
+                                }
+                                else {
+                                    final asyncResult:Async = cast result;
+                                    asyncResult.func(next);
+                                }
                             }
-                            else {
-                                final asyncResult:Async = cast result;
-                                asyncResult.func(next);
+                            else if (next != null) {
+                                next();
                             }
+                            return result;
                         }
-                        else if (next != null) {
-                            next();
+                        catch (e:Dynamic) {
+                            #if hscript
+                            if (e is hscript.Expr.Error) {
+                                final hscriptErr:hscript.Expr.Error = cast e;
+                                trace('${hscriptErr.pmin}-${hscriptErr.pmax} ${hscriptErr.e}');
+                            }
+                            #end
+                            trace(Type.getClassName(Type.getClass(e)) + ' -> ' + e);
+                            return null;
                         }
-                        return result;
                     }
                 }
 
@@ -2691,6 +2746,21 @@ class RuntimeError extends Error {
                 }
             }
 
+            if (scope.node != null) {
+
+                // Check node state
+                final stateInNode = nodeStates.get(scope.node.id);
+                if (stateInNode != null) {
+                    if (Objects.fieldExists(this, stateInNode.fields, name)) {
+                        return FieldAccess(
+                            access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                            stateInNode.fields,
+                            name
+                        );
+                    }
+                }
+            }
+
             i--;
         }
 
@@ -2715,6 +2785,15 @@ class RuntimeError extends Error {
         if (topLevelFunctions.exists(name)) {
             return FunctionAccess(
                 access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                name
+            );
+        }
+
+        if (!strictAccess) {
+            // When variable is not resolved, write to top level state
+            return FieldAccess(
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                topLevelState.fields,
                 name
             );
         }

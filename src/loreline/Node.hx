@@ -1915,22 +1915,44 @@ class NUnary extends NExpr {
 /**
  * Represents an import statement
  */
-class NImport extends AstNode {
+class NImportStatement extends AstNode {
     /**
-     * The path of the file to import
+     * The relative path of the file to import
      */
     public var path:String;
 
     /**
+     * Position of the path part of the import
+     */
+    public var pathPos:Position;
+
+    /**
+     * The imported AST
+     */
+    public var script:Script;
+
+    /**
      * Creates a new import statement node.
      * @param pos Position in source where this import appears
-     * @param path The path of the file to import
+     * @param path The relative path of the file to import
+     * @param script The imported AST
      * @param leadingComments Optional comments before
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:NodeId, pos:Position, path:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, path:String, pathPos:Position, script:Script, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.path = path;
+        this.pathPos = pathPos;
+        this.script = script;
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (script != null) {
+            handleNode(script, this);
+            script.each(handleNode);
+        }
     }
 
     override function type():String {
@@ -1940,6 +1962,7 @@ class NImport extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.path = path;
+        json.pathPos = pathPos.toJson();
         return json;
     }
 }

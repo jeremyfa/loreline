@@ -3,6 +3,35 @@ package loreline;
 using StringTools;
 using loreline.Utf8;
 
+enum abstract CodeToHscriptStackType(Int) {
+
+    var ObjectBrace;
+
+    var ArrayBracket;
+
+    var Brace;
+
+    var Indent;
+
+    var Bracket;
+
+    var Paren;
+
+    public function toString() {
+
+        return switch abstract {
+            case ObjectBrace: 'ObjectBrace';
+            case ArrayBracket: 'ArrayBracket';
+            case Brace: 'Brace';
+            case Indent: 'Indent';
+            case Bracket: 'Bracket';
+            case Paren: 'Paren';
+        }
+
+    }
+
+}
+
 /**
  * Preprocesses Loreline script code to make it compatible with HScript.
  * This class converts Loreline syntax into valid HScript syntax by:
@@ -25,12 +54,12 @@ class CodeToHscript {
     /**
      * The input Loreline script code
      */
-    var input:String = null;
+    public var input(default, null):String = null;
 
     /**
      * Buffer for the processed output
      */
-    var output:Utf8Buf = null;
+    public var output(default, null):Utf8Buf = null;
 
     /**
      * Buffer for tracking the current line
@@ -68,16 +97,6 @@ class CodeToHscript {
     var currentPosOffset:Int = 0;
 
     /**
-     * Tracks open parentheses depth
-     */
-    var parens:Int = 0;
-
-    /**
-     * Tracks open brackets depth
-     */
-    var brackets:Int = 0;
-
-    /**
      * Whether currently processing a control structure
      */
     var inControl:Bool = false;
@@ -96,6 +115,11 @@ class CodeToHscript {
      * Stack of indentation levels
      */
     var indentStack:Array<Int> = null;
+
+    /**
+     * A stack to keep track of whether we are inside an object or array literal or not
+     */
+    var stack:Array<CodeToHscriptStackType>;
 
     /**
      * Creates a new CodeToHscript instance.
@@ -121,85 +145,303 @@ class CodeToHscript {
         this.inString = false;
         this.posOffsets = [];
         this.currentPosOffset = 0;
-        this.parens = 0;
-        this.brackets = 0;
         this.inControl = false;
         this.inControlWithoutParens = false;
         this.indentStack = [];
         this.indentLevel = 0;
+        this.stack = [];
 
         processInput();
 
         return this.output.toString().rtrim() + "\n";
     }
 
+    public function toLorelinePos(funcPos:Position, pmin:Int, pmax:Int):Position {
+
+        final min = inputPosFromProcessedPos(pmin);
+        final max = inputPosFromProcessedPos(pmax);
+        final len = max + 1 - min;
+        return funcPos.withOffset(input, min, len, funcPos.offset);
+
+    }
+
+    public function inputPosFromProcessedPos(pos:Int):Int {
+        if (pos < 0) return 0;
+        if (pos >= posOffsets.length) return input.uLength() - 1 - posOffsets[input.uLength() - 1];
+        return pos - posOffsets[pos];
+    }
+
+    public function processedPosFromInputPos(pos:Int):Int {
+        if (pos < 0) return 0;
+        if (pos >= input.uLength()) return output.length - 1;
+
+        // We need to find the position in the processed output that corresponds to our input position
+        var count = 0;
+        for (i in 0...posOffsets.length) {
+            if (i - posOffsets[i] > pos) {
+                // We've gone past our target position
+                return i - 1;
+            }
+            else if (i - posOffsets[i] == pos) {
+                // Found exact match
+                return i;
+            }
+            count = i;
+        }
+
+        // If we reach here, use the last known position
+        return count;
+    }
+
     /**
      * Main input processing loop that handles each character in the input.
      */
-    function processInput() {
+    function processInput(until:Int = -1) {
+
+        var braceLevel:Int = 0;
+        var bracketLevel:Int = 0;
+        var parenLevel:Int = 0;
+
         while (index < length) {
             final c = input.uCharCodeAt(index);
 
             if (c == "\"".code) {
                 processString();
-            } else if (c == "/".code) {
+            }
+            else if (c == "'".code) {
+                error("Unexpected single quote");
+            }
+            else if (c == "/".code) {
                 final cc = input.uCharCodeAt(index + 1);
                 if (cc == "/".code || cc == "*".code) {
                     processComment();
                 } else {
-                    index++;
                     add(c);
                 }
-            } else if (c == "\n".code) {
-                processLineBreak();
-            } else {
+            }
+            else if (c == "\n".code) {
+                add(c);
+            }
+            else if (c == "{".code) {
+                braceLevel++;
+                add(c);
+            }
+            else if (c == "}".code) {
+                braceLevel--;
+                if (c == until && braceLevel < 0) {
+                    return;
+                }
+                else {
+                    add(c);
+                }
+            }
+            else if (c == "[".code) {
+                bracketLevel++;
+                add(c);
+            }
+            else if (c == "]".code) {
+                bracketLevel--;
+                if (c == until && bracketLevel < 0) {
+                    return;
+                }
+                else {
+                    add(c);
+                }
+            }
+            else if (c == "(".code) {
+                parenLevel++;
+                add(c);
+            }
+            else if (c == ")".code) {
+                parenLevel--;
+                if (c == until && parenLevel < 0) {
+                    return;
+                }
+                else {
+                    add(c);
+                }
+            }
+            else {
                 if (isAlphaNumeric(c) && index > 0 && !isAlphaNumeric(input.uCharCodeAt(index - 1))) {
                     if (c == "a".code) {
                         // Convert and
                         if (input.uCharCodeAt(index + 1) == "n".code && input.uCharCodeAt(index + 2) == "d".code && !isAlphaNumeric(input.uCharCodeAt(index + 3))) {
-                            index++;
                             add("&".code);
-                            index++;
                             add("&".code);
-                            index++;
                             add(" ".code);
                         }
                         else {
-                            index++;
                             add(c);
                         }
                     }
                     else if (c == "o".code) {
                         // Convert or
                         if (input.uCharCodeAt(index + 1) == "r".code && !isAlphaNumeric(input.uCharCodeAt(index + 2))) {
-                            index++;
                             add("|".code);
-                            index++;
                             add("|".code);
-                            index++;
                             add(" ".code);
                         }
                         else {
-                            index++;
                             add(c);
                         }
                     }
                     else {
-                        index++;
                         add(c);
                     }
                 }
                 else {
-                    index++;
                     add(c);
                 }
             }
         }
+
     }
 
     /**
      * Processes a string literal, preserving its content and escape sequences.
      */
+    function processString() {
+        inString = true;
+        add('"'.code);
+
+        var escaped = false;
+
+        while (index < length) {
+            var c = input.uCharCodeAt(index);
+
+            if (escaped) {
+                add(c);
+                escaped = false;
+            }
+            else if (c == "\\".code) {
+                escaped = true;
+                add("\\".code);
+            }
+            else if (c == '"'.code) {
+                // End of string
+                add(c);
+                inString = false;
+                return;
+            }
+            else if (c == "$".code && !escaped) {
+                index++;
+                c = input.uCharCodeAt(index);
+
+                if (c == "{".code) {
+                    currentPosOffset--;
+                    addExtra('"'.code);
+                    addExtra('+'.code);
+
+                    add('('.code); // Counts {
+
+                    inString = false;
+                    processComplexInterpolation();
+                    inString = true;
+
+                    add(')'.code); // Counts }
+
+                    currentPosOffset--;
+                    addExtra('+'.code);
+                    addExtra('"'.code);
+                    currentPosOffset++;
+                }
+                else if (isIdentifierStart(c)) {
+                    currentPosOffset--;
+                    addExtra('"'.code);
+                    addExtra('+'.code);
+                    processFieldAccessInterpolation();
+                    currentPosOffset--;
+                    addExtra('+'.code);
+                    addExtra('"'.code);
+                    currentPosOffset++;
+                }
+                else {
+                    error("Expected identifier or { after $");
+                }
+            }
+            else {
+                add(c);
+            }
+        }
+
+        error("Unterminated string");
+    }
+
+    function processComplexInterpolation() {
+        processInput("}".code);
+    }
+
+    function processFieldAccessInterpolation() {
+        // Read initial identifier
+        if (!isIdentifierStart(input.uCharCodeAt(index))) {
+            error("Expected identifier in field access");
+        }
+        processIdentifier();
+
+        // Keep reading field access, array access, function calls, and their combinations
+        while (index < length) {
+            switch (input.uCharCodeAt(index)) {
+                case "[".code:
+                    add("[".code);
+                    processInput("]".code);
+
+                case "(".code:
+                    add("(".code);
+                    processInput(")".code);
+                    add(")".code);
+
+                case ".".code if (index + 1 < length && isIdentifierStart(input.uCharCodeAt(index + 1))):
+                    add(".".code);
+                    processIdentifier();
+
+                case _:
+                    break;
+            }
+        }
+    }
+
+    function processIdentifier() {
+
+        while (index < length) {
+            final c = input.uCharCodeAt(index);
+            if (!isIdentifierPart(c)) break;
+            add(c);
+        }
+
+    }
+
+    /**
+     * Checks if a character is a digit (0-9).
+     * @param c Character code to check
+     * @* @return Whether the character is a digit
+     */
+    inline function isDigit(c:Int):Bool {
+        return c >= "0".code && c <= "9".code;
+    }
+
+    /**
+     * Checks if a character is valid as the start of an identifier.
+     * Valid identifier starts are letters and underscore.
+     * @param c Character code to check
+     * @return Whether the character can start an identifier
+     */
+    inline function isIdentifierStart(c:Int):Bool {
+        return (c >= "a".code && c <= "z".code) ||
+               (c >= "A".code && c <= "Z".code) ||
+                c == "_".code;
+    }
+
+    /**
+     * Checks if a character is valid as part of an identifier.
+     * Valid identifier parts are letters, numbers, and underscore.
+     * @param c Character code to check
+     * @return Whether the character can be part of an identifier
+     */
+    inline function isIdentifierPart(c:Int):Bool {
+        return isIdentifierStart(c) || isDigit(c);
+    }
+
+    /*
     function processString() {
         inString = true;
 
@@ -238,6 +480,7 @@ class CodeToHscript {
             }
         }
     }
+    */
 
     /**
      * Processes comments, preserving their layout while replacing content with spaces
@@ -251,9 +494,8 @@ class CodeToHscript {
 
         if (c == "/".code) {
             // Single line comment (// ...)
-            index++; // Skip the //
+            // Skip the //
             add(" ".code);
-            index++;
             add(" ".code);
 
             // Replace each character with space until we hit a line break or EOF
@@ -262,14 +504,12 @@ class CodeToHscript {
                 if (cc == "\n".code) {
                     break; // Keep the line break intact, but don't process it here
                 }
-                index++;
                 add(" ".code); // Replace with space
             }
         } else if (c == "*".code) {
             // Multi-line comment (/* ... */)
-            index++; // Skip the /*
+            // Skip the /*
             add(" ".code);
-            index++;
             add(" ".code);
 
             while (index < length) {
@@ -277,32 +517,20 @@ class CodeToHscript {
 
                 if (cc == "*".code && index + 1 < length && input.uCharCodeAt(index + 1) == "/".code) {
                     // End of comment found
-                    index++;
                     add(" ".code); // Replace "*" with space
-                    index++;
                     add(" ".code); // Replace "/" with space
                     break;
                 } else if (cc == "\n".code) {
                     // Preserve line breaks
-                    index++;
                     add("\n".code);
                 } else {
                     // Replace with space
-                    index++;
                     add(" ".code);
                 }
             }
         }
 
         inComment = false;
-    }
-
-    /**
-     * Processes a line break character.
-     */
-    function processLineBreak() {
-        index++;
-        add("\n".code);
     }
 
     /**
@@ -532,13 +760,38 @@ class CodeToHscript {
         return false;
     }
 
+    function endsWithArrayIndexable(line:String):Bool {
+
+        var length = line.uLength();
+        if (length == 0) return false;
+
+        // Get first non whitespace char code starting from end of line
+        var lastNonWhitespacePos = length - 1;
+        while (lastNonWhitespacePos >= 0) {
+            var c = line.uCharCodeAt(lastNonWhitespacePos);
+            if (!isWhitespace(c)) break;
+            lastNonWhitespacePos--;
+        }
+
+        // Return false if the whole line is white spaces
+        if (lastNonWhitespacePos < 0) return false;
+
+        var lastChar = line.uCharCodeAt(lastNonWhitespacePos);
+
+        // Return true if the non whitespace char code is anything among those: identifier character/closing parenthesis/closing brace/closing bracket
+        return lastChar == ")".code ||
+               lastChar == "}".code ||
+               lastChar == "]".code ||
+               isAlphaNumeric(lastChar);
+    }
+
     /**
      * Checks if a character is a whitespace character.
      *
      * @param c The character code to check
      * @return True if the character is whitespace, false otherwise
      */
-    function isWhiteSpace(c:Int):Bool {
+    function isWhitespace(c:Int):Bool {
         return (c == " ".code || c == "\n".code || c == "\t".code || c == "\r".code);
     }
 
@@ -556,24 +809,175 @@ class CodeToHscript {
     }
 
     /**
-     * Adds a character to the output, handling special cases such as:
-     * - String literals
-     * - Control structures
-     * - Indentation changes
-     * - Adding missing semicolons and braces
-     *
-     * @param c The character code to add
+     * Adds a character to the output, and increment index
      */
-    function add(c:Int) {
+    extern inline overload function addExtra(c:Int) {
+        _add(c, false);
+    }
+
+    /**
+     * Adds a character to the output without incrementing index
+     */
+    extern inline overload function add(c:Int) {
+        _add(c, true);
+    }
+
+    function inStatementsBlock():Bool {
+
+        var i = stack.length - 1;
+        if (i >= 0) {
+            return (stack[i] == Brace || stack[i] == Indent);
+        }
+
+        return true;
+
+    }
+
+    function inObjectBlock():Bool {
+
+        var i = stack.length - 1;
+        while (i >= 0) {
+            if (stack[i] != Indent) {
+                var res = (stack[i] == ObjectBrace);
+                return res;
+            }
+            i--;
+        }
+
+        return false;
+
+    }
+
+    function inArrayBlock():Bool {
+
+        var i = stack.length - 1;
+        while (i >= 0) {
+            if (stack[i] != Indent) {
+                var res = (stack[i] == ArrayBracket);
+                return res;
+            }
+            i--;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Returns whether the input at the given position begins with a label pattern (identifier:).
+     * @param pos Position to check from
+     * @return True if a label starts at the position, false otherwise
+     */
+    function isLabelStart(pos:Int):Bool {
+
+        // Skip any whitespace and comments before looking for label
+        pos = skipWhitespaceAndComments(pos);
+
+        // Check if we have a valid identifier
+        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
+            return false;
+        }
+
+        // Track the initial position
+        var startPos = pos;
+
+        // Read through identifier characters
+        pos++;
+        while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
+            pos++;
+        }
+
+        // Skip whitespace between identifier and colon
+        while (pos < length && isWhitespace(input.uCharCodeAt(pos))) {
+            pos++;
+        }
+
+        // Must end with a colon
+        if (pos >= length || input.uCharCodeAt(pos) != ":".code) {
+            return false;
+        }
+
+        // Verify that what we read is an identifier is not a keyword
+        final word = input.uSubstr(startPos, pos - startPos);
+        if (word == 'case') {
+            return false;
+        }
+
+        return true;
+    }
+
+    function skipWhitespaceAndComments(pos:Int):Int {
+        final startPos = pos;
+        var foundContent = false;
+        while (pos < this.length) {
+            // Skip whitespace
+            while (pos < this.length && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code || input.uCharCodeAt(pos) == "\n".code || input.uCharCodeAt(pos) == "\r".code)) {
+                pos++;
+                foundContent = true;
+            }
+
+            // Check for comments
+            if (pos < this.length - 1) {
+                if (input.uCharCodeAt(pos) == "/".code) {
+                    if (input.uCharCodeAt(pos + 1) == "/".code) {
+                        // Single line comment - invalid in single line
+                        pos = startPos;
+                        return pos;
+                    }
+                    else if (input.uCharCodeAt(pos + 1) == "*".code) {
+                        // Multi-line comment
+                        pos += 2;
+                        foundContent = true;
+                        var commentClosed = false;
+                        while (pos < this.length - 1) {
+                            if (input.uCharCodeAt(pos) == "*".code && input.uCharCodeAt(pos + 1) == "/".code) {
+                                pos += 2;
+                                commentClosed = true;
+                                break;
+                            }
+                            pos++;
+                        }
+                        if (!commentClosed) {
+                            pos = startPos;
+                            return pos;
+                        }
+                        continue;
+                    }
+                }
+            }
+            break;
+        }
+        return foundContent ? pos : startPos;
+    }
+
+    inline function stackPush(item:CodeToHscriptStackType) {
+        stack.push(item);
+    }
+
+    inline function stackPop() {
+        return stack.pop();
+    }
+
+    function _add(c:Int, incrementIndex:Bool) {
+        if (incrementIndex) {
+            index++;
+        }
+        else {
+            currentPosOffset++;
+        }
+
         if (inString) {
             // When inside a string, we treat it as "the same line"
-            lineOutput.addChar(" ".code);
+            lineOutput.addChar(c == '"'.code ? c : " ".code);
             output.addChar(c);
             posOffsets.push(currentPosOffset);
-        } else if (c == "\n".code) {
+        }
+        else if (c == "\n".code) {
             if (inControlWithoutParens) {
                 inControlWithoutParens = false;
-                parens--;
+                if (stackPop() != Paren) {
+                    error("Unexpected end of line");
+                }
                 currentPosOffset++;
                 lineOutput.addChar(")".code);
                 output.addChar(")".code);
@@ -585,24 +989,27 @@ class CodeToHscript {
             final line = lineOutput.toString();
             lineOutput = new Utf8Buf();
 
-            if (parens == 0 && brackets == 0) {
+            if (inStatementsBlock() || inObjectBlock() || inArrayBlock()) {
                 final indent = nextLineIndentOffset(line, index);
 
                 if (line.trim().length == 0) {
                     // Nothing special to do
                 }
-                else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index)) {
+                else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index) && !endsOrFollowsWithChar(line, "[".code, index)) {
+                    stackPush(Indent);
+
                     indentLevel += indent;
                     indentStack.push(indentLevel);
-
-                    currentPosOffset += 2;
+                    currentPosOffset++;
                     output.addChar(" ".code);
                     posOffsets.push(currentPosOffset);
+                    currentPosOffset++;
                     output.addChar("{".code);
                     posOffsets.push(currentPosOffset);
                 }
-                else if (indent < 0 && !endsOrFollowsWithChar(line, "}".code, index)) {
-                    if (!endsOrFollowsWithChar(line, ";".code, index)) {
+                else if (indent < 0 && /*!endsOrFollowsWithChar(line, "}".code, index)*/ stack.length > 0 && stack[stack.length-1] == Indent /*&& !endsOrFollowsWithChar(line, "]".code, index)*/) {
+
+                    if (!inObjectBlock() && !endsOrFollowsWithChar(line, ";".code, index)) {
                         currentPosOffset++;
                         output.addChar(";".code);
                         posOffsets.push(currentPosOffset);
@@ -610,7 +1017,8 @@ class CodeToHscript {
 
                     indentLevel += indent;
                     var first = true;
-                    while (indentStack[indentStack.length - 1] > indentLevel) {
+                    while (indentStack[indentStack.length - 1] > indentLevel && stack.length > 0 && stack[stack.length-1] == Indent) {
+                        stackPop();
                         indentStack.pop();
                         if (first) {
                             first = false;
@@ -625,29 +1033,32 @@ class CodeToHscript {
                     }
                 }
                 else if (indent == 0 && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {
-                    currentPosOffset++;
-                    output.addChar(";".code);
-                    posOffsets.push(currentPosOffset);
+                    if (inObjectBlock()) {
+                        currentPosOffset++;
+                        output.addChar(",".code);
+                        posOffsets.push(currentPosOffset);
+                    }
+                    else if (inArrayBlock()) {
+                        currentPosOffset++;
+                        output.addChar(",".code);
+                        posOffsets.push(currentPosOffset);
+                    }
+                    else {
+                        currentPosOffset++;
+                        output.addChar(";".code);
+                        posOffsets.push(currentPosOffset);
+                    }
                 }
-            }
-
-            if (c == "(".code) {
-                parens++;
-            } else if (c == ")".code) {
-                parens--;
-            } else if (c == "[".code) {
-                brackets++;
-            } else if (c == "]".code) {
-                brackets--;
             }
 
             output.addChar(c);
             posOffsets.push(currentPosOffset);
-        } else if (!inControl && !isWhiteSpace(c) && endsWithControlKeyword(lineOutput.toString(), index - 1)) {
+        }
+        else if (!inControl && !isWhitespace(c) && endsWithControlKeyword(lineOutput.toString(), index - 1)) {
             inControl = true;
             if (!followsWithChar("(".code, index)) {
                 inControlWithoutParens = true;
-                parens++;
+                stackPush(Paren);
                 currentPosOffset++;
                 lineOutput.addChar(c);
                 output.addChar("(".code);
@@ -656,10 +1067,54 @@ class CodeToHscript {
             lineOutput.addChar(c);
             output.addChar(c);
             posOffsets.push(currentPosOffset);
-        } else {
+        }
+        else {
+
+            if (c == "(".code) {
+                stackPush(Paren);
+            }
+            else if (c == ")".code) {
+                if (stackPop() != Paren) {
+                    error("Unexpected: )");
+                }
+            }
+            else if (c == "[".code) {
+                if (!endsWithArrayIndexable(lineOutput.toString())) {
+                    stackPush(ArrayBracket);
+                }
+                else {
+                    stackPush(Bracket);
+                }
+            }
+            else if (c == "]".code) {
+                var popped = stackPop();
+                if (popped != Bracket && popped != ArrayBracket) {
+                    error("Unexpected: ]");
+                }
+            }
+            else if (c == "{".code) {
+                if (isLabelStart(index)) {
+                    stackPush(ObjectBrace);
+                }
+                else {
+                    stackPush(Brace);
+                }
+            }
+            else if (c == "}".code) {
+                var popped = stackPop();
+                if (popped != Brace && popped != ObjectBrace) {
+                    error("Unexpected: }");
+                }
+            }
+
             lineOutput.addChar(c);
             output.addChar(c);
             posOffsets.push(currentPosOffset);
         }
     }
+
+    function error(message:String) {
+        throw new Error(message, Position.fromContentAndIndex(input, index));
+    }
+
 }

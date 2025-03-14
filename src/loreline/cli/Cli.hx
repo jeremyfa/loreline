@@ -129,6 +129,10 @@ class Cli {
 
     }
 
+    function handleFile(path:String, cb:(content:String)->Void) {
+        cb(File.getContent(path));
+    }
+
     function json(file:String) {
 
         if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
@@ -137,7 +141,7 @@ class Cli {
 
         try {
             final content = File.getContent(file);
-            final script = Loreline.parse(content);
+            final script = Loreline.parse(content, file, handleFile);
             print(Json.stringify(script.toJson(), null, '  '));
         }
         catch (e:Any) {
@@ -163,7 +167,7 @@ class Cli {
 
         try {
             final content = File.getContent(file);
-            final script = Loreline.parse(content);
+            final script = Loreline.parse(content, file, handleFile);
             print(new AstPrinter().print(script));
         }
         catch (e:Any) {
@@ -192,7 +196,7 @@ class Cli {
         try {
             final content = File.getContent(file);
 
-            final script = Loreline.parse(content);
+            final script = Loreline.parse(content, file, handleFile);
 
             errorInStdOut = true;
 

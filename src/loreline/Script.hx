@@ -32,16 +32,69 @@ class Script extends Node {
         return json;
     }
 
+    public function eachExcludingImported(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (body != null) {
+            for (child in body) {
+                handleNode(child, this);
+                if (!(child is NImportStatement)) {
+                    child.each(handleNode);
+                }
+            }
+        }
+    }
+
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
         if (body != null) {
-            for (i in 0...body.length) {
-                final child = body[i];
+            for (child in body) {
                 handleNode(child, this);
                 child.each(handleNode);
             }
         }
     }
 
+    public function iterator():ScriptBodyIterator {
+        return new ScriptBodyIterator(body);
+    }
+
+}
+
+@:allow(loreline.Script)
+private class ScriptBodyIterator {
+    var body:Array<AstNode>;
+    var index:Int;
+    var flatBody:Array<AstNode>;
+
+    public function new(body:Array<AstNode>) {
+        this.body = body;
+        index = 0;
+        flatBody = [];
+        fillBody(body);
+    }
+
+    function fillBody(body) {
+        for (i in 0...body.length) {
+            final node = body[i];
+            if (node is NImportStatement) {
+                final importNode:NImportStatement = cast node;
+                if (importNode.script != null) {
+                    fillBody(importNode.script.body);
+                }
+            }
+            flatBody.push(body[i]);
+        }
+    }
+
+    public function hasNext():Bool {
+        @:privateAccess return index < flatBody.length;
+    }
+
+    public function next():AstNode {
+        final v = flatBody[index];
+        index++;
+        return v;
+    }
 }

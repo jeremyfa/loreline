@@ -639,8 +639,8 @@ class AstPrinter {
                     addChar("]".code);
                 }
 
-            case NImport:
-                final imp:NImport = cast node;
+            case NImportStatement:
+                final imp:NImportStatement = cast node;
                 add(' path="');
                 add(imp.path);
                 add('"');

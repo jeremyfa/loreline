@@ -238,6 +238,7 @@ async function main() {
             '-D', 'no-root',
             '-D', 'real-position',
             '-D', 'loreline_use_cs_types',
+            '-D', 'hscriptPos',
             '--main', 'loreline.lib.Library'
         ];
 

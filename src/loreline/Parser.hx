@@ -1,14 +1,42 @@
 package loreline;
 
+import haxe.io.Path;
 import loreline.Lexer;
 import loreline.Node;
 
+using StringTools;
 using loreline.Utf8;
 
 /**
  * Represents a parsing error with position information.
  */
 class ParseError extends Error {
+
+}
+
+@:structInit
+class ParserContext {
+
+    /**
+     * The path of the root script being parsed
+     */
+    public var rootPath:String;
+
+    /**
+     * The path of the current script being parsed
+     */
+    public var path:String;
+
+    /**
+     * Available tokens mapped by import path.
+     * All import paths should be either absolute or relative to `rootPath`
+     */
+    public var imports:Map<String,Tokens>;
+
+    /**
+     * Mapping of paths that already have been imported (to prevent circular imports)
+     */
+    public var imported:Map<String,Bool> = new Map();
 
 }
 
@@ -19,7 +47,7 @@ class ParseError extends Error {
 @:keep class Parser {
 
     /** Array of tokens to parse */
-    final tokens:Array<Token>;
+    final tokens:Tokens;
 
     /** Current position in the token stream */
     var current:Int;
@@ -45,11 +73,14 @@ class ParseError extends Error {
     /** Root beat, when adding narrative flow directly at the script root */
     var rootBeat:NBeatDecl;
 
+    /** Context of this parser that contains info like what is the path of the tokens being parsed, as well as a repository of tokens matching file paths that could be imported. */
+    var context:ParserContext;
+
     /**
      * Creates a new Parser instance.
      * @param tokens Array of tokens to parse
      */
-    public function new(tokens:Array<Token>) {
+    public function new(tokens:Tokens, ?context:ParserContext) {
         this.tokens = tokens;
         this.current = 0;
         this.errors = null;
@@ -59,6 +90,7 @@ class ParseError extends Error {
         this.lineBreakAfterToken = false;
         this.currentNodeId = NodeId.UNDEFINED;
         this.rootBeat = null;
+        this.context = context;
     }
 
     /**
@@ -366,9 +398,9 @@ class ParseError extends Error {
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
-            case Function(_, _, _): parseFunction();
+            case Function(_, _, _) if (topLevel): parseFunction();
             case _:
-                addError(new ParseError('Unexpected token: ${tokens[current].type}', currentPos()));
+                addError(new ParseError('Unexpected: ${tokens[current].type.toCodeString()}', currentPos()));
                 advance();
                 new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
@@ -398,22 +430,54 @@ class ParseError extends Error {
      * Parses an import statement (import "file.lor")
      * @return Import statement node
      */
-    function parseImport():NImport {
+    function parseImport():NImportStatement {
         final startPos = currentPos();
-        final imp = new NImport(nextNodeId(NODE), startPos, null);
 
         expect(KwImport);
 
-        final path = switch tokens[current].type {
-            case LString(s, _): s;
-            case _: throw new ParseError("Expected string literal for import path", currentPos());
+        if (context == null) {
+            throw new ParseError("Cannot import without a context", currentPos());
         }
 
+        final pathToken = tokens[current];
+        final rawImportPath = switch pathToken.type {
+            case LString(_, s, _): s;
+            case _: throw new ParseError("Expected string literal for import path", currentPos());
+        }
+        var importPath = rawImportPath;
+
+        if (!Path.isAbsolute(importPath)) {
+            importPath = Path.join([Path.directory(context.rootPath), importPath]);
+        }
+
+        importPath = Path.normalize(importPath);
+
+        if (!importPath.toLowerCase().endsWith('.lor')) {
+            importPath += '.lor';
+        }
+
+        if (context.imported.exists(importPath)) {
+            advance();
+            return attachComments(new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), rawImportPath, pathToken.pos, null));
+        }
+
+        final importedTokens = context.imports.get(importPath);
+        if (importedTokens == null) {
+            throw new ParseError("Failed to import file at path " + importPath + " (" + rawImportPath + ")", currentPos());
+        }
+
+        final tempParser = new Parser(importedTokens, {
+            rootPath: context.rootPath,
+            path: importPath,
+            imports: context.imports,
+            imported: context.imported
+        });
+        tempParser.currentNodeId = currentNodeId;
+        final importedScript = tempParser.parse();
+        currentNodeId = tempParser.currentNodeId;
+
         advance();
-
-        attachComments(imp);
-
-        return imp;
+        return attachComments(new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), rawImportPath, pathToken.pos, importedScript));
     }
 
     /**
@@ -638,7 +702,7 @@ class ParseError extends Error {
             return indentToken;
         }
         else {
-            addError(new ParseError('Expected ${TokenType.LBrace} or ${TokenType.Indent}, got ${tokens[current].type}', currentPos()));
+            addError(new ParseError('Expected ${TokenType.LBrace.toCodeString()} or ${TokenType.Indent.toCodeString()}, got ${tokens[current].type.toCodeString()}', currentPos()));
             return new Token(Indent, currentPos());
         }
 
@@ -1173,7 +1237,7 @@ class ParseError extends Error {
                 return stringLiteral;
 
             case _:
-                throw new ParseError('Expected string, got ${tokens[current].type}', currentPos());
+                throw new ParseError('Expected string, got ${tokens[current].type.toCodeString()}', currentPos());
         }
     }
 
@@ -1250,7 +1314,7 @@ class ParseError extends Error {
      * @param content Original string content
      * @return string part representing the interpolation
      */
-    function parseStringInterpolation(braces:Bool, inTag:Bool, tokens:Array<Token>, start:Int, length:Int, content:String):NStringPart {
+    function parseStringInterpolation(braces:Bool, inTag:Bool, tokens:Tokens, start:Int, length:Int, content:String):NStringPart {
         final pos = makeStringPartPosition(tokens[0]?.pos ?? currentPos(), content, start);
         pos.length = length;
 
@@ -1381,7 +1445,8 @@ class ParseError extends Error {
                         for (argTokenGroup in argTokens) {
                             final tempParser = new Parser(argTokenGroup);
                             tempParser.currentNodeId = currentNodeId;
-                            args.push(tempParser.parseExpression());
+                            final arg = tempParser.parseExpression();
+                            args.push(arg);
                             currentNodeId = tempParser.currentNodeId;
                         }
 
@@ -1397,7 +1462,7 @@ class ParseError extends Error {
                         prevIsDot = true;
 
                     case _:
-                        addError(new ParseError('Unexpected token in field access: ${token.type}', token.pos));
+                        addError(new ParseError('Unexpected token in field access: ${token.type.toCodeString()}', token.pos));
                         return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                 }
             }
@@ -1754,7 +1819,7 @@ class ParseError extends Error {
             return advance();
         }
         else {
-            final error = new ParseError('Expected ${type}, got ${isAtEnd() ? 'EoF' : Std.string(tokens[current].type)}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+            final error = new ParseError('Expected ${type.toCodeString()}, got ${isAtEnd() ? 'end of file' : tokens[current].type.toCodeString()}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
             switch type {
                 case RBrace | RParen | Unindent:
                     addError(error);
@@ -1789,7 +1854,7 @@ class ParseError extends Error {
                 advance();
                 name;
             case _:
-                throw new ParseError('Expected identifier, got ${tokens[current].type}', currentPos());
+                throw new ParseError('Expected identifier, got ${tokens[current].type.toCodeString()}', currentPos());
         }
     }
 

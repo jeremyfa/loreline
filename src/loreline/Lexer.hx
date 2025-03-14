@@ -23,7 +23,7 @@ enum LStringAttachment {
      * @param start Starting position in the string
      * @param length Length of the interpolation
      */
-    Interpolation(braces:Bool, inTag:Bool, expr:Array<Token>, start:Int, length:Int);
+    Interpolation(braces:Bool, inTag:Bool, expr:Tokens, start:Int, length:Int);
 
     /**
      * String formatting tag.
@@ -311,7 +311,66 @@ class TokenTypeHelpers {
         }
     }
 
+    public static function toCodeString(a:TokenType):String {
+        return switch a {
+            case KwImport: 'import';
+            case KwState: 'state';
+            case KwBeat: 'beat';
+            case KwCharacter: 'character';
+            case KwChoice: 'choice';
+            case KwIf: 'if';
+            case KwElse: 'else';
+            case KwNew: 'new';
+            case Function(_, _, _): 'function';
+            case LString(_, _, _): 'string';
+            case LNumber(_): 'number';
+            case LBoolean(_): 'boolean';
+            case LNull: 'null';
+            case Identifier(name): 'identifier';
+            case OpAssign: '=';
+            case OpPlusAssign: '+=';
+            case OpMinusAssign: '-=';
+            case OpMultiplyAssign: '*=';
+            case OpDivideAssign: '/=';
+            case OpPlus: '+';
+            case OpMinus: '-';
+            case OpMultiply: '*';
+            case OpDivide: '/';
+            case OpModulo: '%';
+            case OpEquals: '==';
+            case OpNotEquals: '!=';
+            case OpGreater: '>';
+            case OpLess: '<';
+            case OpGreaterEq: '>=';
+            case OpLessEq: '<=';
+            case OpAnd(word): word ? 'and' : '&&';
+            case OpOr(word): word ? 'or' : '||';
+            case OpNot: '!';
+            case Arrow: '->';
+            case Colon: ':';
+            case Comma: ',';
+            case Dot: '.';
+            case LBrace: '{';
+            case RBrace: '}';
+            case LParen: '(';
+            case RParen: ')';
+            case LBracket: '[';
+            case RBracket: ']';
+            case CommentLine(content): 'comment';
+            case CommentMultiLine(content): 'multiline comment';
+            case Indent: 'indent';
+            case Unindent: 'unindent';
+            case LineBreak: 'line break';
+            case Eof: 'end of file';
+        }
+    }
+
 }
+
+/**
+ * Represents an array of tokens (a tokenized source code).
+ */
+typedef Tokens = Array<Token>;
 
 /**
  * Represents a token in the source code.
@@ -415,7 +474,7 @@ class Token {
     /**
      * Current token lists during tokenization
      */
-    var tokenized:Array<Token>;
+    var tokenized:Tokens;
 
     /**
      * A stack to keep track of whether we are inside a `beat` or a `state`/`character` block.
@@ -445,7 +504,7 @@ class Token {
     var indentStack:Array<Int> = [];
 
     /** Queue of generated indentation tokens */
-    var indentTokens:Array<Token> = [];
+    var indentTokens:Tokens = [];
 
     /** The indentation size (e.g., 4 spaces or 1 tab) */
     var indentSize:Int = 4;
@@ -489,7 +548,7 @@ class Token {
      * Converts the entire input into an array of tokens.
      * @return Array of tokens
      */
-    public function tokenize():Array<Token> {
+    public function tokenize():Tokens {
         final tokens = [];
         this.tokenized = tokens;
         while (true) {
@@ -591,6 +650,12 @@ class Token {
         }
 
         final startPos = makePosition();
+
+        // If following import keyword, read import value
+        if (tokenized.length > 0 && tokenized[tokenized.length - 1].type == KwImport) {
+            return readImportValue(c, startPos);
+        }
+
         return switch (c) {
             case "{".code: advance(); makeToken(LBrace, startPos);
             case "}".code: advance(); makeToken(RBrace, startPos);
@@ -1284,7 +1349,7 @@ class Token {
             return false;
         }
 
-        // Verify that what we read as an identifier is not a keyword
+        // Verify that what we read is an identifier is not a keyword
         final word = input.uSubstr(startPos, pos - startPos);
         if (KEYWORDS.exists(word)) {
             return false;
@@ -1762,6 +1827,31 @@ class Token {
         return i >= 0 && strictExprs[i] == Strict;
     }
 
+    function readImportValue(c:Int, startPos:Position):Token {
+
+        if (c == '"'.code) {
+            return readString(startPos);
+        }
+        else {
+            final buf = new Utf8Buf();
+            while (pos < length) {
+                final cc = input.uCharCodeAt(pos);
+                if (cc == "\n".code) {
+                    break;
+                }
+                buf.addChar(cc);
+                pos++;
+            }
+            final value = buf.toString().rtrim();
+            return makeToken(LString(
+                Unquoted, value, []
+            ), new Position(
+                startPos.line, startPos.column, startPos.offset, value.uLength()
+            ));
+        }
+
+    }
+
     /**
      * Tries to read an unquoted string literal from the current position.
      * Returns null if the current position cannot start an unquoted string.
@@ -2215,10 +2305,10 @@ class Token {
      * @return Array of tokens making up the interpolation expression
      * @throws LexerError if interpolation is malformed or unterminated
      */
-    function readComplexInterpolation(interpStart:Position):Array<Token> {
+    function readComplexInterpolation(interpStart:Position):Tokens {
         strictExprs.push(Strict);
 
-        final tokens = new Array<Token>();
+        final tokens = new Tokens();
         var braceLevel = 1;
         var currentColumn = interpStart.column;
         var currentLine = interpStart.line;
@@ -2300,26 +2390,37 @@ class Token {
 
     /**
      * Reads a simple field access interpolation (e.g. $foo.bar[baz].qux).
-     * @param stringStart Starting position of the interpolation
+     * @param interpStart Starting position of the interpolation
      * @return Array of tokens making up the field access
      * @throws LexerError if field access is malformed
      */
-    function readFieldAccessInterpolation(stringStart:Position):Array<Token> {
-        final tokens = new Array<Token>();
+    function readFieldAccessInterpolation(interpStart:Position):Tokens {
+        strictExprs.push(Strict);
+
+        final tokens = new Tokens();
 
         // Read initial identifier
         if (!isIdentifierStart(input.uCharCodeAt(pos))) {
             error("Expected identifier in field access", true);
         }
-        tokens.push(readIdentifierTokenInInterpolation(stringStart));
+
+        // Read identifier token
+        final idStartPos = pos;
+        while (pos < length) {
+            final c = input.uCharCodeAt(pos);
+            if (!isIdentifierPart(c)) break;
+            advance();
+        }
+        final name = input.uSubstr(idStartPos, pos - idStartPos);
+        final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
+        tokens.push(new Token(tokenType, new Position(interpStart.line, interpStart.column, idStartPos, pos - idStartPos)));
 
         // Keep reading field access, array access, function calls, and their combinations
         while (pos < length) {
             switch (input.uCharCodeAt(pos)) {
                 case "[".code:
                     // Push the [ token
-                    final bracketPos = makePositionRelativeTo(stringStart);
-                    tokens.push(new Token(LBracket, bracketPos));
+                    tokens.push(new Token(LBracket, new Position(line, column, pos, 1)));
                     advance();
 
                     // Enter array bracket expression mode
@@ -2332,8 +2433,7 @@ class Token {
                         if (input.uCharCodeAt(pos) == "]".code) {
                             bracketLevel--;
                             if (bracketLevel == 0) {
-                                final closeBracketPos = makePositionRelativeTo(stringStart);
-                                tokens.push(new Token(RBracket, closeBracketPos));
+                                tokens.push(new Token(RBracket, new Position(line, column, pos, 1)));
                                 advance();
                                 stack.pop();
                                 strictExprs.pop();
@@ -2345,7 +2445,7 @@ class Token {
                         }
 
                         // Read next token within brackets
-                        tokens.push(nextTokenWithPosition(stringStart));
+                        tokens.push(nextToken());
                     }
 
                     if (bracketLevel > 0) {
@@ -2354,8 +2454,7 @@ class Token {
 
                 case "(".code:
                     // Push the ( token
-                    final parenPos = makePositionRelativeTo(stringStart);
-                    tokens.push(new Token(LParen, parenPos));
+                    tokens.push(new Token(LParen, new Position(line, column, pos, 1)));
                     advance();
 
                     // Enter function call expression mode
@@ -2368,8 +2467,7 @@ class Token {
                         if (input.uCharCodeAt(pos) == ")".code) {
                             parenLevel--;
                             if (parenLevel == 0) {
-                                final closeParenPos = makePositionRelativeTo(stringStart);
-                                tokens.push(new Token(RParen, closeParenPos));
+                                tokens.push(new Token(RParen, new Position(line, column, pos, 1)));
                                 advance();
                                 stack.pop();
                                 strictExprs.pop();
@@ -2381,13 +2479,12 @@ class Token {
                         }
 
                         if (input.uCharCodeAt(pos) == ",".code) {
-                            final commaPos = makePositionRelativeTo(stringStart);
-                            tokens.push(new Token(Comma, commaPos));
+                            tokens.push(new Token(Comma, new Position(line, column, pos, 1)));
                             advance();
                         }
                         else {
                             // Read next token within parentheses
-                            tokens.push(nextTokenWithPosition(stringStart));
+                            tokens.push(nextToken());
                         }
                     }
 
@@ -2396,16 +2493,26 @@ class Token {
                     }
 
                 case ".".code if (pos + 1 < length && isIdentifierStart(input.uCharCodeAt(pos + 1))):
-                    final dotPos = makePositionRelativeTo(stringStart);
+                    tokens.push(new Token(Dot, new Position(line, column, pos, 1)));
                     advance();
-                    tokens.push(new Token(Dot, dotPos));
-                    tokens.push(readIdentifierTokenInInterpolation(stringStart));
+
+                    // Read the identifier after the dot
+                    final idStartPos = pos;
+                    while (pos < length) {
+                        final c = input.uCharCodeAt(pos);
+                        if (!isIdentifierPart(c)) break;
+                        advance();
+                    }
+                    final name = input.uSubstr(idStartPos, pos - idStartPos);
+                    final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
+                    tokens.push(new Token(tokenType, new Position(line, column - (pos - idStartPos), idStartPos)));
 
                 case _:
                     break;
             }
         }
 
+        strictExprs.pop();
         return tokens;
     }
 

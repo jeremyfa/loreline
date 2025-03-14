@@ -9,4 +9,4 @@
 	url = https://github.com/HaxeFoundation/hxcs.git
 [submodule "git/hscript"]
 	path = git/hscript
-	url = https://github.com/HaxeFoundation/hscript.git
+	url = https://github.com/jeremyfa/hscript.git

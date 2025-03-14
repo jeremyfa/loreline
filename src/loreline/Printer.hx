@@ -302,7 +302,7 @@ class Printer {
      * Prints an import statement.
      * @param imp Import statement node
      */
-    function printImport(imp:NImport) {
+    function printImport(imp:NImportStatement) {
         printLeadingComments(imp);
         writeln('import "${imp.path}"');
         printTrailingComments(imp);

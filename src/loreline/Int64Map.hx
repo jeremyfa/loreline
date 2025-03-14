@@ -181,15 +181,15 @@ class Int64Map<V> {
         }
     }
 
-    public function iterator():Int64MapIterator<V> {
+    public inline function iterator():Int64MapIterator<V> {
         return new Int64MapIterator(this);
     }
 
-    public function keyIterator():Int64MapKeyIterator<V> {
+    public inline function keyIterator():Int64MapKeyIterator<V> {
         return new Int64MapKeyIterator(this);
     }
 
-    public function keyValueIterator():Int64MapKeyValueIterator<V> {
+    public inline function keyValueIterator():Int64MapKeyValueIterator<V> {
         return new Int64MapKeyValueIterator(this);
     }
 
