@@ -2302,12 +2302,49 @@ class InterpreterOptions {
             switch (part.partType) {
                 case Raw(text):
                     if (!keepWhitespace) {
-                        text = text.ltrim();
+                        text = stripStringIndent(text);
+                        text = stripStringComments(text);
                     }
                     final len = text.uLength();
                     if (len > 0) keepWhitespace = true;
+                    var prevIsDollar:Bool = false;
+                    var escaped:Bool = false;
+                    for (i in 0...len) {
+                        final c = text.uCharCodeAt(i);
+                        if (escaped) {
+                            if (c == "n".code) {
+                                buf.addChar("\n".code);
+                            }
+                            else if (c == "r".code) {
+                                buf.addChar("\r".code);
+                            }
+                            else if (c == "t".code) {
+                                buf.addChar("\t".code);
+                            }
+                            else {
+                                buf.addChar(c);
+                            }
+                            escaped = false;
+                            prevIsDollar = false;
+                        }
+                        else if (c == "\\".code) {
+                            escaped = true;
+                            prevIsDollar = false;
+                        }
+                        else if (c == "$".code) {
+                            if (prevIsDollar) {
+                                buf.addChar(c);
+                                prevIsDollar = false;
+                            }
+                            else {
+                                prevIsDollar = true;
+                            }
+                        }
+                        else {
+                            buf.addChar(c);
+                        }
+                    }
                     offset += len;
-                    buf.add(text);
 
                 case Expr(expr):
                     keepWhitespace = true;
@@ -2351,6 +2388,111 @@ class InterpreterOptions {
             text: buf.toString(),
             tags: tags
         };
+
+    }
+
+    function stripStringIndent(content:String):String {
+
+        var minIndent:Int = -1;
+        var currentIndent:Int = -1;
+
+        final len:Int = content.uLength();
+        var i:Int = 0;
+
+        while (content.uCharCodeAt(i) == " ".code && i < len) {
+            i++;
+        }
+        if (i > 0) {
+            minIndent = i;
+        }
+
+        while (i < len) {
+            final c = content.uCharCodeAt(i);
+            if (c == "\n".code) {
+                currentIndent = 0;
+            }
+            else if (currentIndent >= 0 && c == " ".code) {
+                currentIndent++;
+            }
+            else if (currentIndent >= 0) {
+                if (minIndent == -1 || minIndent > currentIndent) {
+                    minIndent = currentIndent;
+                }
+                currentIndent = -1;
+            }
+            i++;
+        }
+
+        if (minIndent > 0) {
+            final indentBuf = new Utf8Buf();
+            for (_ in 0...minIndent) {
+                indentBuf.addChar(" ".code);
+            }
+            content = content.replace("\n" + indentBuf.toString(), "\n");
+        }
+
+        return content;
+
+    }
+
+    function stripStringComments(content:String):String {
+
+        final result = new Utf8Buf();
+        final len:Int = content.uLength();
+        var i:Int = 0;
+
+        while (i < len) {
+            final c = content.uCharCodeAt(i);
+
+            // Check for line comment
+            if (c == "/".code && i + 1 < len && content.uCharCodeAt(i + 1) == "/".code) {
+                // Skip to the end of line or end of string
+                while (i < len && content.uCharCodeAt(i) != "\n".code) {
+                    i++;
+                }
+                continue;
+            }
+
+            // Check for multiline comment
+            if (c == "/".code && i + 1 < len && content.uCharCodeAt(i + 1) == "*".code) {
+                // Remember if we had a space before the comment
+                final hadSpaceBefore = (i > 0 && content.uCharCodeAt(i - 1) == " ".code);
+
+                // Skip the opening /*
+                i += 2;
+
+                // Find the end of multiline comment
+                while (i + 1 < len && !(content.uCharCodeAt(i) == "*".code && content.uCharCodeAt(i + 1) == "/".code)) {
+                    i++;
+                }
+
+                // Skip the closing */
+                i += 2;
+
+                // Check if there's a space after the comment
+                final hasSpaceAfter = (i < len && content.uCharCodeAt(i) == " ".code);
+
+                // If we had a space before and there's a space after, skip the space after
+                // to avoid having double spaces
+                if (hadSpaceBefore && hasSpaceAfter) {
+                    i++;
+                }
+
+                // Add a single space in place of the comment if there wasn't one before
+                // and there isn't one after
+                if (!hadSpaceBefore && !hasSpaceAfter && i < len) {
+                    result.addChar(" ".code);
+                }
+
+                continue;
+            }
+
+            // Normal character, add to result
+            result.addChar(c);
+            i++;
+        }
+
+        return result.toString();
 
     }
 

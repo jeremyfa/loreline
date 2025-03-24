@@ -278,7 +278,10 @@ class Lens {
             if (node is NImportStatement) {
                 final importNode:NImportStatement = cast node;
 
-                var importPath = importNode.path;
+                var importPath:String = switch importNode.path.parts[0].partType {
+                    case Raw(text): text;
+                    case _: "";
+                };
 
                 if (!Path.isAbsolute(importPath)) {
                     importPath = Path.join([rootDir, importPath]);

@@ -197,6 +197,12 @@ class Server {
                 case "textDocument/formatting":
                     handleDocumentFormatting(cast request.params);
 
+                case "loreline/documentChoiceOptions":
+                    handleDocumentChoiceOptions(cast request.params);
+
+                case "loreline/documentTextStatements":
+                    handleDocumentTextStatements(cast request.params);
+
                 case _:
                     throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
             }
@@ -427,14 +433,17 @@ class Server {
 
                     // Check for references to unknown characters in dialogue statements
                     for (dialogue in lens.getNodesOfType(NDialogueStatement, false)) {
-                        final characterDecl = lens.findCharacterFromDialogue(dialogue);
-                        if (characterDecl == null) {
-                            addDiagnostic(
-                                uri,
-                                dialogue.characterPos,
-                                'Unknown character: ${dialogue.character}',
-                                DiagnosticSeverity.Warning
-                            );
+                        final parentBeat = lens.getFirstParentOfType(dialogue, NBeatDecl);
+                        if (parentBeat != null && parentBeat.name != "_") {
+                            final characterDecl = lens.findCharacterFromDialogue(dialogue);
+                            if (characterDecl == null) {
+                                addDiagnostic(
+                                    uri,
+                                    dialogue.characterPos,
+                                    'Unknown character: ${dialogue.character}',
+                                    DiagnosticSeverity.Warning
+                                );
+                            }
                         }
                     }
 
@@ -633,10 +642,10 @@ class Server {
             }
         };
 
-        // // Prevent duplicates
-        // for (diag in diagnostics) {
-        //     if (diag.message == message && diag.severity == severity && rangesEqual(diag.range, range)) return;
-        // }
+        // Prevent duplicates
+        for (diag in diagnostics) {
+            if (diag.message == message && diag.severity == severity && rangesEqual(diag.range, range)) return;
+        }
 
         diagnostics.push({
             range: range,
@@ -1207,7 +1216,11 @@ class Server {
         if (importNode != null) {
             final rootPath = pathFromUri(uri);
             if (rootPath != null) {
-                var importPath = importNode.path;
+                var importPath = switch importNode.path.parts[0].partType {
+                    case Raw(text): text;
+                    case _: "";
+                }
+
                 if (!Path.isAbsolute(importPath)) {
                     importPath = Path.join([Path.directory(rootPath), importPath]);
                 }
@@ -1223,6 +1236,23 @@ class Server {
         }
 
         return uri;
+
+    }
+
+    function makeRawTextHover(cursorLorelinePos:loreline.Position, title:String, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
+
+        switch part.partType {
+            case Raw(text):
+                final offset = cursorLorelinePos.offset - part.pos.offset;
+                for (sub in extractTextSectionsExcludingComments(text)) {
+                    if (offset >= sub.offset && offset < sub.offset + sub.length) {
+                        return makeHover(title, description, content, part, part.pos.withOffset(content, sub.offset, sub.length));
+                    }
+                }
+                return null;
+            case _:
+                return makeHover(title, description, content, part, pos);
+        }
 
     }
 
@@ -1406,7 +1436,7 @@ class Server {
                                     case Raw(text):
                                         final spaces = text.uLength() - text.ltrim().uLength();
                                         if (spaces > 0) {
-                                            return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
+                                            return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
                                         }
                                     case _:
                                 }
@@ -1417,7 +1447,7 @@ class Server {
                         if (literal.parts.length == 1) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
+                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1425,7 +1455,7 @@ class Server {
                         else if (partIndex == 0) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
+                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1433,7 +1463,7 @@ class Server {
                         else if (partIndex == literal.parts.length - 1) {
                             switch literal.parts[literal.parts.length - 1].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
+                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1443,7 +1473,7 @@ class Server {
 
                 switch stringPart.partType {
                     case Raw(text):
-                        return makeHover(hoverTitle('Text'), hoverDescriptionForNode(stringPart), content, stringPart);
+                        return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(stringPart), content, stringPart);
                     case Expr(expr):
                     case Tag(closing, expr):
                 }
@@ -1952,6 +1982,181 @@ class Server {
         // - Consistent spacing
         // - Line breaks between blocks
         return [];
+    }
+
+    function handleDocumentChoiceOptions(params:{
+        textDocument:TextDocumentIdentifier
+    }):Array<{kind:String, range:loreline.lsp.Protocol.Range}> {
+
+        final ast = documents.get(params.textDocument.uri);
+        if (ast == null) return [];
+
+        final content = documentContents.get(params.textDocument.uri);
+
+        final result = [];
+
+        ast.eachExcludingImported((node, parent) -> {
+            if (node is NChoiceOption) {
+                final opt:NChoiceOption = cast node;
+                result.push({
+                    kind: 'option',
+                    range: rangeFromLorelinePosition(opt.text.pos, content)
+                });
+
+                if (opt.text != null) {
+                    if (opt.text.quotes == DoubleQuotes) {
+                        result.push({
+                            kind: 'text',
+                            range: rangeFromLorelinePosition(new loreline.Position(
+                                opt.text.pos.line,
+                                opt.text.pos.column,
+                                opt.text.pos.offset,
+                                1
+                            ), content)
+                        });
+                    }
+                    for (part in opt.text.parts) {
+                        switch part.partType {
+                            case Raw(text):
+                                result.push({
+                                    kind: 'text',
+                                    range: rangeFromLorelinePosition(part.pos, content)
+                                });
+                            case _:
+                        }
+                    }
+                    if (opt.text.quotes == DoubleQuotes) {
+                        result.push({
+                            kind: 'text',
+                            range: rangeFromLorelinePosition(opt.text.pos.withOffset(content, opt.text.pos.length - 1, 1), content)
+                        });
+                    }
+                }
+            }
+        });
+
+        return result;
+
+    }
+
+    function handleDocumentTextStatements(params:{
+        textDocument:TextDocumentIdentifier
+    }):Array<{kind:String, range:loreline.lsp.Protocol.Range}> {
+
+        final ast = documents.get(params.textDocument.uri);
+        if (ast == null) return [];
+
+        final content = documentContents.get(params.textDocument.uri);
+
+        final result = [];
+
+        ast.eachExcludingImported((node, parent) -> {
+            if (node is NTextStatement) {
+                final text:NTextStatement = cast node;
+                result.push({
+                    kind: 'statement',
+                    range: rangeFromLorelinePosition(text.pos, content)
+                });
+
+                if (text.content != null) {
+                    if (text.content.quotes == DoubleQuotes) {
+                        result.push({
+                            kind: 'text',
+                            range: rangeFromLorelinePosition(new loreline.Position(
+                                text.content.pos.line,
+                                text.content.pos.column,
+                                text.content.pos.offset,
+                                1
+                            ), content)
+                        });
+                    }
+                    for (part in text.content.parts) {
+                        switch part.partType {
+                            case Raw(text):
+                                for (sub in extractTextSectionsExcludingComments(text)) {
+                                    result.push({
+                                        kind: 'text',
+                                        range: rangeFromLorelinePosition(part.pos.withOffset(content, sub.offset, sub.length), content)
+                                    });
+                                }
+                            case _:
+                        }
+                    }
+                    if (text.content.quotes == DoubleQuotes) {
+                        result.push({
+                            kind: 'text',
+                            range: rangeFromLorelinePosition(text.content.pos.withOffset(content, text.content.pos.length - 1, 1), content)
+                        });
+                    }
+                }
+            }
+        });
+
+        return result;
+
+    }
+
+    function extractTextSectionsExcludingComments(text:String):Array<{offset:Int, length:Int}> {
+        final results:Array<{offset:Int, length:Int}> = [];
+
+        var i = 0;
+        var startOffset = 0;
+        var inSingleLineComment = false;
+        var inMultiLineComment = false;
+
+        while (i < text.uLength()) {
+            // Check for comment starts
+            if (!inSingleLineComment && !inMultiLineComment) {
+                if (i + 1 < text.uLength() && text.uCharCodeAt(i) == '/'.code && text.uCharCodeAt(i + 1) == '/'.code) {
+                    // Start of single line comment
+                    if (i > startOffset) {
+                        // Add text before comment, but trim trailing whitespace
+                        var sectionText = text.uSubstr(startOffset, i - startOffset);
+                        var trimmedLength = sectionText.rtrim().uLength();
+                        if (trimmedLength > 0) {
+                            results.push({offset: startOffset, length: trimmedLength});
+                        }
+                    }
+                    inSingleLineComment = true;
+                    i += 2; // Skip //
+                    continue;
+                } else if (i + 1 < text.uLength() && text.uCharCodeAt(i) == '/'.code && text.uCharCodeAt(i + 1) == '*'.code) {
+                    // Start of multi-line comment
+                    if (i > startOffset) {
+                        // Add text before comment
+                        results.push({offset: startOffset, length: i - startOffset});
+                    }
+                    inMultiLineComment = true;
+                    i += 2; // Skip /*
+                    continue;
+                }
+            }
+
+            // Check for comment ends
+            if (inSingleLineComment) {
+                if (text.uCharCodeAt(i) == '\n'.code) {
+                    inSingleLineComment = false;
+                    startOffset = i + 1; // Start after newline
+                }
+            } else if (inMultiLineComment) {
+                if (i + 1 < text.uLength() && text.uCharCodeAt(i) == '*'.code && text.uCharCodeAt(i + 1) == '/'.code) {
+                    inMultiLineComment = false;
+                    i += 2; // Skip */
+                    startOffset = i; // Start after comment end
+                    continue;
+                }
+            }
+
+            i++;
+        }
+
+        // Add any remaining text that's not in a comment
+        if (!inSingleLineComment && !inMultiLineComment && i > startOffset) {
+            results.push({offset: startOffset, length: i - startOffset});
+        }
+
+        return results;
+
     }
 
     /**

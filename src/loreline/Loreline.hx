@@ -31,6 +31,12 @@ class Loreline {
         final lexer = new Lexer(input);
         final tokens = lexer.tokenize();
 
+        #if loreline_debug_tokens
+        for (tok in tokens) {
+            trace(tok);
+        }
+        #end
+
         final lexerErrors = lexer.getErrors();
         if (lexerErrors != null && lexerErrors.length > 0) {
             throw lexerErrors[0];

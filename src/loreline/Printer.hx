@@ -23,7 +23,7 @@ class Printer {
     /**
      * Buffer containing the generated output.
      */
-    var _buf:StringBuf;
+    var _buf:Utf8Buf;
 
     /**
      * State tracking for blank lines at start of output.
@@ -60,7 +60,7 @@ class Printer {
      * @param indent String used for each level of indentation (default: 4 spaces)
      * @param newline String used for line breaks (default: \n)
      */
-    public function new(indent:String = '    ', newline:String = '\n') {
+    public function new(indent:String = '  ', newline:String = '\n') {
         _indent = indent;
         _newline = newline;
         _beginLine = 0;
@@ -191,7 +191,7 @@ class Printer {
      */
     public inline function clear() {
         _level = 0;
-        _buf = new loreline.Utf8.Utf8Buf();
+        _buf = new Utf8Buf();
     }
 
     /**
@@ -228,12 +228,16 @@ class Printer {
                 printCharacterDecl(cast node);
             case NBeatDecl:
                 printBeatDecl(cast node);
+            case NFunctionDecl:
+                printFunctionDecl(cast node);
             case NTextStatement:
                 printTextStatement(cast node);
             case NDialogueStatement:
                 printDialogueStatement(cast node);
             case NChoiceStatement:
                 printChoiceStatement(cast node);
+            case NImportStatement:
+                printImportStatement(cast node);
             case NChoiceOption:
                 printChoiceOption(cast node);
             case NIfStatement:
@@ -329,7 +333,8 @@ class Printer {
         if (state.temporary) write('new ');
         write('state ');
         printTrailingComments(state);
-        writeln('{');
+        if (state.style == Braces) writeln('{');
+        else writeln();
         indent();
         var first = true;
         for (field in state.fields) {
@@ -346,7 +351,7 @@ class Printer {
         }
         writeln();
         unindent();
-        writeln('}');
+        if (state.style == Braces) writeln('}');
     }
 
     /**
@@ -359,7 +364,7 @@ class Printer {
         printLeadingComments(char);
         write('character ${char.name} ');
         printTrailingComments(char);
-        writeln('{');
+        if (char.style == Braces) writeln('{');
         indent();
         for (prop in char.fields) {
             printLeadingComments(prop);
@@ -371,7 +376,7 @@ class Printer {
             }
         }
         unindent();
-        writeln('}');
+        if (char.style == Braces) writeln('}');
     }
 
     /**
@@ -384,7 +389,7 @@ class Printer {
         printLeadingComments(beat);
         write('beat ${beat.name} ');
         printTrailingComments(beat);
-        writeln('{');
+        if (beat.style == Braces) writeln('{');
         writeln();
         indent();
         for (i in 0...beat.body.length) {
@@ -396,7 +401,19 @@ class Printer {
         unindent();
         if (_beginLine == 0) writeln();
         if (_lastVisibleChar != '}'.code) writeln();
-        writeln('}');
+        if (beat.style == Braces) writeln('}');
+    }
+
+    /**
+     * Prints a function declaration node.
+     * @param func Function declaration to print
+     */
+    function printFunctionDecl(func:NFunctionDecl) {
+        writeln();
+        writeln();
+        printLeadingComments(func);
+        write(func.code);
+        printTrailingComments(func);
     }
 
     /**
@@ -430,13 +447,26 @@ class Printer {
         printLeadingComments(choice);
         write('choice ');
         printTrailingComments(choice);
-        writeln('{');
+        if (choice.style == Braces) writeln('{');
         indent();
         for (option in choice.options) {
             printNode(option);
         }
         unindent();
-        writeln('}');
+        if (choice.style == Braces) writeln('}');
+    }
+
+    /**
+     * Prints an import statement node.
+     * @param imp Import statement to print
+     */
+    function printImportStatement(imp:NImportStatement) {
+        writeln();
+        writeln();
+        printLeadingComments(imp);
+        write('import ');
+        printStringLiteral(imp.path);
+        printTrailingComments(imp);
     }
 
     /**
@@ -486,13 +516,12 @@ class Printer {
     function printIfStatement(ifStmt:NIfStatement, isElseIf:Bool = false) {
         if (!isElseIf) {
             writeln();
-            writeln();
         }
         printLeadingComments(ifStmt);
         write('if ');
         printParenExpression(ifStmt.condition);
         printTrailingComments(ifStmt);
-        write(' {');
+        if (ifStmt.thenBranch.style == Braces) write(' {');
         writeln();
         indent();
         for (node in ifStmt.thenBranch.body) {
@@ -500,21 +529,23 @@ class Printer {
             writeln();
         }
         unindent();
-        writeln('}');
+        if (ifStmt.thenBranch.style == Braces) write('}');
         if (ifStmt.elseBranch != null) {
             if (ifStmt.elseBranch.body.length == 1 && ifStmt.elseBranch.body[0] is NIfStatement) {
+                writeln();
                 write('else ');
                 printIfStatement(cast ifStmt.elseBranch.body[0], true);
             }
             else {
-                writeln('else {');
+                if (ifStmt.elseBranch.style == Braces) writeln('else {');
+                else writeln('else');
                 indent();
                 for (node in ifStmt.elseBranch.body) {
                     printNode(node);
                     writeln();
                 }
                 unindent();
-                writeln('}');
+                if (ifStmt.elseBranch.style == Braces) writeln('}');
             }
         }
     }
@@ -545,6 +576,7 @@ class Printer {
                 case Raw(text):
                     write(text);
                 case Expr(expr):
+                    // TODO differenciate simple and complex interpolation
                     final needsBraces = !Std.isOfType(expr, NAccess);
                     write('$');
                     if (needsBraces) write('{');
@@ -584,8 +616,8 @@ class Printer {
                     printNode(elem);
                 }
                 write(']');
-            case Object(_):
-                writeln('{');
+            case Object(style):
+                if (style == Braces) writeln('{');
                 indent();
                 var first = true;
                 for (field in (lit.value:Array<NObjectField>)) {
@@ -602,7 +634,7 @@ class Printer {
                 }
                 writeln();
                 unindent();
-                write('}');
+                if (style == Braces) write('}');
         }
         printTrailingComments(lit);
     }

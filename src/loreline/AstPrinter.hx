@@ -642,7 +642,10 @@ class AstPrinter {
             case NImportStatement:
                 final imp:NImportStatement = cast node;
                 add(' path="');
-                add(imp.path);
+                add(switch imp.path.parts[0].partType {
+                    case Raw(text): text;
+                    case _: '';
+                });
                 add('"');
 
             case _:

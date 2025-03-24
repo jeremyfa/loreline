@@ -929,46 +929,105 @@ class Token {
     /**
      * Helper function to skip whitespace and comments
      */
-    extern inline overload function skipWhitespaceAndComments(pos:Int):Int {
-        return _skipWhitespaceAndComments(pos);
+    extern inline overload function skipWhitespaceAndComments(pos:Int, stopNextLine:Bool = false):Int {
+        return _skipWhitespaceAndComments(pos, stopNextLine);
     }
 
     /**
      * Helper function to skip whitespace and comments
      */
-    extern inline overload function skipWhitespaceAndComments():Void {
-        final newPos = skipWhitespaceAndComments(pos);
+    extern inline overload function skipWhitespaceAndComments(stopNextLine:Bool = false):Void {
+        final newPos = skipWhitespaceAndComments(pos, stopNextLine);
         while (pos < newPos) {
             advance();
         }
     }
 
-    function _skipWhitespaceAndComments(pos:Int):Int {
+    function _skipWhitespaceAndComments(pos:Int, stopNextLine:Bool = false):Int {
+        if (stopNextLine) {
+            return _skipWhitespaceAndCommentsStopNextLine(pos);
+        }
+        else {
+            final startPos = pos;
+            var foundContent = false;
+            while (pos < this.length) {
+                // Skip whitespace
+                while (pos < this.length && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code)) {
+                    pos++;
+                    foundContent = true;
+                }
+
+                // Check for comments
+                if (pos < this.length - 1) {
+                    if (input.uCharCodeAt(pos) == "/".code) {
+                        if (input.uCharCodeAt(pos + 1) == "/".code) {
+                            // Single line comment - invalid in single line
+                            pos = startPos;
+                            return pos;
+                        }
+                        else if (input.uCharCodeAt(pos + 1) == "*".code) {
+                            // Multi-line comment
+                            pos += 2;
+                            foundContent = true;
+                            var commentClosed = false;
+                            while (pos < this.length - 1) {
+                                if (input.uCharCodeAt(pos) == "*".code && input.uCharCodeAt(pos + 1) == "/".code) {
+                                    pos += 2;
+                                    commentClosed = true;
+                                    break;
+                                }
+                                pos++;
+                            }
+                            if (!commentClosed) {
+                                pos = startPos;
+                                return pos;
+                            }
+                            continue;
+                        }
+                    }
+                }
+                break;
+            }
+            return foundContent ? pos : startPos;
+        }
+    }
+
+    function _skipWhitespaceAndCommentsStopNextLine(pos:Int):Int {
         final startPos = pos;
         var foundContent = false;
+        var isNextLine = false;
         while (pos < this.length) {
-            // Skip whitespace
-            while (pos < this.length && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code)) {
+            // Skip whitespace including newlines
+            while (pos < this.length
+                && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code || input.uCharCodeAt(pos) == "\n".code
+                    || input.uCharCodeAt(pos) == "\r".code)) {
+                if (input.uCharCodeAt(pos) == "\r".code || input.uCharCodeAt(pos) == "\n".code) {
+                    isNextLine = true;
+                }
                 pos++;
                 foundContent = true;
             }
 
             // Check for comments
-            if (pos < this.length - 1) {
+            if (pos < this.length - 1 && !isNextLine) {
                 if (input.uCharCodeAt(pos) == "/".code) {
                     if (input.uCharCodeAt(pos + 1) == "/".code) {
-                        // Single line comment - invalid in single line
-                        pos = startPos;
-                        return pos;
+                        // Single line comment - skip until end of line
+                        pos += 2; // Skip //
+                        foundContent = true;
+                        while (pos < this.length && input.uCharCodeAt(pos) != "\n".code && input.uCharCodeAt(pos) != "\r".code) {
+                            pos++;
+                        }
+                        continue; // Continue to process potential newline after comment
                     }
                     else if (input.uCharCodeAt(pos + 1) == "*".code) {
                         // Multi-line comment
-                        pos += 2;
+                        pos += 2; // Skip /*
                         foundContent = true;
                         var commentClosed = false;
                         while (pos < this.length - 1) {
                             if (input.uCharCodeAt(pos) == "*".code && input.uCharCodeAt(pos + 1) == "/".code) {
-                                pos += 2;
+                                pos += 2; // Skip */
                                 commentClosed = true;
                                 break;
                             }
@@ -976,15 +1035,18 @@ class Token {
                         }
                         if (!commentClosed) {
                             pos = startPos;
-                            return pos;
+                            return pos; // Unclosed comment, return original position
                         }
                         continue;
                     }
                 }
             }
+
             break;
         }
+
         return foundContent ? pos : startPos;
+
     }
 
     /**
@@ -1123,7 +1185,7 @@ class Token {
             }
 
             // Check for various delimiters typical from if condition
-            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
+            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (c == "!".code && input.charCodeAt(pos + 1) == "=".code) || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
                 return true;
             }
 
@@ -1146,21 +1208,23 @@ class Token {
      * @param pos Position to check from
      * @return True if an identifier expression starts at the position, false otherwise
      */
-    function isIdentifierExpressionStart(pos:Int):Bool {
+    function isIdentifierExpressionStart(pos:Int, lowercaseIdentOnly:Bool):Bool {
         pos = skipWhitespaceAndComments(pos);
 
         // Helper function to read identifier
-        inline function readIdent():Bool {
+        inline function readIdent(lowercaseIdentOnly = false):Bool {
             var result = true;
 
             if (pos >= this.length) {
                 result = false;
             }
             else {
+                var isUnderscore:Bool = false;
                 var c = input.uCharCodeAt(pos);
+                isUnderscore = (c == "_".code);
 
                 // First char must be letter or underscore
-                if (!isIdentifierStart(c)) {
+                if (!isIdentifierStart(c) || (lowercaseIdentOnly && !isUnderscore && !isLowerCase(c))) {
                     result = false;
                 }
                 else {
@@ -1168,8 +1232,14 @@ class Token {
 
                     // Continue reading identifier chars
                     while (pos < this.length) {
+                        final wasUnderscore = isUnderscore;
                         c = input.uCharCodeAt(pos);
+                        isUnderscore = (c == "_".code);
                         if (!isIdentifierPart(c)) break;
+                        if (lowercaseIdentOnly && wasUnderscore && !isUnderscore && !isLowerCase(c)) {
+                            result = false;
+                            break;
+                        }
                         pos++;
                     }
                 }
@@ -1191,7 +1261,7 @@ class Token {
         }
 
         // Must start with identifier
-        if (!readIdent()) {
+        if (!readIdent(lowercaseIdentOnly)) {
             return false;
         }
 
@@ -1460,14 +1530,12 @@ class Token {
      * @param pos Position to check from
      * @return True if an assignment starts at the position, false otherwise
      */
-    function isAssignStart(pos:Int):Bool {
-
-        // Save initial position to restore it later
-        var startPos = pos;
+    function isAssignStart(pos:Int, strict:Bool):Bool {
 
         // Helper function to read identifier
         inline function readIdent():Bool {
             var result = true;
+            final startPos = pos;
 
             if (pos >= this.length) {
                 result = false;
@@ -1491,64 +1559,82 @@ class Token {
                 }
             }
 
+            if (pos == startPos + 2 && input.uCharCodeAt(startPos) == "i".code && input.uCharCodeAt(startPos + 1) == "f".code) {
+                // `if` keyword isn't valid here
+                return false;
+            }
+
             return result;
         }
 
         // Must start with identifier
-        if (!readIdent()) {
-            pos = startPos;
+        if (strict && !readIdent()) {
             return false;
         }
 
         // Keep reading segments until we find opening parenthesis
+        var isEscape:Bool = false;
         while (pos < this.length) {
             pos = skipWhitespaceAndComments(pos);
 
             if (pos >= this.length) {
-                pos = startPos;
                 return false;
             }
 
             var c = input.uCharCodeAt(pos);
 
             // Found assign operator
-            if (c == "=".code ||
-                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
-                pos = startPos;
+            if (!isEscape && (c == "=".code ||
+                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code)))) {
                 return true;
             }
 
-            // Handle dot access
-            if (c == ".".code) {
-                pos++;
-                pos = skipWhitespaceAndComments(pos);
-                if (!readIdent()) {
-                    pos = startPos;
-                    return false;
-                }
-                continue;
-            }
-
-            // Handle bracket access
-            if (c == "[".code) {
-                // Skip everything until closing bracket
-                pos++;
-                while (pos < this.length) {
-                    if (input.uCharCodeAt(pos) == "]".code) {
-                        pos++;
-                        break;
+            if (strict) {
+                // Handle dot access
+                if (c == ".".code) {
+                    pos++;
+                    pos = skipWhitespaceAndComments(pos);
+                    if (!readIdent()) {
+                        return false;
                     }
+                    continue;
+                }
+
+                // Handle bracket access
+                if (c == "[".code) {
+                    // Skip everything until closing bracket
+                    pos++;
+                    while (pos < this.length) {
+                        if (input.uCharCodeAt(pos) == "]".code) {
+                            pos++;
+                            break;
+                        }
+                        pos++;
+                    }
+                    continue;
+                }
+
+                // Any other character means this isn't an assign
+                return false;
+            }
+            else {
+                // End of line in loose mode: not an assign
+                if (c == "\\".code) {
+                    isEscape = true;
                     pos++;
                 }
-                continue;
+                else if (c == "\r".code || c == "\n".code) {
+                    return false;
+                }
+                else if (isIdentifierStart(c)) {
+                    if (!readIdent()) return false;
+                }
+                else {
+                    pos++;
+                }
             }
-
-            // Any other character means this isn't an assign
-            pos = startPos;
-            return false;
         }
 
-        pos = startPos;
         return false;
 
     }
@@ -1572,23 +1658,169 @@ class Token {
     }
 
     /**
-     * Returns whether we are currently right after a label.
-     * @return True if after a label, false otherwise
+     * If we are currently right after a label, return the related identifier token index (before colon),
+     * or -1 if not after a label.
      */
-    function isAfterLabel(inSameLine:Bool = true):Bool {
+    function afterLabelIdentifierToken(inSameLine:Bool = true):Int {
 
         var i = tokenized.length - 1;
         while (i >= 0) {
             final token = tokenized[i];
 
             if (!token.type.isComment() && (inSameLine || (token.type != LineBreak && token.type != Indent && token.type != Unindent))) {
-                return (token.type == Colon && i > 0 && tokenized[i-1].type.isIdentifier());
+                if (token.type == Colon && i > 0 && tokenized[i-1].type.isIdentifier()) {
+                    return i - 1;
+                }
+                return -1;
             }
 
             i--;
         }
 
-        return false;
+        return -1;
+
+    }
+
+    /**
+     * Checks if a dialogue statement continues over multiple lines.
+     *
+     * @param labelIdentifierToken The token containing the character name before the colon
+     * @return The indentation of the multiline dialogue or -1
+     */
+    function isStartingMultilineDialogue(labelIdentifierTokenIndex:Int):Int {
+
+        final labelIdentifierToken = tokenized[labelIdentifierTokenIndex];
+        var i = labelIdentifierTokenIndex + 1;
+        while (tokenized[i].type != Colon) {
+            i++;
+        }
+        var pos = tokenized[i].pos.offset + 1;
+
+        // Calculate the indentation level of the label identifier token
+        final labelColumn = labelIdentifierToken.pos.column;
+
+        // First, check if the first line contains only tags or is empty
+        // A valid tag pattern would be: whitespace* (<...> whitespace*)+
+        var onlyTagsOnFirstLine = true;
+        var insideTag = false;
+
+        // Trim leading whitespace
+        while (pos < length) {
+            final c = input.uCharCodeAt(pos);
+            if (c == " ".code || c == "\t".code) {
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        // Check if there's any content besides tags and whitespace on the first line
+        while (pos < length) {
+            final c = input.uCharCodeAt(pos);
+
+            // Found end of first line
+            if (c == "\n".code || c == "\r".code) {
+                break;
+            }
+
+            // Handle comments
+            if (c == "/".code && pos + 1 < length) {
+                final next = input.uCharCodeAt(pos + 1);
+                if (next == "/".code) {
+                    // Single-line comment, skip to end of line
+                    break;
+                } else if (next == "*".code) {
+                    // Skip multiline comment
+                    pos += 2; // Skip /*
+                    while (pos < length) {
+                        if (input.uCharCodeAt(pos) == "*".code &&
+                            pos + 1 < length &&
+                            input.uCharCodeAt(pos + 1) == "/".code) {
+                                pos += 2; // Skip */
+                            break;
+                        }
+                        pos++;
+                    }
+                    continue;
+                }
+            }
+
+            // Handle tags
+            if (c == "<".code) {
+                insideTag = true;
+            } else if (c == ">".code) {
+                insideTag = false;
+            } else if (!insideTag && !(c == " ".code || c == "\t".code)) {
+                // Found non-tag, non-whitespace content on first line
+                onlyTagsOnFirstLine = false;
+                break;
+            }
+
+            pos++;
+        }
+
+        // If the first line has text content (not just tags), this isn't a multiline dialogue
+        if (!onlyTagsOnFirstLine) {
+            return -1;
+        }
+
+        final prevPos = pos;
+        pos = skipWhitespaceAndComments(pos, true);
+        if (pos <= prevPos) {
+            // Not indented
+            return -1;
+        }
+
+        // Compute indent
+        var indent = 0;
+        var tmpPos = pos;
+        while (tmpPos > 0 && (input.uCharCodeAt(tmpPos-1) == " ".code || input.uCharCodeAt(tmpPos-1) == "\t".code)) {
+            indent++;
+            tmpPos--;
+        }
+
+        // Check that it's enough
+        if (indent <= labelColumn - 1) {
+            return -1;
+        }
+
+        // Check that there is content in this line
+        pos = skipWhitespaceAndComments(pos, false);
+        if (isWhitespace(input.uCharCodeAt(pos)) || (input.uCharCodeAt(pos) == "/".code && input.uCharCodeAt(pos+1) == "/".code)) {
+            return -1;
+        }
+
+        return indent;
+
+    }
+
+    function isContinuingMultilineText(pos:Int, indent:Int):Bool {
+
+        if (input.uCharCodeAt(pos) == "\r".code) {
+            pos++;
+        }
+
+        if (input.uCharCodeAt(pos) == "\n".code) {
+            pos++;
+        }
+
+        var computedIndent = 0;
+        while (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code) {
+            computedIndent++;
+            pos++;
+        }
+
+        if (computedIndent != indent) {
+            return false;
+        }
+
+        // Check that there is content in this line
+        pos = skipWhitespaceAndComments(pos, false);
+        if (isWhitespace(input.uCharCodeAt(pos)) || (input.uCharCodeAt(pos) == "/".code && input.uCharCodeAt(pos+1) == "/".code)) {
+            return false;
+        }
+
+        return true;
 
     }
 
@@ -1896,7 +2128,21 @@ class Token {
         // Whether this is an unquoted string value or not
         final inBrackets = isInsideBrackets();
         final isAssignValue = followsAssignStart();
-        final isAfterLabel = isAfterLabel();
+        final labelIdentifierIndex = afterLabelIdentifierToken(false);
+
+        // When after label, but starting the line after, check that we are indented
+        if (labelIdentifierIndex != -1 && tokenized[labelIdentifierIndex].pos.line < line && tokenized[labelIdentifierIndex].pos.column >= column) {
+            return null;
+        }
+
+        final multilineIndent = if (labelIdentifierIndex != -1) {
+            isStartingMultilineDialogue(labelIdentifierIndex);
+        }
+        else {
+            -1;
+        }
+
+        final isAfterLabel = (labelIdentifierIndex != -1);
         final isValue = (parent == KwState || parent == KwCharacter || inBrackets || isAssignValue);
 
         // More skip cases
@@ -1906,7 +2152,7 @@ class Token {
             }
         }
         else {
-            if (!isAfterLabel && (isIdentifierExpressionStart(pos) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos))) {
+            if (!isAfterLabel && (isIdentifierExpressionStart(pos, true) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
                 return null;
             }
         }
@@ -1932,7 +2178,7 @@ class Token {
             }
             if (!isValue) {
                 // Skip if starting with some keywords
-                if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && KEYWORDS.exists(identifier)) return null;
+                if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && identifier != 'and' && identifier != 'or' && KEYWORDS.exists(identifier)) return null;
 
                 // Skip if starting with a label
                 if (isColon(pos + identifier.length)) {
@@ -2026,15 +2272,60 @@ class Token {
                 advance();
             }
             // Check for end of string conditions
-            else if (tagStart == -1 && (c == "\n".code || c == "\r".code || c == "{".code)) {
+            else if (tagStart == -1 && (c == "{".code)) {
                 break;
+            }
+            // Check for line breaks, which end the string only if not followed by more
+            // string content on the next non-empty line
+            // Also check trailing comments //
+            else if (tagStart == -1 && (c == "\n".code || c == "\r".code || (c == "/".code && pos < length - 1 && input.uCharCodeAt(pos+1) == "/".code))) {
+                if (multilineIndent != -1) {
+                    if (isContinuingMultilineText(pos, multilineIndent)) {
+                        buf.addChar(c);
+                        advance();
+                        // CRLF
+                        if (c == "\r".code && input.charCodeAt(pos) == "\n".code) {
+                            buf.addChar("\n".code);
+                            advance();
+                        }
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            else if (tagStart == -1 && (c == "/".code && pos < length - 1 && input.uCharCodeAt(pos+1) == "*".code)) {
+                // Skip multiline comment in unquoted string
+                buf.addChar("/".code);
+                buf.addChar("*".code);
+                advance(2); // Process /*
+
+                // Read until comment end
+                var commentClosed = false;
+                while (pos < length) {
+                    if (input.uCharCodeAt(pos) == "*".code && pos + 1 < length && input.uCharCodeAt(pos + 1) == "/".code) {
+                        buf.addChar("*".code);
+                        buf.addChar("/".code);
+                        advance(2); // Process */
+                        commentClosed = true;
+                        break;
+                    }
+                    buf.addChar(input.uCharCodeAt(pos));
+                    advance();
+                }
+
+                currentColumn = column;
+                currentLine = line;
+
+                if (!commentClosed) {
+                    error("Unterminated multiline comment", false);
+                }
             }
             // Check for trailing if
             else if (tagStart == -1 && !isValue && isIfStart(pos)) {
-                break;
-            }
-            // Check for comment start
-            else if (tagStart == -1 && (c == "/".code && pos < length - 1 && (input.uCharCodeAt(pos+1) == "/".code || input.uCharCodeAt(pos+1) == "*".code))) {
                 break;
             }
             // Check for arrow start
@@ -2099,6 +2390,12 @@ class Token {
 
                         buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
+                    else if (input.uCharCodeAt(pos) == "$".code) {
+                        buf.addChar("$".code);
+                        buf.addChar("$".code);
+                        advance();
+                        currentColumn += 1;
+                    }
                     else {
                         error("Expected identifier or { after $", false);
                         final interpLength = pos - tokenStartPos;
@@ -2131,17 +2428,60 @@ class Token {
             var content = buf.toString();
             final rawContentLength = content.uLength();
             content = content.rtrim();
-            final contentLength = content.uLength();
+
+            var contentLength = content.uLength();
+            var rtrimmedOffset = (rawContentLength - contentLength);
             if (contentLength > 0 && hasNonSpecialChar(content) && !isNumber(content) && content != 'null' && content != 'true' && content != 'false') {
+
+                if (multilineIndent == -1 && !isAfterLabel) {
+                    // Look for more text to compose a paragraph
+                    final savedLine = line;
+                    final savedColumn = column;
+                    final savedPos = pos;
+
+                    skipWhitespaceAndComments(true);
+
+                    final afterWhitespaceAndCommentsPos = pos;
+                    if (column == startColumn) {
+                        // Only valid if the indentation is identical
+                        final followingText = tryReadUnquotedString();
+                        if (followingText != null) {
+                            switch followingText.type {
+                                case LString(_, s_, attachments_):
+                                    if (attachments_ != null) {
+                                        for (attachment in attachments_) {
+                                            attachments.push(attachment);
+                                        }
+                                    }
+                                    content += input.uSubstring(savedPos - rtrimmedOffset, afterWhitespaceAndCommentsPos);
+                                    content += s_;
+                                case _:
+                            }
+                        }
+                        else {
+                            line = savedLine;
+                            column = savedColumn;
+                            pos = savedPos;
+                        }
+                    }
+                    else {
+                        line = savedLine;
+                        column = savedColumn;
+                        pos = savedPos;
+                    }
+                }
+
                 attachments.sort(compareAttachments);
 
                 final token = makeToken(LString(
                     Unquoted, content,
                     attachments.length > 0 ? attachments : null
                 ), start);
-                token.pos.length += contentLength - rawContentLength;
+                token.pos.length -= rtrimmedOffset;
+
                 return token;
             }
+
         }
 
         // Not matching an unquoted string, restore
@@ -2249,6 +2589,12 @@ class Token {
                         attachments.push(Interpolation(false, tagStart != -1, tokens, interpStart, interpLength));
 
                         buf.add(input.uSubstr(tokenStartPos, interpLength));
+                    }
+                    else if (input.uCharCodeAt(pos) == "$".code) {
+                        buf.addChar("$".code);
+                        buf.addChar("$".code);
+                        advance();
+                        currentColumn += 1;
                     }
                     else {
                         error("Expected identifier or { after $", false);
@@ -3030,6 +3376,10 @@ class Token {
         return (c >= "a".code && c <= "z".code) ||
                (c >= "A".code && c <= "Z".code) ||
                 c == "_".code;
+    }
+
+    inline function isLowerCase(c:Int):Bool {
+        return (c >= "a".code && c <= "z".code);
     }
 
     /**

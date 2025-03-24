@@ -340,7 +340,7 @@ class Node {
     }
 
     public function type():String {
-        return "node";
+        return "Node";
     }
 
     /**
@@ -1919,12 +1919,7 @@ class NImportStatement extends AstNode {
     /**
      * The relative path of the file to import
      */
-    public var path:String;
-
-    /**
-     * Position of the path part of the import
-     */
-    public var pathPos:Position;
+    public var path:NStringLiteral;
 
     /**
      * The imported AST
@@ -1939,10 +1934,9 @@ class NImportStatement extends AstNode {
      * @param leadingComments Optional comments before
      * @param trailingComments Optional comments after the operation
      */
-    public function new(id:NodeId, pos:Position, path:String, pathPos:Position, script:Script, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, path:NStringLiteral, script:Script, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.path = path;
-        this.pathPos = pathPos;
         this.script = script;
     }
 
@@ -1961,8 +1955,7 @@ class NImportStatement extends AstNode {
 
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
-        json.path = path;
-        json.pathPos = pathPos.toJson();
+        json.path = path.toJson();
         return json;
     }
 }

@@ -45,7 +45,7 @@ class Cli {
 
     var typeDelay:Float = 0.0075;//#if eval 0 #else 0.0075 #end;
 
-    var sentenceDelay:Float = 0.5;
+    var sentenceDelay:Float = 0.4;
 
     var showDisabled:Bool = false;
 
@@ -102,6 +102,12 @@ class Cli {
                 case 'ast':
                     if (args.length >= 2)
                         ast(args[1]);
+                    else
+                        fail('Missing file argument');
+
+                case 'format':
+                    if (args.length >= 2)
+                        format(args[1]);
                     else
                         fail('Missing file argument');
 
@@ -169,6 +175,32 @@ class Cli {
             final content = File.getContent(file);
             final script = Loreline.parse(content, file, handleFile);
             print(new AstPrinter().print(script));
+        }
+        catch (e:Any) {
+            #if debug
+            if (e is Error) {
+                printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
+            }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
+            #end
+            fail(e, file);
+        }
+
+    }
+
+    function format(file:String) {
+
+        if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
+            fail('Invalid file: $file');
+        }
+
+        try {
+            final content = File.getContent(file);
+            final script = Loreline.parse(content, file, handleFile);
+            print(new Printer().print(script));
         }
         catch (e:Any) {
             #if debug

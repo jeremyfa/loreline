@@ -439,9 +439,12 @@ class ParserContext {
             throw new ParseError("Cannot import without a context", currentPos());
         }
 
+        var quotes:Quotes = Unquoted;
         final pathToken = tokens[current];
         final rawImportPath = switch pathToken.type {
-            case LString(_, s, _): s;
+            case LString(q, s, _):
+                quotes = q;
+                s;
             case _: throw new ParseError("Expected string literal for import path", currentPos());
         }
         var importPath = rawImportPath;
@@ -458,7 +461,11 @@ class ParserContext {
 
         if (context.imported.exists(importPath)) {
             advance();
-            return attachComments(new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), rawImportPath, pathToken.pos, null));
+            final node = new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, null);
+            node.path = new NStringLiteral(nextNodeId(NODE), pathToken.pos, quotes, [
+                new NStringPart(nextNodeId(NODE), pathToken.pos, Raw(rawImportPath))
+            ]);
+            return attachComments(node);
         }
 
         final importedTokens = context.imports.get(importPath);
@@ -477,7 +484,11 @@ class ParserContext {
         currentNodeId = tempParser.currentNodeId;
 
         advance();
-        return attachComments(new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), rawImportPath, pathToken.pos, importedScript));
+        final node = new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, importedScript);
+        node.path = new NStringLiteral(nextNodeId(NODE), pathToken.pos, quotes, [
+            new NStringPart(nextNodeId(NODE), pathToken.pos, Raw(rawImportPath))
+        ]);
+        return attachComments(node);
     }
 
     /**
@@ -500,8 +511,24 @@ class ParserContext {
 
         attachComments(dialogue);
 
+        // Handle text in indented block
+        var indented:Bool = false;
+        if (checkBlockStart()) {
+            final blockToken = parseBlockStart();
+            if (blockToken.type != Indent) {
+                throw new ParseError('Expected indent, got ${blockToken.type.toCodeString()}', blockToken.pos);
+            }
+            indented = true;
+        }
+
         // Parse dialogue content
         dialogue.content = parseStringLiteral();
+
+        // Handle unindent
+        if (indented) {
+            while (match(LineBreak)) {}
+            expect(Unindent);
+        }
 
         // Update position
         dialogue.pos = dialogue.pos.extendedTo(dialogue.content.pos);
@@ -786,28 +813,76 @@ class ParserContext {
      * @return Choice option node
      */
     function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
+
         final startPos = currentPos();
         final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, []));
-        choiceOption.text = parseStringLiteral();
+
+        var errorPos = null;
+
+        try {
+            choiceOption.text = parseStringLiteral();
+        }
+        catch (e:ParseError) {
+            addError(e);
+            errorPos = currentPos();
+            if (currentPos().offset == startPos.offset) advance();
+            choiceOption.text = new NStringLiteral(nextNodeId(NODE), currentPos(), Unquoted, [new NStringPart(nextNodeId(NODE), currentPos(), Raw("?"))]);
+        }
 
         // Parse optional condition
         if (match(KwIf)) {
-            choiceOption.condition = parseConditionExpression();
+            final offset = currentPos().offset;
+            try {
+                choiceOption.condition = parseConditionExpression();
+            }
+            catch (e:ParseError) {
+                addError(e);
+                errorPos = currentPos();
+                if (currentPos().offset == offset) advance();
+            }
         }
 
         // Parse option body
         if (checkBlockStart()) {
             choiceOption.body = [];
-            choiceOption.style = parseStatementBlock(choiceOption.body);
+            final offset = currentPos().offset;
+            try {
+                choiceOption.style = parseStatementBlock(choiceOption.body);
+            }
+            catch (e:ParseError) {
+                addError(e);
+                errorPos = currentPos();
+                if (currentPos().offset == offset) advance();
+                if (choiceOption.body.length == 0) {
+                    choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
+                }
+            }
         }
         else if (!check(blockEnd)) {  // If not end of choice
-            choiceOption.body = [parseNode()];
+            final offset = currentPos().offset;
+            try {
+                choiceOption.body = [];
+                choiceOption.body.push(parseNode());
+            }
+            catch (e:ParseError) {
+                addError(e);
+                errorPos = currentPos();
+                if (currentPos().offset == offset) advance();
+                if (choiceOption.body.length == 0) {
+                    choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
+                }
+            }
             choiceOption.style = Plain;
         }
 
         choiceOption.pos = choiceOption.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
+        if (errorPos != null) {
+            while (!isAtEnd() && currentPos().line <= errorPos.line + 1) advance();
+        }
+
         return choiceOption;
+
     }
 
     /**
@@ -1237,7 +1312,7 @@ class ParserContext {
                 return stringLiteral;
 
             case _:
-                throw new ParseError('Expected string, got ${tokens[current].type.toCodeString()}', currentPos());
+                throw new ParseError('Expected text, got ${tokens[current].type.toCodeString()}', currentPos());
         }
     }
 
@@ -1778,6 +1853,13 @@ class ParserContext {
         var expr:NExpr = null;
         try {
             expr = parseExpression();
+            if (expr != null) {
+                switch Type.getClass(expr) {
+                    case NAssign:
+                        addError(new ParseError("Invalid condition expression: can't assign a variable here. Did you want to use '==' instead?", expr.pos));
+                    case _:
+                }
+            }
         }
         catch (e:ParseError) {
             addError(e);
