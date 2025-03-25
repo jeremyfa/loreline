@@ -170,43 +170,7 @@ class Server {
                 throw { code: ErrorCodes.ServerNotInitialized, message: "Server not initialized" };
             }
 
-            final result = switch (request.method) {
-                case "initialize":
-                    handleInitialize(cast request.params);
-
-                case "shutdown":
-                    handleShutdown();
-
-                case "textDocument/completion":
-                    handleCompletion(cast request.params);
-
-                case "textDocument/definition":
-                    handleDefinition(cast request.params);
-
-                case "textDocument/hover":
-                    handleHover(cast request.params);
-
-                case "textDocument/documentSymbol":
-                    handleDocumentSymbol(cast request.params);
-
-                case "textDocument/references":
-                    null;
-                    // TODO
-                    //handleReferences(cast request.params);
-
-                case "textDocument/formatting":
-                    handleDocumentFormatting(cast request.params);
-
-                case "loreline/documentChoiceOptions":
-                    handleDocumentChoiceOptions(cast request.params);
-
-                case "loreline/documentTextStatements":
-                    handleDocumentTextStatements(cast request.params);
-
-                case _:
-                    throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
-            }
-
+            final result = resolveRequest(request);
             return createResponse(request.id, result);
 
         } catch (e:Any) {
@@ -219,6 +183,39 @@ class Server {
             }
         }
         return null;
+    }
+
+    function resolveRequest(request:RequestMessage):Any {
+
+        return switch (request.method) {
+            case "initialize":
+                handleInitialize(cast request.params);
+
+            case "shutdown":
+                handleShutdown();
+
+            case "textDocument/completion":
+                handleCompletion(cast request.params);
+
+            case "textDocument/definition":
+                handleDefinition(cast request.params);
+
+            case "textDocument/hover":
+                handleHover(cast request.params);
+
+            case "textDocument/documentSymbol":
+                handleDocumentSymbol(cast request.params);
+
+            case "textDocument/references":
+                null; // TODO
+
+            case "textDocument/formatting":
+                handleDocumentFormatting(cast request.params);
+
+            case _:
+                throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
+        }
+
     }
 
     /**
@@ -1982,118 +1979,6 @@ class Server {
         // - Consistent spacing
         // - Line breaks between blocks
         return [];
-    }
-
-    function handleDocumentChoiceOptions(params:{
-        textDocument:TextDocumentIdentifier
-    }):Array<{kind:String, range:loreline.lsp.Protocol.Range}> {
-
-        final ast = documents.get(params.textDocument.uri);
-        if (ast == null) return [];
-
-        final content = documentContents.get(params.textDocument.uri);
-
-        final result = [];
-
-        ast.eachExcludingImported((node, parent) -> {
-            if (node is NChoiceOption) {
-                final opt:NChoiceOption = cast node;
-                result.push({
-                    kind: 'option',
-                    range: rangeFromLorelinePosition(opt.text.pos, content)
-                });
-
-                if (opt.text != null) {
-                    if (opt.text.quotes == DoubleQuotes) {
-                        result.push({
-                            kind: 'text',
-                            range: rangeFromLorelinePosition(new loreline.Position(
-                                opt.text.pos.line,
-                                opt.text.pos.column,
-                                opt.text.pos.offset,
-                                1
-                            ), content)
-                        });
-                    }
-                    for (part in opt.text.parts) {
-                        switch part.partType {
-                            case Raw(text):
-                                result.push({
-                                    kind: 'text',
-                                    range: rangeFromLorelinePosition(part.pos, content)
-                                });
-                            case _:
-                        }
-                    }
-                    if (opt.text.quotes == DoubleQuotes) {
-                        result.push({
-                            kind: 'text',
-                            range: rangeFromLorelinePosition(opt.text.pos.withOffset(content, opt.text.pos.length - 1, 1), content)
-                        });
-                    }
-                }
-            }
-        });
-
-        return result;
-
-    }
-
-    function handleDocumentTextStatements(params:{
-        textDocument:TextDocumentIdentifier
-    }):Array<{kind:String, range:loreline.lsp.Protocol.Range}> {
-
-        final ast = documents.get(params.textDocument.uri);
-        if (ast == null) return [];
-
-        final content = documentContents.get(params.textDocument.uri);
-
-        final result = [];
-
-        ast.eachExcludingImported((node, parent) -> {
-            if (node is NTextStatement) {
-                final text:NTextStatement = cast node;
-                result.push({
-                    kind: 'statement',
-                    range: rangeFromLorelinePosition(text.pos, content)
-                });
-
-                if (text.content != null) {
-                    if (text.content.quotes == DoubleQuotes) {
-                        result.push({
-                            kind: 'text',
-                            range: rangeFromLorelinePosition(new loreline.Position(
-                                text.content.pos.line,
-                                text.content.pos.column,
-                                text.content.pos.offset,
-                                1
-                            ), content)
-                        });
-                    }
-                    for (part in text.content.parts) {
-                        switch part.partType {
-                            case Raw(text):
-                                for (sub in extractTextSectionsExcludingComments(text)) {
-                                    result.push({
-                                        kind: 'text',
-                                        range: rangeFromLorelinePosition(part.pos.withOffset(content, sub.offset, sub.length), content)
-                                    });
-                                }
-                            case _:
-                        }
-                    }
-                    if (text.content.quotes == DoubleQuotes) {
-                        result.push({
-                            kind: 'text',
-                            range: rangeFromLorelinePosition(text.content.pos.withOffset(content, text.content.pos.length - 1, 1), content)
-                        });
-                    }
-                }
-            }
-        });
-
-        return result;
-
     }
 
     function extractTextSectionsExcludingComments(text:String):Array<{offset:Int, length:Int}> {

@@ -137,7 +137,7 @@ Persistent state remains throughout your story:
 
 ```lor
 state
-  coffeeBeans: 100   // Track inventory
+  coffeeBeans: 100 // Track inventory
   rushHour: false  // Is it busy?
   dayNumber: 1     // Which day of the story
 ```
@@ -304,13 +304,9 @@ Happy writing!
 
 Loreline scripts are written in `.lor` files. See [CoffeeShop.lor](/test/CoffeeShop.lor) and [Minimal.lor](/test/Minimal.lor) as examples.
 
-You can write these with any text editor, but the best option is using [Visual Studio Code](https://code.visualstudio.com/) along with the [Loreline Extension](https://marketplace.visualstudio.com/items?itemName=jeremyfa.loreline). This will make your editor support syntax highlighting of `.lor` files, which makes the content much more readable and easy to work with:
+You can write these with any text editor, but the best option available for free is using [Visual Studio Code](https://code.visualstudio.com/) along with the [Loreline Extension](https://marketplace.visualstudio.com/items?itemName=jeremyfa.loreline). This will make your editor support syntax highlighting of `.lor` files, which makes the content much more readable and easy to work with:
 
-![Minimal example, syntax highlighted in VSCode](/minimal-screenshot.png)
-
-It will also provide code completion and additional info from your script:
-
-![Example of Hover information in VSCode](/hover-screenshot.png)
+![Screenshot of the Loreline extension for VSCode](/vscode-screenshot.png)
 
 ## Test using the command line interface
 
