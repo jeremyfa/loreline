@@ -260,6 +260,8 @@ class Cli {
 
         if (character != null) {
 
+            final multiline = text.contains("\n");
+
             character = interpreter.getCharacterField(character, 'name') ?? character;
 
             var tagItems = [];
@@ -270,7 +272,13 @@ class Cli {
             }
             var tagItemsText = "";
             if (tagItems.length > 0) {
-                tagItemsText = tagItems.join("") + " ";
+                tagItemsText = tagItems.join("");
+                if (!multiline) {
+                    tagItemsText += " ";
+                }
+            }
+            if (multiline) {
+                text = "\n  " + text.replace("\n", "\n  ").rtrim();
             }
             type(
                 " " + (character + ":").cyan().bold() + " " + tagItemsText + text.green()

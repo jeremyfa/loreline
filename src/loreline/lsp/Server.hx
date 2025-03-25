@@ -1238,13 +1238,23 @@ class Server {
 
     function makeRawTextHover(cursorLorelinePos:loreline.Position, title:String, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
+        var spaceOffset = 0;
+        if (pos == null) {
+            pos = part.pos;
+        }
+        else {
+            spaceOffset = pos.offset - part.pos.offset;
+        }
+
         switch part.partType {
             case Raw(text):
-                final offset = cursorLorelinePos.offset - part.pos.offset;
+                final offset = cursorLorelinePos.offset - pos.offset;
+                var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
-                    if (offset >= sub.offset && offset < sub.offset + sub.length) {
-                        return makeHover(title, description, content, part, part.pos.withOffset(content, sub.offset, sub.length));
+                    if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
+                        return makeHover(title, description, content, part, pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0)));
                     }
+                    first = false;
                 }
                 return null;
             case _:
@@ -1444,7 +1454,7 @@ class Server {
                         if (literal.parts.length == 1) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
+                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1452,7 +1462,7 @@ class Server {
                         else if (partIndex == 0) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
+                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1460,7 +1470,7 @@ class Server {
                         else if (partIndex == literal.parts.length - 1) {
                             switch literal.parts[literal.parts.length - 1].partType {
                                 case Raw(text):
-                                    return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
+                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }

@@ -2295,6 +2295,8 @@ class InterpreterOptions {
         var offset = 0;
 
         var keepWhitespace = (str.quotes != Unquoted);
+        var keepIndents = (str.quotes != Unquoted);
+        var keepComments = (str.quotes != Unquoted);
 
         for (i in 0...str.parts.length) {
             final part = str.parts[i];
@@ -2302,8 +2304,13 @@ class InterpreterOptions {
             switch (part.partType) {
                 case Raw(text):
                     if (!keepWhitespace) {
-                        text = stripStringIndent(text);
+                        text = text.ltrim();
+                    }
+                    if (!keepComments) {
                         text = stripStringComments(text);
+                    }
+                    if (!keepIndents) {
+                        text = stripStringIndent(text);
                     }
                     final len = text.uLength();
                     if (len > 0) keepWhitespace = true;

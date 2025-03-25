@@ -2446,6 +2446,7 @@ class Token {
                         // Only valid if the indentation is identical
                         final followingText = tryReadUnquotedString();
                         if (followingText != null) {
+                            final between = input.uSubstring(savedPos - rtrimmedOffset, afterWhitespaceAndCommentsPos);
                             switch followingText.type {
                                 case LString(_, s_, attachments_):
                                     if (attachments_ != null) {
@@ -2453,9 +2454,15 @@ class Token {
                                             attachments.push(attachment);
                                         }
                                     }
-                                    content += input.uSubstring(savedPos - rtrimmedOffset, afterWhitespaceAndCommentsPos);
+                                    content += between;
                                     content += s_;
                                 case _:
+                            }
+                            rtrimmedOffset = 0;
+                            var n = pos - 1;
+                            while (n >= 0 && input.uCharCodeAt(n) == " ".code || input.uCharCodeAt(n) == "\t".code) {
+                                rtrimmedOffset++;
+                                n--;
                             }
                         }
                         else {
