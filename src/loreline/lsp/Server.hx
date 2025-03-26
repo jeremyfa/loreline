@@ -1236,7 +1236,32 @@ class Server {
 
     }
 
-    function makeRawTextHover(cursorLorelinePos:loreline.Position, title:String, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
+    function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
+
+        var kind = 'Text';
+        var name = null;
+        var origin = null;
+
+        final parent = lens.getParentNode(literal);
+        if (parent != null) {
+            switch HxType.getClass(parent) {
+                case NChoiceOption:
+                    kind = 'Choice option';
+                case NDialogueStatement:
+                    kind = 'Dialogue';
+                    final characterDecl = lens.findCharacterFromDialogue(cast parent);
+                    if (characterDecl != null) {
+                        origin = characterName(characterDecl);
+                    }
+                case _:
+            }
+        }
+
+        return makeHover(hoverTitle(kind, name, origin), description, content, part, pos);
+
+    }
+
+    function makeUnquotedTextHover(literal:NStringLiteral, lens:Lens, cursorLorelinePos:loreline.Position, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
         var spaceOffset = 0;
         if (pos == null) {
@@ -1246,19 +1271,38 @@ class Server {
             spaceOffset = pos.offset - part.pos.offset;
         }
 
+        var kind = 'Text';
+        var name = null;
+        var origin = null;
+
+        final parent = lens.getParentNode(literal);
+        if (parent != null) {
+            switch HxType.getClass(parent) {
+                case NChoiceOption:
+                    kind = 'Choice option';
+                case NDialogueStatement:
+                    kind = 'Dialogue';
+                    final characterDecl = lens.findCharacterFromDialogue(cast parent);
+                    if (characterDecl != null) {
+                        origin = characterName(characterDecl);
+                    }
+                case _:
+            }
+        }
+
         switch part.partType {
             case Raw(text):
                 final offset = cursorLorelinePos.offset - pos.offset;
                 var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
                     if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
-                        return makeHover(title, description, content, part, pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0)));
+                        return makeHover(hoverTitle(kind, name, origin), description, content, part, pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0)));
                     }
                     first = false;
                 }
                 return null;
             case _:
-                return makeHover(title, description, content, part, pos);
+                return makeHover(hoverTitle(kind, name, origin), description, content, part, pos);
         }
 
     }
@@ -1443,7 +1487,7 @@ class Server {
                                     case Raw(text):
                                         final spaces = text.uLength() - text.ltrim().uLength();
                                         if (spaces > 0) {
-                                            return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
+                                            return makeUnquotedTextHover(literal, lens, lorelinePos, hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
                                         }
                                     case _:
                                 }
@@ -1454,7 +1498,7 @@ class Server {
                         if (literal.parts.length == 1) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
+                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1462,7 +1506,7 @@ class Server {
                         else if (partIndex == 0) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
+                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1470,7 +1514,7 @@ class Server {
                         else if (partIndex == literal.parts.length - 1) {
                             switch literal.parts[literal.parts.length - 1].partType {
                                 case Raw(text):
-                                    return makeHover(hoverTitle('Text'), hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
+                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1480,7 +1524,7 @@ class Server {
 
                 switch stringPart.partType {
                     case Raw(text):
-                        return makeRawTextHover(lorelinePos, hoverTitle('Text'), hoverDescriptionForNode(stringPart), content, stringPart);
+                        return makeUnquotedTextHover(literal, lens, lorelinePos, hoverDescriptionForNode(stringPart), content, stringPart);
                     case Expr(expr):
                     case Tag(closing, expr):
                 }
