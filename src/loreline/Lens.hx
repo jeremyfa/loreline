@@ -574,6 +574,41 @@ class Lens {
 
     }
 
+    public function isTopLevelNode(node:Node):Bool {
+
+        if (node is AstNode) {
+            final astNode:AstNode = cast node;
+            return script.body.indexOf(astNode) != -1;
+        }
+
+        return false;
+
+    }
+
+    public function findTopLevelBeatFromNode(node:Node):Null<NBeatDecl> {
+
+        if (isTopLevelNode(node)) {
+            if (node is NBeatDecl) {
+                return cast node;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            var resolved = getFirstParentOfType(node, NBeatDecl);
+            while (resolved != null && !isTopLevelNode(resolved)) {
+                resolved = getFirstParentOfType(resolved, NBeatDecl);
+            }
+            if (resolved != null && resolved is NBeatDecl) {
+                return cast resolved;
+            }
+        }
+
+        return null;
+
+    }
+
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
 
         var result:Null<NBeatDecl> = null;

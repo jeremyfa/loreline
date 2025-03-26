@@ -820,6 +820,21 @@ enum abstract BlockStyle(Int) {
 
 }
 
+enum abstract ConditionStyle(Int) {
+
+    var Plain = 0;
+
+    var Parens = 2;
+
+    public function toString() {
+        return switch abstract {
+            case Plain: "Plain";
+            case Parens: "Parens";
+        }
+    }
+
+}
+
 /**
  * Represents a string part that can appear in string literals.
  */
@@ -1116,6 +1131,11 @@ class NChoiceOption extends AstNode {
     public var condition:Null<NExpr>;
 
     /**
+     * The style of the condition (plain or parentheses).
+     */
+    public var conditionStyle:ConditionStyle;
+
+    /**
      * Array of nodes to execute when this option is chosen.
      */
     public var body:Array<AstNode>;
@@ -1130,14 +1150,16 @@ class NChoiceOption extends AstNode {
      * @param pos Position in source where this option appears
      * @param text String literal containing the option text
      * @param condition Optional condition for option availability
+     * @param conditionStyle The style of the condition (plain or parentheses)
      * @param body Array of nodes to execute when chosen
      * @param leadingComments Optional comments before the option
      * @param trailingComments Optional comments after the option
      */
-    public function new(id:NodeId, pos:Position, text:NStringLiteral, condition:Null<NExpr>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, text:NStringLiteral, condition:Null<NExpr>, conditionStyle:ConditionStyle, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.text = text;
         this.condition = condition;
+        this.conditionStyle = conditionStyle;
         this.body = body;
         this.style = Plain;
     }
@@ -1173,7 +1195,10 @@ class NChoiceOption extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.text = text.toJson();
-        if (condition != null) json.condition = condition.toJson();
+        if (condition != null) {
+            json.condition = condition.toJson();
+            json.conditionStyle = conditionStyle.toString();
+        }
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();
         return json;
@@ -1247,6 +1272,11 @@ class NIfStatement extends AstNode {
     public var condition:NExpr;
 
     /**
+     * The style of the condition (plain or parentheses).
+     */
+    public var conditionStyle:ConditionStyle;
+
+    /**
      * Array of nodes to execute if condition is true.
      */
     public var thenBranch:NBlock;
@@ -1270,6 +1300,7 @@ class NIfStatement extends AstNode {
      * Creates a new if statement node.
      * @param pos Position in source where this if statement appears
      * @param condition Expression to evaluate
+     * @param conditionStyle The style of the condition (plain or parentheses)
      * @param thenBranch Nodes to execute if condition is true
      * @param elseBranch Optional nodes to execute if condition is false
      * @param leadingComments Optional comments before the if
@@ -1277,9 +1308,10 @@ class NIfStatement extends AstNode {
      * @param elseLeadingComments Optional comments before the else
      * @param elseTrailingComments Optional comments after the else
      */
-    public function new(id:NodeId, pos:Position, condition:NExpr, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, condition:NExpr, conditionStyle:ConditionStyle, thenBranch:NBlock, elseBranch:Null<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>, ?elseLeadingComments:Array<Comment>, ?elseTrailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.condition = condition;
+        this.conditionStyle = conditionStyle;
         this.thenBranch = thenBranch;
         this.elseBranch = elseBranch;
         this.elseLeadingComments = elseLeadingComments;
@@ -1326,6 +1358,7 @@ class NIfStatement extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.condition = condition.toJson();
+        json.conditionStyle = conditionStyle.toString();
         json.thenBranch = [for (node in thenBranch.body) node.toJson()];
         json.thenStyle = thenBranch.style.toString();
         if (elseBranch != null) {

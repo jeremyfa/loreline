@@ -1981,14 +1981,32 @@ class Server {
         textDocument:TextDocumentIdentifier,
         options:FormattingOptions
     }):Array<TextEdit> {
+
         final ast = documents.get(params.textDocument.uri);
         if (ast == null) return [];
 
-        // TODO: Format document:
-        // - Proper indentation
-        // - Consistent spacing
-        // - Line breaks between blocks
+        final content = documentContents.get(params.textDocument.uri);
+        if (content == null) return [];
+
+        try {
+            var indent = new StringBuf();
+            final tabSize = params.options.tabSize ?? 2;
+            for (i in 0...tabSize) {
+                indent.addChar(" ".code);
+            }
+            final printer = new Printer(indent.toString(), isWindows ? "\r\n" : "\n");
+
+            return [{
+                newText: printer.print(ast),
+                range: rangeFromLorelinePosition(new loreline.Position(1, 1, 0, content.uLength()), content)
+            }];
+        }
+        catch (e:Any) {
+            onLog("Error when formatting: " + e);
+        }
+
         return [];
+
     }
 
     function extractTextSectionsExcludingComments(text:String):Array<{offset:Int, length:Int}> {
@@ -2065,7 +2083,7 @@ class Server {
      * @param length Optional length to include in position
      * @return A Loreline Position instance
      */
-     function toLorelinePosition(protocolPos:loreline.lsp.Protocol.Position, content:String, ?length:Int = 0):loreline.Position {
+    public static function toLorelinePosition(protocolPos:loreline.lsp.Protocol.Position, content:String, ?length:Int = 0):loreline.Position {
         // Convert from 0-based to 1-based indexing
         final line = protocolPos.line + 1;
         final column = protocolPos.character + 1;
@@ -2076,7 +2094,7 @@ class Server {
         return new loreline.Position(line, column, offset, length);
     }
 
-    function computeLorelineOffset(line:Int, column:Int, content:String) {
+    static function computeLorelineOffset(line:Int, column:Int, content:String) {
 
         var offset = 0;
 

@@ -815,7 +815,7 @@ class ParserContext {
     function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
 
         final startPos = currentPos();
-        final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, []));
+        final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, Plain, []));
 
         var errorPos = null;
 
@@ -833,6 +833,9 @@ class ParserContext {
         if (match(KwIf)) {
             final offset = currentPos().offset;
             try {
+                if (check(LParen)) {
+                    choiceOption.conditionStyle = Parens;
+                }
                 choiceOption.condition = parseConditionExpression();
             }
             catch (e:ParseError) {
@@ -936,9 +939,12 @@ class ParserContext {
      */
     function parseIfStatement():NIfStatement {
         final startPos = currentPos();
-        final ifNode = new NIfStatement(nextNodeId(NODE), startPos, null, null, null);
+        final ifNode = new NIfStatement(nextNodeId(NODE), startPos, null, Plain, null, null);
 
         expect(KwIf);
+        if (check(LParen)) {
+            ifNode.conditionStyle = Parens;
+        }
         ifNode.condition = parseConditionExpression();
 
         while (match(LineBreak)) {}

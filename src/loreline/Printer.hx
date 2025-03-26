@@ -21,6 +21,11 @@ class Printer {
     var _level:Int;
 
     /**
+     * Previous indentation level.
+     */
+    var _prevLevel:Int;
+
+    /**
      * Buffer containing the generated output.
      */
     var _buf:Utf8Buf;
@@ -39,6 +44,16 @@ class Printer {
      * Last character written to the output that is visible (not a white space).
      */
     var _lastVisibleChar:Int;
+
+    /**
+     * If this value is higher than 0, new lines are not printed
+     */
+    var _noLn:Int;
+
+    /**
+     * Counts the number of empty lines being printed
+     */
+    var _numEmptyLines:Int;
 
     /**
      * String used for each level of indentation.
@@ -66,6 +81,17 @@ class Printer {
         _beginLine = 0;
         _lastChar = -1;
         clear();
+    }
+
+    /**
+     * Resets the printer to its initial state.
+     */
+    public inline function clear() {
+        _noLn = 0;
+        _level = 0;
+        _prevLevel = 0;
+        _numEmptyLines = 0;
+        _buf = new Utf8Buf();
     }
 
     /**
@@ -141,7 +167,10 @@ class Printer {
      * @return This printer instance for chaining
      */
     public function newline() {
-        if (_beginLine < 2) {
+        if (_beginLine < 2 && _noLn == 0) {
+            if (_beginLine == 1) {
+                _numEmptyLines++;
+            }
             _buf.add(_newline);
             _beginLine++;
         }
@@ -187,14 +216,6 @@ class Printer {
     }
 
     /**
-     * Resets the printer to its initial state.
-     */
-    public inline function clear() {
-        _level = 0;
-        _buf = new Utf8Buf();
-    }
-
-    /**
      * Returns the current content of the output buffer.
      * @return Generated source code
      */
@@ -218,7 +239,7 @@ class Printer {
      * Dispatches a node to its appropriate printing function based on type.
      * @param node Node to print
      */
-    function printNode(node:Node) {
+    function printNode(node:Node, sameLine:Bool = false) {
         switch (Type.getClass(node)) {
             case Script:
                 printScript(cast node);
@@ -243,7 +264,7 @@ class Printer {
             case NIfStatement:
                 printIfStatement(cast node);
             case NTransition:
-                printTransition(cast node);
+                printTransition(cast node, sameLine);
             case NStringLiteral:
                 printStringLiteral(cast node);
             case NLiteral:
@@ -318,6 +339,7 @@ class Printer {
      */
     function printScript(script:Script) {
         for (decl in script.body) {
+            _prevLevel = _level;
             printNode(decl);
         }
     }
@@ -365,6 +387,7 @@ class Printer {
         write('character ${char.name} ');
         printTrailingComments(char);
         if (char.style == Braces) writeln('{');
+        else writeln();
         indent();
         for (prop in char.fields) {
             printLeadingComments(prop);
@@ -391,8 +414,10 @@ class Printer {
         printTrailingComments(beat);
         if (beat.style == Braces) writeln('{');
         writeln();
+        writeln();
         indent();
         for (i in 0...beat.body.length) {
+            _prevLevel = _level;
             printNode(beat.body[i]);
             if (i < beat.body.length - 1) {
                 writeln();
@@ -421,6 +446,9 @@ class Printer {
      * @param text Text statement to print
      */
     function printTextStatement(text:NTextStatement) {
+        if (_level == _prevLevel) {
+            writeln();
+        }
         printLeadingComments(text);
         printNode(text.content);
         printTrailingComments(text);
@@ -431,6 +459,9 @@ class Printer {
      * @param dialogue Dialogue statement to print
      */
     function printDialogueStatement(dialogue:NDialogueStatement) {
+        if (_level == _prevLevel) {
+            writeln();
+        }
         printLeadingComments(dialogue);
         write('${dialogue.character}: ');
         printTrailingComments(dialogue);
@@ -448,9 +479,14 @@ class Printer {
         write('choice ');
         printTrailingComments(choice);
         if (choice.style == Braces) writeln('{');
+        else writeln();
         indent();
-        for (option in choice.options) {
-            printNode(option);
+        if (choice.options.length > 0) {
+            _noLn++;
+            for (option in choice.options) {
+                printNode(option);
+                writeln();
+            }
         }
         unindent();
         if (choice.style == Braces) writeln('}');
@@ -476,31 +512,39 @@ class Printer {
     function printChoiceOption(option:NChoiceOption) {
         writeln();
         writeln();
+        _noLn = 0;
         printLeadingComments(option);
         printNode(option.text);
         printTrailingComments(option);
         if (option.condition != null) {
             write(' if ');
-            printParenExpression(option.condition);
+            printInLineExpression(option.condition, option.conditionStyle == Parens);
         }
         if (option.body.length > 0) {
-            if (option.body.length == 1 && (Std.isOfType(option.body[0], NTransition))) {
+            if (option.condition == null && option.body.length == 1 && (Std.isOfType(option.body[0], NTransition))) {
+                _prevLevel = _level;
                 write(' ');
-                printNode(option.body[0]);
+                printNode(option.body[0], true);
                 if (_beginLine == 0) writeln();
             }
             else {
-                writeln(' {');
+                if (option.style == Braces)
+                    writeln(' {');
+                else
+                    writeln();
+                _prevLevel = _level;
                 indent();
                 for (node in option.body) {
                     printNode(node);
                     if (_beginLine == 0 && node != option.body[option.body.length - 1]) {
                         writeln();
                     }
+                    _prevLevel = _level;
                 }
                 unindent();
                 writeln();
-                writeln('}');
+                if (option.style == Braces)
+                    writeln('}');
             }
         }
         else {
@@ -514,35 +558,44 @@ class Printer {
      * @param isElseIf Whether this is part of an else-if chain
      */
     function printIfStatement(ifStmt:NIfStatement, isElseIf:Bool = false) {
-        if (!isElseIf) {
+        if (_level == _prevLevel) {
             writeln();
         }
         printLeadingComments(ifStmt);
         write('if ');
-        printParenExpression(ifStmt.condition);
+        printInLineExpression(ifStmt.condition, ifStmt.conditionStyle == Parens);
         printTrailingComments(ifStmt);
         if (ifStmt.thenBranch.style == Braces) write(' {');
         writeln();
+        _prevLevel = _level;
         indent();
+        var emptyLinesBeforeIf = _numEmptyLines;
         for (node in ifStmt.thenBranch.body) {
             printNode(node);
             writeln();
+            _prevLevel = _level;
         }
         unindent();
         if (ifStmt.thenBranch.style == Braces) write('}');
         if (ifStmt.elseBranch != null) {
             if (ifStmt.elseBranch.body.length == 1 && ifStmt.elseBranch.body[0] is NIfStatement) {
-                writeln();
+                final subIf:NIfStatement = cast ifStmt.elseBranch.body[0];
+                if (_numEmptyLines - emptyLinesBeforeIf > 0 || needsEmptyLines(subIf))
+                    writeln();
                 write('else ');
                 printIfStatement(cast ifStmt.elseBranch.body[0], true);
             }
             else {
+                if (_numEmptyLines - emptyLinesBeforeIf > 0)
+                    writeln();
                 if (ifStmt.elseBranch.style == Braces) writeln('else {');
                 else writeln('else');
+                _prevLevel = _level;
                 indent();
                 for (node in ifStmt.elseBranch.body) {
                     printNode(node);
                     writeln();
+                    _prevLevel = _level;
                 }
                 unindent();
                 if (ifStmt.elseBranch.style == Braces) writeln('}');
@@ -550,11 +603,22 @@ class Printer {
         }
     }
 
+    function needsEmptyLines(node:AstNode) {
+
+        // Not optimal, but accurate
+        final printer = new Printer(_indent, "\n");
+        return printer.print(node).indexOf("\n\n") != -1;
+
+    }
+
     /**
      * Prints a transition node.
      * @param trans Transition to print
      */
-    function printTransition(trans:NTransition) {
+    function printTransition(trans:NTransition, sameLine:Bool) {
+        if (!sameLine && _prevLevel == _level) {
+            writeln();
+        }
         printLeadingComments(trans);
         write('-> ${trans.target}');
         printTrailingComments(trans);
@@ -727,18 +791,18 @@ class Printer {
     }
 
     /**
-     * Prints an expression wrapped in parentheses.
+     * Prints an in-line expression optionally wrapped in parentheses.
      * @param expr Expression to wrap in parentheses
      */
-    function printParenExpression(expr:NExpr) {
-        write('(');
+    function printInLineExpression(expr:NExpr, parens:Bool) {
+        if (parens) write('(');
         if (expr is NBinary) {
             printBinary(cast expr, true);
         }
         else {
             printNode(expr);
         }
-        write(')');
+        if (parens) write(')');
     }
 
     /**
