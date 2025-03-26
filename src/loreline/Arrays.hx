@@ -91,7 +91,7 @@ class Arrays {
 
         #if cs
         if (isCsList(array)) {
-            return csListIterator(array, value);
+            return csListIterator(array);
         }
         #end
 
@@ -148,7 +148,7 @@ class CSListIterator {
         this.list = array;
         this.index = 0;
         // Get the length using the already implemented csListLength method
-        this.length = Arrays.csListLength(array);
+        this.length = @:privateAccess Arrays.csListLength(array);
     }
 
     public function hasNext():Bool {
@@ -157,7 +157,7 @@ class CSListIterator {
 
     public function next():Dynamic {
         // Use the already implemented csListGet method
-        var value = Arrays.csListGet(list, index);
+        var value = @:privateAccess Arrays.csListGet(list, index);
         index++;
         return value;
     }

@@ -151,6 +151,32 @@ namespace Loreline
             public Interpreter Interpreter;
         }
 
+        public struct InterpreterOptions
+        {
+            /// <summary>
+            /// Retrieve default interpreter options
+            /// </summary>
+            public static InterpreterOptions Default()
+            {
+                return new InterpreterOptions
+                {
+                    Functions = null,
+                    StrictAccess = false
+                };
+            }
+
+            /// <summary>
+            /// Optional map of additional functions to make available to the script
+            /// </summary>
+            public Dictionary<string, Function> Functions;
+
+            /// <summary>
+            /// Tells whether access is strict or not. If set to true,
+            /// trying to read or write an undefined variable will throw an error.
+            /// </summary>
+            public bool StrictAccess;
+        }
+
         /// <summary>
         /// Handler type to be called when the execution finishes.
         /// </summary>
@@ -169,26 +195,60 @@ namespace Loreline
         /// <param name="handleDialogue">Function to call when displaying dialogue text</param>
         /// <param name="handleChoice">Function to call when presenting choices</param>
         /// <param name="handleFinish">Function to call when execution finishes</param>
-        /// <param name="functions">Optional map of additional functions to make available to the script</param>
         public Interpreter(
             Script script,
             DialogueHandler handleDialogue,
             ChoiceHandler handleChoice,
-            FinishHandler handleFinish,
-            Dictionary<string, Function> functions = null
+            FinishHandler handleFinish
         )
         {
+            InterpreterOptions options = new InterpreterOptions
+            {
+                Functions = null,
+                StrictAccess = false
+            };
+
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
-            Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, functions);
+            Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
 
             runtimeInterpreter = new Runtime.Interpreter(
                 script.runtimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                functionsWrap
+                new Runtime.InterpreterOptions(functionsWrap, options.StrictAccess)
+            );
+        }
+
+        /// <summary>
+        /// Creates a new Loreline script interpreter.
+        /// </summary>
+        /// <param name="script">The parsed script to execute</param>
+        /// <param name="handleDialogue">Function to call when displaying dialogue text</param>
+        /// <param name="handleChoice">Function to call when presenting choices</param>
+        /// <param name="handleFinish">Function to call when execution finishes</param>
+        /// <param name="options">Additional options</param>
+        public Interpreter(
+            Script script,
+            DialogueHandler handleDialogue,
+            ChoiceHandler handleChoice,
+            FinishHandler handleFinish,
+            InterpreterOptions options
+        )
+        {
+            DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
+            ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
+            FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
+            Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
+
+            runtimeInterpreter = new Runtime.Interpreter(
+                script.runtimeScript,
+                handleDialogueWrap,
+                handleChoiceWrap,
+                handleFinishWrap,
+                new Runtime.InterpreterOptions(functionsWrap, options.StrictAccess)
             );
         }
 

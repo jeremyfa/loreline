@@ -564,8 +564,8 @@ class Server {
             // File path and file handler provided, which mean we can support
             // imports, either synchronous or asynchronous
 
-            var imports = new Imports(filePath, tokens, handleFile, handleError);
-            imports.resolve((hasErrors, resolvedImports) -> {
+            var imports = new Imports();
+            imports.resolve(filePath, tokens, handleFile, handleError, (hasErrors, resolvedImports) -> {
 
                 final parser = new Parser(tokens, {
                     rootPath: filePath,

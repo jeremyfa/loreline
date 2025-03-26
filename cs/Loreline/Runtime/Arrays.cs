@@ -86,6 +86,15 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static object getIterator(object array) {
+			if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+				return global::Loreline.Runtime.Arrays.csListIterator(array);
+			}
+			
+			return new global::Loreline.Internal.Iterators.ArrayIterator<object>(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((global::Loreline.Internal.Root.Array) (((object) (array) )) )) ))) ));
+		}
+		
+		
 		public static bool isCsList(object array) {
 			return array is global::System.Collections.IList;
 		}
@@ -117,6 +126,234 @@ namespace Loreline.Runtime {
 		public static void csListPush(object array, object @value) {
 			global::System.Collections.IList list = (global::System.Collections.IList)array;
 			list.Add(@value);
+		}
+		
+		
+		public static object csListIterator(object array) {
+			return new global::Loreline.Runtime.CSListIterator(((object) (array) ));
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime {
+	public class CSListIterator : global::Loreline.Internal.Lang.HxObject {
+		
+		public CSListIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
+		}
+		
+		
+		public CSListIterator(object array) {
+			global::Loreline.Runtime.CSListIterator.__hx_ctor_loreline_CSListIterator(this, array);
+		}
+		
+		
+		protected static void __hx_ctor_loreline_CSListIterator(global::Loreline.Runtime.CSListIterator __hx_this, object array) {
+			__hx_this.list = array;
+			__hx_this.index = 0;
+			__hx_this.length = global::Loreline.Runtime.Arrays.csListLength(array);
+		}
+		
+		
+		public object list;
+		
+		public int index;
+		
+		public int length;
+		
+		public virtual bool hasNext() {
+			return ( this.index < this.length );
+		}
+		
+		
+		public virtual object next() {
+			object @value = global::Loreline.Runtime.Arrays.csListGet(this.list, this.index);
+			this.index++;
+			return @value;
+		}
+		
+		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 520590566:
+					{
+						this.length = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					case 1041537810:
+					{
+						this.index = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					case 1202920542:
+					{
+						this.list = ((object) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 520590566:
+					{
+						this.length = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 1041537810:
+					{
+						this.index = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 1202920542:
+					{
+						this.list = ((object) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1224901875:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "next", 1224901875)) );
+					}
+					
+					
+					case 407283053:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "hasNext", 407283053)) );
+					}
+					
+					
+					case 520590566:
+					{
+						return this.length;
+					}
+					
+					
+					case 1041537810:
+					{
+						return this.index;
+					}
+					
+					
+					case 1202920542:
+					{
+						return this.list;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField(field, hash, throwErrors, isCheck, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 520590566:
+					{
+						return ((double) (this.length) );
+					}
+					
+					
+					case 1041537810:
+					{
+						return ((double) (this.index) );
+					}
+					
+					
+					case 1202920542:
+					{
+						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(this.list)) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
+			unchecked {
+				switch (hash) {
+					case 1224901875:
+					{
+						return this.next();
+					}
+					
+					
+					case 407283053:
+					{
+						return this.hasNext();
+					}
+					
+					
+					default:
+					{
+						return base.__hx_invokeField(field, hash, dynargs);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("length");
+			baseArr.push("index");
+			baseArr.push("list");
+			base.__hx_getFields(baseArr);
 		}
 		
 		

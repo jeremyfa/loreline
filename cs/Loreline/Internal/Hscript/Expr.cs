@@ -196,138 +196,138 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public class Expr : global::Loreline.Internal.Lang.Enum {
+	public class ExprDef : global::Loreline.Internal.Lang.Enum {
 		
-		protected Expr(int index) : base(index) {
+		protected ExprDef(int index) : base(index) {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EConst(global::Loreline.Internal.Hscript.Const c) {
-			return new global::Loreline.Internal.Hscript.Expr_EConst(c);
+		public static global::Loreline.Internal.Hscript.ExprDef EConst(global::Loreline.Internal.Hscript.Const c) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EConst(c);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EIdent(string v) {
-			return new global::Loreline.Internal.Hscript.Expr_EIdent(v);
+		public static global::Loreline.Internal.Hscript.ExprDef EIdent(string v) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EIdent(v);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EVar(string n, global::Loreline.Internal.Hscript.CType t, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EVar(n, t, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EVar(string n, global::Loreline.Internal.Hscript.CType t, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EVar(n, t, e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EParent(global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EParent(e);
+		public static global::Loreline.Internal.Hscript.ExprDef EParent(object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EParent(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EBlock(global::Loreline.Internal.Root.Array<object> e) {
-			return new global::Loreline.Internal.Hscript.Expr_EBlock(e);
+		public static global::Loreline.Internal.Hscript.ExprDef EBlock(global::Loreline.Internal.Root.Array<object> e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EBlock(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EField(global::Loreline.Internal.Hscript.Expr e, string f) {
-			return new global::Loreline.Internal.Hscript.Expr_EField(e, f);
+		public static global::Loreline.Internal.Hscript.ExprDef EField(object e, string f) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EField(e, f);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EBinop(string op, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) {
-			return new global::Loreline.Internal.Hscript.Expr_EBinop(op, e1, e2);
+		public static global::Loreline.Internal.Hscript.ExprDef EBinop(string op, object e1, object e2) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EBinop(op, e1, e2);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EUnop(string op, bool prefix, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EUnop(op, prefix, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EUnop(string op, bool prefix, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EUnop(op, prefix, e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ECall(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Root.Array<object> @params) {
-			return new global::Loreline.Internal.Hscript.Expr_ECall(e, @params);
+		public static global::Loreline.Internal.Hscript.ExprDef ECall(object e, global::Loreline.Internal.Root.Array<object> @params) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ECall(e, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EIf(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) {
-			return new global::Loreline.Internal.Hscript.Expr_EIf(cond, e1, e2);
+		public static global::Loreline.Internal.Hscript.ExprDef EIf(object cond, object e1, object e2) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EIf(cond, e1, e2);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EWhile(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EWhile(cond, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EWhile(object cond, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EWhile(cond, e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EFor(string v, global::Loreline.Internal.Hscript.Expr it, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EFor(v, it, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EFor(string v, object it, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EFor(v, it, e);
 		}
 		
 		
-		public static readonly global::Loreline.Internal.Hscript.Expr EBreak = new global::Loreline.Internal.Hscript.Expr_EBreak();
+		public static readonly global::Loreline.Internal.Hscript.ExprDef EBreak = new global::Loreline.Internal.Hscript.ExprDef_EBreak();
 		
-		public static readonly global::Loreline.Internal.Hscript.Expr EContinue = new global::Loreline.Internal.Hscript.Expr_EContinue();
+		public static readonly global::Loreline.Internal.Hscript.ExprDef EContinue = new global::Loreline.Internal.Hscript.ExprDef_EContinue();
 		
-		public static global::Loreline.Internal.Hscript.Expr EFunction(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.Expr e, string name, global::Loreline.Internal.Hscript.CType ret) {
-			return new global::Loreline.Internal.Hscript.Expr_EFunction(args, e, name, ret);
+		public static global::Loreline.Internal.Hscript.ExprDef EFunction(global::Loreline.Internal.Root.Array<object> args, object e, string name, global::Loreline.Internal.Hscript.CType ret) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EFunction(args, e, name, ret);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EReturn(global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EReturn(e);
+		public static global::Loreline.Internal.Hscript.ExprDef EReturn(object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EReturn(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EArray(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Hscript.Expr index) {
-			return new global::Loreline.Internal.Hscript.Expr_EArray(e, index);
+		public static global::Loreline.Internal.Hscript.ExprDef EArray(object e, object index) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EArray(e, index);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EArrayDecl(global::Loreline.Internal.Root.Array<object> e) {
-			return new global::Loreline.Internal.Hscript.Expr_EArrayDecl(e);
+		public static global::Loreline.Internal.Hscript.ExprDef EArrayDecl(global::Loreline.Internal.Root.Array<object> e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EArrayDecl(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) {
-			return new global::Loreline.Internal.Hscript.Expr_ENew(cl, @params);
+		public static global::Loreline.Internal.Hscript.ExprDef ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ENew(cl, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EThrow(global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EThrow(e);
+		public static global::Loreline.Internal.Hscript.ExprDef EThrow(object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EThrow(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ETry(global::Loreline.Internal.Hscript.Expr e, string v, global::Loreline.Internal.Hscript.CType t, global::Loreline.Internal.Hscript.Expr ecatch) {
-			return new global::Loreline.Internal.Hscript.Expr_ETry(e, v, t, ecatch);
+		public static global::Loreline.Internal.Hscript.ExprDef ETry(object e, string v, global::Loreline.Internal.Hscript.CType t, object ecatch) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ETry(e, v, t, ecatch);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EObject(global::Loreline.Internal.Root.Array<object> fl) {
-			return new global::Loreline.Internal.Hscript.Expr_EObject(fl);
+		public static global::Loreline.Internal.Hscript.ExprDef EObject(global::Loreline.Internal.Root.Array<object> fl) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EObject(fl);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ETernary(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) {
-			return new global::Loreline.Internal.Hscript.Expr_ETernary(cond, e1, e2);
+		public static global::Loreline.Internal.Hscript.ExprDef ETernary(object cond, object e1, object e2) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ETernary(cond, e1, e2);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ESwitch(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Root.Array<object> cases, global::Loreline.Internal.Hscript.Expr defaultExpr) {
-			return new global::Loreline.Internal.Hscript.Expr_ESwitch(e, cases, defaultExpr);
+		public static global::Loreline.Internal.Hscript.ExprDef ESwitch(object e, global::Loreline.Internal.Root.Array<object> cases, object defaultExpr) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ESwitch(e, cases, defaultExpr);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EDoWhile(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EDoWhile(cond, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EDoWhile(object cond, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EDoWhile(cond, e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr EMeta(string name, global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.Expr e) {
-			return new global::Loreline.Internal.Hscript.Expr_EMeta(name, args, e);
+		public static global::Loreline.Internal.Hscript.ExprDef EMeta(string name, global::Loreline.Internal.Root.Array<object> args, object e) {
+			return new global::Loreline.Internal.Hscript.ExprDef_EMeta(name, args, e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Expr ECheckType(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Hscript.CType t) {
-			return new global::Loreline.Internal.Hscript.Expr_ECheckType(e, t);
+		public static global::Loreline.Internal.Hscript.ExprDef ECheckType(object e, global::Loreline.Internal.Hscript.CType t) {
+			return new global::Loreline.Internal.Hscript.ExprDef_ECheckType(e, t);
 		}
 		
 		
@@ -338,9 +338,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EConst : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EConst : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EConst(global::Loreline.Internal.Hscript.Const c) : base(0) {
+		public ExprDef_EConst(global::Loreline.Internal.Hscript.Const c) : base(0) {
 			this.c = c;
 		}
 		
@@ -365,7 +365,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EConst en = ( other as global::Loreline.Internal.Hscript.Expr_EConst );
+			global::Loreline.Internal.Hscript.ExprDef_EConst en = ( other as global::Loreline.Internal.Hscript.ExprDef_EConst );
 			if (( en == null )) {
 				return false;
 			}
@@ -392,9 +392,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EIdent : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EIdent : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EIdent(string v) : base(1) {
+		public ExprDef_EIdent(string v) : base(1) {
 			this.v = v;
 		}
 		
@@ -421,7 +421,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EIdent en = ( other as global::Loreline.Internal.Hscript.Expr_EIdent );
+			global::Loreline.Internal.Hscript.ExprDef_EIdent en = ( other as global::Loreline.Internal.Hscript.ExprDef_EIdent );
 			if (( en == null )) {
 				return false;
 			}
@@ -448,9 +448,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EVar : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EVar : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EVar(string n, global::Loreline.Internal.Hscript.CType t, global::Loreline.Internal.Hscript.Expr e) : base(2) {
+		public ExprDef_EVar(string n, global::Loreline.Internal.Hscript.CType t, object e) : base(2) {
 			this.n = n;
 			this.t = t;
 			this.e = e;
@@ -479,7 +479,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EVar en = ( other as global::Loreline.Internal.Hscript.Expr_EVar );
+			global::Loreline.Internal.Hscript.ExprDef_EVar en = ( other as global::Loreline.Internal.Hscript.ExprDef_EVar );
 			if (( en == null )) {
 				return false;
 			}
@@ -509,7 +509,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly global::Loreline.Internal.Hscript.CType t;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -518,9 +518,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EParent : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EParent : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EParent(global::Loreline.Internal.Hscript.Expr e) : base(3) {
+		public ExprDef_EParent(object e) : base(3) {
 			this.e = e;
 		}
 		
@@ -547,7 +547,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EParent en = ( other as global::Loreline.Internal.Hscript.Expr_EParent );
+			global::Loreline.Internal.Hscript.ExprDef_EParent en = ( other as global::Loreline.Internal.Hscript.ExprDef_EParent );
 			if (( en == null )) {
 				return false;
 			}
@@ -565,7 +565,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -574,9 +574,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EBlock : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EBlock : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EBlock(global::Loreline.Internal.Root.Array<object> e) : base(4) {
+		public ExprDef_EBlock(global::Loreline.Internal.Root.Array<object> e) : base(4) {
 			this.e = e;
 		}
 		
@@ -603,7 +603,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EBlock en = ( other as global::Loreline.Internal.Hscript.Expr_EBlock );
+			global::Loreline.Internal.Hscript.ExprDef_EBlock en = ( other as global::Loreline.Internal.Hscript.ExprDef_EBlock );
 			if (( en == null )) {
 				return false;
 			}
@@ -630,9 +630,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EField : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EField : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EField(global::Loreline.Internal.Hscript.Expr e, string f) : base(5) {
+		public ExprDef_EField(object e, string f) : base(5) {
 			this.e = e;
 			this.f = f;
 		}
@@ -660,7 +660,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EField en = ( other as global::Loreline.Internal.Hscript.Expr_EField );
+			global::Loreline.Internal.Hscript.ExprDef_EField en = ( other as global::Loreline.Internal.Hscript.ExprDef_EField );
 			if (( en == null )) {
 				return false;
 			}
@@ -682,7 +682,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly string f;
 		
@@ -693,9 +693,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EBinop : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EBinop : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EBinop(string op, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) : base(6) {
+		public ExprDef_EBinop(string op, object e1, object e2) : base(6) {
 			this.op = op;
 			this.e1 = e1;
 			this.e2 = e2;
@@ -724,7 +724,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EBinop en = ( other as global::Loreline.Internal.Hscript.Expr_EBinop );
+			global::Loreline.Internal.Hscript.ExprDef_EBinop en = ( other as global::Loreline.Internal.Hscript.ExprDef_EBinop );
 			if (( en == null )) {
 				return false;
 			}
@@ -752,9 +752,9 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly string op;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e1;
+		public readonly object e1;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e2;
+		public readonly object e2;
 		
 	}
 }
@@ -763,9 +763,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EUnop : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EUnop : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EUnop(string op, bool prefix, global::Loreline.Internal.Hscript.Expr e) : base(7) {
+		public ExprDef_EUnop(string op, bool prefix, object e) : base(7) {
 			this.op = op;
 			this.prefix = prefix;
 			this.e = e;
@@ -794,7 +794,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EUnop en = ( other as global::Loreline.Internal.Hscript.Expr_EUnop );
+			global::Loreline.Internal.Hscript.ExprDef_EUnop en = ( other as global::Loreline.Internal.Hscript.ExprDef_EUnop );
 			if (( en == null )) {
 				return false;
 			}
@@ -824,7 +824,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly bool prefix;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -833,9 +833,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ECall : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ECall : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ECall(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Root.Array<object> @params) : base(8) {
+		public ExprDef_ECall(object e, global::Loreline.Internal.Root.Array<object> @params) : base(8) {
 			this.e = e;
 			this.@params = @params;
 		}
@@ -863,7 +863,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ECall en = ( other as global::Loreline.Internal.Hscript.Expr_ECall );
+			global::Loreline.Internal.Hscript.ExprDef_ECall en = ( other as global::Loreline.Internal.Hscript.ExprDef_ECall );
 			if (( en == null )) {
 				return false;
 			}
@@ -885,7 +885,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly global::Loreline.Internal.Root.Array<object> @params;
 		
@@ -896,9 +896,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EIf : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EIf : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EIf(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) : base(9) {
+		public ExprDef_EIf(object cond, object e1, object e2) : base(9) {
 			this.cond = cond;
 			this.e1 = e1;
 			this.e2 = e2;
@@ -927,7 +927,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EIf en = ( other as global::Loreline.Internal.Hscript.Expr_EIf );
+			global::Loreline.Internal.Hscript.ExprDef_EIf en = ( other as global::Loreline.Internal.Hscript.ExprDef_EIf );
 			if (( en == null )) {
 				return false;
 			}
@@ -953,11 +953,11 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr cond;
+		public readonly object cond;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e1;
+		public readonly object e1;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e2;
+		public readonly object e2;
 		
 	}
 }
@@ -966,9 +966,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EWhile : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EWhile : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EWhile(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e) : base(10) {
+		public ExprDef_EWhile(object cond, object e) : base(10) {
 			this.cond = cond;
 			this.e = e;
 		}
@@ -996,7 +996,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EWhile en = ( other as global::Loreline.Internal.Hscript.Expr_EWhile );
+			global::Loreline.Internal.Hscript.ExprDef_EWhile en = ( other as global::Loreline.Internal.Hscript.ExprDef_EWhile );
 			if (( en == null )) {
 				return false;
 			}
@@ -1018,9 +1018,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr cond;
+		public readonly object cond;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1029,9 +1029,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EFor : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EFor : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EFor(string v, global::Loreline.Internal.Hscript.Expr it, global::Loreline.Internal.Hscript.Expr e) : base(11) {
+		public ExprDef_EFor(string v, object it, object e) : base(11) {
 			this.v = v;
 			this.it = it;
 			this.e = e;
@@ -1060,7 +1060,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EFor en = ( other as global::Loreline.Internal.Hscript.Expr_EFor );
+			global::Loreline.Internal.Hscript.ExprDef_EFor en = ( other as global::Loreline.Internal.Hscript.ExprDef_EFor );
 			if (( en == null )) {
 				return false;
 			}
@@ -1088,9 +1088,9 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly string v;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr it;
+		public readonly object it;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1099,9 +1099,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EBreak : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EBreak : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EBreak() : base(12) {
+		public ExprDef_EBreak() : base(12) {
 		}
 		
 		
@@ -1117,9 +1117,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EContinue : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EContinue : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EContinue() : base(13) {
+		public ExprDef_EContinue() : base(13) {
 		}
 		
 		
@@ -1135,9 +1135,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EFunction : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EFunction : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EFunction(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.Expr e, string name, global::Loreline.Internal.Hscript.CType ret) : base(14) {
+		public ExprDef_EFunction(global::Loreline.Internal.Root.Array<object> args, object e, string name, global::Loreline.Internal.Hscript.CType ret) : base(14) {
 			this.args = args;
 			this.e = e;
 			this.name = name;
@@ -1167,7 +1167,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EFunction en = ( other as global::Loreline.Internal.Hscript.Expr_EFunction );
+			global::Loreline.Internal.Hscript.ExprDef_EFunction en = ( other as global::Loreline.Internal.Hscript.ExprDef_EFunction );
 			if (( en == null )) {
 				return false;
 			}
@@ -1199,7 +1199,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly global::Loreline.Internal.Root.Array<object> args;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly string name;
 		
@@ -1212,9 +1212,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EReturn : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EReturn : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EReturn(global::Loreline.Internal.Hscript.Expr e) : base(15) {
+		public ExprDef_EReturn(object e) : base(15) {
 			this.e = e;
 		}
 		
@@ -1241,7 +1241,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EReturn en = ( other as global::Loreline.Internal.Hscript.Expr_EReturn );
+			global::Loreline.Internal.Hscript.ExprDef_EReturn en = ( other as global::Loreline.Internal.Hscript.ExprDef_EReturn );
 			if (( en == null )) {
 				return false;
 			}
@@ -1259,7 +1259,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1268,9 +1268,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EArray : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EArray : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EArray(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Hscript.Expr index) : base(16) {
+		public ExprDef_EArray(object e, object index) : base(16) {
 			this.e = e;
 			this.index = index;
 		}
@@ -1298,7 +1298,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EArray en = ( other as global::Loreline.Internal.Hscript.Expr_EArray );
+			global::Loreline.Internal.Hscript.ExprDef_EArray en = ( other as global::Loreline.Internal.Hscript.ExprDef_EArray );
 			if (( en == null )) {
 				return false;
 			}
@@ -1320,9 +1320,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr index;
+		public readonly object index;
 		
 	}
 }
@@ -1331,9 +1331,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EArrayDecl : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EArrayDecl : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EArrayDecl(global::Loreline.Internal.Root.Array<object> e) : base(17) {
+		public ExprDef_EArrayDecl(global::Loreline.Internal.Root.Array<object> e) : base(17) {
 			this.e = e;
 		}
 		
@@ -1360,7 +1360,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EArrayDecl en = ( other as global::Loreline.Internal.Hscript.Expr_EArrayDecl );
+			global::Loreline.Internal.Hscript.ExprDef_EArrayDecl en = ( other as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl );
 			if (( en == null )) {
 				return false;
 			}
@@ -1387,9 +1387,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ENew : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ENew : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) : base(18) {
+		public ExprDef_ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) : base(18) {
 			this.cl = cl;
 			this.@params = @params;
 		}
@@ -1417,7 +1417,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ENew en = ( other as global::Loreline.Internal.Hscript.Expr_ENew );
+			global::Loreline.Internal.Hscript.ExprDef_ENew en = ( other as global::Loreline.Internal.Hscript.ExprDef_ENew );
 			if (( en == null )) {
 				return false;
 			}
@@ -1450,9 +1450,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EThrow : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EThrow : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EThrow(global::Loreline.Internal.Hscript.Expr e) : base(19) {
+		public ExprDef_EThrow(object e) : base(19) {
 			this.e = e;
 		}
 		
@@ -1479,7 +1479,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EThrow en = ( other as global::Loreline.Internal.Hscript.Expr_EThrow );
+			global::Loreline.Internal.Hscript.ExprDef_EThrow en = ( other as global::Loreline.Internal.Hscript.ExprDef_EThrow );
 			if (( en == null )) {
 				return false;
 			}
@@ -1497,7 +1497,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1506,9 +1506,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ETry : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ETry : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ETry(global::Loreline.Internal.Hscript.Expr e, string v, global::Loreline.Internal.Hscript.CType t, global::Loreline.Internal.Hscript.Expr ecatch) : base(20) {
+		public ExprDef_ETry(object e, string v, global::Loreline.Internal.Hscript.CType t, object ecatch) : base(20) {
 			this.e = e;
 			this.v = v;
 			this.t = t;
@@ -1538,7 +1538,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ETry en = ( other as global::Loreline.Internal.Hscript.Expr_ETry );
+			global::Loreline.Internal.Hscript.ExprDef_ETry en = ( other as global::Loreline.Internal.Hscript.ExprDef_ETry );
 			if (( en == null )) {
 				return false;
 			}
@@ -1568,13 +1568,13 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly string v;
 		
 		public readonly global::Loreline.Internal.Hscript.CType t;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr ecatch;
+		public readonly object ecatch;
 		
 	}
 }
@@ -1583,9 +1583,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EObject : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EObject : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EObject(global::Loreline.Internal.Root.Array<object> fl) : base(21) {
+		public ExprDef_EObject(global::Loreline.Internal.Root.Array<object> fl) : base(21) {
 			this.fl = fl;
 		}
 		
@@ -1612,7 +1612,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EObject en = ( other as global::Loreline.Internal.Hscript.Expr_EObject );
+			global::Loreline.Internal.Hscript.ExprDef_EObject en = ( other as global::Loreline.Internal.Hscript.ExprDef_EObject );
 			if (( en == null )) {
 				return false;
 			}
@@ -1639,9 +1639,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ETernary : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ETernary : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ETernary(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e1, global::Loreline.Internal.Hscript.Expr e2) : base(22) {
+		public ExprDef_ETernary(object cond, object e1, object e2) : base(22) {
 			this.cond = cond;
 			this.e1 = e1;
 			this.e2 = e2;
@@ -1670,7 +1670,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ETernary en = ( other as global::Loreline.Internal.Hscript.Expr_ETernary );
+			global::Loreline.Internal.Hscript.ExprDef_ETernary en = ( other as global::Loreline.Internal.Hscript.ExprDef_ETernary );
 			if (( en == null )) {
 				return false;
 			}
@@ -1696,11 +1696,11 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr cond;
+		public readonly object cond;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e1;
+		public readonly object e1;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e2;
+		public readonly object e2;
 		
 	}
 }
@@ -1709,9 +1709,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ESwitch : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ESwitch : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ESwitch(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Root.Array<object> cases, global::Loreline.Internal.Hscript.Expr defaultExpr) : base(23) {
+		public ExprDef_ESwitch(object e, global::Loreline.Internal.Root.Array<object> cases, object defaultExpr) : base(23) {
 			this.e = e;
 			this.cases = cases;
 			this.defaultExpr = defaultExpr;
@@ -1740,7 +1740,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ESwitch en = ( other as global::Loreline.Internal.Hscript.Expr_ESwitch );
+			global::Loreline.Internal.Hscript.ExprDef_ESwitch en = ( other as global::Loreline.Internal.Hscript.ExprDef_ESwitch );
 			if (( en == null )) {
 				return false;
 			}
@@ -1766,11 +1766,11 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly global::Loreline.Internal.Root.Array<object> cases;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr defaultExpr;
+		public readonly object defaultExpr;
 		
 	}
 }
@@ -1779,9 +1779,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EDoWhile : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EDoWhile : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EDoWhile(global::Loreline.Internal.Hscript.Expr cond, global::Loreline.Internal.Hscript.Expr e) : base(24) {
+		public ExprDef_EDoWhile(object cond, object e) : base(24) {
 			this.cond = cond;
 			this.e = e;
 		}
@@ -1809,7 +1809,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EDoWhile en = ( other as global::Loreline.Internal.Hscript.Expr_EDoWhile );
+			global::Loreline.Internal.Hscript.ExprDef_EDoWhile en = ( other as global::Loreline.Internal.Hscript.ExprDef_EDoWhile );
 			if (( en == null )) {
 				return false;
 			}
@@ -1831,9 +1831,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr cond;
+		public readonly object cond;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1842,9 +1842,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_EMeta : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_EMeta : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_EMeta(string name, global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.Expr e) : base(25) {
+		public ExprDef_EMeta(string name, global::Loreline.Internal.Root.Array<object> args, object e) : base(25) {
 			this.name = name;
 			this.args = args;
 			this.e = e;
@@ -1873,7 +1873,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_EMeta en = ( other as global::Loreline.Internal.Hscript.Expr_EMeta );
+			global::Loreline.Internal.Hscript.ExprDef_EMeta en = ( other as global::Loreline.Internal.Hscript.ExprDef_EMeta );
 			if (( en == null )) {
 				return false;
 			}
@@ -1903,7 +1903,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly global::Loreline.Internal.Root.Array<object> args;
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 	}
 }
@@ -1912,9 +1912,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Expr_ECheckType : global::Loreline.Internal.Hscript.Expr {
+	public sealed class ExprDef_ECheckType : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public Expr_ECheckType(global::Loreline.Internal.Hscript.Expr e, global::Loreline.Internal.Hscript.CType t) : base(26) {
+		public ExprDef_ECheckType(object e, global::Loreline.Internal.Hscript.CType t) : base(26) {
 			this.e = e;
 			this.t = t;
 		}
@@ -1942,7 +1942,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Expr_ECheckType en = ( other as global::Loreline.Internal.Hscript.Expr_ECheckType );
+			global::Loreline.Internal.Hscript.ExprDef_ECheckType en = ( other as global::Loreline.Internal.Hscript.ExprDef_ECheckType );
 			if (( en == null )) {
 				return false;
 			}
@@ -1964,7 +1964,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Hscript.Expr e;
+		public readonly object e;
 		
 		public readonly global::Loreline.Internal.Hscript.CType t;
 		
@@ -2373,53 +2373,239 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public class Error : global::Loreline.Internal.Lang.Enum {
+	public class Error : global::Loreline.Internal.Lang.HxObject {
 		
-		protected Error(int index) : base(index) {
+		public Error(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EInvalidChar(int c) {
-			return new global::Loreline.Internal.Hscript.Error_EInvalidChar(c);
+		public Error(global::Loreline.Internal.Hscript.ErrorDef e, int pmin, int pmax, string origin, int line) {
+			global::Loreline.Internal.Hscript.Error.__hx_ctor_hscript_Error(this, e, pmin, pmax, origin, line);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EUnexpected(string s) {
-			return new global::Loreline.Internal.Hscript.Error_EUnexpected(s);
+		protected static void __hx_ctor_hscript_Error(global::Loreline.Internal.Hscript.Error __hx_this, global::Loreline.Internal.Hscript.ErrorDef e, int pmin, int pmax, string origin, int line) {
+			__hx_this.e = e;
+			__hx_this.pmin = pmin;
+			__hx_this.pmax = pmax;
+			__hx_this.origin = origin;
+			__hx_this.line = line;
 		}
 		
 		
-		public static readonly global::Loreline.Internal.Hscript.Error EUnterminatedString = new global::Loreline.Internal.Hscript.Error_EUnterminatedString();
+		public global::Loreline.Internal.Hscript.ErrorDef e;
 		
-		public static readonly global::Loreline.Internal.Hscript.Error EUnterminatedComment = new global::Loreline.Internal.Hscript.Error_EUnterminatedComment();
+		public int pmin;
 		
-		public static global::Loreline.Internal.Hscript.Error EInvalidPreprocessor(string msg) {
-			return new global::Loreline.Internal.Hscript.Error_EInvalidPreprocessor(msg);
+		public int pmax;
+		
+		public string origin;
+		
+		public int line;
+		
+		public virtual string toString() {
+			return global::Loreline.Internal.Hscript.Printer.errorToString(this);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EUnknownVariable(string v) {
-			return new global::Loreline.Internal.Hscript.Error_EUnknownVariable(v);
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1202919412:
+					{
+						this.line = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					case 1247473716:
+					{
+						this.pmax = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					case 1247475490:
+					{
+						this.pmin = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EInvalidIterator(string v) {
-			return new global::Loreline.Internal.Hscript.Error_EInvalidIterator(v);
+		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1202919412:
+					{
+						this.line = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 1258363366:
+					{
+						this.origin = global::Loreline.Internal.Lang.Runtime.toString(@value);
+						return @value;
+					}
+					
+					
+					case 1247473716:
+					{
+						this.pmax = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 1247475490:
+					{
+						this.pmin = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 101:
+					{
+						this.e = ((global::Loreline.Internal.Hscript.ErrorDef) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EInvalidOp(string op) {
-			return new global::Loreline.Internal.Hscript.Error_EInvalidOp(op);
+		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 946786476:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "toString", 946786476)) );
+					}
+					
+					
+					case 1202919412:
+					{
+						return this.line;
+					}
+					
+					
+					case 1258363366:
+					{
+						return this.origin;
+					}
+					
+					
+					case 1247473716:
+					{
+						return this.pmax;
+					}
+					
+					
+					case 1247475490:
+					{
+						return this.pmin;
+					}
+					
+					
+					case 101:
+					{
+						return this.e;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField(field, hash, throwErrors, isCheck, handleProperties);
+					}
+					
+				}
+				
+			}
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error EInvalidAccess(string f) {
-			return new global::Loreline.Internal.Hscript.Error_EInvalidAccess(f);
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1202919412:
+					{
+						return ((double) (this.line) );
+					}
+					
+					
+					case 1247473716:
+					{
+						return ((double) (this.pmax) );
+					}
+					
+					
+					case 1247475490:
+					{
+						return ((double) (this.pmin) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.Error ECustom(string msg) {
-			return new global::Loreline.Internal.Hscript.Error_ECustom(msg);
+		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
+			unchecked {
+				switch (hash) {
+					case 946786476:
+					{
+						return this.toString();
+					}
+					
+					
+					default:
+					{
+						return base.__hx_invokeField(field, hash, dynargs);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("line");
+			baseArr.push("origin");
+			baseArr.push("pmax");
+			baseArr.push("pmin");
+			baseArr.push("e");
+			base.__hx_getFields(baseArr);
+		}
+		
+		
+		public override string ToString(){
+			return this.toString();
 		}
 		
 		
@@ -2430,9 +2616,66 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EInvalidChar : global::Loreline.Internal.Hscript.Error {
+	public class ErrorDef : global::Loreline.Internal.Lang.Enum {
 		
-		public Error_EInvalidChar(int c) : base(0) {
+		protected ErrorDef(int index) : base(index) {
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EInvalidChar(int c) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EInvalidChar(c);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EUnexpected(string s) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EUnexpected(s);
+		}
+		
+		
+		public static readonly global::Loreline.Internal.Hscript.ErrorDef EUnterminatedString = new global::Loreline.Internal.Hscript.ErrorDef_EUnterminatedString();
+		
+		public static readonly global::Loreline.Internal.Hscript.ErrorDef EUnterminatedComment = new global::Loreline.Internal.Hscript.ErrorDef_EUnterminatedComment();
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EInvalidPreprocessor(string msg) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EInvalidPreprocessor(msg);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EUnknownVariable(string v) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EUnknownVariable(v);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EInvalidIterator(string v) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EInvalidIterator(v);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EInvalidOp(string op) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EInvalidOp(op);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef EInvalidAccess(string f) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_EInvalidAccess(f);
+		}
+		
+		
+		public static global::Loreline.Internal.Hscript.ErrorDef ECustom(string msg) {
+			return new global::Loreline.Internal.Hscript.ErrorDef_ECustom(msg);
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Internal.Hscript {
+	public sealed class ErrorDef_EInvalidChar : global::Loreline.Internal.Hscript.ErrorDef {
+		
+		public ErrorDef_EInvalidChar(int c) : base(0) {
 			this.c = c;
 		}
 		
@@ -2457,7 +2700,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EInvalidChar en = ( other as global::Loreline.Internal.Hscript.Error_EInvalidChar );
+			global::Loreline.Internal.Hscript.ErrorDef_EInvalidChar en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EInvalidChar );
 			if (( en == null )) {
 				return false;
 			}
@@ -2484,9 +2727,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EUnexpected : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EUnexpected : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EUnexpected(string s) : base(1) {
+		public ErrorDef_EUnexpected(string s) : base(1) {
 			this.s = s;
 		}
 		
@@ -2513,7 +2756,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EUnexpected en = ( other as global::Loreline.Internal.Hscript.Error_EUnexpected );
+			global::Loreline.Internal.Hscript.ErrorDef_EUnexpected en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EUnexpected );
 			if (( en == null )) {
 				return false;
 			}
@@ -2540,9 +2783,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EUnterminatedString : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EUnterminatedString : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EUnterminatedString() : base(2) {
+		public ErrorDef_EUnterminatedString() : base(2) {
 		}
 		
 		
@@ -2558,9 +2801,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EUnterminatedComment : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EUnterminatedComment : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EUnterminatedComment() : base(3) {
+		public ErrorDef_EUnterminatedComment() : base(3) {
 		}
 		
 		
@@ -2576,9 +2819,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EInvalidPreprocessor : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EInvalidPreprocessor : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EInvalidPreprocessor(string msg) : base(4) {
+		public ErrorDef_EInvalidPreprocessor(string msg) : base(4) {
 			this.msg = msg;
 		}
 		
@@ -2605,7 +2848,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EInvalidPreprocessor en = ( other as global::Loreline.Internal.Hscript.Error_EInvalidPreprocessor );
+			global::Loreline.Internal.Hscript.ErrorDef_EInvalidPreprocessor en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EInvalidPreprocessor );
 			if (( en == null )) {
 				return false;
 			}
@@ -2632,9 +2875,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EUnknownVariable : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EUnknownVariable : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EUnknownVariable(string v) : base(5) {
+		public ErrorDef_EUnknownVariable(string v) : base(5) {
 			this.v = v;
 		}
 		
@@ -2661,7 +2904,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EUnknownVariable en = ( other as global::Loreline.Internal.Hscript.Error_EUnknownVariable );
+			global::Loreline.Internal.Hscript.ErrorDef_EUnknownVariable en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EUnknownVariable );
 			if (( en == null )) {
 				return false;
 			}
@@ -2688,9 +2931,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EInvalidIterator : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EInvalidIterator : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EInvalidIterator(string v) : base(6) {
+		public ErrorDef_EInvalidIterator(string v) : base(6) {
 			this.v = v;
 		}
 		
@@ -2717,7 +2960,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EInvalidIterator en = ( other as global::Loreline.Internal.Hscript.Error_EInvalidIterator );
+			global::Loreline.Internal.Hscript.ErrorDef_EInvalidIterator en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EInvalidIterator );
 			if (( en == null )) {
 				return false;
 			}
@@ -2744,9 +2987,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EInvalidOp : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EInvalidOp : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EInvalidOp(string op) : base(7) {
+		public ErrorDef_EInvalidOp(string op) : base(7) {
 			this.op = op;
 		}
 		
@@ -2773,7 +3016,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EInvalidOp en = ( other as global::Loreline.Internal.Hscript.Error_EInvalidOp );
+			global::Loreline.Internal.Hscript.ErrorDef_EInvalidOp en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EInvalidOp );
 			if (( en == null )) {
 				return false;
 			}
@@ -2800,9 +3043,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_EInvalidAccess : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_EInvalidAccess : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_EInvalidAccess(string f) : base(8) {
+		public ErrorDef_EInvalidAccess(string f) : base(8) {
 			this.f = f;
 		}
 		
@@ -2829,7 +3072,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_EInvalidAccess en = ( other as global::Loreline.Internal.Hscript.Error_EInvalidAccess );
+			global::Loreline.Internal.Hscript.ErrorDef_EInvalidAccess en = ( other as global::Loreline.Internal.Hscript.ErrorDef_EInvalidAccess );
 			if (( en == null )) {
 				return false;
 			}
@@ -2856,9 +3099,9 @@ namespace Loreline.Internal.Hscript {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Hscript {
-	public sealed class Error_ECustom : global::Loreline.Internal.Hscript.Error {
+	public sealed class ErrorDef_ECustom : global::Loreline.Internal.Hscript.ErrorDef {
 		
-		public Error_ECustom(string msg) : base(9) {
+		public ErrorDef_ECustom(string msg) : base(9) {
 			this.msg = msg;
 		}
 		
@@ -2885,7 +3128,7 @@ namespace Loreline.Internal.Hscript {
 				return true;
 			}
 			
-			global::Loreline.Internal.Hscript.Error_ECustom en = ( other as global::Loreline.Internal.Hscript.Error_ECustom );
+			global::Loreline.Internal.Hscript.ErrorDef_ECustom en = ( other as global::Loreline.Internal.Hscript.ErrorDef_ECustom );
 			if (( en == null )) {
 				return false;
 			}

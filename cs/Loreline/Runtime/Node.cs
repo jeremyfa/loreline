@@ -1385,7 +1385,7 @@ namespace Loreline.Runtime {
 		public global::Loreline.Runtime.Position pos;
 		
 		public virtual string type() {
-			return "node";
+			return "Node";
 		}
 		
 		
@@ -3008,6 +3008,49 @@ namespace Loreline.Runtime._Node {
 
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime._Node {
+	public sealed class ConditionStyle_Impl_ {
+		
+		static ConditionStyle_Impl_() {
+			unchecked{
+				global::Loreline.Runtime._Node.ConditionStyle_Impl_.Plain = ((int) (0) );
+				global::Loreline.Runtime._Node.ConditionStyle_Impl_.Parens = ((int) (2) );
+			}
+		}
+		
+		
+		public static int Plain;
+		
+		public static int Parens;
+		
+		public static string toString(int this1) {
+			unchecked {
+				switch (this1) {
+					case 0:
+					{
+						return "Plain";
+					}
+					
+					
+					case 2:
+					{
+						return "Parens";
+					}
+					
+					
+				}
+				
+				return null;
+			}
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
 	public class NStringPart : global::Loreline.Runtime.NExpr {
 		
@@ -3858,15 +3901,16 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public NChoiceOption(long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral text, global::Loreline.Runtime.NExpr condition, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Runtime.NChoiceOption.__hx_ctor_loreline_NChoiceOption(this, id, pos, text, condition, body, leadingComments, trailingComments);
+		public NChoiceOption(long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral text, global::Loreline.Runtime.NExpr condition, int conditionStyle, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+			global::Loreline.Runtime.NChoiceOption.__hx_ctor_loreline_NChoiceOption(this, id, pos, text, condition, conditionStyle, body, leadingComments, trailingComments);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_NChoiceOption(global::Loreline.Runtime.NChoiceOption __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral text, global::Loreline.Runtime.NExpr condition, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) {
+		protected static void __hx_ctor_loreline_NChoiceOption(global::Loreline.Runtime.NChoiceOption __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral text, global::Loreline.Runtime.NExpr condition, int conditionStyle, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) {
 			global::Loreline.Runtime.AstNode.__hx_ctor_loreline_AstNode(__hx_this, id, pos, leadingComments, trailingComments);
 			__hx_this.text = text;
 			__hx_this.condition = condition;
+			__hx_this.conditionStyle = conditionStyle;
 			__hx_this.body = body;
 			__hx_this.style = ((int) (0) );
 		}
@@ -3875,6 +3919,8 @@ namespace Loreline.Runtime {
 		public global::Loreline.Runtime.NStringLiteral text;
 		
 		public global::Loreline.Runtime.NExpr condition;
+		
+		public int conditionStyle;
 		
 		public global::Loreline.Internal.Root.Array<object> body;
 		
@@ -3917,6 +3963,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Internal.Lang.Runtime.setField(json, "text", 1291439277, this.text.toJson());
 			if (( this.condition != null )) {
 				global::Loreline.Internal.Lang.Runtime.setField(json, "condition", 2083776923, this.condition.toJson());
+				global::Loreline.Internal.Lang.Runtime.setField(json, "conditionStyle", 580614550, global::Loreline.Runtime._Node.ConditionStyle_Impl_.toString(this.conditionStyle));
 			}
 			
 			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
@@ -3947,6 +3994,13 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 580614550:
+					{
+						this.conditionStyle = ((int) (@value) );
+						return @value;
+					}
+					
+					
 					default:
 					{
 						return base.__hx_setField_f(field, hash, @value, handleProperties);
@@ -3971,6 +4025,13 @@ namespace Loreline.Runtime {
 					case 1092319906:
 					{
 						this.body = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						return @value;
+					}
+					
+					
+					case 580614550:
+					{
+						this.conditionStyle = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
 						return @value;
 					}
 					
@@ -4033,6 +4094,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 580614550:
+					{
+						return this.conditionStyle;
+					}
+					
+					
 					case 2083776923:
 					{
 						return this.condition;
@@ -4065,6 +4132,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 580614550:
+					{
+						return ((double) (this.conditionStyle) );
+					}
+					
+					
 					default:
 					{
 						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
@@ -4079,6 +4152,7 @@ namespace Loreline.Runtime {
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
 			baseArr.push("style");
 			baseArr.push("body");
+			baseArr.push("conditionStyle");
 			baseArr.push("condition");
 			baseArr.push("text");
 			base.__hx_getFields(baseArr);
@@ -4289,14 +4363,15 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public NIfStatement(long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NExpr condition, global::Loreline.Runtime.NBlock thenBranch, global::Loreline.Runtime.NBlock elseBranch, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments, global::Loreline.Internal.Root.Array<object> elseLeadingComments, global::Loreline.Internal.Root.Array<object> elseTrailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Runtime.NIfStatement.__hx_ctor_loreline_NIfStatement(this, id, pos, condition, thenBranch, elseBranch, leadingComments, trailingComments, elseLeadingComments, elseTrailingComments);
+		public NIfStatement(long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NExpr condition, int conditionStyle, global::Loreline.Runtime.NBlock thenBranch, global::Loreline.Runtime.NBlock elseBranch, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments, global::Loreline.Internal.Root.Array<object> elseLeadingComments, global::Loreline.Internal.Root.Array<object> elseTrailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+			global::Loreline.Runtime.NIfStatement.__hx_ctor_loreline_NIfStatement(this, id, pos, condition, conditionStyle, thenBranch, elseBranch, leadingComments, trailingComments, elseLeadingComments, elseTrailingComments);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_NIfStatement(global::Loreline.Runtime.NIfStatement __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NExpr condition, global::Loreline.Runtime.NBlock thenBranch, global::Loreline.Runtime.NBlock elseBranch, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments, global::Loreline.Internal.Root.Array<object> elseLeadingComments, global::Loreline.Internal.Root.Array<object> elseTrailingComments) {
+		protected static void __hx_ctor_loreline_NIfStatement(global::Loreline.Runtime.NIfStatement __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NExpr condition, int conditionStyle, global::Loreline.Runtime.NBlock thenBranch, global::Loreline.Runtime.NBlock elseBranch, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments, global::Loreline.Internal.Root.Array<object> elseLeadingComments, global::Loreline.Internal.Root.Array<object> elseTrailingComments) {
 			global::Loreline.Runtime.AstNode.__hx_ctor_loreline_AstNode(__hx_this, id, pos, leadingComments, trailingComments);
 			__hx_this.condition = condition;
+			__hx_this.conditionStyle = conditionStyle;
 			__hx_this.thenBranch = thenBranch;
 			__hx_this.elseBranch = elseBranch;
 			__hx_this.elseLeadingComments = elseLeadingComments;
@@ -4305,6 +4380,8 @@ namespace Loreline.Runtime {
 		
 		
 		public global::Loreline.Runtime.NExpr condition;
+		
+		public int conditionStyle;
 		
 		public global::Loreline.Runtime.NBlock thenBranch;
 		
@@ -4366,6 +4443,7 @@ namespace Loreline.Runtime {
 		public override object toJson() {
 			object json = base.toJson();
 			global::Loreline.Internal.Lang.Runtime.setField(json, "condition", 2083776923, this.condition.toJson());
+			global::Loreline.Internal.Lang.Runtime.setField(json, "conditionStyle", 580614550, global::Loreline.Runtime._Node.ConditionStyle_Impl_.toString(this.conditionStyle));
 			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
 			{
 				int _g1 = 0;
@@ -4439,6 +4517,27 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 580614550:
+					{
+						this.conditionStyle = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
@@ -4466,6 +4565,13 @@ namespace Loreline.Runtime {
 					case 178157919:
 					{
 						this.thenBranch = ((global::Loreline.Runtime.NBlock) (@value) );
+						return @value;
+					}
+					
+					
+					case 580614550:
+					{
+						this.conditionStyle = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
 						return @value;
 					}
 					
@@ -4533,6 +4639,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 580614550:
+					{
+						return this.conditionStyle;
+					}
+					
+					
 					case 2083776923:
 					{
 						return this.condition;
@@ -4550,11 +4662,32 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 580614550:
+					{
+						return ((double) (this.conditionStyle) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
 			baseArr.push("elseTrailingComments");
 			baseArr.push("elseLeadingComments");
 			baseArr.push("elseBranch");
 			baseArr.push("thenBranch");
+			baseArr.push("conditionStyle");
 			baseArr.push("condition");
 			base.__hx_getFields(baseArr);
 		}
@@ -6140,24 +6273,37 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class NImport : global::Loreline.Runtime.AstNode {
+	public class NImportStatement : global::Loreline.Runtime.AstNode {
 		
-		public NImport(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+		public NImportStatement(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 		}
 		
 		
-		public NImport(long id, global::Loreline.Runtime.Position pos, string path, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Runtime.NImport.__hx_ctor_loreline_NImport(this, id, pos, path, leadingComments, trailingComments);
+		public NImportStatement(long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral path, global::Loreline.Runtime.Script script, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+			global::Loreline.Runtime.NImportStatement.__hx_ctor_loreline_NImportStatement(this, id, pos, path, script, leadingComments, trailingComments);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_NImport(global::Loreline.Runtime.NImport __hx_this, long id, global::Loreline.Runtime.Position pos, string path, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) {
+		protected static void __hx_ctor_loreline_NImportStatement(global::Loreline.Runtime.NImportStatement __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Runtime.NStringLiteral path, global::Loreline.Runtime.Script script, global::Loreline.Internal.Root.Array<object> leadingComments, global::Loreline.Internal.Root.Array<object> trailingComments) {
 			global::Loreline.Runtime.AstNode.__hx_ctor_loreline_AstNode(__hx_this, id, pos, leadingComments, trailingComments);
 			__hx_this.path = path;
+			__hx_this.script = script;
 		}
 		
 		
-		public string path;
+		public global::Loreline.Runtime.NStringLiteral path;
+		
+		public global::Loreline.Runtime.Script script;
+		
+		public override void each(global::Loreline.Internal.Lang.Function handleNode) {
+			base.each(handleNode);
+			if (( this.script != null )) {
+				handleNode.__hx_invoke2_o(default(double), this.script, default(double), this);
+				this.script.each(handleNode);
+			}
+			
+		}
+		
 		
 		public override string type() {
 			return "Import";
@@ -6166,7 +6312,7 @@ namespace Loreline.Runtime {
 		
 		public override object toJson() {
 			object json = base.toJson();
-			global::Loreline.Internal.Lang.Runtime.setField(json, "path", 1246881189, this.path);
+			global::Loreline.Internal.Lang.Runtime.setField(json, "path", 1246881189, this.path.toJson());
 			return json;
 		}
 		
@@ -6174,9 +6320,16 @@ namespace Loreline.Runtime {
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 1197493771:
+					{
+						this.script = ((global::Loreline.Runtime.Script) (@value) );
+						return @value;
+					}
+					
+					
 					case 1246881189:
 					{
-						this.path = global::Loreline.Internal.Lang.Runtime.toString(@value);
+						this.path = ((global::Loreline.Runtime.NStringLiteral) (@value) );
 						return @value;
 					}
 					
@@ -6207,6 +6360,18 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1124892161:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "each", 1124892161)) );
+					}
+					
+					
+					case 1197493771:
+					{
+						return this.script;
+					}
+					
+					
 					case 1246881189:
 					{
 						return this.path;
@@ -6225,6 +6390,7 @@ namespace Loreline.Runtime {
 		
 		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("script");
 			baseArr.push("path");
 			base.__hx_getFields(baseArr);
 		}

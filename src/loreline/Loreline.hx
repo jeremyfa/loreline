@@ -23,7 +23,7 @@ class Loreline {
      *          (optional) A file handler to read imports. If that handler is asynchronous, then `parse()` method
      *          will return null and `callback` argument should be used to get the final script
      * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously
-     * @return The parsed script as an AST `Script` instance
+     * @return The parsed script as an AST `Script` instance (if loaded synchronously)
      * @throws loreline.Error If the script contains syntax errors or other parsing issues
      */
     public static function parse(input:String, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(script:Script)->Void):Null<Script> {
@@ -48,10 +48,11 @@ class Loreline {
             // File path and file handler provided, which mean we can support
             // imports, either synchronous or asynchronous
 
-            var imports = new Imports(filePath, tokens, handleFile, (error) -> {
+            final imports = new Imports();
+            imports.resolve(filePath, tokens, handleFile, (error) -> {
                 throw error;
-            });
-            imports.resolve((hasErrors, resolvedImports) -> {
+            },
+            (hasErrors, resolvedImports) -> {
 
                 final parser = new Parser(tokens, {
                     rootPath: filePath,
@@ -103,7 +104,7 @@ class Loreline {
      * @param handleChoice Function called when player needs to make a choice
      * @param handleFinish Function called when script execution completes
      * @param beatName Optional name of a specific beat to start from (defaults to first beat)
-     * @param functions Optional map of custom functions to make available in the script
+     * @param options Additional options
      * @return The interpreter instance that is running the script
      */
     public static function play(
@@ -162,7 +163,13 @@ class Loreline {
         );
 
         interpreter.restore(saveData);
-        interpreter.resume();
+
+        if (beatName != null) {
+            interpreter.start(beatName);
+        }
+        else {
+            interpreter.resume();
+        }
 
         return interpreter;
     }

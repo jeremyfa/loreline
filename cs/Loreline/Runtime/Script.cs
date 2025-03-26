@@ -41,20 +41,45 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual void eachExcludingImported(global::Loreline.Internal.Lang.Function handleNode) {
+			base.each(handleNode);
+			if (( this.body != null )) {
+				int _g = 0;
+				global::Loreline.Internal.Root.Array<object> _g1 = this.body;
+				while (( _g < _g1.length )) {
+					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1[_g]) );
+					 ++ _g;
+					handleNode.__hx_invoke2_o(default(double), child, default(double), this);
+					if ( ! (( child is global::Loreline.Runtime.NImportStatement )) ) {
+						child.each(handleNode);
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		
 		public override void each(global::Loreline.Internal.Lang.Function handleNode) {
 			base.each(handleNode);
 			if (( this.body != null )) {
 				int _g = 0;
-				int _g1 = this.body.length;
-				while (( _g < _g1 )) {
-					int i = _g++;
-					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (this.body[i]) );
+				global::Loreline.Internal.Root.Array<object> _g1 = this.body;
+				while (( _g < _g1.length )) {
+					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1[_g]) );
+					 ++ _g;
 					handleNode.__hx_invoke2_o(default(double), child, default(double), this);
 					child.each(handleNode);
 				}
 				
 			}
 			
+		}
+		
+		
+		public virtual global::Loreline.Runtime._Script.ScriptBodyIterator iterator() {
+			return new global::Loreline.Runtime._Script.ScriptBodyIterator(((global::Loreline.Internal.Root.Array<object>) (this.body) ));
 		}
 		
 		
@@ -82,9 +107,21 @@ namespace Loreline.Runtime {
 		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 328878574:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "iterator", 328878574)) );
+					}
+					
+					
 					case 1124892161:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "each", 1124892161)) );
+					}
+					
+					
+					case 627641210:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "eachExcludingImported", 627641210)) );
 					}
 					
 					
@@ -111,7 +148,274 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
+			unchecked {
+				switch (hash) {
+					case 2082581827:
+					case 1124892161:
+					{
+						return global::Loreline.Internal.Lang.Runtime.slowCallField(this, field, dynargs);
+					}
+					
+					
+					case 328878574:
+					{
+						return this.iterator();
+					}
+					
+					
+					case 627641210:
+					{
+						this.eachExcludingImported(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						break;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_invokeField(field, hash, dynargs);
+					}
+					
+				}
+				
+				return null;
+			}
+		}
+		
+		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("body");
+			base.__hx_getFields(baseArr);
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime._Script {
+	public class ScriptBodyIterator : global::Loreline.Internal.Lang.HxObject {
+		
+		public ScriptBodyIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
+		}
+		
+		
+		public ScriptBodyIterator(global::Loreline.Internal.Root.Array<object> body) {
+			global::Loreline.Runtime._Script.ScriptBodyIterator.__hx_ctor_loreline__Script_ScriptBodyIterator(this, body);
+		}
+		
+		
+		protected static void __hx_ctor_loreline__Script_ScriptBodyIterator(global::Loreline.Runtime._Script.ScriptBodyIterator __hx_this, global::Loreline.Internal.Root.Array<object> body) {
+			__hx_this.body = body;
+			__hx_this.index = 0;
+			__hx_this.flatBody = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			__hx_this.fillBody(body);
+		}
+		
+		
+		public global::Loreline.Internal.Root.Array<object> body;
+		
+		public int index;
+		
+		public global::Loreline.Internal.Root.Array<object> flatBody;
+		
+		public virtual void fillBody(global::Loreline.Internal.Root.Array<object> body) {
+			int _g = 0;
+			int _g1 = body.length;
+			while (( _g < _g1 )) {
+				int i = _g++;
+				global::Loreline.Runtime.AstNode node = ((global::Loreline.Runtime.AstNode) (body[i]) );
+				if (( node is global::Loreline.Runtime.NImportStatement )) {
+					global::Loreline.Runtime.NImportStatement importNode = ((global::Loreline.Runtime.NImportStatement) (node) );
+					if (( importNode.script != null )) {
+						this.fillBody(importNode.script.body);
+					}
+					
+				}
+				
+				this.flatBody.push(((global::Loreline.Runtime.AstNode) (body[i]) ));
+			}
+			
+		}
+		
+		
+		public virtual bool hasNext() {
+			return ( this.index < this.flatBody.length );
+		}
+		
+		
+		public virtual global::Loreline.Runtime.AstNode next() {
+			global::Loreline.Runtime.AstNode v = ((global::Loreline.Runtime.AstNode) (this.flatBody[this.index]) );
+			this.index++;
+			return v;
+		}
+		
+		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1041537810:
+					{
+						this.index = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 339051259:
+					{
+						this.flatBody = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						return @value;
+					}
+					
+					
+					case 1041537810:
+					{
+						this.index = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					case 1092319906:
+					{
+						this.body = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1224901875:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "next", 1224901875)) );
+					}
+					
+					
+					case 407283053:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "hasNext", 407283053)) );
+					}
+					
+					
+					case 1647145669:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "fillBody", 1647145669)) );
+					}
+					
+					
+					case 339051259:
+					{
+						return this.flatBody;
+					}
+					
+					
+					case 1041537810:
+					{
+						return this.index;
+					}
+					
+					
+					case 1092319906:
+					{
+						return this.body;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField(field, hash, throwErrors, isCheck, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1041537810:
+					{
+						return ((double) (this.index) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
+			unchecked {
+				switch (hash) {
+					case 1224901875:
+					{
+						return this.next();
+					}
+					
+					
+					case 407283053:
+					{
+						return this.hasNext();
+					}
+					
+					
+					case 1647145669:
+					{
+						this.fillBody(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						break;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_invokeField(field, hash, dynargs);
+					}
+					
+				}
+				
+				return null;
+			}
+		}
+		
+		
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("flatBody");
+			baseArr.push("index");
 			baseArr.push("body");
 			base.__hx_getFields(baseArr);
 		}

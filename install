@@ -266,6 +266,8 @@ async function main() {
 
                 content = content.replace(/\bhaxe\b/g, 'Loreline.Internal');
                 content = content.replace(/\bhscript\b/g, 'Loreline.Internal.Hscript');
+                content = content.replace(/\b\.Loreline\.Internal\.Hscript\b/g, '.hscript');
+                content = content.replace(/\bstring Loreline\.Internal\.Hscript\b/g, 'string hscript');
                 content = content.replace(/\bnamespace cs\b/g, 'namespace Loreline.Internal.Cs');
                 content = content.replace(/\bcs.\b/g, 'Loreline.Internal.Cs.');
                 content = content.replace(/\bloreline\b/g, 'Loreline.Runtime');
@@ -284,6 +286,10 @@ async function main() {
                 const namespaceParts = namespace.split('.');
 
                 let newPath = path.join('cs', namespaceParts[0], namespaceParts[1], path.basename(filePath));
+
+                if (namespaceParts.length > 2 && namespaceParts[2].charAt(0).toUpperCase() == namespaceParts[2].charAt(0) && namespaceParts[2].charAt(0) != '_' && namespaceParts[2] != 'Cs') {
+                    newPath = path.join('cs', namespaceParts[0], namespaceParts[1], namespaceParts[2], path.basename(filePath));
+                }
 
                 if (!fs.existsSync(path.dirname(newPath))) {
                     fs.mkdirSync(path.dirname(newPath), { recursive: true });

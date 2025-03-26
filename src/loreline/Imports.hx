@@ -21,13 +21,13 @@ private class ImportsLoopInfo {
 
 class Imports {
 
-    final handleFile:ImportsFileHandler;
+    var handleFile:ImportsFileHandler;
 
-    final handleError:ImportsErrorHandler;
+    var handleError:ImportsErrorHandler;
 
-    final tokens:Tokens;
+    var tokens:Tokens;
 
-    final rootPath:String;
+    var rootPath:String;
 
     public var autoAddExtension:Bool = true;
 
@@ -39,14 +39,15 @@ class Imports {
 
     var pendingImports:Int = 0;
 
-    public function new(rootPath:String, tokens:Tokens, handleFile:ImportsFileHandler, handleError:ImportsErrorHandler) {
+    public function new() {}
+
+    public function resolve(rootPath:String, tokens:Tokens, handleFile:ImportsFileHandler, handleError:ImportsErrorHandler, done:ImportsCallback) {
+
         this.rootPath = rootPath;
         this.tokens = tokens;
         this.handleFile = handleFile;
         this.handleError = handleError;
-    }
 
-    public function resolve(done:ImportsCallback) {
         this.done = done;
         this.hasErrors = false;
         this.pendingImports = 0;

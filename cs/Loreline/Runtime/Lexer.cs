@@ -2406,6 +2406,335 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static string toCodeString(global::Loreline.Runtime.TokenType a) {
+			unchecked {
+				switch (a._hx_index) {
+					case 0:
+					{
+						return "import";
+					}
+					
+					
+					case 1:
+					{
+						return "state";
+					}
+					
+					
+					case 2:
+					{
+						return "beat";
+					}
+					
+					
+					case 3:
+					{
+						return "character";
+					}
+					
+					
+					case 4:
+					{
+						return "choice";
+					}
+					
+					
+					case 5:
+					{
+						return "if";
+					}
+					
+					
+					case 6:
+					{
+						return "else";
+					}
+					
+					
+					case 7:
+					{
+						return "new";
+					}
+					
+					
+					case 8:
+					{
+						string _g = ( a as global::Loreline.Runtime.TokenType_Function ).name;
+						global::Loreline.Internal.Root.Array<string> _g1 = ( a as global::Loreline.Runtime.TokenType_Function ).args;
+						string _g2 = ( a as global::Loreline.Runtime.TokenType_Function ).code;
+						return "function";
+					}
+					
+					
+					case 9:
+					{
+						int _g3 = ( a as global::Loreline.Runtime.TokenType_LString ).quotes;
+						string _g4 = ( a as global::Loreline.Runtime.TokenType_LString ).s;
+						global::Loreline.Internal.Root.Array<object> _g5 = ( a as global::Loreline.Runtime.TokenType_LString ).attachments;
+						return "string";
+					}
+					
+					
+					case 10:
+					{
+						double _g6 = ( a as global::Loreline.Runtime.TokenType_LNumber ).n;
+						return "number";
+					}
+					
+					
+					case 11:
+					{
+						bool _g7 = ( a as global::Loreline.Runtime.TokenType_LBoolean ).b;
+						return "boolean";
+					}
+					
+					
+					case 12:
+					{
+						return "null";
+					}
+					
+					
+					case 13:
+					{
+						string name = ( a as global::Loreline.Runtime.TokenType_Identifier ).name;
+						return "identifier";
+					}
+					
+					
+					case 14:
+					{
+						return "=";
+					}
+					
+					
+					case 15:
+					{
+						return "+=";
+					}
+					
+					
+					case 16:
+					{
+						return "-=";
+					}
+					
+					
+					case 17:
+					{
+						return "*=";
+					}
+					
+					
+					case 18:
+					{
+						return "/=";
+					}
+					
+					
+					case 19:
+					{
+						return "+";
+					}
+					
+					
+					case 20:
+					{
+						return "-";
+					}
+					
+					
+					case 21:
+					{
+						return "*";
+					}
+					
+					
+					case 22:
+					{
+						return "/";
+					}
+					
+					
+					case 23:
+					{
+						return "%";
+					}
+					
+					
+					case 24:
+					{
+						return "==";
+					}
+					
+					
+					case 25:
+					{
+						return "!=";
+					}
+					
+					
+					case 26:
+					{
+						return ">";
+					}
+					
+					
+					case 27:
+					{
+						return "<";
+					}
+					
+					
+					case 28:
+					{
+						return ">=";
+					}
+					
+					
+					case 29:
+					{
+						return "<=";
+					}
+					
+					
+					case 30:
+					{
+						bool word = ( a as global::Loreline.Runtime.TokenType_OpAnd ).word;
+						if (word) {
+							return "and";
+						}
+						else {
+							return "&&";
+						}
+						
+					}
+					
+					
+					case 31:
+					{
+						bool word1 = ( a as global::Loreline.Runtime.TokenType_OpOr ).word;
+						if (word1) {
+							return "or";
+						}
+						else {
+							return "||";
+						}
+						
+					}
+					
+					
+					case 32:
+					{
+						return "!";
+					}
+					
+					
+					case 33:
+					{
+						return "->";
+					}
+					
+					
+					case 34:
+					{
+						return ":";
+					}
+					
+					
+					case 35:
+					{
+						return ",";
+					}
+					
+					
+					case 36:
+					{
+						return ".";
+					}
+					
+					
+					case 37:
+					{
+						return "{";
+					}
+					
+					
+					case 38:
+					{
+						return "}";
+					}
+					
+					
+					case 39:
+					{
+						return "(";
+					}
+					
+					
+					case 40:
+					{
+						return ")";
+					}
+					
+					
+					case 41:
+					{
+						return "[";
+					}
+					
+					
+					case 42:
+					{
+						return "]";
+					}
+					
+					
+					case 43:
+					{
+						string content = ( a as global::Loreline.Runtime.TokenType_CommentLine ).content;
+						return "comment";
+					}
+					
+					
+					case 44:
+					{
+						string content1 = ( a as global::Loreline.Runtime.TokenType_CommentMultiLine ).content;
+						return "multiline comment";
+					}
+					
+					
+					case 45:
+					{
+						return "indent";
+					}
+					
+					
+					case 46:
+					{
+						return "unindent";
+					}
+					
+					
+					case 47:
+					{
+						return "line break";
+					}
+					
+					
+					case 48:
+					{
+						return "end of file";
+					}
+					
+					
+				}
+				
+				return null;
+			}
+		}
+		
+		
 	}
 }
 
@@ -2970,6 +3299,10 @@ namespace Loreline.Runtime {
 				}
 				
 				global::Loreline.Runtime.Position startPos = new global::Loreline.Runtime.Position(((int) (this.startLine) ), ((int) (this.startColumn) ), ((int) (this.pos) ), default(global::Loreline.Internal.Lang.Null<int>));
+				if (( ( this.tokenized.length > 0 ) && ( ((global::Loreline.Runtime.Token) (this.tokenized[( this.tokenized.length - 1 )]) ).type == global::Loreline.Runtime.TokenType.KwImport ) )) {
+					return this.readImportValue((c).@value, startPos);
+				}
+				
 				if ( ! (c.hasValue) ) {
 					global::Loreline.Runtime.Token tmp2 = this.tryReadUnquotedString();
 					if (( tmp2 != null )) {
@@ -5494,21 +5827,94 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual int _skipWhitespaceAndComments(int pos) {
+		public virtual int _skipWhitespaceAndComments(int pos, global::Loreline.Internal.Lang.Null<bool> stopNextLine) {
+			unchecked {
+				bool stopNextLine1 = ( ( ! (stopNextLine.hasValue) ) ? (false) : ((stopNextLine).@value) );
+				if (stopNextLine1) {
+					return this._skipWhitespaceAndCommentsStopNextLine(pos);
+				}
+				else {
+					int startPos = pos;
+					bool foundContent = false;
+					while (( pos < this.length )) {
+						while (( ( pos < this.length ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 9) )) )) {
+							 ++ pos;
+							foundContent = true;
+						}
+						
+						if (( pos < ( this.length - 1 ) )) {
+							if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 47)) {
+								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47)) {
+									pos = startPos;
+									return pos;
+								}
+								else if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 42)) {
+									pos += 2;
+									foundContent = true;
+									bool commentClosed = false;
+									while (( pos < ( this.length - 1 ) )) {
+										if (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 42) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) )) {
+											pos += 2;
+											commentClosed = true;
+											break;
+										}
+										
+										 ++ pos;
+									}
+									
+									if ( ! (commentClosed) ) {
+										pos = startPos;
+										return pos;
+									}
+									
+									continue;
+								}
+								
+							}
+							
+						}
+						
+						break;
+					}
+					
+					if (foundContent) {
+						return pos;
+					}
+					else {
+						return startPos;
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public virtual int _skipWhitespaceAndCommentsStopNextLine(int pos) {
 			unchecked {
 				int startPos = pos;
 				bool foundContent = false;
+				bool isNextLine = false;
 				while (( pos < this.length )) {
-					while (( ( pos < this.length ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 9) )) )) {
+					while (( ( pos < this.length ) && (( ( ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 9) ) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 10) ) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 13) )) )) {
+						if (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 13) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 10) )) {
+							isNextLine = true;
+						}
+						
 						 ++ pos;
 						foundContent = true;
 					}
 					
-					if (( pos < ( this.length - 1 ) )) {
+					if (( ( pos < ( this.length - 1 ) ) &&  ! (isNextLine)  )) {
 						if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 47)) {
 							if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47)) {
-								pos = startPos;
-								return pos;
+								pos += 2;
+								foundContent = true;
+								while (( ( ( pos < this.length ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 10)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 13)) ) )) {
+									 ++ pos;
+								}
+								
+								continue;
 							}
 							else if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 42)) {
 								pos += 2;
@@ -5552,7 +5958,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool isIfStart(int pos) {
 			unchecked {
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				if (( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 105)) )) {
 					return false;
 				}
@@ -5563,10 +5969,10 @@ namespace Loreline.Runtime {
 				}
 				
 				int startPos =  ++ pos;
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				if (( ( pos < this.length ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 33) )) {
 					 ++ pos;
-					pos = this._skipWhitespaceAndComments(pos);
+					pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				}
 				
 				if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 40)) {
@@ -5668,7 +6074,7 @@ namespace Loreline.Runtime {
 						
 					}
 					
-					pos = this._skipWhitespaceAndComments(pos);
+					pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					if (( pos >= this.length )) {
 						return true;
 					}
@@ -5676,7 +6082,7 @@ namespace Loreline.Runtime {
 					global::Loreline.Internal.Lang.Null<int> c7 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
 					if (global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 46)) {
 						 ++ pos;
-						pos = this._skipWhitespaceAndComments(pos);
+						pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 						bool result1 = true;
 						int len1 = _gthis.length;
 						if (( pos >= len1 )) {
@@ -5738,7 +6144,7 @@ namespace Loreline.Runtime {
 							return true;
 						}
 						
-						pos = this._skipWhitespaceAndComments(pos);
+						pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 						if (( pos >= this.length )) {
 							return true;
 						}
@@ -5762,7 +6168,7 @@ namespace Loreline.Runtime {
 							 ++ pos;
 						}
 						
-						pos = this._skipWhitespaceAndComments(pos);
+						pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 						if (( pos >= this.length )) {
 							return true;
 						}
@@ -5796,7 +6202,7 @@ namespace Loreline.Runtime {
 						return true;
 					}
 					
-					if (( ( ( ( ( ( global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 40) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 38) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 124) ) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61) && global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 61) ) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 62) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 60) ) || ( ( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61)) ) && (( ( ( ( global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 43) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 45) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 42) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 47) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 123) )) ) )) {
+					if (( ( ( ( ( ( ( global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 40) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 38) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 124) ) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61) && global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 61) ) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 62) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 60) ) || ( global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 33) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61) ) ) || ( ( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61)) ) && (( ( ( ( global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 43) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 45) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 42) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 47) ) || global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 123) )) ) )) {
 						return true;
 					}
 					
@@ -5813,10 +6219,10 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool isIdentifierExpressionStart(int pos) {
+		public virtual bool isIdentifierExpressionStart(int pos, bool lowercaseIdentOnly) {
 			unchecked {
-				pos = this._skipWhitespaceAndComments(pos);
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				if (( pos >= this.length )) {
 					return false;
 				}
@@ -5831,17 +6237,50 @@ namespace Loreline.Runtime {
 					result = false;
 				}
 				else {
+					bool isUnderscore = false;
 					global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+					isUnderscore = global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 95);
+					bool tmp = default(bool);
 					int c1 = (c).@value;
-					if ( ! ((( ( ( ( c1 >= 97 ) && ( c1 <= 122 ) ) || ( ( c1 >= 65 ) && ( c1 <= 90 ) ) ) || ( c1 == 95 ) ))) ) {
+					if (( ( ( ( c1 >= 97 ) && ( c1 <= 122 ) ) || ( ( c1 >= 65 ) && ( c1 <= 90 ) ) ) || ( c1 == 95 ) )) {
+						if (( lowercaseIdentOnly &&  ! (isUnderscore)  )) {
+							int c2 = (c).@value;
+							tmp =  ! ((( ( c2 >= 97 ) && ( c2 <= 122 ) ))) ;
+						}
+						else {
+							tmp = false;
+						}
+						
+					}
+					else {
+						tmp = true;
+					}
+					
+					if (tmp) {
 						result = false;
 					}
 					else {
 						 ++ pos;
 						while (( pos < _gthis.length )) {
+							bool wasUnderscore = isUnderscore;
 							c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-							int c2 = (c).@value;
-							if ( ! ((( ( ( ( ( c2 >= 97 ) && ( c2 <= 122 ) ) || ( ( c2 >= 65 ) && ( c2 <= 90 ) ) ) || ( c2 == 95 ) ) || ( ( c2 >= 48 ) && ( c2 <= 57 ) ) ))) ) {
+							isUnderscore = global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 95);
+							int c3 = (c).@value;
+							if ( ! ((( ( ( ( ( c3 >= 97 ) && ( c3 <= 122 ) ) || ( ( c3 >= 65 ) && ( c3 <= 90 ) ) ) || ( c3 == 95 ) ) || ( ( c3 >= 48 ) && ( c3 <= 57 ) ) ))) ) {
+								break;
+							}
+							
+							bool tmp1 = default(bool);
+							if (( ( lowercaseIdentOnly && wasUnderscore ) &&  ! (isUnderscore)  )) {
+								int c4 = (c).@value;
+								tmp1 =  ! ((( ( c4 >= 97 ) && ( c4 <= 122 ) ))) ;
+							}
+							else {
+								tmp1 = false;
+							}
+							
+							if (tmp1) {
+								result = false;
 								break;
 							}
 							
@@ -5857,44 +6296,78 @@ namespace Loreline.Runtime {
 				}
 				
 				while (( pos < this.length )) {
-					pos = this._skipWhitespaceAndComments(pos);
+					pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					if (( pos >= this.length )) {
 						return true;
 					}
 					
-					global::Loreline.Internal.Lang.Null<int> c3 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
-					int c4 = (c3).@value;
-					if (( ( ( ( (  ! ((( ( c4 == 32 ) || ( c4 == 9 ) )))  && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 46)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 91)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 10)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 13)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 47)) ) )) {
+					global::Loreline.Internal.Lang.Null<int> c5 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
+					int c6 = (c5).@value;
+					if (( ( ( ( (  ! ((( ( c6 == 32 ) || ( c6 == 9 ) )))  && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 46)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 91)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 10)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 13)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 47)) ) )) {
 						return false;
 					}
 					
-					if (( ( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 10) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 13) ) || ( ( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 47) && ( ( pos + 1 ) < this.length ) ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 42) )) ) )) {
+					if (( ( global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 10) || global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 13) ) || ( ( global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 47) && ( ( pos + 1 ) < this.length ) ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 42) )) ) )) {
 						return true;
 					}
 					
-					if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 46)) {
+					if (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 46)) {
 						 ++ pos;
-						pos = this._skipWhitespaceAndComments(pos);
+						pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 						if (( pos >= this.length )) {
 							return true;
 						}
 						
+						bool lowercaseIdentOnly1 = false;
 						bool result1 = true;
 						if (( pos >= _gthis.length )) {
 							result1 = false;
 						}
 						else {
-							global::Loreline.Internal.Lang.Null<int> c5 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-							int c6 = (c5).@value;
-							if ( ! ((( ( ( ( c6 >= 97 ) && ( c6 <= 122 ) ) || ( ( c6 >= 65 ) && ( c6 <= 90 ) ) ) || ( c6 == 95 ) ))) ) {
+							bool isUnderscore1 = false;
+							global::Loreline.Internal.Lang.Null<int> c7 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+							isUnderscore1 = global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 95);
+							bool tmp2 = default(bool);
+							int c8 = (c7).@value;
+							if (( ( ( ( c8 >= 97 ) && ( c8 <= 122 ) ) || ( ( c8 >= 65 ) && ( c8 <= 90 ) ) ) || ( c8 == 95 ) )) {
+								if (( lowercaseIdentOnly1 &&  ! (isUnderscore1)  )) {
+									int c9 = (c7).@value;
+									tmp2 =  ! ((( ( c9 >= 97 ) && ( c9 <= 122 ) ))) ;
+								}
+								else {
+									tmp2 = false;
+								}
+								
+							}
+							else {
+								tmp2 = true;
+							}
+							
+							if (tmp2) {
 								result1 = false;
 							}
 							else {
 								 ++ pos;
 								while (( pos < _gthis.length )) {
-									c5 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-									int c7 = (c5).@value;
-									if ( ! ((( ( ( ( ( c7 >= 97 ) && ( c7 <= 122 ) ) || ( ( c7 >= 65 ) && ( c7 <= 90 ) ) ) || ( c7 == 95 ) ) || ( ( c7 >= 48 ) && ( c7 <= 57 ) ) ))) ) {
+									bool wasUnderscore1 = isUnderscore1;
+									c7 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+									isUnderscore1 = global::Loreline.Internal.Lang.Runtime.eq((c7).toDynamic(), 95);
+									int c10 = (c7).@value;
+									if ( ! ((( ( ( ( ( c10 >= 97 ) && ( c10 <= 122 ) ) || ( ( c10 >= 65 ) && ( c10 <= 90 ) ) ) || ( c10 == 95 ) ) || ( ( c10 >= 48 ) && ( c10 <= 57 ) ) ))) ) {
+										break;
+									}
+									
+									bool tmp3 = default(bool);
+									if (( ( lowercaseIdentOnly1 && wasUnderscore1 ) &&  ! (isUnderscore1)  )) {
+										int c11 = (c7).@value;
+										tmp3 =  ! ((( ( c11 >= 97 ) && ( c11 <= 122 ) ))) ;
+									}
+									else {
+										tmp3 = false;
+									}
+									
+									if (tmp3) {
+										result1 = false;
 										break;
 									}
 									
@@ -5912,16 +6385,16 @@ namespace Loreline.Runtime {
 						continue;
 					}
 					
-					if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 91)) {
+					if (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 91)) {
 						 ++ pos;
 						int bracketLevel = 1;
 						while (( ( pos < this.length ) && ( bracketLevel > 0 ) )) {
-							c3 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
-							if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 91)) {
+							c5 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
+							if (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 91)) {
 								 ++ bracketLevel;
 							}
 							
-							if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 93)) {
+							if (global::Loreline.Internal.Lang.Runtime.eq((c5).toDynamic(), 93)) {
 								 -- bracketLevel;
 							}
 							
@@ -5931,8 +6404,8 @@ namespace Loreline.Runtime {
 						continue;
 					}
 					
-					int c8 = (c3).@value;
-					if (( ( c8 == 32 ) || ( c8 == 9 ) )) {
+					int c12 = (c5).@value;
+					if (( ( c12 == 32 ) || ( c12 == 9 ) )) {
 						 ++ pos;
 						continue;
 					}
@@ -5952,7 +6425,7 @@ namespace Loreline.Runtime {
 				}
 				
 				pos += 2;
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				if (( pos >= this.length )) {
 					return false;
 				}
@@ -5989,7 +6462,7 @@ namespace Loreline.Runtime {
 					
 				}
 				
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				if (( pos < this.length )) {
 					global::Loreline.Internal.Lang.Null<int> c2 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
 					if (( ( ( ( ( ! (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 10)) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 13)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 32)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 9)) ) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 47)) ) )) {
@@ -6005,7 +6478,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool isLabelStart(int pos) {
 			unchecked {
-				pos = this._skipWhitespaceAndComments(pos);
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 				int c = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).@value;
 				if ( ! ((( ( ( ( c >= 97 ) && ( c <= 122 ) ) || ( ( c >= 65 ) && ( c <= 90 ) ) ) || ( c == 95 ) ))) ) {
 					return false;
@@ -6097,7 +6570,7 @@ namespace Loreline.Runtime {
 				}
 				
 				while (( pos < this.length )) {
-					pos = this._skipWhitespaceAndComments(pos);
+					pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					if (( pos >= this.length )) {
 						pos = startPos;
 						return false;
@@ -6111,7 +6584,7 @@ namespace Loreline.Runtime {
 					
 					if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 46)) {
 						 ++ pos;
-						pos = this._skipWhitespaceAndComments(pos);
+						pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 						bool result1 = true;
 						if (( pos >= _gthis.length )) {
 							result1 = false;
@@ -6170,110 +6643,164 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool isAssignStart(int pos) {
+		public virtual bool isAssignStart(int pos, bool strict) {
 			unchecked {
-				int startPos = pos;
 				global::Loreline.Runtime.Lexer _gthis = this;
-				bool result = true;
-				if (( pos >= _gthis.length )) {
-					result = false;
-				}
-				else {
-					global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-					int c1 = (c).@value;
-					if ( ! ((( ( ( ( c1 >= 97 ) && ( c1 <= 122 ) ) || ( ( c1 >= 65 ) && ( c1 <= 90 ) ) ) || ( c1 == 95 ) ))) ) {
+				bool tmp = default(bool);
+				if (strict) {
+					bool result = true;
+					int startPos = pos;
+					if (( pos >= _gthis.length )) {
 						result = false;
 					}
 					else {
-						 ++ pos;
-						while (( pos < _gthis.length )) {
-							c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-							int c2 = (c).@value;
-							if ( ! ((( ( ( ( ( c2 >= 97 ) && ( c2 <= 122 ) ) || ( ( c2 >= 65 ) && ( c2 <= 90 ) ) ) || ( c2 == 95 ) ) || ( ( c2 >= 48 ) && ( c2 <= 57 ) ) ))) ) {
-								break;
+						global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+						int c1 = (c).@value;
+						if ( ! ((( ( ( ( c1 >= 97 ) && ( c1 <= 122 ) ) || ( ( c1 >= 65 ) && ( c1 <= 90 ) ) ) || ( c1 == 95 ) ))) ) {
+							result = false;
+						}
+						else {
+							 ++ pos;
+							while (( pos < _gthis.length )) {
+								c = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+								int c2 = (c).@value;
+								if ( ! ((( ( ( ( ( c2 >= 97 ) && ( c2 <= 122 ) ) || ( ( c2 >= 65 ) && ( c2 <= 90 ) ) ) || ( c2 == 95 ) ) || ( ( c2 >= 48 ) && ( c2 <= 57 ) ) ))) ) {
+									break;
+								}
+								
+								 ++ pos;
 							}
 							
-							 ++ pos;
 						}
 						
 					}
 					
+					tmp =  ! ((( (( ( ( pos == ( startPos + 2 ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, startPos)).toDynamic(), 105) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, ( startPos + 1 ))).toDynamic(), 102) )) ? (false) : (result) ))) ;
+				}
+				else {
+					tmp = false;
 				}
 				
-				if ( ! (result) ) {
-					pos = startPos;
+				if (tmp) {
 					return false;
 				}
 				
+				bool isEscape = false;
 				while (( pos < this.length )) {
-					pos = this._skipWhitespaceAndComments(pos);
+					pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					if (( pos >= this.length )) {
-						pos = startPos;
 						return false;
 					}
 					
 					global::Loreline.Internal.Lang.Null<int> c3 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
-					if (( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 61) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61) && (( ( ( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 43) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 45) ) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 42) ) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 47) )) ) )) {
-						pos = startPos;
+					if ((  ! (isEscape)  && (( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 61) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 61) && (( ( ( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 43) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 45) ) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 42) ) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 47) )) ) )) )) {
 						return true;
 					}
 					
-					if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 46)) {
-						 ++ pos;
-						pos = this._skipWhitespaceAndComments(pos);
-						bool result1 = true;
-						if (( pos >= _gthis.length )) {
-							result1 = false;
-						}
-						else {
-							global::Loreline.Internal.Lang.Null<int> c4 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-							int c5 = (c4).@value;
-							if ( ! ((( ( ( ( c5 >= 97 ) && ( c5 <= 122 ) ) || ( ( c5 >= 65 ) && ( c5 <= 90 ) ) ) || ( c5 == 95 ) ))) ) {
+					if (strict) {
+						if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 46)) {
+							 ++ pos;
+							pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
+							bool result1 = true;
+							int startPos1 = pos;
+							if (( pos >= _gthis.length )) {
 								result1 = false;
 							}
 							else {
-								 ++ pos;
-								while (( pos < _gthis.length )) {
-									c4 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
-									int c6 = (c4).@value;
-									if ( ! ((( ( ( ( ( c6 >= 97 ) && ( c6 <= 122 ) ) || ( ( c6 >= 65 ) && ( c6 <= 90 ) ) ) || ( c6 == 95 ) ) || ( ( c6 >= 48 ) && ( c6 <= 57 ) ) ))) ) {
-										break;
+								global::Loreline.Internal.Lang.Null<int> c4 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+								int c5 = (c4).@value;
+								if ( ! ((( ( ( ( c5 >= 97 ) && ( c5 <= 122 ) ) || ( ( c5 >= 65 ) && ( c5 <= 90 ) ) ) || ( c5 == 95 ) ))) ) {
+									result1 = false;
+								}
+								else {
+									 ++ pos;
+									while (( pos < _gthis.length )) {
+										c4 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+										int c6 = (c4).@value;
+										if ( ! ((( ( ( ( ( c6 >= 97 ) && ( c6 <= 122 ) ) || ( ( c6 >= 65 ) && ( c6 <= 90 ) ) ) || ( c6 == 95 ) ) || ( ( c6 >= 48 ) && ( c6 <= 57 ) ) ))) ) {
+											break;
+										}
+										
+										 ++ pos;
 									}
 									
-									 ++ pos;
 								}
 								
 							}
 							
-						}
-						
-						if ( ! (result1) ) {
-							pos = startPos;
-							return false;
-						}
-						
-						continue;
-					}
-					
-					if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 91)) {
-						 ++ pos;
-						while (( pos < this.length )) {
-							if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 93)) {
-								 ++ pos;
-								break;
+							if ( ! ((( (( ( ( pos == ( startPos1 + 2 ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, startPos1)).toDynamic(), 105) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, ( startPos1 + 1 ))).toDynamic(), 102) )) ? (false) : (result1) ))) ) {
+								return false;
 							}
 							
+							continue;
+						}
+						
+						if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 91)) {
+							 ++ pos;
+							while (( pos < this.length )) {
+								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 93)) {
+									 ++ pos;
+									break;
+								}
+								
+								 ++ pos;
+							}
+							
+							continue;
+						}
+						
+						return false;
+					}
+					else if (global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 92)) {
+						isEscape = true;
+						 ++ pos;
+					}
+					else if (( global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 13) || global::Loreline.Internal.Lang.Runtime.eq((c3).toDynamic(), 10) )) {
+						return false;
+					}
+					else {
+						int c7 = (c3).@value;
+						if (( ( ( ( c7 >= 97 ) && ( c7 <= 122 ) ) || ( ( c7 >= 65 ) && ( c7 <= 90 ) ) ) || ( c7 == 95 ) )) {
+							bool result2 = true;
+							int startPos2 = pos;
+							if (( pos >= _gthis.length )) {
+								result2 = false;
+							}
+							else {
+								global::Loreline.Internal.Lang.Null<int> c8 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+								int c9 = (c8).@value;
+								if ( ! ((( ( ( ( c9 >= 97 ) && ( c9 <= 122 ) ) || ( ( c9 >= 65 ) && ( c9 <= 90 ) ) ) || ( c9 == 95 ) ))) ) {
+									result2 = false;
+								}
+								else {
+									 ++ pos;
+									while (( pos < _gthis.length )) {
+										c8 = global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, pos);
+										int c10 = (c8).@value;
+										if ( ! ((( ( ( ( ( c10 >= 97 ) && ( c10 <= 122 ) ) || ( ( c10 >= 65 ) && ( c10 <= 90 ) ) ) || ( c10 == 95 ) ) || ( ( c10 >= 48 ) && ( c10 <= 57 ) ) ))) ) {
+											break;
+										}
+										
+										 ++ pos;
+									}
+									
+								}
+								
+							}
+							
+							if ( ! ((( (( ( ( pos == ( startPos2 + 2 ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, startPos2)).toDynamic(), 105) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(_gthis.input, ( startPos2 + 1 ))).toDynamic(), 102) )) ? (false) : (result2) ))) ) {
+								return false;
+							}
+							
+						}
+						else {
 							 ++ pos;
 						}
 						
-						continue;
 					}
 					
-					pos = startPos;
-					return false;
 				}
 				
-				pos = startPos;
 				return false;
 			}
 		}
@@ -6300,26 +6827,151 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool isAfterLabel(global::Loreline.Internal.Lang.Null<bool> inSameLine) {
+		public virtual int afterLabelIdentifierToken(global::Loreline.Internal.Lang.Null<bool> inSameLine) {
 			unchecked {
 				bool inSameLine1 = ( ( ! (inSameLine.hasValue) ) ? (true) : ((inSameLine).@value) );
 				int i = ( this.tokenized.length - 1 );
 				while (( i >= 0 )) {
 					global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (this.tokenized[i]) );
 					if ((  ! (global::Loreline.Runtime.TokenTypeHelpers.isComment(token.type))  && (( inSameLine1 || ( ( ( token.type != global::Loreline.Runtime.TokenType.LineBreak ) && ( token.type != global::Loreline.Runtime.TokenType.Indent ) ) && ( token.type != global::Loreline.Runtime.TokenType.Unindent ) ) )) )) {
-						if (( ( token.type == global::Loreline.Runtime.TokenType.Colon ) && ( i > 0 ) )) {
-							return global::Loreline.Runtime.TokenTypeHelpers.isIdentifier(((global::Loreline.Runtime.Token) (this.tokenized[( i - 1 )]) ).type);
-						}
-						else {
-							return false;
+						if (( ( ( token.type == global::Loreline.Runtime.TokenType.Colon ) && ( i > 0 ) ) && global::Loreline.Runtime.TokenTypeHelpers.isIdentifier(((global::Loreline.Runtime.Token) (this.tokenized[( i - 1 )]) ).type) )) {
+							return ( i - 1 );
 						}
 						
+						return -1;
 					}
 					
 					 -- i;
 				}
 				
-				return false;
+				return -1;
+			}
+		}
+		
+		
+		public virtual int isStartingMultilineDialogue(int labelIdentifierTokenIndex) {
+			unchecked {
+				global::Loreline.Runtime.Token labelIdentifierToken = ((global::Loreline.Runtime.Token) (this.tokenized[labelIdentifierTokenIndex]) );
+				int i = ( labelIdentifierTokenIndex + 1 );
+				while (( ((global::Loreline.Runtime.Token) (this.tokenized[i]) ).type != global::Loreline.Runtime.TokenType.Colon )) {
+					 ++ i;
+				}
+				
+				int pos = ( ((global::Loreline.Runtime.Token) (this.tokenized[i]) ).pos.offset + 1 );
+				int labelColumn = labelIdentifierToken.pos.column;
+				bool onlyTagsOnFirstLine = true;
+				bool insideTag = false;
+				while (( pos < this.length )) {
+					global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
+					if (( global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 9) )) {
+						 ++ pos;
+					}
+					else {
+						break;
+					}
+					
+				}
+				
+				while (( pos < this.length )) {
+					global::Loreline.Internal.Lang.Null<int> c1 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos);
+					if (( global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 10) || global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 13) )) {
+						break;
+					}
+					
+					if (( global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 47) && ( ( pos + 1 ) < this.length ) )) {
+						global::Loreline.Internal.Lang.Null<int> next = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ));
+						if (global::Loreline.Internal.Lang.Runtime.eq((next).toDynamic(), 47)) {
+							break;
+						}
+						else if (global::Loreline.Internal.Lang.Runtime.eq((next).toDynamic(), 42)) {
+							pos += 2;
+							while (( pos < this.length )) {
+								if (( ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 42) && ( ( pos + 1 ) < this.length ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) )) {
+									pos += 2;
+									break;
+								}
+								
+								 ++ pos;
+							}
+							
+							continue;
+						}
+						
+					}
+					
+					if (global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 60)) {
+						insideTag = true;
+					}
+					else if (global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 62)) {
+						insideTag = false;
+					}
+					else if ((  ! (insideTag)  &&  ! ((( global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((c1).toDynamic(), 9) )))  )) {
+						onlyTagsOnFirstLine = false;
+						break;
+					}
+					
+					 ++ pos;
+				}
+				
+				if ( ! (onlyTagsOnFirstLine) ) {
+					return -1;
+				}
+				
+				int prevPos = pos;
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(true, true));
+				if (( pos <= prevPos )) {
+					return -1;
+				}
+				
+				int indent = 0;
+				int tmpPos = pos;
+				while (( ( tmpPos > 0 ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( tmpPos - 1 ))).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( tmpPos - 1 ))).toDynamic(), 9) )) )) {
+					 ++ indent;
+					 -- tmpPos;
+				}
+				
+				if (( indent <= ( labelColumn - 1 ) )) {
+					return -1;
+				}
+				
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
+				int c2 = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).@value;
+				if (( ( ( c2 == 32 ) || ( c2 == 9 ) ) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 47) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) ) )) {
+					return -1;
+				}
+				
+				return indent;
+			}
+		}
+		
+		
+		public virtual bool isContinuingMultilineText(int pos, int indent) {
+			unchecked {
+				if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 13)) {
+					 ++ pos;
+				}
+				
+				if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 10)) {
+					 ++ pos;
+				}
+				
+				int computedIndent = 0;
+				while (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 32) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 9) )) {
+					 ++ computedIndent;
+					 ++ pos;
+				}
+				
+				if (( computedIndent != indent )) {
+					return false;
+				}
+				
+				pos = this._skipWhitespaceAndComments(pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
+				int c = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).@value;
+				if (( ( ( c == 32 ) || ( c == 9 ) ) || ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, pos)).toDynamic(), 47) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( pos + 1 ))).toDynamic(), 47) ) )) {
+					return false;
+				}
+				
+				return true;
 			}
 		}
 		
@@ -6703,6 +7355,39 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual global::Loreline.Runtime.Token readImportValue(int c, global::Loreline.Runtime.Position startPos) {
+			unchecked {
+				if (( c == 34 )) {
+					return this.readString(startPos);
+				}
+				else {
+					global::Loreline.Internal.Root.StringBuf buf = new global::Loreline.Internal.Root.StringBuf();
+					while (( this.pos < this.length )) {
+						global::Loreline.Internal.Lang.Null<int> cc = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos);
+						if (global::Loreline.Internal.Lang.Runtime.eq((cc).toDynamic(), 10)) {
+							break;
+						}
+						
+						buf.addChar((cc).@value);
+						this.pos++;
+					}
+					
+					string @value = buf.b.ToString().TrimEnd();
+					global::Loreline.Runtime.Position position = new global::Loreline.Runtime.Position(((int) (startPos.line) ), ((int) (startPos.column) ), ((int) (startPos.offset) ), new global::Loreline.Internal.Lang.Null<int>(@value.Length, true));
+					if (( position == null )) {
+						position = new global::Loreline.Runtime.Position(((int) (this.startLine) ), ((int) (this.startColumn) ), ((int) (this.pos) ), default(global::Loreline.Internal.Lang.Null<int>));
+					}
+					
+					position.length = ( this.pos - position.offset );
+					global::Loreline.Runtime.Token token = new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LString(((int) (0) ), @value, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ), ((global::Loreline.Runtime.Position) (position) ));
+					this.previous = token;
+					return token;
+				}
+				
+			}
+		}
+		
+		
 		public virtual global::Loreline.Runtime.Token tryReadUnquotedString() {
 			unchecked {
 				if (this.isStrict()) {
@@ -6740,7 +7425,13 @@ namespace Loreline.Runtime {
 				
 				bool inBrackets = this.isInsideBrackets();
 				bool isAssignValue = this.followsAssignStart();
-				bool isAfterLabel = this.isAfterLabel(default(global::Loreline.Internal.Lang.Null<bool>));
+				int labelIdentifierIndex = this.afterLabelIdentifierToken(new global::Loreline.Internal.Lang.Null<bool>(false, true));
+				if (( ( ( labelIdentifierIndex != -1 ) && ( ((global::Loreline.Runtime.Token) (this.tokenized[labelIdentifierIndex]) ).pos.line < this.line ) ) && ( ((global::Loreline.Runtime.Token) (this.tokenized[labelIdentifierIndex]) ).pos.column >= this.column ) )) {
+					return null;
+				}
+				
+				int multilineIndent = ( (( labelIdentifierIndex != -1 )) ? (this.isStartingMultilineDialogue(labelIdentifierIndex)) : (-1) );
+				bool isAfterLabel = ( labelIdentifierIndex != -1 );
 				bool isValue = ( ( ( ( parent == global::Loreline.Runtime.TokenType.KwState ) || ( parent == global::Loreline.Runtime.TokenType.KwCharacter ) ) || inBrackets ) || isAssignValue );
 				if (isValue) {
 					if (( this.isCallStart(this.pos) || this.isLabelStart(this.pos) )) {
@@ -6748,7 +7439,7 @@ namespace Loreline.Runtime {
 					}
 					
 				}
-				else if ((  ! (isAfterLabel)  && (( ( ( this.isIdentifierExpressionStart(this.pos) || this.isIfStart(this.pos) ) || this.isCallStart(this.pos) ) || this.isAssignStart(this.pos) )) )) {
+				else if ((  ! (isAfterLabel)  && (( ( ( this.isIdentifierExpressionStart(this.pos, true) || this.isIfStart(this.pos) ) || this.isCallStart(this.pos) ) || this.isAssignStart(this.pos, false) )) )) {
 					return null;
 				}
 				
@@ -6766,7 +7457,7 @@ namespace Loreline.Runtime {
 					}
 					
 					if ( ! (isValue) ) {
-						if (( ( ( ( ( identifier != "if" ) && ( identifier != "null" ) ) && ( identifier != "true" ) ) && ( identifier != "false" ) ) && global::Loreline.Runtime.Lexer.KEYWORDS.exists(identifier) )) {
+						if (( ( ( ( ( ( ( identifier != "if" ) && ( identifier != "null" ) ) && ( identifier != "true" ) ) && ( identifier != "false" ) ) && ( identifier != "and" ) ) && ( identifier != "or" ) ) && global::Loreline.Runtime.Lexer.KEYWORDS.exists(identifier) )) {
 							return null;
 						}
 						
@@ -6887,13 +7578,131 @@ namespace Loreline.Runtime {
 						}
 						
 					}
-					else if (( ( tagStart == -1 ) && (( ( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 10) || global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 13) ) || global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 123) )) )) {
+					else if (( ( tagStart == -1 ) && global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 123) )) {
 						break;
+					}
+					else if (( ( tagStart == -1 ) && (( ( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 10) || global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 13) ) || ( ( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 47) && ( this.pos < ( this.length - 1 ) ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 47) ) )) )) {
+						if (( multilineIndent != -1 )) {
+							if (this.isContinuingMultilineText(this.pos, multilineIndent)) {
+								buf.addChar((c2).@value);
+								{
+									int count3 = 1;
+									while (( ( count3-- > 0 ) && ( this.pos < this.length ) )) {
+										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+											this.line++;
+											this.column = 1;
+										}
+										else {
+											this.column++;
+										}
+										
+										this.pos++;
+									}
+									
+								}
+								
+								if (( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 13) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10) )) {
+									buf.addChar(10);
+									{
+										int count4 = 1;
+										while (( ( count4-- > 0 ) && ( this.pos < this.length ) )) {
+											if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+												this.line++;
+												this.column = 1;
+											}
+											else {
+												this.column++;
+											}
+											
+											this.pos++;
+										}
+										
+									}
+									
+								}
+								
+							}
+							else {
+								break;
+							}
+							
+						}
+						else {
+							break;
+						}
+						
+					}
+					else if (( ( tagStart == -1 ) && (( ( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 47) && ( this.pos < ( this.length - 1 ) ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 42) )) )) {
+						buf.addChar(47);
+						buf.addChar(42);
+						{
+							int count5 = 2;
+							while (( ( count5-- > 0 ) && ( this.pos < this.length ) )) {
+								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+									this.line++;
+									this.column = 1;
+								}
+								else {
+									this.column++;
+								}
+								
+								this.pos++;
+							}
+							
+						}
+						
+						bool commentClosed = false;
+						while (( this.pos < this.length )) {
+							if (( ( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 42) && ( ( this.pos + 1 ) < this.length ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 47) )) {
+								buf.addChar(42);
+								buf.addChar(47);
+								{
+									int count6 = 2;
+									while (( ( count6-- > 0 ) && ( this.pos < this.length ) )) {
+										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+											this.line++;
+											this.column = 1;
+										}
+										else {
+											this.column++;
+										}
+										
+										this.pos++;
+									}
+									
+								}
+								
+								commentClosed = true;
+								break;
+							}
+							
+							buf.addChar((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).@value);
+							{
+								int count7 = 1;
+								while (( ( count7-- > 0 ) && ( this.pos < this.length ) )) {
+									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+										this.line++;
+										this.column = 1;
+									}
+									else {
+										this.column++;
+									}
+									
+									this.pos++;
+								}
+								
+							}
+							
+						}
+						
+						currentColumn = this.column;
+						currentLine = this.line;
+						if ( ! (commentClosed) ) {
+							this.error("Unterminated multiline comment", false);
+						}
+						
 					}
 					else if (( ( ( tagStart == -1 ) &&  ! (isValue)  ) && this.isIfStart(this.pos) )) {
-						break;
-					}
-					else if (( ( tagStart == -1 ) && (( ( global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 47) && ( this.pos < ( this.length - 1 ) ) ) && (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 47) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 42) )) )) )) {
 						break;
 					}
 					else if (( ( ( ( ( tagStart == -1 ) && global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 45) ) && ( this.pos < ( this.length - 1 ) ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).toDynamic(), 62) ) && this.isTransitionStart(this.pos) )) {
@@ -6921,8 +7730,8 @@ namespace Loreline.Runtime {
 						
 						buf.addChar((c2).@value);
 						{
-							int count3 = 1;
-							while (( ( count3-- > 0 ) && ( this.pos < this.length ) )) {
+							int count8 = 1;
+							while (( ( count8-- > 0 ) && ( this.pos < this.length ) )) {
 								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 									this.line++;
 									this.column = 1;
@@ -6941,8 +7750,8 @@ namespace Loreline.Runtime {
 					else if (( allowTags && global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 62) )) {
 						buf.addChar((c2).@value);
 						{
-							int count4 = 1;
-							while (( ( count4-- > 0 ) && ( this.pos < this.length ) )) {
+							int count9 = 1;
+							while (( ( count9-- > 0 ) && ( this.pos < this.length ) )) {
 								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 									this.line++;
 									this.column = 1;
@@ -6970,8 +7779,8 @@ namespace Loreline.Runtime {
 						int tokenStartPos = this.pos;
 						try {
 							{
-								int count5 = 1;
-								while (( ( count5-- > 0 ) && ( this.pos < this.length ) )) {
+								int count10 = 1;
+								while (( ( count10-- > 0 ) && ( this.pos < this.length ) )) {
 									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 										this.line++;
 										this.column = 1;
@@ -6988,8 +7797,8 @@ namespace Loreline.Runtime {
 							 ++ currentColumn;
 							if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 123)) {
 								{
-									int count6 = 1;
-									while (( ( count6-- > 0 ) && ( this.pos < this.length ) )) {
+									int count11 = 1;
+									while (( ( count11-- > 0 ) && ( this.pos < this.length ) )) {
 										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 											this.line++;
 											this.column = 1;
@@ -7026,6 +7835,27 @@ namespace Loreline.Runtime {
 										buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(x1)) ));
 									}
 									
+								}
+								else if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 36)) {
+									buf.addChar(36);
+									buf.addChar(36);
+									{
+										int count12 = 1;
+										while (( ( count12-- > 0 ) && ( this.pos < this.length ) )) {
+											if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+												this.line++;
+												this.column = 1;
+											}
+											else {
+												this.column++;
+											}
+											
+											this.pos++;
+										}
+										
+									}
+									
+									 ++ currentColumn;
 								}
 								else {
 									this.error("Expected identifier or { after $", false);
@@ -7071,8 +7901,8 @@ namespace Loreline.Runtime {
 						
 						buf.addChar((c2).@value);
 						{
-							int count7 = 1;
-							while (( ( count7-- > 0 ) && ( this.pos < this.length ) )) {
+							int count13 = 1;
+							while (( ( count13-- > 0 ) && ( this.pos < this.length ) )) {
 								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 									this.line++;
 									this.column = 1;
@@ -7095,7 +7925,88 @@ namespace Loreline.Runtime {
 					int rawContentLength = content.Length;
 					content = content.TrimEnd();
 					int contentLength = content.Length;
+					int rtrimmedOffset = ( rawContentLength - contentLength );
 					if (( ( ( ( ( ( contentLength > 0 ) && this.hasNonSpecialChar(content) ) &&  ! (this.isNumber(content))  ) && ( content != "null" ) ) && ( content != "true" ) ) && ( content != "false" ) )) {
+						if (( ( multilineIndent == -1 ) &&  ! (isAfterLabel)  )) {
+							int savedLine = this.line;
+							int savedColumn = this.column;
+							int savedPos = this.pos;
+							{
+								int newPos = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(true, true));
+								while (( this.pos < newPos )) {
+									int count14 = 1;
+									while (( ( count14-- > 0 ) && ( this.pos < this.length ) )) {
+										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+											this.line++;
+											this.column = 1;
+										}
+										else {
+											this.column++;
+										}
+										
+										this.pos++;
+									}
+									
+								}
+								
+							}
+							
+							int afterWhitespaceAndCommentsPos = this.pos;
+							if (( this.column == startColumn )) {
+								global::Loreline.Runtime.Token followingText = this.tryReadUnquotedString();
+								if (( followingText != null )) {
+									string between = global::Loreline.Internal.Lang.StringExt.substring(this.input, ( savedPos - rtrimmedOffset ), new global::Loreline.Internal.Lang.Null<int>(afterWhitespaceAndCommentsPos, true));
+									{
+										global::Loreline.Runtime.TokenType _g2 = followingText.type;
+										if (( _g2._hx_index == 9 )) {
+											int _g3 = ( _g2 as global::Loreline.Runtime.TokenType_LString ).quotes;
+											{
+												string s_ = ( _g2 as global::Loreline.Runtime.TokenType_LString ).s;
+												global::Loreline.Internal.Root.Array<object> attachments_ = ( _g2 as global::Loreline.Runtime.TokenType_LString ).attachments;
+												{
+													if (( attachments_ != null )) {
+														int _g4 = 0;
+														while (( _g4 < attachments_.length )) {
+															global::Loreline.Runtime.LStringAttachment attachment = ((global::Loreline.Runtime.LStringAttachment) (attachments_[_g4]) );
+															 ++ _g4;
+															attachments.push(attachment);
+														}
+														
+													}
+													
+													content = global::Loreline.Internal.Lang.Runtime.concat(content, between);
+													content = global::Loreline.Internal.Lang.Runtime.concat(content, s_);
+												}
+												
+											}
+											
+										}
+										
+									}
+									
+									rtrimmedOffset = 0;
+									int n = ( this.pos - 1 );
+									while (( ( ( n >= 0 ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, n)).toDynamic(), 32) ) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, n)).toDynamic(), 9) )) {
+										 ++ rtrimmedOffset;
+										 -- n;
+									}
+									
+								}
+								else {
+									this.line = savedLine;
+									this.column = savedColumn;
+									this.pos = savedPos;
+								}
+								
+							}
+							else {
+								this.line = savedLine;
+								this.column = savedColumn;
+								this.pos = savedPos;
+							}
+							
+						}
+						
 						attachments.sort(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Runtime.Lexer), "compareAttachments", 1900414603)) ));
 						global::Loreline.Internal.Root.Array<object> type = ( (( attachments.length > 0 )) ? (attachments) : (null) );
 						global::Loreline.Runtime.Position position = start;
@@ -7107,7 +8018,7 @@ namespace Loreline.Runtime {
 						global::Loreline.Runtime.Token token = new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LString(((int) (0) ), content, type)) ), ((global::Loreline.Runtime.Position) (position) ));
 						this.previous = token;
 						global::Loreline.Runtime.Token token1 = token;
-						token1.pos.length += ( contentLength - rawContentLength );
+						token1.pos.length -= rtrimmedOffset;
 						return token1;
 					}
 					
@@ -7345,6 +8256,27 @@ namespace Loreline.Runtime {
 									}
 									
 								}
+								else if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 36)) {
+									buf.addChar(36);
+									buf.addChar(36);
+									{
+										int count8 = 1;
+										while (( ( count8-- > 0 ) && ( this.pos < this.length ) )) {
+											if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+												this.line++;
+												this.column = 1;
+											}
+											else {
+												this.column++;
+											}
+											
+											this.pos++;
+										}
+										
+									}
+									
+									 ++ currentColumn;
+								}
 								else {
 									this.error("Expected identifier or { after $", false);
 									int interpLength2 = ( this.pos - tokenStartPos );
@@ -7389,8 +8321,8 @@ namespace Loreline.Runtime {
 						
 						buf.addChar((c).@value);
 						{
-							int count8 = 1;
-							while (( ( count8-- > 0 ) && ( this.pos < this.length ) )) {
+							int count9 = 1;
+							while (( ( count9-- > 0 ) && ( this.pos < this.length ) )) {
 								if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 									this.line++;
 									this.column = 1;
@@ -7527,15 +8459,44 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> readFieldAccessInterpolation(global::Loreline.Runtime.Position stringStart) {
+		public virtual global::Loreline.Internal.Root.Array<object> readFieldAccessInterpolation(global::Loreline.Runtime.Position interpStart) {
 			unchecked {
+				this.strictExprs.push(((int) (1) ));
 				global::Loreline.Internal.Root.Array<object> tokens = new global::Loreline.Internal.Root.Array<object>();
 				int c = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).@value;
 				if ( ! ((( ( ( ( c >= 97 ) && ( c <= 122 ) ) || ( ( c >= 65 ) && ( c <= 90 ) ) ) || ( c == 95 ) ))) ) {
 					this.error("Expected identifier in field access", true);
 				}
 				
-				tokens.push(this.readIdentifierTokenInInterpolation(stringStart));
+				int idStartPos = this.pos;
+				while (( this.pos < this.length )) {
+					global::Loreline.Internal.Lang.Null<int> c1 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos);
+					int c2 = (c1).@value;
+					if ( ! ((( ( ( ( ( c2 >= 97 ) && ( c2 <= 122 ) ) || ( ( c2 >= 65 ) && ( c2 <= 90 ) ) ) || ( c2 == 95 ) ) || ( ( c2 >= 48 ) && ( c2 <= 57 ) ) ))) ) {
+						break;
+					}
+					
+					{
+						int count = 1;
+						while (( ( count-- > 0 ) && ( this.pos < this.length ) )) {
+							if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+								this.line++;
+								this.column = 1;
+							}
+							else {
+								this.column++;
+							}
+							
+							this.pos++;
+						}
+						
+					}
+					
+				}
+				
+				string name = global::Loreline.Internal.Lang.StringExt.substr(this.input, idStartPos, new global::Loreline.Internal.Lang.Null<int>(( this.pos - idStartPos ), true));
+				global::Loreline.Runtime.TokenType tokenType = ( (global::Loreline.Runtime.Lexer.KEYWORDS.exists(name)) ? (((global::Loreline.Runtime.TokenType) ((global::Loreline.Runtime.Lexer.KEYWORDS.@get(name)).@value) )) : (global::Loreline.Runtime.TokenType.Identifier(name)) );
+				tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (tokenType) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (interpStart.line) ), ((int) (interpStart.column) ), ((int) (idStartPos) ), new global::Loreline.Internal.Lang.Null<int>(( this.pos - idStartPos ), true))) )));
 				while (( this.pos < this.length )) {
 					global::Loreline.Internal.Lang.Null<int> _g = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos);
 					if ( ! (_g.hasValue) ) {
@@ -7545,11 +8506,10 @@ namespace Loreline.Runtime {
 						switch (((_g)).@value) {
 							case 40:
 							{
-								global::Loreline.Runtime.Position parenPos = this.makePositionRelativeTo(stringStart);
-								tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LParen) ), ((global::Loreline.Runtime.Position) (parenPos) )));
+								tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LParen) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 								{
-									int count = 1;
-									while (( ( count-- > 0 ) && ( this.pos < this.length ) )) {
+									int count1 = 1;
+									while (( ( count1-- > 0 ) && ( this.pos < this.length ) )) {
 										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 											this.line++;
 											this.column = 1;
@@ -7570,11 +8530,10 @@ namespace Loreline.Runtime {
 									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 41)) {
 										 -- parenLevel;
 										if (( parenLevel == 0 )) {
-											global::Loreline.Runtime.Position closeParenPos = this.makePositionRelativeTo(stringStart);
-											tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.RParen) ), ((global::Loreline.Runtime.Position) (closeParenPos) )));
+											tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.RParen) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 											{
-												int count1 = 1;
-												while (( ( count1-- > 0 ) && ( this.pos < this.length ) )) {
+												int count2 = 1;
+												while (( ( count2-- > 0 ) && ( this.pos < this.length ) )) {
 													if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 														this.line++;
 														this.column = 1;
@@ -7599,11 +8558,10 @@ namespace Loreline.Runtime {
 									}
 									
 									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 44)) {
-										global::Loreline.Runtime.Position commaPos = this.makePositionRelativeTo(stringStart);
-										tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.Comma) ), ((global::Loreline.Runtime.Position) (commaPos) )));
+										tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.Comma) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 										{
-											int count2 = 1;
-											while (( ( count2-- > 0 ) && ( this.pos < this.length ) )) {
+											int count3 = 1;
+											while (( ( count3-- > 0 ) && ( this.pos < this.length ) )) {
 												if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 													this.line++;
 													this.column = 1;
@@ -7619,7 +8577,7 @@ namespace Loreline.Runtime {
 										
 									}
 									else {
-										tokens.push(this.nextTokenWithPosition(stringStart));
+										tokens.push(this.nextToken());
 									}
 									
 								}
@@ -7636,18 +8594,18 @@ namespace Loreline.Runtime {
 							{
 								bool tmp = default(bool);
 								if (( ( this.pos + 1 ) < this.length )) {
-									int c1 = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).@value;
-									tmp = ( ( ( ( c1 >= 97 ) && ( c1 <= 122 ) ) || ( ( c1 >= 65 ) && ( c1 <= 90 ) ) ) || ( c1 == 95 ) );
+									int c3 = (global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( this.pos + 1 ))).@value;
+									tmp = ( ( ( ( c3 >= 97 ) && ( c3 <= 122 ) ) || ( ( c3 >= 65 ) && ( c3 <= 90 ) ) ) || ( c3 == 95 ) );
 								}
 								else {
 									tmp = false;
 								}
 								
 								if (tmp) {
-									global::Loreline.Runtime.Position dotPos = this.makePositionRelativeTo(stringStart);
+									tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.Dot) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 									{
-										int count3 = 1;
-										while (( ( count3-- > 0 ) && ( this.pos < this.length ) )) {
+										int count4 = 1;
+										while (( ( count4-- > 0 ) && ( this.pos < this.length ) )) {
 											if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 												this.line++;
 												this.column = 1;
@@ -7661,11 +8619,38 @@ namespace Loreline.Runtime {
 										
 									}
 									
-									tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.Dot) ), ((global::Loreline.Runtime.Position) (dotPos) )));
-									tokens.push(this.readIdentifierTokenInInterpolation(stringStart));
+									int idStartPos1 = this.pos;
+									while (( this.pos < this.length )) {
+										global::Loreline.Internal.Lang.Null<int> c4 = global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos);
+										int c5 = (c4).@value;
+										if ( ! ((( ( ( ( ( c5 >= 97 ) && ( c5 <= 122 ) ) || ( ( c5 >= 65 ) && ( c5 <= 90 ) ) ) || ( c5 == 95 ) ) || ( ( c5 >= 48 ) && ( c5 <= 57 ) ) ))) ) {
+											break;
+										}
+										
+										{
+											int count5 = 1;
+											while (( ( count5-- > 0 ) && ( this.pos < this.length ) )) {
+												if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
+													this.line++;
+													this.column = 1;
+												}
+												else {
+													this.column++;
+												}
+												
+												this.pos++;
+											}
+											
+										}
+										
+									}
+									
+									string name1 = global::Loreline.Internal.Lang.StringExt.substr(this.input, idStartPos1, new global::Loreline.Internal.Lang.Null<int>(( this.pos - idStartPos1 ), true));
+									global::Loreline.Runtime.TokenType tokenType1 = ( (global::Loreline.Runtime.Lexer.KEYWORDS.exists(name1)) ? (((global::Loreline.Runtime.TokenType) ((global::Loreline.Runtime.Lexer.KEYWORDS.@get(name1)).@value) )) : (global::Loreline.Runtime.TokenType.Identifier(name1)) );
+									tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (tokenType1) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (( this.column - (( this.pos - idStartPos1 )) )) ), ((int) (idStartPos1) ), default(global::Loreline.Internal.Lang.Null<int>))) )));
 								}
 								else {
-									goto label1;
+									goto label3;
 								}
 								
 								break;
@@ -7674,11 +8659,10 @@ namespace Loreline.Runtime {
 							
 							case 91:
 							{
-								global::Loreline.Runtime.Position bracketPos = this.makePositionRelativeTo(stringStart);
-								tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LBracket) ), ((global::Loreline.Runtime.Position) (bracketPos) )));
+								tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.LBracket) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 								{
-									int count4 = 1;
-									while (( ( count4-- > 0 ) && ( this.pos < this.length ) )) {
+									int count6 = 1;
+									while (( ( count6-- > 0 ) && ( this.pos < this.length ) )) {
 										if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 											this.line++;
 											this.column = 1;
@@ -7699,11 +8683,10 @@ namespace Loreline.Runtime {
 									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 93)) {
 										 -- bracketLevel;
 										if (( bracketLevel == 0 )) {
-											global::Loreline.Runtime.Position closeBracketPos = this.makePositionRelativeTo(stringStart);
-											tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.RBracket) ), ((global::Loreline.Runtime.Position) (closeBracketPos) )));
+											tokens.push(new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.RBracket) ), ((global::Loreline.Runtime.Position) (new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.pos) ), new global::Loreline.Internal.Lang.Null<int>(1, true))) )));
 											{
-												int count5 = 1;
-												while (( ( count5-- > 0 ) && ( this.pos < this.length ) )) {
+												int count7 = 1;
+												while (( ( count7-- > 0 ) && ( this.pos < this.length ) )) {
 													if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, this.pos)).toDynamic(), 10)) {
 														this.line++;
 														this.column = 1;
@@ -7727,7 +8710,7 @@ namespace Loreline.Runtime {
 										 ++ bracketLevel;
 									}
 									
-									tokens.push(this.nextTokenWithPosition(stringStart));
+									tokens.push(this.nextToken());
 								}
 								
 								if (( bracketLevel > 0 )) {
@@ -7740,7 +8723,7 @@ namespace Loreline.Runtime {
 							
 							default:
 							{
-								goto label1;
+								goto label3;
 							}
 							
 						}
@@ -7748,7 +8731,8 @@ namespace Loreline.Runtime {
 					}
 					
 				}
-				label1: {};
+				label3: {};
+				this.strictExprs.pop();
 				return tokens;
 			}
 		}
@@ -8160,7 +9144,7 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.Token readFunction(global::Loreline.Runtime.Position start) {
 			unchecked {
 				{
-					int newPos = this._skipWhitespaceAndComments(this.pos);
+					int newPos = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					while (( this.pos < newPos )) {
 						int count = 1;
 						while (( ( count-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8216,7 +9200,7 @@ namespace Loreline.Runtime {
 				}
 				
 				{
-					int newPos1 = this._skipWhitespaceAndComments(this.pos);
+					int newPos1 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					while (( this.pos < newPos1 )) {
 						int count2 = 1;
 						while (( ( count2-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8264,7 +9248,7 @@ namespace Loreline.Runtime {
 					if (global::Loreline.Internal.Lang.Runtime.eq((c2).toDynamic(), 47)) {
 						int prevPos = this.pos;
 						{
-							int newPos2 = this._skipWhitespaceAndComments(this.pos);
+							int newPos2 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 							while (( this.pos < newPos2 )) {
 								int count4 = 1;
 								while (( ( count4-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8324,7 +9308,7 @@ namespace Loreline.Runtime {
 						}
 						
 						{
-							int newPos3 = this._skipWhitespaceAndComments(this.pos);
+							int newPos3 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 							while (( this.pos < newPos3 )) {
 								int count7 = 1;
 								while (( ( count7-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8374,7 +9358,7 @@ namespace Loreline.Runtime {
 						}
 						
 						{
-							int newPos4 = this._skipWhitespaceAndComments(this.pos);
+							int newPos4 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 							while (( this.pos < newPos4 )) {
 								int count9 = 1;
 								while (( ( count9-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8418,7 +9402,7 @@ namespace Loreline.Runtime {
 						}
 						
 						{
-							int newPos5 = this._skipWhitespaceAndComments(this.pos);
+							int newPos5 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 							while (( this.pos < newPos5 )) {
 								int count11 = 1;
 								while (( ( count11-- > 0 ) && ( this.pos < this.length ) )) {
@@ -8465,7 +9449,7 @@ namespace Loreline.Runtime {
 				}
 				
 				{
-					int newPos6 = this._skipWhitespaceAndComments(this.pos);
+					int newPos6 = this._skipWhitespaceAndComments(this.pos, new global::Loreline.Internal.Lang.Null<bool>(false, true));
 					while (( this.pos < newPos6 )) {
 						int count13 = 1;
 						while (( ( count13-- > 0 ) && ( this.pos < this.length ) )) {
@@ -9059,6 +10043,19 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public bool isLowerCase(int c) {
+			unchecked {
+				if (( c >= 97 )) {
+					return ( c <= 122 );
+				}
+				else {
+					return false;
+				}
+				
+			}
+		}
+		
+		
 		public bool isIdentifierPart(int c) {
 			unchecked {
 				if ( ! ((( ( ( ( c >= 97 ) && ( c <= 122 ) ) || ( ( c >= 65 ) && ( c <= 90 ) ) ) || ( c == 95 ) ))) ) {
@@ -9304,6 +10301,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 805277703:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isLowerCase", 805277703)) );
+					}
+					
+					
 					case 1449108079:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isIdentifierStart", 1449108079)) );
@@ -9436,6 +10439,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 597630998:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "readImportValue", 597630998)) );
+					}
+					
+					
 					case 1771682515:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isStrict", 1771682515)) );
@@ -9508,9 +10517,21 @@ namespace Loreline.Runtime {
 					}
 					
 					
-					case 619027138:
+					case 1866719084:
 					{
-						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isAfterLabel", 619027138)) );
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isContinuingMultilineText", 1866719084)) );
+					}
+					
+					
+					case 89635323:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isStartingMultilineDialogue", 89635323)) );
+					}
+					
+					
+					case 1991172728:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "afterLabelIdentifierToken", 1991172728)) );
 					}
 					
 					
@@ -9553,6 +10574,12 @@ namespace Loreline.Runtime {
 					case 1911284859:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "isIfStart", 1911284859)) );
+					}
+					
+					
+					case 1913699897:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "_skipWhitespaceAndCommentsStopNextLine", 1913699897)) );
 					}
 					
 					
@@ -9818,6 +10845,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 805277703:
+					{
+						return this.isLowerCase(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+					}
+					
+					
 					case 1449108079:
 					{
 						return this.isIdentifierStart(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
@@ -9953,6 +10986,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 597630998:
+					{
+						return this.readImportValue(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((global::Loreline.Runtime.Position) (dynargs[1]) ));
+					}
+					
+					
 					case 1771682515:
 					{
 						return this.isStrict();
@@ -10027,9 +11066,21 @@ namespace Loreline.Runtime {
 					}
 					
 					
-					case 619027138:
+					case 1866719084:
 					{
-						return this.isAfterLabel(global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
+						return this.isContinuingMultilineText(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+					}
+					
+					
+					case 89635323:
+					{
+						return this.isStartingMultilineDialogue(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+					}
+					
+					
+					case 1991172728:
+					{
+						return this.afterLabelIdentifierToken(global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
 					}
 					
 					
@@ -10041,7 +11092,7 @@ namespace Loreline.Runtime {
 					
 					case 1151280105:
 					{
-						return this.isAssignStart(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.isAssignStart(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Runtime.toBool(dynargs[1]));
 					}
 					
 					
@@ -10065,7 +11116,7 @@ namespace Loreline.Runtime {
 					
 					case 1702898679:
 					{
-						return this.isIdentifierExpressionStart(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.isIdentifierExpressionStart(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Runtime.toBool(dynargs[1]));
 					}
 					
 					
@@ -10075,9 +11126,15 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1913699897:
+					{
+						return this._skipWhitespaceAndCommentsStopNextLine(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+					}
+					
+					
 					case 1575472496:
 					{
-						return this._skipWhitespaceAndComments(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this._skipWhitespaceAndComments(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
 					}
 					
 					

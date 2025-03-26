@@ -23,6 +23,38 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static global::Loreline.Runtime.Position fromContentAndIndex(string content, int offset, global::Loreline.Internal.Lang.Null<int> length) {
+			unchecked {
+				int length1 = ( ( ! (length.hasValue) ) ? (0) : ((length).@value) );
+				int line = 1;
+				int column = 1;
+				int currentOffset = 0;
+				int len = content.Length;
+				if (( offset > len )) {
+					offset = len;
+				}
+				
+				if (( offset < 0 )) {
+					offset = 0;
+				}
+				
+				while (( currentOffset < offset )) {
+					if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, currentOffset)).toDynamic(), 10)) {
+						 ++ line;
+						column = 1;
+					}
+					else {
+						 ++ column;
+					}
+					
+					 ++ currentOffset;
+				}
+				
+				return new global::Loreline.Runtime.Position(((int) (line) ), ((int) (column) ), ((int) (offset) ), new global::Loreline.Internal.Lang.Null<int>(length1, true));
+			}
+		}
+		
+		
 		public int line;
 		
 		public int column;
@@ -46,8 +78,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime.Position withOffset(string content, int additionalOffset, global::Loreline.Internal.Lang.Null<int> newLength) {
+		public virtual global::Loreline.Runtime.Position withOffset(string content, int additionalOffset, global::Loreline.Internal.Lang.Null<int> newLength, global::Loreline.Internal.Lang.Null<int> contentStart) {
 			unchecked {
+				int contentStart1 = ( ( ! (contentStart.hasValue) ) ? (0) : ((contentStart).@value) );
 				int newLength1 = ( ( ! (newLength.hasValue) ) ? (0) : ((newLength).@value) );
 				if (( additionalOffset == 0 )) {
 					return new global::Loreline.Runtime.Position(((int) (this.line) ), ((int) (this.column) ), ((int) (this.offset) ), new global::Loreline.Internal.Lang.Null<int>(newLength1, true));
@@ -59,7 +92,7 @@ namespace Loreline.Runtime {
 				if (( additionalOffset > 0 )) {
 					int chars = 0;
 					while (( chars < additionalOffset )) {
-						if (( ( currentOffset < content.Length ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, currentOffset)).toDynamic(), 10) )) {
+						if (( ( currentOffset < ( contentStart1 + content.Length ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( currentOffset - contentStart1 ))).toDynamic(), 10) )) {
 							 ++ currentLine;
 							currentColumn = 1;
 						}
@@ -76,12 +109,12 @@ namespace Loreline.Runtime {
 					int chars1 = 0;
 					while (( chars1 > additionalOffset )) {
 						 -- currentOffset;
-						if (( ( currentOffset >= 0 ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, currentOffset)).toDynamic(), 10) )) {
+						if (( ( currentOffset >= 0 ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( currentOffset - contentStart1 ))).toDynamic(), 10) )) {
 							 -- currentLine;
 							int col = 1;
 							int scanPos = ( currentOffset - 1 );
 							while (( scanPos >= 0 )) {
-								global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, scanPos);
+								global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( scanPos - contentStart1 ));
 								if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 10)) {
 									break;
 								}
@@ -312,7 +345,7 @@ namespace Loreline.Runtime {
 					
 					case 1275710009:
 					{
-						return this.withOffset(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )));
+						return this.withOffset(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 3 )) ? (dynargs[3]) : (null) )));
 					}
 					
 					

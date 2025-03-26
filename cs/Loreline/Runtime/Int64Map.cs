@@ -346,17 +346,17 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime._Int64Map.Int64MapIterator<V> iterator() {
+		public global::Loreline.Runtime._Int64Map.Int64MapIterator<V> iterator() {
 			return new global::Loreline.Runtime._Int64Map.Int64MapIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
 		}
 		
 		
-		public virtual global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V> keyIterator() {
+		public global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V> keyIterator() {
 			return new global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
 		}
 		
 		
-		public virtual global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V> keyValueIterator() {
+		public global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V> keyValueIterator() {
 			return new global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
 		}
 		

@@ -434,6 +434,41 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
+		public virtual bool @remove(string key) {
+			unchecked {
+				int idx = -1;
+				bool tmp = default(bool);
+				if (( this.cachedKey == key )) {
+					idx = this.cachedIndex;
+					tmp = ( idx != -1 );
+				}
+				else {
+					tmp = false;
+				}
+				
+				if ( ! (tmp) ) {
+					idx = this.lookup(key);
+				}
+				
+				if (( idx == -1 )) {
+					return false;
+				}
+				else {
+					if (( this.cachedKey == key )) {
+						this.cachedIndex = -1;
+					}
+					
+					this.hashes[idx] = 1;
+					this._keys[idx] = null;
+					this.vals[idx] = default(T);
+					 -- this.size;
+					return true;
+				}
+				
+			}
+		}
+		
+		
 		public object keys() {
 			return new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T>(((global::Loreline.Internal.Ds.StringMap<T>) (this) ));
 		}
@@ -571,6 +606,12 @@ namespace Loreline.Internal.Ds {
 					case 1191633396:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "keys", 1191633396)) );
+					}
+					
+					
+					case 76061764:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "remove", 76061764)) );
 					}
 					
 					
@@ -722,6 +763,12 @@ namespace Loreline.Internal.Ds {
 					}
 					
 					
+					case 76061764:
+					{
+						return this.@remove(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+					}
+					
+					
 					case 1071652316:
 					{
 						return this.exists(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
@@ -799,6 +846,8 @@ namespace Loreline.Internal.Ds {
 		void resize(int newNBuckets);
 		
 		bool exists(string key);
+		
+		bool @remove(string key);
 		
 		object keys();
 		
