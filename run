@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+import { spawn } from 'node:child_process';
+import * as url from 'node:url';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 async function command(command, args = []) {
     const childProcess = spawn(command, args, {

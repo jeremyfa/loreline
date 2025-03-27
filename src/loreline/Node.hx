@@ -16,13 +16,21 @@ enum abstract NodeIdStep(Int) {
 
 }
 
+#if loreline_node_id_class
+class NodeId {
+#else
 abstract NodeId(Int64) {
+#end
 
     static inline final OFFSET:Int = 32768;
 
     static inline final MAX:Int = 65535;
 
     public static final UNDEFINED:NodeId = new NodeId(0, 0, 0, 0);
+
+    #if loreline_node_id_class
+    var thisVal:Int64;
+    #end
 
     public function new(section:Int, branch:Int, block:Int, node:Int) {
         if (section < 0 || section > MAX) {
@@ -37,7 +45,7 @@ abstract NodeId(Int64) {
         if (node < 0 || node > MAX) {
             throw 'Node value ($node) should be between 0 and $MAX';
         }
-        this = Int64.make(
+        #if loreline_node_id_class thisVal #else this #end = Int64.make(
             packInt32(section - OFFSET, branch - OFFSET), packInt32(block - OFFSET, node - OFFSET)
         );
     }
@@ -88,42 +96,42 @@ abstract NodeId(Int64) {
 
     public var section(get,set):Int;
     inline function get_section():Int {
-        return int32GetHigh(this.high) + OFFSET;
+        return int32GetHigh(#if loreline_node_id_class thisVal #else this #end.high) + OFFSET;
     }
     inline function set_section(section:Int):Int {
-        this = Int64.make(int32SetHigh(this.high, section - OFFSET), this.low);
+        #if loreline_node_id_class thisVal #else this #end = Int64.make(int32SetHigh(#if loreline_node_id_class thisVal #else this #end.high, section - OFFSET), #if loreline_node_id_class thisVal #else this #end.low);
         return section;
     }
 
     public var branch(get,set):Int;
     inline function get_branch():Int {
-        return int32GetLow(this.high) + OFFSET;
+        return int32GetLow(#if loreline_node_id_class thisVal #else this #end.high) + OFFSET;
     }
     inline function set_branch(branch:Int):Int {
-        this = Int64.make(int32SetLow(this.high, branch - OFFSET), this.low);
+        #if loreline_node_id_class thisVal #else this #end = Int64.make(int32SetLow(#if loreline_node_id_class thisVal #else this #end.high, branch - OFFSET), #if loreline_node_id_class thisVal #else this #end.low);
         return branch;
     }
 
     public var block(get,set):Int;
     inline function get_block():Int {
-        return int32GetHigh(this.low) + OFFSET;
+        return int32GetHigh(#if loreline_node_id_class thisVal #else this #end.low) + OFFSET;
     }
     inline function set_block(block:Int):Int {
-        this = Int64.make(this.high, int32SetHigh(this.low, block - OFFSET));
+        #if loreline_node_id_class thisVal #else this #end = Int64.make(#if loreline_node_id_class thisVal #else this #end.high, int32SetHigh(#if loreline_node_id_class thisVal #else this #end.low, block - OFFSET));
         return block;
     }
 
     public var node(get,set):Int;
     inline function get_node():Int {
-        return int32GetLow(this.low) + OFFSET;
+        return int32GetLow(#if loreline_node_id_class thisVal #else this #end.low) + OFFSET;
     }
     inline function set_node(node:Int):Int {
-        this = Int64.make(this.high, int32SetLow(this.low, node - OFFSET));
+        #if loreline_node_id_class thisVal #else this #end = Int64.make(#if loreline_node_id_class thisVal #else this #end.high, int32SetLow(#if loreline_node_id_class thisVal #else this #end.low, node - OFFSET));
         return node;
     }
 
     public function nextSection():NodeId {
-        final section = abstract.section;
+        final section = #if loreline_node_id_class this #else abstract #end.section;
         if (section == MAX) {
             throw 'Node id section overflow';
         }
@@ -133,7 +141,7 @@ abstract NodeId(Int64) {
     }
 
     public function nextBranch():NodeId {
-        final branch = abstract.branch;
+        final branch = #if loreline_node_id_class this #else abstract #end.branch;
         if (branch == MAX) {
             return nextSection();
         }
@@ -143,7 +151,7 @@ abstract NodeId(Int64) {
     }
 
     public function nextBlock():NodeId {
-        final block = abstract.block;
+        final block = #if loreline_node_id_class this #else abstract #end.block;
         if (block == MAX) {
             return nextBranch();
         }
@@ -153,7 +161,7 @@ abstract NodeId(Int64) {
     }
 
     public function nextNode():NodeId {
-        final node = abstract.node;
+        final node = #if loreline_node_id_class this #else abstract #end.node;
         if (node == MAX) {
             return nextBlock();
         }
@@ -163,7 +171,7 @@ abstract NodeId(Int64) {
     }
 
     inline public function toInt64():Int64 {
-        return this;
+        return #if loreline_node_id_class thisVal #else this #end;
     }
 
     public function toString():String {
@@ -317,6 +325,9 @@ private class NodeIdMapKeyValueIterator<V> {
 /**
  * Base class for all AST nodes. Contains position information and basic JSON conversion.
  */
+#if js
+@:expose
+#end
 class Node {
 
     /**

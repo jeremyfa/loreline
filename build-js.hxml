@@ -1,0 +1,10 @@
+--class-path src
+--main loreline.lib.Library
+--js js/loreline.js
+--no-output
+-D js-es=6
+-D no-compilation
+-D loreline_use_js_types
+-D loreline_typedef_options
+-D loreline_functions_map_dynamic_access
+-D loreline_node_id_class

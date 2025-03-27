@@ -5,6 +5,9 @@ import loreline.Node;
 /**
  * Represents the root node of a Loreline script AST.
  */
+#if js
+@:expose
+#end
 class Script extends Node {
     /**
      * Array of top-level declarations in the script.

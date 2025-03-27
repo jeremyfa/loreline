@@ -218,27 +218,6 @@ class TextTag {
 }
 
 /**
- * Helper class for managing the next evaluation step.
- * Used to control whether the next step should be executed synchronously or asynchronously.
- */
-class EvalNext {
-    /**
-     * Whether the next step should be executed synchronously.
-     */
-    public var sync:Bool = true;
-
-    /**
-     * The callback to execute for the next step.
-     */
-    public var cb:()->Void = null;
-
-    /**
-     * Creates a new EvalNext instance.
-     */
-    public function new() {}
-}
-
-/**
  * Represents a choice option presented to the user.
  */
 @:structInit
@@ -298,8 +277,38 @@ class RuntimeError extends Error {
 
 }
 
-@:structInit
-class InterpreterOptions {
+/**
+ * Helper class for managing the next evaluation step.
+ * Used to control whether the next step should be executed synchronously or asynchronously.
+ */
+class EvalNext {
+    /**
+     * Whether the next step should be executed synchronously.
+     */
+    public var sync:Bool = true;
+
+    /**
+     * The callback to execute for the next step.
+     */
+    public var cb:()->Void = null;
+
+    /**
+     * Creates a new EvalNext instance.
+     */
+    public function new() {}
+}
+
+#if loreline_functions_map_dynamic_access
+typedef FunctionsMap = haxe.DynamicAccess<Any>;
+#else
+typedef FunctionsMap = haxe.ds.Map<String,Any>;
+#end
+
+#if loreline_typedef_options
+typedef InterpreterOptions = {
+#else
+@:structInit class InterpreterOptions {
+#end
 
     #if cs
     /**
@@ -312,18 +321,21 @@ class InterpreterOptions {
     /**
      * Optional map of additional functions to make available to the script
      */
-    public var functions:Map<String,Any> = null;
+    #if loreline_typedef_options @:optional #end
+    public var functions:FunctionsMap #if !loreline_typedef_options = null #end;
 
     /**
      * Tells whether access is strict or not. If set to true,
      * trying to read or write an undefined variable will throw an error.
      */
-    public var strictAccess:Bool = false;
+    #if loreline_typedef_options @:optional #end
+    public var strictAccess:Bool #if !loreline_typedef_options = false #end;
 
     /**
      * A custom instanciator to create fields objects.
      */
-    var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any = null;
+    #if loreline_typedef_options @:optional #end
+    public var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any #if !loreline_typedef_options = null #end;
 
 }
 
@@ -335,6 +347,9 @@ class InterpreterOptions {
  */
 #if hscript
 @:allow(loreline.HscriptInterp)
+#end
+#if js
+@:expose
 #end
 @:keep class Interpreter {
 
@@ -516,7 +531,7 @@ class InterpreterOptions {
      * Starts script execution from the beginning or a specific beat.
      *
      * @param beatName Optional name of the beat to start from. If null, execution starts from
-     *                the first beat or a beat named "_" if it exists.
+     *                 the first beat or a beat named "_" if it exists.
      * @throws RuntimeError If the specified beat doesn't exist or if no beats are found in the script
      */
     public function start(?beatName:String) {
@@ -1482,7 +1497,7 @@ class InterpreterOptions {
      *
      * @param functions Optional map of additional functions to make available
      */
-    function initializeTopLevelFunctions(functions:Map<String,Any>) {
+    function initializeTopLevelFunctions(functions:FunctionsMap) {
 
         topLevelFunctions.set('random', (min:Int, max:Int) -> {
             return Math.floor(min + random() * (max + 1 - min));

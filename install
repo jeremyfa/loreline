@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const { spawn, execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync, spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import * as url from 'node:url';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 async function command(cmd, args, options) {
     if (args == null) args = [];
@@ -337,12 +339,27 @@ async function main() {
 
         let haxeBuildJsArgs = [
             '--class-path', 'src',
-            '--js', 'build/loreline.js',
+            '--js', 'js/loreline.js',
             '-D', 'js-es=6',
+            '-D', 'loreline_use_js_types',
+            '-D', 'loreline_typedef_options',
+            '-D', 'loreline_functions_map_dynamic_access',
+            '-D', 'loreline_node_id_class',
             '--main', 'loreline.lib.Library'
         ];
 
         await command(haxe, haxeBuildJsArgs.concat(haxeBuildArgs).concat([]));
+
+        let ln = process.platform == 'win32' ? '\r\n' : '\n';
+
+        let js = fs.readFileSync('js/loreline.js', 'utf8');
+        js = 'let runtime = {}; let globals = {}; ' + js;
+        js = js.split('})(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);').join('})(runtime, globals);');
+        js += ln + 'export const Loreline = runtime.loreline.Loreline;';
+        js += ln + 'export const Interpreter = runtime.loreline.Interpreter;';
+        js += ln + 'export const Node = runtime.loreline.Node;';
+        js += ln + 'export const Script = runtime.loreline.Script;';
+        fs.writeFileSync('js/loreline.js', js);
 
     }
 

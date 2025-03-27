@@ -29,7 +29,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Runtime.Script[] result = new global::Loreline.Runtime.Script[]{null};
 			if (( ( filePath != null ) && ( handleFile != null ) )) {
 				global::Loreline.Runtime.Imports imports = new global::Loreline.Runtime.Imports();
-				imports.resolve(filePath, tokens, handleFile, ( (( global::Loreline.Runtime.Loreline_parse_52__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Loreline_parse_52__Fun.__hx_current) : (global::Loreline.Runtime.Loreline_parse_52__Fun.__hx_current = ((global::Loreline.Runtime.Loreline_parse_52__Fun) (new global::Loreline.Runtime.Loreline_parse_52__Fun()) )) ), new global::Loreline.Runtime.Loreline_parse_55__Fun(tokens, result, filePath, callback));
+				imports.resolve(filePath, tokens, handleFile, ( (( global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current) : (global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current = ((global::Loreline.Runtime.Loreline_parse_55__Fun) (new global::Loreline.Runtime.Loreline_parse_55__Fun()) )) ), new global::Loreline.Runtime.Loreline_parse_58__Fun(tokens, result, filePath, callback));
 				return ((global::Loreline.Runtime.Script) (result[0]) );
 			}
 			
@@ -76,13 +76,13 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Loreline_parse_52__Fun : global::Loreline.Internal.Lang.Function {
+	public class Loreline_parse_55__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Loreline_parse_52__Fun() : base(1, 0) {
+		public Loreline_parse_55__Fun() : base(1, 0) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Loreline_parse_52__Fun __hx_current;
+		public static global::Loreline.Runtime.Loreline_parse_55__Fun __hx_current;
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			global::Loreline.Runtime.Error error = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Runtime.Error) (((object) (__fn_float1) )) )) : (((global::Loreline.Runtime.Error) (__fn_dyn1) )) );
@@ -97,9 +97,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Loreline_parse_55__Fun : global::Loreline.Internal.Lang.Function {
+	public class Loreline_parse_58__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Loreline_parse_55__Fun(global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Runtime.Script[] result, string filePath, global::Loreline.Internal.Lang.Function callback) : base(2, 0) {
+		public Loreline_parse_58__Fun(global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Runtime.Script[] result, string filePath, global::Loreline.Internal.Lang.Function callback) : base(2, 0) {
 			this.tokens = tokens;
 			this.result = result;
 			this.filePath = filePath;

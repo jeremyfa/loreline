@@ -1,0 +1,21 @@
+{
+  "name": "loreline",
+  "version": "0.4.0",
+  "description": "Loreline is an open-source scripting language for writing interactive fictions.",
+  "homepage": "https://github.com/jeremyfa/loreline#readme",
+  "bugs": {
+    "url": "https://github.com/jeremyfa/loreline/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeremyfa/loreline.git"
+  },
+  "license": "MIT",
+  "author": "Jérémy Faivre",
+  "type": "module",
+  "main": "js/loreline.js",
+  "types": "js/loreline.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

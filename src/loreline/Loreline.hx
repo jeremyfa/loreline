@@ -9,6 +9,9 @@ import loreline.Parser;
  * The main public API for Loreline runtime.
  * Provides easy access to the core functionality for parsing and running Loreline scripts.
  */
+#if js
+@:expose
+#end
 class Loreline {
 
     /**

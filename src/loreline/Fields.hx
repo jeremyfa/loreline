@@ -4,6 +4,9 @@ package loreline;
  * Base interface to hold loreline values
  * This interface allows to map loreline object fields to game-specific objects.
  */
+#if js
+@:expose
+#end
 interface Fields {
 
     /**
