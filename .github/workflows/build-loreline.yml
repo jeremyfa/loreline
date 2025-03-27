@@ -220,9 +220,79 @@ jobs:
           path: loreline-linux-${{ matrix.arch }}.zip
           compression-level: 0
 
+
+  build-loreline-csharp:
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Display dotnet version
+        run: dotnet --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          echo 'neko path: '$NEKOPATH
+          echo 'haxe path: '$HAXEPATH
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Build loreline
+        working-directory: .
+        run: |
+          node ./install --cs --cs-dll
+
+      - name: Create zip archive
+        working-directory: cs
+        run: zip -r '../loreline-csharp.zip' ./*
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-csharp.zip
+          path: loreline-csharp.zip
+          compression-level: 0
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-loreline-windows, build-loreline-mac, build-loreline-linux]
+    needs: [build-loreline-windows, build-loreline-mac, build-loreline-linux, build-loreline-csharp]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -251,6 +321,12 @@ jobs:
           name: loreline-linux-arm64.zip
           path: .
 
+      - name: Download loreline-csharp.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-csharp.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -270,3 +346,4 @@ jobs:
             loreline-mac.zip
             loreline-linux-x86_64.zip
             loreline-linux-arm64.zip
+            loreline-csharp.zip
