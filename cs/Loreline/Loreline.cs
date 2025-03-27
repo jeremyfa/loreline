@@ -9,7 +9,7 @@ namespace Loreline
     /// The main public API for Loreline runtime.
     /// Provides easy access to the core functionality for parsing and running Loreline scripts.
     /// </summary>
-    static class Loreline
+    public static class Engine
     {
         public delegate void ImportsFileCallback(string data);
 

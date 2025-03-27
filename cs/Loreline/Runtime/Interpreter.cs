@@ -9,12 +9,12 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public RuntimeState(object fields, object originalFields) {
-			global::Loreline.Runtime.RuntimeState.__hx_ctor_loreline_RuntimeState(this, fields, originalFields);
+		public RuntimeState(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Runtime.Node node, object fields, object originalFields) {
+			global::Loreline.Runtime.RuntimeState.__hx_ctor_loreline_RuntimeState(this, interpreter, node, fields, originalFields);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_RuntimeState(global::Loreline.Runtime.RuntimeState __hx_this, object fields, object originalFields) {
+		protected static void __hx_ctor_loreline_RuntimeState(global::Loreline.Runtime.RuntimeState __hx_this, global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Runtime.Node node, object fields, object originalFields) {
 			unchecked {
 				__hx_this.scope = -1;
 				{
@@ -22,7 +22,7 @@ namespace Loreline.Runtime {
 						__hx_this.fields = fields;
 					}
 					else {
-						__hx_this.clear();
+						__hx_this.clear(interpreter, node);
 					}
 					
 					if (( originalFields != null )) {
@@ -44,13 +44,13 @@ namespace Loreline.Runtime {
 		
 		public object originalFields;
 		
-		public virtual void clear() {
-			this.fields = global::Loreline.Runtime.Objects.createFields(null, null);
+		public virtual void clear(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Runtime.Node node) {
+			this.fields = global::Loreline.Runtime.Objects.createFields(interpreter, null, node);
 		}
 		
 		
 		public virtual void createOriginalFields() {
-			this.originalFields = global::Loreline.Runtime.Objects.createFields(null, null);
+			this.originalFields = global::Loreline.Runtime.Objects.createFields(null, null, null);
 		}
 		
 		
@@ -212,7 +212,7 @@ namespace Loreline.Runtime {
 					
 					case 1213952397:
 					{
-						this.clear();
+						this.clear(((global::Loreline.Runtime.Interpreter) (dynargs[0]) ), ((global::Loreline.Runtime.Node) (dynargs[1]) ));
 						break;
 					}
 					
@@ -246,17 +246,17 @@ namespace Loreline.Runtime {
 namespace Loreline.Runtime {
 	public class RuntimeCharacter : global::Loreline.Runtime.RuntimeState {
 		
-		public RuntimeCharacter(global::Loreline.Internal.Lang.EmptyObject empty) : base(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) )) {
+		public RuntimeCharacter(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 		}
 		
 		
-		public RuntimeCharacter(object fields) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Runtime.RuntimeCharacter.__hx_ctor_loreline_RuntimeCharacter(this, fields);
+		public RuntimeCharacter(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Runtime.AstNode node, object fields, object originalFields) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+			global::Loreline.Runtime.RuntimeCharacter.__hx_ctor_loreline_RuntimeCharacter(this, interpreter, node, fields, originalFields);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_RuntimeCharacter(global::Loreline.Runtime.RuntimeCharacter __hx_this, object fields) {
-			global::Loreline.Runtime.RuntimeState.__hx_ctor_loreline_RuntimeState(__hx_this, fields, null);
+		protected static void __hx_ctor_loreline_RuntimeCharacter(global::Loreline.Runtime.RuntimeCharacter __hx_this, global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Runtime.AstNode node, object fields, object originalFields) {
+			global::Loreline.Runtime.RuntimeState.__hx_ctor_loreline_RuntimeState(__hx_this, interpreter, node, fields, originalFields);
 		}
 		
 		
@@ -997,15 +997,21 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public InterpreterOptions(global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess) {
-			global::Loreline.Runtime.InterpreterOptions.__hx_ctor_loreline_InterpreterOptions(this, functions, strictAccess);
+		public InterpreterOptions(object wrapper, global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess, global::Loreline.Internal.Lang.Function customCreateFields) {
+			global::Loreline.Runtime.InterpreterOptions.__hx_ctor_loreline_InterpreterOptions(this, wrapper, functions, strictAccess, customCreateFields);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_InterpreterOptions(global::Loreline.Runtime.InterpreterOptions __hx_this, global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess) {
+		protected static void __hx_ctor_loreline_InterpreterOptions(global::Loreline.Runtime.InterpreterOptions __hx_this, object wrapper, global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess, global::Loreline.Internal.Lang.Function customCreateFields) {
+			__hx_this.customCreateFields = null;
 			__hx_this.strictAccess = false;
 			__hx_this.functions = null;
+			__hx_this.wrapper = null;
 			{
+				if (( wrapper != null )) {
+					__hx_this.wrapper = wrapper;
+				}
+				
 				if (( functions != null )) {
 					__hx_this.functions = functions;
 				}
@@ -1014,18 +1020,54 @@ namespace Loreline.Runtime {
 					__hx_this.strictAccess = (strictAccess).@value;
 				}
 				
+				if (( customCreateFields != null )) {
+					__hx_this.customCreateFields = customCreateFields;
+				}
+				
 			}
 			
 		}
 		
 		
+		public object wrapper;
+		
 		public global::Loreline.Internal.Ds.StringMap<object> functions;
 		
 		public bool strictAccess;
 		
+		public global::Loreline.Internal.Lang.Function customCreateFields;
+		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 224712019:
+					{
+						this.wrapper = ((object) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 2043537382:
+					{
+						this.customCreateFields = ((global::Loreline.Internal.Lang.Function) (@value) );
+						return @value;
+					}
+					
+					
 					case 1238058445:
 					{
 						this.strictAccess = global::Loreline.Internal.Lang.Runtime.toBool(@value);
@@ -1036,6 +1078,13 @@ namespace Loreline.Runtime {
 					case 872614491:
 					{
 						this.functions = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						return @value;
+					}
+					
+					
+					case 224712019:
+					{
+						this.wrapper = ((object) (@value) );
 						return @value;
 					}
 					
@@ -1054,6 +1103,12 @@ namespace Loreline.Runtime {
 		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 2043537382:
+					{
+						return this.customCreateFields;
+					}
+					
+					
 					case 1238058445:
 					{
 						return this.strictAccess;
@@ -1063,6 +1118,12 @@ namespace Loreline.Runtime {
 					case 872614491:
 					{
 						return this.functions;
+					}
+					
+					
+					case 224712019:
+					{
+						return this.wrapper;
 					}
 					
 					
@@ -1077,9 +1138,31 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 224712019:
+					{
+						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(this.wrapper)) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("customCreateFields");
 			baseArr.push("strictAccess");
 			baseArr.push("functions");
+			baseArr.push("wrapper");
 			base.__hx_getFields(baseArr);
 		}
 		
@@ -1105,6 +1188,7 @@ namespace Loreline.Runtime {
 		protected static void __hx_ctor_loreline_Interpreter(global::Loreline.Runtime.Interpreter __hx_this, global::Loreline.Runtime.Script script, global::Loreline.Internal.Lang.Function handleDialogue, global::Loreline.Internal.Lang.Function handleChoice, global::Loreline.Internal.Lang.Function handleFinish, global::Loreline.Runtime.InterpreterOptions options) {
 			unchecked {
 				__hx_this._random = null;
+				__hx_this.wrapper = null;
 				__hx_this.beatToResume = null;
 				__hx_this.finishTrigger = null;
 				__hx_this.flushing = false;
@@ -1115,7 +1199,6 @@ namespace Loreline.Runtime {
 				__hx_this.nodeStates = new global::Loreline.Runtime.NodeIdMap<object>();
 				__hx_this.topLevelBeats = new global::Loreline.Internal.Ds.StringMap<object>();
 				__hx_this.topLevelCharacters = new global::Loreline.Internal.Ds.StringMap<object>();
-				__hx_this.topLevelState = new global::Loreline.Runtime.RuntimeState(default(object), default(object));
 				{
 					__hx_this.script = script;
 					__hx_this.handleDialogue = handleDialogue;
@@ -1124,6 +1207,8 @@ namespace Loreline.Runtime {
 					__hx_this.lens = new global::Loreline.Runtime.Lens(((global::Loreline.Runtime.Script) (script) ));
 					global::Loreline.Internal.Lang.Null<bool> tmp = ( (( options != null )) ? (new global::Loreline.Internal.Lang.Null<bool>(options.strictAccess, true)) : (default(global::Loreline.Internal.Lang.Null<bool>)) );
 					__hx_this.strictAccess = ( tmp.hasValue && (tmp).@value );
+					__hx_this.wrapper = ( (( options != null )) ? (options.wrapper) : (null) );
+					__hx_this.topLevelState = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (__hx_this) ), ((global::Loreline.Runtime.Node) (script) ), default(object), default(object));
 					__hx_this.initializeTopLevelFunctions(( (( options != null )) ? (options.functions) : (null) ));
 					{
 						global::Loreline.Runtime._Script.ScriptBodyIterator decl = script.iterator();
@@ -1206,6 +1291,10 @@ namespace Loreline.Runtime {
 		public global::Loreline.Runtime.EvalNext finishTrigger;
 		
 		public global::Loreline.Runtime.NBeatDecl beatToResume;
+		
+		public global::Loreline.Internal.Lang.Function customCreateFields;
+		
+		public object wrapper;
 		
 		public virtual void start(string beatName) {
 			global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
@@ -1679,7 +1768,7 @@ namespace Loreline.Runtime {
 				
 				global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
 				global::Loreline.Runtime.Interpreter _gthis = this;
-				moveNext[0] = new global::Loreline.Runtime.Interpreter_resumeNodeBody_973__Fun(scopeLevel, resumeIndex, next, moveNext, index, currentScope, body, _gthis);
+				moveNext[0] = new global::Loreline.Runtime.Interpreter_resumeNodeBody_1003__Fun(scopeLevel, resumeIndex, next, moveNext, index, currentScope, body, _gthis);
 				((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 			}
 		}
@@ -1873,7 +1962,7 @@ namespace Loreline.Runtime {
 			object tmp = ( (( state != null )) ? (state.fields) : (null) );
 			object fields = this.restoreFields(( (( tmp != null )) ? (tmp) : (null) ), data);
 			if (( state == null )) {
-				state = new global::Loreline.Runtime.RuntimeState(((object) (fields) ), default(object));
+				state = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (this) ), default(global::Loreline.Runtime.Node), ((object) (fields) ), default(object));
 			}
 			
 			return state;
@@ -1925,7 +2014,7 @@ namespace Loreline.Runtime {
 			object tmp = ( (( character != null )) ? (character.fields) : (null) );
 			object fields = this.restoreFields(( (( tmp != null )) ? (tmp) : (null) ), data);
 			if (( character == null )) {
-				character = new global::Loreline.Runtime.RuntimeCharacter(((object) (fields) ));
+				character = new global::Loreline.Runtime.RuntimeCharacter(((global::Loreline.Runtime.Interpreter) (this) ), default(global::Loreline.Runtime.AstNode), ((object) (fields) ), default(object));
 			}
 			
 			return character;
@@ -1938,7 +2027,7 @@ namespace Loreline.Runtime {
 			}
 			
 			if (( target == null )) {
-				target = global::Loreline.Runtime.Objects.createFields(this, global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(savedFields, "type", 1292432058, true)));
+				target = global::Loreline.Runtime.Objects.createFields(this, global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(savedFields, "type", 1292432058, true)), null);
 			}
 			
 			object data = global::Loreline.Internal.Lang.Runtime.getField(savedFields, "fields", 9342585, true);
@@ -2012,9 +2101,9 @@ namespace Loreline.Runtime {
 		
 		public virtual void initializeTopLevelFunctions(global::Loreline.Internal.Ds.StringMap<object> functions) {
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("random", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1457__Fun(_gthis)) ));
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("chance", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1461__Fun(_gthis)) ));
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("wait", ((object) (( (( global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun.__hx_current) : (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun.__hx_current = ((global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun()) )) )) ));
+			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("random", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1487__Fun(_gthis)) ));
+			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("chance", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1491__Fun(_gthis)) ));
+			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("wait", ((object) (( (( global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun.__hx_current) : (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun.__hx_current = ((global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun()) )) )) ));
 			if (( functions != null )) {
 				global::Loreline.Internal.IMap<string, object> map = functions;
 				global::Loreline.Internal.IMap<string, object> _g_map = map;
@@ -2070,7 +2159,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Runtime.EvalNext wrapped = new global::Loreline.Runtime.EvalNext();
 			wrapped.sync = true;
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			wrapped.cb = new global::Loreline.Runtime.Interpreter_wrapNext_1547__Fun(wrapped, cb, _gthis);
+			wrapped.cb = new global::Loreline.Runtime.Interpreter_wrapNext_1577__Fun(wrapped, cb, _gthis);
 			return wrapped;
 		}
 		
@@ -2160,7 +2249,7 @@ namespace Loreline.Runtime {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Duplicate top level character: ", character.name)) ), ((global::Loreline.Runtime.Position) (character.pos) )))) );
 			}
 			
-			global::Loreline.Runtime.RuntimeCharacter characterState = new global::Loreline.Runtime.RuntimeCharacter(default(object));
+			global::Loreline.Runtime.RuntimeCharacter characterState = new global::Loreline.Runtime.RuntimeCharacter(((global::Loreline.Runtime.Interpreter) (this) ), ((global::Loreline.Runtime.AstNode) (character) ), default(object), default(object));
 			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@set(character.name, characterState);
 			{
 				int _g = 0;
@@ -2186,7 +2275,7 @@ namespace Loreline.Runtime {
 				global::Loreline.Runtime.RuntimeState runtimeState = null;
 				if (state.temporary) {
 					if (( scope.state == null )) {
-						scope.state = new global::Loreline.Runtime.RuntimeState(default(object), default(object));
+						scope.state = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (this) ), ((global::Loreline.Runtime.Node) (state) ), default(object), default(object));
 					}
 					
 					runtimeState = scope.state;
@@ -2195,7 +2284,7 @@ namespace Loreline.Runtime {
 					long key = ((long) (scope.node.id) );
 					runtimeState = ((global::Loreline.Runtime.RuntimeState) ((this.nodeStates.map._get(((int) (( ((long) (key) ) >> 32 )) ), ((int) (((long) (key) )) ))).@value) );
 					if (( runtimeState == null )) {
-						runtimeState = new global::Loreline.Runtime.RuntimeState(default(object), default(object));
+						runtimeState = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (this) ), ((global::Loreline.Runtime.Node) (state) ), default(object), default(object));
 						{
 							long key1 = ((long) (scope.node.id) );
 							this.nodeStates.map._set(((int) (( ((long) (key1) ) >> 32 )) ), ((int) (((long) (key1) )) ), runtimeState);
@@ -2308,7 +2397,7 @@ namespace Loreline.Runtime {
 			int[] index = new int[]{0};
 			global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_1864__Fun(next, moveNext, index, body, _gthis);
+			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_1894__Fun(next, moveNext, index, body, _gthis);
 			((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 		}
 		
@@ -2354,8 +2443,8 @@ namespace Loreline.Runtime {
 				
 				int[] index = new int[]{-1};
 				global::Loreline.Runtime.Interpreter _gthis = this;
-				global::Loreline.Runtime.EvalNext choiceCallback = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_1986__Fun(next, index, choice, _gthis));
-				this.handleChoice.__hx_invoke3_o(default(double), this, default(double), options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_1997__Fun(index, choiceCallback));
+				global::Loreline.Runtime.EvalNext choiceCallback = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2016__Fun(next, index, choice, _gthis));
+				this.handleChoice.__hx_invoke3_o(default(double), this, default(double), options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_2027__Fun(index, choiceCallback));
 				choiceCallback.sync = false;
 			}
 		}
@@ -2983,10 +3072,10 @@ namespace Loreline.Runtime {
 									object e = ((object) (global::Loreline.Internal.Exception.caught(_g3).unwrap()) );
 									if (( e is global::Loreline.Internal.Hscript.Error )) {
 										global::Loreline.Internal.Hscript.Error hscriptErr = ((global::Loreline.Internal.Hscript.Error) (e) );
-										global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("", global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmin)), "-"), global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmax)), " "), global::Loreline.Internal.Root.Std.@string(hscriptErr.e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2573) )}));
+										global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("", global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmin)), "-"), global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmax)), " "), global::Loreline.Internal.Root.Std.@string(hscriptErr.e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2603) )}));
 									}
 									
-									global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (e) ))), " -> "), global::Loreline.Internal.Root.Std.@string(e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2576) )}));
+									global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (e) ))), " -> "), global::Loreline.Internal.Root.Std.@string(e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2606) )}));
 									return null;
 								}
 								
@@ -4259,6 +4348,13 @@ namespace Loreline.Runtime {
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 224712019:
+					{
+						this.wrapper = ((object) (@value) );
+						return @value;
+					}
+					
+					
 					case 1301394908:
 					{
 						this.nextScopeId = ((int) (@value) );
@@ -4283,6 +4379,20 @@ namespace Loreline.Runtime {
 					case 637940642:
 					{
 						this._random = ((global::Loreline.Runtime.Random) (@value) );
+						return @value;
+					}
+					
+					
+					case 224712019:
+					{
+						this.wrapper = ((object) (@value) );
+						return @value;
+					}
+					
+					
+					case 2043537382:
+					{
+						this.customCreateFields = ((global::Loreline.Internal.Lang.Function) (@value) );
 						return @value;
 					}
 					
@@ -4876,6 +4986,18 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 224712019:
+					{
+						return this.wrapper;
+					}
+					
+					
+					case 2043537382:
+					{
+						return this.customCreateFields;
+					}
+					
+					
 					case 2115507486:
 					{
 						return this.beatToResume;
@@ -5004,6 +5126,12 @@ namespace Loreline.Runtime {
 		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 224712019:
+					{
+						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(this.wrapper)) );
+					}
+					
+					
 					case 1301394908:
 					{
 						return ((double) (this.nextScopeId) );
@@ -5529,6 +5657,8 @@ namespace Loreline.Runtime {
 		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
 			baseArr.push("_random");
+			baseArr.push("wrapper");
+			baseArr.push("customCreateFields");
 			baseArr.push("beatToResume");
 			baseArr.push("finishTrigger");
 			baseArr.push("flushing");
@@ -5558,9 +5688,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_resumeNodeBody_973__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_resumeNodeBody_1003__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_resumeNodeBody_973__Fun(int scopeLevel, int[] resumeIndex, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeScope currentScope, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_resumeNodeBody_1003__Fun(int scopeLevel, int[] resumeIndex, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeScope currentScope, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.scopeLevel = scopeLevel;
 			this.resumeIndex = resumeIndex;
 			this.next = next;
@@ -5622,9 +5752,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1457__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_initializeTopLevelFunctions_1487__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1457__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(2, 1) {
+		public Interpreter_initializeTopLevelFunctions_1487__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(2, 1) {
 			this._gthis = _gthis;
 		}
 		
@@ -5647,9 +5777,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1461__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_initializeTopLevelFunctions_1491__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1461__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(1, 0) {
+		public Interpreter_initializeTopLevelFunctions_1491__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(1, 0) {
 			this._gthis = _gthis;
 		}
 		
@@ -5669,9 +5799,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1466__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_initializeTopLevelFunctions_1496__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1466__Fun(double seconds) : base(1, 0) {
+		public Interpreter_initializeTopLevelFunctions_1496__Fun(double seconds) : base(1, 0) {
 			this.seconds = seconds;
 		}
 		
@@ -5695,17 +5825,17 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1465__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_initializeTopLevelFunctions_1495__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1465__Fun() : base(1, 0) {
+		public Interpreter_initializeTopLevelFunctions_1495__Fun() : base(1, 0) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1465__Fun __hx_current;
+		public static global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1495__Fun __hx_current;
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			double seconds = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((double) (__fn_float1) )) : (((double) (global::Loreline.Internal.Lang.Runtime.toDouble(__fn_dyn1)) )) );
-			return new global::Loreline.Runtime.Async(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1466__Fun(seconds)) ));
+			return new global::Loreline.Runtime.Async(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1496__Fun(seconds)) ));
 		}
 		
 		
@@ -5716,9 +5846,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_wrapNext_1547__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_wrapNext_1577__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_wrapNext_1547__Fun(global::Loreline.Runtime.EvalNext wrapped, global::Loreline.Internal.Lang.Function cb, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_wrapNext_1577__Fun(global::Loreline.Runtime.EvalNext wrapped, global::Loreline.Internal.Lang.Function cb, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.wrapped = wrapped;
 			this.cb = cb;
 			this._gthis = _gthis;
@@ -5760,9 +5890,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalNodeBody_1864__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalNodeBody_1894__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalNodeBody_1864__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalNodeBody_1894__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.next = next;
 			this.moveNext = moveNext;
 			this.index = index;
@@ -5806,9 +5936,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_1986__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2016__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_1986__Fun(global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalChoice_2016__Fun(global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.next = next;
 			this.index = index;
 			this.choice = choice;
@@ -5843,9 +5973,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_1997__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2027__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_1997__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
+		public Interpreter_evalChoice_2027__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
 			this.index = index;
 			this.choiceCallback = choiceCallback;
 		}

@@ -1074,7 +1074,7 @@ namespace Loreline.Runtime {
 					case 21:
 					{
 						global::Loreline.Internal.Root.Array<object> fl = ( e1 as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
-						object o = global::Loreline.Runtime.Objects.createFields(this.interpreter, null);
+						object o = global::Loreline.Runtime.Objects.createFields(this.interpreter, null, null);
 						{
 							int _g16 = 0;
 							while (( _g16 < fl.length )) {

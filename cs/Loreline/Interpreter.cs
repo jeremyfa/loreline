@@ -11,7 +11,7 @@ namespace Loreline
     /// managing the runtime state, and interacting with the host application
     /// through handler functions.
     /// </summary>
-    class Interpreter
+    public class Interpreter
     {
         /// <summary>
         /// Represents a tag in text content, which can be used for styling or other purposes.
@@ -141,6 +141,15 @@ namespace Loreline
         public delegate void ChoiceHandler(Choice choice);
 
         /// <summary>
+        /// A custom instanciator to create fields objects.
+        /// </summary>
+        /// <param name="interpreter">The interpreter related to this object creation</param>
+        /// <param name="type">The expected type of the object, if there is any known</param>
+        /// <param name="node">The associated node in the script, if any</param>
+        /// <returns></returns>
+        public delegate object CreateFields(Interpreter interpreter, string type, Node node);
+
+        /// <summary>
         /// Contains information about the script execution completion.
         /// </summary>
         public struct Finish
@@ -175,6 +184,11 @@ namespace Loreline
             /// trying to read or write an undefined variable will throw an error.
             /// </summary>
             public bool StrictAccess;
+
+            /// <summary>
+            /// A custom instanciator to create fields objects.
+            /// </summary>
+            public CreateFields CustomCreateFields;
         }
 
         /// <summary>
@@ -186,7 +200,7 @@ namespace Loreline
         /// <summary>
         /// The underlying runtime interpreter instance.
         /// </summary>
-        public readonly Runtime.Interpreter runtimeInterpreter;
+        public readonly Runtime.Interpreter RuntimeInterpreter;
 
         /// <summary>
         /// Creates a new Loreline script interpreter.
@@ -205,20 +219,22 @@ namespace Loreline
             InterpreterOptions options = new InterpreterOptions
             {
                 Functions = null,
-                StrictAccess = false
+                StrictAccess = false,
+                CustomCreateFields = null
             };
 
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
             Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
+            CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
 
-            runtimeInterpreter = new Runtime.Interpreter(
-                script.runtimeScript,
+            RuntimeInterpreter = new Runtime.Interpreter(
+                script.RuntimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(functionsWrap, options.StrictAccess)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap)
             );
         }
 
@@ -242,13 +258,14 @@ namespace Loreline
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
             Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
+            CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
 
-            runtimeInterpreter = new Runtime.Interpreter(
-                script.runtimeScript,
+            RuntimeInterpreter = new Runtime.Interpreter(
+                script.RuntimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(functionsWrap, options.StrictAccess)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap)
             );
         }
 
@@ -260,7 +277,7 @@ namespace Loreline
         /// <exception cref="Runtime.RuntimeError">Thrown if the specified beat doesn't exist or if no beats are found in the script</exception>
         public void Start(string beatName = null)
         {
-            runtimeInterpreter.start(beatName);
+            RuntimeInterpreter.start(beatName);
         }
 
         /// <summary>
@@ -271,7 +288,7 @@ namespace Loreline
         /// <returns>A JSON string containing the serialized state</returns>
         public string Save()
         {
-            return Runtime.Json.stringify(runtimeInterpreter.save(), false);
+            return Runtime.Json.stringify(RuntimeInterpreter.save(), false);
         }
 
         /// <summary>
@@ -282,7 +299,7 @@ namespace Loreline
         /// <exception cref="Runtime.RuntimeError">Thrown if the save data version is incompatible</exception>
         public void Restore(string savedData)
         {
-            runtimeInterpreter.restore(Runtime.Json.parse(savedData));
+            RuntimeInterpreter.restore(Runtime.Json.parse(savedData));
         }
 
         /// <summary>
@@ -291,7 +308,7 @@ namespace Loreline
         /// </summary>
         public void Resume()
         {
-            runtimeInterpreter.resume();
+            RuntimeInterpreter.resume();
         }
 
         /// <summary>
@@ -301,7 +318,7 @@ namespace Loreline
         /// <returns>The character's fields or null if the character doesn't exist</returns>
         public object GetCharacter(string name)
         {
-            return runtimeInterpreter.getCharacter(name);
+            return RuntimeInterpreter.getCharacter(name);
         }
 
         /// <summary>
@@ -312,7 +329,7 @@ namespace Loreline
         /// <returns>The field value or null if the character or field doesn't exist</returns>
         public object GetCharacterField(string character, string name)
         {
-            return runtimeInterpreter.getCharacterField(character, name);
+            return RuntimeInterpreter.getCharacterField(character, name);
         }
 
         private static TextTag[] WrapTags(Internal.Root.Array<Runtime.TextTag> rawTags)
@@ -361,6 +378,13 @@ namespace Loreline
             return result;
         }
 
+        private static CreateFieldsWrap WrapCreateFields(Interpreter interpreter, CreateFields createFields)
+        {
+            if (createFields == null) return null;
+
+            return new CreateFieldsWrap(interpreter, createFields);
+        }
+
         private class FunctionWrap : Internal.Lang.Function
         {
             private Interpreter interpreter;
@@ -374,6 +398,26 @@ namespace Loreline
             public override object __hx_invokeDynamic(object[] __fn_dynargs)
             {
                 return func(interpreter, __fn_dynargs);
+            }
+        }
+
+        private class CreateFieldsWrap : Internal.Lang.Function
+        {
+            private Interpreter interpreter;
+            private CreateFields createFields;
+            public CreateFieldsWrap(Interpreter interpreter, CreateFields createFields) : base(3, 1)
+            {
+                this.interpreter = interpreter;
+                this.createFields = createFields;
+            }
+
+            public override object __hx_invoke3_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2, double __fn_float3, object __fn_dyn3)
+            {
+                return createFields(
+                    interpreter,
+                    (string)__fn_dyn2,
+                    __fn_dyn3 != null ? new Node((Runtime.Node)__fn_dyn3) : null
+                );
             }
         }
 

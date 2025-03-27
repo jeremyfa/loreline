@@ -2,6 +2,7 @@ package loreline;
 
 import haxe.ds.IntMap;
 import haxe.ds.StringMap;
+import loreline.Node.AstNode;
 
 class Objects {
 
@@ -18,6 +19,9 @@ class Objects {
         }
         #if cs
         else if (isCsDict(value)) {
+            return true;
+        }
+        else if (isCsFields(value)) {
             return true;
         }
         #end
@@ -44,6 +48,9 @@ class Objects {
         else if (isCsDict(fields)) {
             getCsDictField(fields, name);
         }
+        else if (isCsFields(fields)) {
+            getCsFieldsValue(interpreter, fields, name);
+        }
         #end
         else {
             Reflect.getProperty(fields, name);
@@ -62,6 +69,9 @@ class Objects {
         #if cs
         else if (isCsDict(fields)) {
             getCsDictKeys(fields);
+        }
+        else if (isCsFields(fields)) {
+            getCsFieldsKeys(interpreter, fields);
         }
         #end
         else {
@@ -82,6 +92,9 @@ class Objects {
         else if (isCsDict(fields)) {
             setCsDictField(fields, name, value);
         }
+        else if (isCsFields(fields)) {
+            setCsFieldsValue(interpreter, fields, name, value);
+        }
         #end
         else {
             Reflect.setProperty(fields, name, value);
@@ -101,6 +114,9 @@ class Objects {
         else if (isCsDict(fields)) {
             csDictFieldExists(fields, name);
         }
+        else if (isCsFields(fields)) {
+            csFieldsKeyExists(interpreter, fields, name);
+        }
         #end
         else {
             Reflect.hasField(fields, name);
@@ -108,7 +124,15 @@ class Objects {
 
     }
 
-    public static function createFields(?interpreter:Interpreter, ?type:String):Any {
+    public static function createFields(?interpreter:Interpreter, ?type:String, ?node:Node):Any {
+
+        @:privateAccess
+        if (interpreter != null && interpreter.customCreateFields != null) {
+            final customInstance:Any = interpreter.customCreateFields(interpreter, type, node);
+            if (customInstance != null) {
+                return customInstance;
+            }
+        }
 
         if (type != null) {
             final instance:Any = Type.createEmptyInstance(Type.resolveClass(type));
@@ -156,6 +180,36 @@ class Objects {
         untyped __cs__('{0} = (string)dictKey', key);
         keys.push(key);
         untyped __cs__('}');
+        untyped __cs__('}');
+        return keys;
+    }
+
+    public static function isCsFields(fields:Any):Bool {
+        return untyped __cs__('{0} is global::Loreline.IFields', fields);
+    }
+
+    public static function getCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String):Any {
+        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        return untyped __cs__('f.LorelineGet((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
+    }
+
+    public static function setCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String, value:Any):Void {
+        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        untyped __cs__('f.LorelineSet((global::Loreline.Interpreter)({0}), {1}, {2})', @:privateAccess interpreter?.wrapper, name, value);
+    }
+
+    public static function csFieldsKeyExists(?interpreter:Interpreter, fields:Any, name:String):Bool {
+        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        return untyped __cs__('f.LorelineExists((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
+    }
+
+    public static function getCsFieldsKeys(?interpreter:Interpreter, fields:Any):Array<String> {
+        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        final keys:Array<String> = [];
+        untyped __cs__('foreach (string fieldsKey in f.LorelineFields((global::Loreline.Interpreter)({0}))) {', @:privateAccess interpreter?.wrapper);
+        final key:String = null;
+        untyped __cs__('{0} = fieldsKey', key);
+        keys.push(key);
         untyped __cs__('}');
         return keys;
     }

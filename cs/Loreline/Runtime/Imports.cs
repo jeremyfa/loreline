@@ -86,6 +86,7 @@ namespace Loreline.Runtime {
 		
 		
 		protected static void __hx_ctor_loreline_Imports(global::Loreline.Runtime.Imports __hx_this) {
+			__hx_this.ext = ".lor";
 			__hx_this.pendingImports = 0;
 			__hx_this.hasErrors = false;
 			__hx_this.done = null;
@@ -115,6 +116,8 @@ namespace Loreline.Runtime {
 		
 		public int pendingImports;
 		
+		public string ext;
+		
 		public virtual void resolve(string rootPath, global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Internal.Lang.Function handleFile, global::Loreline.Internal.Lang.Function handleError, global::Loreline.Internal.Lang.Function done) {
 			this.rootPath = rootPath;
 			this.tokens = tokens;
@@ -123,6 +126,10 @@ namespace Loreline.Runtime {
 			this.done = done;
 			this.hasErrors = false;
 			this.pendingImports = 0;
+			if (( ( rootPath != null ) && rootPath.EndsWith(".lor.txt") )) {
+				this.ext = ".lor.txt";
+			}
+			
 			global::Loreline.Internal.Ds.StringMap<object> resolvedImports = new global::Loreline.Internal.Ds.StringMap<object>();
 			global::Loreline.Internal.Root.Array<string> toImport = new global::Loreline.Internal.Root.Array<string>(new string[]{});
 			global::Loreline.Internal.Ds.StringMap<bool> visitedImports = new global::Loreline.Internal.Ds.StringMap<bool>();
@@ -151,7 +158,7 @@ namespace Loreline.Runtime {
 		
 		public virtual void handleItemInLoop(string item, global::Loreline.Runtime._Imports.ImportsLoopInfo loopInfo, global::Loreline.Internal.Root.Array<string> toImport, global::Loreline.Internal.Ds.StringMap<bool> visitedImports, global::Loreline.Internal.Ds.StringMap<object> resolvedImports) {
 			global::Loreline.Runtime.Imports _gthis = this;
-			this.handleFile.__hx_invoke2_o(default(double), item, default(double), new global::Loreline.Runtime.Imports_handleItemInLoop_86__Fun(visitedImports, toImport, resolvedImports, loopInfo, item, _gthis));
+			this.handleFile.__hx_invoke2_o(default(double), item, default(double), new global::Loreline.Runtime.Imports_handleItemInLoop_92__Fun(visitedImports, toImport, resolvedImports, loopInfo, item, _gthis));
 		}
 		
 		
@@ -174,8 +181,8 @@ namespace Loreline.Runtime {
 									}
 									
 									path = global::Loreline.Internal.Io.Path.normalize(path);
-									if ( ! (path.ToLowerInvariant().EndsWith(".lor")) ) {
-										path = global::Loreline.Internal.Lang.Runtime.concat(path, ".lor");
+									if ( ! (path.ToLowerInvariant().EndsWith(this.ext)) ) {
+										path = global::Loreline.Internal.Lang.Runtime.concat(path, this.ext);
 									}
 									
 									if ( ! (visitedImports.exists(path)) ) {
@@ -223,6 +230,13 @@ namespace Loreline.Runtime {
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 5049505:
+					{
+						this.ext = global::Loreline.Internal.Lang.Runtime.toString(@value);
+						return @value;
+					}
+					
+					
 					case 77000663:
 					{
 						this.pendingImports = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
@@ -321,6 +335,12 @@ namespace Loreline.Runtime {
 					case 1734349548:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "resolve", 1734349548)) );
+					}
+					
+					
+					case 5049505:
+					{
+						return this.ext;
 					}
 					
 					
@@ -453,6 +473,7 @@ namespace Loreline.Runtime {
 		
 		
 		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+			baseArr.push("ext");
 			baseArr.push("pendingImports");
 			baseArr.push("hasErrors");
 			baseArr.push("done");
@@ -473,9 +494,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Imports_handleItemInLoop_86__Fun : global::Loreline.Internal.Lang.Function {
+	public class Imports_handleItemInLoop_92__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Imports_handleItemInLoop_86__Fun(global::Loreline.Internal.Ds.StringMap<bool> visitedImports, global::Loreline.Internal.Root.Array<string> toImport, global::Loreline.Internal.Ds.StringMap<object> resolvedImports, global::Loreline.Runtime._Imports.ImportsLoopInfo loopInfo, string item, global::Loreline.Runtime.Imports _gthis) : base(1, 0) {
+		public Imports_handleItemInLoop_92__Fun(global::Loreline.Internal.Ds.StringMap<bool> visitedImports, global::Loreline.Internal.Root.Array<string> toImport, global::Loreline.Internal.Ds.StringMap<object> resolvedImports, global::Loreline.Runtime._Imports.ImportsLoopInfo loopInfo, string item, global::Loreline.Runtime.Imports _gthis) : base(1, 0) {
 			this.visitedImports = visitedImports;
 			this.toImport = toImport;
 			this.resolvedImports = resolvedImports;

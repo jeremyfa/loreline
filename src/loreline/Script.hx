@@ -32,6 +32,10 @@ class Script extends Node {
         return json;
     }
 
+    public override function type():String {
+        return "Script";
+    }
+
     public function eachExcludingImported(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 

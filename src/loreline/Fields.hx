@@ -2,6 +2,7 @@ package loreline;
 
 /**
  * Base interface to hold loreline values
+ * This interface allows to map loreline object fields to game-specific objects.
  */
 interface Fields {
 

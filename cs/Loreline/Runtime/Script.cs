@@ -41,6 +41,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public override string type() {
+			return "Script";
+		}
+		
+		
 		public virtual void eachExcludingImported(global::Loreline.Internal.Lang.Function handleNode) {
 			base.each(handleNode);
 			if (( this.body != null )) {
@@ -125,6 +130,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1292432058:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "type", 1292432058)) );
+					}
+					
+					
 					case 2082581827:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "toJson", 2082581827)) );
@@ -152,6 +163,7 @@ namespace Loreline.Runtime {
 			unchecked {
 				switch (hash) {
 					case 2082581827:
+					case 1292432058:
 					case 1124892161:
 					{
 						return global::Loreline.Internal.Lang.Runtime.slowCallField(this, field, dynargs);

@@ -43,12 +43,12 @@ class RuntimeState {
      * @param fields Initial field values, or null to create empty fields
      * @param originalFields Original field values for comparison, or null to create empty original fields
      */
-    public function new(?fields:Any, ?originalFields:Any) {
+    public function new(interpreter:Interpreter, node:Node, fields:Any, originalFields:Any) {
         if (fields != null) {
             this.fields = fields;
         }
         else {
-            clear();
+            clear(interpreter, node);
         }
 
         if (originalFields != null) {
@@ -62,8 +62,8 @@ class RuntimeState {
     /**
      * Clears all fields in this state.
      */
-    public function clear():Void {
-        this.fields = Objects.createFields();
+    public function clear(interpreter:Interpreter, node:Node):Void {
+        this.fields = Objects.createFields(interpreter, null, node);
     }
 
     /**
@@ -84,11 +84,9 @@ class RuntimeCharacter extends RuntimeState {
 
     /**
      * Creates a new character runtime state with optional initial field values.
-     *
-     * @param fields Initial field values, or null to create empty fields
      */
-    public function new(?fields:Any) {
-        super(fields);
+    public function new(interpreter:Interpreter, node:AstNode, fields:Any, originalFields:Any) {
+        super(interpreter, node, fields, originalFields);
     }
 
 }
@@ -303,6 +301,14 @@ class RuntimeError extends Error {
 @:structInit
 class InterpreterOptions {
 
+    #if cs
+    /**
+     * When using Loreline outside of Haxe, the interpreter can be wrapped by
+     * an object more tailored for the host platform. This is that wrapper object.
+     */
+    public var wrapper:Any = null;
+    #end
+
     /**
      * Optional map of additional functions to make available to the script
      */
@@ -313,6 +319,11 @@ class InterpreterOptions {
      * trying to read or write an undefined variable will throw an error.
      */
     public var strictAccess:Bool = false;
+
+    /**
+     * A custom instanciator to create fields objects.
+     */
+    var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any = null;
 
 }
 
@@ -354,7 +365,7 @@ class InterpreterOptions {
     /**
      * The top level state, which is shared across the whole script execution.
      */
-    final topLevelState:RuntimeState = new RuntimeState();
+    final topLevelState:RuntimeState;
 
     /**
      * Top level characters can be referenced and their state
@@ -434,6 +445,19 @@ class InterpreterOptions {
     var beatToResume:NBeatDecl = null;
 
     /**
+     * A custom instanciator to create fields objects.
+     */
+    var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
+
+    #if cs
+    /**
+     * When using Loreline outside of Haxe, the interpreter can be wrapped by
+     * an object more tailored for the host platform. This is that wrapper object.
+     */
+    var wrapper:Any = null;
+    #end
+
+    /**
      * Creates a new Loreline script interpreter.
      *
      * @param script The parsed script to execute
@@ -452,6 +476,12 @@ class InterpreterOptions {
         this.lens = new Lens(script);
 
         this.strictAccess = options?.strictAccess ?? false;
+
+        #if cs
+        this.wrapper = options?.wrapper;
+        #end
+
+        this.topLevelState = new RuntimeState(this, script, null, null);
 
         // Build default function
         initializeTopLevelFunctions(options?.functions);
@@ -1304,7 +1334,7 @@ class InterpreterOptions {
         final fields = restoreFields(state?.fields ?? null, data);
 
         if (state == null) {
-            state = new RuntimeState(fields);
+            state = new RuntimeState(this, null, fields, null);
         }
 
         return state;
@@ -1361,7 +1391,7 @@ class InterpreterOptions {
         final fields = restoreFields(character?.fields ?? null, data);
 
         if (character == null) {
-            character = new RuntimeCharacter(fields);
+            character = new RuntimeCharacter(this, null, fields, null);
         }
 
         return character;
@@ -1688,7 +1718,7 @@ class InterpreterOptions {
         }
 
         // Create new character state
-        final characterState = new RuntimeCharacter();
+        final characterState = new RuntimeCharacter(this, character, null, null);
         topLevelCharacters.set(character.name, characterState);
 
         // Evaluate character values
@@ -1714,14 +1744,14 @@ class InterpreterOptions {
         var runtimeState:RuntimeState = null;
         if (state.temporary) {
             if (scope.state == null) {
-                scope.state = new RuntimeState();
+                scope.state = new RuntimeState(this, state, null, null);
             }
             runtimeState = scope.state;
         }
         else {
             runtimeState = nodeStates.get(scope.node.id);
             if (runtimeState == null) {
-                runtimeState = new RuntimeState();
+                runtimeState = new RuntimeState(this, state, null, null);
                 nodeStates.set(scope.node.id, runtimeState);
             }
         }

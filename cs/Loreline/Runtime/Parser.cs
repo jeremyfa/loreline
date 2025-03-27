@@ -984,8 +984,13 @@ namespace Loreline.Runtime {
 				}
 				
 				importPath = global::Loreline.Internal.Io.Path.normalize(importPath);
-				if ( ! (importPath.ToLowerInvariant().EndsWith(".lor")) ) {
-					importPath = global::Loreline.Internal.Lang.Runtime.concat(importPath, ".lor");
+				string ext = ".lor";
+				if (this.context.rootPath.EndsWith(".lor.txt")) {
+					ext = ".lor.txt";
+				}
+				
+				if ( ! (importPath.ToLowerInvariant().EndsWith(ext)) ) {
+					importPath = global::Loreline.Internal.Lang.Runtime.concat(importPath, ext);
 				}
 				
 				if (((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, bool>) (this.context.imported) )) ))) ).exists(importPath)) {

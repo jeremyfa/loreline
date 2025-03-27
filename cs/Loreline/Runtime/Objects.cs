@@ -31,6 +31,9 @@ namespace Loreline.Runtime {
 			else if (global::Loreline.Runtime.Objects.isCsDict(@value)) {
 				return true;
 			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(@value)) {
+				return true;
+			}
 			else if (( ( ( (( ( ( @value is int ) || ( @value is uint ) ) || global::Loreline.Internal.Lang.Runtime.isInt(@value) )) || (( ( @value is double ) || ( ( @value is int ) || ( @value is uint ) ) )) ) || ( @value is bool ) ) || ( @value is string ) )) {
 				return false;
 			}
@@ -51,6 +54,9 @@ namespace Loreline.Runtime {
 			}
 			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
 				return global::Loreline.Runtime.Objects.getCsDictField(fields, name);
+			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(fields)) {
+				return global::Loreline.Runtime.Objects.getCsFieldsValue(interpreter, fields, name);
 			}
 			else {
 				return global::Loreline.Internal.Root.Reflect.getProperty(fields, name);
@@ -79,6 +85,9 @@ namespace Loreline.Runtime {
 			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
 				return global::Loreline.Runtime.Objects.getCsDictKeys(fields);
 			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(fields)) {
+				return global::Loreline.Runtime.Objects.getCsFieldsKeys(interpreter, fields);
+			}
 			else {
 				return global::Loreline.Internal.Root.Reflect.fields(fields);
 			}
@@ -95,6 +104,9 @@ namespace Loreline.Runtime {
 			}
 			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
 				global::Loreline.Runtime.Objects.setCsDictField(fields, name, @value);
+			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(fields)) {
+				global::Loreline.Runtime.Objects.setCsFieldsValue(interpreter, fields, name, @value);
 			}
 			else {
 				global::Loreline.Internal.Root.Reflect.setProperty(fields, name, @value);
@@ -113,6 +125,9 @@ namespace Loreline.Runtime {
 			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
 				return global::Loreline.Runtime.Objects.csDictFieldExists(fields, name);
 			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(fields)) {
+				return global::Loreline.Runtime.Objects.csFieldsKeyExists(interpreter, fields, name);
+			}
 			else {
 				return global::Loreline.Internal.Root.Reflect.hasField(fields, name);
 			}
@@ -120,7 +135,15 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static object createFields(global::Loreline.Runtime.Interpreter interpreter, string type) {
+		public static object createFields(global::Loreline.Runtime.Interpreter interpreter, string type, global::Loreline.Runtime.Node node) {
+			if (( ( interpreter != null ) && ( interpreter.customCreateFields != null ) )) {
+				object customInstance = ((object) (interpreter.customCreateFields.__hx_invoke3_o(default(double), interpreter, default(double), type, default(double), node)) );
+				if (( customInstance != null )) {
+					return customInstance;
+				}
+				
+			}
+			
 			if (( type != null )) {
 				object instance = global::Loreline.Internal.Root.Type.createEmptyInstance<object>(((global::System.Type) (global::Loreline.Internal.Root.Type.resolveClass(type)) ));
 				if (( instance is global::Loreline.Runtime.Fields )) {
@@ -167,6 +190,41 @@ namespace Loreline.Runtime {
 			key = (string)dictKey;
 			keys.push(key);
 			};
+			};
+			return keys;
+		}
+		
+		
+		public static bool isCsFields(object fields) {
+			return fields is global::Loreline.IFields;
+		}
+		
+		
+		public static object getCsFieldsValue(global::Loreline.Runtime.Interpreter interpreter, object fields, string name) {
+			global::Loreline.IFields f = (global::Loreline.IFields)fields;
+			return f.LorelineGet((global::Loreline.Interpreter)(( (( interpreter != null )) ? (interpreter.wrapper) : (null) )), name);
+		}
+		
+		
+		public static void setCsFieldsValue(global::Loreline.Runtime.Interpreter interpreter, object fields, string name, object @value) {
+			global::Loreline.IFields f = (global::Loreline.IFields)fields;
+			f.LorelineSet((global::Loreline.Interpreter)(( (( interpreter != null )) ? (interpreter.wrapper) : (null) )), name, @value);
+		}
+		
+		
+		public static bool csFieldsKeyExists(global::Loreline.Runtime.Interpreter interpreter, object fields, string name) {
+			global::Loreline.IFields f = (global::Loreline.IFields)fields;
+			return f.LorelineExists((global::Loreline.Interpreter)(( (( interpreter != null )) ? (interpreter.wrapper) : (null) )), name);
+		}
+		
+		
+		public static global::Loreline.Internal.Root.Array<string> getCsFieldsKeys(global::Loreline.Runtime.Interpreter interpreter, object fields) {
+			global::Loreline.IFields f = (global::Loreline.IFields)fields;
+			global::Loreline.Internal.Root.Array<string> keys = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+			foreach (string fieldsKey in f.LorelineFields((global::Loreline.Interpreter)(( (( interpreter != null )) ? (interpreter.wrapper) : (null) )))) {;
+			string key = null;
+			key = fieldsKey;
+			keys.push(key);
 			};
 			return keys;
 		}
