@@ -455,8 +455,13 @@ class ParserContext {
 
         importPath = Path.normalize(importPath);
 
-        if (!importPath.toLowerCase().endsWith('.lor')) {
-            importPath += '.lor';
+        var ext = '.lor';
+        if (context.rootPath.endsWith('.lor.txt')) {
+            ext = '.lor.txt';
+        }
+
+        if (!importPath.toLowerCase().endsWith(ext)) {
+            importPath += ext;
         }
 
         if (context.imported.exists(importPath)) {

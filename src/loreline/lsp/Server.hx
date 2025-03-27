@@ -1224,8 +1224,13 @@ class Server {
 
                 importPath = Path.normalize(importPath);
 
-                if (!importPath.toLowerCase().endsWith('.lor')) {
-                    importPath += '.lor';
+                var ext = '.lor';
+                if (rootPath != null && rootPath.endsWith('.lor.txt')) {
+                    ext = '.lor.txt';
+                }
+
+                if (!importPath.toLowerCase().endsWith(ext)) {
+                    importPath += ext;
                 }
 
                 uri = uriFromPath(importPath);

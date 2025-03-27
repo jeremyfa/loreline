@@ -274,6 +274,11 @@ class Lens {
             script = this.script;
         }
 
+        var ext = '.lor';
+        if (rootPath != null && rootPath.endsWith('.lor.txt')) {
+            ext = '.lor.txt';
+        }
+
         for (node in script.body) {
             if (node is NImportStatement) {
                 final importNode:NImportStatement = cast node;
@@ -289,8 +294,8 @@ class Lens {
 
                 importPath = Path.normalize(importPath);
 
-                if (!importPath.toLowerCase().endsWith('.lor')) {
-                    importPath += '.lor';
+                if (!importPath.toLowerCase().endsWith(ext)) {
+                    importPath += ext;
                 }
 
                 if (!used.exists(importPath)) {

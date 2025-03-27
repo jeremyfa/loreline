@@ -39,6 +39,8 @@ class Imports {
 
     var pendingImports:Int = 0;
 
+    var ext:String = '.lor';
+
     public function new() {}
 
     public function resolve(rootPath:String, tokens:Tokens, handleFile:ImportsFileHandler, handleError:ImportsErrorHandler, done:ImportsCallback) {
@@ -51,6 +53,10 @@ class Imports {
         this.done = done;
         this.hasErrors = false;
         this.pendingImports = 0;
+
+        if (rootPath != null && rootPath.endsWith('.lor.txt')) {
+            ext = '.lor.txt';
+        }
 
         final resolvedImports:Map<String,Tokens> = new Map();
         final toImport:Array<String> = [];
@@ -144,8 +150,8 @@ class Imports {
                             path = Path.join([cwd, path]);
                         }
                         path = Path.normalize(path);
-                        if (!path.toLowerCase().endsWith('.lor')) {
-                            path += '.lor';
+                        if (!path.toLowerCase().endsWith(ext)) {
+                            path += ext;
                         }
                         if (!visitedImports.exists(path)) {
                             pendingImports++;
