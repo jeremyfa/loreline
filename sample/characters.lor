@@ -1,0 +1,25 @@
+
+character barista
+  name: Barista
+  friendship: 0
+
+character doctor
+  name: Dr. Bean
+
+character sarah
+  name: Sarah
+  present: false
+  greeted: false
+
+character james
+  name: James
+  present: false
+  greeted: false
+
+character player
+  name: Player
+  consumedCoffees: 0
+  cafeVisits: 0
+  // When player jitters...
+  jitters: false
+  energy: 0
