@@ -148,8 +148,8 @@ class RuntimeScope {
     public var id:Int = -1;
 
     /**
-     * The parent beat where this scope is located. Can be either
-     * a top level beat or a nested beat.
+     * The parent beat where this scope is located.
+     * Can be either a top level beat or a nested beat.
      */
     public var beat:NBeatDecl;
 
@@ -175,6 +175,11 @@ class RuntimeScope {
     public var head:AstNode = null;
 
     /**
+     * If this scope was created from an insertion, this is the insertion runtime data.
+     */
+    public var insertion:RuntimeInsertion = null;
+
+    /**
      * Finds a nested beat declaration with the given name in this scope, if any.
      *
      * @param name The name of the beat to find
@@ -190,6 +195,31 @@ class RuntimeScope {
         }
         return null;
     }
+
+}
+
+/**
+ * Fata that needs to be hold with a scope when
+ * a beat is being inserted within a choice
+ */
+@:structInit
+class RuntimeInsertion {
+
+    /**
+     * The original node causing that insertion
+     */
+    public var origin:NInsertion;
+
+    /**
+     * The inserted choice options, or `null` if nothing is inserted yet
+     */
+    public var options:Array<NChoiceOption> = null;
+
+    /**
+     * The call stack of this insertion, which is used to resume
+     * the execution at the correct location when a choice of it has been selected
+     */
+    public var stack:Array<RuntimeScope> = [];
 
 }
 
@@ -1895,9 +1925,10 @@ typedef InterpreterOptions = {
      * @param beat The parent beat
      * @param node The node containing the body
      * @param body The body to execute
+     * @param insertion If any, the insertion related to this evaluation
      * @param next Callback to call when execution completes
      */
-    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, next:()->Void) {
+    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:NInsertion, next:()->Void) {
 
         // Push new scope
         push({
@@ -2014,38 +2045,135 @@ typedef InterpreterOptions = {
      */
     function evalChoice(choice:NChoiceStatement, next:()->Void) {
 
-        // Compute choice contents
         final options:Array<ChoiceOption> = [];
-        for (option in choice.options) {
-            final enabled = option.condition == null || evaluateCondition(option.condition);
-            final content = evaluateString(option.text);
-            options.push({
-                text: content.text,
-                tags: content.tags,
-                enabled: enabled
-            });
-        }
+        final optionsDone = wrapNext(() -> {
+            // Step 2
 
-        // Then call the user-defined choice handler.
-        // The execution will be "paused" until the callback
-        // is called, either synchronously or asynchronously
-        var index:Int = -1;
-        var choiceCallback = wrapNext(() -> {
-            if (index >= 0 && index < choice.options.length) {
-                // Evaluate the chosen option
-                evalChoiceOption(choice.options[index], next);
+            // Then call the user-defined choice handler.
+            // The execution will be "paused" until the callback
+            // is called, either synchronously or asynchronously
+            var index:Int = -1;
+            var choiceCallback = wrapNext(() -> {
+                if (index >= 0 && index < choice.options.length) {
+                    // Evaluate the chosen option
+                    evalChoiceOption(choice.options[index], next);
+                }
+                else {
+                    // Choice is invalid. In that situation, we suppose
+                    // the choice was cancelable and just continue evaluation
+                    next();
+                }
+            });
+            handleChoice(this, options, function(index_:Int) {
+                index = index_;
+                choiceCallback.cb();
+            });
+            choiceCallback.sync = false;
+
+        });
+
+        // Step 1
+        evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb);
+        optionsDone.sync = false;
+
+    }
+
+    function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void) {
+
+        // Push new scope
+        push({
+            beat: beat,
+            node: choice
+        });
+
+        // Get options
+        final options = choice.options;
+
+        // Then iterate through each child node in the body
+        var index = 0;
+        var moveNext:()->Void = null;
+        moveNext = () -> {
+
+            // Check if we still have an option to evaluate
+            if (index < options.length) {
+
+                // Yes, do it
+                final option = options[index];
+                currentScope.head = option;
+                index++;
+                final enabled = option.condition == null || evaluateCondition(option.condition);
+                if (option.text != null) {
+                    final done = wrapNext(moveNext);
+                    final content = evaluateString(option.text);
+                    result.push({
+                        text: content.text,
+                        tags: content.tags,
+                        enabled: enabled
+                    });
+                    done.cb();
+                    done.sync = false;
+                }
+                else if (option.insertion != null) {
+                    final done = wrapNext(moveNext);
+                    evalInsertion(option.insertion, done.cb);
+                    done.sync = false;
+                }
+                else {
+                    throw new RuntimeError('Invalid choice option', option.pos);
+                }
+
             }
             else {
-                // Choice is invalid. In that situation, we suppose
-                // the choice was cancelable and just continue evaluation
+
+                // We are done, pop node scope
+                // and finish that node body evaluation
+                pop();
                 next();
             }
-        });
-        handleChoice(this, options, function(index_:Int) {
-            index = index_;
-            choiceCallback.cb();
-        });
-        choiceCallback.sync = false;
+
+        }
+
+        // Start evaluating the body
+        moveNext();
+
+    }
+
+    /**
+     * Evaluates a beat by executing its body.
+     *
+     * @param beat The beat to evaluate
+     * @param next Callback to call when evaluation completes
+     */
+    function evalInsertion(insertion:NInsertion, next:()->Void) {
+
+        final beatName = insertion.target;
+        var resolvedBeat:NBeatDecl = null;
+
+        // Look for matching beat in scopes recursively
+        var i = stack.length - 1;
+        while (i >= 0) {
+            final scope = stack[i];
+            final beatInScope = scope.beatByName(beatName);
+            if (beatInScope != null) {
+                resolvedBeat = beatInScope;
+                break;
+            }
+            i--;
+        }
+
+        // If no beat was found, look at top level beats
+        if (resolvedBeat == null) {
+            if (topLevelBeats.exists(beatName)) {
+                resolvedBeat = topLevelBeats.get(beatName);
+            }
+        }
+
+        // If still nothing found, not good...
+        if (resolvedBeat == null) {
+            throw new RuntimeError('Beat $beatName not found', script.pos);
+        }
+
+        evalNodeBody(resolvedBeat, resolvedBeat, resolvedBeat.body, insertion, next);
 
     }
 
@@ -2314,7 +2442,7 @@ typedef InterpreterOptions = {
 
         // If no beat was found, look at top level beats
         if (resolvedBeat == null) {
-            if (topLevelBeats.exists(transition.target)) {
+            if (topLevelBeats.exists(beatName)) {
                 resolvedBeat = topLevelBeats.get(beatName);
             }
         }
