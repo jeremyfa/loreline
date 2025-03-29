@@ -258,10 +258,8 @@ class Cli {
 
     function handleDialogue(interpreter:Interpreter, character:String, text:String, tags:Array<TextTag>, callback:()->Void):Void {
 
+        final multiline = text.contains("\n");
         if (character != null) {
-
-            final multiline = text.contains("\n");
-
             character = interpreter.getCharacterField(character, 'name') ?? character;
 
             var tagItems = [];
@@ -285,6 +283,9 @@ class Cli {
             );
         }
         else {
+            if (multiline) {
+                text = text.replace("\n", "\n ").rtrim();
+            }
             type(
                 " " + text.cyan().italic()
             );
