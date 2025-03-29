@@ -398,6 +398,7 @@ class ParserContext {
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
+            case OpPlus: ensureInBeat(parseInsertion());
             case Function(_, _, _) if (topLevel): parseFunction();
             case _:
                 addError(new ParseError('Unexpected: ${tokens[current].type.toCodeString()}', currentPos()));
@@ -820,12 +821,19 @@ class ParserContext {
     function parseChoiceOption(blockEnd:TokenType):NChoiceOption {
 
         final startPos = currentPos();
-        final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, Plain, []));
+        final choiceOption = attachComments(new NChoiceOption(nextNodeId(BLOCK), startPos, null, null, null, Plain, []));
 
         var errorPos = null;
+        var isInsertion = false;
 
         try {
-            choiceOption.text = parseStringLiteral();
+            if (check(OpPlus)) {
+                isInsertion = true;
+                choiceOption.insertion = parseInsertion();
+            }
+            else {
+                choiceOption.text = parseStringLiteral();
+            }
         }
         catch (e:ParseError) {
             addError(e);
@@ -834,53 +842,55 @@ class ParserContext {
             choiceOption.text = new NStringLiteral(nextNodeId(NODE), currentPos(), Unquoted, [new NStringPart(nextNodeId(NODE), currentPos(), Raw("?"))]);
         }
 
-        // Parse optional condition
-        if (match(KwIf)) {
-            final offset = currentPos().offset;
-            try {
-                if (check(LParen)) {
-                    choiceOption.conditionStyle = Parens;
+        if (!isInsertion) {
+            // Parse optional condition
+            if (match(KwIf)) {
+                final offset = currentPos().offset;
+                try {
+                    if (check(LParen)) {
+                        choiceOption.conditionStyle = Parens;
+                    }
+                    choiceOption.condition = parseConditionExpression();
                 }
-                choiceOption.condition = parseConditionExpression();
+                catch (e:ParseError) {
+                    addError(e);
+                    errorPos = currentPos();
+                    if (currentPos().offset == offset) advance();
+                }
             }
-            catch (e:ParseError) {
-                addError(e);
-                errorPos = currentPos();
-                if (currentPos().offset == offset) advance();
-            }
-        }
 
-        // Parse option body
-        if (checkBlockStart()) {
-            choiceOption.body = [];
-            final offset = currentPos().offset;
-            try {
-                choiceOption.style = parseStatementBlock(choiceOption.body);
-            }
-            catch (e:ParseError) {
-                addError(e);
-                errorPos = currentPos();
-                if (currentPos().offset == offset) advance();
-                if (choiceOption.body.length == 0) {
-                    choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
-                }
-            }
-        }
-        else if (!check(blockEnd)) {  // If not end of choice
-            final offset = currentPos().offset;
-            try {
+            // Parse option body
+            if (checkBlockStart()) {
                 choiceOption.body = [];
-                choiceOption.body.push(parseNode());
-            }
-            catch (e:ParseError) {
-                addError(e);
-                errorPos = currentPos();
-                if (currentPos().offset == offset) advance();
-                if (choiceOption.body.length == 0) {
-                    choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
+                final offset = currentPos().offset;
+                try {
+                    choiceOption.style = parseStatementBlock(choiceOption.body);
+                }
+                catch (e:ParseError) {
+                    addError(e);
+                    errorPos = currentPos();
+                    if (currentPos().offset == offset) advance();
+                    if (choiceOption.body.length == 0) {
+                        choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
+                    }
                 }
             }
-            choiceOption.style = Plain;
+            else if (!check(blockEnd)) {  // If not end of choice
+                final offset = currentPos().offset;
+                try {
+                    choiceOption.body = [];
+                    choiceOption.body.push(parseNode());
+                }
+                catch (e:ParseError) {
+                    addError(e);
+                    errorPos = currentPos();
+                    if (currentPos().offset == offset) advance();
+                    if (choiceOption.body.length == 0) {
+                        choiceOption.body = [new NLiteral(nextNodeId(NODE), currentPos(), null, Null)];
+                    }
+                }
+                choiceOption.style = Plain;
+            }
         }
 
         choiceOption.pos = choiceOption.pos.extendedTo(prevNonWhitespaceOrComment().pos);
@@ -998,6 +1008,18 @@ class ParserContext {
 
         final target = expectIdentifier();
         return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
+    }
+
+    /**
+     * Parses an insertion statement (+ target).
+     * @return Insertion node
+     */
+    function parseInsertion():NInsertion {
+        final startPos = currentPos();
+        expect(OpPlus);
+
+        final target = expectIdentifier();
+        return attachComments(new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
     }
 
     /**

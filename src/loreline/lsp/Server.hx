@@ -428,6 +428,13 @@ class Server {
                         }
                     }
 
+                    // Look for insertions of unknown beats
+                    for (insertion in lens.getNodesOfType(NInsertion, false)) {
+                        if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
+                            addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error);
+                        }
+                    }
+
                     // Check for references to unknown characters in dialogue statements
                     for (dialogue in lens.getNodesOfType(NDialogueStatement, false)) {
                         final parentBeat = lens.getFirstParentOfType(dialogue, NBeatDecl);
@@ -1181,6 +1188,23 @@ class Server {
                         });
                     }
 
+                case NInsertion:
+                    final insertion:NInsertion = cast node;
+                    final beatDecl = lens.findBeatFromInsertion(insertion);
+                    if (beatDecl != null) {
+                        // Create a location link with more detailed targeting
+                        result.push({
+                            // The document containing the target
+                            targetUri: resolveNodeUri(uri, beatDecl, lens),
+                            // Full range of the beat declaration
+                            targetRange: rangeFromLorelinePosition(beatDecl.pos, content),
+                            // More precise range for the beat name
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(beatDecl.pos, content), content),
+                            // Range of the insertion reference in the source
+                            originSelectionRange: rangeFromLorelinePosition(insertion.targetPos, content)
+                        });
+                    }
+
                 case NDialogueStatement:
                     final dialogue:NDialogueStatement = cast node;
                     final characterDecl = lens.findCharacterFromDialogue(dialogue);
@@ -1397,6 +1421,15 @@ class Server {
                     else {
                         return makeHover(hoverTitle('Transition'), hoverDescriptionForNode(cast node), content, node);
                     }
+                }
+            case NInsertion:
+                final insertion:NInsertion = cast node;
+                final beat = lens.findBeatFromInsertion(insertion);
+                if (beat != null) {
+                    return makeBeatDeclHover(beat, uri, content, lens, node);
+                }
+                else {
+                    return makeHover(hoverTitle('Insertion'), hoverDescriptionForNode(cast node), content, node);
                 }
             case NObjectField:
                 return makeObjectFieldHover(cast node, content);
@@ -1765,7 +1798,6 @@ class Server {
             if (incomingBeats.length > 0) {
                 final targets = [];
                 for (ref in incomingBeats) {
-                    // final refType = HxType.getClass(ref.origin) == NTransition ? "transition" : "call";
                     final incoming = lens.getFirstParentOfType(ref.origin, NBeatDecl);
                     if (incoming != null) {
                         targets.push(makePositionLink(incoming.name, uri, incoming));

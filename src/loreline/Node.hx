@@ -1137,6 +1137,11 @@ class NChoiceOption extends AstNode {
     public var text:NStringLiteral;
 
     /**
+     * Alternatively, instead of text, this could be an insertion
+     */
+    public var insertion:NInsertion;
+
+    /**
      * Optional condition that must be true for this option to be available.
      */
     public var condition:Null<NExpr>;
@@ -1166,9 +1171,10 @@ class NChoiceOption extends AstNode {
      * @param leadingComments Optional comments before the option
      * @param trailingComments Optional comments after the option
      */
-    public function new(id:NodeId, pos:Position, text:NStringLiteral, condition:Null<NExpr>, conditionStyle:ConditionStyle, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+    public function new(id:NodeId, pos:Position, text:NStringLiteral, insertion:NInsertion, condition:Null<NExpr>, conditionStyle:ConditionStyle, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.text = text;
+        this.insertion = insertion;
         this.condition = condition;
         this.conditionStyle = conditionStyle;
         this.body = body;
@@ -1193,6 +1199,10 @@ class NChoiceOption extends AstNode {
             handleNode(text, this);
             text.each(handleNode);
         }
+        if (insertion != null) {
+            handleNode(insertion, this);
+            insertion.each(handleNode);
+        }
         if (condition != null) {
             handleNode(condition, this);
             condition.each(handleNode);
@@ -1205,7 +1215,12 @@ class NChoiceOption extends AstNode {
      */
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
-        json.text = text.toJson();
+        if (text != null) {
+            json.text = text.toJson();
+        }
+        if (insertion != null) {
+            json.insertion = insertion.toJson();
+        }
         if (condition != null) {
             json.condition = condition.toJson();
             json.conditionStyle = conditionStyle.toString();
@@ -1485,6 +1500,50 @@ class NTransition extends AstNode {
     /**
      * Converts the transition to a JSON representation.
      * @return Dynamic object containing transition data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        json.target = target;
+        json.targetPos = targetPos.toJson();
+        return json;
+    }
+}
+
+/**
+ * Represents an insertion of another beat (+).
+ */
+class NInsertion extends AstNode {
+    /**
+     * Name of the target beat.
+     */
+    public var target:String;
+
+    /**
+     * Position of the target part of the insertion
+     */
+    public var targetPos:Position;
+
+    /**
+     * Creates a new insertion node.
+     * @param pos Position in source where this insertion appears
+     * @param target Name of the target beat
+     * @param targetPos Position of the target part of the insertion
+     * @param leadingComments Optional comments before the insertion
+     * @param trailingComments Optional comments after the insertion
+     */
+    public function new(id:NodeId, pos:Position, target:String, targetPos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.target = target;
+        this.targetPos = targetPos;
+    }
+
+    override function type():String {
+        return "Insertion";
+    }
+
+    /**
+     * Converts the insertion to a JSON representation.
+     * @return Dynamic object containing insertion data
      */
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();

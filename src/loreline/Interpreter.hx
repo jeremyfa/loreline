@@ -1855,6 +1855,8 @@ typedef InterpreterOptions = {
                 // `next` callback because we are starting a new stack
                 evalTransition(cast node);
 
+            // TODO NInsertion
+
             case _:
                 throw new RuntimeError('Unsupported node type: ${Type.getClassName(Type.getClass(node))}', node.pos);
         }

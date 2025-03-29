@@ -265,6 +265,8 @@ class Printer {
                 printIfStatement(cast node);
             case NTransition:
                 printTransition(cast node, sameLine);
+            case NInsertion:
+                printInsertion(cast node);
             case NStringLiteral:
                 printStringLiteral(cast node);
             case NLiteral:
@@ -622,6 +624,19 @@ class Printer {
         printLeadingComments(trans);
         write('-> ${trans.target}');
         printTrailingComments(trans);
+    }
+
+    /**
+     * Prints an insertion node.
+     * @param insert Insertion to print
+     */
+    function printInsertion(insert:NInsertion) {
+        if (_prevLevel == _level) {
+            writeln();
+        }
+        printLeadingComments(insert);
+        write('+ ${insert.target}');
+        printTrailingComments(insert);
     }
 
     /**

@@ -549,6 +549,18 @@ class Lens {
 
     }
 
+    /**
+     * Finds and returns the beat declaration referenced by the given insertion.
+     * This method searches through the beat declarations to find a match based on the insertion's fields.
+     * @param insertion The insertion object containing the reference to search for
+     * @return The referenced beat declaration if found, null otherwise
+     */
+    public function findBeatFromInsertion(insertion:NInsertion):Null<NBeatDecl> {
+
+        return findBeatByNameFromNode(insertion.target, insertion);
+
+    }
+
     public function findBeatByPathFromNode(path:String, node:Node):Null<NBeatDecl> {
 
         final parts = path.split('.');
@@ -946,6 +958,13 @@ class Lens {
                         targetBeats.set(targetBeat.id, new Reference(targetBeat, transition));
                     }
 
+                case NInsertion:
+                    final insertion:NInsertion = cast node;
+                    final targetBeat = findBeatByNameFromNode(insertion.target, insertion);
+                    if (targetBeat != null) {
+                        targetBeats.set(targetBeat.id, new Reference(targetBeat, insertion));
+                    }
+
                 case NCall:
                     final call:NCall = cast node;
                     // Only check calls that could be beat references
@@ -983,6 +1002,12 @@ class Lens {
                     final transition:NTransition = cast node;
                     if (transition.target == beatDecl.name) {
                         references.push(new Reference(beatDecl, transition));
+                    }
+
+                case NInsertion:
+                    final insertion:NInsertion = cast node;
+                    if (insertion.target == beatDecl.name) {
+                        references.push(new Reference(beatDecl, insertion));
                     }
 
                 case NCall:

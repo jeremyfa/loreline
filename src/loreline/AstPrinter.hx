@@ -92,6 +92,15 @@ class AstPrinter {
         }
     }
 
+    private function printConditionStyle(style:ConditionStyle, label:String = " style="):Void {
+        switch style {
+            case Plain:
+            case Parens:
+                add(label);
+                add(style.toString());
+        }
+    }
+
     /**
      * Print a node with its type, ID, position, and properties
      */
@@ -588,6 +597,9 @@ class AstPrinter {
             case NChoiceOption:
                 final option:NChoiceOption = cast node;
                 printBlockStyle(option.style);
+                if (option.condition != null) {
+                    printConditionStyle(option.conditionStyle, ' conditionStyle=');
+                }
                 addLineBreak();
                 indentLevel++;
                 indent();
@@ -636,6 +648,24 @@ class AstPrinter {
                     add(transition.targetPos.offset);
                     addChar(":".code);
                     add(transition.targetPos.length);
+                    addChar("]".code);
+                }
+
+            case NInsertion:
+                final insertion:NInsertion = cast node;
+                add(' target="');
+                add(insertion.target);
+                add('"');
+
+                if (insertion.targetPos != null) {
+                    add(" targetPos=[");
+                    add(insertion.targetPos.line);
+                    addChar(":".code);
+                    add(insertion.targetPos.column);
+                    addChar(":".code);
+                    add(insertion.targetPos.offset);
+                    addChar(":".code);
+                    add(insertion.targetPos.length);
                     addChar("]".code);
                 }
 

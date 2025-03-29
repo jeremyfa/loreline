@@ -1386,6 +1386,53 @@ class Token {
         return true;
     }
 
+    function isInsertionStart(pos:Int):Bool {
+
+        // Check for +
+        if (input.uCharCodeAt(pos) != "+".code) {
+            return false;
+        }
+        pos += 1;
+
+        // Skip whitespace and comments between -> and identifier
+        pos = skipWhitespaceAndComments(pos);
+
+        // Read target
+        if (pos >= this.length) {
+            return false;
+        }
+
+        final char = input.uCharCodeAt(pos);
+        if (char == ".".code) {
+            // Move past dot
+            pos++;
+        }
+        else if (isIdentifierPart(input.uCharCodeAt(pos))) {
+            // Move past identifier
+            pos++;
+            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
+                pos++;
+            }
+        }
+        else {
+            return false;
+        }
+
+        // Skip any trailing comments
+        pos = skipWhitespaceAndComments(pos);
+
+        // Check that we're at end of line, end of input, or only have whitespace/comments left
+        if (pos < this.length) {
+            var c = input.uCharCodeAt(pos);
+            if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
+                return false;
+            }
+        }
+
+        // Return success
+        return true;
+    }
+
     /**
      * Returns whether the input at the given position begins with a label pattern (identifier:).
      * @param pos Position to check from
@@ -2166,6 +2213,13 @@ class Token {
         if (!isValue) {
             if (c == "=".code ||
                 (cc == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code))) {
+                return null;
+            }
+        }
+
+        // Skip if this is a beat insertion
+        if (!isValue && !isAfterLabel) {
+            if (isInsertionStart(pos)) {
                 return null;
             }
         }
