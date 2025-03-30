@@ -31,26 +31,63 @@ typedef SaveDataNode = {
 }
 
 /**
+ * Represents an insertion
+ */
+typedef SaveDataInsertion = {
+    /** The insertion node reference */
+    var ?origin:SaveDataNode;
+    /** The choice options collected by this insertion, if any */
+    var ?options:Array<SaveDataChoiceOption>;
+    /** The call stack of this insertion, if it has collected choices and is waiting resume */
+    var ?stack:Array<SaveDataScope>;
+}
+
+/**
+ * Represents a choice option in the save data
+ */
+typedef SaveDataChoiceOption = {
+    /** Text displayed for this option */
+    var text:String;
+    /** Whether this option is disabled */
+    var ?disabled:Bool;
+    /** Tags associated with this option, if any */
+    var ?tags:Array<SaveDataTextTag>;
+    /** Reference to the target node for this option, if any */
+    var ?node:SaveDataNode;
+    /** Reference to the insertion related to this option, if any */
+    var ?insertion:Int;
+}
+
+/**
+ * Represents a text tag
+ */
+typedef SaveDataTextTag = {
+    /** The value/name of the tag */
+    var value:String;
+    /** The offset where the tag appears in text */
+    var offset:Int;
+    /** Whether this is a closing tag */
+    var ?closing:Bool;
+}
+
+/**
  * Represents a scope's state in the save data
  */
 typedef SaveDataScope = {
     /** The scope's unique identifier */
     var id:Int;
-
     /** ID of the associated beat, if any */
     var ?beat:SaveDataBeat;
-
     /** ID of the associated node, if any */
     var ?node:SaveDataNode;
-
     /** State data if temporary state is present */
     var ?state:Any;
-
     /** Beat IDs if scope has beats */
     var ?beats:Array<SaveDataBeat>;
-
     /** ID of the current head node, if any */
     var ?head:SaveDataNode;
+    /** Insertion related to this scope, if any */
+    var ?insertion:Int;
 }
 
 /**
@@ -69,16 +106,14 @@ typedef SaveDataFields = {
 typedef SaveData = {
     /** Save data format version */
     var version:Int;
-
     /** Current execution stack */
     var stack:Array<SaveDataScope>;
-
     /** Top level state */
     var state:SaveDataFields;
-
     /** Character states keyed by name */
     var characters:Dynamic<SaveDataFields>;
-
     /** Node states keyed by ID */
     var nodeStates:Dynamic<SaveDataFields>;
+    /** Insertions keyed by ID */
+    var ?insertions:Dynamic<SaveDataInsertion>;
 }

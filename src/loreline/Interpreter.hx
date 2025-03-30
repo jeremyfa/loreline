@@ -202,8 +202,12 @@ class RuntimeScope {
  * Fata that needs to be hold with a scope when
  * a beat is being inserted within a choice
  */
-@:structInit
 class RuntimeInsertion {
+
+    /**
+     * The insertion id, a unique integer value among all insertions.
+     */
+    public var id:Int;
 
     /**
      * The original node causing that insertion
@@ -213,13 +217,18 @@ class RuntimeInsertion {
     /**
      * The inserted choice options, or `null` if nothing is inserted yet
      */
-    public var options:Array<NChoiceOption> = null;
+    public var options:Array<ChoiceOption> = null;
 
     /**
      * The call stack of this insertion, which is used to resume
      * the execution at the correct location when a choice of it has been selected
      */
     public var stack:Array<RuntimeScope> = [];
+
+    public function new(id:Int, origin:NInsertion) {
+        this.id = id;
+        this.origin = origin;
+    }
 
 }
 
@@ -269,6 +278,20 @@ class ChoiceOption {
      * Whether this choice option is currently enabled.
      */
     public var enabled:Bool;
+
+    /**
+     * The related choice option node, only used internally
+     */
+    @:allow(loreline.Interpreter)
+    private var node:NChoiceOption;
+
+    /**
+     * The related insertion of this option.
+     * Needed to be able to resume execution if that choice option is chosen.
+     */
+    @:allow(loreline.Interpreter)
+    private var insertion:RuntimeInsertion;
+
 }
 
 /**
@@ -461,10 +484,44 @@ typedef InterpreterOptions = {
     }
 
     /**
+     * Current insertion associated with current scope or a parent scope, with current execution state.
+     */
+    var currentInsertion(get,never):RuntimeInsertion;
+    function get_currentInsertion():RuntimeInsertion {
+        var i = stack.length - 1;
+        while (i >= 0) {
+            final scope = stack[i];
+            if (scope.insertion != null) {
+                return scope.insertion;
+            }
+            i--;
+        }
+        return null;
+    }
+
+    function removeCurrentInsertion() {
+        var i = stack.length - 1;
+        while (i >= 0) {
+            final scope = stack[i];
+            if (scope.insertion != null) {
+                scope.insertion = null;
+                break;
+            }
+            i--;
+        }
+    }
+
+    /**
      * The next scope id to assign when pushing a new scope.
      * Every time we reset the stack, this counter is also reset.
      */
     var nextScopeId:Int = 1;
+
+    /**
+     * The next insertion id to assign when creating a new insertion.
+     * Every time we reset the stack, this counter is also reset.
+     */
+    var nextInsertionId:Int = 1;
 
     /**
      * List of pending callbacks that should be run synchronously.
@@ -614,15 +671,23 @@ typedef InterpreterOptions = {
      */
     public function save():SaveData {
 
-        return {
+        final insertions:Dynamic<SaveDataInsertion> = {};
+
+        final result:SaveData = {
             version: 1,
             stack: [
-                for (scope in stack) serializeScope(scope)
+                for (scope in stack) serializeScope(scope, insertions)
             ],
             state: serializeState(topLevelState),
             characters: serializeCharacters(),
             nodeStates: serializeNodeStates()
         };
+
+        if (Reflect.fields(insertions).length > 0) {
+            result.insertions = insertions;
+        }
+
+        return result;
 
     }
 
@@ -644,6 +709,7 @@ typedef InterpreterOptions = {
         stack.resize(0);
         nodeStates.clear();
         nextScopeId = 1;
+        nextInsertionId = 1;
 
         // Restore top level state
         restoreState(topLevelState, saveData.state);
@@ -690,6 +756,21 @@ typedef InterpreterOptions = {
 
     }
 
+    function resumeFromLevel(scopeLevel:Int, next:()->Void) {
+
+        // Prepare to continue execution
+        final done = wrapNext(next);
+
+        // We now consider that finishing this
+        // execution chain is the finish trigger
+        finishTrigger = done;
+
+        // Resume from the top scope
+        resumeNode(stack[scopeLevel].node, scopeLevel, done.cb);
+        done.sync = false;
+
+    }
+
     /**
      * Gets a character by name.
      *
@@ -725,7 +806,7 @@ typedef InterpreterOptions = {
      * @param scope The scope to serialize
      * @return The serialized scope data
      */
-    function serializeScope(scope:RuntimeScope):SaveDataScope {
+    function serializeScope(scope:RuntimeScope, insertions:Dynamic<SaveDataInsertion>):SaveDataScope {
 
         final result:SaveDataScope = {
             id: scope.id
@@ -749,6 +830,79 @@ typedef InterpreterOptions = {
 
         if (scope.head != null) {
             result.head = serializeNodeReference(scope.head);
+        }
+
+        if (scope.insertion != null) {
+            result.insertion = serializeInsertion(scope.insertion, insertions);
+        }
+
+        return result;
+
+    }
+
+    function serializeInsertion(insertion:RuntimeInsertion, insertions:Dynamic<SaveDataInsertion>) {
+
+        final key:String = Std.string(insertion.id);
+
+        var serialized:SaveDataInsertion = Reflect.field(insertions, key);
+
+        if (serialized == null) {
+            serialized = {};
+
+            if (insertion.options != null) {
+                serialized.options = [for (opt in insertion.options) serializeChoiceOption(opt, insertions)];
+            }
+
+            if (insertion.origin != null) {
+                serialized.origin = serializeNodeReference(insertion.origin);
+            }
+
+            if (insertion.stack != null) {
+                serialized.stack = [for (scope in insertion.stack) serializeScope(scope, insertions)];
+            }
+
+            Reflect.setField(insertions, key, serialized);
+        }
+
+        return insertion.id;
+
+    }
+
+    function serializeChoiceOption(option:ChoiceOption, insertions:Dynamic<SaveDataInsertion>) {
+
+        final result:SaveDataChoiceOption = {
+            text: option.text
+        };
+
+        if (!option.enabled) {
+            result.disabled = true;
+        }
+
+        if (option.tags != null) {
+            result.tags = [for (tag in option.tags) serializeTextTag(tag)];
+        }
+
+        if (option.node != null) {
+            result.node = serializeNodeReference(option.node);
+        }
+
+        if (option.insertion != null) {
+            result.insertion = serializeInsertion(option.insertion, insertions);
+        }
+
+        return result;
+
+    }
+
+    function serializeTextTag(tag:TextTag) {
+
+        final result:SaveDataTextTag = {
+            value: tag.value,
+            offset: tag.offset
+        };
+
+        if (tag.closing) {
+            result.closing = true;
         }
 
         return result;
@@ -985,6 +1139,8 @@ typedef InterpreterOptions = {
                     resumeBeatRun(cast node, scopeLevel, next);
                 case NChoiceOption:
                     resumeChoiceOption(cast node, scopeLevel, next);
+                case NChoiceStatement:
+                    resumeChoice(cast node, scopeLevel, next);
                 case NIfStatement:
                     resumeIf(cast node, scopeLevel, next);
                 case NCall if (isBeatCall(node, scopeLevel)):
@@ -1108,6 +1264,27 @@ typedef InterpreterOptions = {
     function resumeChoiceOption(option:NChoiceOption, scopeLevel:Int, next:()->Void) {
 
         resumeNodeBody(option, scopeLevel, option.body, next);
+
+    }
+
+    /**
+     * Resumes execution of a choice
+     */
+    function resumeChoice(choice:NChoiceStatement, scopeLevel:Int, next:()->Void) {
+
+        // Step in scope
+        final currentScope = stack[scopeLevel];
+
+        if (currentScope.head == null) {
+            evalChoice(choice, next);
+        }
+        else if (currentScope.head is NChoiceOption) {
+            final option:NChoiceOption = cast currentScope.head;
+            evalNodeBody(currentScope.beat, option, option.body, next);
+        }
+        else {
+            throw new RuntimeError('Choice head is not a choice option', currentScope.head.pos);
+        }
 
     }
 
@@ -1838,6 +2015,9 @@ typedef InterpreterOptions = {
         // Reset scope id
         nextScopeId = 1;
 
+        // Reset insertion id
+        nextInsertionId = 1;
+
         // Run beat
         final done = wrapNext(finish);
 
@@ -1928,38 +2108,49 @@ typedef InterpreterOptions = {
      * @param insertion If any, the insertion related to this evaluation
      * @param next Callback to call when execution completes
      */
-    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:NInsertion, next:()->Void) {
+    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:RuntimeInsertion, next:()->Void) {
 
         // Push new scope
         push({
             beat: beat,
-            node: node
+            node: node,
+            insertion: insertion
         });
 
         // Then iterate through each child node in the body
         var index = 0;
         var moveNext:()->Void = null;
+        final currentInsertion = this.currentInsertion;
         moveNext = () -> {
 
-            // Check if we still have a node to evaluate
-            if (index < body.length) {
-
-                // Yes, do it
-                final childNode = body[index];
-                currentScope.head = childNode;
-                index++;
-                final done = wrapNext(moveNext);
-
-                evalNode(childNode, done.cb);
-                done.sync = false;
+            if (currentInsertion?.options != null) {
+                // At each iteration, check if we are within an insertion with completed choice options.
+                // If that's the case, we should pause this stack execution for now and return
+                pop();
+                next();
 
             }
             else {
+                // Check if we still have a node to evaluate
+                if (index < body.length) {
 
-                // We are done, pop node scope
-                // and finish that node body evaluation
-                pop();
-                next();
+                    // Yes, do it
+                    final childNode = body[index];
+                    currentScope.head = childNode;
+                    index++;
+
+                    final done = wrapNext(moveNext);
+                    evalNode(childNode, done.cb);
+                    done.sync = false;
+
+                }
+                else {
+
+                    // We are done, pop node scope
+                    // and finish that node body evaluation
+                    pop();
+                    next();
+                }
             }
 
         }
@@ -2049,14 +2240,54 @@ typedef InterpreterOptions = {
         final optionsDone = wrapNext(() -> {
             // Step 2
 
+            // If we are within an insertion waiting for a choice block,
+            // then we reached that choice block and should collect options
+            final currentInsertion = this.currentInsertion;
+            if (currentInsertion != null && currentInsertion.options == null) {
+                // Copy the current stack so that we can restore it later
+                currentInsertion.stack = [].concat(stack);
+
+                // Fill in options
+                currentInsertion.options = options;
+
+                // No need to continue here, we won't display that choice
+                // because instead we are collection the options for a parent one.
+                next();
+                return;
+            }
+
             // Then call the user-defined choice handler.
             // The execution will be "paused" until the callback
             // is called, either synchronously or asynchronously
             var index:Int = -1;
             var choiceCallback = wrapNext(() -> {
-                if (index >= 0 && index < choice.options.length) {
+                if (index >= 0 && index < options.length) {
                     // Evaluate the chosen option
-                    evalChoiceOption(choice.options[index], next);
+                    final option = options[index];
+                    if (option.insertion != null) {
+                        final scopeLevel = stack.length;
+                        while (stack.length > 0) stack.pop();
+                        for (scope in option.insertion.stack) {
+
+                            // Need to remove the insertion data now, as we are just back
+                            // to normal execution flow now!
+                            if (scope.insertion == option.insertion) {
+                                scope.insertion = null;
+                            }
+
+                            stack.push(scope);
+                        }
+                        final lastScope = stack[stack.length-1];
+                        push({
+                            beat: lastScope.beat,
+                            node: cast lens.getParentNode(option.node),
+                            head: option.node
+                        });
+                        resumeFromLevel(scopeLevel, next);
+                    }
+                    else {
+                        evalChoiceOption(option.node, next);
+                    }
                 }
                 else {
                     // Choice is invalid. In that situation, we suppose
@@ -2080,26 +2311,29 @@ typedef InterpreterOptions = {
 
     function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void) {
 
-        // Push new scope
-        push({
-            beat: beat,
-            node: choice
-        });
-
         // Get options
         final options = choice.options;
 
         // Then iterate through each child node in the body
         var index = 0;
         var moveNext:()->Void = null;
+        var insertion:RuntimeInsertion = null;
         moveNext = () -> {
+
+            // Look for collection options in previous step (from an insertion)
+            if (insertion != null && insertion.options != null) {
+                for (i in 0...insertion.options.length) {
+                    final opt = insertion.options[i];
+                    result.push(opt);
+                }
+                insertion = null;
+            }
 
             // Check if we still have an option to evaluate
             if (index < options.length) {
 
                 // Yes, do it
                 final option = options[index];
-                currentScope.head = option;
                 index++;
                 final enabled = option.condition == null || evaluateCondition(option.condition);
                 if (option.text != null) {
@@ -2108,14 +2342,17 @@ typedef InterpreterOptions = {
                     result.push({
                         text: content.text,
                         tags: content.tags,
-                        enabled: enabled
+                        enabled: enabled,
+                        node: option,
+                        insertion: currentInsertion
                     });
                     done.cb();
                     done.sync = false;
                 }
                 else if (option.insertion != null) {
                     final done = wrapNext(moveNext);
-                    evalInsertion(option.insertion, done.cb);
+                    insertion = new RuntimeInsertion(nextInsertionId, option.insertion);
+                    evalInsertion(insertion, done.cb);
                     done.sync = false;
                 }
                 else {
@@ -2125,9 +2362,7 @@ typedef InterpreterOptions = {
             }
             else {
 
-                // We are done, pop node scope
-                // and finish that node body evaluation
-                pop();
+                // We are done, finish that evaluation
                 next();
             }
 
@@ -2138,15 +2373,9 @@ typedef InterpreterOptions = {
 
     }
 
-    /**
-     * Evaluates a beat by executing its body.
-     *
-     * @param beat The beat to evaluate
-     * @param next Callback to call when evaluation completes
-     */
-    function evalInsertion(insertion:NInsertion, next:()->Void) {
+    function evalInsertion(insertion:RuntimeInsertion, next:()->Void) {
 
-        final beatName = insertion.target;
+        final beatName = insertion.origin.target;
         var resolvedBeat:NBeatDecl = null;
 
         // Look for matching beat in scopes recursively

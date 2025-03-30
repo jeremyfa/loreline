@@ -528,7 +528,13 @@ class ParserContext {
         }
 
         // Parse dialogue content
-        dialogue.content = parseStringLiteral();
+        try {
+            dialogue.content = parseStringLiteral();
+        }
+        catch (e:ParseError) {
+            addError(e);
+            dialogue.content = new NStringLiteral(nextNodeId(NODE), currentPos(), Unquoted, [new NStringPart(nextNodeId(NODE), currentPos(), Raw("?"))]);
+        }
 
         // Handle unindent
         if (indented) {
@@ -559,7 +565,8 @@ class ParserContext {
             // Parse statement
             try {
                 statements.push(parseNode());
-            } catch (e:ParseError) {
+            }
+            catch (e:ParseError) {
                 if (errors == null) errors = [];
                 errors.push(e);
                 synchronize();

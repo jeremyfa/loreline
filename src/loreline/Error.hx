@@ -27,7 +27,7 @@ class Error {
      * @param message The error message
      * @param pos The position where the error occurred
      */
-    public function new(message:String, pos:Position) {
+    public function new(message:String, ?pos:Position) {
         this.message = message;
         this.pos = pos;
         this.stack = CallStack.callStack();
@@ -38,7 +38,12 @@ class Error {
      * @return Formatted error message with position
      */
     public function toString():String {
-        return '$message at ${pos.toString()}';
+        return if (pos != null) {
+            '$message at ${pos.toString()}';
+        }
+        else {
+            message;
+        }
     }
 
 }
