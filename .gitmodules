@@ -10,3 +10,6 @@
 [submodule "git/hscript"]
 	path = git/hscript
 	url = https://github.com/jeremyfa/hscript.git
+[submodule "git/yaml"]
+	path = git/yaml
+	url = https://github.com/jeremyfa/yaml.git

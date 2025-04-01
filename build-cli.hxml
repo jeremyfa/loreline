@@ -1,4 +1,5 @@
 --class-path src
 --main loreline.cli.Cli
+--library yaml
 --library hscript
 -D hscriptPos
