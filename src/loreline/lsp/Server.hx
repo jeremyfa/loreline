@@ -423,15 +423,19 @@ class Server {
 
                     // Look for transitions to unknown beats
                     for (transition in lens.getNodesOfType(NTransition, false)) {
-                        if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
-                            addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error);
+                        if (transition.target != '.') {
+                            if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
+                                addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error);
+                            }
                         }
                     }
 
                     // Look for insertions of unknown beats
                     for (insertion in lens.getNodesOfType(NInsertion, false)) {
-                        if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
-                            addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error);
+                        if (insertion.target != '.') {
+                            if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
+                                addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error);
+                            }
                         }
                     }
 
@@ -2031,7 +2035,8 @@ class Server {
     function characterName(character:NCharacterDecl):String {
 
         final nameExpr = character.get('name');
-        return nameExpr != null ? printLoreline(nameExpr) : character.name;
+        final printed = nameExpr != null ? printLoreline(nameExpr) : null;
+        return printed != null && printed != 'null' && printed.trim() != '' && printed != '0' && printed != 'false' ? printed : character.name;
 
     }
 

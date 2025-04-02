@@ -58,10 +58,12 @@ class TestRunner {
                     final tag = tags[t];
                     if (tag.offset == i) {
                         textBuf.addChar("<".code);
+                        textBuf.addChar("<".code);
                         if (tag.closing) {
                             textBuf.addChar("/".code);
                         }
                         textBuf.add(tag.value);
+                        textBuf.addChar(">".code);
                         textBuf.addChar(">".code);
                     }
                 }
@@ -81,10 +83,12 @@ class TestRunner {
             final tag = tags[t];
             if (tag.offset > len) {
                 textBuf.addChar("<".code);
+                textBuf.addChar("<".code);
                 if (tag.closing) {
                     textBuf.addChar("/".code);
                 }
                 textBuf.add(tag.value);
+                textBuf.addChar(">".code);
                 textBuf.addChar(">".code);
             }
         }
@@ -94,14 +98,25 @@ class TestRunner {
 
     }
 
-    function compareOutput(expectedOutput:String, actualOutput:String):Bool {
+    public static function compareOutput(expectedOutput:String, actualOutput:String):Int {
 
         // Normalize line endings (CRLF -> LF) and trim whitespace
-        final normalizedExpected = expectedOutput.replace("\r\n", "\n").trim();
-        final normalizedActual = actualOutput.replace("\r\n", "\n").trim();
+        final normalizedExpected = expectedOutput.replace("\r\n", "\n").trim().split("\n");
+        final normalizedActual = actualOutput.replace("\r\n", "\n").trim().split("\n");
 
-        // Compare normalized strings
-        return normalizedExpected == normalizedActual;
+        final len = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+
+        var i = 0;
+        while (i < len) {
+            if (normalizedExpected[i] != normalizedActual[i]) return i;
+            i++;
+        }
+
+        if (i < len) {
+            return i;
+        }
+
+        return -1;
 
     }
 
@@ -132,8 +147,12 @@ class TestRunner {
                 }
             }
             else {
+                text = insertTagsInText(text, tags, multiline);
+                output.addChar("~".code);
+                output.addChar(" ".code);
                 output.add(text);
             }
+            output.addChar("\n".code);
             output.addChar("\n".code);
             callback();
         }
@@ -150,8 +169,6 @@ class TestRunner {
                 final multiline = opt.text.contains("\n");
                 final text = insertTagsInText(opt.text, opt.tags, multiline);
                 if (multiline) {
-                    output.addChar("\n".code);
-                    output.addChar(" ".code);
                     output.addChar(" ".code);
                     output.add(text);
                 }
@@ -161,6 +178,7 @@ class TestRunner {
                 }
                 output.addChar("\n".code);
             }
+            output.addChar("\n".code);
 
             if (choices == null || choices.length == 0) {
                 done(new TestResult(
@@ -177,7 +195,8 @@ class TestRunner {
         function handleFinish(interpreter:Interpreter) {
 
             final actualOutput = output.toString();
-            final passed = compareOutput(testCase.expectedOutput, actualOutput);
+            final compareResult = compareOutput(testCase.expectedOutput, actualOutput);
+            final passed = (compareResult == -1);
 
             done(new TestResult(
                 testCase, passed, actualOutput, null
