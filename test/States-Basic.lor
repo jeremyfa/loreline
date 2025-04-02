@@ -1,0 +1,99 @@
+
+state
+  coffeeBeans: 5
+  milk: 2
+
+character barista
+  name: Barista
+
+beat OrderDrink
+
+  "Remaining: coffeeBeans=$coffeeBeans milk=$milk"
+
+  if coffeeBeans <= 0
+    barista: I'm sold out, what a day!
+    -> .
+
+  choice
+    Order a cappuccino if coffeeBeans >= 2 and milk > 0
+      coffeeBeans -= 2
+      milk -= 1
+      barista: <proud> Look at the latte art I made for you!
+
+    Order an espresso if coffeeBeans > 0
+      coffeeBeans -= 1
+      barista: <happy> One espresso coming right up!
+
+  -> OrderDrink
+
+/*
+<test>
+- choices: [0,0,1]
+  expected: |
+    ~ Remaining: coffeeBeans=5 milk=2
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<proud>>Look at the latte art I made for you!
+
+    ~ Remaining: coffeeBeans=3 milk=1
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<proud>>Look at the latte art I made for you!
+
+    ~ Remaining: coffeeBeans=1 milk=0
+
+    - Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=0 milk=0
+
+    Barista: I'm sold out, what a day!
+
+- choices: [1,1,1,1,1]
+  expected: |
+    ~ Remaining: coffeeBeans=5 milk=2
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=4 milk=2
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=3 milk=2
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=2 milk=2
+
+    + Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=1 milk=2
+
+    - Order a cappuccino
+    + Order an espresso
+
+    Barista: <<happy>>One espresso coming right up!
+
+    ~ Remaining: coffeeBeans=0 milk=2
+
+    Barista: I'm sold out, what a day!
+</test>
+*/

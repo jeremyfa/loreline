@@ -1,0 +1,49 @@
+
+character player
+  name: null
+
+beat Introspection
+
+  if !player.name
+    What is my name?
+    ChooseName()
+    -> Introspection
+
+  else
+    Oh, I remember, my name is $player.name!
+
+beat ChooseName
+  choice
+    Alex
+      player.name = Alex
+    Sam
+      player.name = Sam
+    Jamie
+      player.name = Jamie
+    Riley
+      player.name = Riley
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ What is my name?
+
+    + Alex
+    + Sam
+    + Jamie
+    + Riley
+
+    ~ Oh, I remember, my name is Alex!
+- choices: [3]
+  expected: |
+    ~ What is my name?
+
+    + Alex
+    + Sam
+    + Jamie
+    + Riley
+
+    ~ Oh, I remember, my name is Riley!
+</test>
+*/

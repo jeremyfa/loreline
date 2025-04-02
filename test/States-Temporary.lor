@@ -1,0 +1,95 @@
+
+
+beat CounterExample
+
+  // Should be persistent
+  state
+    counter: 0
+
+  // Should reset everytime we enter the beat
+  new state
+    tmpCounter: 0
+
+  choice
+    Increment tmpCounter
+      tmpCounter += 1
+
+    Increment counter
+      counter += 1
+
+  "tmpCounter=$tmpCounter counter=$counter"
+
+  choice
+    Increment tmpCounter
+      tmpCounter += 1
+
+    Increment counter
+      counter += 1
+
+  "tmpCounter=$tmpCounter counter=$counter"
+
+  -> CounterExample
+
+/*
+<test>
+- choices: [0,1,1]
+  expected: |
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=1 counter=0
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=1 counter=1
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=0 counter=2
+
+    + Increment tmpCounter
+    + Increment counter
+
+- choices: [1,1,1,0,0,1,1]
+  expected: |
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=0 counter=1
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=0 counter=2
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=0 counter=3
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=1 counter=3
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=1 counter=3
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=1 counter=4
+
+    + Increment tmpCounter
+    + Increment counter
+
+    ~ tmpCounter=0 counter=5
+
+    + Increment tmpCounter
+    + Increment counter
+</test>
+*/

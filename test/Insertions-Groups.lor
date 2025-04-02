@@ -1,0 +1,55 @@
+
+character friend
+  name: Friend
+
+beat MultipleExample
+  friend: What's your current mood?
+  choice
+    + PositiveMoods
+    + NegativeMoods
+
+beat PositiveMoods
+  choice
+    I'm super excited!
+      You express how much you are excited
+    Happy to be alive :)
+      Every day is a victory and you are happy to share that feeling with your friend
+  friend: Yeah, glad to hear that!
+
+beat NegativeMoods
+  choice
+    I'm depressed...
+      Your friend can see how bad you feel right now just by looking at you
+    The world drives me mad!
+      You show anger about everything
+  friend: What can I do to help...
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Friend: What's your current mood?
+
+    + I'm super excited!
+    + Happy to be alive :)
+    + I'm depressed...
+    + The world drives me mad!
+
+    ~ You express how much you are excited
+
+    Friend: Yeah, glad to hear that!
+
+- choices: [3]
+  expected: |
+    Friend: What's your current mood?
+
+    + I'm super excited!
+    + Happy to be alive :)
+    + I'm depressed...
+    + The world drives me mad!
+
+    ~ You show anger about everything
+
+    Friend: What can I do to help...
+</test>
+*/

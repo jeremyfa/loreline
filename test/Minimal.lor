@@ -1,0 +1,52 @@
+
+The warm aroma of coffee fills the café.
+
+barista: Hi there! How are you doing today?
+
+choice
+    Having a great day
+        barista: Wonderful! Coffee will make it even better.
+
+    Need caffeine...
+        barista: Say no more! Let me help with that.
+
+    Your name is Alex, right?
+        barista: Oh, I didn't expect you'd remember it!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ The warm aroma of coffee fills the café.
+
+    barista: Hi there! How are you doing today?
+
+    + Having a great day
+    + Need caffeine...
+    + Your name is Alex, right?
+
+    barista: Wonderful! Coffee will make it even better.
+- choices: [1]
+  expected: |
+    ~ The warm aroma of coffee fills the café.
+
+    barista: Hi there! How are you doing today?
+
+    + Having a great day
+    + Need caffeine...
+    + Your name is Alex, right?
+
+    barista: Say no more! Let me help with that.
+- choices: [3]
+  expected: |
+    ~ The warm aroma of coffee fills the café.
+
+    barista: Hi there! How are you doing today?
+
+    + Having a great day
+    + Need caffeine...
+    + Your name is Alex, right?
+
+    barista: Oh, I didn't expect you'd remember it!
+</test>
+*/
