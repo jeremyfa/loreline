@@ -2918,14 +2918,23 @@ typedef InterpreterOptions = {
 
         final value:Any = evaluateExpression(expr);
 
-        return if (value is String) {
+        return if (value is Bool) {
+            (value:Bool) == true;
+        }
+        else if (value is String) {
             (value:String).length > 0;
         }
         else if (value is Array) {
             (value:Array<Any>).length > 0;
         }
+        else if (value is Int) {
+            (value:Int) != 0;
+        }
+        else if (value is Float) {
+            (value:Float) != 0;
+        }
         else {
-            (value:Dynamic) == true;
+            value != null;
         }
 
     }
@@ -3152,6 +3161,25 @@ typedef InterpreterOptions = {
                     case OpNot if (operand is Bool): {
                         final v:Bool = operand;
                         !v;
+                    }
+                    case OpNot if (operand is String): {
+                        final v:String = operand;
+                        (v == null || v.length == 0);
+                    }
+                    case OpNot if (operand is Array): {
+                        final v:Array<Any> = operand;
+                        (v == null || v.length == 0);
+                    }
+                    case OpNot if (operand is Int): {
+                        final v:Int = operand;
+                        (v == 0);
+                    }
+                    case OpNot if (operand is Float): {
+                        final v:Float = operand;
+                        (v == 0);
+                    }
+                    case OpNot: {
+                        (operand == null);
                     }
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
                 }
