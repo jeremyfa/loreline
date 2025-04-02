@@ -125,6 +125,8 @@ class ParserContext {
             }
         }
 
+        attachComments(script);
+
         if (rootParsing) {
             parsing = false;
         }
@@ -2002,7 +2004,7 @@ class ParserContext {
                 }
                 node.leadingComments.push(comment);
             }
-            else if (comment.pos.line == nodeStart.line) {
+            else if (comment.pos.line == nodeStart.line || isAtEnd()) {
                 // Trailing comments: same line as node
                 if (node.trailingComments == null) {
                     node.trailingComments = [];

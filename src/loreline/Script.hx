@@ -8,7 +8,7 @@ import loreline.Node;
 #if js
 @:expose
 #end
-class Script extends Node {
+class Script extends AstNode {
     /**
      * Array of top-level declarations in the script.
      */
