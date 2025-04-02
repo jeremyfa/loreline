@@ -996,16 +996,28 @@ class Token {
         final startPos = pos;
         var foundContent = false;
         var isNextLine = false;
+        var foundOneCR = false;
+        var foundOneLF = false;
         while (pos < this.length) {
             // Skip whitespace including newlines
-            while (pos < this.length
-                && (input.uCharCodeAt(pos) == " ".code || input.uCharCodeAt(pos) == "\t".code || input.uCharCodeAt(pos) == "\n".code
-                    || input.uCharCodeAt(pos) == "\r".code)) {
-                if (input.uCharCodeAt(pos) == "\r".code || input.uCharCodeAt(pos) == "\n".code) {
-                    isNextLine = true;
+            while (pos < this.length) {
+                final c = input.uCharCodeAt(pos);
+                if (c == " ".code || c == "\t".code || (!foundOneLF && c == "\n".code)
+                    || (foundOneCR && c == "\r".code)) {
+                    if (c == "\r".code) {
+                        foundOneCR = true;
+                        isNextLine = true;
+                    }
+                    else if (c == "\n".code) {
+                        isNextLine = true;
+                        foundOneLF = true;
+                    }
+                    pos++;
+                    foundContent = true;
                 }
-                pos++;
-                foundContent = true;
+                else {
+                    break;
+                }
             }
 
             // Check for comments
@@ -1843,12 +1855,21 @@ class Token {
 
     function isContinuingMultilineText(pos:Int, indent:Int):Bool {
 
+        if (input.uCharCodeAt(pos) == "/".code && input.uCharCodeAt(pos+1) == "/".code) {
+            while (pos < length && input.uCharCodeAt(pos) != "\r".code && input.uCharCodeAt(pos) != "\n".code) {
+                pos++;
+            }
+        }
+
         if (input.uCharCodeAt(pos) == "\r".code) {
             pos++;
         }
 
         if (input.uCharCodeAt(pos) == "\n".code) {
             pos++;
+        }
+        else {
+            return false;
         }
 
         var computedIndent = 0;
@@ -1863,7 +1884,7 @@ class Token {
 
         // Check that there is content in this line
         pos = skipWhitespaceAndComments(pos, false);
-        if (isWhitespace(input.uCharCodeAt(pos)) || (input.uCharCodeAt(pos) == "/".code && input.uCharCodeAt(pos+1) == "/".code)) {
+        if (isWhitespace(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == "\r".code || input.uCharCodeAt(pos) == "\n".code || (input.uCharCodeAt(pos) == "/".code && input.uCharCodeAt(pos+1) == "/".code)) {
             return false;
         }
 
@@ -2178,8 +2199,14 @@ class Token {
         final labelIdentifierIndex = afterLabelIdentifierToken(false);
 
         // When after label, but starting the line after, check that we are indented
-        if (labelIdentifierIndex != -1 && tokenized[labelIdentifierIndex].pos.line < line && tokenized[labelIdentifierIndex].pos.column >= column) {
-            return null;
+        if (labelIdentifierIndex != -1 && tokenized[labelIdentifierIndex].pos.line < line) {
+            if (tokenized[labelIdentifierIndex].pos.column >= column) {
+                return null;
+            }
+            // Also check that the line gap is 1 maximum
+            if (line - tokenized[labelIdentifierIndex].pos.line > 1) {
+                return null;
+            }
         }
 
         final multilineIndent = if (labelIdentifierIndex != -1) {
@@ -2342,6 +2369,8 @@ class Token {
                             buf.addChar("\n".code);
                             advance();
                         }
+                        currentColumn = column;
+                        currentLine = line;
                     }
                     else {
                         break;
@@ -2505,7 +2534,16 @@ class Token {
                                 case LString(_, s_, attachments_):
                                     if (attachments_ != null) {
                                         for (attachment in attachments_) {
-                                            attachments.push(attachment);
+                                            switch attachment {
+                                                case Interpolation(braces, inTag, expr, start, length):
+                                                    attachments.push(
+                                                        Interpolation(braces, inTag, expr, start + afterWhitespaceAndCommentsPos - startPos, length)
+                                                    );
+                                                case Tag(closing, start, length):
+                                                    attachments.push(
+                                                        Tag(closing, start + afterWhitespaceAndCommentsPos - startPos, length)
+                                                    );
+                                            }
                                         }
                                     }
                                     content += between;
