@@ -1980,10 +1980,12 @@ typedef InterpreterOptions = {
 
         // Evaluate state values
         for (field in state.fields) {
-            final evaluated = evaluateExpression(field.value);
-            Objects.setField(this, runtimeState.fields, field.name, evaluated);
-            if (!state.temporary && isOriginalScriptExpression(field.value)) {
-                Objects.setField(this, runtimeState.originalFields, field.name, evaluated);
+            if (!Objects.fieldExists(this, runtimeState.fields, field.name)) {
+                final evaluated = evaluateExpression(field.value);
+                Objects.setField(this, runtimeState.fields, field.name, evaluated);
+                if (!state.temporary && isOriginalScriptExpression(field.value)) {
+                    Objects.setField(this, runtimeState.originalFields, field.name, evaluated);
+                }
             }
         }
 
