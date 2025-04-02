@@ -125,6 +125,18 @@ class TestRunner {
         final output = new Utf8Buf();
         final choices = testCase.choices != null ? [].concat(testCase.choices) : null;
 
+        function handleFinish(interpreter:Interpreter) {
+
+            final actualOutput = output.toString();
+            final compareResult = compareOutput(testCase.expectedOutput, actualOutput);
+            final passed = (compareResult == -1);
+
+            done(new TestResult(
+                testCase, passed, actualOutput, null
+            ));
+
+        }
+
         function handleDialogue(interpreter:Interpreter, character:String, text:String, tags:Array<TextTag>, callback:()->Void) {
             final multiline = text.contains("\n");
             if (character != null) {
@@ -181,26 +193,13 @@ class TestRunner {
             output.addChar("\n".code);
 
             if (choices == null || choices.length == 0) {
-                done(new TestResult(
-                    testCase, false, output.toString(), new Error('Reached a choice without knowing which index to pick')
-                ));
+                // Early finish when no choices
+                handleFinish(interpreter);
             }
             else {
                 final index = choices.shift();
                 callback(index);
             }
-
-        }
-
-        function handleFinish(interpreter:Interpreter) {
-
-            final actualOutput = output.toString();
-            final compareResult = compareOutput(testCase.expectedOutput, actualOutput);
-            final passed = (compareResult == -1);
-
-            done(new TestResult(
-                testCase, passed, actualOutput, null
-            ));
 
         }
 
