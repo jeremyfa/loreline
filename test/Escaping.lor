@@ -1,0 +1,39 @@
+
+// Escaping dollar by doubling it
+barista: That rare coffee is going to cost 9$$. Are you ok with that?
+
+// Escaping dollar with backslash
+player: Damn, I only have 5\$ left...
+
+// Escaping tags
+That's a high \<price> tag :(
+
+// And closing tags
+And no time to withdraw money, the place will be \</closing> already.
+
+// Line breaks are handled...
+player: Can I pay...\nthe rest...\ntomorrow?
+
+// But they can be escaped too!
+barista: Can you pay...\\nthe rest...\\ntomorrow? Sorry, I was just finishing my croissant!
+
+/*
+<test>
+- choices: []
+  expected: |
+    barista: That rare coffee is going to cost 9$. Are you ok with that?
+
+    player: Damn, I only have 5$ left...
+
+    ~ That's a high <price> tag :(
+
+    ~ And no time to withdraw money, the place will be </closing> already.
+
+    player:
+      Can I pay...
+      the rest...
+      tomorrow?
+
+    barista: Can you pay...\nthe rest...\ntomorrow? Sorry, I was just finishing my croissant!
+</test>
+*/

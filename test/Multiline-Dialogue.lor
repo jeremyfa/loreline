@@ -1,0 +1,15 @@
+
+barista:
+  Hey there, welcome to our cafe!
+  Got a special brew for you today.
+  Check out those limited edition Ethiopian coffee beans at the counter. You'll spot the little tag right away. Give it a try, yeah?
+
+/*
+<test>
+- expected: |
+    barista:
+      Hey there, welcome to our cafe!
+      Got a special brew for you today.
+      Check out those limited edition Ethiopian coffee beans at the counter. You'll spot the little tag right away. Give it a try, yeah?
+</test>
+*/

@@ -202,106 +202,120 @@ class Cli {
 
     function test(path:String) {
 
-        if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
-            var dir = path;
-            for (file in FileSystem.readDirectory(dir)) {
-                if (file.endsWith('.lor')) {
-                    testFile(Path.join([dir, file]));
+        for (crlf in [false, true]) {
+            if (crlf) {
+                print('[ CRLF ]'.cyan().bold());
+                print('');
+            }
+            else {
+                print('[ LF ]'.cyan().bold());
+                print('');
+            }
+            if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
+                var dir = path;
+                for (file in FileSystem.readDirectory(dir)) {
+                    if (file.endsWith('.lor')) {
+                        testFile(Path.join([dir, file]), crlf);
+                    }
                 }
             }
-        }
-        else {
-            testFile(path);
-        }
+            else {
+                testFile(path, crlf);
+            }
 
-        print('');
+            print('');
+        }
 
     }
 
-    function testFile(file:String) {
+    function testFile(file:String, crlf:Bool) {
 
         if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
             fail('Invalid file: $file');
         }
 
         try {
-            final content = File.getContent(file);
+            var content = File.getContent(file);
+            if (crlf) {
+                content = content.replace("\r\n", "\n").replace("\n", "\r\n");
+            }
+            else {
+                content = content.replace("\r\n", "\n");
+            }
             final script = Loreline.parse(content, file, handleFile);
-            if (script.trailingComments != null) {
-                for (comment in script.trailingComments) {
-                    if (comment.multiline) {
-                        final testStart = comment.content.uIndexOf('<test>');
-                        if (testStart != -1) {
-                            final testEnd = comment.content.uIndexOf('</test>', testStart + 6);
-                            if (testEnd != -1) {
-                                final testYml = Yaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
-                                if (testYml != null && testYml is Array) {
-                                    for (item in (testYml:Array<Dynamic>)) {
-                                        final testCase = new InterpreterTestCase(
-                                            file, content, file,
-                                            item.beat, item.choices, null,
-                                            item.expected
-                                        );
-                                        final testRunner = new TestRunner(handleFile);
-                                        testRunner.runTestCase(testCase, result -> {
-                                            final testCase:InterpreterTestCase = cast result.testCase;
-                                            if (result.passed) {
-                                                print('PASS'.green().bold() + ' - ' + file.gray() + (testCase.choices != null ? ' ' + '[${testCase.choices.join(',')}]'.gray() : ''));
-                                            }
-                                            else {
-                                                print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + (testCase.choices != null ? ' ' + '[${testCase.choices.join(',')}]'.gray() : ''));
+            script.eachComment((node, comment) -> {
+                if (comment.multiline) {
+                    final testStart = comment.content.uIndexOf('<test>');
+                    if (testStart != -1) {
+                        final testEnd = comment.content.uIndexOf('</test>', testStart + 6);
+                        if (testEnd != -1) {
+                            final testYml = Yaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
+                            if (testYml != null && testYml is Array) {
+                                for (item in (testYml:Array<Dynamic>)) {
+                                    final testCase = new InterpreterTestCase(
+                                        file, content, file,
+                                        item.beat, item.choices, null,
+                                        item.expected
+                                    );
+                                    final testRunner = new TestRunner(handleFile);
+                                    testRunner.runTestCase(testCase, result -> {
+                                        final testCase:InterpreterTestCase = cast result.testCase;
+                                        if (result.passed) {
+                                            print('PASS'.green().bold() + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
+                                        }
+                                        else {
+                                            print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
 
-                                                if (TestRunner.compareOutput(testCase.expectedOutput, result.actualOutput) != -1) {
+                                            if (TestRunner.compareOutput(testCase.expectedOutput, result.actualOutput) != -1) {
 
-                                                    print('');
+                                                print('');
 
-                                                    // Normalize line endings (CRLF -> LF) and trim whitespace
-                                                    final normalizedExpected = testCase.expectedOutput.replace("\r\n", "\n").trim().split("\n");
-                                                    final normalizedActual = result.actualOutput.replace("\r\n", "\n").trim().split("\n");
+                                                // Normalize line endings (CRLF -> LF) and trim whitespace
+                                                final normalizedExpected = testCase.expectedOutput.replace("\r\n", "\n").trim().split("\n");
+                                                final normalizedActual = result.actualOutput.replace("\r\n", "\n").trim().split("\n");
 
-                                                    final len = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+                                                final len = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
 
-                                                    var foundDifference = false;
-                                                    var i = 0;
-                                                    while (i < len) {
-                                                        if (normalizedExpected[i] == normalizedActual[i]) {
-                                                            print(normalizedActual[i].yellow());
-                                                        }
-                                                        else {
-                                                            print('> Unexpected output at line ${i+1}');
-                                                            print('>  got: ' + normalizedActual[i].red());
-                                                            print('> need: ' + normalizedExpected[i].yellow());
-                                                            foundDifference = true;
-                                                            break;
-                                                        }
-                                                        i++;
+                                                var foundDifference = false;
+                                                var i = 0;
+                                                while (i < len) {
+                                                    if (normalizedExpected[i] == normalizedActual[i]) {
+                                                        print(normalizedActual[i].yellow());
                                                     }
-
-                                                    if (!foundDifference && i < len) {
-                                                        if (i >= normalizedActual.length) {
-                                                            print('> Unexpected output at line ${i+1}');
-                                                            print('>  got: ' + normalizedActual[i].red());
-                                                            print('> need: ' + '(empty)'.yellow());
-                                                        }
-                                                        else {
-                                                            print('> Unexpected output at line ${i+1}');
-                                                            print('>  got: ' + '(empty)'.red());
-                                                            print('> need: ' + normalizedExpected[i].yellow());
-                                                        }
+                                                    else {
+                                                        print('> Unexpected output at line ${i+1}');
+                                                        print('>  got: ' + normalizedActual[i].red());
+                                                        print('> need: ' + normalizedExpected[i].yellow());
+                                                        foundDifference = true;
+                                                        break;
                                                     }
-
-                                                    print('\n');
+                                                    i++;
                                                 }
 
+                                                if (!foundDifference && i < len) {
+                                                    if (i >= normalizedActual.length) {
+                                                        print('> Unexpected output at line ${i+1}');
+                                                        print('>  got: ' + normalizedActual[i].red());
+                                                        print('> need: ' + '(empty)'.yellow());
+                                                    }
+                                                    else {
+                                                        print('> Unexpected output at line ${i+1}');
+                                                        print('>  got: ' + '(empty)'.red());
+                                                        print('> need: ' + normalizedExpected[i].yellow());
+                                                    }
+                                                }
+
+                                                print('\n');
                                             }
-                                        });
-                                    }
+
+                                        }
+                                    });
                                 }
                             }
                         }
                     }
                 }
-            }
+            });
         }
         catch (e:Any) {
             print('FAIL'.red().bold() + ' - $e - ' + file.gray());

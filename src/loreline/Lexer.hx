@@ -996,21 +996,13 @@ class Token {
         final startPos = pos;
         var foundContent = false;
         var isNextLine = false;
-        var foundOneCR = false;
-        var foundOneLF = false;
         while (pos < this.length) {
             // Skip whitespace including newlines
             while (pos < this.length) {
                 final c = input.uCharCodeAt(pos);
-                if (c == " ".code || c == "\t".code || (!foundOneLF && c == "\n".code)
-                    || (foundOneCR && c == "\r".code)) {
-                    if (c == "\r".code) {
-                        foundOneCR = true;
+                if (c == " ".code || c == "\t".code || c == "\r".code || (!isNextLine && c == "\n".code)) {
+                    if (c == "\n".code) {
                         isNextLine = true;
-                    }
-                    else if (c == "\n".code) {
-                        isNextLine = true;
-                        foundOneLF = true;
                     }
                     pos++;
                     foundContent = true;

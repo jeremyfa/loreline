@@ -451,6 +451,39 @@ class AstNode extends Node {
         return "AstNode";
     }
 
+    public function eachComment(handleComment:(node:AstNode, comment:Comment)->Void) {
+
+        if (leadingComments != null) {
+            for (comment in leadingComments) {
+                handleComment(this, comment);
+            }
+        }
+
+        if (trailingComments != null) {
+            for (comment in trailingComments) {
+                handleComment(this, comment);
+            }
+        }
+
+        each((node, _) -> {
+            if (node is AstNode) {
+                final astNode:AstNode = cast node;
+
+                if (astNode.leadingComments != null) {
+                    for (comment in astNode.leadingComments) {
+                        handleComment(this, comment);
+                    }
+                }
+
+                if (astNode.trailingComments != null) {
+                    for (comment in astNode.trailingComments) {
+                        handleComment(this, comment);
+                    }
+                }
+            }
+        });
+    }
+
     override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
