@@ -56,6 +56,8 @@ class Cli {
 
     var loadedSave:Bool = false;
 
+    var hasFailedTest:Bool = false;
+
     function new() {
 
         #if loreline_debug_interpreter
@@ -226,6 +228,10 @@ class Cli {
             print('');
         }
 
+        if (hasFailedTest) {
+            Sys.exit(1);
+        }
+
     }
 
     function testFile(file:String, crlf:Bool) {
@@ -264,6 +270,7 @@ class Cli {
                                             print('PASS'.green().bold() + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
                                         }
                                         else {
+                                            hasFailedTest = true;
                                             print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
 
                                             if (TestRunner.compareOutput(testCase.expectedOutput, result.actualOutput) != -1) {
@@ -318,6 +325,7 @@ class Cli {
             });
         }
         catch (e:Any) {
+            hasFailedTest = true;
             print('FAIL'.red().bold() + ' - $e - ' + file.gray());
         }
 

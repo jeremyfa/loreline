@@ -50,6 +50,11 @@ jobs:
           $GIT_TAG = $($env:GITHUB_REF).replace("refs/tags/", "")
           ./loreline version --check-tag $GIT_TAG
 
+      - name: Run unit tests
+        working-directory: .
+        run: |
+          ./loreline test ./test
+
       - name: Create zip archive
         working-directory: .
         run: |
@@ -128,6 +133,11 @@ jobs:
         run: |
           GIT_TAG=${GITHUB_REF/refs\/tags\//}
           ./loreline version --check-tag $GIT_TAG
+
+      - name: Run unit tests
+        working-directory: .
+        run: |
+          ./loreline test ./test
 
       - name: Create zip archive
         run: zip --symlinks -9 'loreline-mac.zip' loreline
@@ -208,6 +218,11 @@ jobs:
         run: |
           GIT_TAG=${GITHUB_REF/refs\/tags\//}
           ./loreline version --check-tag $GIT_TAG
+
+      - name: Run unit tests
+        working-directory: .
+        run: |
+          ./loreline test ./test
 
       - name: Create zip archive
         run: zip --symlinks -9 'loreline-linux-${{ matrix.arch }}.zip' loreline
