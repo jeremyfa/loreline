@@ -2,4 +2,6 @@
 --main loreline.cli.Cli
 --library yaml
 --library hscript
+--macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
+--macro addGlobalMetadata('hscript', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
 -D hscriptPos
