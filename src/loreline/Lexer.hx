@@ -3189,6 +3189,10 @@ class Token {
         // Check if using braces or indentation
         final usesBraces = pos < length && input.uCharCodeAt(pos) == "{".code;
 
+        var lastLineBreakPos = pos;
+        var lastLineBreakLine = line;
+        var lastLineBreakColumn = column;
+
         if (usesBraces) {
             // Brace-delimited function body
             advance(); // Skip opening brace
@@ -3226,6 +3230,9 @@ class Token {
             while (pos < length) {
                 final c = input.uCharCodeAt(pos);
                 if (c == "\n".code || c == "\r".code) {
+                    lastLineBreakPos = pos;
+                    lastLineBreakLine = line;
+                    lastLineBreakColumn = column;
                     advance();
                     currentLine = true;
                     break;
@@ -3273,12 +3280,20 @@ class Token {
 
                 // Check for newline to reset line processing
                 if (c == "\n".code || c == "\r".code) {
+                    lastLineBreakPos = pos;
+                    lastLineBreakLine = line;
+                    lastLineBreakColumn = column;
                     currentLine = true;
                 }
 
                 advance();
             }
         }
+
+        // Keep last line break after function body so that it is tokenized
+        pos = lastLineBreakPos;
+        line = lastLineBreakLine;
+        column = lastLineBreakColumn;
 
         // Extract the function code from the original input
         final bodyEnd = pos;

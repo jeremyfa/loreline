@@ -1,0 +1,18 @@
+
+function enumerate(value, word)
+  var result = ""
+  for (i in 0...value) // Testing with parenthesis
+    if i > 0 // Testing without parenthesis
+      result += ", "
+    result += "$word ${i + 1}"
+  return result
+
+Here are all my apples: $enumerate(7, "apple")
+
+/*
+<test>
+- expected: |
+    ~ Here are all my apples: apple 1, apple 2, apple 3, apple 4, apple 5, apple 6, apple 7
+</test>
+*/
+

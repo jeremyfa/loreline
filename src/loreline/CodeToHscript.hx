@@ -951,11 +951,20 @@ class CodeToHscript {
     }
 
     inline function stackPush(item:CodeToHscriptStackType) {
+        #if loreline_debug_function_token_stack
+        trace('PUSH $item i=$index output=${output.toString()}');
+        #end
         stack.push(item);
     }
 
     inline function stackPop() {
+        #if loreline_debug_function_token_stack
+        final s = stack.pop();
+        trace('POP $s i=$index output=${output.toString()}');
+        return s;
+        #else
         return stack.pop();
+        #end
     }
 
     function _add(c:Int, incrementIndex:Bool) {
@@ -1056,7 +1065,7 @@ class CodeToHscript {
         }
         else if (!inControl && !isWhitespace(c) && endsWithControlKeyword(lineOutput.toString(), index - 1)) {
             inControl = true;
-            if (!followsWithChar("(".code, index)) {
+            if (!followsWithChar("(".code, index - 1)) {
                 inControlWithoutParens = true;
                 stackPush(Paren);
                 currentPosOffset++;
@@ -1064,12 +1073,14 @@ class CodeToHscript {
                 output.addChar("(".code);
                 posOffsets.push(currentPosOffset);
             }
+            else if (c == "(".code) {
+                stackPush(Paren);
+            }
             lineOutput.addChar(c);
             output.addChar(c);
             posOffsets.push(currentPosOffset);
         }
         else {
-
             if (c == "(".code) {
                 stackPush(Paren);
             }

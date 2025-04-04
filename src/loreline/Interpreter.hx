@@ -1771,6 +1771,9 @@ typedef InterpreterOptions = {
                 topLevelFunctions.set(func.name, value);
             }
             catch (e:Any) {
+                #if loreline_debug_functions
+                trace(codeToHscript.output.toString());
+                #end
                 throw new RuntimeError('Failed to parse function code: $e', func.pos);
             }
         }
