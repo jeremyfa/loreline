@@ -46,9 +46,9 @@ class Cli {
 
     var errorInStdOut:Bool = false;
 
-    var typeDelay:Float = 0.0075;//#if eval 0 #else 0.0075 #end;
+    var typeDelay:Float = 0.005;
 
-    var sentenceDelay:Float = 0.4;
+    var sentenceDelay:Float = 0.2;
 
     var showDisabled:Bool = false;
 
