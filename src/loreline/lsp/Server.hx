@@ -1488,7 +1488,7 @@ class Server {
                     case Expr(expr):
                         return makeNodeHover(lorelinePos, lens, uri, content, expr);
                     case Tag(closing, expr):
-                        return makeHover(hoverTitle('Tag', "&lt;" + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, stringPart);
+                        return makeHover(hoverTitle('Tag', "&lt;" + (closing ? "/" : "") + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, stringPart);
                 }
 
                 final literal = lens.getFirstParentOfType(node, NStringLiteral);
@@ -1502,7 +1502,7 @@ class Server {
                             case Expr(expr):
                                 return makeNodeHover(lorelinePos, lens, uri, content, expr);
                             case Tag(closing, expr):
-                                return makeHover(hoverTitle('Tag', "&lt;" + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, parentStringPart);
+                                return makeHover(hoverTitle('Tag', "&lt;" + (closing ? "/" : "") + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, parentStringPart);
                         }
                     }
 

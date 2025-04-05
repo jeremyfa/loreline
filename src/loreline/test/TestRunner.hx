@@ -81,7 +81,7 @@ class TestRunner {
         }
         for (t in 0...tags.length) {
             final tag = tags[t];
-            if (tag.offset > len) {
+            if (tag.offset >= len) {
                 textBuf.addChar("<".code);
                 textBuf.addChar("<".code);
                 if (tag.closing) {

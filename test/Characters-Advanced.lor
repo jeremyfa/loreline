@@ -1,0 +1,46 @@
+
+character barista
+  name: Alex
+  friendliness: 3
+  expertise: high
+
+character customer
+  name: Jamie
+  firstVisit: true
+  favoriteDrink: "Americano"
+
+// Testing character property interpolation
+This coffee shop is run by $barista.name who has $barista.friendliness friendliness points.
+
+// Testing character property in conditionals
+if barista.expertise == "high"
+  barista: I've been making coffee for 10 years now.
+else
+  barista: I'm still learning the craft.
+
+// Testing character name resolution with name property
+$barista greets you with a smile.
+
+$customer looks around nervously.
+
+// Testing character property update
+if customer.firstVisit
+  barista: Welcome to our shop! First time here?
+  customer.firstVisit = false
+else
+  barista: Welcome back! Would you like your usual $customer.favoriteDrink?
+
+/*
+<test>
+- expected: |
+    ~ This coffee shop is run by Alex who has 3 friendliness points.
+
+    Alex: I've been making coffee for 10 years now.
+
+    ~ Alex greets you with a smile.
+
+    ~ Jamie looks around nervously.
+
+    Alex: Welcome to our shop! First time here?
+</test>
+*/

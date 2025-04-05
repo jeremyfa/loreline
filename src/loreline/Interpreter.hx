@@ -1735,13 +1735,6 @@ typedef InterpreterOptions = {
 
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
-        var list:Array<Dynamic> = [
-          "carrot",
-          1234,
-          null,
-          "potato",
-        ];
-
         #if hscript
         if (func.name != null) {
             final codeToHscript = new CodeToHscript();
@@ -2703,17 +2696,40 @@ typedef InterpreterOptions = {
         final tags:Array<TextTag> = [];
         var offset = 0;
 
+        final numParts = str.parts.length;
+
         var keepWhitespace = (str.quotes != Unquoted);
         var keepIndents = (str.quotes != Unquoted);
         var keepComments = (str.quotes != Unquoted);
 
-        for (i in 0...str.parts.length) {
+        var trailingTextPartIndex = -1;
+        if (!keepWhitespace) {
+            var n = numParts - 1;
+            while (n >= 0) {
+                final part = str.parts[n];
+                switch part.partType {
+                    case Raw(_):
+                        // This is the trailing text part
+                        trailingTextPartIndex = n;
+                        break;
+                    case Expr(_):
+                        break; // No trailing text part
+                    case Tag(_, _):
+                        n--;
+                }
+            }
+        }
+
+        for (i in 0...numParts) {
             final part = str.parts[i];
 
             switch (part.partType) {
                 case Raw(text):
                     if (!keepWhitespace) {
                         text = text.ltrim();
+                    }
+                    if (i == trailingTextPartIndex) {
+                        text = text.rtrim();
                     }
                     if (!keepComments) {
                         text = stripStringComments(text);

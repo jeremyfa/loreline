@@ -1621,12 +1621,12 @@ class ParserContext {
      * @return StringPart representing the tag
      */
     function parseStringTag(closing:Bool, start:Int, length:Int, content:String, quotes:Quotes, attachments:Array<LStringAttachment>):NStringPart {
-        var pos = makeStringPartPosition(currentPos(), content, start);
-        pos.length = length;
-
+        var strPos = currentPos();
         if (quotes != Unquoted) {
-            pos = pos.withOffset(content, 1, pos.length);
+            strPos = strPos.withOffset(content, 1, strPos.length - 2);
         }
+        var pos = makeStringPartPosition(strPos, content, start);
+        pos.length = length;
 
         // Calculate tag content boundaries
         final offsetStart = (closing ? 2 : 1);
@@ -1654,7 +1654,7 @@ class ParserContext {
 
         // Return simple tag if no interpolations
         if (!hasAttachmentsInRange) {
-            final partPos = makeStringPartPosition(pos, content, innerStart);
+            final partPos = makeStringPartPosition(strPos, content, innerStart);
             partPos.length = innerLength;
             final literalId = nextNodeId(NODE);
             final partId = nextNodeId(NODE);
@@ -1683,22 +1683,25 @@ class ParserContext {
                         if (aStart >= innerStart && aEnd <= innerEnd) {
                             // Add raw text before interpolation
                             if (aStart > currentPos) {
-                                final partPos = makeStringPartPosition(pos, content.uSubstr(start), currentPos - start + offsetStart);
-                                partPos.length = aStart - currentPos;
+                                final partPos = makeStringPartPosition(strPos, content, innerStart);
+                                partPos.length = aStart - innerStart;
                                 parts.push(new NStringPart(nextNodeId(NODE), partPos, Raw(
                                     content.uSubstr(currentPos, aStart - currentPos)
                                 )));
                             }
 
                             // Process interpolation
-                            parts.push(parseStringInterpolation(
+                            final interpPart = parseStringInterpolation(
                                 braces,
                                 true,
                                 tokens,
                                 aStart,
                                 aLength,
                                 content
-                            ));
+                            );
+                            interpPart.pos = makeStringPartPosition(strPos, content, aStart);
+                            interpPart.pos.length = aLength;
+                            parts.push(interpPart);
 
                             currentPos = aEnd;
                         }

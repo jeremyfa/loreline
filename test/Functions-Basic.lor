@@ -1,4 +1,5 @@
 
+// Create a function with simple arithmetics
 function add(a, b)
   return a + b
 
@@ -6,6 +7,7 @@ state
   apples: 7
   oranges: 3
 
+// Call the function with state values as arguments and display the result in text
 We have $apples apples and $oranges oranges, which makes a total of $add(apples, oranges) fruits!
 
 /*

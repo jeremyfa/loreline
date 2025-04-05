@@ -1,0 +1,62 @@
+
+character barista
+  name: Alex
+
+character customer
+  name: Jamie
+
+// Testing basic tags
+barista: <happy>Great to see you again!</happy>
+
+// Testing nested tags
+barista: <excited><loud>WELCOME BACK!</loud> It's been a while.</excited>
+
+// Testing space between text and tags (space should be ignored)
+barista: <slightly confused> Didn't you order something different last time?
+
+// Testing space between text and tags in double quotes (space should be preserved)
+barista: "<relaxed> Well, nevermind!"
+
+// Testing tags in narrative text
+The espresso machine <whirs>makes a pleasant humming sound</whirs> as the <steam>hot vapor rises</steam>.
+
+// Testing tags with interpolation
+barista: <knows $customer.name>Oh hey, $customer.name! Your usual?
+
+/* Testing tags in multiline dialogue: there should be
+   no space between them and the actual text content */
+barista:
+  <professional>
+  Let me explain our seasonal offerings.
+  We have three new blends this month.
+  Each one has unique characteristics.
+  </professional>
+
+/* Another multiline dialogue where white spaces between tags should be preserved */
+barista: "<enthusiastic>
+I personally recommend our Ethiopian roast.
+It has bright notes of citrus and chocolate.
+Perfect for an afternoon pick-me-up!
+</enthusiastic>"
+
+/*
+<test>
+- expected: |
+    Alex: <<happy>>Great to see you again!<</happy>>
+
+    Alex: <<excited>><<loud>>WELCOME BACK!<</loud>> It's been a while.<</excited>>
+
+    Alex: <<slightly confused>>Didn't you order something different last time?
+
+    Alex: <<relaxed>> Well, nevermind!
+
+    ~ The espresso machine <<whirs>>makes a pleasant humming sound<</whirs>> as the <<steam>>hot vapor rises<</steam>>.
+
+    Alex: <<knows Jamie>>Oh hey, Jamie! Your usual?
+
+    Alex:
+      <<professional>>Let me explain our seasonal offerings.
+      We have three new blends this month.
+      Each one has unique characteristics.<</professional>>
+</test>
+*/
