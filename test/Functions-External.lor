@@ -1,0 +1,20 @@
+
+function playExplosion()
+
+sarah: What's this green diamond? Wait, let me touch it...
+james: Nooo don't touch it!
+
+playExplosion()
+
+james: Sarah? Sarah!!
+
+/*
+<test>
+- expected: |
+    sarah: What's this green diamond? Wait, let me touch it...
+
+    james: Nooo don't touch it!
+
+    james: Sarah? Sarah!!
+</test>
+*/

@@ -415,9 +415,11 @@ class Server {
 
                     // Check for errors in functions
                     for (func in lens.getNodesOfType(NFunctionDecl, false)) {
-                        final funcHscript = lens.getFuncHscript(func);
-                        if (funcHscript.error != null) {
-                            addDiagnostic(uri, funcHscript.error.pos, funcHscript.error.message, DiagnosticSeverity.Error);
+                        if (!func.external) {
+                            final funcHscript = lens.getFuncHscript(func);
+                            if (funcHscript.error != null) {
+                                addDiagnostic(uri, funcHscript.error.pos, funcHscript.error.message, DiagnosticSeverity.Error);
+                            }
                         }
                     }
 
@@ -454,6 +456,8 @@ class Server {
                             }
                         }
                     }
+
+                    // TODO check references to beat calls and function calls
 
                     // Add semantic validation
                     validateDocument(uri, ast);

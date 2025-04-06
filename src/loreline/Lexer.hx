@@ -113,7 +113,7 @@ enum TokenType {
     KwNew;
 
     /** Function code */
-    Function(name:Null<String>, args:Array<String>, code:String);
+    Function(name:Null<String>, args:Array<String>, code:String, external:Bool);
 
     /** String literal with optional attachments */
     LString(quotes:Quotes, s:String, ?attachments:Array<LStringAttachment>);
@@ -806,7 +806,7 @@ class Token {
             if (c == " ".code) {
                 spaces++;
             } else if (c == "\t".code) {
-                spaces += 4; // Treat each tab as 4 spaces
+                spaces++;
             } else {
                 break;
             }
@@ -3103,6 +3103,9 @@ class Token {
     function readFunction(start:Position):Token {
         skipWhitespaceAndComments();
 
+        // Evaluate min indentation
+        final minIndent = start.column; // Column is 1-based, so column 0 will mean min indent 1
+
         // Read function name if present
         var name:Null<String> = null;
         if (isIdentifierStart(input.uCharCodeAt(pos))) {
@@ -3250,7 +3253,7 @@ class Token {
                     while (pos < length) {
                         final c = input.uCharCodeAt(pos);
                         if (c == " ".code) indent++;
-                        else if (c == "\t".code) indent += 4; // Count tab as 4 spaces
+                        else if (c == "\t".code) indent++;
                         else break;
                         advance();
                     }
@@ -3258,6 +3261,12 @@ class Token {
                     // If this is the first line, record the indent level
                     if (functionIndentLevel == -1 && pos < length && input.uCharCodeAt(pos) != "\n".code && input.uCharCodeAt(pos) != "\r".code) {
                         functionIndentLevel = indent;
+
+                        // Check this is indented enough
+                        if (functionIndentLevel < minIndent) {
+                            pos = indentStart;
+                            break;
+                        }
                     }
                     // Check if we are done (dedent or empty line at lower indentation)
                     else if (functionIndentLevel != -1 && indent < functionIndentLevel &&
@@ -3297,10 +3306,15 @@ class Token {
 
         // Extract the function code from the original input
         final bodyEnd = pos;
-        final code = input.uSubstr(start.offset, bodyEnd - start.offset).rtrim() + "\n";
+        var code = input.uSubstr(start.offset, bodyEnd - start.offset).rtrim();
+
+        final external = (code.uIndexOf("\n") == -1);
+        if (!external) {
+            code = code + "\n";
+        }
 
         // Create token with the function code
-        final token = makeToken(Function(name, args, code), start);
+        final token = makeToken(Function(name, args, code, external), start);
         token.pos.length = code.uLength();
         return token;
     }

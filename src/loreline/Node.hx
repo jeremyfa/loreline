@@ -1605,6 +1605,11 @@ class NFunctionDecl extends NExpr {
      */
     public var code:String;
 
+    /**
+     * Whether this is an external function (so this is only a declaration without implementation)
+     */
+    public var external:Bool;
+
 
     /**
      * Creates a new function node.
@@ -1612,14 +1617,16 @@ class NFunctionDecl extends NExpr {
      * @param name The function name (if any)
      * @param args Argument names
      * @param code The actual code of the function (including the signature)
+     * @param external Whether this is an external function (so this is only a declaration without implementation)
      * @param leadingComments Optional comments before the function
      * @param trailingComments Optional comments after the function
      */
-     public function new(id:NodeId, pos:Position, name:Null<String>, args:Array<String>, code:String, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+     public function new(id:NodeId, pos:Position, name:Null<String>, args:Array<String>, code:String, external:Bool, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.name = name;
         this.args = args;
         this.code = code;
+        this.external = external;
     }
 
     override function type():String {
@@ -1637,6 +1644,7 @@ class NFunctionDecl extends NExpr {
         }
         json.args = [].concat(args);
         json.code = code;
+        json.external = external;
         return json;
     }
 }

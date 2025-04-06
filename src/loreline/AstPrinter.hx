@@ -292,6 +292,9 @@ class AstPrinter {
                     add(func.name);
                     add('"');
                 }
+                if (func.external) {
+                    add(' external=true');
+                }
                 add(" args=[" + func.args.join(', ') + "]");
                 addLineBreak();
                 indentLevel++;

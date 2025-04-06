@@ -396,7 +396,7 @@ class ParserContext {
             case LString(_, _, _): ensureInBeat(parseTextStatement());
             case Identifier(_) if (peek().type == Colon): ensureInBeat(parseDialogueStatement());
             case Identifier(_) | LNumber(_) | LBoolean(_) |
-                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot: parseExpressionStatement();
+                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot: ensureInBeat(parseExpressionStatement());
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case Arrow: ensureInBeat(parseTransition());
@@ -1039,9 +1039,9 @@ class ParserContext {
         final startPos = currentPos();
 
         return switch (tokens[current].type) {
-            case Function(name, args, body):
+            case Function(name, args, code, external):
                 advance();
-                attachComments(new NFunctionDecl(nextNodeId(BLOCK), startPos, name, [].concat(args), body));
+                attachComments(new NFunctionDecl(nextNodeId(BLOCK), startPos, name, [].concat(args), code, external));
 
             case _:
                 throw new ParseError("Unexpected token in expression", currentPos());

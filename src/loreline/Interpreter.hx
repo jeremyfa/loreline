@@ -1736,10 +1736,10 @@ typedef InterpreterOptions = {
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
         #if hscript
-        if (func.name != null) {
+        if (func.name != null && (!func.external || !topLevelFunctions.exists(func.name))) {
             final codeToHscript = new CodeToHscript();
             try {
-                final expr = codeToHscript.process(func.code);
+                final expr = codeToHscript.process(func.code + (func.external ? " {}" : ""));
                 #if loreline_debug_functions
                 final offsets = @:privateAccess codeToHscript.posOffsets;
                 trace('\n'+func.code);
@@ -3043,7 +3043,7 @@ typedef InterpreterOptions = {
 
         // If we get here, the call target was invalid
         throw new RuntimeError(
-            'Invalid call target: ${Type.getClassName(Type.getClass(call.target))}',
+            'Invalid call target: ${printLoreline(call.target) ?? Type.getClassName(Type.getClass(call.target))}',
             call.pos
         );
 
@@ -3531,6 +3531,19 @@ typedef InterpreterOptions = {
     function valueToString(value:Any):String {
 
         return Std.string(value);
+
+    }
+
+    function printLoreline(node:Node):String {
+
+        try {
+            final printer = new Printer();
+            printer.enableComments = false;
+            return printer.print(node).trim();
+        }
+        catch (e:Any) {
+            return null;
+        }
 
     }
 
