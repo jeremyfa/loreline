@@ -302,6 +302,14 @@ class ParserContext {
         return tokens[current]?.pos ?? new Position(1, 1, 0, 0);
     }
 
+    function currentTokenTypeToString():String {
+        if (tokens != null && current >= 0) {
+            final token = tokens[current];
+            return token?.type?.toCodeString();
+        }
+        return null;
+    }
+
     /**
      * Checks if the current token matches the expected type.
      * @param type TokenType to check against
@@ -403,7 +411,7 @@ class ParserContext {
             case OpPlus: ensureInBeat(parseInsertion());
             case Function(_, _, _) if (topLevel): parseFunction();
             case _:
-                addError(new ParseError('Unexpected: ${tokens[current].type.toCodeString()}', currentPos()));
+                addError(new ParseError('Unexpected: ${currentTokenTypeToString()}', currentPos()));
                 advance();
                 new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
@@ -744,7 +752,7 @@ class ParserContext {
             return indentToken;
         }
         else {
-            addError(new ParseError('Expected ${TokenType.LBrace.toCodeString()} or ${TokenType.Indent.toCodeString()}, got ${tokens[current].type.toCodeString()}', currentPos()));
+            addError(new ParseError('Expected ${TokenType.LBrace.toCodeString()} or ${TokenType.Indent.toCodeString()}, got ${currentTokenTypeToString()}', currentPos()));
             return new Token(Indent, currentPos());
         }
 
@@ -1354,7 +1362,7 @@ class ParserContext {
                 return stringLiteral;
 
             case _:
-                throw new ParseError('Expected text, got ${tokens[current].type.toCodeString()}', currentPos());
+                throw new ParseError('Expected text, got ${currentTokenTypeToString()}', currentPos());
         }
     }
 
@@ -1946,7 +1954,7 @@ class ParserContext {
             return advance();
         }
         else {
-            final error = new ParseError('Expected ${type.toCodeString()}, got ${isAtEnd() ? 'end of file' : tokens[current].type.toCodeString()}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+            final error = new ParseError('Expected ${type.toCodeString()}, got ${isAtEnd() ? 'end of file' : currentTokenTypeToString()}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
             switch type {
                 case RBrace | RParen | Unindent:
                     addError(error);
@@ -1981,7 +1989,7 @@ class ParserContext {
                 advance();
                 name;
             case _:
-                throw new ParseError('Expected identifier, got ${tokens[current].type.toCodeString()}', currentPos());
+                throw new ParseError('Expected identifier, got ${currentTokenTypeToString()}', currentPos());
         }
     }
 
