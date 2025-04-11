@@ -1736,38 +1736,40 @@ typedef InterpreterOptions = {
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
         #if hscript
-        if (func.name != null && (!func.external || !topLevelFunctions.exists(func.name))) {
-            final codeToHscript = new CodeToHscript();
-            try {
-                final expr = codeToHscript.process(func.code + (func.external ? " {}" : ""));
-                #if loreline_debug_functions
-                final offsets = @:privateAccess codeToHscript.posOffsets;
-                trace('\n'+func.code);
-                trace('\n'+expr);
-                trace(offsets.length + ' / ' + expr.uLength());
-                trace(offsets.join(" "));
-                var chars = [];
-                var origChars = [];
-                for (i in 0...expr.uLength()) {
-                    chars.push(expr.uCharAt(i).replace("\n", " "));
-                    origChars.push(func.code.uCharAt(i - offsets[i]).replace("\n", " "));
+        if (func.name != null) {
+            if (!func.external || !topLevelFunctions.exists(func.name)) {
+                final codeToHscript = new CodeToHscript();
+                try {
+                    final expr = codeToHscript.process(func.code + (func.external ? " {}" : ""));
+                    #if loreline_debug_functions
+                    final offsets = @:privateAccess codeToHscript.posOffsets;
+                    trace('\n'+func.code);
+                    trace('\n'+expr);
+                    trace(offsets.length + ' / ' + expr.uLength());
+                    trace(offsets.join(" "));
+                    var chars = [];
+                    var origChars = [];
+                    for (i in 0...expr.uLength()) {
+                        chars.push(expr.uCharAt(i).replace("\n", " "));
+                        origChars.push(func.code.uCharAt(i - offsets[i]).replace("\n", " "));
+                    }
+                    trace(origChars.join(" "));
+                    trace(chars.join(" "));
+                    #end
+                    final parser = new hscript.Parser();
+                    parser.allowJSON = true;
+                    parser.allowTypes = true;
+                    final ast = parser.parseString(expr);
+                    final interp = new HscriptInterp(this);
+                    final value:Dynamic = interp.execute(ast);
+                    topLevelFunctions.set(func.name, value);
                 }
-                trace(origChars.join(" "));
-                trace(chars.join(" "));
-                #end
-                final parser = new hscript.Parser();
-                parser.allowJSON = true;
-                parser.allowTypes = true;
-                final ast = parser.parseString(expr);
-                final interp = new HscriptInterp(this);
-                final value:Dynamic = interp.execute(ast);
-                topLevelFunctions.set(func.name, value);
-            }
-            catch (e:Any) {
-                #if loreline_debug_functions
-                trace(codeToHscript.output.toString());
-                #end
-                throw new RuntimeError('Failed to parse function code: $e', func.pos);
+                catch (e:Any) {
+                    #if loreline_debug_functions
+                    trace(codeToHscript.output.toString());
+                    #end
+                    throw new RuntimeError('Failed to parse function code: $e', func.pos);
+                }
             }
         }
         else {
