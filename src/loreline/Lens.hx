@@ -68,6 +68,7 @@ class FuncHscript {
             if (this.error == null) {
                 if (e is hscript.Expr.Error) {
                     final hscriptError:hscript.Expr.Error = cast e;
+                    #if hscriptPos
                     this.error = new WrappedError(
                         hscriptError,
                         switch hscriptError.e {
@@ -84,6 +85,24 @@ class FuncHscript {
                         },
                         codeToHscript.toLorelinePos(func.pos, hscriptError.pmin, hscriptError.pmax)
                     );
+                    #else
+                    this.error = new WrappedError(
+                        hscriptError,
+                        switch hscriptError {
+                            case EInvalidChar(c): 'Invalid character: $c';
+                            case EUnexpected(s): 'Unexpected: $s';
+                            case EUnterminatedString: 'Unterminated string';
+                            case EUnterminatedComment: 'Unterminated comment';
+                            case EInvalidPreprocessor(msg): 'Invalid preprocessor: $msg';
+                            case EUnknownVariable(v): 'Unknown variable: $v';
+                            case EInvalidIterator(v): 'Invalid iterator: $v';
+                            case EInvalidOp(op): 'Invalid operator: $op';
+                            case EInvalidAccess(f): 'Invalid access: $f';
+                            case ECustom(msg): msg;
+                        },
+                        func.pos
+                    );
+                    #end
                 }
                 else if (e is Error) {
                     this.error = cast e;
@@ -1292,6 +1311,7 @@ class Lens {
 
         var bestExpr:hscript.Expr = null;
 
+        #if hscriptPos
         var handler:(expr:hscript.Expr)->Void = null;
         handler = expr -> {
             if (expr != null) {
@@ -1306,6 +1326,7 @@ class Lens {
             }
         };
         hscript.Tools.iter(info.expr, handler);
+        #end
 
         return bestExpr;
 
@@ -1313,7 +1334,7 @@ class Lens {
 
     public function resolveHscriptAccess(func:NFunctionDecl, expr:hscript.Expr):Null<Node> {
 
-        switch expr.e {
+        switch #if hscriptPos expr.e #else expr #end {
 
             case EIdent(name):
 

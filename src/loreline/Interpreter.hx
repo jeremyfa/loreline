@@ -3006,10 +3006,23 @@ typedef InterpreterOptions = {
                             #if hscript
                             if (e is hscript.Expr.Error) {
                                 final hscriptErr:hscript.Expr.Error = cast e;
-                                trace('${hscriptErr.pmin}-${hscriptErr.pmax} ${hscriptErr.e}');
+                                #if hscriptPos
+                                throw new RuntimeError(
+                                    'Error when evaluating function (${hscriptErr.pmin}-${hscriptErr.pmax}): ' + hscriptErr.e,
+                                    call.pos
+                                );
+                                #else
+                                throw new RuntimeError(
+                                    'Error when evaluating function: ' + hscriptErr,
+                                    call.pos
+                                );
+                                #end
                             }
                             #end
-                            trace(Type.getClassName(Type.getClass(e)) + ' -> ' + e);
+                            throw new RuntimeError(
+                                'Error when calling function: ' + e,
+                                call.pos
+                            );
                             return null;
                         }
                     }

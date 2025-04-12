@@ -133,7 +133,8 @@ class CodeToHscript {
      * @return The processed HScript compatible code
      */
     public function process(input:String) {
-        input = input + "\n//"; // Small hack to make sure last dedent is processed
+
+        input = input.rtrim() + "\n//<END>"; // Small hack to make sure last dedent is processed
 
         this.input = input;
         this.index = 0;
@@ -154,6 +155,7 @@ class CodeToHscript {
         processInput();
 
         return this.output.toString().rtrim() + "\n";
+
     }
 
     public function toLorelinePos(funcPos:Position, pmin:Int, pmax:Int):Position {
@@ -218,6 +220,9 @@ class CodeToHscript {
                 } else {
                     add(c);
                 }
+            }
+            else if (c == "\r".code) {
+                add(c);
             }
             else if (c == "\n".code) {
                 add(c);
@@ -501,7 +506,7 @@ class CodeToHscript {
             // Replace each character with space until we hit a line break or EOF
             while (index < length) {
                 final cc = input.uCharCodeAt(index);
-                if (cc == "\n".code) {
+                if (cc == "\r".code || cc == "\n".code) {
                     break; // Keep the line break intact, but don't process it here
                 }
                 add(" ".code); // Replace with space
@@ -520,9 +525,9 @@ class CodeToHscript {
                     add(" ".code); // Replace "*" with space
                     add(" ".code); // Replace "/" with space
                     break;
-                } else if (cc == "\n".code) {
+                } else if (cc == "\r".code || cc == "\n".code) {
                     // Preserve line breaks
-                    add("\n".code);
+                    add(cc);
                 } else {
                     // Replace with space
                     add(" ".code);
@@ -547,7 +552,8 @@ class CodeToHscript {
 
         final trimmed = line.rtrim();
         final len = trimmed.uLength();
-        return len > 0 && trimmed.uCharCodeAt(len - 1) == c;
+        var result = (len > 0 && trimmed.uCharCodeAt(len - 1) == c);
+        return result;
     }
 
     /**
@@ -560,6 +566,7 @@ class CodeToHscript {
     function followsWithChar(c:Int, pos:Int):Bool {
         // Skip whitespace, newlines, and comments to check if the next meaningful character is c
         var tempIndex = pos;
+        var result = false;
 
         while (tempIndex < length) {
             final cc = input.uCharCodeAt(tempIndex);
@@ -578,7 +585,7 @@ class CodeToHscript {
                 if (nextChar == "/".code) {
                     tempIndex += 2;
                     // Skip to end of line
-                    while (tempIndex < length && input.uCharCodeAt(tempIndex) != "\n".code) {
+                    while (tempIndex < length && input.uCharCodeAt(tempIndex) != "\r".code && input.uCharCodeAt(tempIndex) != "\n".code) {
                         tempIndex++;
                     }
                     if (tempIndex < length)
@@ -602,10 +609,11 @@ class CodeToHscript {
             }
 
             // We found the next meaningful character
-            return cc == c;
+            result = (cc == c);
+            break;
         }
 
-        return false;
+        return result;
     }
 
     /**
@@ -616,7 +624,7 @@ class CodeToHscript {
      * @param pos The position to start looking from if the character is not at the end of the line
      * @return True if the character is found at the end of the line or as the next meaningful character
      */
-    function endsOrFollowsWithChar(line:String, c:Int, pos:Int):Bool {
+    function endsOrFollowsWithChar(line:String, c:Int, pos:Int, ?hxpos:haxe.PosInfos):Bool {
         return endsWithChar(line, c) || followsWithChar(c, pos);
     }
 
@@ -628,6 +636,7 @@ class CodeToHscript {
      * @return A positive number for indent, negative for dedent, or zero for no change
      */
     function nextLineIndentOffset(line:String, pos:Int):Int {
+
         // Return indent offset: positive for indent, negative for dedent, zero for same indentation
 
         // Count leading spaces and tabs to determine indentation of current line
@@ -643,11 +652,12 @@ class CodeToHscript {
         while (pos < length) {
             // TODO could be improved to avoid allocations
             var endLine = input.uIndexOf("\n", pos);
-            if (endLine == -1)
+            if (endLine == -1) {
                 endLine = length;
+            }
             var nextLine = input.uSubstring(pos, endLine);
             var trimmed = nextLine.ltrim();
-            if (trimmed.length > 0) {
+            if (trimmed.length > 0 && (!trimmed.startsWith('//') || trimmed.startsWith('//<END>')) && !trimmed.startsWith('/*')) {
                 var nextIndent = nextLine.uLength() - trimmed.uLength();
                 return nextIndent - currentIndent;
             }
@@ -685,7 +695,7 @@ class CodeToHscript {
                 if (nextChar == "/".code) {
                     tempIndex += 2;
                     // Skip to end of line
-                    while (tempIndex < length && input.uCharCodeAt(tempIndex) != "\n".code) {
+                    while (tempIndex < length && input.uCharCodeAt(tempIndex) != "\r".code && input.uCharCodeAt(tempIndex) != "\n".code) {
                         tempIndex++;
                     }
                     continue;
@@ -981,7 +991,7 @@ class CodeToHscript {
             output.addChar(c);
             posOffsets.push(currentPosOffset);
         }
-        else if (c == "\n".code) {
+        else if (c == "\r".code || c == "\n".code) {
             if (inControlWithoutParens) {
                 inControlWithoutParens = false;
                 if (stackPop() != Paren) {

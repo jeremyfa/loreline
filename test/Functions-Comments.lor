@@ -1,0 +1,19 @@
+
+// Commented function
+function add(a, b) /* Function comment */ // More comment
+  return a + b
+  // Some trailing comment
+
+state
+  apples: 7
+  oranges: 3
+
+// Call the function with state values as arguments and display the result in text
+We have $apples apples and $oranges oranges, which makes a total of $add(apples, oranges) fruits!
+
+/*
+<test>
+- expected: |
+    ~ We have 7 apples and 3 oranges, which makes a total of 10 fruits!
+</test>
+*/
