@@ -104,15 +104,16 @@ class TestRunner {
         final normalizedExpected = expectedOutput.replace("\r\n", "\n").trim().split("\n");
         final normalizedActual = actualOutput.replace("\r\n", "\n").trim().split("\n");
 
-        final len = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+        final minLen = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+        final maxLen = Std.int(Math.max(normalizedExpected.length, normalizedActual.length));
 
         var i = 0;
-        while (i < len) {
+        while (i < minLen) {
             if (normalizedExpected[i] != normalizedActual[i]) return i;
             i++;
         }
 
-        if (i < len) {
+        if (i < maxLen) {
             return i;
         }
 

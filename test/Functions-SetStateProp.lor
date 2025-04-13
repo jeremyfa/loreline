@@ -1,0 +1,24 @@
+
+state
+  basket:
+    fruits: 2
+
+function getFruit()
+  basket.fruits = basket.fruits + 1
+
+You have $basket.fruits fruits
+
+getFruit()
+
+You have $basket.fruits fruits
+
+/*
+<test>
+- expected: |
+    ~ You have 2 fruits
+
+    ~ You have 3 fruits
+</test>
+*/
+
+

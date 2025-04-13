@@ -263,7 +263,7 @@ beat DoctorsVisit
 
     Sneak out to get more coffee
       doctor: <exasperated> I saw that coming...
-      rushHour = ${!rushHour}
+      rushHour = !rushHour
 
       -> CoffeeShop
 

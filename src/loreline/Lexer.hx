@@ -2187,7 +2187,13 @@ class Token {
 
         // Whether this is an unquoted string value or not
         final inBrackets = isInsideBrackets();
-        final isAssignValue = followsAssignStart();
+
+        // If loreline_assign_unquoted is defined, unquoted string values will be allowed after
+        // assigns like = += -= /= etc...
+        // The default is not allowed in order to keep some consistency between assign syntax
+        // and condition expressions, which are usually working in pairs
+        final isAssignValue = #if loreline_assign_unquoted followsAssignStart() #else false #end;
+
         final labelIdentifierIndex = afterLabelIdentifierToken(false);
 
         // When after label, but starting the line after, check that we are indented

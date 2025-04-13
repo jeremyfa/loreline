@@ -120,7 +120,14 @@ class HscriptInterp {
     }
 
     function setVar( name : String, v : Dynamic ) {
-        variables.set(name, v);
+
+        if (!variables.exists(name)) {
+            Objects.setField(interpreter, interpreter.topLevelState.fields, name, v);
+        }
+        else {
+            throw "Invalid assign";
+        }
+
         return v;
     }
 

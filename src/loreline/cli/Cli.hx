@@ -281,11 +281,12 @@ class Cli {
                                                 final normalizedExpected = testCase.expectedOutput.replace("\r\n", "\n").trim().split("\n");
                                                 final normalizedActual = result.actualOutput.replace("\r\n", "\n").trim().split("\n");
 
-                                                final len = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+                                                final minLen = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+                                                final maxLen = Std.int(Math.max(normalizedExpected.length, normalizedActual.length));
 
                                                 var foundDifference = false;
                                                 var i = 0;
-                                                while (i < len) {
+                                                while (i < minLen) {
                                                     if (normalizedExpected[i] == normalizedActual[i]) {
                                                         print(normalizedActual[i].yellow());
                                                     }
@@ -299,13 +300,19 @@ class Cli {
                                                     i++;
                                                 }
 
-                                                if (!foundDifference && i < len) {
-                                                    if (i >= normalizedActual.length) {
+                                                if (!foundDifference && i < maxLen) {
+                                                    if (i < normalizedActual.length) {
+                                                        while (i < maxLen && normalizedActual[i].trim().length <= 0) {
+                                                            i++;
+                                                        }
                                                         print('> Unexpected output at line ${i+1}');
                                                         print('>  got: ' + normalizedActual[i].red());
                                                         print('> need: ' + '(empty)'.yellow());
                                                     }
                                                     else {
+                                                        while (i < maxLen && normalizedExpected[i].trim().length <= 0) {
+                                                            i++;
+                                                        }
                                                         print('> Unexpected output at line ${i+1}');
                                                         print('>  got: ' + '(empty)'.red());
                                                         print('> need: ' + normalizedExpected[i].yellow());

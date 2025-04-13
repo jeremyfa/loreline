@@ -15,13 +15,13 @@ beat Introspection
 beat ChooseName
   choice
     Alex
-      player.name = Alex
+      player.name = "Alex"
     Sam
-      player.name = Sam
+      player.name = "Sam"
     Jamie
-      player.name = Jamie
+      player.name = "Jamie"
     Riley
-      player.name = Riley
+      player.name = "Riley"
 
 /*
 <test>

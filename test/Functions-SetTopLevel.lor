@@ -1,0 +1,39 @@
+
+state
+  fruits: 2
+
+function getFruit1()
+  fruits = fruits + 1
+
+function getFruit2()
+  fruits++
+
+function useFruits(amount)
+  fruits -= amount
+
+You have $fruits fruits
+
+getFruit1()
+
+You have $fruits fruits
+
+getFruit2()
+
+You have $fruits fruits
+
+useFruits(2)
+
+You have $fruits fruits
+
+/*
+<test>
+- expected: |
+    ~ You have 2 fruits
+
+    ~ You have 3 fruits
+
+    ~ You have 4 fruits
+
+    ~ You have 2 fruits
+</test>
+*/

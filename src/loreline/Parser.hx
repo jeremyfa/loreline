@@ -99,15 +99,6 @@ class ParserContext {
      */
     public function parse():Script {
 
-        static var parsing:Bool = false;
-
-        // Reset node ids for this new parsing
-        var rootParsing = !parsing;
-        if (rootParsing) {
-            parsing = true;
-            this.currentNodeId = NodeId.UNDEFINED;
-        }
-
         final startPos = currentPos();
         final nodes = [];
         final script = new Script(nextNodeId(NODE), startPos, nodes);
@@ -126,10 +117,6 @@ class ParserContext {
         }
 
         attachComments(script);
-
-        if (rootParsing) {
-            parsing = false;
-        }
 
         return script;
     }

@@ -907,16 +907,23 @@
             "patterns": [
                 {
                     "begin": "<(?!-)",
-                    "end": ">",
-                    "captures": {
+                    "beginCaptures": {
                         "0": {
                             "name": "punctuation.definition.tag.loreline"
                         }
                     },
-                    "contentName": "storage.modifier.metadata.loreline",
+                    "end": ">",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.tag.loreline"
+                        }
+                    },
                     "patterns": [
                         {
-                            "match": "[^<>]+",
+                            "include": "#string-interpolation"
+                        },
+                        {
+                            "match": ".",
                             "name": "storage.modifier.metadata.loreline"
                         }
                     ]

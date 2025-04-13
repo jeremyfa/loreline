@@ -37,7 +37,7 @@ choice
     + Your name is Alex, right?
 
     barista: Say no more! Let me help with that.
-- choices: [3]
+- choices: [2]
   expected: |
     ~ The warm aroma of coffee fills the café.
 
