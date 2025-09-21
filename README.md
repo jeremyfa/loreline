@@ -1,5 +1,7 @@
 # Loreline
 
+⚠️ _This project is not yet ready for production, consider this as a "preview" version. More to come soon!_
+
 Loreline is an open-source scripting language for writing interactive fictions.
 
 ![Screenshot of the Loreline extension for VSCode](/vscode-screenshot.png)
