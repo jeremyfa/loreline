@@ -801,6 +801,20 @@ typedef InterpreterOptions = {
     }
 
     /**
+     * Sets a specific field on a character.
+     *
+     * @param character The name of the character
+     * @param name The name of the field to set
+     * @param value The value of the field to set
+     */
+    public function setCharacterField(character:String, name:String, value:Any):Void {
+
+        final fields = topLevelCharacters.get(character).fields;
+        Objects.setField(this, fields, name, value);
+
+    }
+
+    /**
      * Serializes a scope to save data.
      *
      * @param scope The scope to serialize
