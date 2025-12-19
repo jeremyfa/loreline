@@ -17,7 +17,7 @@ class Objects {
         else if (value is IntMap) {
             return false;
         }
-        #if cs
+        #if loreline_cs_api
         else if (isCsDict(value)) {
             return true;
         }
@@ -44,7 +44,7 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).get(name);
         }
-        #if cs
+        #if loreline_cs_api
         else if (isCsDict(fields)) {
             getCsDictField(fields, name);
         }
@@ -66,7 +66,7 @@ class Objects {
         else if (fields is StringMap) {
             [for (key in (cast fields:StringMap<Any>).keys()) key];
         }
-        #if cs
+        #if loreline_cs_api
         else if (isCsDict(fields)) {
             getCsDictKeys(fields);
         }
@@ -88,7 +88,7 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).set(name, value);
         }
-        #if cs
+        #if loreline_cs_api
         else if (isCsDict(fields)) {
             setCsDictField(fields, name, value);
         }
@@ -110,7 +110,7 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).exists(name);
         }
-        #if cs
+        #if loreline_cs_api
         else if (isCsDict(fields)) {
             csDictFieldExists(fields, name);
         }
@@ -143,14 +143,14 @@ class Objects {
             return instance;
         }
 
-        #if (cs && loreline_use_cs_types)
+        #if (loreline_cs_api && loreline_use_cs_types)
         return untyped __cs__('new System.Collections.Generic.Dictionary<string,object>()');
         #else
         return new Map<String,Any>();
         #end
     }
 
-    #if cs
+    #if loreline_cs_api
 
     public static function isCsDict(fields:Any):Bool {
         return untyped __cs__('{0} is global::System.Collections.IDictionary', fields);

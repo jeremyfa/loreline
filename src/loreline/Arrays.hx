@@ -4,7 +4,7 @@ class Arrays {
 
     public static function isArray(array:Any):Bool {
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return true;
         }
@@ -20,7 +20,7 @@ class Arrays {
 
     public static function arrayLength(array:Any):Int {
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return csListLength(array);
         }
@@ -35,7 +35,7 @@ class Arrays {
 
         final i:Int = Std.int(index);
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return csListGet(array, index);
         }
@@ -55,7 +55,7 @@ class Arrays {
 
         final i:Int = Std.int(index);
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return csListSet(array, index, value);
         }
@@ -67,7 +67,7 @@ class Arrays {
     }
 
     public static function createArray():Any {
-        #if (cs && loreline_use_cs_types)
+        #if (loreline_cs_api && loreline_use_cs_types)
         return untyped __cs__('new System.Collections.Generic.List<object>()');
         #else
         final arr:Array<Dynamic> = [];
@@ -77,7 +77,7 @@ class Arrays {
 
     public static function arrayPush(array:Any, value:Any):Void {
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return csListPush(array, value);
         }
@@ -89,7 +89,7 @@ class Arrays {
 
     public static function getIterator(array:Any):Iterator<Dynamic> {
 
-        #if cs
+        #if loreline_cs_api
         if (isCsList(array)) {
             return csListIterator(array);
         }
@@ -99,7 +99,7 @@ class Arrays {
 
     }
 
-    #if cs
+    #if loreline_cs_api
 
     static function isCsList(array:Any):Bool {
         return untyped __cs__('{0} is global::System.Collections.IList', array);
@@ -138,7 +138,7 @@ class Arrays {
 
 }
 
-#if cs
+#if loreline_cs_api
 class CSListIterator {
     private var list:Any;
     private var index:Int;

@@ -236,7 +236,7 @@ class RuntimeInsertion {
  * Represents a tag in text content, which can be used for styling or other purposes.
  */
 @:structInit
-#if cs
+#if loreline_cs_api
 @:struct
 #end
 class TextTag {
@@ -260,7 +260,7 @@ class TextTag {
  * Represents a choice option presented to the user.
  */
 @:structInit
-#if cs
+#if loreline_cs_api
 @:struct
 #end
 class ChoiceOption {
@@ -363,7 +363,7 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if cs
+    #if loreline_cs_api
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -551,7 +551,7 @@ typedef InterpreterOptions = {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if cs
+    #if loreline_cs_api
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -579,7 +579,7 @@ typedef InterpreterOptions = {
 
         this.strictAccess = options?.strictAccess ?? false;
 
-        #if cs
+        #if loreline_cs_api
         this.wrapper = options?.wrapper;
         #end
 
@@ -1055,7 +1055,7 @@ typedef InterpreterOptions = {
                 }
             }
         }
-        #if cs
+        #if loreline_cs_api
         else if (Objects.isCsDict(fields)) {
             type = 'System.Collections.IDictionary';
             final keys = Objects.getCsDictKeys(fields);
@@ -3087,7 +3087,7 @@ typedef InterpreterOptions = {
      */
     function evaluateArrayLiteral(expr:Array<Dynamic>):Any {
 
-        #if (cs && loreline_use_cs_types)
+        #if (loreline_cs_api && loreline_use_cs_types)
         untyped __cs__('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', expr.length);
         for (elem in expr) {
             final val = evaluateExpression(elem);
@@ -3109,7 +3109,7 @@ typedef InterpreterOptions = {
      */
     function evaluateObjectLiteral(expr:Array<NObjectField>):Any {
 
-        #if (cs && loreline_use_cs_types)
+        #if (loreline_cs_api && loreline_use_cs_types)
         untyped __cs__('System.Collections.Generic.Dictionary<string,object> result = new System.Collections.Generic.Dictionary<string,object>()', expr.length);
         for (field in expr) {
             final val = evaluateExpression(field.value);

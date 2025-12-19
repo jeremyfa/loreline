@@ -4,3 +4,4 @@
 --no-output
 -D no-compilation
 -D loreline_use_cs_types
+-D loreline_cs_api
