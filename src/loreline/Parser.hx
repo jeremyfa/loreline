@@ -879,7 +879,7 @@ class ParserContext {
                     }
                 }
             }
-            else if (!check(blockEnd)) {  // If not end of choice
+            else if (check(Arrow)) {  // Inline transition (e.g., Option text -> Beat)
                 final offset = currentPos().offset;
                 try {
                     choiceOption.body = [];

@@ -858,6 +858,15 @@ class Token {
     }
 
     /**
+     * Checks if currently at the root level of a choice block (not inside an option body).
+     * @return True if the top of the stack is a choice entry, false otherwise
+     */
+    function inChoiceRoot():Bool {
+        return stack.length > 0
+            && (stack[stack.length - 1] == ChoiceIndent || stack[stack.length - 1] == ChoiceBrace);
+    }
+
+    /**
      * Checks if currently in a state or character block.
      * @return True if inside a state or character block, false otherwise
      */
@@ -2514,7 +2523,7 @@ class Token {
             var rtrimmedOffset = (rawContentLength - contentLength);
             if (contentLength > 0 && hasNonSpecialChar(content) && !isNumber(content) && content != 'null' && content != 'true' && content != 'false') {
 
-                if (multilineIndent == -1 && !isAfterLabel) {
+                if (multilineIndent == -1 && !isAfterLabel && !inChoiceRoot()) {
                     // Look for more text to compose a paragraph
                     final savedLine = line;
                     final savedColumn = column;
