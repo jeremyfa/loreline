@@ -1,0 +1,33 @@
+
+state
+  x: 10
+
+x = 20
+"After x = 20: $x"
+
+x += 5
+"After x += 5: $x"
+
+x -= 3
+"After x -= 3: $x"
+
+x *= 2
+"After x *= 2: $x"
+
+x /= 4
+"After x /= 4: $x"
+
+/*
+<test>
+- expected: |
+    ~ After x = 20: 20
+
+    ~ After x += 5: 25
+
+    ~ After x -= 3: 22
+
+    ~ After x *= 2: 44
+
+    ~ After x /= 4: 11
+</test>
+*/

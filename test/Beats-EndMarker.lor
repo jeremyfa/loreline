@@ -1,0 +1,20 @@
+
+character narrator
+  name: Narrator
+
+beat Main
+  narrator: This line should appear.
+  narrator: This one too.
+  -> .
+
+beat NeverReached
+  narrator: This should never appear.
+
+/*
+<test>
+- expected: |
+    Narrator: This line should appear.
+
+    Narrator: This one too.
+</test>
+*/

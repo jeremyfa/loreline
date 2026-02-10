@@ -1,0 +1,92 @@
+
+character barista
+  name: Alex
+
+barista: What would you like?
+
+choice
+  A hot drink
+    barista: What kind?
+    choice
+      Espresso
+        barista: One espresso!
+      Latte
+        barista: One latte!
+
+  A cold drink
+    barista: What kind?
+    choice
+      Iced coffee
+        barista: One iced coffee!
+      Lemonade
+        barista: One lemonade!
+
+barista: Coming right up.
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    Alex: What would you like?
+
+    + A hot drink
+    + A cold drink
+
+    Alex: What kind?
+
+    + Espresso
+    + Latte
+
+    Alex: One espresso!
+
+    Alex: Coming right up.
+
+- choices: [0, 1]
+  expected: |
+    Alex: What would you like?
+
+    + A hot drink
+    + A cold drink
+
+    Alex: What kind?
+
+    + Espresso
+    + Latte
+
+    Alex: One latte!
+
+    Alex: Coming right up.
+
+- choices: [1, 0]
+  expected: |
+    Alex: What would you like?
+
+    + A hot drink
+    + A cold drink
+
+    Alex: What kind?
+
+    + Iced coffee
+    + Lemonade
+
+    Alex: One iced coffee!
+
+    Alex: Coming right up.
+
+- choices: [1, 1]
+  expected: |
+    Alex: What would you like?
+
+    + A hot drink
+    + A cold drink
+
+    Alex: What kind?
+
+    + Iced coffee
+    + Lemonade
+
+    Alex: One lemonade!
+
+    Alex: Coming right up.
+</test>
+*/

@@ -1,0 +1,25 @@
+
+function getScore()
+  return 75
+
+if getScore() > 50
+  You passed with a score of $getScore()!
+else
+  You failed.
+
+if getScore() >= 90
+  "Grade: A"
+else
+  if getScore() >= 70
+    "Grade: B"
+  else
+    "Grade: C"
+
+/*
+<test>
+- expected: |
+    ~ You passed with a score of 75!
+
+    ~ Grade: B
+</test>
+*/

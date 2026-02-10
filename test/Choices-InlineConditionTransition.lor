@@ -1,0 +1,48 @@
+
+state
+  hasCard: true
+  isMember: false
+
+character barista
+  name: Alex
+
+beat Menu
+  barista: What can I get you?
+
+  choice
+    Pay with card if hasCard -> CardPayment
+    Member discount if isMember -> MemberPayment
+    Pay with cash -> CashPayment
+
+beat CardPayment
+  barista: Card payment accepted!
+
+beat MemberPayment
+  barista: Member discount applied!
+
+beat CashPayment
+  barista: Cash it is!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: What can I get you?
+
+    + Pay with card
+    - Member discount
+    + Pay with cash
+
+    Alex: Card payment accepted!
+
+- choices: [2]
+  expected: |
+    Alex: What can I get you?
+
+    + Pay with card
+    - Member discount
+    + Pay with cash
+
+    Alex: Cash it is!
+</test>
+*/

@@ -1,0 +1,30 @@
+
+function formatItem(name, quantity, price)
+  return quantity + "x " + name + " at " + (quantity * price)
+
+state
+  total: 0
+
+function addToTotal(amount)
+  total += amount
+
+Ordered $formatItem("Coffee", 2, 5)
+
+addToTotal(10)
+
+Ordered $formatItem("Cake", 1, 8)
+
+addToTotal(8)
+
+Total spent is $total
+
+/*
+<test>
+- expected: |
+    ~ Ordered 2x Coffee at 10
+
+    ~ Ordered 1x Cake at 8
+
+    ~ Total spent is 18
+</test>
+*/

@@ -1,0 +1,51 @@
+
+state
+  a: true
+  b: false
+  c: true
+  x: 5
+
+// Test and + or keywords
+if a and c
+  a AND c is true.
+
+if a or b
+  a OR b is true.
+
+// Test ! (not)
+if !b
+  NOT b is true.
+
+// Test combined: a && !b
+if a && !b
+  a AND NOT b is true.
+
+// Test numeric in boolean context
+if x
+  x is truthy.
+
+// Test comparison combined with logical
+if x > 3 and x < 10
+  x is between 3 and 10.
+
+if x == 5 || b
+  x equals 5 or b is true.
+
+/*
+<test>
+- expected: |
+    ~ a AND c is true.
+
+    ~ a OR b is true.
+
+    ~ NOT b is true.
+
+    ~ a AND NOT b is true.
+
+    ~ x is truthy.
+
+    ~ x is between 3 and 10.
+
+    ~ x equals 5 or b is true.
+</test>
+*/

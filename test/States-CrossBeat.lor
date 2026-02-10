@@ -1,0 +1,30 @@
+
+state
+  score: 0
+
+character narrator
+  name: Narrator
+
+beat Round1
+  score += 10
+  narrator: Score after round 1: $score
+  -> Round2
+
+beat Round2
+  score += 20
+  narrator: Score after round 2: $score
+  -> Round3
+
+beat Round3
+  narrator: Final score: $score
+
+/*
+<test>
+- expected: |
+    Narrator: Score after round 1: 10
+
+    Narrator: Score after round 2: 30
+
+    Narrator: Final score: 30
+</test>
+*/

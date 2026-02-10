@@ -1,0 +1,23 @@
+
+character barista
+  name: Alex
+
+character customer
+  name: Jamie
+
+$barista smiles warmly at the newcomer.
+
+$customer takes a seat by the window.
+
+$barista walks over to greet $customer.
+
+/*
+<test>
+- expected: |
+    ~ Alex smiles warmly at the newcomer.
+
+    ~ Jamie takes a seat by the window.
+
+    ~ Alex walks over to greet Jamie.
+</test>
+*/

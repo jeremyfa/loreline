@@ -1,0 +1,24 @@
+
+// Consecutive lines without a blank line form one text block
+The warm aroma of coffee fills the café.
+Sunlight streams through the windows.
+A gentle murmur of conversation fills the space.
+
+// A blank line separates text into a new block
+The barista smiles and waves.
+
+// Double-quoted text with a colon stays as narrative
+"Total: three drinks served today."
+
+/*
+<test>
+- expected: |
+    ~ The warm aroma of coffee fills the café.
+      Sunlight streams through the windows.
+      A gentle murmur of conversation fills the space.
+
+    ~ The barista smiles and waves.
+
+    ~ Total: three drinks served today.
+</test>
+*/

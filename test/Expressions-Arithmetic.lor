@@ -1,0 +1,45 @@
+
+state
+  a: 10
+  b: 4
+
+"Result of $a + $b = ${a + b}"
+"Result of $a - $b = ${a - b}"
+"Result of $a * $b = ${a * b}"
+"Result of $a / $b = ${a / b}"
+"Result of $a % $b = ${a % b}"
+
+a += 5
+After a \+= 5: $a
+
+a -= 2
+After a \-= 2: $a
+
+a *= 3
+After a \*= 3: $a
+
+a /= 3
+After a \/= 3: $a
+
+/*
+<test>
+- expected: |
+    ~ Result of 10 + 4 = 14
+
+    ~ Result of 10 - 4 = 6
+
+    ~ Result of 10 * 4 = 40
+
+    ~ Result of 10 / 4 = 2.5
+
+    ~ Result of 10 % 4 = 2
+
+    ~ After a += 5: 15
+
+    ~ After a -= 2: 13
+
+    ~ After a *= 3: 39
+
+    ~ After a /= 3: 13
+</test>
+*/

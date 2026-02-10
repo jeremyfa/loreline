@@ -1,0 +1,42 @@
+
+character hero
+  name: Robin
+  health: 100
+  alive: true
+  weapon: "sword"
+  companion: null
+
+$hero has $hero.health health points.
+
+$hero wields a $hero.weapon.
+
+"$hero is alive: $hero.alive"
+
+if hero.companion == null
+  $hero travels alone.
+
+hero.companion = "Wolf"
+
+if hero.companion != null
+  $hero now travels with $hero.companion.
+
+hero.health -= 30
+
+$hero has $hero.health health points left.
+
+/*
+<test>
+- expected: |
+    ~ Robin has 100 health points.
+
+    ~ Robin wields a sword.
+
+    ~ Robin is alive: true
+
+    ~ Robin travels alone.
+
+    ~ Robin now travels with Wolf.
+
+    ~ Robin has 70 health points left.
+</test>
+*/

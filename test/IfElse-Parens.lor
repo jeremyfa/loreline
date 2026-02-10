@@ -1,0 +1,31 @@
+
+state
+  x: 10
+  y: 20
+
+if (x > 5)
+  x is greater than 5.
+
+if (x < y)
+  x is less than y.
+
+if (x == 10)
+  x equals 10.
+else
+  x does not equal 10.
+
+if (x > 5 && y > 15)
+  Both conditions true.
+
+/*
+<test>
+- expected: |
+    ~ x is greater than 5.
+
+    ~ x is less than y.
+
+    ~ x equals 10.
+
+    ~ Both conditions true.
+</test>
+*/

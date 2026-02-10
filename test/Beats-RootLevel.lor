@@ -1,0 +1,48 @@
+
+state
+  mood: "happy"
+
+The sun is shining today.
+
+if mood == "happy"
+  Everything feels right with the world.
+else
+  A cloud hangs over you.
+
+choice
+  Smile
+    You can't help but grin.
+  Sigh
+    You let out a content sigh.
+
+What a lovely day.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ The sun is shining today.
+
+    ~ Everything feels right with the world.
+
+    + Smile
+    + Sigh
+
+    ~ You can't help but grin.
+
+    ~ What a lovely day.
+
+- choices: [1]
+  expected: |
+    ~ The sun is shining today.
+
+    ~ Everything feels right with the world.
+
+    + Smile
+    + Sigh
+
+    ~ You let out a content sigh.
+
+    ~ What a lovely day.
+</test>
+*/

@@ -1,0 +1,40 @@
+
+state
+  x: 5
+  y: 10
+  z: 5
+
+if x < y
+  $x is less than $y
+
+if y > x
+  $y is greater than $x
+
+if x <= z
+  $x is less than or equal to $z
+
+if x >= z
+  $x is greater than or equal to $z
+
+if x == z
+  $x equals $z
+
+if x != y
+  $x does not equal $y
+
+/*
+<test>
+- expected: |
+    ~ 5 is less than 10
+
+    ~ 10 is greater than 5
+
+    ~ 5 is less than or equal to 5
+
+    ~ 5 is greater than or equal to 5
+
+    ~ 5 equals 5
+
+    ~ 5 does not equal 10
+</test>
+*/

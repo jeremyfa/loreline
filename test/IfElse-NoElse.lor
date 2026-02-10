@@ -1,0 +1,21 @@
+
+state
+  hasUmbrella: true
+  isRaining: false
+
+if hasUmbrella
+  You have your umbrella ready.
+
+if isRaining
+  It's pouring outside!
+
+The weather report is done.
+
+/*
+<test>
+- expected: |
+    ~ You have your umbrella ready.
+
+    ~ The weather report is done.
+</test>
+*/

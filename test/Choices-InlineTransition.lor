@@ -1,0 +1,54 @@
+
+character barista
+  name: Alex
+
+beat Menu
+  barista: What'll it be?
+
+  choice
+    Espresso -> MakeEspresso
+    Latte -> MakeLatte
+    Leave -> Goodbye
+
+beat MakeEspresso
+  barista: One espresso, coming right up!
+
+beat MakeLatte
+  barista: One latte, extra foam!
+
+beat Goodbye
+  barista: See you next time!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: What'll it be?
+
+    + Espresso
+    + Latte
+    + Leave
+
+    Alex: One espresso, coming right up!
+
+- choices: [1]
+  expected: |
+    Alex: What'll it be?
+
+    + Espresso
+    + Latte
+    + Leave
+
+    Alex: One latte, extra foam!
+
+- choices: [2]
+  expected: |
+    Alex: What'll it be?
+
+    + Espresso
+    + Latte
+    + Leave
+
+    Alex: See you next time!
+</test>
+*/

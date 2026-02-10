@@ -1,0 +1,11 @@
+
+import imports/helpers/greeting
+
+The message is: $greet("World")
+
+/*
+<test>
+- expected: |
+    ~ The message is: Hello, World!
+</test>
+*/

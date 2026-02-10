@@ -1,0 +1,25 @@
+
+character narrator
+  name: Narrator
+
+beat Intro
+  narrator: Welcome to the story.
+  -> Middle
+
+beat Middle
+  narrator: You are in the middle now.
+  -> Ending
+
+beat Ending
+  narrator: This is the end.
+
+/*
+<test>
+- expected: |
+    Narrator: Welcome to the story.
+
+    Narrator: You are in the middle now.
+
+    Narrator: This is the end.
+</test>
+*/

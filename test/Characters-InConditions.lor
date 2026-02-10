@@ -1,0 +1,56 @@
+
+character barista
+  name: Alex
+  friendliness: 3
+
+character customer
+  name: Jamie
+  isRegular: false
+
+if barista.friendliness > 2
+  barista: Hey there! Great to see you!
+else
+  barista: What can I get you?
+
+choice
+  Chat with barista if barista.friendliness > 1
+    barista: I love this job.
+  Ask for menu
+    barista: Here you go!
+
+if !customer.isRegular
+  barista: First time here?
+  customer.isRegular = true
+
+if customer.isRegular
+  barista: Welcome to the family!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: Hey there! Great to see you!
+
+    + Chat with barista
+    + Ask for menu
+
+    Alex: I love this job.
+
+    Alex: First time here?
+
+    Alex: Welcome to the family!
+
+- choices: [1]
+  expected: |
+    Alex: Hey there! Great to see you!
+
+    + Chat with barista
+    + Ask for menu
+
+    Alex: Here you go!
+
+    Alex: First time here?
+
+    Alex: Welcome to the family!
+</test>
+*/

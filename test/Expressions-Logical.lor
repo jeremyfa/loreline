@@ -1,0 +1,51 @@
+
+state
+  sunny: true
+  warm: true
+  raining: false
+
+// Test && / and
+if sunny && warm
+  It's sunny and warm!
+
+if sunny and warm
+  And again with 'and' keyword!
+
+// Test || / or
+if sunny || raining
+  It's sunny or raining.
+
+if sunny or raining
+  And again with 'or' keyword!
+
+// Test !
+if !raining
+  It's not raining.
+
+// Test combined
+if sunny && !raining
+  Perfect weather!
+
+if raining || !warm
+  Bad weather.
+else
+  Good weather.
+
+/*
+<test>
+- expected: |
+    ~ It's sunny and warm!
+
+    ~ And again with 'and' keyword!
+
+    ~ It's sunny or raining.
+
+    ~ And again with 'or' keyword!
+
+    ~ It's not raining.
+
+    ~ Perfect weather!
+
+    ~ Good weather.
+</test>
+*/

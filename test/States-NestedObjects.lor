@@ -1,0 +1,24 @@
+
+state
+  menu:
+    espresso: 3
+    latte: 5
+
+Espresso costs $menu.espresso dollars.
+
+Latte costs $menu.latte dollars.
+
+menu.espresso = 4
+
+After price change, espresso costs $menu.espresso dollars.
+
+/*
+<test>
+- expected: |
+    ~ Espresso costs 3 dollars.
+
+    ~ Latte costs 5 dollars.
+
+    ~ After price change, espresso costs 4 dollars.
+</test>
+*/

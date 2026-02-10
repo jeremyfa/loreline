@@ -1,0 +1,55 @@
+
+character barista
+  name: Alex
+
+barista: What size would you like?
+
+choice
+  Small
+    barista: A small it is.
+  Medium
+    barista: Medium, good choice.
+  Large
+    barista: Going big today!
+
+barista: I'll get that started for you right away.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: What size would you like?
+
+    + Small
+    + Medium
+    + Large
+
+    Alex: A small it is.
+
+    Alex: I'll get that started for you right away.
+
+- choices: [1]
+  expected: |
+    Alex: What size would you like?
+
+    + Small
+    + Medium
+    + Large
+
+    Alex: Medium, good choice.
+
+    Alex: I'll get that started for you right away.
+
+- choices: [2]
+  expected: |
+    Alex: What size would you like?
+
+    + Small
+    + Medium
+    + Large
+
+    Alex: Going big today!
+
+    Alex: I'll get that started for you right away.
+</test>
+*/

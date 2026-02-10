@@ -1,0 +1,62 @@
+
+character barista
+  name: Alex
+
+beat Order
+  barista: What drink?
+
+  choice
+    Coffee
+      barista: Good choice.
+    Tea
+      barista: Coming right up.
+
+  barista: And what size?
+
+  choice
+    Small
+      barista: A small one.
+    Large
+      barista: Going big!
+
+  barista: Here you go!
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    Alex: What drink?
+
+    + Coffee
+    + Tea
+
+    Alex: Good choice.
+
+    Alex: And what size?
+
+    + Small
+    + Large
+
+    Alex: A small one.
+
+    Alex: Here you go!
+
+- choices: [1, 1]
+  expected: |
+    Alex: What drink?
+
+    + Coffee
+    + Tea
+
+    Alex: Coming right up.
+
+    Alex: And what size?
+
+    + Small
+    + Large
+
+    Alex: Going big!
+
+    Alex: Here you go!
+</test>
+*/

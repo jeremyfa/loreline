@@ -1,0 +1,33 @@
+
+state
+  hasKey: true
+  doorLocked: true
+
+if hasKey
+  You have a key in your pocket.
+else
+  Your pockets are empty.
+
+if doorLocked
+  The door is locked.
+  if hasKey
+    You unlock the door with your key.
+    doorLocked = false
+  else
+    You can't get through.
+
+if !doorLocked
+  The door is open now.
+
+/*
+<test>
+- expected: |
+    ~ You have a key in your pocket.
+
+    ~ The door is locked.
+
+    ~ You unlock the door with your key.
+
+    ~ The door is open now.
+</test>
+*/

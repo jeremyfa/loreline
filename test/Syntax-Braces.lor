@@ -1,0 +1,50 @@
+
+state {
+  score: 0
+}
+
+character narrator {
+  name: Narrator
+}
+
+beat Main {
+  narrator: Welcome!
+
+  choice {
+    Play {
+      score += 10
+      narrator: You scored $score points!
+    }
+    Skip {
+      narrator: Maybe next time.
+    }
+  }
+
+  narrator: Thanks for playing.
+}
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Narrator: Welcome!
+
+    + Play
+    + Skip
+
+    Narrator: You scored 10 points!
+
+    Narrator: Thanks for playing.
+
+- choices: [1]
+  expected: |
+    Narrator: Welcome!
+
+    + Play
+    + Skip
+
+    Narrator: Maybe next time.
+
+    Narrator: Thanks for playing.
+</test>
+*/

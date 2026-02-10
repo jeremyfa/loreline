@@ -1,0 +1,6 @@
+
+character barista
+  name: Alex
+
+character customer
+  name: Jamie

@@ -1,0 +1,20 @@
+
+state
+  fruits: ["apple", "banana", "cherry"]
+
+The first fruit is $fruits[0].
+
+The second fruit is $fruits[1].
+
+The third fruit is $fruits[2].
+
+/*
+<test>
+- expected: |
+    ~ The first fruit is apple.
+
+    ~ The second fruit is banana.
+
+    ~ The third fruit is cherry.
+</test>
+*/

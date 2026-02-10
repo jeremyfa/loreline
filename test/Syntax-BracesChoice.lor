@@ -1,0 +1,49 @@
+
+state {
+  hasPass: true
+  isVIP: false
+}
+
+character guard {
+  name: Guard
+}
+
+beat Gate {
+  guard: Halt! State your business.
+
+  choice {
+    Show pass if hasPass {
+      guard: You may enter.
+    }
+    VIP entrance if isVIP {
+      guard: Right this way.
+    }
+    Leave {
+      guard: Move along then.
+    }
+  }
+}
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Guard: Halt! State your business.
+
+    + Show pass
+    - VIP entrance
+    + Leave
+
+    Guard: You may enter.
+
+- choices: [2]
+  expected: |
+    Guard: Halt! State your business.
+
+    + Show pass
+    - VIP entrance
+    + Leave
+
+    Guard: Move along then.
+</test>
+*/

@@ -1,0 +1,20 @@
+
+character guide
+  name: Guide
+
+beat FirstBeat
+  guide: You should not see this.
+
+beat SecondBeat
+  guide: Starting from the second beat.
+
+beat ThirdBeat
+  guide: You should not see this either.
+
+/*
+<test>
+- beat: SecondBeat
+  expected: |
+    Guide: Starting from the second beat.
+</test>
+*/

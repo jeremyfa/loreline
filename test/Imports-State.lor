@@ -1,0 +1,18 @@
+
+import imports/shared-state
+
+You have $coins coins and $itemCount items.
+
+coins -= 10
+itemCount += 1
+
+You now have $coins coins and $itemCount items.
+
+/*
+<test>
+- expected: |
+    ~ You have 50 coins and 0 items.
+
+    ~ You now have 40 coins and 1 items.
+</test>
+*/

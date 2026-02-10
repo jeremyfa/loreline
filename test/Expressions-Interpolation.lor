@@ -1,0 +1,26 @@
+
+state
+  price: 5
+  quantity: 3
+  name: "World"
+
+The price is $price
+
+The total is ${price * quantity}
+
+The price plus two is ${price + 2}
+
+Hello $name!
+
+/*
+<test>
+- expected: |
+    ~ The price is 5
+
+    ~ The total is 15
+
+    ~ The price plus two is 7
+
+    ~ Hello World!
+</test>
+*/

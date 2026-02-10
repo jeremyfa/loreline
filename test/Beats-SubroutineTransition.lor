@@ -1,0 +1,26 @@
+
+character guide
+  name: Guide
+
+beat Main
+  guide: Starting in Main.
+  Detour()
+  guide: This should NOT appear.
+
+beat Detour
+  guide: In the Detour.
+  -> Destination
+
+beat Destination
+  guide: Arrived at Destination.
+
+/*
+<test>
+- expected: |
+    Guide: Starting in Main.
+
+    Guide: In the Detour.
+
+    Guide: Arrived at Destination.
+</test>
+*/

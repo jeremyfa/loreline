@@ -1,0 +1,18 @@
+
+import imports/shared-characters
+
+barista: Welcome to our shop!
+customer: Thanks, happy to be here.
+
+$barista waves at $customer.
+
+/*
+<test>
+- expected: |
+    Alex: Welcome to our shop!
+
+    Jamie: Thanks, happy to be here.
+
+    ~ Alex waves at Jamie.
+</test>
+*/

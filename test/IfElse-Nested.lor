@@ -1,0 +1,28 @@
+
+state
+  temperature: 30
+  humidity: 80
+
+if temperature > 25
+  It's warm.
+  if humidity > 70
+    It's also humid.
+    if temperature > 35
+      It's dangerously hot!
+    else
+      Stay hydrated.
+  else
+    At least it's dry.
+else
+  It's cool outside.
+
+/*
+<test>
+- expected: |
+    ~ It's warm.
+
+    ~ It's also humid.
+
+    ~ Stay hydrated.
+</test>
+*/

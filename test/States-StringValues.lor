@@ -1,0 +1,30 @@
+
+state
+  greeting: "hello"
+  mood: "happy"
+
+The greeting is: $greeting
+
+if greeting == "hello"
+  Greeting matches hello.
+
+if mood != "sad"
+  Mood is not sad.
+
+mood = "excited"
+
+if mood == "excited"
+  Mood changed to excited.
+
+/*
+<test>
+- expected: |
+    ~ The greeting is: hello
+
+    ~ Greeting matches hello.
+
+    ~ Mood is not sad.
+
+    ~ Mood changed to excited.
+</test>
+*/

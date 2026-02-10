@@ -1,0 +1,48 @@
+
+state
+  hasCoupon: true
+
+character barista
+  name: Alex
+
+beat Menu
+  barista: Here's what we have today.
+  choice
+    + Drinks
+    Use coupon if hasCoupon
+      barista: Coupon applied!
+    Leave
+      barista: Bye!
+
+beat Drinks
+  choice
+    Espresso
+      barista: One espresso!
+    Latte
+      barista: One latte!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: Here's what we have today.
+
+    + Espresso
+    + Latte
+    + Use coupon
+    + Leave
+
+    Alex: One espresso!
+
+- choices: [2]
+  expected: |
+    Alex: Here's what we have today.
+
+    + Espresso
+    + Latte
+    + Use coupon
+    + Leave
+
+    Alex: Coupon applied!
+</test>
+*/

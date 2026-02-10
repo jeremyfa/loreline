@@ -1,0 +1,49 @@
+
+character barista
+  name: Alex
+
+barista: Good morning!
+
+choice
+  Hi!
+    barista: Hey there!
+  Just nod
+  Wave silently
+
+barista: What can I get you?
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: Good morning!
+
+    + Hi!
+    + Just nod
+    + Wave silently
+
+    Alex: Hey there!
+
+    Alex: What can I get you?
+
+- choices: [1]
+  expected: |
+    Alex: Good morning!
+
+    + Hi!
+    + Just nod
+    + Wave silently
+
+    Alex: What can I get you?
+
+- choices: [2]
+  expected: |
+    Alex: Good morning!
+
+    + Hi!
+    + Just nod
+    + Wave silently
+
+    Alex: What can I get you?
+</test>
+*/

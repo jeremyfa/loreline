@@ -1,0 +1,45 @@
+
+// Comment at the top
+
+state
+  x: 5  // Inline comment on state
+
+character narrator // Comment after character
+  name: Narrator
+
+// Comment before beat
+beat Main
+  // Comment inside beat
+  narrator: Hello!  // Inline comment on dialogue
+
+  /* Block comment
+     spanning multiple lines */
+
+  if x > 0  // Comment on if
+    narrator: x is positive.
+
+  choice
+    // Comment before option
+    Option A  // Comment on option
+      narrator: Chose A.
+    Option B
+      narrator: Chose B.
+
+  narrator: Done.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Narrator: Hello!
+
+    Narrator: x is positive.
+
+    + Option A
+    + Option B
+
+    Narrator: Chose A.
+
+    Narrator: Done.
+</test>
+*/
