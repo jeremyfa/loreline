@@ -1,0 +1,19 @@
+
+state
+  x: 0
+
+function addOne()
+  x += 1
+
+  // This comment is part of the function body
+
+beat Start
+  addOne()
+  Result is $x
+
+/*
+<test>
+- expected: |
+    ~ Result is 1
+</test>
+*/

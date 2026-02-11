@@ -1,0 +1,24 @@
+
+state
+  x: 0
+
+function doNothing()
+
+  // Only a comment in the body
+
+function addOne()
+  x += 1
+
+  // Trailing comment after code
+
+beat Start
+  doNothing()
+  addOne()
+  Result is $x
+
+/*
+<test>
+- expected: |
+    ~ Result is 1
+</test>
+*/

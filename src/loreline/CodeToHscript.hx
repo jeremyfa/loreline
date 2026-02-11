@@ -300,6 +300,22 @@ class CodeToHscript {
             }
         }
 
+        // Close any remaining open indent blocks at the top level.
+        // This handles cases where the function body contains only comments
+        // (which are replaced with spaces and don't trigger dedent).
+        if (until == -1) {
+            while (stack.length > 0 && stack[stack.length - 1] == Indent) {
+                stackPop();
+                indentStack.pop();
+                currentPosOffset++;
+                output.addChar(" ".code);
+                posOffsets.push(currentPosOffset);
+                currentPosOffset++;
+                output.addChar("}".code);
+                posOffsets.push(currentPosOffset);
+            }
+        }
+
     }
 
     /**
@@ -649,6 +665,10 @@ class CodeToHscript {
 
         var currentIndent = line.uLength() - currentLine.uLength();
 
+        // Track the first skipped comment's indentation to handle function bodies
+        // that contain only comments (no actual code statements).
+        var firstSkippedCommentIndent = -1;
+
         while (pos < length) {
             // TODO could be improved to avoid allocations
             var endLine = input.uIndexOf("\n", pos);
@@ -659,9 +679,24 @@ class CodeToHscript {
             var trimmed = nextLine.ltrim();
             if (trimmed.length > 0 && (!trimmed.startsWith('//') || trimmed.startsWith('//<END>')) && !trimmed.startsWith('/*')) {
                 var nextIndent = nextLine.uLength() - trimmed.uLength();
+                // When reaching //<END> from the function declaration line (indent 0),
+                // if we only found comment lines at a higher indent, use that indent
+                // to properly generate the function body braces.
+                if (trimmed.startsWith('//<END>') && currentIndent == 0 && firstSkippedCommentIndent > 0) {
+                    return firstSkippedCommentIndent - currentIndent;
+                }
                 return nextIndent - currentIndent;
             }
+            // Remember the indentation of the first skipped comment line
+            if (trimmed.length > 0 && firstSkippedCommentIndent == -1) {
+                firstSkippedCommentIndent = nextLine.uLength() - trimmed.uLength();
+            }
             pos = endLine + 1;
+        }
+
+        // If we ran off the end without finding //<END>, check comments too
+        if (currentIndent == 0 && firstSkippedCommentIndent > 0) {
+            return firstSkippedCommentIndent - currentIndent;
         }
 
         return 0;
