@@ -589,6 +589,7 @@ class Server {
                 });
 
                 result = parser.parse();
+                result.indentSize = lexer.detectedIndentSize;
                 final parseErrors = parser.getErrors();
 
                 if (parseErrors != null && parseErrors.length > 0) {
@@ -609,6 +610,7 @@ class Server {
         final parser = new Parser(tokens);
 
         result = parser.parse();
+        result.indentSize = lexer.detectedIndentSize;
         final parseErrors = parser.getErrors();
 
         if (parseErrors != null && parseErrors.length > 0) {

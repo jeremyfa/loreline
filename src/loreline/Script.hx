@@ -10,6 +10,11 @@ import loreline.Node;
 #end
 class Script extends AstNode {
     /**
+     * The detected indentation size of the source (e.g., 2 or 4 spaces).
+     */
+    public var indentSize:Int = 2;
+
+    /**
      * Array of top-level declarations in the script.
      */
     public var body:Array<AstNode>;

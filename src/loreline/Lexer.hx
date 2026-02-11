@@ -509,6 +509,9 @@ class Token {
     /** The indentation size (e.g., 4 spaces or 1 tab) */
     var indentSize:Int = 4;
 
+    /** The detected indentation size from the source (set on first indent). */
+    public var detectedIndentSize(default, null):Int = 2;
+
     /** Whether tabs are allowed for indentation */
     var allowTabs:Bool = true;
 
@@ -636,6 +639,10 @@ class Token {
 
             if (currentIndent > indentStack[indentStack.length - 1]) {
                 // Indent - just check that it's more than previous level
+                if (indentStack.length == 1) {
+                    // First indent seen — detect indent size from source
+                    detectedIndentSize = currentIndent - indentStack[0];
+                }
                 indentStack.push(currentIndent);
                 indentTokens.push(makeToken(Indent));
             } else if (currentIndent < indentStack[indentStack.length - 1]) {

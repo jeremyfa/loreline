@@ -5,13 +5,10 @@ import loreline.Node;
 
 using loreline.Utf8;
 
-// TODO:
-// This printer is expected to print valid loreline code,
-// but it doesn't take into account the code style yet.
-
 /**
  * A code printer that converts AST nodes back into formatted Loreline source code.
  * Handles indentation, newlines, and pretty-printing of all node types.
+ * Respects AST style metadata (BlockStyle, ConditionStyle, Quotes, operator forms).
  */
 class Printer {
 
@@ -240,6 +237,7 @@ class Printer {
      * @param node Node to print
      */
     function printNode(node:Node, sameLine:Bool = false) {
+        if (node == null) return;
         switch (Type.getClass(node)) {
             case Script:
                 printScript(cast node);
@@ -465,9 +463,19 @@ class Printer {
             writeln();
         }
         printLeadingComments(dialogue);
-        write('${dialogue.character}: ');
-        printTrailingComments(dialogue);
-        printNode(dialogue.content);
+        if (dialogue.content != null && hasRealNewlines(dialogue.content)) {
+            // Multiline dialogue: put text on next line, indented
+            write('${dialogue.character}:');
+            printTrailingComments(dialogue);
+            writeln();
+            indent();
+            printNode(dialogue.content);
+            unindent();
+        } else {
+            write('${dialogue.character}: ');
+            printTrailingComments(dialogue);
+            printNode(dialogue.content);
+        }
     }
 
     /**
@@ -516,7 +524,11 @@ class Printer {
         writeln();
         _noLn = 0;
         printLeadingComments(option);
-        printNode(option.text);
+        if (option.insertion != null) {
+            printNode(option.insertion);
+        } else {
+            printNode(option.text);
+        }
         printTrailingComments(option);
         if (option.condition != null) {
             write(' if ');
@@ -653,14 +665,18 @@ class Printer {
         for (part in str.parts) {
             switch (part.partType) {
                 case Raw(text):
-                    write(text);
+                    if (surroundWithQuotes)
+                        writeQuotedRaw(text);
+                    else
+                        writeUnquotedRaw(text);
                 case Expr(expr):
-                    // TODO differenciate simple and complex interpolation
-                    final needsBraces = !Std.isOfType(expr, NAccess);
+                    // Use simple interpolation ($var, $var.prop, $var[idx], $var.call())
+                    // when the expression is a pure access chain.
+                    final canBeSimple = isSimpleInterpolationExpr(expr);
                     write('$');
-                    if (needsBraces) write('{');
+                    if (!canBeSimple) write('{');
                     printNode(expr);
-                    if (needsBraces) write('}');
+                    if (!canBeSimple) write('}');
                 case Tag(closing, content):
                     write(closing ? '</' : '<');
                     printStringLiteral(content);
@@ -670,6 +686,80 @@ class Printer {
         if (surroundWithQuotes) {
             write('"');
             printTrailingComments(str);
+        }
+    }
+
+    /**
+     * Writes a Raw text part for an unquoted string literal.
+     * Escape sequences are preserved as-is from the AST (already in correct form for unquoted context).
+     * Handles multiline continuation by stripping source indentation and re-indenting at current level.
+     */
+    function writeUnquotedRaw(text:String) {
+        writeRawWithContinuation(text, true);
+    }
+
+    /**
+     * Writes a Raw text part for a double-quoted string literal.
+     * Escape sequences are preserved as-is from the AST (already in correct form for quoted context).
+     * Content inside quotes is written verbatim — no indentation is added for continuation lines.
+     */
+    function writeQuotedRaw(text:String) {
+        if (text.indexOf("\n") == -1) {
+            write(text);
+            return;
+        }
+        // For quoted strings, write content verbatim without triggering indentation.
+        // Newlines inside quotes are part of the content, not structural.
+        final lines = text.split("\n");
+        for (i in 0...lines.length) {
+            if (i > 0) {
+                _buf.add(_newline);
+            }
+            var line = lines[i];
+            // Strip trailing \r from CRLF sources
+            if (line.uLength() > 0 && line.uCharCodeAt(line.uLength() - 1) == '\r'.code) {
+                line = line.uSubstring(0, line.uLength() - 1);
+            }
+            if (line.uLength() > 0) {
+                _buf.add(line);
+                _lastChar = line.uCharCodeAt(line.uLength() - 1);
+            }
+        }
+    }
+
+    /**
+     * Writes raw text, handling embedded real newlines.
+     * @param stripIndent If true, strips leading whitespace from continuation lines
+     *        (for unquoted strings where source indentation is in the raw text).
+     */
+    function writeRawWithContinuation(text:String, stripIndent:Bool) {
+        if (text.indexOf("\n") == -1) {
+            write(text);
+            return;
+        }
+        final lines = text.split("\n");
+        for (i in 0...lines.length) {
+            if (i > 0) {
+                _buf.add(_newline);
+                _beginLine = 1;
+            }
+            var line = lines[i];
+            // Strip trailing \r that may remain from CRLF sources
+            if (line.uLength() > 0 && line.uCharCodeAt(line.uLength() - 1) == '\r'.code) {
+                line = line.uSubstring(0, line.uLength() - 1);
+            }
+            if (stripIndent && i > 0) {
+                // Strip source-level indentation from continuation lines;
+                // the Printer's tab() will add the correct indentation for the current level.
+                var j = 0;
+                while (j < line.uLength() && (line.uCharCodeAt(j) == ' '.code || line.uCharCodeAt(j) == '\t'.code)) {
+                    j++;
+                }
+                if (j > 0) line = line.uSubstring(j);
+            }
+            if (line.uLength() > 0) {
+                write(line);
+            }
         }
     }
 
@@ -697,6 +787,7 @@ class Printer {
                 write(']');
             case Object(style):
                 if (style == Braces) writeln('{');
+                else writeln();
                 indent();
                 var first = true;
                 for (field in (lit.value:Array<NObjectField>)) {
@@ -807,9 +898,12 @@ class Printer {
 
     /**
      * Prints an in-line expression optionally wrapped in parentheses.
+     * Comments on the expression are suppressed (they should be attached to the parent node).
      * @param expr Expression to wrap in parentheses
      */
     function printInLineExpression(expr:NExpr, parens:Bool) {
+        final savedComments = enableComments;
+        enableComments = false;
         if (parens) write('(');
         if (expr is NBinary) {
             printBinary(cast expr, true);
@@ -818,6 +912,47 @@ class Printer {
             printNode(expr);
         }
         if (parens) write(')');
+        enableComments = savedComments;
+    }
+
+    /**
+     * Checks if an expression can be printed as simple interpolation ($var, $var.field, $var[idx], $var.call()).
+     * Simple interpolation is a chain of NAccess, NArrayAccess, and NCall rooted at a plain NAccess (no target).
+     */
+    function isSimpleInterpolationExpr(expr:NExpr):Bool {
+        if (Std.isOfType(expr, NAccess)) {
+            final access:NAccess = cast expr;
+            if (access.target == null) return true;
+            return isSimpleInterpolationExpr(access.target);
+        }
+        if (Std.isOfType(expr, NArrayAccess)) {
+            return isSimpleInterpolationExpr((cast(expr, NArrayAccess)).target);
+        }
+        if (Std.isOfType(expr, NCall)) {
+            return isSimpleInterpolationExpr((cast(expr, NCall)).target);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a string literal contains real newlines in its raw parts.
+     * Real newlines indicate multiline text from the source (as opposed to escape sequences).
+     */
+    function hasRealNewlines(node:Node):Bool {
+        if (Std.isOfType(node, NStringLiteral)) {
+            final str:NStringLiteral = cast node;
+            // Only unquoted strings have structural newlines (multiline continuation).
+            // Quoted strings have embedded newlines that are part of the content.
+            if (str.quotes == DoubleQuotes) return false;
+            for (part in str.parts) {
+                switch (part.partType) {
+                    case Raw(text):
+                        if (text.indexOf("\n") != -1) return true;
+                    case _:
+                }
+            }
+        }
+        return false;
     }
 
     /**

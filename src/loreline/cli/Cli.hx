@@ -208,53 +208,30 @@ class Cli {
 
     function test(path:String) {
 
-        var totalPassCount = 0;
-        var totalFailCount = 0;
+        passCount = 0;
+        failCount = 0;
 
-        for (crlf in [false, true]) {
-            passCount = 0;
-            failCount = 0;
-
-            if (crlf) {
-                print('[ CRLF ]'.cyan().bold());
-                print('');
-            }
-            else {
-                print('[ LF ]'.cyan().bold());
-                print('');
-            }
-            if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
-                var dir = path;
-                for (file in FileSystem.readDirectory(dir)) {
-                    if (file.endsWith('.lor')) {
-                        testFile(Path.join([dir, file]), crlf);
-                    }
+        if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
+            var dir = path;
+            for (file in FileSystem.readDirectory(dir)) {
+                if (file.endsWith('.lor')) {
+                    final filePath = Path.join([dir, file]);
+                    testFile(filePath, false);
+                    testFile(filePath, true);
                 }
             }
-            else {
-                testFile(path, crlf);
-            }
-
-            print('');
-            if (failCount > 0) {
-                print('  $passCount passed, $failCount failed'.red().bold());
-            }
-            else {
-                print('  $passCount passed'.green().bold());
-            }
-            print('');
-
-            totalPassCount += passCount;
-            totalFailCount += failCount;
-        }
-
-        print('[ TOTAL ]'.cyan().bold());
-        print('');
-        if (totalFailCount > 0) {
-            print('  $totalPassCount passed, $totalFailCount failed'.red().bold());
         }
         else {
-            print('  All $totalPassCount tests passed'.green().bold());
+            testFile(path, false);
+            testFile(path, true);
+        }
+
+        print('');
+        if (failCount > 0) {
+            print('  $passCount passed, $failCount failed'.red().bold());
+        }
+        else {
+            print('  All $passCount tests passed'.green().bold());
         }
         print('');
 
@@ -279,6 +256,10 @@ class Cli {
                 content = content.replace("\r\n", "\n");
             }
             final script = Loreline.parse(content, file, handleFile);
+
+            // Collect test items from <test> YAML blocks
+            var testItems:Array<Dynamic> = [];
+            var restoreInputs:Array<String> = [];
             script.eachComment((node, comment) -> {
                 if (comment.multiline) {
                     final testStart = comment.content.uIndexOf('<test>');
@@ -288,7 +269,6 @@ class Cli {
                             final testYml = Yaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
                             if (testYml != null && testYml is Array) {
                                 for (item in (testYml:Array<Dynamic>)) {
-                                    final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
                                     var restoreInput:String = null;
                                     if (item.restoreFile != null) {
                                         final restorePath = Path.join([Path.directory(file), item.restoreFile]);
@@ -299,86 +279,197 @@ class Cli {
                                             restoreInput = restoreInput.replace("\r\n", "\n");
                                         }
                                     }
-                                    final testCase = new InterpreterTestCase(
-                                        file, content, file,
-                                        item.beat, item.choices, null,
-                                        saveAtChoice, restoreInput, item.expected
-                                    );
-                                    final testRunner = new TestRunner(handleFile);
-                                    testRunner.runTestCase(testCase, result -> {
-                                        final testCase:InterpreterTestCase = cast result.testCase;
-                                        if (result.passed) {
-                                            passCount++;
-                                            print('PASS'.green().bold() + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
-                                        }
-                                        else {
-                                            failCount++;
-                                            hasFailedTest = true;
-                                            print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
-
-                                            if (TestRunner.compareOutput(testCase.expectedOutput, result.actualOutput) != -1) {
-
-                                                print('');
-
-                                                // Normalize line endings (CRLF -> LF) and trim whitespace
-                                                final normalizedExpected = testCase.expectedOutput.replace("\r\n", "\n").trim().split("\n");
-                                                final normalizedActual = result.actualOutput.replace("\r\n", "\n").trim().split("\n");
-
-                                                final minLen = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
-                                                final maxLen = Std.int(Math.max(normalizedExpected.length, normalizedActual.length));
-
-                                                var foundDifference = false;
-                                                var i = 0;
-                                                while (i < minLen) {
-                                                    if (normalizedExpected[i] == normalizedActual[i]) {
-                                                        print(normalizedActual[i].yellow());
-                                                    }
-                                                    else {
-                                                        print('> Unexpected output at line ${i+1}');
-                                                        print('>  got: ' + normalizedActual[i].red());
-                                                        print('> need: ' + normalizedExpected[i].yellow());
-                                                        foundDifference = true;
-                                                        break;
-                                                    }
-                                                    i++;
-                                                }
-
-                                                if (!foundDifference && i < maxLen) {
-                                                    if (i < normalizedActual.length) {
-                                                        while (i < maxLen && normalizedActual[i].trim().length <= 0) {
-                                                            i++;
-                                                        }
-                                                        print('> Unexpected output at line ${i+1}');
-                                                        print('>  got: ' + normalizedActual[i].red());
-                                                        print('> need: ' + '(empty)'.yellow());
-                                                    }
-                                                    else {
-                                                        while (i < maxLen && normalizedExpected[i].trim().length <= 0) {
-                                                            i++;
-                                                        }
-                                                        print('> Unexpected output at line ${i+1}');
-                                                        print('>  got: ' + '(empty)'.red());
-                                                        print('> need: ' + normalizedExpected[i].yellow());
-                                                    }
-                                                }
-
-                                                print('\n');
-                                            }
-
-                                        }
-                                    });
+                                    testItems.push(item);
+                                    restoreInputs.push(restoreInput);
                                 }
                             }
                         }
                     }
                 }
             });
+
+            // Run each test case on the original script
+            for (idx in 0...testItems.length) {
+                final item = testItems[idx];
+                final restoreInput = restoreInputs[idx];
+                final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                final testCase = new InterpreterTestCase(
+                    file, content, file,
+                    item.beat, item.choices, null,
+                    saveAtChoice, restoreInput, item.expected
+                );
+                final testRunner = new TestRunner(handleFile);
+                testRunner.runTestCase(testCase, result -> {
+                    final testCase:InterpreterTestCase = cast result.testCase;
+                    final modeLabel = crlf ? 'CRLF' : 'LF';
+                    final choicesLabel = testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : '';
+                    if (result.passed) {
+                        passCount++;
+                        print('PASS'.green().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + choicesLabel);
+                    }
+                    else {
+                        failCount++;
+                        hasFailedTest = true;
+                        print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + choicesLabel);
+
+                        if (TestRunner.compareOutput(testCase.expectedOutput, result.actualOutput) != -1) {
+
+                            print('');
+
+                            // Normalize line endings (CRLF -> LF) and trim whitespace
+                            final normalizedExpected = testCase.expectedOutput.replace("\r\n", "\n").trim().split("\n");
+                            final normalizedActual = result.actualOutput.replace("\r\n", "\n").trim().split("\n");
+
+                            final minLen = Std.int(Math.min(normalizedExpected.length, normalizedActual.length));
+                            final maxLen = Std.int(Math.max(normalizedExpected.length, normalizedActual.length));
+
+                            var foundDifference = false;
+                            var i = 0;
+                            while (i < minLen) {
+                                if (normalizedExpected[i] == normalizedActual[i]) {
+                                    print(normalizedActual[i].yellow());
+                                }
+                                else {
+                                    print('> Unexpected output at line ${i+1}');
+                                    print('>  got: ' + normalizedActual[i].red());
+                                    print('> need: ' + normalizedExpected[i].yellow());
+                                    foundDifference = true;
+                                    break;
+                                }
+                                i++;
+                            }
+
+                            if (!foundDifference && i < maxLen) {
+                                if (i < normalizedActual.length) {
+                                    while (i < maxLen && normalizedActual[i].trim().length <= 0) {
+                                        i++;
+                                    }
+                                    print('> Unexpected output at line ${i+1}');
+                                    print('>  got: ' + normalizedActual[i].red());
+                                    print('> need: ' + '(empty)'.yellow());
+                                }
+                                else {
+                                    while (i < maxLen && normalizedExpected[i].trim().length <= 0) {
+                                        i++;
+                                    }
+                                    print('> Unexpected output at line ${i+1}');
+                                    print('>  got: ' + '(empty)'.red());
+                                    print('> need: ' + normalizedExpected[i].yellow());
+                                }
+                            }
+
+                            print('\n');
+                        }
+
+                    }
+                });
+            }
+
+            // Combined round-trip test: structural idempotency + behavioral equivalence
+            testRoundTrip(script, file, crlf, testItems, restoreInputs);
         }
         catch (e:Any) {
             hasFailedTest = true;
             print('FAIL'.red().bold() + ' - $e - ' + file.gray());
         }
 
+    }
+
+    function testRoundTrip(script:Script, file:String, crlf:Bool, testItems:Array<Dynamic>, restoreInputs:Array<String>) {
+        // Skip round-trip test for files with imports (import resolution requires file context)
+        for (node in script.body) {
+            if (node is loreline.Node.NImportStatement) return;
+        }
+
+        final modeLabel = crlf ? 'CRLF' : 'LF';
+        try {
+            final newline = crlf ? "\r\n" : "\n";
+            final printer = new Printer("  ", newline);
+
+            // Structural check: print → parse → print must be stable
+            final print1 = printer.print(script);
+            final script2 = Loreline.parse(print1);
+            final print2 = printer.print(script2);
+            if (print1 != print2) {
+                failCount++;
+                hasFailedTest = true;
+                print('FAIL'.red().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'roundtrip'.gray());
+
+                // Show first difference
+                final lines1 = print1.replace("\r\n", "\n").split("\n");
+                final lines2 = print2.replace("\r\n", "\n").split("\n");
+                final minLen = Std.int(Math.min(lines1.length, lines2.length));
+                for (i in 0...minLen) {
+                    if (lines1[i] != lines2[i]) {
+                        print('> Printer output not idempotent at line ${i + 1}');
+                        print('>  print1: ' + lines1[i].red());
+                        print('>  print2: ' + lines2[i].yellow());
+                        break;
+                    }
+                }
+                if (lines1.length != lines2.length) {
+                    print('> Line count differs: print1=${lines1.length}, print2=${lines2.length}');
+                }
+                print('');
+                return;
+            }
+
+            // Behavioral check: run each test case on the round-tripped content
+            var allPassed = true;
+            var firstError:String = null;
+            var firstExpected:String = null;
+            var firstActual:String = null;
+            for (idx in 0...testItems.length) {
+                final item = testItems[idx];
+                final restoreInput = restoreInputs[idx];
+                final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                final rtTestCase = new InterpreterTestCase(
+                    file, print1, null,
+                    item.beat, item.choices, null,
+                    saveAtChoice, restoreInput, item.expected
+                );
+                final rtTestRunner = new TestRunner(handleFile);
+                rtTestRunner.runTestCase(rtTestCase, rtResult -> {
+                    if (!rtResult.passed) {
+                        allPassed = false;
+                        if (firstError == null) {
+                            firstError = rtResult.error != null ? Std.string(rtResult.error) : null;
+                            firstExpected = (cast(rtResult.testCase, InterpreterTestCase)).expectedOutput;
+                            firstActual = rtResult.actualOutput;
+                        }
+                    }
+                });
+            }
+
+            if (allPassed) {
+                passCount++;
+                print('PASS'.green().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'roundtrip'.gray());
+            } else {
+                failCount++;
+                hasFailedTest = true;
+                print('FAIL'.red().bold() + (firstError != null ? ' - ' + firstError : '') + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'roundtrip'.gray());
+
+                if (firstExpected != null && firstActual != null && TestRunner.compareOutput(firstExpected, firstActual) != -1) {
+                    print('');
+                    final normExpected = firstExpected.replace("\r\n", "\n").trim().split("\n");
+                    final normActual = firstActual.replace("\r\n", "\n").trim().split("\n");
+                    final ml = Std.int(Math.min(normExpected.length, normActual.length));
+                    for (i in 0...ml) {
+                        if (normExpected[i] != normActual[i]) {
+                            print('> Unexpected output at line ${i+1}');
+                            print('>  got: ' + normActual[i].red());
+                            print('> need: ' + normExpected[i].yellow());
+                            break;
+                        }
+                    }
+                    print('\n');
+                }
+            }
+        } catch (e:Any) {
+            failCount++;
+            hasFailedTest = true;
+            print('FAIL'.red().bold() + ' - roundtrip error: $e - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'roundtrip'.gray());
+        }
     }
 
     function format(file:String) {
