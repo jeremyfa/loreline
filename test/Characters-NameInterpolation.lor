@@ -1,0 +1,20 @@
+
+character barista
+  name: Alex
+
+character customer
+  name: Sam
+
+beat Start
+  $barista begins cleaning up.
+
+  $customer waves goodbye.
+
+/*
+<test>
+- expected: |
+    ~ Alex begins cleaning up.
+
+    ~ Sam waves goodbye.
+</test>
+*/

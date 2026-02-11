@@ -1,0 +1,67 @@
+
+state
+  mood: "neutral"
+
+beat Start
+  Your mood is $mood
+
+  choice
+    Be happy
+      mood = "happy"
+    Be sad
+      mood = "sad"
+
+  Your mood is now $mood
+
+  choice
+    Continue -> Ending
+
+beat Ending
+  "Final mood: $mood"
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    ~ Your mood is neutral
+
+    + Be happy
+    + Be sad
+
+    ~ Your mood is now happy
+
+    + Continue
+
+    ~ Final mood: happy
+- choices: [0, 0]
+  saveAtChoice: 1
+  expected: |
+    ~ Your mood is neutral
+
+    + Be happy
+    + Be sad
+
+    ~ Your mood is now happy
+
+    + Continue
+
+    + Continue
+
+    ~ Final mood: happy
+- choices: [1, 0]
+  saveAtChoice: 1
+  expected: |
+    ~ Your mood is neutral
+
+    + Be happy
+    + Be sad
+
+    ~ Your mood is now sad
+
+    + Continue
+
+    + Continue
+
+    ~ Final mood: sad
+</test>
+*/

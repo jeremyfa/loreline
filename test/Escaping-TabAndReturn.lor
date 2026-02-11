@@ -1,0 +1,10 @@
+
+beat Start
+  "Tabbed:\there"
+
+/*
+<test>
+- expected: |
+    ~ Tabbed:	here
+</test>
+*/

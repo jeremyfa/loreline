@@ -1,0 +1,24 @@
+
+state
+  counter: 0
+
+beat NewBeat
+  This beat is new
+
+beat Start
+  counter += 1
+  Welcome to the game
+
+  choice
+    Option A -> PickedA
+    Option B -> PickedB
+
+beat PickedA
+  You picked A
+
+  Counter is $counter
+
+beat PickedB
+  You picked B
+
+  Counter is $counter

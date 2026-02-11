@@ -1,0 +1,14 @@
+
+state
+  greeting: "hello"
+  name: "world"
+
+beat Start
+  "Result is ${greeting + " " + name}"
+
+/*
+<test>
+- expected: |
+    ~ Result is hello world
+</test>
+*/

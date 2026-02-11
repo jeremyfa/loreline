@@ -1,0 +1,21 @@
+
+beat Outer
+  Starting outer
+
+  beat Inner
+    Inside inner
+
+  Inner()
+
+  Back in outer
+
+/*
+<test>
+- expected: |
+    ~ Starting outer
+
+    ~ Inside inner
+
+    ~ Back in outer
+</test>
+*/

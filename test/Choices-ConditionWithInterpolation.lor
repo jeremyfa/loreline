@@ -1,0 +1,32 @@
+
+character sarah
+  name: Sarah
+  present: true
+
+state
+  coins: 5
+
+beat Start
+  choice
+    Chat with $sarah if sarah.present
+      Sarah smiles at you.
+    Buy item if coins >= 5
+      coins -= 5
+      You bought it for 5 coins.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Chat with Sarah
+    + Buy item
+
+    ~ Sarah smiles at you.
+- choices: [1]
+  expected: |
+    + Chat with Sarah
+    + Buy item
+
+    ~ You bought it for 5 coins.
+</test>
+*/

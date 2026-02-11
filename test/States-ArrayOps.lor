@@ -1,0 +1,21 @@
+
+state
+  items: ["apple", "banana", "cherry"]
+
+beat Start
+  First is $items[0]
+
+  Last is $items[2]
+
+  Count is ${items.length}
+
+/*
+<test>
+- expected: |
+    ~ First is apple
+
+    ~ Last is cherry
+
+    ~ Count is 3
+</test>
+*/

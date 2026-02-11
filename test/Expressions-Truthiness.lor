@@ -1,0 +1,50 @@
+
+state
+  emptyStr: ""
+  fullStr: "hello"
+  zero: 0
+  nonZero: 5
+  nothing: null
+  emptyArr: []
+  fullArr: [1, 2]
+
+beat Start
+  if !emptyStr
+    Empty string is falsy
+
+  if fullStr
+    Non-empty string is truthy
+
+  if !zero
+    Zero is falsy
+
+  if nonZero
+    Non-zero is truthy
+
+  if !nothing
+    Null is falsy
+
+  if !emptyArr
+    Empty array is falsy
+
+  if fullArr
+    Non-empty array is truthy
+
+/*
+<test>
+- expected: |
+    ~ Empty string is falsy
+
+    ~ Non-empty string is truthy
+
+    ~ Zero is falsy
+
+    ~ Non-zero is truthy
+
+    ~ Null is falsy
+
+    ~ Empty array is falsy
+
+    ~ Non-empty array is truthy
+</test>
+*/

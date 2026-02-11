@@ -1,0 +1,27 @@
+
+state
+  flag: false
+
+beat Start
+  Before choice
+
+  choice
+    Option A if flag
+      Picked A
+    Option B if flag
+      Picked B
+
+  After choice
+
+/*
+<test>
+- choices: [-1]
+  expected: |
+    ~ Before choice
+
+    - Option A
+    - Option B
+
+    ~ After choice
+</test>
+*/

@@ -1,0 +1,21 @@
+
+state
+  x: 5
+
+beat Start
+  Negative is ${-x}
+
+  Double negative is ${-(-x)}
+
+  Result is ${x + -3}
+
+/*
+<test>
+- expected: |
+    ~ Negative is -5
+
+    ~ Double negative is 5
+
+    ~ Result is 2
+</test>
+*/

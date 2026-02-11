@@ -1,0 +1,26 @@
+
+state
+  counter: 0
+
+beat Start
+  counter += 1
+  Welcome to the game
+
+  if counter > 100
+    This should never show
+  else
+    Keep going
+
+  choice
+    Option A -> PickedA
+    Option B -> PickedB
+
+beat PickedA
+  You picked A
+
+  Counter is $counter
+
+beat PickedB
+  You picked B
+
+  Counter is $counter

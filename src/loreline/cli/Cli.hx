@@ -58,6 +58,10 @@ class Cli {
 
     var hasFailedTest:Bool = false;
 
+    var passCount:Int = 0;
+
+    var failCount:Int = 0;
+
     function new() {
 
         #if loreline_debug_interpreter
@@ -204,7 +208,13 @@ class Cli {
 
     function test(path:String) {
 
+        var totalPassCount = 0;
+        var totalFailCount = 0;
+
         for (crlf in [false, true]) {
+            passCount = 0;
+            failCount = 0;
+
             if (crlf) {
                 print('[ CRLF ]'.cyan().bold());
                 print('');
@@ -226,7 +236,27 @@ class Cli {
             }
 
             print('');
+            if (failCount > 0) {
+                print('  $passCount passed, $failCount failed'.red().bold());
+            }
+            else {
+                print('  $passCount passed'.green().bold());
+            }
+            print('');
+
+            totalPassCount += passCount;
+            totalFailCount += failCount;
         }
+
+        print('[ TOTAL ]'.cyan().bold());
+        print('');
+        if (totalFailCount > 0) {
+            print('  $totalPassCount passed, $totalFailCount failed'.red().bold());
+        }
+        else {
+            print('  All $totalPassCount tests passed'.green().bold());
+        }
+        print('');
 
         if (hasFailedTest) {
             Sys.exit(1);
@@ -259,18 +289,30 @@ class Cli {
                             if (testYml != null && testYml is Array) {
                                 for (item in (testYml:Array<Dynamic>)) {
                                     final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                                    var restoreInput:String = null;
+                                    if (item.restoreFile != null) {
+                                        final restorePath = Path.join([Path.directory(file), item.restoreFile]);
+                                        restoreInput = File.getContent(restorePath);
+                                        if (crlf) {
+                                            restoreInput = restoreInput.replace("\r\n", "\n").replace("\n", "\r\n");
+                                        } else {
+                                            restoreInput = restoreInput.replace("\r\n", "\n");
+                                        }
+                                    }
                                     final testCase = new InterpreterTestCase(
                                         file, content, file,
                                         item.beat, item.choices, null,
-                                        saveAtChoice, item.expected
+                                        saveAtChoice, restoreInput, item.expected
                                     );
                                     final testRunner = new TestRunner(handleFile);
                                     testRunner.runTestCase(testCase, result -> {
                                         final testCase:InterpreterTestCase = cast result.testCase;
                                         if (result.passed) {
+                                            passCount++;
                                             print('PASS'.green().bold() + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
                                         }
                                         else {
+                                            failCount++;
                                             hasFailedTest = true;
                                             print('FAIL'.red().bold() + (result.error != null ? ' - ' + result.error : '') + ' - ' + file.gray() + (testCase.choices != null && testCase.choices.length > 0 ? ' ~ '.gray() + '[${testCase.choices.join(',')}]'.gray() : ''));
 

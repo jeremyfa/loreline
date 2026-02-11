@@ -1,0 +1,22 @@
+
+state
+  score: 10
+
+beat Start
+  if score > 5
+    -> HighScore
+  else
+    -> LowScore
+
+beat HighScore
+  You got a high score!
+
+beat LowScore
+  Better luck next time.
+
+/*
+<test>
+- expected: |
+    ~ You got a high score!
+</test>
+*/

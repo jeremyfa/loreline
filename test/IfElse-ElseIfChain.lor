@@ -1,0 +1,22 @@
+
+state
+  grade: 75
+
+beat Start
+  if grade >= 90
+    Excellent!
+  else if grade >= 80
+    Great!
+  else if grade >= 70
+    Good.
+  else if grade >= 60
+    Okay.
+  else
+    Try harder.
+
+/*
+<test>
+- expected: |
+    ~ Good.
+</test>
+*/

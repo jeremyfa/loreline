@@ -203,14 +203,26 @@ class TestRunner {
             if (testCase.saveAtChoice >= 0 && choiceCount == testCase.saveAtChoice) {
                 choiceCount++;
                 final saveData:SaveData = interpreter.save();
-                // Resume on a new interpreter (handlers are closures sharing the same state)
-                Loreline.resume(
-                    parsedScript,
-                    handleDialogue,
-                    handleChoice,
-                    handleFinish,
-                    saveData
-                );
+
+                if (testCase.restoreInput != null) {
+                    // Parse the modified script and resume with it
+                    Loreline.parse(testCase.restoreInput, testCase.filePath, handleFile, restoreScript -> {
+                        if (restoreScript != null) {
+                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData);
+                        } else {
+                            done(new TestResult(testCase, false, output.toString(), new Error('Error parsing restoreInput script')));
+                        }
+                    });
+                } else {
+                    // Resume on a new interpreter (handlers are closures sharing the same state)
+                    Loreline.resume(
+                        parsedScript,
+                        handleDialogue,
+                        handleChoice,
+                        handleFinish,
+                        saveData
+                    );
+                }
                 return;
             }
 

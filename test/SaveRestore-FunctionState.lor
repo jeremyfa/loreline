@@ -1,0 +1,45 @@
+
+state
+  fruits: 2
+
+function getFruit()
+  fruits = fruits + 1
+
+beat Start
+  You have $fruits fruits
+
+  getFruit()
+
+  You have $fruits fruits
+
+  choice
+    Continue -> Result
+
+beat Result
+  You still have $fruits fruits
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ You have 2 fruits
+
+    ~ You have 3 fruits
+
+    + Continue
+
+    ~ You still have 3 fruits
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ You have 2 fruits
+
+    ~ You have 3 fruits
+
+    + Continue
+
+    + Continue
+
+    ~ You still have 3 fruits
+</test>
+*/

@@ -1,0 +1,25 @@
+
+state
+  counter: 0
+
+beat Start
+  counter += 1
+  Welcome to the game
+
+  Extra narrative line one
+
+  Extra narrative line two
+
+  choice
+    Option A -> PickedA
+    Option B -> PickedB
+
+beat PickedA
+  You picked A
+
+  Counter is $counter
+
+beat PickedB
+  You picked B
+
+  Counter is $counter

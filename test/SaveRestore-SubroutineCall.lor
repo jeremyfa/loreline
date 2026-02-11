@@ -1,0 +1,65 @@
+
+character guide
+  name: Guide
+
+beat Main
+  guide: Before the detour.
+  Detour()
+  guide: After the detour.
+
+beat Detour
+  guide: This is the detour.
+  choice
+    Option A
+      guide: Picked A in detour.
+    Option B
+      guide: Picked B in detour.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Guide: Before the detour.
+
+    Guide: This is the detour.
+
+    + Option A
+    + Option B
+
+    Guide: Picked A in detour.
+
+    Guide: After the detour.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    Guide: Before the detour.
+
+    Guide: This is the detour.
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    Guide: Picked A in detour.
+
+    Guide: After the detour.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    Guide: Before the detour.
+
+    Guide: This is the detour.
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    Guide: Picked B in detour.
+
+    Guide: After the detour.
+</test>
+*/

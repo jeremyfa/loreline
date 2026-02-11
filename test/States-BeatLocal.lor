@@ -1,0 +1,21 @@
+
+beat Counter
+  state
+    count: 0
+
+  count += 1
+  Count is $count
+
+  if count < 3
+    -> Counter
+
+/*
+<test>
+- expected: |
+    ~ Count is 1
+
+    ~ Count is 2
+
+    ~ Count is 3
+</test>
+*/

@@ -56,13 +56,21 @@ class InterpreterTestCase extends TestCase {
      */
     public final saveAtChoice:Int;
 
-    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Int, expectedOutput:String) {
+    /**
+     * If set, contains the content of a modified script to use when restoring
+     * (instead of the original parsed script). Used for testing node ID stability
+     * when a script is modified between save and restore.
+     */
+    public final restoreInput:String;
+
+    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Int, restoreInput:String, expectedOutput:String) {
         super(name, input, expectedOutput);
         this.filePath = filePath;
         this.beatName = beatName;
         this.choices = choices != null ? [].concat(choices) : null;
         this.options = options;
         this.saveAtChoice = saveAtChoice;
+        this.restoreInput = restoreInput;
     }
 
 }

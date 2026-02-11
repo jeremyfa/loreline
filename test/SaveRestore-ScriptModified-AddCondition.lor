@@ -1,0 +1,41 @@
+
+state
+  counter: 0
+
+beat Start
+  counter += 1
+  Welcome to the game
+
+  choice
+    Option A -> PickedA
+    Option B -> PickedB
+
+beat PickedA
+  You picked A
+
+  Counter is $counter
+
+beat PickedB
+  You picked B
+
+  Counter is $counter
+
+/*
+<test>
+- choices: [0]
+  saveAtChoice: 0
+  restoreFile: modified/SaveRestore-ScriptModified-AddCondition.lor
+  expected: |
+    ~ Welcome to the game
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ You picked A
+
+    ~ Counter is 1
+</test>
+*/

@@ -1,0 +1,19 @@
+
+state
+  val: 0
+
+beat Start
+  val = random(1, 1)
+  Random is $val
+
+  if chance(1)
+    Chance passed
+
+/*
+<test>
+- expected: |
+    ~ Random is 1
+
+    ~ Chance passed
+</test>
+*/

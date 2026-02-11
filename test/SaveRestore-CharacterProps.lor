@@ -1,0 +1,50 @@
+
+character barista
+  name: Alex
+  friendliness: 3
+
+character customer
+  name: Jamie
+  isRegular: false
+
+beat Start
+  barista: Hey there!
+
+  customer.isRegular = true
+  barista.friendliness = 5
+
+  choice
+    Chat -> AfterChat
+
+beat AfterChat
+  if customer.isRegular
+    barista: Welcome back, regular!
+
+  if barista.friendliness > 4
+    barista: You are my favorite customer!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: Hey there!
+
+    + Chat
+
+    Alex: Welcome back, regular!
+
+    Alex: You are my favorite customer!
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    Alex: Hey there!
+
+    + Chat
+
+    + Chat
+
+    Alex: Welcome back, regular!
+
+    Alex: You are my favorite customer!
+</test>
+*/

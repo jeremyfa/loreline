@@ -1,0 +1,27 @@
+
+state
+  val: null
+  other: "something"
+
+beat Start
+  if val == null
+    Val is null
+
+  if other != null
+    Other is not null
+
+  val = "now set"
+
+  if val != null
+    Val is now set
+
+/*
+<test>
+- expected: |
+    ~ Val is null
+
+    ~ Other is not null
+
+    ~ Val is now set
+</test>
+*/

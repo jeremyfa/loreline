@@ -1,0 +1,19 @@
+
+state
+  a: 10
+  b: 3
+
+beat Start
+  Result is ${a % b}
+
+  a = 7
+  Result is ${a % 2}
+
+/*
+<test>
+- expected: |
+    ~ Result is 1
+
+    ~ Result is 1
+</test>
+*/

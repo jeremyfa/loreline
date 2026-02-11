@@ -1,0 +1,20 @@
+
+state
+  data:
+    items: ["first", "second"]
+    info:
+      label: "test"
+
+beat Start
+  Item is $data.items[0]
+
+  Label is $data.info.label
+
+/*
+<test>
+- expected: |
+    ~ Item is first
+
+    ~ Label is test
+</test>
+*/
