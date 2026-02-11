@@ -721,7 +721,7 @@ typedef InterpreterOptions = {
         restoreNodeStates(saveData.nodeStates);
 
         // Restore scope stack
-        if (!restoreStack(saveData.stack)) {
+        if (!restoreStack(saveData.stack, saveData.insertions)) {
             // If failed to restore stack, simply resolve last known top level beat as fallback
             beatToResume = restoreBeatToResume(saveData.stack);
         }
@@ -992,7 +992,7 @@ typedef InterpreterOptions = {
 
         return {
             id: beat.id.toString(),
-            path: beat.name
+            path: path
         };
 
     }
@@ -1296,6 +1296,12 @@ typedef InterpreterOptions = {
             final option:NChoiceOption = cast currentScope.head;
             evalNodeBody(currentScope.beat, option, option.body, next);
         }
+        else if (currentScope.insertion != null) {
+            // Save happened during insertion evaluation (Phase 1 of choice).
+            // Pop insertion scope(s) and re-evaluate the entire choice.
+            while (stack.length > scopeLevel) pop();
+            evalChoice(choice, next);
+        }
         else {
             throw new RuntimeError('Choice head is not a choice option', currentScope.head.pos);
         }
@@ -1386,90 +1392,23 @@ typedef InterpreterOptions = {
      * Restores the execution stack from saved data.
      *
      * @param savedStack The saved stack data
+     * @param savedInsertions The saved insertions map (keyed by insertion ID)
      * @return True if the stack was restored successfully, false otherwise
      */
-    function restoreStack(savedStack:Array<SaveDataScope>):Bool {
+    function restoreStack(savedStack:Array<SaveDataScope>, ?savedInsertions:Dynamic<SaveDataInsertion>):Bool {
 
         final result:Array<RuntimeScope> = [];
+        final restoredInsertions = new Map<Int, RuntimeInsertion>();
 
         var i = savedStack.length - 1;
         while (i >= 0) {
-            final savedScope = savedStack[i];
-            final beat:NBeatDecl = restoreBeat(savedScope.beat);
-
-            if (beat == null) {
-                // Failed to resolve beat,
-                // can't restore stack
-                return false;
-            }
-
-            final savedBeatId = NodeId.fromString(savedScope.beat.id);
-
-            final savedNode = savedScope.node;
-            final node:AstNode = if (savedNode != null) {
-                restoreNode(
-                    savedNode,
-                    savedBeatId,
-                    beat
-                );
-            }
-            else {
-                null;
-            }
-
-            if (savedNode != null && node == null) {
-                // Failed to resolve node,
-                // can't restore stack
-                return false;
-            }
-
-            final beats:Array<NBeatDecl> = [];
-            if (savedScope.beats != null) {
-                for (savedBeat in savedScope.beats) {
-                    final beatInScope = restoreBeat(savedBeat);
-                    if (beatInScope == null) {
-                        // Failed to resolve beat in scope,
-                        // can't restore stack
-                        return false;
-                    }
-                    beats.push(beatInScope);
-                }
-            }
-
-            final savedState = savedScope.state;
-            final state:RuntimeState = savedState != null ? restoreState(null, savedScope.state) : null;
-
-            final savedHead = savedScope.head;
-            final head:AstNode = if (savedHead != null) {
-                restoreNode(
-                    savedHead,
-                    savedBeatId,
-                    beat
-                );
-            }
-            else {
-                null;
-            }
-
-            if (savedHead != null && head == null) {
-                // Failed to resolve head,
-                // can't restore stack
-                return false;
-            }
-
-            // Keep scope item
-            result.push({
-                beat: beat,
-                node: node,
-                state: state,
-                beats: beats,
-                head: head
-            });
-
+            final scope = restoreScopeItem(savedStack[i], savedInsertions, restoredInsertions);
+            if (scope == null) return false;
+            result.push(scope);
             i--;
         }
 
-        // Add the items in the actual stack
+        // Add the items in the actual stack (reverse order, push() assigns IDs)
         i = result.length - 1;
         while (i >= 0) {
             push(result[i]);
@@ -1477,6 +1416,186 @@ typedef InterpreterOptions = {
         }
 
         return true;
+
+    }
+
+    /**
+     * Restores a single scope from saved data, including its insertion reference.
+     * Used by both restoreStack() (for the main stack) and restoreInsertion() (for insertion stacks).
+     *
+     * @param savedScope The saved scope data
+     * @param savedInsertions The saved insertions map
+     * @param restoredInsertions Cache of already-restored insertions (for circular reference handling)
+     * @return The restored scope, or null if restoration failed
+     */
+    function restoreScopeItem(
+        savedScope:SaveDataScope,
+        savedInsertions:Dynamic<SaveDataInsertion>,
+        restoredInsertions:Map<Int, RuntimeInsertion>
+    ):RuntimeScope {
+
+        final beat = restoreBeat(savedScope.beat);
+        if (beat == null) return null;
+
+        final savedBeatId = NodeId.fromString(savedScope.beat.id);
+
+        final savedNode = savedScope.node;
+        final node:AstNode = if (savedNode != null) {
+            restoreNode(savedNode, savedBeatId, beat);
+        } else {
+            null;
+        }
+        if (savedNode != null && node == null) return null;
+
+        final beats:Array<NBeatDecl> = [];
+        if (savedScope.beats != null) {
+            for (savedBeat in savedScope.beats) {
+                final beatInScope = restoreBeat(savedBeat);
+                if (beatInScope == null) return null;
+                beats.push(beatInScope);
+            }
+        }
+
+        final savedState = savedScope.state;
+        final state:RuntimeState = savedState != null ? restoreState(null, savedScope.state) : null;
+
+        final savedHead = savedScope.head;
+        final head:AstNode = if (savedHead != null) {
+            restoreNode(savedHead, savedBeatId, beat);
+        } else {
+            null;
+        }
+        if (savedHead != null && head == null) return null;
+
+        // Restore insertion reference
+        var insertion:RuntimeInsertion = null;
+        if (savedScope.insertion != null && savedInsertions != null) {
+            insertion = restoreInsertion(savedScope.insertion, savedInsertions, restoredInsertions);
+        }
+
+        return ({
+            beat: beat,
+            node: node,
+            state: state,
+            beats: beats,
+            head: head,
+            insertion: insertion
+        } : RuntimeScope);
+
+    }
+
+    /**
+     * Restores a RuntimeInsertion from serialized data.
+     * Uses a cache to handle circular references (insertion.stack contains scopes that reference the same insertion).
+     *
+     * @param insertionId The insertion ID to restore
+     * @param savedInsertions The saved insertions map
+     * @param restoredInsertions Cache of already-restored insertions
+     * @return The restored insertion, or null if not found
+     */
+    function restoreInsertion(
+        insertionId:Int,
+        savedInsertions:Dynamic<SaveDataInsertion>,
+        restoredInsertions:Map<Int, RuntimeInsertion>
+    ):RuntimeInsertion {
+
+        // Check cache first (handles circular references and deduplication)
+        if (restoredInsertions.exists(insertionId)) {
+            return restoredInsertions.get(insertionId);
+        }
+
+        final key:String = Std.string(insertionId);
+        final saved:SaveDataInsertion = Reflect.field(savedInsertions, key);
+        if (saved == null) return null;
+
+        // Resolve origin NInsertion node (may be null if script was modified)
+        var origin:NInsertion = null;
+        if (saved.origin != null) {
+            final nodeId = NodeId.fromString(saved.origin.id);
+            final node = lens.getNodeById(nodeId);
+            if (node != null && node.type() == saved.origin.type) {
+                origin = cast node;
+            }
+        }
+
+        // Create and cache BEFORE restoring stack/options (breaks circular refs)
+        final insertion = new RuntimeInsertion(insertionId, origin);
+        restoredInsertions.set(insertionId, insertion);
+
+        // Update nextInsertionId to avoid collisions with future insertions
+        if (insertionId >= nextInsertionId) {
+            nextInsertionId = insertionId + 1;
+        }
+
+        // Restore choice options
+        if (saved.options != null) {
+            insertion.options = [];
+            for (savedOpt in saved.options) {
+                final opt = restoreChoiceOption(savedOpt, savedInsertions, restoredInsertions);
+                if (opt != null) insertion.options.push(opt);
+            }
+        }
+
+        // Restore the insertion's own stack (NOT pushed via push() — matching runtime behavior)
+        if (saved.stack != null) {
+            insertion.stack = [];
+            for (savedScope in saved.stack) {
+                final scope = restoreScopeItem(savedScope, savedInsertions, restoredInsertions);
+                if (scope != null) insertion.stack.push(scope);
+            }
+        }
+
+        return insertion;
+
+    }
+
+    /**
+     * Restores a ChoiceOption from serialized data.
+     *
+     * @param saved The saved choice option data
+     * @param savedInsertions The saved insertions map
+     * @param restoredInsertions Cache of already-restored insertions
+     * @return The restored choice option, or null if node resolution failed
+     */
+    function restoreChoiceOption(
+        saved:SaveDataChoiceOption,
+        savedInsertions:Dynamic<SaveDataInsertion>,
+        restoredInsertions:Map<Int, RuntimeInsertion>
+    ):ChoiceOption {
+
+        // Resolve the NChoiceOption AST node
+        var node:NChoiceOption = null;
+        if (saved.node != null) {
+            final nodeId = NodeId.fromString(saved.node.id);
+            final astNode = lens.getNodeById(nodeId);
+            if (astNode != null && astNode.type() == saved.node.type) {
+                node = cast astNode;
+            }
+        }
+
+        // Restore text tags
+        var tags:Array<TextTag> = null;
+        if (saved.tags != null) {
+            tags = [for (t in saved.tags) ({
+                closing: t.closing == true,
+                value: t.value,
+                offset: t.offset
+            } : TextTag)];
+        }
+
+        // Restore linked insertion
+        var insertion:RuntimeInsertion = null;
+        if (saved.insertion != null && savedInsertions != null) {
+            insertion = restoreInsertion(saved.insertion, savedInsertions, restoredInsertions);
+        }
+
+        return ({
+            text: saved.text,
+            tags: tags,
+            enabled: saved.disabled != true,
+            node: node,
+            insertion: insertion
+        } : ChoiceOption);
 
     }
 
@@ -1607,7 +1726,7 @@ typedef InterpreterOptions = {
 
         for (idStr in Reflect.fields(data)) {
             final id = NodeId.fromString(idStr);
-            final stateData = Reflect.field(nodeStates, idStr);
+            final stateData:SaveDataState = Reflect.field(data, idStr);
 
             final nodeState = restoreState(null, stateData);
             nodeStates.set(id, nodeState);
@@ -2365,7 +2484,7 @@ typedef InterpreterOptions = {
                 }
                 else if (option.insertion != null) {
                     final done = wrapNext(moveNext);
-                    insertion = new RuntimeInsertion(nextInsertionId, option.insertion);
+                    insertion = new RuntimeInsertion(nextInsertionId++, option.insertion);
                     evalInsertion(insertion, done.cb);
                     done.sync = false;
                 }

@@ -2,6 +2,9 @@ package loreline.test;
 
 import loreline.Imports;
 import loreline.Interpreter;
+import loreline.Loreline;
+import loreline.SaveData;
+import loreline.Script;
 import loreline.Utf8;
 import loreline.test.TestCase;
 
@@ -125,6 +128,8 @@ class TestRunner {
 
         final output = new Utf8Buf();
         final choices = testCase.choices != null ? [].concat(testCase.choices) : null;
+        var choiceCount:Int = 0;
+        var parsedScript:Script = null;
 
         function handleFinish(interpreter:Interpreter) {
 
@@ -193,6 +198,24 @@ class TestRunner {
             }
             output.addChar("\n".code);
 
+            // Save/restore test: save at the specified choice point,
+            // then resume on a new interpreter
+            if (testCase.saveAtChoice >= 0 && choiceCount == testCase.saveAtChoice) {
+                choiceCount++;
+                final saveData:SaveData = interpreter.save();
+                // Resume on a new interpreter (handlers are closures sharing the same state)
+                Loreline.resume(
+                    parsedScript,
+                    handleDialogue,
+                    handleChoice,
+                    handleFinish,
+                    saveData
+                );
+                return;
+            }
+
+            choiceCount++;
+
             if (choices == null || choices.length == 0) {
                 // Early finish when no choices
                 handleFinish(interpreter);
@@ -209,6 +232,7 @@ class TestRunner {
             Loreline.parse(testCase.input, testCase.filePath, handleFile, script -> {
 
                 if (script != null) {
+                    parsedScript = script;
 
                     // Execute the script
                     Loreline.play(

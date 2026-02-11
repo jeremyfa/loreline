@@ -1,0 +1,56 @@
+
+beat Outer
+  In outer
+
+  beat Inner
+    In inner
+    choice
+      Option A
+        Chose A in inner
+      Option B
+        Chose B in inner
+
+  Inner()
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ In outer
+
+    ~ In inner
+
+    + Option A
+    + Option B
+
+    ~ Chose A in inner
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ In outer
+
+    ~ In inner
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ Chose A in inner
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ In outer
+
+    ~ In inner
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ Chose B in inner
+</test>
+*/

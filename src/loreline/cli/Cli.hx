@@ -258,10 +258,11 @@ class Cli {
                             final testYml = Yaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
                             if (testYml != null && testYml is Array) {
                                 for (item in (testYml:Array<Dynamic>)) {
+                                    final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
                                     final testCase = new InterpreterTestCase(
                                         file, content, file,
                                         item.beat, item.choices, null,
-                                        item.expected
+                                        saveAtChoice, item.expected
                                     );
                                     final testRunner = new TestRunner(handleFile);
                                     testRunner.runTestCase(testCase, result -> {

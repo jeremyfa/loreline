@@ -1,0 +1,62 @@
+
+beat Start
+  choice
+    Direct option -> PickedDirect
+    + InsertedBeat
+
+beat InsertedBeat
+  choice
+    Inserted A -> PickedInsertedA
+    Inserted B -> PickedInsertedB
+
+beat PickedDirect
+  You picked the direct option
+
+beat PickedInsertedA
+  You picked inserted A
+
+beat PickedInsertedB
+  You picked inserted B
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    ~ You picked the direct option
+- choices: [1]
+  expected: |
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    ~ You picked inserted A
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    ~ You picked inserted A
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    + Direct option
+    + Inserted A
+    + Inserted B
+
+    ~ You picked the direct option
+</test>
+*/
