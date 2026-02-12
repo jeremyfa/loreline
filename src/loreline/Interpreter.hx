@@ -390,6 +390,13 @@ typedef InterpreterOptions = {
     #if loreline_typedef_options @:optional #end
     public var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any #if !loreline_typedef_options = null #end;
 
+    /**
+     * Optional translations map (localization key → translated string literal).
+     * Built from a parsed translation file using AstUtils.extractTranslations().
+     */
+    #if loreline_typedef_options @:optional #end
+    public var translations:Map<String, NStringLiteral> #if !loreline_typedef_options = null #end;
+
 }
 
 /**
@@ -410,6 +417,12 @@ typedef InterpreterOptions = {
      * The script being executed.
      */
     final script:Script;
+
+    /**
+     * Optional translations map (localization key → translated string literal).
+     * When set, evaluateString() substitutes tagged text with translated versions.
+     */
+    public var translations:Null<Map<String, NStringLiteral>>;
 
     /**
      * User-defined dialogue handler,
@@ -578,6 +591,7 @@ typedef InterpreterOptions = {
         this.lens = new Lens(script);
 
         this.strictAccess = options?.strictAccess ?? false;
+        this.translations = options?.translations;
 
         #if loreline_cs_api
         this.wrapper = options?.wrapper;
@@ -2827,6 +2841,29 @@ typedef InterpreterOptions = {
      * @return Object containing the evaluated text and any tags
      */
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
+        // Check for localization tag and substitute from translations map
+        if (translations != null) {
+            for (part in str.parts) {
+                switch (part.partType) {
+                    case Tag(false, tagContent):
+                        if (tagContent.parts.length > 0) {
+                            switch (tagContent.parts[0].partType) {
+                                case Raw(text):
+                                    if (StringTools.startsWith(text, "#")) {
+                                        final id = text.substr(1);
+                                        final translated = translations.get(id);
+                                        if (translated != null) {
+                                            return evaluateString(translated);
+                                        }
+                                    }
+                                case _:
+                            }
+                        }
+                    case _:
+                }
+            }
+        }
+
         final buf = new loreline.Utf8.Utf8Buf();
         final tags:Array<TextTag> = [];
         var offset = 0;
@@ -2943,11 +2980,15 @@ typedef InterpreterOptions = {
                     }
 
                 case Tag(closing, expr):
-                    tags.push({
-                        closing: closing,
-                        value: evaluateString(expr).text,
-                        offset: offset
-                    });
+                    final tagValue = evaluateString(expr).text;
+                    // Skip localization tags (starting with #) — they are metadata, not formatting
+                    if (!StringTools.startsWith(tagValue, "#")) {
+                        tags.push({
+                            closing: closing,
+                            value: tagValue,
+                            offset: offset
+                        });
+                    }
             }
         }
 

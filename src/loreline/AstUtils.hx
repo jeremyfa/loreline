@@ -154,6 +154,129 @@ class AstUtils {
         });
     }
 
+    // ── Localization ─────────────────────────────────────────────────
+
+    /** Add localization key tags to all translatable text in the AST. */
+    public static function addLocalizationKeys(node:AstNode):Void {
+        node.each((child, _) -> {
+            var str:NStringLiteral = null;
+            if (Std.isOfType(child, NTextStatement)) str = (cast(child, NTextStatement)).content;
+            else if (Std.isOfType(child, NDialogueStatement)) str = (cast(child, NDialogueStatement)).content;
+            else if (Std.isOfType(child, NChoiceOption)) str = (cast(child, NChoiceOption)).text;
+
+            if (str != null) {
+                // Skip if already has a # tag
+                var hasHashTag = false;
+                for (part in str.parts) {
+                    switch (part.partType) {
+                        case Tag(false, tagContent):
+                            if (tagContent.parts.length > 0) {
+                                switch (tagContent.parts[0].partType) {
+                                    case Raw(text):
+                                        if (StringTools.startsWith(text, "#")) {
+                                            hasHashTag = true;
+                                            break;
+                                        }
+                                    case _:
+                                }
+                            }
+                        case _:
+                    }
+                }
+                if (hasHashTag) return;
+
+                // Compute canonical form for hashing
+                var canonical = new StringBuf();
+                for (part in str.parts) {
+                    switch (part.partType) {
+                        case Raw(text): canonical.add(text);
+                        case Expr(_): canonical.add("${}");
+                        case Tag(_, _): // skip tags
+                    }
+                }
+
+                final hash = haxe.crypto.Md5.encode(canonical.toString()).substr(0, 8);
+                final tagText = "#" + hash;
+
+                // Create tag NStringLiteral with the hash
+                final tagLiteral = new NStringLiteral(
+                    NodeId.UNDEFINED, null, Unquoted,
+                    [new NStringPart(NodeId.UNDEFINED, null, Raw(tagText))]
+                );
+                str.parts.push(new NStringPart(NodeId.UNDEFINED, null, Tag(false, tagLiteral)));
+            }
+        });
+    }
+
+    /**
+     * Extract translations from a parsed translation file.
+     * Returns a map of localization key → NStringLiteral (with # tag removed).
+     */
+    public static function extractTranslations(node:AstNode):Map<String, NStringLiteral> {
+        final result = new Map<String, NStringLiteral>();
+        node.each((child, _) -> {
+            if (Std.isOfType(child, NTextStatement)) {
+                final str:NStringLiteral = (cast(child, NTextStatement)).content;
+                extractTranslationFromString(str, result);
+            } else if (Std.isOfType(child, NDialogueStatement)) {
+                final str:NStringLiteral = (cast(child, NDialogueStatement)).content;
+                extractTranslationFromString(str, result);
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Generate a translation template from a source script.
+     * Outputs lines with original text as comments followed by #id and original text.
+     */
+    public static function generateTranslationTemplate(node:AstNode):String {
+        final buf = new StringBuf();
+        var first = true;
+        node.each((child, _) -> {
+            var str:NStringLiteral = null;
+            if (Std.isOfType(child, NTextStatement)) str = (cast(child, NTextStatement)).content;
+            else if (Std.isOfType(child, NDialogueStatement)) str = (cast(child, NDialogueStatement)).content;
+            else if (Std.isOfType(child, NChoiceOption)) str = (cast(child, NChoiceOption)).text;
+
+            if (str != null) {
+                // Find # tag and raw text
+                var tagId:String = null;
+                var rawText = new StringBuf();
+                for (part in str.parts) {
+                    switch (part.partType) {
+                        case Raw(text): rawText.add(text);
+                        case Tag(false, tagContent):
+                            if (tagContent.parts.length > 0) {
+                                switch (tagContent.parts[0].partType) {
+                                    case Raw(text):
+                                        if (StringTools.startsWith(text, "#")) {
+                                            tagId = text;
+                                        }
+                                    case _:
+                                }
+                            }
+                        case _:
+                    }
+                }
+
+                if (tagId != null) {
+                    final text = StringTools.trim(rawText.toString());
+                    if (!first) buf.add("\n");
+                    buf.add("// ");
+                    buf.add(text);
+                    buf.add("\n");
+                    buf.add(tagId);
+                    buf.add(" ");
+                    buf.add(text);
+                    buf.add("\n");
+                    first = false;
+                }
+            }
+        });
+        return buf.toString();
+    }
+
     // ── Private helpers ─────────────────────────────────────────────
 
     /**
@@ -328,5 +451,47 @@ class AstUtils {
             result.add(line.substr(pos));
         }
         return result.toString();
+    }
+
+    /**
+     * Helper: extract a translation entry from a string literal with a # tag.
+     * Adds the id → NStringLiteral (with # tag removed) to the result map.
+     */
+    static function extractTranslationFromString(str:NStringLiteral, result:Map<String, NStringLiteral>):Void {
+        // Find a # tag in the parts
+        var tagIndex = -1;
+        var tagId:String = null;
+        for (i in 0...str.parts.length) {
+            switch (str.parts[i].partType) {
+                case Tag(false, tagContent):
+                    if (tagContent.parts.length > 0) {
+                        switch (tagContent.parts[0].partType) {
+                            case Raw(text):
+                                if (StringTools.startsWith(text, "#")) {
+                                    tagIndex = i;
+                                    tagId = text.substr(1);
+                                    break;
+                                }
+                            case _:
+                        }
+                    }
+                case _:
+            }
+        }
+
+        if (tagId != null) {
+            // Create a copy of the string literal without the # tag
+            final newParts = new Array<NStringPart>();
+            for (i in 0...str.parts.length) {
+                if (i != tagIndex) {
+                    newParts.push(str.parts[i]);
+                }
+            }
+            final translated = new NStringLiteral(
+                str.nodeId, str.pos, str.quotes, newParts,
+                str.leadingComments, str.trailingComments
+            );
+            result.set(tagId, translated);
+        }
     }
 }

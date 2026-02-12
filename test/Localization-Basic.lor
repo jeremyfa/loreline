@@ -1,0 +1,38 @@
+
+character barista
+  name: Alex
+
+beat Menu
+  The cafe smells wonderful. #intro
+  barista: Welcome! What can I get you? #welcome
+  choice
+    Espresso #opt-espresso
+      barista: One espresso! #espresso-reply
+    Latte #opt-latte
+      barista: One latte! #latte-reply
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ The cafe smells wonderful.
+
+    Alex: Welcome! What can I get you?
+
+    + Espresso
+    + Latte
+
+    Alex: One espresso!
+
+- choices: [1]
+  expected: |
+    ~ The cafe smells wonderful.
+
+    Alex: Welcome! What can I get you?
+
+    + Espresso
+    + Latte
+
+    Alex: One latte!
+</test>
+*/

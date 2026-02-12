@@ -2441,7 +2441,7 @@ class Token {
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
                     final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
+                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || nameStart == "#".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
                 }
@@ -2456,6 +2456,27 @@ class Token {
                 if (tagStart != -1) {
                     attachments.push(Tag(tagIsClosing, tagStart, buf.length - tagStart));
                     tagStart = -1;
+                }
+            }
+            else if (allowTags && tagStart == -1 && c == "#".code && !escaped) {
+                // #identifier shorthand for <#identifier> tag
+                final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
+                if (isIdentifierPart(nextChar)) {
+                    final shorthandStart = buf.length;
+                    buf.addChar("#".code);
+                    advance();
+                    currentColumn++;
+                    while (pos < length && (isIdentifierPart(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == "-".code)) {
+                        buf.addChar(input.uCharCodeAt(pos));
+                        advance();
+                        currentColumn++;
+                    }
+                    attachments.push(Tag(false, shorthandStart, buf.length - shorthandStart));
+                }
+                else {
+                    buf.addChar(c);
+                    advance();
+                    currentColumn++;
                 }
             }
             else if (c == "$".code && !escaped) {
@@ -2657,7 +2678,7 @@ class Token {
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
                     final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
+                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || nameStart == "#".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
                 }
@@ -2672,6 +2693,27 @@ class Token {
                 if (tagStart != -1) {
                     attachments.push(Tag(tagIsClosing, tagStart, buf.length - tagStart));
                     tagStart = -1;
+                }
+            }
+            else if (allowTags && tagStart == -1 && c == "#".code && !escaped) {
+                // #identifier shorthand for <#identifier> tag
+                final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
+                if (isIdentifierPart(nextChar)) {
+                    final shorthandStart = buf.length;
+                    buf.addChar("#".code);
+                    advance();
+                    currentColumn++;
+                    while (pos < length && (isIdentifierPart(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == "-".code)) {
+                        buf.addChar(input.uCharCodeAt(pos));
+                        advance();
+                        currentColumn++;
+                    }
+                    attachments.push(Tag(false, shorthandStart, buf.length - shorthandStart));
+                }
+                else {
+                    buf.addChar(c);
+                    advance();
+                    currentColumn++;
                 }
             }
             else if (c == "$".code && !escaped) {

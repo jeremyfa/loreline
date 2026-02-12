@@ -1624,9 +1624,10 @@ class ParserContext {
         pos.length = length;
 
         // Calculate tag content boundaries
-        final offsetStart = (closing ? 2 : 1);
+        final isHashtag = content.uCharCodeAt(start) == "#".code;
+        final offsetStart = isHashtag ? 0 : (closing ? 2 : 1);
         final innerStart = start + offsetStart; // Skip < and optional /
-        final innerLength = length - (closing ? 3 : 2); // Account for < > and optional /
+        final innerLength = isHashtag ? length : (length - (closing ? 3 : 2)); // Account for < > and optional /
         final innerEnd = innerStart + innerLength;
         final tagId = nextNodeId(NODE);
 

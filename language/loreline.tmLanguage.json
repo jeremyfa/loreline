@@ -423,7 +423,7 @@
         "unquoted-string-values": {
             "patterns": [
                 {
-                    "begin": "(?!,?\\s*(?:/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*\\s*:\\s*)(?<=:|,|\\[|(?:(?::|=)\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*))\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*(?:function)\\b)((?!\\s*(?:(?:true|false|null)\\b(?!\\s*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r,])|\\d+(?:\\.\\d+)?\\b(?!\\s*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r,])))(?=.*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r])(?!\\s*(?:(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*\\s*(?:\\(|\\[))|(\\[|\\{|,)|(?:\"))))",
+                    "begin": "(?!,?\\s*(?:/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*\\s*:\\s*)(?<=:|,|\\[|(?:(?::)\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*))\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*(?:function)\\b)((?!\\s*(?:(?:true|false|null)\\b(?!\\s*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r,])|\\d+(?:\\.\\d+)?\\b(?!\\s*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r,])))(?=.*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r])(?!\\s*(?:(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*\\s*(?:\\(|\\[))|(\\[|\\{|,)|(?:\"))))",
                     "beginCaptures": {
                         "1": {
                             "patterns": [
@@ -580,9 +580,6 @@
                     "include": "#comments"
                 },
                 {
-                    "include": "#string-interpolation"
-                },
-                {
                     "include": "#function-block"
                 },
                 {
@@ -623,6 +620,9 @@
                 },
                 {
                     "include": "#unquoted-strings"
+                },
+                {
+                    "include": "#string-interpolation"
                 },
                 {
                     "include": "#functions-in-beat"
@@ -808,38 +808,40 @@
         "unquoted-multiline-dialogues": {
             "patterns": [
                 {
-                    "begin": "(?<=^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*)*\\s*)(?!\\s*(?:state|beat|character|choice|else|new|function|import)\\b)(\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*)(<[^<>]+>\\s*)*((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*\")(//.*)?$",
+                    "begin": "(^[ \\t]*)(?!\\s*(?:state|beat|character|choice|else|new|function|import)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
                     "beginCaptures": {
                         "2": {
                             "name": "entity.name.class.loreline"
                         },
                         "3": {
                             "name": "keyword.operator.type.annotation.loreline"
-                        },
-                        "4": {
+                        }
+                    },
+                    "end": "^(?!\\1[ \\t]|\\1$)",
+                    "patterns": [
+                        {
+                            "begin": "(?<=:)\\s*",
+                            "end": "(?=\\n)",
                             "patterns": [
                                 {
                                     "include": "#string-tags"
+                                },
+                                {
+                                    "include": "#comments"
+                                },
+                                {
+                                    "name": "constant.character.escape.loreline",
+                                    "match": "\\\\."
+                                },
+                                {
+                                    "include": "#string-interpolation"
+                                },
+                                {
+                                    "match": "(?!<|//).",
+                                    "name": "string.unquoted.dialogue.loreline"
                                 }
                             ]
                         },
-                        "5": {
-                            "patterns": [
-                                {
-                                    "include": "#comments"
-                                }
-                            ]
-                        },
-                        "6": {
-                            "patterns": [
-                                {
-                                    "include": "#comments"
-                                }
-                            ]
-                        }
-                    },
-                    "end": "^(?![ \\t]*$)(?=\\1\\S|\\S)",
-                    "patterns": [
                         {
                             "include": "#comments"
                         },
@@ -905,6 +907,10 @@
         },
         "string-tags": {
             "patterns": [
+                {
+                    "match": "#[a-zA-Z0-9_][a-zA-Z0-9_-]*",
+                    "name": "comment.line.loreline"
+                },
                 {
                     "begin": "<(?!-)",
                     "beginCaptures": {

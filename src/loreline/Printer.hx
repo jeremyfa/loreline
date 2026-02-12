@@ -678,9 +678,18 @@ class Printer {
                     printNode(expr);
                     if (!canBeSimple) write('}');
                 case Tag(closing, content):
-                    write(closing ? '</' : '<');
-                    printStringLiteral(content);
-                    write('>');
+                    // Check if tag content starts with # (localization tag shorthand)
+                    final isHashTag = !closing && content.parts.length > 0 && switch (content.parts[0].partType) {
+                        case Raw(text): StringTools.startsWith(text, "#");
+                        case _: false;
+                    };
+                    if (isHashTag) {
+                        printStringLiteral(content);
+                    } else {
+                        write(closing ? '</' : '<');
+                        printStringLiteral(content);
+                        write('>');
+                    }
             }
         }
         if (surroundWithQuotes) {
