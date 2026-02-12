@@ -863,39 +863,15 @@ class Lens {
     public function getAllTags():Array<String> {
         final tags = new Map<String, Bool>();
 
-        // Helper to process string literal
-        function processStringLiteral(str:NStringLiteral) {
-            for (part in str.parts) {
-                switch part.partType {
-                    case Tag(_, content):
-                        // Check if content is a simple string without interpolation
-                        if (content.parts.length == 1) {
-                            switch content.parts[0].partType {
-                                case Raw(text):
-                                    tags.set(text.trim(), true);
-                                case _:
-                            }
-                        }
-                    case _:
+        // Traverse AST looking for hash comments
+        script.each((node, parent) -> {
+            final astNode:AstNode = Std.isOfType(node, AstNode) ? cast node : null;
+            if (astNode != null && astNode.trailingComments != null) {
+                for (comment in astNode.trailingComments) {
+                    if (comment.isHash) {
+                        tags.set(StringTools.trim(comment.content), true);
+                    }
                 }
-            }
-        }
-
-        // Traverse AST looking for string literals with tags
-        script.each((node, parent) -> {
-            switch Type.getClass(node) {
-                case NStringLiteral:
-                    processStringLiteral(cast node);
-                case _:
-            }
-        });
-
-        // Traverse AST looking for string literals with tags
-        script.each((node, parent) -> {
-            switch Type.getClass(node) {
-                case NStringLiteral:
-                    processStringLiteral(cast node);
-                case _:
             }
         });
 
@@ -903,38 +879,23 @@ class Lens {
     }
 
     /**
-     * Count every occurence of tags
+     * Count every occurence of tags (hash comments)
      * @return Map of tag counts
      */
     public function countTags():Map<String,Int> {
         final tags = new Map<String, Int>();
 
-        // Helper to process string literal
-        function processStringLiteral(str:NStringLiteral) {
-            for (part in str.parts) {
-                switch part.partType {
-                    case Tag(_, content):
-                        // Check if content is a simple string without interpolation
-                        if (content.parts.length == 1) {
-                            switch content.parts[0].partType {
-                                case Raw(text):
-                                    text = text.trim();
-                                    final prevCount = tags.get(text) ?? 0;
-                                    tags.set(text, prevCount + 1);
-                                case _:
-                            }
-                        }
-                    case _:
-                }
-            }
-        }
-
-        // Traverse AST looking for string literals with tags
+        // Traverse AST looking for hash comments
         script.each((node, parent) -> {
-            switch Type.getClass(node) {
-                case NStringLiteral:
-                    processStringLiteral(cast node);
-                case _:
+            final astNode:AstNode = Std.isOfType(node, AstNode) ? cast node : null;
+            if (astNode != null && astNode.trailingComments != null) {
+                for (comment in astNode.trailingComments) {
+                    if (comment.isHash) {
+                        final text = StringTools.trim(comment.content);
+                        final prevCount = tags.get(text) ?? 0;
+                        tags.set(text, prevCount + 1);
+                    }
+                }
             }
         });
 

@@ -191,6 +191,8 @@ enum TokenType {
     CommentLine(content:String);
     /** Multi-line comment */
     CommentMultiLine(content:String);
+    /** Hash comment (#identifier) */
+    CommentHash(content:String);
 
     /** Increase indentation level */
     Indent;
@@ -263,6 +265,7 @@ class TokenTypeHelpers {
             case [LBoolean(b1), LBoolean(b2)]: b1 == b2;
             case [CommentLine(c1), CommentLine(c2)]: c1 == c2;
             case [CommentMultiLine(c1), CommentMultiLine(c2)]: c1 == c2;
+            case [CommentHash(c1), CommentHash(c2)]: c1 == c2;
             case [Eof, Eof]: true;
             case _: Type.enumEq(a, b);
         }
@@ -275,7 +278,7 @@ class TokenTypeHelpers {
      */
     public static function isComment(a:TokenType):Bool {
         return switch a {
-            case CommentLine(_) | CommentMultiLine(_): true;
+            case CommentLine(_) | CommentMultiLine(_) | CommentHash(_): true;
             case _: false;
         }
     }
@@ -358,6 +361,7 @@ class TokenTypeHelpers {
             case RBracket: ']';
             case CommentLine(content): 'comment';
             case CommentMultiLine(content): 'multiline comment';
+            case CommentHash(content): 'hash comment';
             case Indent: 'indent';
             case Unindent: 'unindent';
             case LineBreak: 'line break';
@@ -793,6 +797,16 @@ class Token {
                         else {
                             advance();
                             makeToken(OpLess, startPos);
+                        }
+
+                    case "#".code:
+                        final nextC = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
+                        if (isIdentifierPart(nextC) || nextC == "-".code) {
+                            return readHashComment();
+                        }
+                        else {
+                            error('Unexpected character: #', true);
+                            null;
                         }
 
                     case _:
@@ -2087,7 +2101,7 @@ class Token {
                 case Identifier(_) | RParen | RBracket:
                     strictExprs.push(Strict);
                     return;
-                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | Indent | Unindent | LineBreak:
                     // Continue
                 case _:
                     strictExprs.push(Loose);
@@ -2116,7 +2130,7 @@ class Token {
             switch token.type {
                 case Identifier(_) | RParen | RBracket:
                     return true;
-                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | Indent | Unindent | LineBreak:
                     // Continue
                 case _:
                     return false;
@@ -2188,7 +2202,7 @@ class Token {
         // "
         // :
         if (c == "{".code || c == "}".code || c == "[".code || c == "]".code ||
-            c == "\"".code || c == ":".code ||
+            c == "\"".code || c == ":".code || c == "#".code ||
             isWhitespace(c)) {
             return null;
         }
@@ -2441,7 +2455,7 @@ class Token {
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
                     final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || nameStart == "#".code || (tagIsClosing && nameStart == ">".code)) {
+                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
                 }
@@ -2458,20 +2472,20 @@ class Token {
                     tagStart = -1;
                 }
             }
-            else if (allowTags && tagStart == -1 && c == "#".code && !escaped) {
-                // #identifier shorthand for <#identifier> tag
+            else if (tagStart == -1 && c == "#".code && !escaped) {
+                // # in unquoted string: handle ## escape or break for hash comment
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
-                if (isIdentifierPart(nextChar)) {
-                    final shorthandStart = buf.length;
+                if (nextChar == "#".code) {
+                    // ## escape: keep both in buffer, interpreter converts ## → #
+                    buf.addChar("#".code);
                     buf.addChar("#".code);
                     advance();
-                    currentColumn++;
-                    while (pos < length && (isIdentifierPart(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == "-".code)) {
-                        buf.addChar(input.uCharCodeAt(pos));
-                        advance();
-                        currentColumn++;
-                    }
-                    attachments.push(Tag(false, shorthandStart, buf.length - shorthandStart));
+                    advance();
+                    currentColumn += 2;
+                }
+                else if (isIdentifierStart(nextChar) || isDigit(nextChar) || nextChar == "-".code) {
+                    // #identifier: break out, let main lexer handle as hash comment
+                    break;
                 }
                 else {
                     buf.addChar(c);
@@ -2678,7 +2692,7 @@ class Token {
                 final checkPos = pos + (tagIsClosing ? 2 : 1);
                 if (checkPos < length) {
                     final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || nameStart == "#".code || (tagIsClosing && nameStart == ">".code)) {
+                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
                         tagStart = buf.length;
                     }
                 }
@@ -2693,27 +2707,6 @@ class Token {
                 if (tagStart != -1) {
                     attachments.push(Tag(tagIsClosing, tagStart, buf.length - tagStart));
                     tagStart = -1;
-                }
-            }
-            else if (allowTags && tagStart == -1 && c == "#".code && !escaped) {
-                // #identifier shorthand for <#identifier> tag
-                final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
-                if (isIdentifierPart(nextChar)) {
-                    final shorthandStart = buf.length;
-                    buf.addChar("#".code);
-                    advance();
-                    currentColumn++;
-                    while (pos < length && (isIdentifierPart(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == "-".code)) {
-                        buf.addChar(input.uCharCodeAt(pos));
-                        advance();
-                        currentColumn++;
-                    }
-                    attachments.push(Tag(false, shorthandStart, buf.length - shorthandStart));
-                }
-                else {
-                    buf.addChar(c);
-                    advance();
-                    currentColumn++;
                 }
             }
             else if (c == "$".code && !escaped) {
@@ -3114,6 +3107,28 @@ class Token {
 
         error("Unterminated multi-line comment", true);
         return null;
+    }
+
+    /**
+     * Reads a hash comment (#identifier...).
+     * Similar to readLineComment but starts with # instead of //.
+     * @return Hash comment token
+     */
+    function readHashComment():Token {
+        final start = makePosition();
+        advance(); // Skip #
+        final contentStart = pos;
+
+        // Only allow tag-syntax chars: identifier chars and dashes
+        while (pos < length) {
+            final c = input.uCharCodeAt(pos);
+            if (isIdentifierPart(c) || c == "-".code) {
+                advance();
+            }
+            else break;
+        }
+
+        return makeToken(CommentHash(input.uSubstr(contentStart, pos - contentStart)), start);
     }
 
     /**

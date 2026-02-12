@@ -2347,8 +2347,11 @@ typedef InterpreterOptions = {
      */
     function evalText(text:NTextStatement, next:()->Void) {
 
-        // First evaluate the content from the given text
-        final content = evaluateString(text.content);
+        // Check for translation via hash comment
+        final str = getTranslatedString(text, text.content);
+
+        // Evaluate the content
+        final content = evaluateString(str);
 
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
@@ -2365,8 +2368,11 @@ typedef InterpreterOptions = {
      */
     function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
 
-        // First evaluate the content from the given dialogue
-        final content = evaluateString(dialogue.content);
+        // Check for translation via hash comment
+        final str = getTranslatedString(dialogue, dialogue.content);
+
+        // Evaluate the content
+        final content = evaluateString(str);
 
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
@@ -2485,7 +2491,8 @@ typedef InterpreterOptions = {
                 final enabled = option.condition == null || evaluateCondition(option.condition);
                 if (option.text != null) {
                     final done = wrapNext(moveNext);
-                    final content = evaluateString(option.text);
+                    final str = getTranslatedString(option, option.text);
+                    final content = evaluateString(str);
                     result.push({
                         text: content.text,
                         tags: content.tags,
@@ -2840,30 +2847,45 @@ typedef InterpreterOptions = {
      * @param str The string literal to evaluate
      * @return Object containing the evaluated text and any tags
      */
-    function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
-        // Check for localization tag and substitute from translations map
+    /**
+     * If translations are available, checks for a hash comment on the node and returns
+     * the translated string literal if found. Otherwise returns the original string.
+     */
+    function getTranslatedString(node:AstNode, str:NStringLiteral):NStringLiteral {
         if (translations != null) {
-            for (part in str.parts) {
-                switch (part.partType) {
-                    case Tag(false, tagContent):
-                        if (tagContent.parts.length > 0) {
-                            switch (tagContent.parts[0].partType) {
-                                case Raw(text):
-                                    if (StringTools.startsWith(text, "#")) {
-                                        final id = text.substr(1);
-                                        final translated = translations.get(id);
-                                        if (translated != null) {
-                                            return evaluateString(translated);
-                                        }
-                                    }
-                                case _:
-                            }
-                        }
-                    case _:
+            final id = findHashCommentId(node, str);
+            if (id != null) {
+                final translated = translations.get(id);
+                if (translated != null) {
+                    return translated;
                 }
             }
         }
+        return str;
+    }
 
+    function findHashCommentId(node:AstNode, str:NStringLiteral):Null<String> {
+        // Check the statement node's comments first, then the string literal's
+        for (target in ([node, str] : Array<AstNode>)) {
+            if (target.trailingComments != null) {
+                for (comment in target.trailingComments) {
+                    if (comment.isHash) {
+                        return StringTools.trim(comment.content);
+                    }
+                }
+            }
+            if (target.leadingComments != null) {
+                for (comment in target.leadingComments) {
+                    if (comment.isHash) {
+                        return StringTools.trim(comment.content);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
         final buf = new loreline.Utf8.Utf8Buf();
         final tags:Array<TextTag> = [];
         var offset = 0;
@@ -2912,6 +2934,7 @@ typedef InterpreterOptions = {
                     final len = text.uLength();
                     if (len > 0) keepWhitespace = true;
                     var prevIsDollar:Bool = false;
+                    var prevIsHash:Bool = false;
                     var escaped:Bool = false;
                     for (i in 0...len) {
                         final c = text.uCharCodeAt(i);
@@ -2930,10 +2953,12 @@ typedef InterpreterOptions = {
                             }
                             escaped = false;
                             prevIsDollar = false;
+                            prevIsHash = false;
                         }
                         else if (c == "\\".code) {
                             escaped = true;
                             prevIsDollar = false;
+                            prevIsHash = false;
                         }
                         else if (c == "$".code) {
                             if (prevIsDollar) {
@@ -2943,10 +2968,30 @@ typedef InterpreterOptions = {
                             else {
                                 prevIsDollar = true;
                             }
+                            prevIsHash = false;
+                        }
+                        else if (c == "#".code) {
+                            if (prevIsHash) {
+                                // ## → single #
+                                buf.addChar(c);
+                                prevIsHash = false;
+                            }
+                            else {
+                                prevIsHash = true;
+                            }
+                            prevIsDollar = false;
                         }
                         else {
+                            if (prevIsHash) {
+                                buf.addChar("#".code);
+                                prevIsHash = false;
+                            }
                             buf.addChar(c);
                         }
+                    }
+                    // Flush trailing single #
+                    if (prevIsHash) {
+                        buf.addChar("#".code);
                     }
                     offset += len;
 
@@ -2981,14 +3026,11 @@ typedef InterpreterOptions = {
 
                 case Tag(closing, expr):
                     final tagValue = evaluateString(expr).text;
-                    // Skip localization tags (starting with #) — they are metadata, not formatting
-                    if (!StringTools.startsWith(tagValue, "#")) {
-                        tags.push({
-                            closing: closing,
-                            value: tagValue,
-                            offset: offset
-                        });
-                    }
+                    tags.push({
+                        closing: closing,
+                        value: tagValue,
+                        offset: offset
+                    });
             }
         }
 

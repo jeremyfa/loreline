@@ -391,15 +391,22 @@ class Comment extends Node {
     public var multiline:Bool;
 
     /**
+     * Whether this is a hash comment (#identifier).
+     */
+    public var isHash:Bool;
+
+    /**
      * Creates a new Comment node.
      * @param pos Position in source where this comment appears
      * @param content The text content of the comment
      * @param multiline Whether this is a multiline comment
+     * @param isHash Whether this is a hash comment
      */
-    public function new(id:NodeId, pos:Position, content:String, multiline:Bool) {
+    public function new(id:NodeId, pos:Position, content:String, multiline:Bool, isHash:Bool = false) {
         super(id, pos);
         this.content = content;
         this.multiline = multiline;
+        this.isHash = isHash;
     }
 
     override function type():String {
@@ -414,6 +421,7 @@ class Comment extends Node {
         final json:Dynamic = super.toJson();
         json.content = content;
         json.multiline = multiline;
+        if (isHash) json.isHash = true;
         return json;
     }
 

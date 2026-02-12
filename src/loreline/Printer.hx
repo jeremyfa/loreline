@@ -296,6 +296,9 @@ class Printer {
                 if (comment.multiline) {
                     writeln('/*${comment.content}*/');
                 }
+                else if (comment.isHash) {
+                    writeln('#${comment.content}');
+                }
                 else {
                     writeln('//${comment.content}');
                 }
@@ -307,6 +310,19 @@ class Printer {
      * Prints any trailing comments attached to a node.
      * @param node Node with potential comments
      */
+    function printHashTrailingComments(node:AstNode) {
+        if (enableComments && node.trailingComments != null) {
+            for (comment in node.trailingComments) {
+                if (comment.isHash) {
+                    if (_lastChar != ' '.code && _beginLine == 0) {
+                        write(' ');
+                    }
+                    writeln('#${comment.content}');
+                }
+            }
+        }
+    }
+
     function printTrailingComments(node:AstNode) {
         if (enableComments && node.trailingComments != null) {
             for (comment in node.trailingComments) {
@@ -315,6 +331,9 @@ class Printer {
                 }
                 if (comment.multiline) {
                     write('/*${comment.content}*/ ');
+                }
+                else if (comment.isHash) {
+                    writeln('#${comment.content}');
                 }
                 else {
                     writeln('//${comment.content}');
@@ -678,23 +697,16 @@ class Printer {
                     printNode(expr);
                     if (!canBeSimple) write('}');
                 case Tag(closing, content):
-                    // Check if tag content starts with # (localization tag shorthand)
-                    final isHashTag = !closing && content.parts.length > 0 && switch (content.parts[0].partType) {
-                        case Raw(text): StringTools.startsWith(text, "#");
-                        case _: false;
-                    };
-                    if (isHashTag) {
-                        printStringLiteral(content);
-                    } else {
-                        write(closing ? '</' : '<');
-                        printStringLiteral(content);
-                        write('>');
-                    }
+                    write(closing ? '</' : '<');
+                    printStringLiteral(content);
+                    write('>');
             }
         }
         if (surroundWithQuotes) {
             write('"');
             printTrailingComments(str);
+        } else {
+            printHashTrailingComments(str);
         }
     }
 

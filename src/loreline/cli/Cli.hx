@@ -4,6 +4,7 @@ import haxe.CallStack.StackItem;
 import haxe.CallStack;
 import haxe.Json;
 import haxe.io.Path;
+import loreline.AstUtils;
 import loreline.Error;
 import loreline.Interpreter;
 import loreline.Lens;
@@ -293,9 +294,25 @@ class Cli {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
                 final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                var options:InterpreterOptions = null;
+                if (item.translation != null) {
+                    final lang:String = item.translation;
+                    final basePath = file.substring(0, file.length - 4); // strip .lor
+                    final translationPath = basePath + "." + lang + ".lor";
+                    var translationContent = File.getContent(translationPath);
+                    if (crlf) {
+                        translationContent = translationContent.replace("\r\n", "\n").replace("\n", "\r\n");
+                    } else {
+                        translationContent = translationContent.replace("\r\n", "\n");
+                    }
+                    final translationScript = Loreline.parse(translationContent, translationPath, handleFile);
+                    if (translationScript != null) {
+                        options = ({translations: AstUtils.extractTranslations(translationScript)} : InterpreterOptions);
+                    }
+                }
                 final testCase = new InterpreterTestCase(
                     file, content, file,
-                    item.beat, item.choices, null,
+                    item.beat, item.choices, options,
                     saveAtChoice, restoreInput, item.expected
                 );
                 final testRunner = new TestRunner(handleFile);
@@ -423,9 +440,25 @@ class Cli {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
                 final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                var rtOptions:InterpreterOptions = null;
+                if (item.translation != null) {
+                    final lang:String = item.translation;
+                    final basePath = file.substring(0, file.length - 4);
+                    final translationPath = basePath + "." + lang + ".lor";
+                    var translationContent = File.getContent(translationPath);
+                    if (crlf) {
+                        translationContent = translationContent.replace("\r\n", "\n").replace("\n", "\r\n");
+                    } else {
+                        translationContent = translationContent.replace("\r\n", "\n");
+                    }
+                    final translationScript = Loreline.parse(translationContent, translationPath, handleFile);
+                    if (translationScript != null) {
+                        rtOptions = ({translations: AstUtils.extractTranslations(translationScript)} : InterpreterOptions);
+                    }
+                }
                 final rtTestCase = new InterpreterTestCase(
                     file, print1, null,
-                    item.beat, item.choices, null,
+                    item.beat, item.choices, rtOptions,
                     saveAtChoice, restoreInput, item.expected
                 );
                 final rtTestRunner = new TestRunner(handleFile);

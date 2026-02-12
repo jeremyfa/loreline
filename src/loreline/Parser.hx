@@ -151,7 +151,7 @@ class ParserContext {
         var i = current + 1;
         while (i < tokens.length) {
             switch (tokens[i].type) {
-                case CommentLine(_) | CommentMultiLine(_) | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | LineBreak:
                     i++;
                 case _:
                     return tokens[i];
@@ -180,6 +180,9 @@ class ParserContext {
                     case CommentMultiLine(content):
                         if (pendingComments == null) pendingComments = [];
                         pendingComments.push(new Comment(nextNodeId(NODE), currentPos(), content, true));
+                    case CommentHash(content):
+                        if (pendingComments == null) pendingComments = [];
+                        pendingComments.push(new Comment(nextNodeId(NODE), currentPos(), content, false, true));
                     case LineBreak:
                         lastLineBreak = currentPos();
                         lineBreakAfterToken = true;
@@ -239,7 +242,7 @@ class ParserContext {
         var n = current - 1;
         while (n >= 0) {
             switch tokens[n].type {
-                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | Indent | Unindent | LineBreak:
                     // Skip
                 case _:
                     return tokens[n];
@@ -257,7 +260,7 @@ class ParserContext {
         var n = current;
         while (n < tokens.length) {
             switch tokens[n].type {
-                case CommentLine(_) | CommentMultiLine(_) | Indent | Unindent | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | Indent | Unindent | LineBreak:
                     // Skip
                 case _:
                     return tokens[n];
@@ -275,7 +278,7 @@ class ParserContext {
         var n = current;
         while (n < tokens.length) {
             switch tokens[n].type {
-                case CommentLine(_) | CommentMultiLine(_) | LineBreak:
+                case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | LineBreak:
                     // Skip
                 case _:
                     return tokens[n];
@@ -336,7 +339,7 @@ class ParserContext {
      */
     function isComment(type:TokenType):Bool {
         return switch (type) {
-            case CommentLine(_) | CommentMultiLine(_): true;
+            case CommentLine(_) | CommentMultiLine(_) | CommentHash(_): true;
             case _: false;
         }
     }
@@ -358,9 +361,11 @@ class ParserContext {
                     switch(tokens[current].type) {
                         case CommentLine(content): content;
                         case CommentMultiLine(content): content;
+                        case CommentHash(content): content;
                         case _: "";
                     },
-                    tokens[current].type.match(CommentMultiLine(_))
+                    tokens[current].type.match(CommentMultiLine(_)),
+                    tokens[current].type.match(CommentHash(_))
                 ));
             }
             advance();
@@ -1624,10 +1629,9 @@ class ParserContext {
         pos.length = length;
 
         // Calculate tag content boundaries
-        final isHashtag = content.uCharCodeAt(start) == "#".code;
-        final offsetStart = isHashtag ? 0 : (closing ? 2 : 1);
+        final offsetStart = closing ? 2 : 1;
         final innerStart = start + offsetStart; // Skip < and optional /
-        final innerLength = isHashtag ? length : (length - (closing ? 3 : 2)); // Account for < > and optional /
+        final innerLength = length - (closing ? 3 : 2); // Account for < > and optional /
         final innerEnd = innerStart + innerLength;
         final tagId = nextNodeId(NODE);
 

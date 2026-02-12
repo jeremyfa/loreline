@@ -3,13 +3,17 @@ character barista
   name: Alex
 
 beat Menu
-  The cafe smells wonderful. #intro
-  barista: Welcome! What can I get you? #welcome
+  "The cafe smells wonderful." #intro
+  barista: "Welcome! What can I get you?" #welcome
   choice
     Espresso #opt-espresso
       barista: One espresso! #espresso-reply
     Latte #opt-latte
       barista: One latte! #latte-reply
+
+beat Escape
+  This has a literal ##hashtag in text.
+  barista: "Use \#escaped for literal hash."
 
 /*
 <test>
@@ -34,5 +38,34 @@ beat Menu
     + Latte
 
     Alex: One latte!
+
+- beat: Escape
+  expected: |
+    ~ This has a literal #hashtag in text.
+
+    Alex: Use #escaped for literal hash.
+- choices: [0]
+  translation: fr
+  expected: |
+    ~ Le café sent très bon.
+
+    Alex: Bienvenue ! Qu'est-ce que je te sers ?
+
+    + Expresso
+    + Latté
+
+    Alex: Un expresso !
+
+- choices: [1]
+  translation: fr
+  expected: |
+    ~ Le café sent très bon.
+
+    Alex: Bienvenue ! Qu'est-ce que je te sers ?
+
+    + Expresso
+    + Latté
+
+    Alex: Un latté
 </test>
 */
