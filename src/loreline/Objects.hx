@@ -124,6 +124,18 @@ class Objects {
 
     }
 
+    public static function getStringHelper(interpreter:Interpreter, name:String):Any {
+        return @:privateAccess interpreter.stringHelpers.get(name);
+    }
+
+    public static function getArrayHelper(interpreter:Interpreter, name:String):Any {
+        return @:privateAccess interpreter.arrayHelpers.get(name);
+    }
+
+    public static function getMapHelper(interpreter:Interpreter, name:String):Any {
+        return @:privateAccess interpreter.mapHelpers.get(name);
+    }
+
     public static function createFields(?interpreter:Interpreter, ?type:String, ?node:Node):Any {
 
         @:privateAccess

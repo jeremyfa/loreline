@@ -1,0 +1,240 @@
+
+state
+  val: 0
+  text: ""
+  items: []
+  result: false
+
+beat Start
+  // String method-style calls
+  text = "hello"
+  text = text.upper()
+  upper $text
+  text = "HELLO"
+  text = text.lower()
+  lower $text
+  text = "hello world"
+  result = text.has("world")
+  has_yes $result
+  result = text.has("xyz")
+  has_no $result
+  text = "hello world"
+  text = text.replace("world", "there")
+  replaced $text
+  text = "  hello  "
+  text = text.trim()
+  trimmed $text
+  text = "hello"
+  val = text.index("ll")
+  index_found $val
+  val = text.index("xyz")
+  index_missing $val
+  text = "ABCDEF"
+  text = text.sub(0, 3)
+  sub_start $text
+  text = "ABCDEF"
+  text = text.sub(2, 3)
+  sub_mid $text
+  text = "hello world"
+  result = text.starts("hello")
+  starts_yes $result
+  result = text.starts("world")
+  starts_no $result
+  result = text.ends("world")
+  ends_yes $result
+  result = text.ends("hello")
+  ends_no $result
+  text = "ab"
+  text = text.repeat(3)
+  repeat $text
+
+  -> SplitTest
+
+beat SplitTest
+  text = "a,b,c"
+  items = text.split(",")
+  text = items.join("-")
+  split_join $text
+
+  -> ArrayTests
+
+beat ArrayTests
+  items = [10, 20, 30]
+  items.add(40)
+  val = length(items)
+  after_add $val
+
+  val = items.pop()
+  popped $val
+
+  items.prepend(5)
+  val = items[0]
+  prepended $val
+
+  val = items.shift()
+  shifted $val
+
+  result = items.has(20)
+  has_20 $result
+  result = items.has(99)
+  has_99 $result
+
+  val = items.index(30)
+  index_of_30 $val
+
+  result = items.remove(20)
+  remove_20 $result
+
+  items = [3, 1, 2]
+  items.sort()
+  text = items.join(",")
+  sorted $text
+
+  items.reverse()
+  text = items.join(",")
+  reversed $text
+
+  seed_random(42)
+  items = [10, 20, 30]
+  val = items.pick()
+  picked $val
+
+  -> CopyTests
+
+beat CopyTests
+  items = [3, 1, 2]
+  val = items.copy()
+  items.sort()
+  text = items.join(",")
+  sorted_original $text
+  text = val.join(",")
+  unsorted_copy $text
+
+  -> ShuffleTest
+
+beat ShuffleTest
+  seed_random(42)
+  items = [1, 2, 3, 4, 5]
+  items.shuffle()
+  text = items.join(",")
+  shuffled $text
+
+  -> MapTests
+
+beat MapTests
+  state
+    mymap: {}
+
+  mymap.set("name", "Alice")
+  text = mymap.get("name")
+  map_get $text
+
+  result = mymap.has("name")
+  map_has_name $result
+  result = mymap.has("age")
+  map_has_age $result
+
+  mymap.set("age", 30)
+  items = mymap.keys()
+  items = array_sort(items)
+  text = array_join(items, ",")
+  map_keys $text
+
+  result = mymap.remove("age")
+  map_removed $result
+
+  -> MapCopyTest
+
+beat MapCopyTest
+  state
+    original: {}
+
+  map_set(original, "a", 1)
+  map_set(original, "b", 2)
+  state
+    backup: {}
+  backup = original.copy()
+  map_set(original, "a", 99)
+  val = map_get(backup, "a")
+  copy_unchanged $val
+  val = map_get(original, "a")
+  original_changed $val
+
+/*
+<test>
+- expected: |
+    ~ upper HELLO
+
+    ~ lower hello
+
+    ~ has_yes true
+
+    ~ has_no false
+
+    ~ replaced hello there
+
+    ~ trimmed hello
+
+    ~ index_found 2
+
+    ~ index_missing -1
+
+    ~ sub_start ABC
+
+    ~ sub_mid CDE
+
+    ~ starts_yes true
+
+    ~ starts_no false
+
+    ~ ends_yes true
+
+    ~ ends_no false
+
+    ~ repeat ababab
+
+    ~ split_join a-b-c
+
+    ~ after_add 4
+
+    ~ popped 40
+
+    ~ prepended 5
+
+    ~ shifted 5
+
+    ~ has_20 true
+
+    ~ has_99 false
+
+    ~ index_of_30 2
+
+    ~ remove_20 true
+
+    ~ sorted 1,2,3
+
+    ~ reversed 3,2,1
+
+    ~ picked 10
+
+    ~ sorted_original 1,2,3
+
+    ~ unsorted_copy 3,1,2
+
+    ~ shuffled 4,3,5,1,2
+
+    ~ map_get Alice
+
+    ~ map_has_name true
+
+    ~ map_has_age false
+
+    ~ map_keys age,name
+
+    ~ map_removed true
+
+    ~ copy_unchanged 1
+
+    ~ original_changed 99
+</test>
+*/

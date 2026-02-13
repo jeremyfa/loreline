@@ -472,6 +472,10 @@ typedef InterpreterOptions = {
      */
     final topLevelFunctions:Map<String, Any> = new Map();
 
+    final stringHelpers:Map<String, Any> = new Map();
+    final arrayHelpers:Map<String, Any> = new Map();
+    final mapHelpers:Map<String, Any> = new Map();
+
     /**
      * The current execution stack, which consists of scopes added on top of one another.
      * Each scope can have its own local beats and temporary states.
@@ -1849,6 +1853,15 @@ typedef InterpreterOptions = {
             }
         }
 
+        for (key => func in topLevelFunctions) {
+            if (StringTools.startsWith(key, "string_"))
+                stringHelpers.set(key.substr(7), func);
+            else if (StringTools.startsWith(key, "array_"))
+                arrayHelpers.set(key.substr(6), func);
+            else if (StringTools.startsWith(key, "map_"))
+                mapHelpers.set(key.substr(4), func);
+        }
+
     }
 
     function initializeTopLevelFunction(func:NFunctionDecl) {
@@ -3202,10 +3215,20 @@ typedef InterpreterOptions = {
             else {
                 // Handle method calls (obj.method())
                 final obj = evaluateExpression(access.target);
-                final method = Reflect.getProperty(obj, access.name);
-                if (Reflect.isFunction(method)) {
+                var helper:Any = null;
+
+                if (obj is String) {
+                    helper = Objects.getStringHelper(this, access.name);
+                } else if (Arrays.isArray(obj)) {
+                    helper = Objects.getArrayHelper(this, access.name);
+                } else if (Objects.isFields(obj)) {
+                    helper = Objects.getMapHelper(this, access.name);
+                }
+
+                if (helper != null && Reflect.isFunction(helper)) {
                     final args = [for (arg in call.args) evaluateExpression(arg)];
-                    final result:Any = Reflect.callMethod(obj, method, args);
+                    args.insert(0, obj);
+                    final result:Any = Reflect.callMethod(null, helper, args);
                     if (result != null && result is Async) {
                         if (next == null) {
                             throw new RuntimeError(
@@ -3222,6 +3245,28 @@ typedef InterpreterOptions = {
                         next();
                     }
                     return result;
+                } else if (helper == null && !((obj is String) || Arrays.isArray(obj) || Objects.isFields(obj))) {
+                    final method = Reflect.getProperty(obj, access.name);
+                    if (Reflect.isFunction(method)) {
+                        final args = [for (arg in call.args) evaluateExpression(arg)];
+                        final result:Any = Reflect.callMethod(obj, method, args);
+                        if (result != null && result is Async) {
+                            if (next == null) {
+                                throw new RuntimeError(
+                                    'Cannot call async function in expression',
+                                    call.pos
+                                );
+                            }
+                            else {
+                                final asyncResult:Async = cast result;
+                                asyncResult.func(next);
+                            }
+                        }
+                        else if (next != null) {
+                            next();
+                        }
+                        return result;
+                    }
                 }
             }
         }

@@ -501,6 +501,11 @@ The sentence has $length(words) words.
 
 if string_starts(name, "Sir")
   You bow before the knight.
+
+// Method-style (drop the string_ prefix):
+title = name.upper()
+if message.has("help")
+  Someone needs assistance!
 ```
 
 #### Text
@@ -528,11 +533,12 @@ Array functions can also be called as methods on arrays (e.g. `myArray.add(value
 - **`array_remove(array, value)`** — Finds and removes the first occurrence of a value. Returns `true` if found.
 - **`array_index(array, value)`** — Finds the position of a value (starting from `0`), or `-1` if not found.
 - **`array_has(array, value)`** — Checks if an array contains a given value.
-- **`array_sort(array)`** — Returns a new sorted copy without changing the original.
-- **`array_reverse(array)`** — Returns a new reversed copy without changing the original.
+- **`array_sort(array)`** — Sorts the array in place and returns it.
+- **`array_reverse(array)`** — Reverses the array in place and returns it.
 - **`array_join(array, separator)`** — Combines all elements into a string. `array_join(["a", "b", "c"], ", ")` returns `"a, b, c"`.
 - **`array_pick(array)`** — Returns a random element. Affected by `seed_random`.
-- **`array_shuffle(array)`** — Returns a new randomly reordered copy. Affected by `seed_random`.
+- **`array_shuffle(array)`** — Shuffles the array in place and returns it. Affected by `seed_random`.
+- **`array_copy(array)`** — Returns a shallow copy of the array.
 
 ```lor
 items = ["sword", "shield"]
@@ -543,6 +549,11 @@ if array_has(inventory, "golden key")
 
 greetings = ["Hello!", "Hey there!", "Welcome!"]
 barista: $array_pick(greetings)
+
+// Method-style:
+items.sort()
+items.reverse()
+backup = items.copy()
 ```
 
 #### Map
@@ -554,11 +565,17 @@ Map functions can also be called as methods on maps (e.g. `myMap.has("key")`).
 - **`map_get(map, key)`** — Gets the value for a key. Returns `null` if the key doesn't exist.
 - **`map_set(map, key, value)`** — Stores a value under a key.
 - **`map_remove(map, key)`** — Removes a key and its value. Returns `true` if the key existed.
+- **`map_copy(map)`** — Returns a shallow copy of the map.
 
 ```lor
 map_set(inventory_counts, "arrows", 20)
 count = map_get(inventory_counts, "arrows")
 You have $count arrows left.
+
+// Method-style:
+inventory_counts.set("arrows", 20)
+if inventory_counts.has("arrows")
+  count = inventory_counts.get("arrows")
 ```
 
 #### Game state

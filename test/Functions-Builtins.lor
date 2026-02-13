@@ -191,6 +191,27 @@ beat TextHelperTests
   text = plural(1, "is", "are")
   plural_verb $text
 
+  -> CopyTests
+
+beat CopyTests
+  items = [3, 1, 2]
+  val = array_copy(items)
+  items = array_sort(items)
+  text = array_join(items, ",")
+  sorted_orig $text
+  text = array_join(val, ",")
+  copy_unsorted $text
+
+  state
+    src: {}
+  map_set(src, "x", 10)
+  state
+    dst: {}
+  dst = map_copy(src)
+  map_set(src, "x", 99)
+  val = map_get(dst, "x")
+  map_copy_val $val
+
   -> SplitTest
 
 beat SplitTest
@@ -316,6 +337,12 @@ beat SplitTest
     ~ plural_zero items
 
     ~ plural_verb is
+
+    ~ sorted_orig 1,2,3
+
+    ~ copy_unsorted 3,1,2
+
+    ~ map_copy_val 10
 
     ~ split_join a-b-c
 </test>

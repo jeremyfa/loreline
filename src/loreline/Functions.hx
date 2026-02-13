@@ -77,12 +77,14 @@ class Functions {
         target.set("array_join", this.array_join);
         target.set("array_pick", this.array_pick);
         target.set("array_shuffle", this.array_shuffle);
+        target.set("array_copy", this.array_copy);
         // Map
         target.set("map_keys", this.map_keys);
         target.set("map_has", this.map_has);
         target.set("map_get", this.map_get);
         target.set("map_set", this.map_set);
         target.set("map_remove", this.map_remove);
+        target.set("map_copy", this.map_copy);
         // Game state
         target.set("current_beat", this.current_beat);
         target.set("has_beat", this.has_beat);
@@ -565,8 +567,7 @@ class Functions {
      */
     public function array_pop(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            return arr.pop();
+            return Arrays.arrayPop(array);
         }
         return null;
     }
@@ -582,8 +583,7 @@ class Functions {
      */
     public function array_prepend(array:Any, value:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            arr.insert(0, value);
+            Arrays.arrayInsert(array, 0, value);
         }
         return null;
     }
@@ -599,8 +599,7 @@ class Functions {
      */
     public function array_shift(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            return arr.shift();
+            return Arrays.arrayShift(array);
         }
         return null;
     }
@@ -616,10 +615,10 @@ class Functions {
      */
     public function array_remove(array:Any, value:Any):Bool {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            for (i in 0...arr.length) {
-                if (arr[i] == value) {
-                    arr.splice(i, 1);
+            final len = Arrays.arrayLength(array);
+            for (i in 0...len) {
+                if (Arrays.arrayGet(array, i) == value) {
+                    Arrays.arrayRemoveAt(array, i);
                     return true;
                 }
             }
@@ -637,9 +636,9 @@ class Functions {
      */
     public function array_index(array:Any, value:Any):Int {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            for (i in 0...arr.length) {
-                if (arr[i] == value) {
+            final len = Arrays.arrayLength(array);
+            for (i in 0...len) {
+                if (Arrays.arrayGet(array, i) == value) {
                     return i;
                 }
             }
@@ -659,9 +658,9 @@ class Functions {
      */
     public function array_has(array:Any, value:Any):Bool {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            for (i in 0...arr.length) {
-                if (arr[i] == value) {
+            final len = Arrays.arrayLength(array);
+            for (i in 0...len) {
+                if (Arrays.arrayGet(array, i) == value) {
                     return true;
                 }
             }
@@ -670,45 +669,39 @@ class Functions {
     }
 
     /**
-     * Returns a new sorted copy of the array without changing the original.
+     * Sorts the array in place and returns it.
      * Numbers are sorted from smallest to largest; other values are sorted
      * alphabetically.
      *
      * ```lor
      * scores = [30, 10, 20]
-     * ranked = array_sort(scores)
-     * // ranked is [10, 20, 30], scores is still [30, 10, 20]
+     * array_sort(scores)
+     * // scores is now [10, 20, 30]
      * ```
      */
     public function array_sort(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            final copy = arr.copy();
-            copy.sort((a, b) -> {
+            Arrays.arraySort(array, (a, b) -> {
                 if (a is Float && b is Float) return (a : Float) < (b : Float) ? -1 : ((a : Float) > (b : Float) ? 1 : 0);
                 if (a is Int && b is Int) return (a : Int) < (b : Int) ? -1 : ((a : Int) > (b : Int) ? 1 : 0);
                 return Std.string(a) < Std.string(b) ? -1 : (Std.string(a) > Std.string(b) ? 1 : 0);
             });
-            return copy;
         }
         return array;
     }
 
     /**
-     * Returns a new copy of the array in reverse order without changing the original.
+     * Reverses the array in place and returns it.
      *
      * ```lor
      * steps = ["first", "second", "third"]
-     * backwards = array_reverse(steps)
-     * // backwards is ["third", "second", "first"]
+     * array_reverse(steps)
+     * // steps is now ["third", "second", "first"]
      * ```
      */
     public function array_reverse(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            final copy = arr.copy();
-            copy.reverse();
-            return copy;
+            Arrays.arrayReverse(array);
         }
         return array;
     }
@@ -726,8 +719,7 @@ class Functions {
      */
     public function array_join(array:Any, sep:String):String {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            return arr.join(sep);
+            return Arrays.arrayJoin(array, sep);
         }
         return "";
     }
@@ -752,29 +744,43 @@ class Functions {
     }
 
     /**
-     * Returns a new randomly reordered copy of the array without changing the original.
+     * Shuffles the array in place and returns it.
      * Affected by `seed_random`.
      *
      * ```lor
      * deck = ["Ace", "King", "Queen", "Jack"]
-     * deck = array_shuffle(deck)
+     * array_shuffle(deck)
      * You draw the $deck[0].
      * ```
      */
     public function array_shuffle(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            final arr:Array<Any> = cast array;
-            final copy = arr.copy();
             // Fisher-Yates shuffle
-            var i = copy.length - 1;
+            var i = Arrays.arrayLength(array) - 1;
             while (i > 0) {
                 final j = Math.floor(rng() * (i + 1));
-                final tmp = copy[i];
-                copy[i] = copy[j];
-                copy[j] = tmp;
+                final tmp = Arrays.arrayGet(array, i);
+                Arrays.arraySet(array, i, Arrays.arrayGet(array, j));
+                Arrays.arraySet(array, j, tmp);
                 i--;
             }
-            return copy;
+        }
+        return array;
+    }
+
+    /**
+     * Returns a shallow copy of the array.
+     *
+     * ```lor
+     * original = [1, 2, 3]
+     * backup = array_copy(original)
+     * array_sort(original)
+     * // original is now [1, 2, 3] sorted, backup is unchanged
+     * ```
+     */
+    public function array_copy(array:Any):Dynamic {
+        if (Arrays.isArray(array)) {
+            return Arrays.arrayCopy(array);
         }
         return array;
     }
@@ -847,6 +853,26 @@ class Functions {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns a shallow copy of a map.
+     *
+     * ```lor
+     * state
+     *   stats: { strength: 10, agility: 8 }
+     * backup = map_copy(stats)
+     * map_set(stats, "strength", 20)
+     * // stats.strength is 20, backup.strength is still 10
+     * ```
+     */
+    public function map_copy(map:Any):Dynamic {
+        final keys = Objects.getFields(interpreter, map);
+        final copy = Objects.createFields(interpreter);
+        for (key in keys) {
+            Objects.setField(interpreter, copy, key, Objects.getField(interpreter, map, key));
+        }
+        return copy;
     }
 
     // ── Game State ────────────────────────────────────────────────────
