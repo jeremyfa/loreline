@@ -487,6 +487,10 @@ String functions can also be called as methods on strings (e.g. `myString.upper(
 - **`string_split(text, separator)`** — Splits a string into an array. `string_split("a,b,c", ",")` returns `["a", "b", "c"]`.
 - **`string_trim(text)`** — Removes whitespace from the beginning and end. `string_trim("  hello  ")` returns `"hello"`.
 - **`string_index(text, needle)`** — Finds where a piece of text first appears (starting from `0`), or `-1` if not found. `string_index("hello", "ll")` returns `2`.
+- **`string_sub(text, start, length)`** — Extracts a portion of a string. `string_sub("ABCDEF", 0, 3)` returns `"ABC"`.
+- **`string_starts(text, prefix)`** — Checks if a string begins with the given prefix. `string_starts("hello world", "hello")` returns `true`.
+- **`string_ends(text, suffix)`** — Checks if a string ends with the given suffix. `string_ends("hello world", "world")` returns `true`.
+- **`string_repeat(text, count)`** — Repeats the text the given number of times. `string_repeat("ab", 3)` returns `"ababab"`.
 
 ```lor
 if string_has(message, "help")
@@ -494,6 +498,23 @@ if string_has(message, "help")
 
 words = string_split(sentence, " ")
 The sentence has $length(words) words.
+
+if string_starts(name, "Sir")
+  You bow before the knight.
+```
+
+#### Text
+
+- **`plural(count, singular, plural)`** — Returns `singular` when count is 1, `plural` otherwise. Works for both noun plurals and verb conjugation in any language.
+
+```lor
+items = 3
+You found $items $plural(items, "coin", "coins").
+// "You found 3 coins."
+
+boxes = 1
+There $plural(boxes, "is", "are") $boxes $plural(boxes, "box", "boxes") here.
+// "There is 1 box here."
 ```
 
 #### Array

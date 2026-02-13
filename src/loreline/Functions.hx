@@ -58,6 +58,12 @@ class Functions {
         target.set("string_split", this.string_split);
         target.set("string_trim", this.string_trim);
         target.set("string_index", this.string_index);
+        target.set("string_sub", this.string_sub);
+        target.set("string_starts", this.string_starts);
+        target.set("string_ends", this.string_ends);
+        target.set("string_repeat", this.string_repeat);
+        // Text
+        target.set("plural", this.plural);
         // Array
         target.set("array_add", this.array_add);
         target.set("array_pop", this.array_pop);
@@ -441,6 +447,95 @@ class Functions {
      */
     public function string_index(text:String, needle:String):Int {
         return text.indexOf(needle);
+    }
+
+    /**
+     * Extracts a portion of a string starting at position `start` (0-based)
+     * for `length` characters.
+     *
+     * `string_sub("ABCDEF", 0, 3)` returns `"ABC"`.
+     * `string_sub("ABCDEF", 2, 3)` returns `"CDE"`.
+     *
+     * ```lor
+     * code = "ABCDEF"
+     * prefix = string_sub(code, 0, 3)
+     * // prefix is "ABC"
+     * ```
+     */
+    public function string_sub(text:String, start:Any, len:Any):String {
+        return text.substr(Std.int(start), Std.int(len));
+    }
+
+    /**
+     * Checks if a string begins with the given prefix.
+     *
+     * `string_starts("hello world", "hello")` returns `true`.
+     *
+     * ```lor
+     * if string_starts(name, "Sir")
+     *   You bow before the knight.
+     * ```
+     */
+    public function string_starts(text:String, prefix:String):Bool {
+        return StringTools.startsWith(text, prefix);
+    }
+
+    /**
+     * Checks if a string ends with the given suffix.
+     *
+     * `string_ends("hello world", "world")` returns `true`.
+     *
+     * ```lor
+     * if string_ends(reply, "?")
+     *   It sounds like a question.
+     * ```
+     */
+    public function string_ends(text:String, suffix:String):Bool {
+        return StringTools.endsWith(text, suffix);
+    }
+
+    /**
+     * Repeats the text the given number of times.
+     *
+     * `string_repeat("ab", 3)` returns `"ababab"`.
+     *
+     * ```lor
+     * divider = string_repeat("-", 20)
+     * // divider is "--------------------"
+     * ```
+     */
+    public function string_repeat(text:String, count:Int):String {
+        var result = new StringBuf();
+        var i = 0;
+        while (i < count) {
+            result.add(text);
+            i++;
+        }
+        return result.toString();
+    }
+
+    // ── Text ──────────────────────────────────────────────────────────
+
+    /**
+     * Returns `singular` when count is 1, `plural_form` otherwise.
+     * Useful for both noun plurals and verb conjugation. The writer provides
+     * both forms, so this works in any language.
+     *
+     * ```lor
+     * items = 3
+     * You found $items $plural(items, "coin", "coins").
+     * // "You found 3 coins."
+     *
+     * boxes = 1
+     * There $plural(boxes, "is", "are") $boxes $plural(boxes, "box", "boxes") here.
+     * // "There is 1 box here."
+     * ```
+     */
+    public function plural(count:Dynamic, singular:String, plural_form:String):String {
+        var n:Float = 0;
+        if (count is Int) n = (count : Int) * 1.0;
+        else if (count is Float) n = (count : Float);
+        return n == 1 ? singular : plural_form;
     }
 
     // ── Array ─────────────────────────────────────────────────────────

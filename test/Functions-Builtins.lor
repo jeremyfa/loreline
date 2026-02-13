@@ -154,6 +154,43 @@ beat NestedBeatTest
   result = has_beat("Inner")
   has_inner $result
 
+  -> TextHelperTests
+
+beat TextHelperTests
+  // string_sub
+  text = string_sub("ABCDEF", 0, 3)
+  sub_start $text
+  text = string_sub("ABCDEF", 2, 3)
+  sub_mid $text
+
+  // string_starts / string_ends
+  result = string_starts("hello world", "hello")
+  starts_yes $result
+  result = string_starts("hello world", "world")
+  starts_no $result
+  result = string_ends("hello world", "world")
+  ends_yes $result
+  result = string_ends("hello world", "hello")
+  ends_no $result
+
+  // string_repeat
+  text = string_repeat("ab", 3)
+  repeat_ab $text
+  text = string_repeat("-", 5)
+  repeat_dash $text
+  text = string_repeat("x", 0)
+  repeat_zero $text
+
+  // plural
+  text = plural(1, "coin", "coins")
+  plural_one $text
+  text = plural(3, "coin", "coins")
+  plural_many $text
+  text = plural(0, "item", "items")
+  plural_zero $text
+  text = plural(1, "is", "are")
+  plural_verb $text
+
   -> SplitTest
 
 beat SplitTest
@@ -253,6 +290,32 @@ beat SplitTest
     ~ has_nonexistent false
 
     ~ has_inner true
+
+    ~ sub_start ABC
+
+    ~ sub_mid CDE
+
+    ~ starts_yes true
+
+    ~ starts_no false
+
+    ~ ends_yes true
+
+    ~ ends_no false
+
+    ~ repeat_ab ababab
+
+    ~ repeat_dash -----
+
+    ~ repeat_zero
+
+    ~ plural_one coin
+
+    ~ plural_many coins
+
+    ~ plural_zero items
+
+    ~ plural_verb is
 
     ~ split_join a-b-c
 </test>
