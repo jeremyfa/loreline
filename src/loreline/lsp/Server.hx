@@ -1997,14 +1997,17 @@ class Server {
             final parent = lens.getParentNode(access);
 
             if (parent is NCall) {
-                return makeHover(hoverTitle('Function', access.name + '()'), hoverDescriptionForNode(access), content, access);
+                final call:NCall = cast parent;
+                if (call.target == access) {
+                    return makeHover(hoverTitle('Function', access.name + '()'), hoverDescriptionForNode(access), content, access);
+                }
             }
-            else if (parent is NArrayAccess) {
+
+            if (parent is NArrayAccess) {
                 return makeHover(hoverTitle('Array access', access.name + '[]'), hoverDescriptionForNode(access), content, access);
             }
-            else {
-                return makeHover(hoverTitle('Access', access.name), hoverDescriptionForNode(access), content, access);
-            }
+
+            return makeHover(hoverTitle('Access', access.name), hoverDescriptionForNode(access), content, access);
         }
 
         return null;

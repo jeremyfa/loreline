@@ -417,26 +417,139 @@ barista: Your order will be ready in $random(2, 5) minutes!
 
 ### Built-in functions
 
-Loreline comes with a few built-in functions:
+Loreline comes with a collection of built-in functions organized by category.
 
-- **`chance(n)`** - Returns `true` with a 1-in-n probability. For example, `chance(3)` has a 1-in-3 chance of being true:
+#### Math
+
+- **`floor(n)`** — Rounds a number down to the nearest whole number. `floor(3.7)` returns `3`.
+- **`ceil(n)`** — Rounds a number up to the nearest whole number. `ceil(3.2)` returns `4`.
+- **`round(n)`** — Rounds a number to the nearest whole number. `round(3.5)` returns `4`.
+- **`abs(n)`** — Returns the positive version of a number. `abs(-5)` returns `5`.
+- **`min(a, b)`** — Returns the smaller of two values. `min(3, 7)` returns `3`.
+- **`max(a, b)`** — Returns the larger of two values. `max(3, 7)` returns `7`.
+- **`clamp(value, low, high)`** — Keeps a value within a range. `clamp(10, 0, 5)` returns `5`.
+- **`pow(base, exp)`** — Raises a number to a power. `pow(2, 3)` returns `8`.
 
 ```lor
-if chance(2)
-  barista: <cheerful> The coffee beans are extra fresh today!
-else
-  barista: <calm> Same great coffee as always.
+health = clamp(health + healing, 0, max_health)
+damage = min(attack_power, enemy_health)
 ```
 
-- **`shuffle(...)`** - Randomly picks one of the provided values each time it's evaluated:
+#### Random
+
+- **`random(min, max)`** — Returns a random whole number between `min` and `max` (inclusive).
+- **`chance(n)`** — Returns `true` with a 1-in-n probability. `chance(3)` has roughly a 33% chance of being true.
+- **`seed_random(seed)`** — Sets the random seed for reproducible results. After calling this, all random functions produce the same sequence every time.
+- **`random_float(min, max)`** — Returns a random decimal number from `min` up to (but not including) `max`.
 
 ```lor
-barista: $shuffle("Good morning", "Hey there", "Welcome back")! What can I get you?
+roll = random(1, 6)
+You rolled a $roll!
+
+if chance(4)
+  You find a rare gem on the ground!
 ```
 
-- **`random(min, max)`** - Returns a random integer between `min` and `max` (inclusive).
+#### Timing
 
-- **`wait(seconds)`** - Pauses execution for the given number of seconds (useful in game integrations).
+- **`wait(seconds)`** — Pauses the script for the given number of seconds before continuing.
+
+```lor
+The ground begins to shake...
+wait(2)
+A massive boulder crashes through the wall!
+```
+
+#### Type conversion
+
+- **`float(value)`** — Converts a value to a number. Strings like `"3.14"` are parsed. Returns `0` if conversion fails.
+- **`string(value)`** — Converts any value to text. `string(42)` returns `"42"`.
+- **`bool(value)`** — Converts a value to `true` or `false`. Zero, empty strings, empty arrays, and `null` are false; everything else is true.
+
+#### Generic
+
+- **`length(value)`** — Returns the number of characters in a string, or the number of elements in an array.
+
+```lor
+name = "Alice"
+items = [1, 2, 3]
+Your name has $length(name) letters and you carry $length(items) items.
+```
+
+#### String
+
+String functions can also be called as methods on strings (e.g. `myString.upper()`).
+
+- **`string_upper(text)`** — Converts all letters to uppercase. `string_upper("hello")` returns `"HELLO"`.
+- **`string_lower(text)`** — Converts all letters to lowercase. `string_lower("HELLO")` returns `"hello"`.
+- **`string_has(text, needle)`** — Checks if a string contains a piece of text. `string_has("hello world", "world")` returns `true`.
+- **`string_replace(text, from, to)`** — Replaces every occurrence of a piece of text. `string_replace("hello world", "world", "there")` returns `"hello there"`.
+- **`string_split(text, separator)`** — Splits a string into an array. `string_split("a,b,c", ",")` returns `["a", "b", "c"]`.
+- **`string_trim(text)`** — Removes whitespace from the beginning and end. `string_trim("  hello  ")` returns `"hello"`.
+- **`string_index(text, needle)`** — Finds where a piece of text first appears (starting from `0`), or `-1` if not found. `string_index("hello", "ll")` returns `2`.
+
+```lor
+if string_has(message, "help")
+  Someone needs assistance!
+
+words = string_split(sentence, " ")
+The sentence has $length(words) words.
+```
+
+#### Array
+
+Array functions can also be called as methods on arrays (e.g. `myArray.add(value)`).
+
+- **`array_add(array, value)`** — Adds an element to the end of an array.
+- **`array_pop(array)`** — Removes and returns the last element. Returns `null` if empty.
+- **`array_prepend(array, value)`** — Adds an element to the beginning of an array.
+- **`array_shift(array)`** — Removes and returns the first element. Returns `null` if empty.
+- **`array_remove(array, value)`** — Finds and removes the first occurrence of a value. Returns `true` if found.
+- **`array_index(array, value)`** — Finds the position of a value (starting from `0`), or `-1` if not found.
+- **`array_has(array, value)`** — Checks if an array contains a given value.
+- **`array_sort(array)`** — Returns a new sorted copy without changing the original.
+- **`array_reverse(array)`** — Returns a new reversed copy without changing the original.
+- **`array_join(array, separator)`** — Combines all elements into a string. `array_join(["a", "b", "c"], ", ")` returns `"a, b, c"`.
+- **`array_pick(array)`** — Returns a random element. Affected by `seed_random`.
+- **`array_shuffle(array)`** — Returns a new randomly reordered copy. Affected by `seed_random`.
+
+```lor
+items = ["sword", "shield"]
+array_add(items, "potion")
+
+if array_has(inventory, "golden key")
+  You unlock the ancient door.
+
+greetings = ["Hello!", "Hey there!", "Welcome!"]
+barista: $array_pick(greetings)
+```
+
+#### Map
+
+Map functions can also be called as methods on maps (e.g. `myMap.has("key")`).
+
+- **`map_keys(map)`** — Returns an array of all keys in the map.
+- **`map_has(map, key)`** — Checks if a key exists in the map.
+- **`map_get(map, key)`** — Gets the value for a key. Returns `null` if the key doesn't exist.
+- **`map_set(map, key, value)`** — Stores a value under a key.
+- **`map_remove(map, key)`** — Removes a key and its value. Returns `true` if the key existed.
+
+```lor
+map_set(inventory_counts, "arrows", 20)
+count = map_get(inventory_counts, "arrows")
+You have $count arrows left.
+```
+
+#### Game state
+
+- **`current_beat()`** — Returns the name of the beat that is currently running.
+- **`has_beat(name)`** — Checks whether a beat with the given name exists and can be reached from where you are. This includes nested beats and all top-level beats.
+
+```lor
+if has_beat("SecretEnding")
+  choice
+    Try the secret path -> SecretEnding
+```
 
 ### Defining your own functions
 

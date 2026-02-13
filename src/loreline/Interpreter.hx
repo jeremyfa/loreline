@@ -1833,20 +1833,6 @@ typedef InterpreterOptions = {
     }
 
     /**
-     * Gets a random number generator.
-     * Creates one if it doesn't exist yet.
-     *
-     * @return A random number generator
-     */
-    var _random:Random = null;
-    function random():Float {
-        if (_random == null) {
-            _random = new Random();
-        }
-        return _random.next();
-    }
-
-    /**
      * Initializes top-level functions available to the script.
      * This includes built-in functions and any user-provided functions.
      *
@@ -1854,24 +1840,8 @@ typedef InterpreterOptions = {
      */
     function initializeTopLevelFunctions(functions:FunctionsMap) {
 
-        topLevelFunctions.set('random', (min:Int, max:Int) -> {
-            return Math.floor(min + random() * (max + 1 - min));
-        });
-
-        topLevelFunctions.set('chance', (n:Int) -> {
-            return Math.floor(random() * n) == 0;
-        });
-
-        topLevelFunctions.set('wait', (seconds:Float) -> {
-            return new Async(done -> {
-                #if sys
-                Sys.sleep(seconds);
-                done();
-                #else
-                done();
-                #end
-            });
-        });
+        final builtins = new Functions(this);
+        builtins.bindAll(topLevelFunctions);
 
         if (functions != null) {
             for (key => func in functions) {

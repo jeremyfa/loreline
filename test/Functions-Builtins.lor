@@ -1,19 +1,259 @@
 
 state
   val: 0
+  text: ""
+  items: []
+  result: false
 
 beat Start
-  val = random(1, 1)
-  Random is $val
+  // Math functions
+  val = floor(3.7)
+  floor $val
+  val = ceil(3.2)
+  ceil $val
+  val = round(3.5)
+  round $val
+  val = abs(-5)
+  abs $val
+  val = min(3, 7)
+  min $val
+  val = max(3, 7)
+  max $val
+  val = clamp(10, 0, 5)
+  clamp $val
+  val = pow(2, 3)
+  pow $val
 
-  if chance(1)
-    Chance passed
+  // Random functions
+  seed_random(42)
+  val = random(1, 1)
+  seeded_random $val
+  val = random_float(0, 0)
+  random_float $val
+
+  // Type conversion functions
+  val = float("3.14")
+  float_parse $val
+  text = string(42)
+  string_convert $text
+  result = bool(1)
+  bool_truthy $result
+  result = bool(0)
+  bool_falsy $result
+  result = bool("")
+  bool_empty $result
+
+  // Generic function
+  val = length("hello")
+  string_length $val
+  items = [1, 2, 3]
+  val = length(items)
+  array_length $val
+
+  // String functions
+  text = string_upper("hello")
+  upper $text
+  text = string_lower("HELLO")
+  lower $text
+  result = string_has("hello world", "world")
+  has_substring $result
+  result = string_has("hello world", "xyz")
+  has_missing $result
+  text = string_replace("hello world", "world", "there")
+  replaced $text
+  text = string_trim("  hello  ")
+  trimmed $text
+  val = string_index("hello", "ll")
+  index_found $val
+  val = string_index("hello", "xyz")
+  index_missing $val
+
+  -> ArrayTests
+
+beat ArrayTests
+  items = [10, 20, 30]
+  array_add(items, 40)
+  val = length(items)
+  after_add $val
+
+  val = array_pop(items)
+  popped $val
+
+  array_prepend(items, 5)
+  val = items[0]
+  prepended $val
+
+  val = array_shift(items)
+  shifted $val
+
+  result = array_has(items, 20)
+  has_20 $result
+  result = array_has(items, 99)
+  has_99 $result
+
+  val = array_index(items, 30)
+  index_of_30 $val
+
+  result = array_remove(items, 20)
+  remove_20 $result
+
+  items = [3, 1, 2]
+  items = array_sort(items)
+  text = array_join(items, ",")
+  sorted $text
+
+  items = array_reverse(items)
+  text = array_join(items, ",")
+  reversed $text
+
+  seed_random(42)
+  items = [10, 20, 30]
+  val = array_pick(items)
+  picked $val
+
+  -> MapTests
+
+beat MapTests
+  state
+    mymap: {}
+
+  map_set(mymap, "name", "Alice")
+  text = map_get(mymap, "name")
+  map_get $text
+
+  result = map_has(mymap, "name")
+  map_has_name $result
+  result = map_has(mymap, "age")
+  map_has_age $result
+
+  map_set(mymap, "age", 30)
+  items = map_keys(mymap)
+  items = array_sort(items)
+  text = array_join(items, ",")
+  map_keys $text
+
+  result = map_remove(mymap, "age")
+  map_removed $result
+
+  -> GameStateTests
+
+beat GameStateTests
+  text = current_beat()
+  current $text
+  result = has_beat("Start")
+  has_start $result
+  result = has_beat("NonExistent")
+  has_nonexistent $result
+
+  -> NestedBeatTest
+
+beat NestedBeatTest
+  beat Inner
+    Inner beat reached
+
+  result = has_beat("Inner")
+  has_inner $result
+
+  -> SplitTest
+
+beat SplitTest
+  items = string_split("a,b,c", ",")
+  text = array_join(items, "-")
+  split_join $text
 
 /*
 <test>
 - expected: |
-    ~ Random is 1
+    ~ floor 3
 
-    ~ Chance passed
+    ~ ceil 4
+
+    ~ round 4
+
+    ~ abs 5
+
+    ~ min 3
+
+    ~ max 7
+
+    ~ clamp 5
+
+    ~ pow 8
+
+    ~ seeded_random 1
+
+    ~ random_float 0
+
+    ~ float_parse 3.14
+
+    ~ string_convert 42
+
+    ~ bool_truthy true
+
+    ~ bool_falsy false
+
+    ~ bool_empty false
+
+    ~ string_length 5
+
+    ~ array_length 3
+
+    ~ upper HELLO
+
+    ~ lower hello
+
+    ~ has_substring true
+
+    ~ has_missing false
+
+    ~ replaced hello there
+
+    ~ trimmed hello
+
+    ~ index_found 2
+
+    ~ index_missing -1
+
+    ~ after_add 4
+
+    ~ popped 40
+
+    ~ prepended 5
+
+    ~ shifted 5
+
+    ~ has_20 true
+
+    ~ has_99 false
+
+    ~ index_of_30 2
+
+    ~ remove_20 true
+
+    ~ sorted 1,2,3
+
+    ~ reversed 3,2,1
+
+    ~ picked 10
+
+    ~ map_get Alice
+
+    ~ map_has_name true
+
+    ~ map_has_age false
+
+    ~ map_keys age,name
+
+    ~ map_removed true
+
+    ~ current GameStateTests
+
+    ~ has_start true
+
+    ~ has_nonexistent false
+
+    ~ has_inner true
+
+    ~ split_join a-b-c
 </test>
 */

@@ -1351,10 +1351,38 @@
                     "end": "$",
                     "patterns": [
                         {
+                            "include": "#paren-group-in-assigns"
+                        },
+                        {
                             "include": "#unquoted-string-values"
                         },
                         {
                             "include": "#keywords"
+                        },
+                        {
+                            "include": "#expressions"
+                        }
+                    ]
+                }
+            ]
+        },
+        "paren-group-in-assigns": {
+            "patterns": [
+                {
+                    "begin": "(?:\\b[a-zA-Z_][a-zA-Z0-9_]*\\s*)?\\(",
+                    "beginCaptures": {
+                        "0": {
+                            "patterns": [
+                                {
+                                    "include": "#functions"
+                                }
+                            ]
+                        }
+                    },
+                    "end": "\\)",
+                    "patterns": [
+                        {
+                            "include": "#paren-group-in-assigns"
                         },
                         {
                             "include": "#expressions"
