@@ -1219,7 +1219,7 @@ class Token {
             }
 
             // Check for various delimiters typical from if condition
-            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (c == "!".code && input.charCodeAt(pos + 1) == "=".code) || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
+            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (c == "!".code && input.uCharCodeAt(pos + 1) == "=".code) || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
                 return true;
             }
 
@@ -1408,10 +1408,10 @@ class Token {
         // Skip any trailing comments
         pos = skipWhitespaceAndComments(pos);
 
-        // Check that we're at end of line, end of input, or only have whitespace/comments left
+        // Check that we're at end of line, end of input, or only have whitespace/comments/hash left
         if (pos < this.length) {
             var c = input.uCharCodeAt(pos);
-            if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
+            if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code && c != "#".code) {
                 return false;
             }
         }
@@ -2055,10 +2055,10 @@ class Token {
 
         static final specialChars = " \t\"+=*/-(){}[]:\n\r";
 
-        for (i in 0...str.length) {
+        for (i in 0...str.uLength()) {
             var found = false;
             var code = str.uCharCodeAt(i);
-            for (j in 0...specialChars.length) {
+            for (j in 0...specialChars.uLength()) {
                 if (code == specialChars.uCharCodeAt(j)) {
                     found = true;
                     break;
@@ -2393,7 +2393,7 @@ class Token {
                         buf.addChar(c);
                         advance();
                         // CRLF
-                        if (c == "\r".code && input.charCodeAt(pos) == "\n".code) {
+                        if (c == "\r".code && input.uCharCodeAt(pos) == "\n".code) {
                             buf.addChar("\n".code);
                             advance();
                         }

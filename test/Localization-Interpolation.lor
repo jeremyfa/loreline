@@ -1,0 +1,34 @@
+
+state
+  count: 3
+
+character barista
+  name: Alex
+
+beat Start
+  You have $count items #item-count
+  barista: You ordered $count drinks #drink-reply
+  choice
+    Take $count items #opt-take
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ You have 3 items
+
+    Alex: You ordered 3 drinks
+
+    + Take 3 items
+
+- choices: [0]
+  translation: fr
+  expected: |
+    ~ Vous avez 3 articles
+
+    Alex: Vous avez commandé 3 boissons
+
+    + Prendre 3 articles
+
+</test>
+*/

@@ -1351,6 +1351,24 @@ class ParserContext {
                 }
 
                 advance();
+
+                // Attach same-line trailing comments (e.g. hash comments) to the string literal.
+                // We don't use attachComments() here because its isAtEnd() fallback would
+                // incorrectly grab end-of-file comments (like /* <test> */ blocks).
+                if (pendingComments != null) {
+                    var remaining:Array<Comment> = null;
+                    for (c in pendingComments) {
+                        if (c.pos.line == stringLiteralPos.line) {
+                            if (stringLiteral.trailingComments == null) stringLiteral.trailingComments = [];
+                            stringLiteral.trailingComments.push(c);
+                        } else {
+                            if (remaining == null) remaining = [];
+                            remaining.push(c);
+                        }
+                    }
+                    pendingComments = remaining;
+                }
+
                 return stringLiteral;
 
             case _:

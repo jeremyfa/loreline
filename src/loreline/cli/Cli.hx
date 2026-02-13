@@ -127,6 +127,12 @@ class Cli {
                     else
                         fail('Missing file argument');
 
+                case 'translate':
+                    if (args.length >= 2)
+                        translate(args[1], args);
+                    else
+                        fail('Missing file argument');
+
                 case _:
                     help();
             }
@@ -146,7 +152,7 @@ class Cli {
         print(" |_|\\___/|_|  \\___|_|_|_| |_|\\___|".green());
         print("");
         print(" " + "USAGE".bold());
-        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "]".gray() + " " + "story.lor".underline());
+        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "]".gray() + " " + "story.lor".underline());
         print("");
 
     }
@@ -515,6 +521,65 @@ class Cli {
             final content = File.getContent(file);
             final script = Loreline.parse(content, file, handleFile);
             print(new Printer().print(script));
+        }
+        catch (e:Any) {
+            #if debug
+            if (e is Error) {
+                printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
+            }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
+            #end
+            fail(e, file);
+        }
+
+    }
+
+    function translate(file:String, args:Array<String>) {
+
+        final clearIds = argFlag(args, "clear");
+        final lang = argValue(args, "lang", !clearIds);
+        final generateIds = argFlag(args, "auto-ids");
+
+        if (!FileSystem.exists(file) || FileSystem.isDirectory(file))
+            fail('Invalid file: $file');
+
+        try {
+            var content = File.getContent(file);
+            var script = Loreline.parse(content, file, handleFile);
+
+            if (clearIds) {
+                content = AstUtils.removeLocalizationKeys(content, script);
+                File.saveContent(file, content);
+                print('Localization keys removed from: ' + file);
+                return;
+            }
+
+            if (generateIds) {
+                content = AstUtils.insertLocalizationKeys(content, script);
+                File.saveContent(file, content);
+                script = Loreline.parse(content, file, handleFile);
+            }
+
+            final basePath = file.substring(0, file.length - 4);
+            final translationPath = basePath + "." + lang + ".lor";
+
+            var existingTranslations:Map<String, Node.NStringLiteral> = null;
+            if (FileSystem.exists(translationPath)) {
+                final transContent = File.getContent(translationPath);
+                if (transContent.trim().length > 0) {
+                    final transScript = Loreline.parse(transContent, translationPath, handleFile);
+                    if (transScript != null)
+                        existingTranslations = AstUtils.extractTranslations(transScript);
+                }
+            }
+
+            final output = AstUtils.generateTranslationFile(script, existingTranslations, new Printer());
+            File.saveContent(translationPath, output);
+
+            print('Translation file ' + (existingTranslations != null ? 'updated' : 'created') + ': ' + translationPath);
         }
         catch (e:Any) {
             #if debug

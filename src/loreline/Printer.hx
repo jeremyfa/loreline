@@ -221,6 +221,55 @@ class Printer {
     }
 
     /**
+     * Renders a string literal as it would appear in source code, but without comments
+     * and with real newlines replaced by \n escapes. Preserves original quoting style.
+     * Used for the reference text after // in translation files.
+     */
+    public function printStringLiteralAsReference(str:NStringLiteral):String {
+        final saved = enableComments;
+        enableComments = false;
+        clear();
+        _beginLine = 1;
+        printStringLiteral(str);
+        enableComments = saved;
+        var result = StringTools.trim(toString());
+        result = result.split("\n").join("\\n");
+        return result;
+    }
+
+    /**
+     * Renders a string literal as plain text (no surrounding quotes, no comments),
+     * with real newlines replaced by \n escapes. Used for translation placeholder text.
+     */
+    public function printStringLiteralAsText(str:NStringLiteral):String {
+        final saved = enableComments;
+        enableComments = false;
+        clear();
+        _beginLine = 1;
+        for (part in str.parts) {
+            switch (part.partType) {
+                case Raw(text):
+                    if (str.quotes == DoubleQuotes) writeQuotedRaw(text);
+                    else writeUnquotedRaw(text);
+                case Expr(expr):
+                    final canBeSimple = isSimpleInterpolationExpr(expr);
+                    write('$$');
+                    if (!canBeSimple) write('{');
+                    printNode(expr);
+                    if (!canBeSimple) write('}');
+                case Tag(closing, content):
+                    write(closing ? '</' : '<');
+                    printStringLiteral(content);
+                    write('>');
+            }
+        }
+        enableComments = saved;
+        var result = StringTools.trim(toString());
+        result = result.split("\n").join("\\n");
+        return result;
+    }
+
+    /**
      * Main entry point for printing an AST node to source code.
      * @param node Root node to print
      * @return Generated source code as string

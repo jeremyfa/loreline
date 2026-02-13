@@ -1,0 +1,9 @@
+
+#item-count // You have $count items
+Vous avez $count articles
+
+#drink-reply // You ordered $count drinks
+Vous avez commandé $count boissons
+
+#opt-take // Take $count items
+Prendre $count articles

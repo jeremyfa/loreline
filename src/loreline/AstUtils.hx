@@ -1,6 +1,9 @@
 package loreline;
 
 import loreline.Node;
+import loreline.Printer;
+
+using loreline.Utf8;
 
 /**
  * Static utility functions for programmatic AST formatting transformations.
@@ -156,36 +159,139 @@ class AstUtils {
 
     // ── Localization ─────────────────────────────────────────────────
 
-    /** Add localization key hash comments to all translatable text in the AST. */
-    public static function addLocalizationKeys(node:AstNode):Void {
+    /**
+     * Insert localization key hash comments directly into source text.
+     * Returns the modified source content. Does NOT use the Printer,
+     * so all existing content (comments, formatting, test blocks) is preserved.
+     */
+    public static function insertLocalizationKeys(content:String, node:AstNode):String {
+        final rng = new Random();
+        final sourceLines = content.split("\n");
+
+        // Collect all existing hash IDs from the entire AST
+        // (hash comments may land on sibling nodes rather than the text node itself)
+        final existingIds = new Map<String, Bool>();
         node.each((child, _) -> {
-            var astNode:AstNode = null;
-            var str:NStringLiteral = null;
-            if (Std.isOfType(child, NTextStatement)) { astNode = cast child; str = (cast(child, NTextStatement)).content; }
-            else if (Std.isOfType(child, NDialogueStatement)) { astNode = cast child; str = (cast(child, NDialogueStatement)).content; }
-            else if (Std.isOfType(child, NChoiceOption)) { astNode = cast child; str = (cast(child, NChoiceOption)).text; }
-
-            if (str != null && astNode != null) {
-                // Skip if already has a hash comment
-                if (findHashComment(astNode) != null) return;
-
-                // Compute canonical form for hashing
-                var canonical = new StringBuf();
-                for (part in str.parts) {
-                    switch (part.partType) {
-                        case Raw(text): canonical.add(text);
-                        case Expr(_): canonical.add("${}");
-                        case Tag(_, _): // skip tags
-                    }
-                }
-
-                final hash = haxe.crypto.Md5.encode(canonical.toString()).substr(0, 8);
-
-                // Add hash comment to the node
-                if (astNode.trailingComments == null) astNode.trailingComments = [];
-                astNode.trailingComments.push(new Comment(NodeId.UNDEFINED, null, hash, false, true));
+            if (Std.isOfType(child, AstNode)) {
+                final astChild:AstNode = cast child;
+                if (astChild.trailingComments != null)
+                    for (c in astChild.trailingComments) if (c.isHash) existingIds.set(StringTools.trim(c.content), true);
+                if (astChild.leadingComments != null)
+                    for (c in astChild.leadingComments) if (c.isHash) existingIds.set(StringTools.trim(c.content), true);
             }
         });
+
+        // Collect insertions using byte offsets (right after each NStringLiteral)
+        final insertions:Array<{offset:Int, text:String}> = [];
+        node.each((child, _) -> {
+            var str:NStringLiteral = null;
+            if (Std.isOfType(child, NTextStatement)) str = (cast(child, NTextStatement)).content;
+            else if (Std.isOfType(child, NDialogueStatement)) str = (cast(child, NDialogueStatement)).content;
+            else if (Std.isOfType(child, NChoiceOption)) str = (cast(child, NChoiceOption)).text;
+
+            if (str != null) {
+                // Check the source line for an existing hash comment
+                final endLine = getStringEndLine(str);
+                final lineIdx = endLine - 1;
+                if (lineIdx >= 0 && lineIdx < sourceLines.length && lineHasHashComment(sourceLines[lineIdx])) return;
+
+                var id:String;
+                var iterations:Int = 0;
+                do {
+                    id = randomId(rng, 4 + Std.int(iterations * 0.01));
+                    iterations++;
+                }
+                while (existingIds.exists(id));
+                existingIds.set(id, true);
+
+                // Insert right after the string literal position
+                insertions.push({offset: str.pos.offset + str.pos.length, text: ' #$id'});
+            }
+        });
+
+        if (insertions.length == 0) return content;
+
+        // Sort by offset descending and apply (avoids index shifting)
+        insertions.sort((a, b) -> b.offset - a.offset);
+        var result = content;
+        for (ins in insertions) {
+            result = result.uSubstr(0, ins.offset) + ins.text + result.uSubstr(ins.offset);
+        }
+        return result;
+    }
+
+    /** Remove all #hash localization keys from source content, using AST positions. */
+    public static function removeLocalizationKeys(content:String, node:AstNode):String {
+        final removals:Array<{start:Int, end:Int}> = [];
+
+        node.each((child, _) -> {
+            if (Std.isOfType(child, AstNode)) {
+                final astChild:AstNode = cast child;
+                inline function collectHash(comments:Array<Comment>) {
+                    if (comments != null) {
+                        for (c in comments) {
+                            if (c.isHash) {
+                                var start = c.pos.offset;
+                                var end = c.pos.offset + c.pos.length;
+                                // Also remove preceding whitespace (spaces/tabs before #)
+                                while (start > 0) {
+                                    final ch = content.uCharCodeAt(start - 1);
+                                    if (ch == ' '.code || ch == '\t'.code)
+                                        start--;
+                                    else
+                                        break;
+                                }
+                                removals.push({start: start, end: end});
+                            }
+                        }
+                    }
+                }
+                collectHash(astChild.trailingComments);
+                collectHash(astChild.leadingComments);
+            }
+        });
+
+        if (removals.length == 0) return content;
+
+        // Sort by offset descending and apply
+        removals.sort((a, b) -> b.start - a.start);
+        var result = content;
+        for (r in removals) {
+            result = result.uSubstr(0, r.start) + result.uSubstr(r.end);
+        }
+        return result;
+    }
+
+    /** Check if a source line contains a hash comment (# followed by word chars, not preceded by \). */
+    static function lineHasHashComment(line:String):Bool {
+        var i = 0;
+        while (i < line.length) {
+            if (line.charCodeAt(i) == '#'.code) {
+                // Skip escaped hashes (##)
+                if (i + 1 < line.length && line.charCodeAt(i + 1) == '#'.code) {
+                    i += 2;
+                    continue;
+                }
+                // Check if preceded by backslash (escaped)
+                if (i > 0 && line.charCodeAt(i - 1) == '\\'.code) {
+                    i++;
+                    continue;
+                }
+                // Check if followed by at least one word character (a-z, A-Z, 0-9, _, -)
+                var j = i + 1;
+                while (j < line.length) {
+                    final c = line.charCodeAt(j);
+                    if ((c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code) ||
+                        (c >= '0'.code && c <= '9'.code) || c == '_'.code || c == '-'.code)
+                        j++;
+                    else
+                        break;
+                }
+                if (j > i + 1) return true; // found # followed by word chars
+            }
+            i++;
+        }
+        return false;
     }
 
     /**
@@ -202,7 +308,7 @@ class AstUtils {
             else if (Std.isOfType(child, NDialogueStatement)) { astNode = cast child; str = (cast(child, NDialogueStatement)).content; }
 
             if (str != null && astNode != null) {
-                final hashId = findHashComment(astNode);
+                final hashId = findHashComment(astNode, str);
                 if (hashId != null) {
                     result.set(hashId, str);
                 }
@@ -212,45 +318,66 @@ class AstUtils {
     }
 
     /**
-     * Generate a translation template from a source script.
-     * Outputs lines with original text as comments followed by #id and original text.
+     * Collects all translatable entries with #id from a source script, in source order.
+     * Returns pairs of {id, str} for NTextStatement, NDialogueStatement, and NChoiceOption.
      */
-    public static function generateTranslationTemplate(node:AstNode):String {
-        final buf = new StringBuf();
-        var first = true;
+    public static function extractTranslatableEntries(node:AstNode):Array<{id:String, str:NStringLiteral}> {
+        final result:Array<{id:String, str:NStringLiteral}> = [];
         node.each((child, _) -> {
-            var str:NStringLiteral = null;
             var astNode:AstNode = null;
-            if (Std.isOfType(child, NTextStatement)) { astNode = cast child; str = (cast(child, NTextStatement)).content; }
-            else if (Std.isOfType(child, NDialogueStatement)) { astNode = cast child; str = (cast(child, NDialogueStatement)).content; }
-            else if (Std.isOfType(child, NChoiceOption)) { astNode = cast child; str = (cast(child, NChoiceOption)).text; }
-
+            var str:NStringLiteral = null;
+            if (Std.isOfType(child, NTextStatement)) {
+                astNode = cast child; str = (cast(child, NTextStatement)).content;
+            } else if (Std.isOfType(child, NDialogueStatement)) {
+                astNode = cast child; str = (cast(child, NDialogueStatement)).content;
+            } else if (Std.isOfType(child, NChoiceOption)) {
+                final opt:NChoiceOption = cast child;
+                if (opt.text != null) { astNode = cast child; str = opt.text; }
+            }
             if (str != null && astNode != null) {
-                final hashId = findHashComment(astNode);
-                if (hashId != null) {
-                    // Build raw text from string parts
-                    var rawText = new StringBuf();
-                    for (part in str.parts) {
-                        switch (part.partType) {
-                            case Raw(text): rawText.add(text);
-                            case _:
-                        }
-                    }
-
-                    final text = StringTools.trim(rawText.toString());
-                    if (!first) buf.add("\n");
-                    buf.add("// ");
-                    buf.add(text);
-                    buf.add("\n");
-                    buf.add("#");
-                    buf.add(hashId);
-                    buf.add(" ");
-                    buf.add(text);
-                    buf.add("\n");
-                    first = false;
-                }
+                final hashId = findHashComment(astNode, str);
+                if (hashId != null) result.push({id: hashId, str: str});
             }
         });
+        return result;
+    }
+
+    /**
+     * Generates a translation file from a source script.
+     * Each entry has: #id // original-text-as-in-source (with quotes preserved),
+     * followed by translated text or original as placeholder.
+     */
+    public static function generateTranslationFile(
+        sourceScript:AstNode,
+        existingTranslations:Null<Map<String, NStringLiteral>>,
+        printer:Printer
+    ):String {
+        final entries = extractTranslatableEntries(sourceScript);
+        final buf = new Utf8Buf();
+        var first = true;
+        buf.add("\n");
+
+        for (entry in entries) {
+            if (!first) buf.add("\n");
+            first = false;
+
+            final refText = printer.printStringLiteralAsReference(entry.str);
+            final plainText = printer.printStringLiteralAsText(entry.str);
+
+            buf.add("#");
+            buf.add(entry.id);
+            buf.add(" // ");
+            buf.add(refText);
+            buf.add("\n");
+
+            if (existingTranslations != null && existingTranslations.exists(entry.id)) {
+                buf.add(printer.printStringLiteralAsText(existingTranslations.get(entry.id)));
+            } else {
+                buf.add(plainText);
+            }
+            buf.add("\n");
+        }
+
         return buf.toString();
     }
 
@@ -430,25 +557,69 @@ class AstUtils {
         return result.toString();
     }
 
+    /** Find the last line (1-based) occupied by a string literal, accounting for multiline raw parts. */
+    static function getStringEndLine(str:NStringLiteral):Int {
+        var endLine = str.pos.line;
+        for (part in str.parts) {
+            if (part.pos != null) {
+                var partEndLine = part.pos.line;
+                switch (part.partType) {
+                    case Raw(text):
+                        var i = 0;
+                        while (i < text.length) {
+                            if (text.charCodeAt(i) == '\n'.code) partEndLine++;
+                            i++;
+                        }
+                    default:
+                }
+                if (partEndLine > endLine) endLine = partEndLine;
+            }
+        }
+        return endLine;
+    }
+
     /**
      * Helper: find the first hash comment on a node and return its content (the localization key).
      * Returns null if no hash comment is found.
      */
-    static function findHashComment(node:AstNode):Null<String> {
-        if (node.trailingComments != null) {
-            for (comment in node.trailingComments) {
-                if (comment.isHash) {
-                    return StringTools.trim(comment.content);
-                }
-            }
-        }
-        if (node.leadingComments != null) {
-            for (comment in node.leadingComments) {
-                if (comment.isHash) {
-                    return StringTools.trim(comment.content);
-                }
-            }
+    public static function findHashComment(node:AstNode, ?str:NStringLiteral):Null<String> {
+        if (node.trailingComments != null)
+            for (c in node.trailingComments) if (c.isHash) return StringTools.trim(c.content);
+        if (node.leadingComments != null)
+            for (c in node.leadingComments) if (c.isHash) return StringTools.trim(c.content);
+        if (str != null) {
+            if (str.trailingComments != null)
+                for (c in str.trailingComments) if (c.isHash) return StringTools.trim(c.content);
+            if (str.leadingComments != null)
+                for (c in str.leadingComments) if (c.isHash) return StringTools.trim(c.content);
         }
         return null;
+    }
+
+    /** Generate a random base36 ID of the given length, guaranteed to not be a valid hex string. */
+    static function randomId(rng:Random, length:Int):String {
+        static final chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+        static final nonHexChars = "ghijklmnopqrstuvwxyz";
+        final buf = new Utf8Buf();
+        for (_ in 0...length) {
+            buf.addChar(chars.charCodeAt(rng.between(0, 36)));
+        }
+        var result = buf.toString();
+        // Ensure result is not a valid hex string (prevent VSCode color code detection)
+        var allHex = true;
+        for (i in 0...result.length) {
+            final c = result.charCodeAt(i);
+            if (!((c >= '0'.code && c <= '9'.code) || (c >= 'a'.code && c <= 'f'.code))) {
+                allHex = false;
+                break;
+            }
+        }
+        if (allHex) {
+            // Replace one random position with a non-hex character
+            final pos = rng.between(0, length);
+            final replacement = nonHexChars.charCodeAt(rng.between(0, nonHexChars.length));
+            result = result.substr(0, pos) + String.fromCharCode(replacement) + result.substr(pos + 1);
+        }
+        return result;
     }
 }

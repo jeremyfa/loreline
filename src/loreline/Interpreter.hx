@@ -3,6 +3,7 @@ package loreline;
 import Type.ValueType;
 import haxe.ds.StringMap;
 import loreline.Arrays;
+import loreline.AstUtils;
 import loreline.Lexer;
 import loreline.Node;
 import loreline.Objects;
@@ -2865,24 +2866,7 @@ typedef InterpreterOptions = {
     }
 
     function findHashCommentId(node:AstNode, str:NStringLiteral):Null<String> {
-        // Check the statement node's comments first, then the string literal's
-        for (target in ([node, str] : Array<AstNode>)) {
-            if (target.trailingComments != null) {
-                for (comment in target.trailingComments) {
-                    if (comment.isHash) {
-                        return StringTools.trim(comment.content);
-                    }
-                }
-            }
-            if (target.leadingComments != null) {
-                for (comment in target.leadingComments) {
-                    if (comment.isHash) {
-                        return StringTools.trim(comment.content);
-                    }
-                }
-            }
-        }
-        return null;
+        return AstUtils.findHashComment(node, str);
     }
 
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
