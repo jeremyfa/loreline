@@ -476,13 +476,35 @@ items = [1, 2, 3]
 Your name has $length(name) letters and you carry $length(items) items.
 ```
 
+#### Dot notation
+
+All `string_`, `array_`, and `map_` functions can also be called using dot notation. Drop the prefix and call the function on the value directly — the first argument becomes the object before the dot, and the remaining arguments stay in parentheses:
+
+| Function style | Dot notation |
+|---|---|
+| `string_upper(name)` | `name.upper()` |
+| `string_contains(msg, "help")` | `msg.contains("help")` |
+| `array_add(items, "sword")` | `items.add("sword")` |
+| `array_join(items, ", ")` | `items.join(", ")` |
+| `map_get(stats, "hp")` | `stats.get("hp")` |
+
+This also works directly on literals and can be chained:
+
+```lor
+title = "hello".upper()
+sorted = [3, 1, 2].sort().join(",")   // "1,2,3"
+keys = { name: "Alice", age: 30 }.keys()
+```
+
+Both styles are equivalent — use whichever reads better in context.
+
 #### String
 
-String functions can also be called as methods on strings (e.g. `myString.upper()`).
+These can also be called using [dot notation](#dot-notation) (e.g. `name.upper()`).
 
 - **`string_upper(text)`** — Converts all letters to uppercase. `string_upper("hello")` returns `"HELLO"`.
 - **`string_lower(text)`** — Converts all letters to lowercase. `string_lower("HELLO")` returns `"hello"`.
-- **`string_has(text, needle)`** — Checks if a string contains a piece of text. `string_has("hello world", "world")` returns `true`.
+- **`string_contains(text, needle)`** — Checks if a string contains a piece of text. `string_contains("hello world", "world")` returns `true`.
 - **`string_replace(text, from, to)`** — Replaces every occurrence of a piece of text. `string_replace("hello world", "world", "there")` returns `"hello there"`.
 - **`string_split(text, separator)`** — Splits a string into an array. `string_split("a,b,c", ",")` returns `["a", "b", "c"]`.
 - **`string_trim(text)`** — Removes whitespace from the beginning and end. `string_trim("  hello  ")` returns `"hello"`.
@@ -493,7 +515,7 @@ String functions can also be called as methods on strings (e.g. `myString.upper(
 - **`string_repeat(text, count)`** — Repeats the text the given number of times. `string_repeat("ab", 3)` returns `"ababab"`.
 
 ```lor
-if string_has(message, "help")
+if string_contains(message, "help")
   Someone needs assistance!
 
 words = string_split(sentence, " ")
@@ -501,11 +523,6 @@ The sentence has $length(words) words.
 
 if string_starts(name, "Sir")
   You bow before the knight.
-
-// Method-style (drop the string_ prefix):
-title = name.upper()
-if message.has("help")
-  Someone needs assistance!
 ```
 
 #### Text
@@ -524,7 +541,7 @@ There $plural(boxes, "is", "are") $boxes $plural(boxes, "box", "boxes") here.
 
 #### Array
 
-Array functions can also be called as methods on arrays (e.g. `myArray.add(value)`).
+These can also be called using [dot notation](#dot-notation) (e.g. `items.add("sword")`).
 
 - **`array_add(array, value)`** — Adds an element to the end of an array.
 - **`array_pop(array)`** — Removes and returns the last element. Returns `null` if empty.
@@ -549,16 +566,11 @@ if array_has(inventory, "golden key")
 
 greetings = ["Hello!", "Hey there!", "Welcome!"]
 barista: $array_pick(greetings)
-
-// Method-style:
-items.sort()
-items.reverse()
-backup = items.copy()
 ```
 
 #### Map
 
-Map functions can also be called as methods on maps (e.g. `myMap.has("key")`).
+These can also be called using [dot notation](#dot-notation) (e.g. `stats.get("hp")`).
 
 - **`map_keys(map)`** — Returns an array of all keys in the map.
 - **`map_has(map, key)`** — Checks if a key exists in the map.
@@ -571,14 +583,9 @@ Map functions can also be called as methods on maps (e.g. `myMap.has("key")`).
 map_set(inventory_counts, "arrows", 20)
 count = map_get(inventory_counts, "arrows")
 You have $count arrows left.
-
-// Method-style:
-inventory_counts.set("arrows", 20)
-if inventory_counts.has("arrows")
-  count = inventory_counts.get("arrows")
 ```
 
-#### Game state
+#### Story state
 
 - **`current_beat()`** — Returns the name of the beat that is currently running.
 - **`has_beat(name)`** — Checks whether a beat with the given name exists and can be reached from where you are. This includes nested beats and all top-level beats.

@@ -55,9 +55,9 @@ beat Start
   upper $text
   text = string_lower("HELLO")
   lower $text
-  result = string_has("hello world", "world")
+  result = string_contains("hello world", "world")
   has_substring $result
-  result = string_has("hello world", "xyz")
+  result = string_contains("hello world", "xyz")
   has_missing $result
   text = string_replace("hello world", "world", "there")
   replaced $text

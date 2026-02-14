@@ -1210,7 +1210,7 @@ class ParserContext {
 
         return switch (tokens[current].type) {
             case LString(_, _):
-                parseStringLiteral();
+                parsePostfix(startPos, parseStringLiteral());
 
             case LNumber(n):
                 advance();
@@ -1235,16 +1235,16 @@ class ParserContext {
                 }
 
             case LBracket:
-                parseArrayLiteral();
+                parsePostfix(startPos, parseArrayLiteral());
 
             case LBrace:
-                parseObjectLiteral();
+                parsePostfix(startPos, parseObjectLiteral());
 
             case LParen:
                 advance();
                 final expr = parseExpression();
                 expect(RParen);
-                expr;
+                parsePostfix(startPos, expr);
 
             case _:
                 throw new ParseError("Unexpected token in expression", currentPos());
@@ -1752,20 +1752,20 @@ class ParserContext {
      */
     function parseIdentifierExpression(startPos:Position, name:String):NExpr {
         var expr:NExpr = attachComments(makeAccess(startPos, null, name, null));
+        return parsePostfix(startPos, expr);
+    }
 
-        // Parse chained accesses (., [], and ())
+    function parsePostfix(startPos:Position, expr:NExpr):NExpr {
         while (true) {
             if (match(Dot, false)) {
-                // Create placeholder identifier if none follows the dot
                 var prop = null;
                 var propPos = currentPos();
 
                 if (checkIdentifier()) {
                     prop = expectIdentifier();
                 } else {
-                    // Create error for missing identifier but continue parsing
                     addError(new ParseError("Expected identifier after '.'", currentPos()));
-                    prop = ""; // Empty identifier as placeholder
+                    prop = "";
                 }
 
                 expr = attachComments(makeAccess(startPos, expr, prop, propPos));
@@ -1784,7 +1784,6 @@ class ParserContext {
                 break;
             }
         }
-
         return expr;
     }
 

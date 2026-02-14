@@ -53,7 +53,7 @@ class Functions {
         // String
         target.set("string_upper", this.string_upper);
         target.set("string_lower", this.string_lower);
-        target.set("string_has", this.string_has);
+        target.set("string_contains", this.string_contains);
         target.set("string_replace", this.string_replace);
         target.set("string_split", this.string_split);
         target.set("string_trim", this.string_trim);
@@ -388,14 +388,14 @@ class Functions {
     /**
      * Checks if a string contains a given piece of text.
      *
-     * `string_has("hello world", "world")` returns `true`.
+     * `string_contains("hello world", "world")` returns `true`.
      *
      * ```lor
-     * if string_has(message, "help")
+     * if string_contains(message, "help")
      *   Someone needs assistance!
      * ```
      */
-    public function string_has(text:String, needle:String):Bool {
+    public function string_contains(text:String, needle:String):Bool {
         return StringTools.contains(text, needle);
     }
 

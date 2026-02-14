@@ -14,9 +14,9 @@ beat Start
   text = text.lower()
   lower $text
   text = "hello world"
-  result = text.has("world")
+  result = text.contains("world")
   has_yes $result
-  result = text.has("xyz")
+  result = text.contains("xyz")
   has_no $result
   text = "hello world"
   text = text.replace("world", "there")
@@ -160,6 +160,25 @@ beat MapCopyTest
   val = map_get(original, "a")
   original_changed $val
 
+  -> LiteralTests
+
+beat LiteralTests
+  // String literal method calls
+  text = "hello".upper()
+  literal_upper $text
+  text = "HELLO".lower()
+  literal_lower $text
+
+  // Array literal method calls
+  text = [3, 1, 2].sort().join(",")
+  literal_sort $text
+
+  // Object literal method calls
+  items = { name: "Alice", age: 30 }.keys()
+  items = array_sort(items)
+  text = array_join(items, ",")
+  literal_keys $text
+
 /*
 <test>
 - expected: |
@@ -221,7 +240,7 @@ beat MapCopyTest
 
     ~ unsorted_copy 3,1,2
 
-    ~ shuffled 4,3,5,1,2
+    ~ shuffled 2,5,4,3,1
 
     ~ map_get Alice
 
@@ -236,5 +255,13 @@ beat MapCopyTest
     ~ copy_unchanged 1
 
     ~ original_changed 99
+
+    ~ literal_upper HELLO
+
+    ~ literal_lower hello
+
+    ~ literal_sort 1,2,3
+
+    ~ literal_keys age,name
 </test>
 */
