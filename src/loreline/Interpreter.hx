@@ -398,6 +398,13 @@ typedef InterpreterOptions = {
     #if loreline_typedef_options @:optional #end
     public var translations:Map<String, NStringLiteral> #if !loreline_typedef_options = null #end;
 
+    /**
+     * Optional custom string literal processors to add alongside the built-in plural pipe processor.
+     * Each processor receives an NStringLiteral and returns a (possibly transformed) NStringLiteral.
+     */
+    #if loreline_typedef_options @:optional #end
+    public var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> #if !loreline_typedef_options = null #end;
+
 }
 
 /**
@@ -475,6 +482,12 @@ typedef InterpreterOptions = {
     final stringHelpers:Map<String, Any> = new Map();
     final arrayHelpers:Map<String, Any> = new Map();
     final mapHelpers:Map<String, Any> = new Map();
+
+    /**
+     * Pluggable processors that transform string literals before evaluation.
+     * Each processor receives an NStringLiteral and returns a (possibly transformed) NStringLiteral.
+     */
+    public var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> = [];
 
     /**
      * The current execution stack, which consists of scopes added on top of one another.
@@ -606,6 +619,7 @@ typedef InterpreterOptions = {
 
         // Build default function
         initializeTopLevelFunctions(options?.functions);
+        initializeStringLiteralProcessors(options?.stringLiteralProcessors);
 
         // Init top level declarations
         for (decl in script) {
@@ -1864,6 +1878,17 @@ typedef InterpreterOptions = {
 
     }
 
+    function initializeStringLiteralProcessors(processors:Array<(str:NStringLiteral) -> NStringLiteral>) {
+        // Register the built-in plural pipe processor
+        stringLiteralProcessors.push(str -> pluralPipeProcess(str));
+        // Add any user-provided processors
+        if (processors != null) {
+            for (p in processors) {
+                stringLiteralProcessors.push(p);
+            }
+        }
+    }
+
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
         #if hscript
@@ -2853,6 +2878,11 @@ typedef InterpreterOptions = {
     }
 
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
+        // Run string literal processors (e.g. plural pipe syntax)
+        for (i in 0...stringLiteralProcessors.length) {
+            str = stringLiteralProcessors[i](str);
+        }
+
         final buf = new loreline.Utf8.Utf8Buf();
         final tags:Array<TextTag> = [];
         var offset = 0;
@@ -3006,6 +3036,168 @@ typedef InterpreterOptions = {
             tags: tags
         };
 
+    }
+
+    /**
+     * Processes plural pipe syntax in string literal parts.
+     * Transforms `word1|word2` and `(text1|text2)` patterns in Raw parts preceded by Expr parts
+     * into synthetic NCall nodes that invoke the plural() function.
+     */
+    function pluralPipeProcess(str:NStringLiteral):NStringLiteral {
+        var lastExprPartIndex = -1;
+        var changed = false;
+        var newParts:Array<NStringPart> = null;
+
+        for (i in 0...str.parts.length) {
+            final part = str.parts[i];
+            switch (part.partType) {
+                case Expr(_):
+                    lastExprPartIndex = i;
+
+                case Raw(text):
+                    if (lastExprPartIndex >= 0 && rawTextHasUnescapedPipe(text)) {
+                        // Get the count expression from the preceding Expr part
+                        final countExpr = switch (str.parts[lastExprPartIndex].partType) {
+                            case Expr(expr): expr;
+                            case _: null;
+                        };
+                        if (countExpr != null) {
+                            if (!changed) {
+                                // Copy parts up to this point
+                                newParts = [for (j in 0...i) str.parts[j]];
+                                changed = true;
+                            }
+                            // Transform this Raw part, adding new parts to newParts
+                            transformPipeRaw(text, countExpr, part.pos, newParts);
+                            continue;
+                        }
+                    }
+
+                case Tag(_, _):
+            }
+
+            if (changed) {
+                newParts.push(part);
+            }
+        }
+
+        if (!changed) return str;
+
+        return new NStringLiteral(str.id, str.pos, str.quotes, newParts);
+    }
+
+    function rawTextHasUnescapedPipe(text:String):Bool {
+        final len = text.uLength();
+        var i = 0;
+        while (i < len) {
+            final c = text.uCharCodeAt(i);
+            if (c == "\\".code) {
+                i += 2;
+                continue;
+            }
+            if (c == "|".code) return true;
+            i++;
+        }
+        return false;
+    }
+
+    function transformPipeRaw(text:String, countExpr:NExpr, pos:Position, parts:Array<NStringPart>):Void {
+        final len = text.uLength();
+        var i = 0;
+        var segStart = 0;
+
+        while (i < len) {
+            final c = text.uCharCodeAt(i);
+
+            // Skip escaped characters
+            if (c == "\\".code && i + 1 < len) {
+                i += 2;
+                continue;
+            }
+
+            // Parenthesized pattern: (text1|text2)
+            if (c == "(".code) {
+                var pipePos = -1;
+                var closePos = -1;
+                var j = i + 1;
+                while (j < len) {
+                    final cj = text.uCharCodeAt(j);
+                    if (cj == "\\".code && j + 1 < len) {
+                        j += 2;
+                        continue;
+                    }
+                    if (cj == "|".code && pipePos == -1) {
+                        pipePos = j;
+                    } else if (cj == ")".code) {
+                        closePos = j;
+                        break;
+                    }
+                    j++;
+                }
+                if (pipePos != -1 && closePos != -1 && pipePos > i + 1 && closePos > pipePos + 1) {
+                    final singular = text.uSubstr(i + 1, pipePos - i - 1);
+                    final pluralForm = text.uSubstr(pipePos + 1, closePos - pipePos - 1);
+                    // Emit text before the pattern
+                    if (i > segStart) {
+                        parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, i - segStart))));
+                    }
+                    // Emit synthetic NCall to plural(countExpr, singular, pluralForm)
+                    parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, singular, pluralForm, pos))));
+                    i = closePos + 1;
+                    segStart = i;
+                    continue;
+                }
+            }
+
+            // Simple pattern: word1|word2
+            if (c == "|".code) {
+                // Scan backward for word1
+                var wordStart = i;
+                while (wordStart > segStart) {
+                    final wc = text.uCharCodeAt(wordStart - 1);
+                    if (wc == " ".code || wc == "\t".code || wc == "\n".code
+                        || wc == "|".code || wc == "(".code || wc == ")".code) break;
+                    wordStart--;
+                }
+                // Scan forward for word2
+                var wordEnd = i + 1;
+                while (wordEnd < len) {
+                    final wc = text.uCharCodeAt(wordEnd);
+                    if (wc == " ".code || wc == "\t".code || wc == "\n".code
+                        || wc == "|".code || wc == "(".code || wc == ")".code) break;
+                    wordEnd++;
+                }
+                final word1 = text.uSubstr(wordStart, i - wordStart);
+                final word2 = text.uSubstr(i + 1, wordEnd - i - 1);
+                if (word1.length > 0 && word2.length > 0) {
+                    // Emit text before word1
+                    if (wordStart > segStart) {
+                        parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, wordStart - segStart))));
+                    }
+                    // Emit synthetic NCall to plural(countExpr, word1, word2)
+                    parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, word1, word2, pos))));
+                    i = wordEnd;
+                    segStart = i;
+                    continue;
+                }
+            }
+
+            i++;
+        }
+
+        // Emit remaining text
+        if (segStart < len) {
+            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, len - segStart))));
+        }
+    }
+
+    function makePluralCall(countExpr:NExpr, singular:String, pluralForm:String, pos:Position):NCall {
+        final target = new NAccess(NodeId.UNDEFINED, pos, null, "plural");
+        final singularLiteral = new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
+            [new NStringPart(NodeId.UNDEFINED, pos, Raw(singular))]);
+        final pluralLiteral = new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
+            [new NStringPart(NodeId.UNDEFINED, pos, Raw(pluralForm))]);
+        return new NCall(NodeId.UNDEFINED, pos, target, [countExpr, singularLiteral, pluralLiteral]);
     }
 
     function stripStringIndent(content:String):String {

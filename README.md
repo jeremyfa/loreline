@@ -539,6 +539,20 @@ There $plural(boxes, "is", "are") $boxes $plural(boxes, "box", "boxes") here.
 // "There is 1 box here."
 ```
 
+There is also a shorthand **pipe syntax** for the common case. After a numeric `$expression`, write `singular|plural` and it will resolve automatically:
+
+```lor
+items = 3
+You found $items coin|coins.
+// "You found 3 coins."
+
+boxes = 1
+There $boxes (box is|boxes are) here.
+// "There is 1 box here."
+```
+
+Use parentheses for multi-word alternatives. Escape with `\|` if you need a literal pipe character. The pipe syntax only activates after a numeric expression — otherwise `|` is kept as-is.
+
 #### Array
 
 These can also be called using [dot notation](#dot-notation) (e.g. `items.add("sword")`).

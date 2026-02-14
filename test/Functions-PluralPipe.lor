@@ -1,0 +1,49 @@
+state
+  count: 0
+  name: ""
+
+beat Start
+  count = 1
+  $count drink|drinks
+
+  count = 3
+  $count drink|drinks
+
+  count = 1
+  $count (cold drink|cold drinks)
+
+  count = 5
+  $count (cold drink|cold drinks)
+
+  word with a literal \| pipe
+
+  no preceding expr pipe|test
+
+  name = "Alice"
+  $name thing|things
+
+  count = 2
+  $count cat|cats and $count dog|dogs
+
+  -> .
+
+/*
+<test>
+- expected: |
+    ~ 1 drink
+
+    ~ 3 drinks
+
+    ~ 1 cold drink
+
+    ~ 5 cold drinks
+
+    ~ word with a literal | pipe
+
+    ~ no preceding expr pipe|test
+
+    ~ Alice things
+
+    ~ 2 cats and 2 dogs
+</test>
+*/
