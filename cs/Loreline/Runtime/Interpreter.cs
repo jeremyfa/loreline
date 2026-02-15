@@ -212,7 +212,7 @@ namespace Loreline.Runtime {
 					
 					case 1213952397:
 					{
-						this.clear(((global::Loreline.Runtime.Interpreter) (dynargs[0]) ), ((global::Loreline.Runtime.Node) (dynargs[1]) ));
+						this.clear(((global::Loreline.Runtime.Interpreter) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.Node) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
@@ -229,7 +229,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("originalFields");
 			baseArr.push("fields");
 			baseArr.push("scope");
@@ -309,8 +309,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.pos, this.obj, this.name});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.pos, this.obj, this.name});
 		}
 		
 		
@@ -334,15 +334,15 @@ namespace Loreline.Runtime {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.pos) ), ((object) (en.pos) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.pos) ), ((object) (en.pos) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.obj) ), ((object) (en.obj) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.obj) ), ((object) (en.obj) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
@@ -377,8 +377,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.pos, this.array, this.index});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.pos, this.array, this.index});
 		}
 		
 		
@@ -404,15 +404,15 @@ namespace Loreline.Runtime {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.pos) ), ((object) (en.pos) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.pos) ), ((object) (en.pos) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.array) ), ((object) (en.array) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.array) ), ((object) (en.array) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.index) ), ((object) (en.index) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.index) ), ((object) (en.index) ))) ) {
 				return false;
 			}
 			
@@ -446,8 +446,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.pos, this.name});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.pos, this.name});
 		}
 		
 		
@@ -473,11 +473,11 @@ namespace Loreline.Runtime {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.pos) ), ((object) (en.pos) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.pos) ), ((object) (en.pos) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
@@ -509,8 +509,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.pos, this.name});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.pos, this.name});
 		}
 		
 		
@@ -536,11 +536,11 @@ namespace Loreline.Runtime {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.pos) ), ((object) (en.pos) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.pos) ), ((object) (en.pos) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
@@ -570,20 +570,21 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public RuntimeScope(global::Loreline.Internal.Lang.Null<int> id, global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array<object> beats, global::Loreline.Runtime.RuntimeState state, global::Loreline.Runtime.AstNode head) {
-			global::Loreline.Runtime.RuntimeScope.__hx_ctor_loreline_RuntimeScope(this, id, beat, node, beats, state, head);
+		public RuntimeScope(object id, global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array beats, global::Loreline.Runtime.RuntimeState state, global::Loreline.Runtime.AstNode head, global::Loreline.Runtime.RuntimeInsertion insertion) {
+			global::Loreline.Runtime.RuntimeScope.__hx_ctor_loreline_RuntimeScope(this, id, beat, node, beats, state, head, insertion);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_RuntimeScope(global::Loreline.Runtime.RuntimeScope __hx_this, global::Loreline.Internal.Lang.Null<int> id, global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array<object> beats, global::Loreline.Runtime.RuntimeState state, global::Loreline.Runtime.AstNode head) {
+		protected static void __hx_ctor_loreline_RuntimeScope(global::Loreline.Runtime.RuntimeScope __hx_this, object id, global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array beats, global::Loreline.Runtime.RuntimeState state, global::Loreline.Runtime.AstNode head, global::Loreline.Runtime.RuntimeInsertion insertion) {
 			unchecked {
+				__hx_this.insertion = null;
 				__hx_this.head = null;
 				__hx_this.state = null;
 				__hx_this.beats = null;
 				__hx_this.id = -1;
 				{
-					if (id.hasValue) {
-						__hx_this.id = (id).@value;
+					if (( id != default(object) )) {
+						__hx_this.id = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(id)) );
 					}
 					
 					__hx_this.beat = beat;
@@ -600,6 +601,10 @@ namespace Loreline.Runtime {
 						__hx_this.head = head;
 					}
 					
+					if (( insertion != null )) {
+						__hx_this.insertion = insertion;
+					}
+					
 				}
 				
 			}
@@ -612,11 +617,13 @@ namespace Loreline.Runtime {
 		
 		public global::Loreline.Runtime.AstNode node;
 		
-		public global::Loreline.Internal.Root.Array<object> beats;
+		public global::Loreline.Internal.Root.Array beats;
 		
 		public global::Loreline.Runtime.RuntimeState state;
 		
 		public global::Loreline.Runtime.AstNode head;
+		
+		public global::Loreline.Runtime.RuntimeInsertion insertion;
 		
 		public virtual global::Loreline.Runtime.NBeatDecl beatByName(string name) {
 			if (( this.beats == null )) {
@@ -628,7 +635,7 @@ namespace Loreline.Runtime {
 				int _g1 = this.beats.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					global::Loreline.Runtime.NBeatDecl beat = ((global::Loreline.Runtime.NBeatDecl) (this.beats[i]) );
+					global::Loreline.Runtime.NBeatDecl beat = ((global::Loreline.Runtime.NBeatDecl) (this.beats.__get(i)) );
 					if (( beat.name == name )) {
 						return beat;
 					}
@@ -665,6 +672,13 @@ namespace Loreline.Runtime {
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 428594223:
+					{
+						this.insertion = ((global::Loreline.Runtime.RuntimeInsertion) (@value) );
+						return @value;
+					}
+					
+					
 					case 1158359328:
 					{
 						this.head = ((global::Loreline.Runtime.AstNode) (@value) );
@@ -681,7 +695,7 @@ namespace Loreline.Runtime {
 					
 					case 810640957:
 					{
-						this.beats = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.beats = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -724,6 +738,12 @@ namespace Loreline.Runtime {
 					case 477756888:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "beatByName", 477756888)) );
+					}
+					
+					
+					case 428594223:
+					{
+						return this.insertion;
 					}
 					
 					
@@ -799,7 +819,7 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 477756888:
 					{
-						return this.beatByName(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.beatByName(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
@@ -814,12 +834,180 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
+			baseArr.push("insertion");
 			baseArr.push("head");
 			baseArr.push("state");
 			baseArr.push("beats");
 			baseArr.push("node");
 			baseArr.push("beat");
+			baseArr.push("id");
+			base.__hx_getFields(baseArr);
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime {
+	public class RuntimeInsertion : global::Loreline.Internal.Lang.HxObject {
+		
+		public RuntimeInsertion(global::Loreline.Internal.Lang.EmptyObject empty) {
+		}
+		
+		
+		public RuntimeInsertion(int id, global::Loreline.Runtime.NInsertion origin) {
+			global::Loreline.Runtime.RuntimeInsertion.__hx_ctor_loreline_RuntimeInsertion(this, id, origin);
+		}
+		
+		
+		protected static void __hx_ctor_loreline_RuntimeInsertion(global::Loreline.Runtime.RuntimeInsertion __hx_this, int id, global::Loreline.Runtime.NInsertion origin) {
+			__hx_this.stack = new global::Loreline.Internal.Root.Array(new object[]{});
+			__hx_this.options = null;
+			{
+				__hx_this.id = id;
+				__hx_this.origin = origin;
+			}
+			
+		}
+		
+		
+		public int id;
+		
+		public global::Loreline.Runtime.NInsertion origin;
+		
+		public global::Loreline.Internal.Root.Array options;
+		
+		public global::Loreline.Internal.Root.Array stack;
+		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 23515:
+					{
+						this.id = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 67856200:
+					{
+						this.stack = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1610494814:
+					{
+						this.options = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1258363366:
+					{
+						this.origin = ((global::Loreline.Runtime.NInsertion) (@value) );
+						return @value;
+					}
+					
+					
+					case 23515:
+					{
+						this.id = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 67856200:
+					{
+						return this.stack;
+					}
+					
+					
+					case 1610494814:
+					{
+						return this.options;
+					}
+					
+					
+					case 1258363366:
+					{
+						return this.origin;
+					}
+					
+					
+					case 23515:
+					{
+						return this.id;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField(field, hash, throwErrors, isCheck, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 23515:
+					{
+						return ((double) (this.id) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
+			baseArr.push("stack");
+			baseArr.push("options");
+			baseArr.push("origin");
 			baseArr.push("id");
 			base.__hx_getFields(baseArr);
 		}
@@ -856,18 +1044,24 @@ namespace Loreline.Runtime {
 namespace Loreline.Runtime {
 	public struct ChoiceOption {
 		
-		public ChoiceOption(string text, global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag> tags, bool enabled) {
+		public ChoiceOption(string text, global::Loreline.Internal.Root.Array tags, bool enabled, global::Loreline.Runtime.NChoiceOption node, global::Loreline.Runtime.RuntimeInsertion insertion) {
 			this.text = text;
 			this.tags = tags;
 			this.enabled = enabled;
+			this.node = node;
+			this.insertion = insertion;
 		}
 		
 		
 		public string text;
 		
-		public global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag> tags;
+		public global::Loreline.Internal.Root.Array tags;
 		
 		public bool enabled;
+		
+		public global::Loreline.Runtime.NChoiceOption node;
+		
+		public global::Loreline.Runtime.RuntimeInsertion insertion;
 		
 	}
 }
@@ -977,7 +1171,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("cb");
 			baseArr.push("sync");
 			base.__hx_getFields(baseArr);
@@ -997,12 +1191,14 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public InterpreterOptions(object wrapper, global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess, global::Loreline.Internal.Lang.Function customCreateFields) {
-			global::Loreline.Runtime.InterpreterOptions.__hx_ctor_loreline_InterpreterOptions(this, wrapper, functions, strictAccess, customCreateFields);
+		public InterpreterOptions(object wrapper, global::Loreline.Internal.Ds.StringMap functions, object strictAccess, global::Loreline.Internal.Lang.Function customCreateFields, global::Loreline.Internal.Ds.StringMap translations, global::Loreline.Internal.Root.Array stringLiteralProcessors) {
+			global::Loreline.Runtime.InterpreterOptions.__hx_ctor_loreline_InterpreterOptions(this, wrapper, functions, strictAccess, customCreateFields, translations, stringLiteralProcessors);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_InterpreterOptions(global::Loreline.Runtime.InterpreterOptions __hx_this, object wrapper, global::Loreline.Internal.Ds.StringMap<object> functions, global::Loreline.Internal.Lang.Null<bool> strictAccess, global::Loreline.Internal.Lang.Function customCreateFields) {
+		protected static void __hx_ctor_loreline_InterpreterOptions(global::Loreline.Runtime.InterpreterOptions __hx_this, object wrapper, global::Loreline.Internal.Ds.StringMap functions, object strictAccess, global::Loreline.Internal.Lang.Function customCreateFields, global::Loreline.Internal.Ds.StringMap translations, global::Loreline.Internal.Root.Array stringLiteralProcessors) {
+			__hx_this.stringLiteralProcessors = null;
+			__hx_this.translations = null;
 			__hx_this.customCreateFields = null;
 			__hx_this.strictAccess = false;
 			__hx_this.functions = null;
@@ -1016,12 +1212,20 @@ namespace Loreline.Runtime {
 					__hx_this.functions = functions;
 				}
 				
-				if (strictAccess.hasValue) {
-					__hx_this.strictAccess = (strictAccess).@value;
+				if (( strictAccess != default(object) )) {
+					__hx_this.strictAccess = global::Loreline.Internal.Lang.Runtime.toBool(strictAccess);
 				}
 				
 				if (( customCreateFields != null )) {
 					__hx_this.customCreateFields = customCreateFields;
+				}
+				
+				if (( translations != null )) {
+					__hx_this.translations = translations;
+				}
+				
+				if (( stringLiteralProcessors != null )) {
+					__hx_this.stringLiteralProcessors = stringLiteralProcessors;
 				}
 				
 			}
@@ -1031,11 +1235,15 @@ namespace Loreline.Runtime {
 		
 		public object wrapper;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> functions;
+		public global::Loreline.Internal.Ds.StringMap functions;
 		
 		public bool strictAccess;
 		
 		public global::Loreline.Internal.Lang.Function customCreateFields;
+		
+		public global::Loreline.Internal.Ds.StringMap translations;
+		
+		public global::Loreline.Internal.Root.Array stringLiteralProcessors;
 		
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
@@ -1061,6 +1269,20 @@ namespace Loreline.Runtime {
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 1111684383:
+					{
+						this.stringLiteralProcessors = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1128833634:
+					{
+						this.translations = ((global::Loreline.Internal.Ds.StringMap) (@value) );
+						return @value;
+					}
+					
+					
 					case 2043537382:
 					{
 						this.customCreateFields = ((global::Loreline.Internal.Lang.Function) (@value) );
@@ -1077,7 +1299,7 @@ namespace Loreline.Runtime {
 					
 					case 872614491:
 					{
-						this.functions = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.functions = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -1103,6 +1325,18 @@ namespace Loreline.Runtime {
 		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 1111684383:
+					{
+						return this.stringLiteralProcessors;
+					}
+					
+					
+					case 1128833634:
+					{
+						return this.translations;
+					}
+					
+					
 					case 2043537382:
 					{
 						return this.customCreateFields;
@@ -1158,7 +1392,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
+			baseArr.push("stringLiteralProcessors");
+			baseArr.push("translations");
 			baseArr.push("customCreateFields");
 			baseArr.push("strictAccess");
 			baseArr.push("functions");
@@ -1187,35 +1423,41 @@ namespace Loreline.Runtime {
 		
 		protected static void __hx_ctor_loreline_Interpreter(global::Loreline.Runtime.Interpreter __hx_this, global::Loreline.Runtime.Script script, global::Loreline.Internal.Lang.Function handleDialogue, global::Loreline.Internal.Lang.Function handleChoice, global::Loreline.Internal.Lang.Function handleFinish, global::Loreline.Runtime.InterpreterOptions options) {
 			unchecked {
-				__hx_this._random = null;
 				__hx_this.wrapper = null;
 				__hx_this.beatToResume = null;
 				__hx_this.finishTrigger = null;
 				__hx_this.flushing = false;
-				__hx_this.syncCallbacks = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				__hx_this.syncCallbacks = new global::Loreline.Internal.Root.Array(new object[]{});
+				__hx_this.nextInsertionId = 1;
 				__hx_this.nextScopeId = 1;
-				__hx_this.stack = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-				__hx_this.topLevelFunctions = new global::Loreline.Internal.Ds.StringMap<object>();
-				__hx_this.nodeStates = new global::Loreline.Runtime.NodeIdMap<object>();
-				__hx_this.topLevelBeats = new global::Loreline.Internal.Ds.StringMap<object>();
-				__hx_this.topLevelCharacters = new global::Loreline.Internal.Ds.StringMap<object>();
+				__hx_this.stack = new global::Loreline.Internal.Root.Array(new object[]{});
+				__hx_this.stringLiteralProcessors = new global::Loreline.Internal.Root.Array(new object[]{});
+				__hx_this.mapHelpers = new global::Loreline.Internal.Ds.StringMap();
+				__hx_this.arrayHelpers = new global::Loreline.Internal.Ds.StringMap();
+				__hx_this.stringHelpers = new global::Loreline.Internal.Ds.StringMap();
+				__hx_this.topLevelFunctions = new global::Loreline.Internal.Ds.StringMap();
+				__hx_this.nodeStates = new global::Loreline.Runtime.NodeIdMap();
+				__hx_this.topLevelBeats = new global::Loreline.Internal.Ds.StringMap();
+				__hx_this.topLevelCharacters = new global::Loreline.Internal.Ds.StringMap();
 				{
 					__hx_this.script = script;
 					__hx_this.handleDialogue = handleDialogue;
 					__hx_this.handleChoice = handleChoice;
 					__hx_this.handleFinish = handleFinish;
 					__hx_this.lens = new global::Loreline.Runtime.Lens(((global::Loreline.Runtime.Script) (script) ));
-					global::Loreline.Internal.Lang.Null<bool> tmp = ( (( options != null )) ? (new global::Loreline.Internal.Lang.Null<bool>(options.strictAccess, true)) : (default(global::Loreline.Internal.Lang.Null<bool>)) );
-					__hx_this.strictAccess = ( tmp.hasValue && (tmp).@value );
+					object tmp = ( (( options != null )) ? (((object) (options.strictAccess) )) : (null) );
+					__hx_this.strictAccess = ( ((bool) (( tmp != default(object) )) ) && global::Loreline.Internal.Lang.Runtime.toBool(tmp) );
+					__hx_this.translations = ( (( options != null )) ? (options.translations) : (null) );
 					__hx_this.wrapper = ( (( options != null )) ? (options.wrapper) : (null) );
 					__hx_this.topLevelState = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (__hx_this) ), ((global::Loreline.Runtime.Node) (script) ), default(object), default(object));
 					__hx_this.initializeTopLevelFunctions(( (( options != null )) ? (options.functions) : (null) ));
+					__hx_this.initializeStringLiteralProcessors(( (( options != null )) ? (options.stringLiteralProcessors) : (null) ));
 					{
 						global::Loreline.Runtime._Script.ScriptBodyIterator decl = script.iterator();
 						while (decl.hasNext()) {
 							global::Loreline.Runtime.AstNode decl1 = decl.next();
 							{
-								global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (decl1) )));
+								global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (decl1) )));
 								if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NBeatDecl))) {
 									__hx_this.initializeTopLevelBeat(((global::Loreline.Runtime.NBeatDecl) (decl1) ));
 								}
@@ -1245,6 +1487,8 @@ namespace Loreline.Runtime {
 		
 		public global::Loreline.Runtime.Script script;
 		
+		public global::Loreline.Internal.Ds.StringMap translations;
+		
 		public global::Loreline.Internal.Lang.Function handleDialogue;
 		
 		public global::Loreline.Internal.Lang.Function handleChoice;
@@ -1253,15 +1497,23 @@ namespace Loreline.Runtime {
 		
 		public global::Loreline.Runtime.RuntimeState topLevelState;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> topLevelCharacters;
+		public global::Loreline.Internal.Ds.StringMap topLevelCharacters;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> topLevelBeats;
+		public global::Loreline.Internal.Ds.StringMap topLevelBeats;
 		
-		public global::Loreline.Runtime.NodeIdMap<object> nodeStates;
+		public global::Loreline.Runtime.NodeIdMap nodeStates;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> topLevelFunctions;
+		public global::Loreline.Internal.Ds.StringMap topLevelFunctions;
 		
-		public global::Loreline.Internal.Root.Array<object> stack;
+		public global::Loreline.Internal.Ds.StringMap stringHelpers;
+		
+		public global::Loreline.Internal.Ds.StringMap arrayHelpers;
+		
+		public global::Loreline.Internal.Ds.StringMap mapHelpers;
+		
+		public global::Loreline.Internal.Root.Array stringLiteralProcessors;
+		
+		public global::Loreline.Internal.Root.Array stack;
 		
 		public global::Loreline.Runtime.Lens lens;
 		
@@ -1272,7 +1524,7 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.RuntimeScope get_currentScope() {
 			unchecked {
 				if (( this.stack.length > 0 )) {
-					return ((global::Loreline.Runtime.RuntimeScope) (this.stack[( this.stack.length - 1 )]) );
+					return ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(( this.stack.length - 1 ))) );
 				}
 				else {
 					return null;
@@ -1282,9 +1534,47 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		
+		
+		public virtual global::Loreline.Runtime.RuntimeInsertion get_currentInsertion() {
+			unchecked {
+				int i = ( this.stack.length - 1 );
+				while (( i >= 0 )) {
+					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
+					if (( scope.insertion != null )) {
+						return scope.insertion;
+					}
+					
+					 -- i;
+				}
+				
+				return null;
+			}
+		}
+		
+		
+		public virtual void removeCurrentInsertion() {
+			unchecked {
+				int i = ( this.stack.length - 1 );
+				while (( i >= 0 )) {
+					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
+					if (( scope.insertion != null )) {
+						scope.insertion = null;
+						break;
+					}
+					
+					 -- i;
+				}
+				
+			}
+		}
+		
+		
 		public int nextScopeId;
 		
-		public global::Loreline.Internal.Root.Array<object> syncCallbacks;
+		public int nextInsertionId;
+		
+		public global::Loreline.Internal.Root.Array syncCallbacks;
 		
 		public bool flushing;
 		
@@ -1299,7 +1589,7 @@ namespace Loreline.Runtime {
 		public virtual void start(string beatName) {
 			global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
 			if (( beatName != null )) {
-				resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).@get(beatName)).@value) );
+				resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@get(((string) (beatName) ))) );
 				if (( resolvedBeat == null )) {
 					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Beat ", beatName), " not found")) ), ((global::Loreline.Runtime.Position) (this.script.pos) )))) );
 				}
@@ -1349,25 +1639,32 @@ namespace Loreline.Runtime {
 		
 		public virtual object save() {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				object insertions = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
+				global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g1 = 0;
-					global::Loreline.Internal.Root.Array<object> _g2 = this.stack;
+					global::Loreline.Internal.Root.Array _g2 = this.stack;
 					while (( _g1 < _g2.length )) {
-						global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (_g2[_g1]) );
+						global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (_g2.__get(_g1)) );
 						 ++ _g1;
-						_g.push(this.serializeScope(scope));
+						_g.push(this.serializeScope(scope, insertions));
 					}
 					
 				}
 				
-				object tmp = this.serializeState(this.topLevelState);
-				object tmp1 = this.serializeCharacters();
+				object result = this.serializeState(this.topLevelState);
+				object result1 = this.serializeCharacters();
+				object result2 = null;
 				{
 					object __temp_odecl1 = this.serializeNodeStates();
-					return new global::Loreline.Internal.Lang.DynamicObject(new int[]{67856200, 67859985, 283690212, 1439586474}, new object[]{_g, tmp, __temp_odecl1, tmp1}, new int[]{2096228120}, new double[]{((double) (1) )});
+					result2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{67856200, 67859985, 283690212, 1439586474}, new object[]{_g, result, __temp_odecl1, result1}, new int[]{2096228120}, new double[]{((double) (1) )});
 				}
 				
+				if (( global::Loreline.Internal.Root.Reflect.fields(insertions).length > 0 )) {
+					global::Loreline.Internal.Lang.Runtime.setField(result2, "insertions", 1087231332, insertions);
+				}
+				
+				return result2;
 			}
 		}
 		
@@ -1381,11 +1678,12 @@ namespace Loreline.Runtime {
 				this.stack.resize(0);
 				this.nodeStates.map.clear();
 				this.nextScopeId = 1;
+				this.nextInsertionId = 1;
 				this.restoreState(this.topLevelState, global::Loreline.Internal.Lang.Runtime.getField(saveData, "state", 67859985, true));
 				this.restoreCharacters(global::Loreline.Internal.Lang.Runtime.getField(saveData, "characters", 1439586474, true));
 				this.restoreNodeStates(global::Loreline.Internal.Lang.Runtime.getField(saveData, "nodeStates", 283690212, true));
-				if ( ! (this.restoreStack(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saveData, "stack", 67856200, true)) ))) ))) ) {
-					this.beatToResume = this.restoreBeatToResume(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saveData, "stack", 67856200, true)) ))) ));
+				if ( ! (this.restoreStack(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saveData, "stack", 67856200, true)) ), global::Loreline.Internal.Lang.Runtime.getField(saveData, "insertions", 1087231332, true))) ) {
+					this.beatToResume = this.restoreBeatToResume(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saveData, "stack", 67856200, true)) ));
 				}
 				
 			}
@@ -1400,14 +1698,22 @@ namespace Loreline.Runtime {
 			
 			global::Loreline.Runtime.EvalNext done = this.wrapNext(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "finish", 109002835)) ));
 			this.finishTrigger = done;
-			this.resumeNode(((global::Loreline.Runtime.RuntimeScope) (this.stack[0]) ).node, 0, done.cb);
+			this.resumeNode(((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(0)) ).node, 0, done.cb);
 			done.sync = false;
 			this.flush();
 		}
 		
 		
+		public virtual void resumeFromLevel(int scopeLevel, global::Loreline.Internal.Lang.Function next) {
+			global::Loreline.Runtime.EvalNext done = this.wrapNext(next);
+			this.finishTrigger = done;
+			this.resumeNode(((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(scopeLevel)) ).node, scopeLevel, done.cb);
+			done.sync = false;
+		}
+		
+		
 		public virtual object getCharacter(string name) {
-			global::Loreline.Runtime.RuntimeCharacter tmp = ((global::Loreline.Runtime.RuntimeCharacter) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@get(name)).@value) );
+			global::Loreline.Runtime.RuntimeCharacter tmp = ((global::Loreline.Runtime.RuntimeCharacter) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@get(((string) (name) ))) );
 			if (( tmp != null )) {
 				return tmp.fields;
 			}
@@ -1419,7 +1725,7 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual object getCharacterField(string character, string name) {
-			global::Loreline.Runtime.RuntimeCharacter tmp = ((global::Loreline.Runtime.RuntimeCharacter) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@get(character)).@value) );
+			global::Loreline.Runtime.RuntimeCharacter tmp = ((global::Loreline.Runtime.RuntimeCharacter) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@get(((string) (character) ))) );
 			object fields = ( (( tmp != null )) ? (tmp.fields) : (null) );
 			if (( fields != null )) {
 				return global::Loreline.Runtime.Objects.getField(this, fields, name);
@@ -1429,7 +1735,13 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual object serializeScope(global::Loreline.Runtime.RuntimeScope scope) {
+		public virtual void setCharacterField(string character, string name, object @value) {
+			object fields = ((global::Loreline.Runtime.RuntimeCharacter) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@get(((string) (character) ))) ).fields;
+			global::Loreline.Runtime.Objects.setField(this, fields, name, @value);
+		}
+		
+		
+		public virtual object serializeScope(global::Loreline.Runtime.RuntimeScope scope, object insertions) {
 			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{23515}, new double[]{((double) (scope.id) )});
 			if (( scope.beat != null )) {
 				global::Loreline.Internal.Lang.Runtime.setField(result, "beat", 1091821942, this.serializeBeatReference(scope.beat));
@@ -1444,23 +1756,119 @@ namespace Loreline.Runtime {
 			}
 			
 			if (( scope.beats != null )) {
-				global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g1 = 0;
-					global::Loreline.Internal.Root.Array<object> _g2 = scope.beats;
+					global::Loreline.Internal.Root.Array _g2 = scope.beats;
 					while (( _g1 < _g2.length )) {
-						global::Loreline.Runtime.NBeatDecl beat = ((global::Loreline.Runtime.NBeatDecl) (_g2[_g1]) );
+						global::Loreline.Runtime.NBeatDecl beat = ((global::Loreline.Runtime.NBeatDecl) (_g2.__get(_g1)) );
 						 ++ _g1;
 						_g.push(this.serializeBeatReference(beat));
 					}
 					
 				}
 				
-				global::Loreline.Internal.Root.Array<object> __temp_expr1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(result, "beats", 810640957, _g)) ))) );
+				global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(result, "beats", 810640957, _g)) );
 			}
 			
 			if (( scope.head != null )) {
 				global::Loreline.Internal.Lang.Runtime.setField(result, "head", 1158359328, this.serializeNodeReference(scope.head));
+			}
+			
+			if (( scope.insertion != null )) {
+				global::Loreline.Internal.Lang.Runtime.setField(result, "insertion", 428594223, this.serializeInsertion(scope.insertion, insertions));
+			}
+			
+			return result;
+		}
+		
+		
+		public virtual object serializeInsertion(global::Loreline.Runtime.RuntimeInsertion insertion, object insertions) {
+			string key = global::Loreline.Internal.Root.Std.@string(insertion.id);
+			object serialized = global::Loreline.Internal.Root.Reflect.field(insertions, key);
+			if (( serialized == null )) {
+				serialized = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
+				if (( insertion.options != null )) {
+					global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
+					{
+						int _g1 = 0;
+						global::Loreline.Internal.Root.Array _g2 = insertion.options;
+						while (( _g1 < _g2.length )) {
+							global::Loreline.Runtime.ChoiceOption opt = ((global::Loreline.Runtime.ChoiceOption) (_g2.__get(_g1)) );
+							 ++ _g1;
+							_g.push(this.serializeChoiceOption(opt, insertions));
+						}
+						
+					}
+					
+					global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(serialized, "options", 1610494814, _g)) );
+				}
+				
+				if (( insertion.origin != null )) {
+					global::Loreline.Internal.Lang.Runtime.setField(serialized, "origin", 1258363366, this.serializeNodeReference(insertion.origin));
+				}
+				
+				if (( insertion.stack != null )) {
+					global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array(new object[]{});
+					{
+						int _g4 = 0;
+						global::Loreline.Internal.Root.Array _g5 = insertion.stack;
+						while (( _g4 < _g5.length )) {
+							global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (_g5.__get(_g4)) );
+							 ++ _g4;
+							_g3.push(this.serializeScope(scope, insertions));
+						}
+						
+					}
+					
+					global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(serialized, "stack", 67856200, _g3)) );
+				}
+				
+				global::Loreline.Internal.Root.Reflect.setField(insertions, key, serialized);
+			}
+			
+			return insertion.id;
+		}
+		
+		
+		public virtual object serializeChoiceOption(global::Loreline.Runtime.ChoiceOption option, object insertions) {
+			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1291439277}, new object[]{option.text}, new int[]{}, new double[]{});
+			if ( ! (option.enabled) ) {
+				global::Loreline.Internal.Lang.Runtime.setField(result, "disabled", 2080653692, true);
+			}
+			
+			if (( option.tags != null )) {
+				global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
+				{
+					int _g1 = 0;
+					global::Loreline.Internal.Root.Array _g2 = option.tags;
+					while (( _g1 < _g2.length )) {
+						global::Loreline.Runtime.TextTag tag = ((global::Loreline.Runtime.TextTag) (_g2.__get(_g1)) );
+						 ++ _g1;
+						_g.push(this.serializeTextTag(tag));
+					}
+					
+				}
+				
+				global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(result, "tags", 1291236569, _g)) );
+			}
+			
+			if (( option.node != null )) {
+				global::Loreline.Internal.Lang.Runtime.setField(result, "node", 1225394690, this.serializeNodeReference(option.node));
+			}
+			
+			if (( option.insertion != null )) {
+				global::Loreline.Internal.Lang.Runtime.setField(result, "insertion", 428594223, this.serializeInsertion(option.insertion, insertions));
+			}
+			
+			return result;
+		}
+		
+		
+		public virtual object serializeTextTag(global::Loreline.Runtime.TextTag tag) {
+			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{834174833}, new object[]{tag.@value}, new int[]{1614780307}, new double[]{((double) (tag.offset) )});
+			if (tag.closing) {
+				global::Loreline.Internal.Lang.Runtime.setField(result, "closing", 2032525045, true);
 			}
 			
 			return result;
@@ -1475,12 +1883,12 @@ namespace Loreline.Runtime {
 		public virtual object serializeCharacters() {
 			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
 			{
-				global::Loreline.Internal.IMap<string, object> map = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) );
-				global::Loreline.Internal.IMap<string, object> _g_map = map;
+				global::Loreline.Internal.IMap map = ((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) )) );
+				global::Loreline.Internal.IMap _g_map = map;
 				object _g_keys = map.keys();
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "hasNext", 407283053, null))) {
 					string key = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "next", 1224901875, null));
-					global::Loreline.Runtime.RuntimeCharacter _g_value = ((global::Loreline.Runtime.RuntimeCharacter) ((_g_map.@get(key)).@value) );
+					global::Loreline.Runtime.RuntimeCharacter _g_value = ((global::Loreline.Runtime.RuntimeCharacter) (_g_map.@get(key)) );
 					string _g_key = key;
 					string name = _g_key;
 					global::Loreline.Runtime.RuntimeCharacter character = _g_value;
@@ -1503,18 +1911,18 @@ namespace Loreline.Runtime {
 		public virtual object serializeNodeStates() {
 			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
 			{
-				global::Loreline.Runtime.Int64Map<object> _g_map = this.nodeStates.map;
+				global::Loreline.Runtime.Int64Map _g_map = this.nodeStates.map;
 				int _g_index = 0;
-				while (( ( _g_index < ( ((object[]) (_g_map._values) ) as global::System.Array ).Length ) && ( ((object[]) (_g_map._values) )[_g_index] == null ) )) {
+				while (( ( _g_index < ( ((object[]) (_g_map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (_g_map._values) )[_g_index]) ) == null ) )) {
 					 ++ _g_index;
 				}
 				
 				while (( _g_index < ( ((object[]) (_g_map._values) ) as global::System.Array ).Length )) {
-					int k1 = ((int[]) (_g_map._keys1) )[_g_index];
-					int k2 = ((int[]) (_g_map._keys2) )[_g_index];
-					object v = ((object[]) (_g_map._values) )[_g_index];
+					int k1 = ((int) (((int[]) (_g_map._keys1) )[_g_index]) );
+					int k2 = ((int) (((int[]) (_g_map._keys2) )[_g_index]) );
+					object v = ((object) (((object[]) (_g_map._values) )[_g_index]) );
 					 ++ _g_index;
-					while (( ( _g_index < ( ((object[]) (_g_map._values) ) as global::System.Array ).Length ) && ( ((object[]) (_g_map._values) )[_g_index] == null ) )) {
+					while (( ( _g_index < ( ((object[]) (_g_map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (_g_map._values) )[_g_index]) ) == null ) )) {
 						 ++ _g_index;
 					}
 					
@@ -1542,15 +1950,18 @@ namespace Loreline.Runtime {
 			string path = beat.name;
 			global::Loreline.Runtime.NBeatDecl parentBeat = beat;
 			do {
-				parentBeat = ((global::Loreline.Runtime.NBeatDecl) ((this.lens.getFirstParentOfType<object>(((global::Loreline.Runtime.Node) (parentBeat) ), ((global::System.Type) (typeof(global::Loreline.Runtime.NBeatDecl)) ))).@value) );
+				parentBeat = ((global::Loreline.Runtime.NBeatDecl) (this.lens.getFirstParentOfType(((global::Loreline.Runtime.Node) (parentBeat) ), ((global::System.Type) (typeof(global::Loreline.Runtime.NBeatDecl)) ))) );
 				if (( parentBeat != null )) {
 					path = global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(parentBeat.name, "."), path);
 				}
 				
 			}
 			while (( parentBeat != null ));
-			string tmp = global::Loreline.Runtime._Node.NodeId_Impl_.toString(beat.id);
-			return new global::Loreline.Internal.Lang.DynamicObject(new int[]{23515, 1246881189}, new object[]{tmp, beat.name}, new int[]{}, new double[]{});
+			{
+				string __temp_odecl1 = global::Loreline.Runtime._Node.NodeId_Impl_.toString(beat.id);
+				return new global::Loreline.Internal.Lang.DynamicObject(new int[]{23515, 1246881189}, new object[]{__temp_odecl1, path}, new int[]{}, new double[]{});
+			}
+			
 		}
 		
 		
@@ -1573,7 +1984,7 @@ namespace Loreline.Runtime {
 			string type = null;
 			object result = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
 			if (( fields is global::Loreline.Runtime.Fields )) {
-				global::System.Type cls = global::Loreline.Internal.Root.Type.getClass<object>(((object) (fields) ));
+				global::System.Type cls = global::Loreline.Internal.Root.Type.getClass(((object) (fields) ));
 				if ( ! (global::Loreline.Internal.Lang.Runtime.typeEq(cls, null)) ) {
 					type = global::Loreline.Internal.Root.Type.getClassName(cls);
 				}
@@ -1581,9 +1992,9 @@ namespace Loreline.Runtime {
 				global::Loreline.Runtime.Fields fieldMap = ((global::Loreline.Runtime.Fields) (fields) );
 				{
 					int _g = 0;
-					global::Loreline.Internal.Root.Array<string> _g1 = fieldMap.lorelineFields(this);
+					global::Loreline.Internal.Root.Array _g1 = fieldMap.lorelineFields(this);
 					while (( _g < _g1.length )) {
-						string key = _g1[_g];
+						string key = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 						 ++ _g;
 						global::Loreline.Internal.Root.Reflect.setField(result, key, this.serializeValue(fieldMap.lorelineGet(this, key)));
 					}
@@ -1592,12 +2003,12 @@ namespace Loreline.Runtime {
 				
 			}
 			else if (( fields is global::Loreline.Internal.Ds.StringMap )) {
-				global::Loreline.Internal.Ds.StringMap<object> map = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (fields) ))) );
+				global::Loreline.Internal.Ds.StringMap map = ((global::Loreline.Internal.Ds.StringMap) (fields) );
 				{
-					object key1 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (map) ))) );
+					object key1 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (map) ))) );
 					while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(key1, "hasNext", 407283053, null))) {
 						string key2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(key1, "next", 1224901875, null));
-						object @value = (map.@get(key2)).toDynamic();
+						object @value = map.@get(((string) (key2) ));
 						if (( ( ( originalFields == null ) ||  ! (global::Loreline.Runtime.Objects.fieldExists(this, originalFields, key2))  ) ||  ! (global::Loreline.Runtime.Equal.equal(this, global::Loreline.Runtime.Objects.getField(this, originalFields, key2), @value))  )) {
 							global::Loreline.Internal.Root.Reflect.setField(result, key2, this.serializeValue(@value));
 						}
@@ -1609,11 +2020,11 @@ namespace Loreline.Runtime {
 			}
 			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
 				type = "System.Collections.IDictionary";
-				global::Loreline.Internal.Root.Array<string> keys = global::Loreline.Runtime.Objects.getCsDictKeys(fields);
+				global::Loreline.Internal.Root.Array keys = global::Loreline.Runtime.Objects.getCsDictKeys(fields);
 				{
 					int _g2 = 0;
 					while (( _g2 < keys.length )) {
-						string key3 = keys[_g2];
+						string key3 = global::Loreline.Internal.Lang.Runtime.toString(keys.__get(_g2));
 						 ++ _g2;
 						global::Loreline.Internal.Root.Reflect.setField(result, key3, this.serializeValue(global::Loreline.Runtime.Objects.getCsDictField(fields, key3)));
 					}
@@ -1622,16 +2033,16 @@ namespace Loreline.Runtime {
 				
 			}
 			else {
-				global::System.Type cls1 = global::Loreline.Internal.Root.Type.getClass<object>(((object) (fields) ));
+				global::System.Type cls1 = global::Loreline.Internal.Root.Type.getClass(((object) (fields) ));
 				if ( ! (global::Loreline.Internal.Lang.Runtime.typeEq(cls1, null)) ) {
 					type = global::Loreline.Internal.Root.Type.getClassName(cls1);
 				}
 				
 				{
 					int _g3 = 0;
-					global::Loreline.Internal.Root.Array<string> _g4 = global::Loreline.Internal.Root.Reflect.fields(fields);
+					global::Loreline.Internal.Root.Array _g4 = global::Loreline.Internal.Root.Reflect.fields(fields);
 					while (( _g3 < _g4.length )) {
-						string field = _g4[_g3];
+						string field = global::Loreline.Internal.Lang.Runtime.toString(_g4.__get(_g3));
 						 ++ _g3;
 						object value1 = global::Loreline.Internal.Root.Reflect.getProperty(fields, field);
 						if (( ( ( originalFields == null ) ||  ! (global::Loreline.Runtime.Objects.fieldExists(this, originalFields, field))  ) ||  ! (global::Loreline.Runtime.Equal.equal(this, global::Loreline.Runtime.Objects.getField(this, originalFields, field), value1))  )) {
@@ -1664,7 +2075,7 @@ namespace Loreline.Runtime {
 			}
 			
 			if (global::Loreline.Runtime.Arrays.isArray(@value)) {
-				global::Loreline.Internal.Root.Array<object> arr = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array arr = new global::Loreline.Internal.Root.Array(new object[]{});
 				int len = global::Loreline.Runtime.Arrays.arrayLength(@value);
 				{
 					int _g = 0;
@@ -1689,27 +2100,30 @@ namespace Loreline.Runtime {
 				bool isLastNode = ( scopeLevel >= this.stack.length );
 				if ( ! (isLastNode) ) {
 					{
-						global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) )));
+						global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (node) )));
 						if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NBeatDecl))) {
 							this.resumeBeatRun(((global::Loreline.Runtime.NBeatDecl) (node) ), scopeLevel, next);
 						}
 						else if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NCall))) {
-							if (this.isBeatCall(node, new global::Loreline.Internal.Lang.Null<int>(scopeLevel, true))) {
+							if (this.isBeatCall(node, scopeLevel)) {
 								this.resumeCall(((global::Loreline.Runtime.NCall) (node) ), scopeLevel, next);
 							}
 							else {
-								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from node within stack: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
+								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from node within stack: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 							}
 							
 						}
 						else if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NChoiceOption))) {
 							this.resumeChoiceOption(((global::Loreline.Runtime.NChoiceOption) (node) ), scopeLevel, next);
 						}
+						else if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NChoiceStatement))) {
+							this.resumeChoice(((global::Loreline.Runtime.NChoiceStatement) (node) ), scopeLevel, next);
+						}
 						else if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NIfStatement))) {
 							this.resumeIf(((global::Loreline.Runtime.NIfStatement) (node) ), scopeLevel, next);
 						}
 						else {
-							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from node within stack: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
+							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from node within stack: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 						}
 						
 					}
@@ -1717,13 +2131,13 @@ namespace Loreline.Runtime {
 				}
 				else {
 					{
-						global::System.Type __temp_switch2 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) )));
+						global::System.Type __temp_switch2 = (global::Loreline.Internal.Root.Type.getClass(((object) (node) )));
 						if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch2, typeof(global::Loreline.Runtime.NCall))) {
-							if ( ! (this.isBeatCall(node, default(global::Loreline.Internal.Lang.Null<int>))) ) {
+							if ( ! (this.isBeatCall(node, null)) ) {
 								this.evalCall(((global::Loreline.Runtime.NCall) (node) ), next);
 							}
 							else {
-								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from last node: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
+								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from last node: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 							}
 							
 						}
@@ -1737,7 +2151,7 @@ namespace Loreline.Runtime {
 							this.evalText(((global::Loreline.Runtime.NTextStatement) (node) ), next);
 						}
 						else {
-							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from last node: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
+							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Resume execution not supported from last node: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 						}
 						
 					}
@@ -1748,9 +2162,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual void resumeNodeBody(global::Loreline.Runtime.AstNode node, int scopeLevel, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Lang.Function next) {
+		public virtual void resumeNodeBody(global::Loreline.Runtime.AstNode node, int scopeLevel, global::Loreline.Internal.Root.Array body, global::Loreline.Internal.Lang.Function next) {
 			unchecked {
-				global::Loreline.Runtime.RuntimeScope currentScope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[scopeLevel]) );
+				global::Loreline.Runtime.RuntimeScope currentScope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(scopeLevel)) );
 				int[] index = new int[]{0};
 				int[] resumeIndex = new int[]{-1};
 				if (( ( currentScope.head == null ) && ( scopeLevel < ( this.stack.length - 1 ) ) )) {
@@ -1758,9 +2172,9 @@ namespace Loreline.Runtime {
 				}
 				
 				if (( currentScope.head != null )) {
-					index[0] = body.indexOf(currentScope.head, default(global::Loreline.Internal.Lang.Null<int>));
-					resumeIndex[0] = index[0];
-					if (( index[0] == -1 )) {
+					index[0] = body.indexOf(currentScope.head, null);
+					resumeIndex[0] = ((int) (index[0]) );
+					if (( ((int) (index[0]) ) == -1 )) {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Failed to resolve head in scope when resuming through body") ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 					}
 					
@@ -1768,7 +2182,7 @@ namespace Loreline.Runtime {
 				
 				global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
 				global::Loreline.Runtime.Interpreter _gthis = this;
-				moveNext[0] = new global::Loreline.Runtime.Interpreter_resumeNodeBody_1018__Fun(scopeLevel, resumeIndex, next, moveNext, index, currentScope, body, _gthis);
+				moveNext[0] = new global::Loreline.Runtime.Interpreter_resumeNodeBody_1251__Fun(scopeLevel, resumeIndex, next, moveNext, index, currentScope, body, _gthis);
 				((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 			}
 		}
@@ -1784,14 +2198,37 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual void resumeChoice(global::Loreline.Runtime.NChoiceStatement choice, int scopeLevel, global::Loreline.Internal.Lang.Function next) {
+			global::Loreline.Runtime.RuntimeScope currentScope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(scopeLevel)) );
+			if (( currentScope.head == null )) {
+				this.evalChoice(choice, next);
+			}
+			else if (( currentScope.head is global::Loreline.Runtime.NChoiceOption )) {
+				global::Loreline.Runtime.NChoiceOption option = ((global::Loreline.Runtime.NChoiceOption) (currentScope.head) );
+				this.evalNodeBody(currentScope.beat, option, option.body, null, next);
+			}
+			else if (( currentScope.insertion != null )) {
+				while (( this.stack.length > scopeLevel )) {
+					this.pop();
+				}
+				
+				this.evalChoice(choice, next);
+			}
+			else {
+				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Choice head is not a choice option") ), ((global::Loreline.Runtime.Position) (currentScope.head.pos) )))) );
+			}
+			
+		}
+		
+		
 		public virtual void resumeIf(global::Loreline.Runtime.NIfStatement ifStmt, int scopeLevel, global::Loreline.Internal.Lang.Function next) {
 			unchecked {
-				global::Loreline.Runtime.RuntimeScope currentScope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[scopeLevel]) );
+				global::Loreline.Runtime.RuntimeScope currentScope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(scopeLevel)) );
 				if (( currentScope.head == null )) {
 					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Failed to resolve head in scope when resuming through condition") ), ((global::Loreline.Runtime.Position) (ifStmt.pos) )))) );
 				}
 				
-				bool isTrue = ( ifStmt.thenBranch.body.indexOf(currentScope.head, default(global::Loreline.Internal.Lang.Null<int>)) != -1 );
+				bool isTrue = ( ifStmt.thenBranch.body.indexOf(currentScope.head, null) != -1 );
 				global::Loreline.Runtime.NBlock branch = ( (isTrue) ? (ifStmt.thenBranch) : (ifStmt.elseBranch) );
 				if (( ( branch != null ) && ( branch.body.length > 0 ) )) {
 					this.resumeNodeBody(branch, scopeLevel, branch.body, next);
@@ -1813,7 +2250,7 @@ namespace Loreline.Runtime {
 						global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
 						int i = ( this.stack.length - 1 );
 						while (( i >= 0 )) {
-							global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[i]) );
+							global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
 							global::Loreline.Runtime.NBeatDecl beatInScope = scope.beatByName(beatName);
 							if (( beatInScope != null )) {
 								resolvedBeat = beatInScope;
@@ -1823,8 +2260,8 @@ namespace Loreline.Runtime {
 							 -- i;
 						}
 						
-						if (( ( resolvedBeat == null ) && ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).exists(beatName) )) {
-							resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).@get(beatName)).@value) );
+						if (( ( resolvedBeat == null ) && ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).exists(beatName) )) {
+							resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@get(((string) (beatName) ))) );
 						}
 						
 						if (( resolvedBeat != null )) {
@@ -1841,56 +2278,24 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool restoreStack(global::Loreline.Internal.Root.Array<object> savedStack) {
+		public virtual bool restoreStack(global::Loreline.Internal.Root.Array savedStack, object savedInsertions) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> result = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array result = new global::Loreline.Internal.Root.Array(new object[]{});
+				global::Loreline.Internal.Ds.IntMap restoredInsertions = new global::Loreline.Internal.Ds.IntMap();
 				int i = ( savedStack.length - 1 );
 				while (( i >= 0 )) {
-					object savedScope = savedStack[i];
-					global::Loreline.Runtime.NBeatDecl beat = this.restoreBeat(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beat", 1091821942, true));
-					if (( beat == null )) {
+					global::Loreline.Runtime.RuntimeScope scope = this.restoreScopeItem(savedStack.__get(i), savedInsertions, restoredInsertions);
+					if (( scope == null )) {
 						return false;
 					}
 					
-					long savedBeatId = global::Loreline.Runtime._Node.NodeId_Impl_.fromString(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beat", 1091821942, true), "id", 23515, true)));
-					object savedNode = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "node", 1225394690, true);
-					global::Loreline.Runtime.AstNode node = ( (( savedNode != null )) ? (this.restoreNode(savedNode, savedBeatId, beat)) : (null) );
-					if (( ( savedNode != null ) && ( node == null ) )) {
-						return false;
-					}
-					
-					global::Loreline.Internal.Root.Array<object> beats = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-					if (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beats", 810640957, true)) ))) ) != null )) {
-						int _g = 0;
-						global::Loreline.Internal.Root.Array<object> _g1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beats", 810640957, true)) ))) );
-						while (( _g < _g1.length )) {
-							object savedBeat = _g1[_g];
-							 ++ _g;
-							global::Loreline.Runtime.NBeatDecl beatInScope = this.restoreBeat(savedBeat);
-							if (( beatInScope == null )) {
-								return false;
-							}
-							
-							beats.push(beatInScope);
-						}
-						
-					}
-					
-					object savedState = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "state", 67859985, true);
-					global::Loreline.Runtime.RuntimeState state = ( (( savedState != null )) ? (this.restoreState(null, ((object) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "state", 67859985, true)) ))) : (null) );
-					object savedHead = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "head", 1158359328, true);
-					global::Loreline.Runtime.AstNode head = ( (( savedHead != null )) ? (this.restoreNode(savedHead, savedBeatId, beat)) : (null) );
-					if (( ( savedHead != null ) && ( head == null ) )) {
-						return false;
-					}
-					
-					result.push(new global::Loreline.Runtime.RuntimeScope(default(global::Loreline.Internal.Lang.Null<int>), ((global::Loreline.Runtime.NBeatDecl) (beat) ), ((global::Loreline.Runtime.AstNode) (node) ), ((global::Loreline.Internal.Root.Array<object>) (beats) ), ((global::Loreline.Runtime.RuntimeState) (state) ), ((global::Loreline.Runtime.AstNode) (head) )));
+					result.push(scope);
 					 -- i;
 				}
 				
 				i = ( result.length - 1 );
 				while (( i >= 0 )) {
-					this.push(((global::Loreline.Runtime.RuntimeScope) (result[i]) ));
+					this.push(((global::Loreline.Runtime.RuntimeScope) (result.__get(i)) ));
 					 -- i;
 				}
 				
@@ -1899,15 +2304,170 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime.NBeatDecl restoreBeatToResume(global::Loreline.Internal.Root.Array<object> savedStack) {
+		public virtual global::Loreline.Runtime.RuntimeScope restoreScopeItem(object savedScope, object savedInsertions, global::Loreline.Internal.Ds.IntMap restoredInsertions) {
+			global::Loreline.Runtime.NBeatDecl beat = this.restoreBeat(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beat", 1091821942, true));
+			if (( beat == null )) {
+				return null;
+			}
+			
+			long savedBeatId = global::Loreline.Runtime._Node.NodeId_Impl_.fromString(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beat", 1091821942, true), "id", 23515, true)));
+			object savedNode = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "node", 1225394690, true);
+			global::Loreline.Runtime.AstNode node = ( (( savedNode != null )) ? (this.restoreNode(savedNode, savedBeatId, beat)) : (null) );
+			if (( ( savedNode != null ) && ( node == null ) )) {
+				return null;
+			}
+			
+			global::Loreline.Internal.Root.Array beats = new global::Loreline.Internal.Root.Array(new object[]{});
+			if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beats", 810640957, true)) ) != null )) {
+				int _g = 0;
+				global::Loreline.Internal.Root.Array _g1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beats", 810640957, true)) );
+				while (( _g < _g1.length )) {
+					object savedBeat = _g1.__get(_g);
+					 ++ _g;
+					global::Loreline.Runtime.NBeatDecl beatInScope = this.restoreBeat(savedBeat);
+					if (( beatInScope == null )) {
+						return null;
+					}
+					
+					beats.push(beatInScope);
+				}
+				
+			}
+			
+			object savedState = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "state", 67859985, true);
+			global::Loreline.Runtime.RuntimeState state = ( (( savedState != null )) ? (this.restoreState(null, ((object) (global::Loreline.Internal.Lang.Runtime.getField(savedScope, "state", 67859985, true)) ))) : (null) );
+			object savedHead = global::Loreline.Internal.Lang.Runtime.getField(savedScope, "head", 1158359328, true);
+			global::Loreline.Runtime.AstNode head = ( (( savedHead != null )) ? (this.restoreNode(savedHead, savedBeatId, beat)) : (null) );
+			if (( ( savedHead != null ) && ( head == null ) )) {
+				return null;
+			}
+			
+			global::Loreline.Runtime.RuntimeInsertion insertion = null;
+			if (( ( global::Loreline.Internal.Lang.Runtime.getField(savedScope, "insertion", 428594223, true) != default(object) ) && ( savedInsertions != null ) )) {
+				insertion = this.restoreInsertion(((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "insertion", 428594223, true))) ), savedInsertions, restoredInsertions);
+			}
+			
+			return ((global::Loreline.Runtime.RuntimeScope) (new global::Loreline.Runtime.RuntimeScope(default(object), ((global::Loreline.Runtime.NBeatDecl) (beat) ), ((global::Loreline.Runtime.AstNode) (node) ), ((global::Loreline.Internal.Root.Array) (beats) ), ((global::Loreline.Runtime.RuntimeState) (state) ), ((global::Loreline.Runtime.AstNode) (head) ), ((global::Loreline.Runtime.RuntimeInsertion) (insertion) ))) );
+		}
+		
+		
+		public virtual global::Loreline.Runtime.RuntimeInsertion restoreInsertion(int insertionId, object savedInsertions, global::Loreline.Internal.Ds.IntMap restoredInsertions) {
+			unchecked {
+				if (restoredInsertions.exists(insertionId)) {
+					return ((global::Loreline.Runtime.RuntimeInsertion) (restoredInsertions.@get(((int) (insertionId) ))) );
+				}
+				
+				string key = global::Loreline.Internal.Root.Std.@string(insertionId);
+				object saved = global::Loreline.Internal.Root.Reflect.field(savedInsertions, key);
+				if (( saved == null )) {
+					return null;
+				}
+				
+				global::Loreline.Runtime.NInsertion origin = null;
+				if (( global::Loreline.Internal.Lang.Runtime.getField(saved, "origin", 1258363366, true) != null )) {
+					long nodeId = global::Loreline.Runtime._Node.NodeId_Impl_.fromString(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(saved, "origin", 1258363366, true), "id", 23515, true)));
+					global::Loreline.Runtime.Node node = this.lens.getNodeById(nodeId);
+					if (( ( node != null ) && ( node.type() == global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(saved, "origin", 1258363366, true), "type", 1292432058, true)) ) )) {
+						origin = ((global::Loreline.Runtime.NInsertion) (node) );
+					}
+					
+				}
+				
+				global::Loreline.Runtime.RuntimeInsertion insertion = new global::Loreline.Runtime.RuntimeInsertion(((int) (insertionId) ), ((global::Loreline.Runtime.NInsertion) (origin) ));
+				restoredInsertions.@set(((int) (insertionId) ), ((object) (insertion) ));
+				if (( insertionId >= this.nextInsertionId )) {
+					this.nextInsertionId = ( insertionId + 1 );
+				}
+				
+				if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "options", 1610494814, true)) ) != null )) {
+					insertion.options = new global::Loreline.Internal.Root.Array(new object[]{});
+					{
+						int _g = 0;
+						global::Loreline.Internal.Root.Array _g1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "options", 1610494814, true)) );
+						while (( _g < _g1.length )) {
+							object savedOpt = _g1.__get(_g);
+							 ++ _g;
+							global::Loreline.Runtime.ChoiceOption opt = this.restoreChoiceOption(savedOpt, savedInsertions, restoredInsertions);
+							if ( ! (opt.Equals(default(global::Loreline.Runtime.ChoiceOption))) ) {
+								insertion.options.push(opt);
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "stack", 67856200, true)) ) != null )) {
+					insertion.stack = new global::Loreline.Internal.Root.Array(new object[]{});
+					{
+						int _g2 = 0;
+						global::Loreline.Internal.Root.Array _g3 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "stack", 67856200, true)) );
+						while (( _g2 < _g3.length )) {
+							object savedScope = _g3.__get(_g2);
+							 ++ _g2;
+							global::Loreline.Runtime.RuntimeScope scope = this.restoreScopeItem(savedScope, savedInsertions, restoredInsertions);
+							if (( scope != null )) {
+								insertion.stack.push(scope);
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				return insertion;
+			}
+		}
+		
+		
+		public virtual global::Loreline.Runtime.ChoiceOption restoreChoiceOption(object saved, object savedInsertions, global::Loreline.Internal.Ds.IntMap restoredInsertions) {
+			global::Loreline.Runtime.NChoiceOption node = null;
+			if (( global::Loreline.Internal.Lang.Runtime.getField(saved, "node", 1225394690, true) != null )) {
+				long nodeId = global::Loreline.Runtime._Node.NodeId_Impl_.fromString(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(saved, "node", 1225394690, true), "id", 23515, true)));
+				global::Loreline.Runtime.Node astNode = this.lens.getNodeById(nodeId);
+				if (( ( astNode != null ) && ( astNode.type() == global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(saved, "node", 1225394690, true), "type", 1292432058, true)) ) )) {
+					node = ((global::Loreline.Runtime.NChoiceOption) (astNode) );
+				}
+				
+			}
+			
+			global::Loreline.Internal.Root.Array tags = null;
+			if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "tags", 1291236569, true)) ) != null )) {
+				global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
+				{
+					int _g1 = 0;
+					global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(saved, "tags", 1291236569, true)) );
+					while (( _g1 < _g2.length )) {
+						object t = _g2.__get(_g1);
+						 ++ _g1;
+						_g.push(new global::Loreline.Runtime.TextTag(global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.Runtime.getField(t, "closing", 2032525045, true), true), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "value", 834174833, true)), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(t, "offset", 1614780307, true)) )));
+					}
+					
+				}
+				
+				tags = _g;
+			}
+			
+			global::Loreline.Runtime.RuntimeInsertion insertion = null;
+			if (( ( global::Loreline.Internal.Lang.Runtime.getField(saved, "insertion", 428594223, true) != default(object) ) && ( savedInsertions != null ) )) {
+				insertion = this.restoreInsertion(((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.getField(saved, "insertion", 428594223, true))) ), savedInsertions, restoredInsertions);
+			}
+			
+			return new global::Loreline.Runtime.ChoiceOption(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(saved, "text", 1291439277, true)), tags, ( ! (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.Runtime.getField(saved, "disabled", 2080653692, true), true)) ), node, insertion);
+		}
+		
+		
+		public virtual global::Loreline.Runtime.NBeatDecl restoreBeatToResume(global::Loreline.Internal.Root.Array savedStack) {
 			global::Loreline.Runtime.NBeatDecl beat = null;
 			if (( savedStack.length > 0 )) {
-				object savedScope = savedStack[0];
+				object savedScope = savedStack.__get(0);
 				beat = this.restoreBeat(global::Loreline.Internal.Lang.Runtime.getField(savedScope, "beat", 1091821942, true));
 				if (( beat != null )) {
 					global::Loreline.Runtime.NBeatDecl parentBeat = beat;
 					do {
-						parentBeat = ((global::Loreline.Runtime.NBeatDecl) ((this.lens.getFirstParentOfType<object>(((global::Loreline.Runtime.Node) (parentBeat) ), ((global::System.Type) (typeof(global::Loreline.Runtime.NBeatDecl)) ))).@value) );
+						parentBeat = ((global::Loreline.Runtime.NBeatDecl) (this.lens.getFirstParentOfType(((global::Loreline.Runtime.Node) (parentBeat) ), ((global::System.Type) (typeof(global::Loreline.Runtime.NBeatDecl)) ))) );
 						if (( parentBeat != null )) {
 							beat = parentBeat;
 						}
@@ -1940,7 +2500,7 @@ namespace Loreline.Runtime {
 						@value = ( ( @value + 65536 ) & 65535 );
 					}
 					
-					nodeId = ((long) (( ( ((long) (((int) (( ( ((int) (( ((long) (nodeId) ) >> 32 )) ) & 65535 ) | ( @value << 16 ) )) )) ) << 32 ) | ( ((long) (((int) (((long) (nodeId) )) )) ) & 0xffffffffL ) )) );
+					nodeId = ((long) (( ( ((long) (((int) (( ( ((int) (( ((long) (nodeId) ) >> 32 )) ) & 65535 ) | ( @value << 16 ) )) )) ) << 32 ) | ( ((long) (((int) (((long) (nodeId) )) )) ) & ((long) (0xffffffffL) ) ) )) );
 				}
 				
 				global::Loreline.Runtime.Node node = this.lens.getNodeById(nodeId);
@@ -1971,17 +2531,17 @@ namespace Loreline.Runtime {
 		
 		public virtual void restoreCharacters(object data) {
 			int _g = 0;
-			global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
+			global::Loreline.Internal.Root.Array _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
 			while (( _g < _g1.length )) {
-				string name = _g1[_g];
+				string name = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 				 ++ _g;
 				object characterData = global::Loreline.Internal.Root.Reflect.field(data, name);
-				if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).exists(name)) {
-					this.restoreCharacter(((global::Loreline.Runtime.RuntimeCharacter) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@get(name)).@value) ), characterData);
+				if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).exists(name)) {
+					this.restoreCharacter(((global::Loreline.Runtime.RuntimeCharacter) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@get(((string) (name) ))) ), characterData);
 				}
 				else {
 					global::Loreline.Runtime.RuntimeCharacter newCharacter = this.restoreCharacter(null, characterData);
-					((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@set(name, newCharacter);
+					((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@set(((string) (name) ), ((object) (newCharacter) ));
 				}
 				
 			}
@@ -1992,12 +2552,12 @@ namespace Loreline.Runtime {
 		public virtual void restoreNodeStates(object data) {
 			unchecked {
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
+				global::Loreline.Internal.Root.Array _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
 				while (( _g < _g1.length )) {
-					string idStr = _g1[_g];
+					string idStr = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 					 ++ _g;
 					long id = global::Loreline.Runtime._Node.NodeId_Impl_.fromString(idStr);
-					object stateData = global::Loreline.Internal.Root.Reflect.field(this.nodeStates, idStr);
+					object stateData = global::Loreline.Internal.Root.Reflect.field(data, idStr);
 					global::Loreline.Runtime.RuntimeState nodeState = this.restoreState(null, stateData);
 					{
 						long key = ((long) (id) );
@@ -2033,9 +2593,9 @@ namespace Loreline.Runtime {
 			object data = global::Loreline.Internal.Lang.Runtime.getField(savedFields, "fields", 9342585, true);
 			if (global::Loreline.Runtime.Objects.isFields(target)) {
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
+				global::Loreline.Internal.Root.Array _g1 = global::Loreline.Internal.Root.Reflect.fields(data);
 				while (( _g < _g1.length )) {
-					string key = _g1[_g];
+					string key = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 					 ++ _g;
 					global::Loreline.Runtime.Objects.setField(this, target, key, this.restoreValue(global::Loreline.Internal.Root.Reflect.field(data, key)));
 				}
@@ -2043,9 +2603,9 @@ namespace Loreline.Runtime {
 			}
 			else {
 				int _g2 = 0;
-				global::Loreline.Internal.Root.Array<string> _g3 = global::Loreline.Internal.Root.Reflect.fields(data);
+				global::Loreline.Internal.Root.Array _g3 = global::Loreline.Internal.Root.Reflect.fields(data);
 				while (( _g2 < _g3.length )) {
-					string field = _g3[_g2];
+					string field = global::Loreline.Internal.Lang.Runtime.toString(_g3.__get(_g2));
 					 ++ _g2;
 					global::Loreline.Internal.Root.Reflect.setField(target, field, this.restoreValue(global::Loreline.Internal.Root.Reflect.field(data, field)));
 				}
@@ -2085,36 +2645,62 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public global::Loreline.Runtime.Random _random;
-		
-		public virtual double random() {
+		public virtual void initializeTopLevelFunctions(global::Loreline.Internal.Ds.StringMap functions) {
 			unchecked {
-				if (( this._random == null )) {
-					this._random = new global::Loreline.Runtime.Random(default(global::Loreline.Internal.Lang.Null<double>));
+				global::Loreline.Runtime.Functions builtins = new global::Loreline.Runtime.Functions(((global::Loreline.Runtime.Interpreter) (this) ));
+				builtins.bindAll(this.topLevelFunctions);
+				if (( functions != null )) {
+					global::Loreline.Internal.IMap map = ((global::Loreline.Internal.IMap) (functions) );
+					global::Loreline.Internal.IMap _g_map = map;
+					object _g_keys = map.keys();
+					while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "hasNext", 407283053, null))) {
+						string key = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "next", 1224901875, null));
+						object _g_value = ((object) (_g_map.@get(key)) );
+						string _g_key = key;
+						string key1 = _g_key;
+						object func = _g_value;
+						((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).@set(((string) (key1) ), ((object) (func) ));
+					}
+					
 				}
 				
-				global::Loreline.Runtime.Random _this = this._random;
-				return ( ( (_this.seed = ( ( _this.seed * 16807 ) % 2147483647 )) / 2147483647 ) + 0.000000000233 );
+				{
+					global::Loreline.Internal.IMap map1 = ((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) )) );
+					global::Loreline.Internal.IMap _g_map1 = map1;
+					object _g_keys1 = map1.keys();
+					while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys1, "hasNext", 407283053, null))) {
+						string key2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(_g_keys1, "next", 1224901875, null));
+						object _g_value1 = ((object) (_g_map1.@get(key2)) );
+						string _g_key1 = key2;
+						string key3 = _g_key1;
+						object func1 = _g_value1;
+						if (key3.StartsWith("string_")) {
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.stringHelpers) )) ).@set(((string) (global::Loreline.Internal.Lang.StringExt.substr(key3, 7, null)) ), ((object) (func1) ));
+						}
+						else if (key3.StartsWith("array_")) {
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.arrayHelpers) )) ).@set(((string) (global::Loreline.Internal.Lang.StringExt.substr(key3, 6, null)) ), ((object) (func1) ));
+						}
+						else if (key3.StartsWith("map_")) {
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.mapHelpers) )) ).@set(((string) (global::Loreline.Internal.Lang.StringExt.substr(key3, 4, null)) ), ((object) (func1) ));
+						}
+						
+					}
+					
+				}
+				
 			}
 		}
 		
 		
-		public virtual void initializeTopLevelFunctions(global::Loreline.Internal.Ds.StringMap<object> functions) {
+		public virtual void initializeStringLiteralProcessors(global::Loreline.Internal.Root.Array processors) {
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("random", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1502__Fun(_gthis)) ));
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("chance", ((object) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1506__Fun(_gthis)) ));
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set("wait", ((object) (( (( global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun.__hx_current) : (global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun.__hx_current = ((global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun()) )) )) ));
-			if (( functions != null )) {
-				global::Loreline.Internal.IMap<string, object> map = functions;
-				global::Loreline.Internal.IMap<string, object> _g_map = map;
-				object _g_keys = map.keys();
-				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "hasNext", 407283053, null))) {
-					string key = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "next", 1224901875, null));
-					object _g_value = (_g_map.@get(key)).toDynamic();
-					string _g_key = key;
-					string key1 = _g_key;
-					object func = _g_value;
-					((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set(key1, func);
+			this.stringLiteralProcessors.push(new global::Loreline.Runtime.Interpreter_initializeStringLiteralProcessors_1883__Fun(_gthis));
+			if (( processors != null )) {
+				int _g = 0;
+				while (( _g < processors.length )) {
+					global::Loreline.Internal.Lang.Function p = ((global::Loreline.Internal.Lang.Function) (processors.__get(_g)) );
+					 ++ _g;
+					this.stringLiteralProcessors.push(p);
 				}
 				
 			}
@@ -2123,22 +2709,18 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual void initializeTopLevelFunction(global::Loreline.Runtime.NFunctionDecl func) {
-			unchecked {
-				object list_0 = "carrot";
-				object list_1 = 1234;
-				object list_2 = null;
-				object list_3 = "potato";
-				if (( func.name != null )) {
+			if (( func.name != null )) {
+				if ((  ! (func.external)  ||  ! (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).exists(func.name))  )) {
 					global::Loreline.Runtime.CodeToHscript codeToHscript = new global::Loreline.Runtime.CodeToHscript();
 					try {
-						string expr = codeToHscript.process(func.code);
+						string expr = codeToHscript.process(global::Loreline.Internal.Lang.Runtime.concat(func.code, (( (func.external) ? (" {}") : ("") ))));
 						global::Loreline.Internal.Hscript.Parser parser = new global::Loreline.Internal.Hscript.Parser();
 						parser.allowJSON = true;
 						parser.allowTypes = true;
-						object ast = parser.parseString(expr, null, default(global::Loreline.Internal.Lang.Null<int>));
+						object ast = parser.parseString(expr, null, null);
 						global::Loreline.Runtime.HscriptInterp interp = new global::Loreline.Runtime.HscriptInterp(((global::Loreline.Runtime.Interpreter) (this) ));
 						object @value = interp.execute(ast);
-						((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@set(func.name, ((object) (@value) ));
+						((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).@set(((string) (func.name) ), ((object) (@value) ));
 					}
 					catch (global::System.Exception _g){
 						object e = ((object) (global::Loreline.Internal.Exception.caught(_g).unwrap()) );
@@ -2147,11 +2729,12 @@ namespace Loreline.Runtime {
 					
 					
 				}
-				else {
-					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Top level function must have a name") ), ((global::Loreline.Runtime.Position) (func.pos) )))) );
-				}
 				
 			}
+			else {
+				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Top level function must have a name") ), ((global::Loreline.Runtime.Position) (func.pos) )))) );
+			}
+			
 		}
 		
 		
@@ -2159,7 +2742,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Runtime.EvalNext wrapped = new global::Loreline.Runtime.EvalNext();
 			wrapped.sync = true;
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			wrapped.cb = new global::Loreline.Runtime.Interpreter_wrapNext_1592__Fun(wrapped, cb, _gthis);
+			wrapped.cb = new global::Loreline.Runtime.Interpreter_wrapNext_1953__Fun(wrapped, cb, _gthis);
 			return wrapped;
 		}
 		
@@ -2172,8 +2755,8 @@ namespace Loreline.Runtime {
 			this.flushing = true;
 			if (( this.syncCallbacks != null )) {
 				while (( this.syncCallbacks.length > 0 )) {
-					global::Loreline.Internal.Lang.Function cb = ((global::Loreline.Internal.Lang.Function) ((this.syncCallbacks.shift()).@value) );
-					global::Loreline.Internal.Root.Array<object> prevSyncCallbacks = this.syncCallbacks;
+					global::Loreline.Internal.Lang.Function cb = ((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.shift()) );
+					global::Loreline.Internal.Root.Array prevSyncCallbacks = this.syncCallbacks;
 					this.syncCallbacks = null;
 					((global::Loreline.Internal.Lang.Function) (cb) ).__hx_invoke0_o();
 					if (( this.syncCallbacks != null )) {
@@ -2181,7 +2764,7 @@ namespace Loreline.Runtime {
 						int _g1 = this.syncCallbacks.length;
 						while (( _g < _g1 )) {
 							int i = _g++;
-							prevSyncCallbacks.unshift(((global::Loreline.Internal.Lang.Function) (this.syncCallbacks[i]) ));
+							prevSyncCallbacks.unshift(((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.__get(i)) ));
 						}
 						
 					}
@@ -2197,7 +2780,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool pop() {
 			if (( this.stack.length > 0 )) {
-				global::Loreline.Runtime.RuntimeScope __temp_expr1 = ((global::Loreline.Runtime.RuntimeScope) ((this.stack.pop()).@value) );
+				global::Loreline.Runtime.RuntimeScope __temp_expr1 = ((global::Loreline.Runtime.RuntimeScope) (this.stack.pop()) );
 				return true;
 			}
 			
@@ -2218,9 +2801,9 @@ namespace Loreline.Runtime {
 			
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = state.fields;
+				global::Loreline.Internal.Root.Array _g1 = state.fields;
 				while (( _g < _g1.length )) {
-					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1[_g]) );
+					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1.__get(_g)) );
 					 ++ _g;
 					object evaluated = this.evaluateExpression(field.@value);
 					global::Loreline.Runtime.Objects.setField(this, this.topLevelState.fields, field.name, evaluated);
@@ -2236,26 +2819,26 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual void initializeTopLevelBeat(global::Loreline.Runtime.NBeatDecl beat) {
-			if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).exists(beat.name)) {
+			if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).exists(beat.name)) {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Duplicate top level beat: ", beat.name)) ), ((global::Loreline.Runtime.Position) (beat.pos) )))) );
 			}
 			
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).@set(beat.name, beat);
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@set(((string) (beat.name) ), ((object) (beat) ));
 		}
 		
 		
 		public virtual void initializeTopLevelCharacter(global::Loreline.Runtime.NCharacterDecl character) {
-			if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).exists(character.name)) {
+			if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).exists(character.name)) {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Duplicate top level character: ", character.name)) ), ((global::Loreline.Runtime.Position) (character.pos) )))) );
 			}
 			
 			global::Loreline.Runtime.RuntimeCharacter characterState = new global::Loreline.Runtime.RuntimeCharacter(((global::Loreline.Runtime.Interpreter) (this) ), ((global::Loreline.Runtime.AstNode) (character) ), default(object), default(object));
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@set(character.name, characterState);
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@set(((string) (character.name) ), ((object) (characterState) ));
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = character.fields;
+				global::Loreline.Internal.Root.Array _g1 = character.fields;
 				while (( _g < _g1.length )) {
-					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1[_g]) );
+					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1.__get(_g)) );
 					 ++ _g;
 					object evaluated = this.evaluateExpression(field.@value);
 					global::Loreline.Runtime.Objects.setField(this, characterState.fields, field.name, evaluated);
@@ -2282,7 +2865,7 @@ namespace Loreline.Runtime {
 				}
 				else {
 					long key = ((long) (scope.node.id) );
-					runtimeState = ((global::Loreline.Runtime.RuntimeState) ((this.nodeStates.map._get(((int) (( ((long) (key) ) >> 32 )) ), ((int) (((long) (key) )) ))).@value) );
+					runtimeState = ((global::Loreline.Runtime.RuntimeState) (this.nodeStates.map._get(((int) (( ((long) (key) ) >> 32 )) ), ((int) (((long) (key) )) ))) );
 					if (( runtimeState == null )) {
 						runtimeState = new global::Loreline.Runtime.RuntimeState(((global::Loreline.Runtime.Interpreter) (this) ), ((global::Loreline.Runtime.Node) (state) ), default(object), default(object));
 						{
@@ -2296,14 +2879,17 @@ namespace Loreline.Runtime {
 				
 				{
 					int _g = 0;
-					global::Loreline.Internal.Root.Array<object> _g1 = state.fields;
+					global::Loreline.Internal.Root.Array _g1 = state.fields;
 					while (( _g < _g1.length )) {
-						global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1[_g]) );
+						global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (_g1.__get(_g)) );
 						 ++ _g;
-						object evaluated = this.evaluateExpression(field.@value);
-						global::Loreline.Runtime.Objects.setField(this, runtimeState.fields, field.name, evaluated);
-						if ((  ! (state.temporary)  && this.isOriginalScriptExpression(field.@value) )) {
-							global::Loreline.Runtime.Objects.setField(this, runtimeState.originalFields, field.name, evaluated);
+						if ( ! (global::Loreline.Runtime.Objects.fieldExists(this, runtimeState.fields, field.name)) ) {
+							object evaluated = this.evaluateExpression(field.@value);
+							global::Loreline.Runtime.Objects.setField(this, runtimeState.fields, field.name, evaluated);
+							if ((  ! (state.temporary)  && this.isOriginalScriptExpression(field.@value) )) {
+								global::Loreline.Runtime.Objects.setField(this, runtimeState.originalFields, field.name, evaluated);
+							}
+							
 						}
 						
 					}
@@ -2329,6 +2915,7 @@ namespace Loreline.Runtime {
 				}
 				
 				this.nextScopeId = 1;
+				this.nextInsertionId = 1;
 				global::Loreline.Runtime.EvalNext done = this.wrapNext(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "finish", 109002835)) ));
 				this.finishTrigger = done;
 				this.evalBeatRun(beat, done.cb);
@@ -2339,7 +2926,7 @@ namespace Loreline.Runtime {
 		
 		public virtual void evalNode(global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Lang.Function next) {
 			{
-				global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) )));
+				global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (node) )));
 				if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NAssign))) {
 					this.evalAssignment(((global::Loreline.Runtime.NAssign) (node) ), next);
 				}
@@ -2371,7 +2958,7 @@ namespace Loreline.Runtime {
 					this.evalTransition(((global::Loreline.Runtime.NTransition) (node) ));
 				}
 				else {
-					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unsupported node type: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unsupported node type: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (node) ))))) ), ((global::Loreline.Runtime.Position) (node.pos) )))) );
 				}
 				
 			}
@@ -2381,7 +2968,7 @@ namespace Loreline.Runtime {
 		
 		public virtual void evalBeatDecl(global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Internal.Lang.Function next) {
 			if (( this.get_currentScope().beats == null )) {
-				this.get_currentScope().beats = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				this.get_currentScope().beats = new global::Loreline.Internal.Root.Array(new object[]{});
 			}
 			else if (( this.get_currentScope().beatByName(beat.name) != null )) {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Duplicate beat with name: ", beat.name)) ), ((global::Loreline.Runtime.Position) (beat.pos) )))) );
@@ -2392,18 +2979,19 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual void evalNodeBody(global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Internal.Lang.Function next) {
-			this.push(new global::Loreline.Runtime.RuntimeScope(default(global::Loreline.Internal.Lang.Null<int>), ((global::Loreline.Runtime.NBeatDecl) (beat) ), ((global::Loreline.Runtime.AstNode) (node) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Runtime.RuntimeState), default(global::Loreline.Runtime.AstNode)));
+		public virtual void evalNodeBody(global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Root.Array body, global::Loreline.Runtime.RuntimeInsertion insertion, global::Loreline.Internal.Lang.Function next) {
+			this.push(new global::Loreline.Runtime.RuntimeScope(default(object), ((global::Loreline.Runtime.NBeatDecl) (beat) ), ((global::Loreline.Runtime.AstNode) (node) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Runtime.RuntimeState), default(global::Loreline.Runtime.AstNode), ((global::Loreline.Runtime.RuntimeInsertion) (insertion) )));
 			int[] index = new int[]{0};
 			global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
+			global::Loreline.Runtime.RuntimeInsertion currentInsertion = this.get_currentInsertion();
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_1909__Fun(next, moveNext, index, body, _gthis);
+			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_2280__Fun(next, moveNext, index, currentInsertion, body, _gthis);
 			((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 		}
 		
 		
 		public virtual void evalBeatRun(global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Internal.Lang.Function next) {
-			this.evalNodeBody(beat, beat, beat.body, next);
+			this.evalNodeBody(beat, beat, beat.body, null, next);
 		}
 		
 		
@@ -2414,44 +3002,73 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual void evalText(global::Loreline.Runtime.NTextStatement text, global::Loreline.Internal.Lang.Function next) {
-			object content = this.evaluateString(text.content);
-			this.handleDialogue.__hx_invoke5_o(default(double), this, default(double), null, default(double), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), default(double), ((global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<global::Loreline.Runtime.TextTag>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ))) ), default(double), next);
+			global::Loreline.Runtime.NStringLiteral str = this.getTranslatedString(text, text.content);
+			object content = this.evaluateString(str);
+			this.handleDialogue.__hx_invoke5_o(default(double), this, default(double), null, default(double), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), default(double), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ), default(double), next);
 		}
 		
 		
 		public virtual void evalDialogue(global::Loreline.Runtime.NDialogueStatement dialogue, global::Loreline.Internal.Lang.Function next) {
-			object content = this.evaluateString(dialogue.content);
-			this.handleDialogue.__hx_invoke5_o(default(double), this, default(double), dialogue.character, default(double), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), default(double), ((global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<global::Loreline.Runtime.TextTag>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ))) ), default(double), next);
+			global::Loreline.Runtime.NStringLiteral str = this.getTranslatedString(dialogue, dialogue.content);
+			object content = this.evaluateString(str);
+			this.handleDialogue.__hx_invoke5_o(default(double), this, default(double), dialogue.character, default(double), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), default(double), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ), default(double), next);
 		}
 		
 		
 		public virtual void evalChoice(global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Internal.Lang.Function next) {
+			global::Loreline.Internal.Root.Array options = new global::Loreline.Internal.Root.Array(new object[]{});
+			global::Loreline.Runtime.Interpreter _gthis = this;
+			global::Loreline.Runtime.EvalNext optionsDone = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2402__Fun(options, next, _gthis));
+			this.evalChoiceOptionsAndInsertions(this.get_currentScope().beat, choice, options, optionsDone.cb);
+			optionsDone.sync = false;
+		}
+		
+		
+		public virtual void evalChoiceOptionsAndInsertions(global::Loreline.Runtime.NBeatDecl beat, global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Internal.Root.Array result, global::Loreline.Internal.Lang.Function next) {
+			global::Loreline.Internal.Root.Array options = choice.options;
+			int[] index = new int[]{0};
+			global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
+			global::Loreline.Runtime.RuntimeInsertion[] insertion = new global::Loreline.Runtime.RuntimeInsertion[]{null};
+			global::Loreline.Runtime.Interpreter _gthis = this;
+			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalChoiceOptionsAndInsertions_2483__Fun(result, options, next, moveNext, insertion, index, _gthis);
+			((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
+		}
+		
+		
+		public virtual void evalInsertion(global::Loreline.Runtime.RuntimeInsertion insertion, global::Loreline.Internal.Lang.Function next) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<global::Loreline.Runtime.ChoiceOption> options = new global::Loreline.Internal.Root.Array<global::Loreline.Runtime.ChoiceOption>(new global::Loreline.Runtime.ChoiceOption[]{});
-				{
-					int _g = 0;
-					global::Loreline.Internal.Root.Array<object> _g1 = choice.options;
-					while (( _g < _g1.length )) {
-						global::Loreline.Runtime.NChoiceOption option = ((global::Loreline.Runtime.NChoiceOption) (_g1[_g]) );
-						 ++ _g;
-						bool enabled = ( ( option.condition == null ) || this.evaluateCondition(option.condition) );
-						object content = this.evaluateString(option.text);
-						options.push(new global::Loreline.Runtime.ChoiceOption(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), ((global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<global::Loreline.Runtime.TextTag>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ))) ), enabled));
+				string beatName = insertion.origin.target;
+				global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
+				int i = ( this.stack.length - 1 );
+				while (( i >= 0 )) {
+					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
+					global::Loreline.Runtime.NBeatDecl beatInScope = scope.beatByName(beatName);
+					if (( beatInScope != null )) {
+						resolvedBeat = beatInScope;
+						break;
+					}
+					
+					 -- i;
+				}
+				
+				if (( resolvedBeat == null )) {
+					if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).exists(beatName)) {
+						resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@get(((string) (beatName) ))) );
 					}
 					
 				}
 				
-				int[] index = new int[]{-1};
-				global::Loreline.Runtime.Interpreter _gthis = this;
-				global::Loreline.Runtime.EvalNext choiceCallback = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2031__Fun(next, index, choice, _gthis));
-				this.handleChoice.__hx_invoke3_o(default(double), this, default(double), options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_2042__Fun(index, choiceCallback));
-				choiceCallback.sync = false;
+				if (( resolvedBeat == null )) {
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Beat ", beatName), " not found")) ), ((global::Loreline.Runtime.Position) (this.script.pos) )))) );
+				}
+				
+				this.evalNodeBody(resolvedBeat, resolvedBeat, resolvedBeat.body, insertion, next);
 			}
 		}
 		
 		
 		public virtual void evalChoiceOption(global::Loreline.Runtime.NChoiceOption option, global::Loreline.Internal.Lang.Function next) {
-			this.evalNodeBody(this.get_currentScope().beat, option, option.body, next);
+			this.evalNodeBody(this.get_currentScope().beat, option, option.body, null, next);
 		}
 		
 		
@@ -2459,7 +3076,7 @@ namespace Loreline.Runtime {
 			bool isTrue = this.evaluateCondition(ifStmt.condition);
 			global::Loreline.Runtime.NBlock branch = ( (isTrue) ? (ifStmt.thenBranch) : (ifStmt.elseBranch) );
 			if (( ( branch != null ) && ( branch.body.length > 0 ) )) {
-				this.evalNodeBody(this.get_currentScope().beat, branch, branch.body, next);
+				this.evalNodeBody(this.get_currentScope().beat, branch, branch.body, null, next);
 			}
 			else {
 				next.__hx_invoke0_o();
@@ -2525,7 +3142,7 @@ namespace Loreline.Runtime {
 		public virtual bool isOriginalScriptExpression(global::Loreline.Runtime.NExpr expr) {
 			unchecked {
 				{
-					global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (expr) )));
+					global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (expr) )));
 					if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NBinary))) {
 						global::Loreline.Runtime.NBinary bin = ((global::Loreline.Runtime.NBinary) (expr) );
 						if (this.isOriginalScriptExpression(bin.left)) {
@@ -2556,8 +3173,8 @@ namespace Loreline.Runtime {
 								global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (lit.@value) );
 								{
 									int _g1 = 0;
-									while (( _g1 < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(arr, "length", 520590566, true)) ) )) {
-										object elem = arr[_g1];
+									while (( _g1 < arr.length )) {
+										object elem = arr.__get(_g1);
 										 ++ _g1;
 										if (( ( elem is global::Loreline.Runtime.NExpr ) &&  ! (this.isOriginalScriptExpression(((global::Loreline.Runtime.NExpr) (elem) )))  )) {
 											return false;
@@ -2574,11 +3191,11 @@ namespace Loreline.Runtime {
 							case 4:
 							{
 								int _g2 = ( _g as global::Loreline.Runtime.LiteralType_Object ).style;
-								global::Loreline.Internal.Root.Array<object> fields = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (lit.@value) ))) );
+								global::Loreline.Internal.Root.Array fields = ((global::Loreline.Internal.Root.Array) (lit.@value) );
 								{
 									int _g3 = 0;
 									while (( _g3 < fields.length )) {
-										global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (fields[_g3]) );
+										global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (fields.__get(_g3)) );
 										 ++ _g3;
 										if ( ! (this.isOriginalScriptExpression(field.@value)) ) {
 											return false;
@@ -2599,9 +3216,9 @@ namespace Loreline.Runtime {
 						global::Loreline.Runtime.NStringLiteral str = ((global::Loreline.Runtime.NStringLiteral) (expr) );
 						{
 							int _g4 = 0;
-							global::Loreline.Internal.Root.Array<object> _g5 = str.parts;
+							global::Loreline.Internal.Root.Array _g5 = str.parts;
 							while (( _g4 < _g5.length )) {
-								global::Loreline.Runtime.NStringPart part = ((global::Loreline.Runtime.NStringPart) (_g5[_g4]) );
+								global::Loreline.Runtime.NStringPart part = ((global::Loreline.Runtime.NStringPart) (_g5.__get(_g4)) );
 								 ++ _g4;
 								{
 									global::Loreline.Runtime.StringPartType _g6 = part.partType;
@@ -2657,11 +3274,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool isBeatCall(global::Loreline.Runtime.AstNode node, global::Loreline.Internal.Lang.Null<int> scopeLevel) {
+		public virtual bool isBeatCall(global::Loreline.Runtime.AstNode node, object scopeLevel) {
 			unchecked {
-				int scopeLevel1 = ( ( ! (scopeLevel.hasValue) ) ? (-1) : ((scopeLevel).@value) );
+				int scopeLevel1 = ( (( scopeLevel == default(object) )) ? (-1) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(scopeLevel)) )) );
 				if (( node is global::Loreline.Runtime.NCall )) {
-					return ( this.resolveBeatFromCall(((global::Loreline.Runtime.NCall) (node) ), new global::Loreline.Internal.Lang.Null<int>(scopeLevel1, true)) != null );
+					return ( this.resolveBeatFromCall(((global::Loreline.Runtime.NCall) (node) ), scopeLevel1) != null );
 				}
 				
 				return false;
@@ -2669,9 +3286,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime.NBeatDecl resolveBeatFromCall(global::Loreline.Runtime.NCall call, global::Loreline.Internal.Lang.Null<int> scopeLevel) {
+		public virtual global::Loreline.Runtime.NBeatDecl resolveBeatFromCall(global::Loreline.Runtime.NCall call, object scopeLevel) {
 			unchecked {
-				int scopeLevel1 = ( ( ! (scopeLevel.hasValue) ) ? (-1) : ((scopeLevel).@value) );
+				int scopeLevel1 = ( (( scopeLevel == default(object) )) ? (-1) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(scopeLevel)) )) );
 				if (( call.target is global::Loreline.Runtime.NAccess )) {
 					global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (call.target) );
 					if (( access.target == null )) {
@@ -2679,7 +3296,7 @@ namespace Loreline.Runtime {
 						global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
 						int i = ( (( scopeLevel1 == -1 )) ? (( this.stack.length - 1 )) : (scopeLevel1) );
 						while (( i >= 0 )) {
-							global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[i]) );
+							global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
 							global::Loreline.Runtime.NBeatDecl beatInScope = scope.beatByName(beatName);
 							if (( beatInScope != null )) {
 								resolvedBeat = beatInScope;
@@ -2689,8 +3306,8 @@ namespace Loreline.Runtime {
 							 -- i;
 						}
 						
-						if (( ( resolvedBeat == null ) && ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).exists(beatName) )) {
-							resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).@get(beatName)).@value) );
+						if (( ( resolvedBeat == null ) && ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).exists(beatName) )) {
+							resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@get(((string) (beatName) ))) );
 						}
 						
 						if (( resolvedBeat != null )) {
@@ -2707,7 +3324,7 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual void evalCall(global::Loreline.Runtime.NCall call, global::Loreline.Internal.Lang.Function next) {
-			global::Loreline.Runtime.NBeatDecl resolvedBeat = this.resolveBeatFromCall(call, default(global::Loreline.Internal.Lang.Null<int>));
+			global::Loreline.Runtime.NBeatDecl resolvedBeat = this.resolveBeatFromCall(call, null);
 			if (( resolvedBeat != null )) {
 				this.evalBeatRun(resolvedBeat, next);
 				return;
@@ -2728,7 +3345,7 @@ namespace Loreline.Runtime {
 				global::Loreline.Runtime.NBeatDecl resolvedBeat = null;
 				int i = ( this.stack.length - 1 );
 				while (( i >= 0 )) {
-					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[i]) );
+					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
 					global::Loreline.Runtime.NBeatDecl beatInScope = scope.beatByName(beatName);
 					if (( beatInScope != null )) {
 						resolvedBeat = beatInScope;
@@ -2739,8 +3356,8 @@ namespace Loreline.Runtime {
 				}
 				
 				if (( resolvedBeat == null )) {
-					if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).exists(transition.target)) {
-						resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelBeats) )) ))) ).@get(beatName)).@value) );
+					if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).exists(beatName)) {
+						resolvedBeat = ((global::Loreline.Runtime.NBeatDecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelBeats) )) ).@get(((string) (beatName) ))) );
 					}
 					
 				}
@@ -2754,29 +3371,106 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual global::Loreline.Runtime.NStringLiteral getTranslatedString(global::Loreline.Runtime.AstNode node, global::Loreline.Runtime.NStringLiteral str) {
+			if (( this.translations != null )) {
+				string id = this.findHashCommentId(node, str);
+				if (( id != null )) {
+					global::Loreline.Runtime.NStringLiteral translated = ((global::Loreline.Runtime.NStringLiteral) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.translations) )) ).@get(((string) (id) ))) );
+					if (( translated != null )) {
+						return translated;
+					}
+					
+				}
+				
+			}
+			
+			return str;
+		}
+		
+		
+		public virtual string findHashCommentId(global::Loreline.Runtime.AstNode node, global::Loreline.Runtime.NStringLiteral str) {
+			return global::Loreline.Runtime.AstUtils.findHashComment(node, str);
+		}
+		
+		
 		public virtual object evaluateString(global::Loreline.Runtime.NStringLiteral str) {
 			unchecked {
+				{
+					int _g = 0;
+					int _g1 = this.stringLiteralProcessors.length;
+					while (( _g < _g1 )) {
+						int i = _g++;
+						str = ((global::Loreline.Runtime.NStringLiteral) (((global::Loreline.Internal.Lang.Function) (this.stringLiteralProcessors.__get(i)) ).__hx_invoke1_o(default(double), str)) );
+					}
+					
+				}
+				
 				global::Loreline.Internal.Root.StringBuf buf = new global::Loreline.Internal.Root.StringBuf();
-				global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag> tags = new global::Loreline.Internal.Root.Array<global::Loreline.Runtime.TextTag>(new global::Loreline.Runtime.TextTag[]{});
+				global::Loreline.Internal.Root.Array tags = new global::Loreline.Internal.Root.Array(new object[]{});
 				int offset = 0;
+				int numParts = str.parts.length;
 				bool keepWhitespace = ( str.quotes != ((int) (0) ) );
 				bool keepIndents = ( str.quotes != ((int) (0) ) );
 				bool keepComments = ( str.quotes != ((int) (0) ) );
-				{
-					int _g = 0;
-					int _g1 = str.parts.length;
-					while (( _g < _g1 )) {
-						int i = _g++;
-						global::Loreline.Runtime.NStringPart part = ((global::Loreline.Runtime.NStringPart) (str.parts[i]) );
+				int trailingTextPartIndex = -1;
+				if ( ! (keepWhitespace) ) {
+					int n = ( numParts - 1 );
+					while (( n >= 0 )) {
+						global::Loreline.Runtime.NStringPart part = ((global::Loreline.Runtime.NStringPart) (str.parts.__get(n)) );
 						{
 							global::Loreline.Runtime.StringPartType _g2 = part.partType;
 							switch (_g2._hx_index) {
 								case 0:
 								{
-									string text = ( _g2 as global::Loreline.Runtime.StringPartType_Raw ).text;
+									string _g3 = ( _g2 as global::Loreline.Runtime.StringPartType_Raw ).text;
+									trailingTextPartIndex = n;
+									goto label2;
+								}
+								
+								
+								case 1:
+								{
+									global::Loreline.Runtime.NExpr _g4 = ( _g2 as global::Loreline.Runtime.StringPartType_Expr ).expr;
+									goto label2;
+								}
+								
+								
+								case 2:
+								{
+									bool _g5 = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).closing;
+									global::Loreline.Runtime.NStringLiteral _g6 = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).expr;
+									 -- n;
+									break;
+								}
+								
+								
+							}
+							
+						}
+						
+					}
+					label2: {};
+				}
+				
+				{
+					int _g7 = 0;
+					int _g8 = numParts;
+					while (( _g7 < _g8 )) {
+						int i1 = _g7++;
+						global::Loreline.Runtime.NStringPart part1 = ((global::Loreline.Runtime.NStringPart) (str.parts.__get(i1)) );
+						{
+							global::Loreline.Runtime.StringPartType _g9 = part1.partType;
+							switch (_g9._hx_index) {
+								case 0:
+								{
+									string text = ( _g9 as global::Loreline.Runtime.StringPartType_Raw ).text;
 									{
 										if ( ! (keepWhitespace) ) {
 											text = text.TrimStart();
+										}
+										
+										if (( i1 == trailingTextPartIndex )) {
+											text = text.TrimEnd();
 										}
 										
 										if ( ! (keepComments) ) {
@@ -2793,50 +3487,74 @@ namespace Loreline.Runtime {
 										}
 										
 										bool prevIsDollar = false;
+										bool prevIsHash = false;
 										bool escaped = false;
 										{
-											int _g3 = 0;
-											int _g4 = len;
-											while (( _g3 < _g4 )) {
-												int i1 = _g3++;
-												global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, i1);
+											int _g10 = 0;
+											int _g11 = len;
+											while (( _g10 < _g11 )) {
+												int i2 = _g10++;
+												object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, i2);
 												if (escaped) {
-													if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 110)) {
+													if (global::Loreline.Internal.Lang.Runtime.eq(c, 110)) {
 														buf.addChar(10);
 													}
-													else if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 114)) {
+													else if (global::Loreline.Internal.Lang.Runtime.eq(c, 114)) {
 														buf.addChar(13);
 													}
-													else if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 116)) {
+													else if (global::Loreline.Internal.Lang.Runtime.eq(c, 116)) {
 														buf.addChar(9);
 													}
 													else {
-														buf.addChar((c).@value);
+														buf.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(c)) ));
 													}
 													
 													escaped = false;
 													prevIsDollar = false;
+													prevIsHash = false;
 												}
-												else if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 92)) {
+												else if (global::Loreline.Internal.Lang.Runtime.eq(c, 92)) {
 													escaped = true;
 													prevIsDollar = false;
+													prevIsHash = false;
 												}
-												else if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 36)) {
+												else if (global::Loreline.Internal.Lang.Runtime.eq(c, 36)) {
 													if (prevIsDollar) {
-														buf.addChar((c).@value);
+														buf.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(c)) ));
 														prevIsDollar = false;
 													}
 													else {
 														prevIsDollar = true;
 													}
 													
+													prevIsHash = false;
+												}
+												else if (global::Loreline.Internal.Lang.Runtime.eq(c, 35)) {
+													if (prevIsHash) {
+														buf.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(c)) ));
+														prevIsHash = false;
+													}
+													else {
+														prevIsHash = true;
+													}
+													
+													prevIsDollar = false;
 												}
 												else {
-													buf.addChar((c).@value);
+													if (prevIsHash) {
+														buf.addChar(35);
+														prevIsHash = false;
+													}
+													
+													buf.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(c)) ));
 												}
 												
 											}
 											
+										}
+										
+										if (prevIsHash) {
+											buf.addChar(35);
 										}
 										
 										offset += len;
@@ -2848,14 +3566,14 @@ namespace Loreline.Runtime {
 								
 								case 1:
 								{
-									global::Loreline.Runtime.NExpr expr = ( _g2 as global::Loreline.Runtime.StringPartType_Expr ).expr;
+									global::Loreline.Runtime.NExpr expr = ( _g9 as global::Loreline.Runtime.StringPartType_Expr ).expr;
 									{
 										keepWhitespace = true;
 										if (( expr is global::Loreline.Runtime.NAccess )) {
 											global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (expr) );
 											global::Loreline.Runtime.RuntimeAccess resolved = this.resolveAccess(access, access.target, access.name);
 											if (( resolved._hx_index == 2 )) {
-												global::Loreline.Runtime.Position _g5 = ( resolved as global::Loreline.Runtime.RuntimeAccess_CharacterAccess ).pos;
+												global::Loreline.Runtime.Position _g12 = ( resolved as global::Loreline.Runtime.RuntimeAccess_CharacterAccess ).pos;
 												{
 													string name = ( resolved as global::Loreline.Runtime.RuntimeAccess_CharacterAccess ).name;
 													{
@@ -2864,7 +3582,7 @@ namespace Loreline.Runtime {
 														object @value = ( (( tmp != null )) ? (tmp) : ((object) (name) ) );
 														string text1 = this.valueToString(@value);
 														offset += text1.Length;
-														buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(text1)) ));
+														buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (text1) ))) ));
 													}
 													
 												}
@@ -2874,7 +3592,7 @@ namespace Loreline.Runtime {
 												object value1 = this.evaluateExpression(expr);
 												string text2 = this.valueToString(value1);
 												offset += text2.Length;
-												buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(text2)) ));
+												buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (text2) ))) ));
 											}
 											
 										}
@@ -2882,7 +3600,7 @@ namespace Loreline.Runtime {
 											object value2 = this.evaluateExpression(expr);
 											string text3 = this.valueToString(value2);
 											offset += text3.Length;
-											buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(text3)) ));
+											buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (text3) ))) ));
 										}
 										
 									}
@@ -2893,9 +3611,13 @@ namespace Loreline.Runtime {
 								
 								case 2:
 								{
-									bool closing = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).closing;
-									global::Loreline.Runtime.NStringLiteral expr1 = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).expr;
-									tags.push(new global::Loreline.Runtime.TextTag(closing, global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.evaluateString(expr1), "text", 1291439277, true)), offset));
+									bool closing = ( _g9 as global::Loreline.Runtime.StringPartType_Tag ).closing;
+									global::Loreline.Runtime.NStringLiteral expr1 = ( _g9 as global::Loreline.Runtime.StringPartType_Tag ).expr;
+									{
+										string tagValue = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.evaluateString(expr1), "text", 1291439277, true));
+										tags.push(new global::Loreline.Runtime.TextTag(closing, tagValue, offset));
+									}
+									
 									break;
 								}
 								
@@ -2917,13 +3639,234 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual global::Loreline.Runtime.NStringLiteral pluralPipeProcess(global::Loreline.Runtime.NStringLiteral str) {
+			unchecked {
+				int lastExprPartIndex = -1;
+				bool changed = false;
+				global::Loreline.Internal.Root.Array newParts = null;
+				{
+					int _g = 0;
+					int _g1 = str.parts.length;
+					while (( _g < _g1 )) {
+						int i = _g++;
+						global::Loreline.Runtime.NStringPart part = ((global::Loreline.Runtime.NStringPart) (str.parts.__get(i)) );
+						{
+							global::Loreline.Runtime.StringPartType _g2 = part.partType;
+							switch (_g2._hx_index) {
+								case 0:
+								{
+									string text = ( _g2 as global::Loreline.Runtime.StringPartType_Raw ).text;
+									if (( ( lastExprPartIndex >= 0 ) && this.rawTextHasUnescapedPipe(text) )) {
+										global::Loreline.Runtime.NExpr countExpr = null;
+										global::Loreline.Runtime.StringPartType _g3 = ((global::Loreline.Runtime.NStringPart) (str.parts.__get(lastExprPartIndex)) ).partType;
+										if (( _g3._hx_index == 1 )) {
+											global::Loreline.Runtime.NExpr expr = ( _g3 as global::Loreline.Runtime.StringPartType_Expr ).expr;
+											countExpr = expr;
+										}
+										else {
+											countExpr = null;
+										}
+										
+										if (( countExpr != null )) {
+											if ( ! (changed) ) {
+												global::Loreline.Internal.Root.Array _g4 = new global::Loreline.Internal.Root.Array(new object[]{});
+												{
+													int _g5 = 0;
+													int _g6 = i;
+													while (( _g5 < _g6 )) {
+														int j = _g5++;
+														_g4.push(((global::Loreline.Runtime.NStringPart) (str.parts.__get(j)) ));
+													}
+													
+												}
+												
+												newParts = _g4;
+												changed = true;
+											}
+											
+											this.transformPipeRaw(text, countExpr, part.pos, newParts);
+											continue;
+										}
+										
+									}
+									
+									break;
+								}
+								
+								
+								case 1:
+								{
+									global::Loreline.Runtime.NExpr _g7 = ( _g2 as global::Loreline.Runtime.StringPartType_Expr ).expr;
+									lastExprPartIndex = i;
+									break;
+								}
+								
+								
+								case 2:
+								{
+									bool _g8 = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).closing;
+									global::Loreline.Runtime.NStringLiteral _g9 = ( _g2 as global::Loreline.Runtime.StringPartType_Tag ).expr;
+									break;
+								}
+								
+								
+							}
+							
+						}
+						
+						if (changed) {
+							newParts.push(part);
+						}
+						
+					}
+					
+				}
+				
+				if ( ! (changed) ) {
+					return str;
+				}
+				
+				return new global::Loreline.Runtime.NStringLiteral(((long) (str.id) ), ((global::Loreline.Runtime.Position) (str.pos) ), ((int) (str.quotes) ), ((global::Loreline.Internal.Root.Array) (newParts) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+			}
+		}
+		
+		
+		public virtual bool rawTextHasUnescapedPipe(string text) {
+			unchecked {
+				int len = text.Length;
+				int i = 0;
+				while (( i < len )) {
+					object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, i);
+					if (global::Loreline.Internal.Lang.Runtime.eq(c, 92)) {
+						i += 2;
+						continue;
+					}
+					
+					if (global::Loreline.Internal.Lang.Runtime.eq(c, 124)) {
+						return true;
+					}
+					
+					 ++ i;
+				}
+				
+				return false;
+			}
+		}
+		
+		
+		public virtual void transformPipeRaw(string text, global::Loreline.Runtime.NExpr countExpr, global::Loreline.Runtime.Position pos, global::Loreline.Internal.Root.Array parts) {
+			unchecked {
+				int len = text.Length;
+				int i = 0;
+				int segStart = 0;
+				while (( i < len )) {
+					object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, i);
+					if (( global::Loreline.Internal.Lang.Runtime.eq(c, 92) && ( ( i + 1 ) < len ) )) {
+						i += 2;
+						continue;
+					}
+					
+					if (global::Loreline.Internal.Lang.Runtime.eq(c, 40)) {
+						int pipePos = -1;
+						int closePos = -1;
+						int j = ( i + 1 );
+						while (( j < len )) {
+							object cj = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, j);
+							if (( global::Loreline.Internal.Lang.Runtime.eq(cj, 92) && ( ( j + 1 ) < len ) )) {
+								j += 2;
+								continue;
+							}
+							
+							if (( global::Loreline.Internal.Lang.Runtime.eq(cj, 124) && ( pipePos == -1 ) )) {
+								pipePos = j;
+							}
+							else if (global::Loreline.Internal.Lang.Runtime.eq(cj, 41)) {
+								closePos = j;
+								break;
+							}
+							
+							 ++ j;
+						}
+						
+						if (( ( ( ( pipePos != -1 ) && ( closePos != -1 ) ) && ( pipePos > ( i + 1 ) ) ) && ( closePos > ( pipePos + 1 ) ) )) {
+							string singular = global::Loreline.Internal.Lang.StringExt.substr(text, ( i + 1 ), ( ( pipePos - i ) - 1 ));
+							string pluralForm = global::Loreline.Internal.Lang.StringExt.substr(text, ( pipePos + 1 ), ( ( closePos - pipePos ) - 1 ));
+							if (( i > segStart )) {
+								parts.push(new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(text, segStart, ( i - segStart )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+							}
+							
+							parts.push(new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(this.makePluralCall(countExpr, singular, pluralForm, pos))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+							i = ( closePos + 1 );
+							segStart = i;
+							continue;
+						}
+						
+					}
+					
+					if (global::Loreline.Internal.Lang.Runtime.eq(c, 124)) {
+						int wordStart = i;
+						while (( wordStart > segStart )) {
+							object wc = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, ( wordStart - 1 ));
+							if (( ( ( ( ( global::Loreline.Internal.Lang.Runtime.eq(wc, 32) || global::Loreline.Internal.Lang.Runtime.eq(wc, 9) ) || global::Loreline.Internal.Lang.Runtime.eq(wc, 10) ) || global::Loreline.Internal.Lang.Runtime.eq(wc, 124) ) || global::Loreline.Internal.Lang.Runtime.eq(wc, 40) ) || global::Loreline.Internal.Lang.Runtime.eq(wc, 41) )) {
+								break;
+							}
+							
+							 -- wordStart;
+						}
+						
+						int wordEnd = ( i + 1 );
+						while (( wordEnd < len )) {
+							object wc1 = global::Loreline.Internal.Lang.StringExt.charCodeAt(text, wordEnd);
+							if (( ( ( ( ( global::Loreline.Internal.Lang.Runtime.eq(wc1, 32) || global::Loreline.Internal.Lang.Runtime.eq(wc1, 9) ) || global::Loreline.Internal.Lang.Runtime.eq(wc1, 10) ) || global::Loreline.Internal.Lang.Runtime.eq(wc1, 124) ) || global::Loreline.Internal.Lang.Runtime.eq(wc1, 40) ) || global::Loreline.Internal.Lang.Runtime.eq(wc1, 41) )) {
+								break;
+							}
+							
+							 ++ wordEnd;
+						}
+						
+						string word1 = global::Loreline.Internal.Lang.StringExt.substr(text, wordStart, ( i - wordStart ));
+						string word2 = global::Loreline.Internal.Lang.StringExt.substr(text, ( i + 1 ), ( ( wordEnd - i ) - 1 ));
+						if (( ( word1.Length > 0 ) && ( word2.Length > 0 ) )) {
+							if (( wordStart > segStart )) {
+								parts.push(new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(text, segStart, ( wordStart - segStart )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+							}
+							
+							parts.push(new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(this.makePluralCall(countExpr, word1, word2, pos))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+							i = wordEnd;
+							segStart = i;
+							continue;
+						}
+						
+					}
+					
+					 ++ i;
+				}
+				
+				if (( segStart < len )) {
+					parts.push(new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(text, segStart, ( len - segStart )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+				}
+				
+			}
+		}
+		
+		
+		public virtual global::Loreline.Runtime.NCall makePluralCall(global::Loreline.Runtime.NExpr countExpr, string singular, string pluralForm, global::Loreline.Runtime.Position pos) {
+			unchecked {
+				global::Loreline.Runtime.NAccess target = new global::Loreline.Runtime.NAccess(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), default(global::Loreline.Runtime.NExpr), ((string) ("plural") ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				global::Loreline.Runtime.NStringLiteral singularLiteral = new global::Loreline.Runtime.NStringLiteral(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((int) (1) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(singular)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				global::Loreline.Runtime.NStringLiteral pluralLiteral = new global::Loreline.Runtime.NStringLiteral(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((int) (1) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(pluralForm)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				return new global::Loreline.Runtime.NCall(((long) (global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.NExpr) (target) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{countExpr, singularLiteral, pluralLiteral})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+			}
+		}
+		
+		
 		public virtual string stripStringIndent(string content) {
 			unchecked {
 				int minIndent = -1;
 				int currentIndent = -1;
 				int len = content.Length;
 				int i = 0;
-				while (( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i)).toDynamic(), 32) && ( i < len ) )) {
+				while (( global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i), 32) && ( i < len ) )) {
 					 ++ i;
 				}
 				
@@ -2932,11 +3875,11 @@ namespace Loreline.Runtime {
 				}
 				
 				while (( i < len )) {
-					global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i);
-					if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 10)) {
+					object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i);
+					if (global::Loreline.Internal.Lang.Runtime.eq(c, 10)) {
 						currentIndent = 0;
 					}
-					else if (( ( currentIndent >= 0 ) && global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 32) )) {
+					else if (( ( currentIndent >= 0 ) && global::Loreline.Internal.Lang.Runtime.eq(c, 32) )) {
 						 ++ currentIndent;
 					}
 					else if (( currentIndent >= 0 )) {
@@ -2976,24 +3919,24 @@ namespace Loreline.Runtime {
 				int len = content.Length;
 				int i = 0;
 				while (( i < len )) {
-					global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i);
-					if (( ( global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 47) && ( ( i + 1 ) < len ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 ))).toDynamic(), 47) )) {
-						while (( ( i < len ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i)).toDynamic(), 10)) ) )) {
+					object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i);
+					if (( ( global::Loreline.Internal.Lang.Runtime.eq(c, 47) && ( ( i + 1 ) < len ) ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 )), 47) )) {
+						while (( ( i < len ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i), 10)) ) )) {
 							 ++ i;
 						}
 						
 						continue;
 					}
 					
-					if (( ( global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 47) && ( ( i + 1 ) < len ) ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 ))).toDynamic(), 42) )) {
-						bool hadSpaceBefore = ( ( i > 0 ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i - 1 ))).toDynamic(), 32) );
+					if (( ( global::Loreline.Internal.Lang.Runtime.eq(c, 47) && ( ( i + 1 ) < len ) ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 )), 42) )) {
+						bool hadSpaceBefore = ( ( i > 0 ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i - 1 )), 32) );
 						i += 2;
-						while (( ( ( i + 1 ) < len ) &&  ! ((( global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i)).toDynamic(), 42) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 ))).toDynamic(), 47) )))  )) {
+						while (( ( ( i + 1 ) < len ) &&  ! ((( global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i), 42) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, ( i + 1 )), 47) )))  )) {
 							 ++ i;
 						}
 						
 						i += 2;
-						bool hasSpaceAfter = ( ( i < len ) && global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i)).toDynamic(), 32) );
+						bool hasSpaceAfter = ( ( i < len ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i), 32) );
 						if (( hadSpaceBefore && hasSpaceAfter )) {
 							 ++ i;
 						}
@@ -3005,7 +3948,7 @@ namespace Loreline.Runtime {
 						continue;
 					}
 					
-					result.addChar((c).@value);
+					result.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(c)) ));
 					 ++ i;
 				}
 				
@@ -3016,100 +3959,151 @@ namespace Loreline.Runtime {
 		
 		public virtual bool evaluateCondition(global::Loreline.Runtime.NExpr expr) {
 			object @value = this.evaluateExpression(expr);
-			if (( @value is string )) {
+			if (( @value is bool )) {
+				return ( global::Loreline.Internal.Lang.Runtime.toBool(((object) (@value) )) == true );
+			}
+			else if (( @value is string )) {
 				return ( global::Loreline.Internal.Lang.Runtime.toString(((object) (@value) )).Length > 0 );
 			}
-			else if (( @value is global::Loreline.Internal.Root.Array )) {
-				return ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (@value) )) ))) ).length > 0 );
+			else if (global::Loreline.Runtime.Arrays.isArray(@value)) {
+				return ( global::Loreline.Runtime.Arrays.arrayLength(@value) > 0 );
+			}
+			else if ((( ( ( @value is int ) || ( @value is uint ) ) || global::Loreline.Internal.Lang.Runtime.isInt(@value) ))) {
+				return ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (@value) ))) ) != 0 );
+			}
+			else if ((( ( @value is double ) || ( ( @value is int ) || ( @value is uint ) ) ))) {
+				return ( ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (@value) ))) ) != 0 );
 			}
 			else {
-				return global::Loreline.Internal.Lang.Runtime.eq(((object) (@value) ), true);
+				return ( @value != null );
 			}
 			
 		}
 		
 		
 		public virtual object evaluateFunctionCall(global::Loreline.Runtime.NCall call, global::Loreline.Internal.Lang.Function next) {
-			unchecked {
-				if (( call.target is global::Loreline.Runtime.NAccess )) {
-					global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (call.target) );
-					if (( access.target == null )) {
-						object target = this.evaluateExpression(call.target);
-						if (( target != null )) {
-							if (( ((object) (target) ) is global::Loreline.Internal.Lang.Function )) {
-								global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-								{
-									int _g1 = 0;
-									global::Loreline.Internal.Root.Array<object> _g2 = call.args;
-									while (( _g1 < _g2.length )) {
-										global::Loreline.Runtime.NExpr arg = ((global::Loreline.Runtime.NExpr) (_g2[_g1]) );
-										 ++ _g1;
-										_g.push(this.evaluateExpression(arg));
-									}
-									
+			if (( call.target is global::Loreline.Runtime.NAccess )) {
+				global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (call.target) );
+				if (( access.target == null )) {
+					object target = this.evaluateExpression(call.target);
+					if (( target != null )) {
+						if (( ((object) (target) ) is global::Loreline.Internal.Lang.Function )) {
+							global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
+							{
+								int _g1 = 0;
+								global::Loreline.Internal.Root.Array _g2 = call.args;
+								while (( _g1 < _g2.length )) {
+									global::Loreline.Runtime.NExpr arg = ((global::Loreline.Runtime.NExpr) (_g2.__get(_g1)) );
+									 ++ _g1;
+									_g.push(this.evaluateExpression(arg));
 								}
-								
-								global::Loreline.Internal.Root.Array<object> args = _g;
-								try {
-									object result = global::Loreline.Internal.Root.Reflect.callMethod(null, ((object) (target) ), args);
-									if (( ( result != null ) && ( result is global::Loreline.Runtime.Async ) )) {
-										if (( next == null )) {
-											throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Cannot call async function in expression") ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
-										}
-										else {
-											global::Loreline.Runtime.Async asyncResult = ((global::Loreline.Runtime.Async) (result) );
-											asyncResult.func.__hx_invoke1_o(default(double), next);
-										}
-										
-									}
-									else if (( next != null )) {
-										next.__hx_invoke0_o();
-									}
-									
-									return result;
-								}
-								catch (global::System.Exception _g3){
-									object e = ((object) (global::Loreline.Internal.Exception.caught(_g3).unwrap()) );
-									if (( e is global::Loreline.Internal.Hscript.Error )) {
-										global::Loreline.Internal.Hscript.Error hscriptErr = ((global::Loreline.Internal.Hscript.Error) (e) );
-										global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("", global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmin)), "-"), global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmax)), " "), global::Loreline.Internal.Root.Std.@string(hscriptErr.e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2618) )}));
-									}
-									
-									global::Loreline.Internal.Log.trace.__hx_invoke2_o(default(double), global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (e) ))), " -> "), global::Loreline.Internal.Root.Std.@string(e)), default(double), new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"evaluateFunctionCall", "Loreline.Runtime.Interpreter", "src/Loreline.Runtime/Interpreter.hx"}, new int[]{1981972957}, new double[]{((double) (2621) )}));
-									return null;
-								}
-								
 								
 							}
+							
+							global::Loreline.Internal.Root.Array args = _g;
+							try {
+								object result = global::Loreline.Internal.Root.Reflect.callMethod(null, ((object) (target) ), args);
+								if (( ( result != null ) && ( result is global::Loreline.Runtime.Async ) )) {
+									if (( next == null )) {
+										throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Cannot call async function in expression") ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
+									}
+									else {
+										global::Loreline.Runtime.Async asyncResult = ((global::Loreline.Runtime.Async) (result) );
+										asyncResult.func.__hx_invoke1_o(default(double), next);
+									}
+									
+								}
+								else if (( next != null )) {
+									next.__hx_invoke0_o();
+								}
+								
+								return result;
+							}
+							catch (global::System.Exception _g3){
+								object e = ((object) (global::Loreline.Internal.Exception.caught(_g3).unwrap()) );
+								if (( e is global::Loreline.Internal.Hscript.Error )) {
+									global::Loreline.Internal.Hscript.Error hscriptErr = ((global::Loreline.Internal.Hscript.Error) (e) );
+									throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Error when evaluating function (", global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmin)), "-"), global::Loreline.Internal.Lang.Runtime.toString(hscriptErr.pmax)), "): "), global::Loreline.Internal.Root.Std.@string(hscriptErr.e))) ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
+								}
+								
+								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Error when calling function: ", global::Loreline.Internal.Root.Std.@string(e))) ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
+							}
+							
 							
 						}
 						
 					}
-					else {
-						object obj = this.evaluateExpression(access.target);
+					
+				}
+				else {
+					object obj = this.evaluateExpression(access.target);
+					object helper = null;
+					if (( obj is string )) {
+						helper = global::Loreline.Runtime.Objects.getStringHelper(this, access.name);
+					}
+					else if (global::Loreline.Runtime.Arrays.isArray(obj)) {
+						helper = global::Loreline.Runtime.Objects.getArrayHelper(this, access.name);
+					}
+					else if (global::Loreline.Runtime.Objects.isFields(obj)) {
+						helper = global::Loreline.Runtime.Objects.getMapHelper(this, access.name);
+					}
+					
+					if (( ( helper != null ) && ( ((object) (helper) ) is global::Loreline.Internal.Lang.Function ) )) {
+						global::Loreline.Internal.Root.Array _g4 = new global::Loreline.Internal.Root.Array(new object[]{});
+						{
+							int _g5 = 0;
+							global::Loreline.Internal.Root.Array _g6 = call.args;
+							while (( _g5 < _g6.length )) {
+								global::Loreline.Runtime.NExpr arg1 = ((global::Loreline.Runtime.NExpr) (_g6.__get(_g5)) );
+								 ++ _g5;
+								_g4.push(this.evaluateExpression(arg1));
+							}
+							
+						}
+						
+						global::Loreline.Internal.Root.Array args1 = _g4;
+						args1.insert(0, obj);
+						object result1 = global::Loreline.Internal.Root.Reflect.callMethod(null, ((object) (helper) ), args1);
+						if (( ( result1 != null ) && ( result1 is global::Loreline.Runtime.Async ) )) {
+							if (( next == null )) {
+								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Cannot call async function in expression") ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
+							}
+							else {
+								global::Loreline.Runtime.Async asyncResult1 = ((global::Loreline.Runtime.Async) (result1) );
+								asyncResult1.func.__hx_invoke1_o(default(double), next);
+							}
+							
+						}
+						else if (( next != null )) {
+							next.__hx_invoke0_o();
+						}
+						
+						return result1;
+					}
+					else if (( ( helper == null ) &&  ! ((( ( ( obj is string ) || global::Loreline.Runtime.Arrays.isArray(obj) ) || global::Loreline.Runtime.Objects.isFields(obj) )))  )) {
 						object method = global::Loreline.Internal.Root.Reflect.getProperty(obj, access.name);
 						if (( ((object) (method) ) is global::Loreline.Internal.Lang.Function )) {
-							global::Loreline.Internal.Root.Array<object> _g4 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g7 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
-								int _g5 = 0;
-								global::Loreline.Internal.Root.Array<object> _g6 = call.args;
-								while (( _g5 < _g6.length )) {
-									global::Loreline.Runtime.NExpr arg1 = ((global::Loreline.Runtime.NExpr) (_g6[_g5]) );
-									 ++ _g5;
-									_g4.push(this.evaluateExpression(arg1));
+								int _g8 = 0;
+								global::Loreline.Internal.Root.Array _g9 = call.args;
+								while (( _g8 < _g9.length )) {
+									global::Loreline.Runtime.NExpr arg2 = ((global::Loreline.Runtime.NExpr) (_g9.__get(_g8)) );
+									 ++ _g8;
+									_g7.push(this.evaluateExpression(arg2));
 								}
 								
 							}
 							
-							global::Loreline.Internal.Root.Array<object> args1 = _g4;
-							object result1 = global::Loreline.Internal.Root.Reflect.callMethod(obj, method, args1);
-							if (( ( result1 != null ) && ( result1 is global::Loreline.Runtime.Async ) )) {
+							global::Loreline.Internal.Root.Array args2 = _g7;
+							object result2 = global::Loreline.Internal.Root.Reflect.callMethod(obj, method, args2);
+							if (( ( result2 != null ) && ( result2 is global::Loreline.Runtime.Async ) )) {
 								if (( next == null )) {
 									throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Cannot call async function in expression") ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
 								}
 								else {
-									global::Loreline.Runtime.Async asyncResult1 = ((global::Loreline.Runtime.Async) (result1) );
-									asyncResult1.func.__hx_invoke1_o(default(double), next);
+									global::Loreline.Runtime.Async asyncResult2 = ((global::Loreline.Runtime.Async) (result2) );
+									asyncResult2.func.__hx_invoke1_o(default(double), next);
 								}
 								
 							}
@@ -3117,24 +4111,26 @@ namespace Loreline.Runtime {
 								next.__hx_invoke0_o();
 							}
 							
-							return result1;
+							return result2;
 						}
 						
 					}
 					
 				}
 				
-				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Invalid call target: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (call.target) ))))) ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
 			}
+			
+			string tmp = this.printLoreline(call.target);
+			throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Invalid call target: ", (( (( tmp != null )) ? (tmp) : (global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (call.target) )))) )))) ), ((global::Loreline.Runtime.Position) (call.pos) )))) );
 		}
 		
 		
 		public virtual object evaluateArrayLiteral(global::Loreline.Internal.Root.Array expr) {
-			System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>(((int) (global::Loreline.Internal.Lang.Runtime.getField_f(expr, "length", 520590566, true)) ));
+			System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>(expr.length);
 			{
 				int _g = 0;
-				while (( _g < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(expr, "length", 520590566, true)) ) )) {
-					object elem = expr[_g];
+				while (( _g < expr.length )) {
+					object elem = expr.__get(_g);
 					 ++ _g;
 					object val = this.evaluateExpression(((global::Loreline.Runtime.NExpr) (elem) ));
 					result.Add(val);
@@ -3146,12 +4142,12 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual object evaluateObjectLiteral(global::Loreline.Internal.Root.Array<object> expr) {
+		public virtual object evaluateObjectLiteral(global::Loreline.Internal.Root.Array expr) {
 			System.Collections.Generic.Dictionary<string,object> result = new System.Collections.Generic.Dictionary<string,object>();
 			{
 				int _g = 0;
 				while (( _g < expr.length )) {
-					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (expr[_g]) );
+					global::Loreline.Runtime.NObjectField field = ((global::Loreline.Runtime.NObjectField) (expr.__get(_g)) );
 					 ++ _g;
 					object val = this.evaluateExpression(field.@value);
 					result[field.name] = val;
@@ -3166,7 +4162,7 @@ namespace Loreline.Runtime {
 		public virtual object evaluateExpression(global::Loreline.Runtime.NExpr expr) {
 			unchecked {
 				{
-					global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (expr) )));
+					global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (expr) )));
 					if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NAccess))) {
 						global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (expr) );
 						global::Loreline.Runtime.RuntimeAccess resolved = this.resolveAccess(access, access.target, access.name);
@@ -3224,7 +4220,7 @@ namespace Loreline.Runtime {
 							case 4:
 							{
 								int _g1 = ( _g as global::Loreline.Runtime.LiteralType_Object ).style;
-								return this.evaluateObjectLiteral(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (lit.@value) ))) ));
+								return this.evaluateObjectLiteral(((global::Loreline.Internal.Root.Array) (lit.@value) ));
 							}
 							
 							
@@ -3234,7 +4230,7 @@ namespace Loreline.Runtime {
 					else if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NStringLiteral))) {
 						global::Loreline.Runtime.NStringLiteral str = ((global::Loreline.Runtime.NStringLiteral) (expr) );
 						if (( ( str.parts.length == 1 ) && ( str.quotes == ((int) (0) ) ) )) {
-							global::Loreline.Runtime.StringPartType _g2 = ((global::Loreline.Runtime.NStringPart) (str.parts[0]) ).partType;
+							global::Loreline.Runtime.StringPartType _g2 = ((global::Loreline.Runtime.NStringPart) (str.parts.__get(0)) ).partType;
 							if (( _g2._hx_index == 1 )) {
 								global::Loreline.Runtime.NExpr expr1 = ( _g2 as global::Loreline.Runtime.StringPartType_Expr ).expr;
 								return this.evaluateExpression(expr1);
@@ -3276,8 +4272,29 @@ namespace Loreline.Runtime {
 									bool v2 = global::Loreline.Internal.Lang.Runtime.toBool(((object) (operand) ));
 									return  ! (v2) ;
 								}
+								else if (( operand is string )) {
+									string v3 = global::Loreline.Internal.Lang.Runtime.toString(((object) (operand) ));
+									if (( v3 != null )) {
+										return ( v3.Length == 0 );
+									}
+									else {
+										return true;
+									}
+									
+								}
+								else if (global::Loreline.Runtime.Arrays.isArray(operand)) {
+									return ( global::Loreline.Runtime.Arrays.arrayLength(operand) == 0 );
+								}
+								else if ((( ( ( operand is int ) || ( operand is uint ) ) || global::Loreline.Internal.Lang.Runtime.isInt(operand) ))) {
+									int v4 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (operand) ))) );
+									return ( v4 == 0 );
+								}
+								else if ((( ( operand is double ) || ( ( operand is int ) || ( operand is uint ) ) ))) {
+									double v5 = ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (operand) ))) );
+									return ( v5 == 0 );
+								}
 								else {
-									throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Invalid unary operation") ), ((global::Loreline.Runtime.Position) (un.pos) )))) );
+									return ( operand == null );
 								}
 								
 							}
@@ -3292,7 +4309,7 @@ namespace Loreline.Runtime {
 						
 					}
 					else {
-						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unsupported expression type: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass<object>(((object) (expr) ))))) ), ((global::Loreline.Runtime.Position) (expr.pos) )))) );
+						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unsupported expression type: ", global::Loreline.Internal.Root.Type.getClassName(global::Loreline.Internal.Root.Type.getClass(((object) (expr) ))))) ), ((global::Loreline.Runtime.Position) (expr.pos) )))) );
 					}
 					
 				}
@@ -3327,8 +4344,8 @@ namespace Loreline.Runtime {
 					{
 						global::Loreline.Runtime.Position pos2 = ( access as global::Loreline.Runtime.RuntimeAccess_CharacterAccess ).pos;
 						string name1 = ( access as global::Loreline.Runtime.RuntimeAccess_CharacterAccess ).name;
-						if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).exists(name1)) {
-							return ((global::Loreline.Runtime.RuntimeCharacter) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).@get(name1)).@value) ).fields;
+						if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).exists(name1)) {
+							return ((global::Loreline.Runtime.RuntimeCharacter) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).@get(((string) (name1) ))) ).fields;
 						}
 						else {
 							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Character not found: ", name1)) ), ((global::Loreline.Runtime.Position) (pos2) )))) );
@@ -3341,8 +4358,8 @@ namespace Loreline.Runtime {
 					{
 						global::Loreline.Runtime.Position pos3 = ( access as global::Loreline.Runtime.RuntimeAccess_FunctionAccess ).pos;
 						string name2 = ( access as global::Loreline.Runtime.RuntimeAccess_FunctionAccess ).name;
-						if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).exists(name2)) {
-							return (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).@get(name2)).toDynamic();
+						if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).exists(name2)) {
+							return ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).@get(((string) (name2) ));
 						}
 						else {
 							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Function not found: ", name2)) ), ((global::Loreline.Runtime.Position) (pos3) )))) );
@@ -3405,7 +4422,7 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.RuntimeAccess resolveAssignmentTarget(global::Loreline.Runtime.NExpr target) {
 			{
-				global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass<object>(((object) (target) )));
+				global::System.Type __temp_switch1 = (global::Loreline.Internal.Root.Type.getClass(((object) (target) )));
 				if (global::Loreline.Internal.Lang.Runtime.refEq(__temp_switch1, typeof(global::Loreline.Runtime.NAccess))) {
 					global::Loreline.Runtime.NAccess access = ((global::Loreline.Runtime.NAccess) (target) );
 					return this.resolveAccess(access, access.target, access.name);
@@ -3441,7 +4458,7 @@ namespace Loreline.Runtime {
 				
 				int i = ( this.stack.length - 1 );
 				while (( i >= 0 )) {
-					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack[i]) );
+					global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (this.stack.__get(i)) );
 					if (( scope.state != null )) {
 						if (global::Loreline.Runtime.Objects.fieldExists(this, scope.state.fields, name)) {
 							global::Loreline.Runtime.Position tmp = ( (( access != null )) ? (access.pos) : (null) );
@@ -3462,7 +4479,7 @@ namespace Loreline.Runtime {
 					
 					if (( scope.node != null )) {
 						long key = ((long) (scope.node.id) );
-						global::Loreline.Runtime.RuntimeState stateInNode = ((global::Loreline.Runtime.RuntimeState) ((this.nodeStates.map._get(((int) (( ((long) (key) ) >> 32 )) ), ((int) (((long) (key) )) ))).@value) );
+						global::Loreline.Runtime.RuntimeState stateInNode = ((global::Loreline.Runtime.RuntimeState) (this.nodeStates.map._get(((int) (( ((long) (key) ) >> 32 )) ), ((int) (((long) (key) )) ))) );
 						if (( stateInNode != null )) {
 							if (global::Loreline.Runtime.Objects.fieldExists(this, stateInNode.fields, name)) {
 								global::Loreline.Runtime.Position tmp4 = ( (( access != null )) ? (access.pos) : (null) );
@@ -3501,7 +4518,7 @@ namespace Loreline.Runtime {
 					return global::Loreline.Runtime.RuntimeAccess.FieldAccess(( (( tmp9 != null )) ? (tmp9) : (this.script.pos) ), this.topLevelState.fields, name);
 				}
 				
-				if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelCharacters) )) ))) ).exists(name)) {
+				if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelCharacters) )) ).exists(name)) {
 					global::Loreline.Runtime.Position tmp12 = ( (( access != null )) ? (access.pos) : (null) );
 					global::Loreline.Runtime.Position tmp13 = null;
 					if (( tmp12 != null )) {
@@ -3516,7 +4533,7 @@ namespace Loreline.Runtime {
 					return global::Loreline.Runtime.RuntimeAccess.CharacterAccess(( (( tmp13 != null )) ? (tmp13) : (this.script.pos) ), name);
 				}
 				
-				if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.topLevelFunctions) )) ))) ).exists(name)) {
+				if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.topLevelFunctions) )) ).exists(name)) {
 					global::Loreline.Runtime.Position tmp16 = ( (( access != null )) ? (access.pos) : (null) );
 					global::Loreline.Runtime.Position tmp17 = null;
 					if (( tmp16 != null )) {
@@ -4335,6 +5352,10 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual string valueToString(object @value) {
+			if (( (( ( @value is double ) || ( ( @value is int ) || ( @value is uint ) ) )) &&  ! ((( ( ( @value is int ) || ( @value is uint ) ) || global::Loreline.Internal.Lang.Runtime.isInt(@value) )))  )) {
+				return global::Loreline.Internal.Lang.Runtime.toString(((double)@value).ToString(System.Globalization.CultureInfo.InvariantCulture));
+			}
+			
 			if (( @value == null )) {
 				return "null";
 			}
@@ -4345,12 +5366,33 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual string printLoreline(global::Loreline.Runtime.Node node) {
+			try {
+				global::Loreline.Runtime.Printer printer = new global::Loreline.Runtime.Printer(default(string), default(string));
+				printer.enableComments = false;
+				return printer.print(node).Trim();
+			}
+			catch (global::System.Exception _g){
+				return null;
+			}
+			
+			
+		}
+		
+		
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
 					case 224712019:
 					{
 						this.wrapper = ((object) (@value) );
+						return @value;
+					}
+					
+					
+					case 653811639:
+					{
+						this.nextInsertionId = ((int) (@value) );
 						return @value;
 					}
 					
@@ -4376,13 +5418,6 @@ namespace Loreline.Runtime {
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
-					case 637940642:
-					{
-						this._random = ((global::Loreline.Runtime.Random) (@value) );
-						return @value;
-					}
-					
-					
 					case 224712019:
 					{
 						this.wrapper = ((object) (@value) );
@@ -4420,7 +5455,14 @@ namespace Loreline.Runtime {
 					
 					case 1843688755:
 					{
-						this.syncCallbacks = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.syncCallbacks = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 653811639:
+					{
+						this.nextInsertionId = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
 						return @value;
 					}
 					
@@ -4448,35 +5490,63 @@ namespace Loreline.Runtime {
 					
 					case 67856200:
 					{
-						this.stack = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.stack = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1111684383:
+					{
+						this.stringLiteralProcessors = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1626352649:
+					{
+						this.mapHelpers = ((global::Loreline.Internal.Ds.StringMap) (@value) );
+						return @value;
+					}
+					
+					
+					case 1908331180:
+					{
+						this.arrayHelpers = ((global::Loreline.Internal.Ds.StringMap) (@value) );
+						return @value;
+					}
+					
+					
+					case 377777780:
+					{
+						this.stringHelpers = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 1310095788:
 					{
-						this.topLevelFunctions = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.topLevelFunctions = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 283690212:
 					{
-						this.nodeStates = ((global::Loreline.Runtime.NodeIdMap<object>) (global::Loreline.Runtime.NodeIdMap<object>.__hx_cast<object>(((global::Loreline.Runtime.NodeIdMap) (@value) ))) );
+						this.nodeStates = ((global::Loreline.Runtime.NodeIdMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 86284558:
 					{
-						this.topLevelBeats = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.topLevelBeats = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 213667897:
 					{
-						this.topLevelCharacters = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.topLevelCharacters = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -4509,6 +5579,13 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1128833634:
+					{
+						this.translations = ((global::Loreline.Internal.Ds.StringMap) (@value) );
+						return @value;
+					}
+					
+					
 					case 1197493771:
 					{
 						this.script = ((global::Loreline.Runtime.Script) (@value) );
@@ -4530,6 +5607,12 @@ namespace Loreline.Runtime {
 		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 1656094007:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "printLoreline", 1656094007)) );
+					}
+					
+					
 					case 461333821:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "valueToString", 461333821)) );
@@ -4614,9 +5697,45 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 112322256:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "makePluralCall", 112322256)) );
+					}
+					
+					
+					case 473213518:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "transformPipeRaw", 473213518)) );
+					}
+					
+					
+					case 1187003123:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "rawTextHasUnescapedPipe", 1187003123)) );
+					}
+					
+					
+					case 51091901:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "pluralPipeProcess", 51091901)) );
+					}
+					
+					
 					case 613631498:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "evaluateString", 613631498)) );
+					}
+					
+					
+					case 900638323:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "findHashCommentId", 900638323)) );
+					}
+					
+					
+					case 2112173949:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "getTranslatedString", 2112173949)) );
 					}
 					
 					
@@ -4665,6 +5784,18 @@ namespace Loreline.Runtime {
 					case 1311373170:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "evalChoiceOption", 1311373170)) );
+					}
+					
+					
+					case 37614835:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "evalInsertion", 37614835)) );
+					}
+					
+					
+					case 2071430554:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "evalChoiceOptionsAndInsertions", 2071430554)) );
 					}
 					
 					
@@ -4782,21 +5913,15 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 8050095:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "initializeStringLiteralProcessors", 8050095)) );
+					}
+					
+					
 					case 1618251324:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "initializeTopLevelFunctions", 1618251324)) );
-					}
-					
-					
-					case 932127235:
-					{
-						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "random", 932127235)) );
-					}
-					
-					
-					case 637940642:
-					{
-						return this._random;
 					}
 					
 					
@@ -4854,6 +5979,24 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1092728356:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "restoreChoiceOption", 1092728356)) );
+					}
+					
+					
+					case 127529729:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "restoreInsertion", 127529729)) );
+					}
+					
+					
+					case 1994054553:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "restoreScopeItem", 1994054553)) );
+					}
+					
+					
 					case 1619604762:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "restoreStack", 1619604762)) );
@@ -4869,6 +6012,12 @@ namespace Loreline.Runtime {
 					case 28585706:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "resumeIf", 28585706)) );
+					}
+					
+					
+					case 545168622:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "resumeChoice", 545168622)) );
 					}
 					
 					
@@ -4944,9 +6093,33 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 956298669:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "serializeTextTag", 956298669)) );
+					}
+					
+					
+					case 1766080438:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "serializeChoiceOption", 1766080438)) );
+					}
+					
+					
+					case 1726061103:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "serializeInsertion", 1726061103)) );
+					}
+					
+					
 					case 710162324:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "serializeScope", 710162324)) );
+					}
+					
+					
+					case 1820773267:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "setCharacterField", 1820773267)) );
 					}
 					
 					
@@ -4959,6 +6132,12 @@ namespace Loreline.Runtime {
 					case 1361606707:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "getCharacter", 1361606707)) );
+					}
+					
+					
+					case 221796429:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "resumeFromLevel", 221796429)) );
 					}
 					
 					
@@ -5022,9 +6201,33 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 653811639:
+					{
+						return this.nextInsertionId;
+					}
+					
+					
 					case 1301394908:
 					{
 						return this.nextScopeId;
+					}
+					
+					
+					case 402360602:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "removeCurrentInsertion", 402360602)) );
+					}
+					
+					
+					case 723955135:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "get_currentInsertion", 723955135)) );
+					}
+					
+					
+					case 213665974:
+					{
+						return this.get_currentInsertion();
 					}
 					
 					
@@ -5055,6 +6258,30 @@ namespace Loreline.Runtime {
 					case 67856200:
 					{
 						return this.stack;
+					}
+					
+					
+					case 1111684383:
+					{
+						return this.stringLiteralProcessors;
+					}
+					
+					
+					case 1626352649:
+					{
+						return this.mapHelpers;
+					}
+					
+					
+					case 1908331180:
+					{
+						return this.arrayHelpers;
+					}
+					
+					
+					case 377777780:
+					{
+						return this.stringHelpers;
 					}
 					
 					
@@ -5106,6 +6333,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1128833634:
+					{
+						return this.translations;
+					}
+					
+					
 					case 1197493771:
 					{
 						return this.script;
@@ -5132,6 +6365,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 653811639:
+					{
+						return ((double) (this.nextInsertionId) );
+					}
+					
+					
 					case 1301394908:
 					{
 						return ((double) (this.nextScopeId) );
@@ -5152,209 +6391,266 @@ namespace Loreline.Runtime {
 		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
 			unchecked {
 				switch (hash) {
+					case 1656094007:
+					{
+						return this.printLoreline(((global::Loreline.Runtime.Node) (((object) (dynargs[0]) )) ));
+					}
+					
+					
 					case 461333821:
 					{
-						return this.valueToString(dynargs[0]);
+						return this.valueToString(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 1863180102:
 					{
-						return this.performOperation(((global::Loreline.Runtime.TokenType) (dynargs[0]) ), dynargs[1], dynargs[2], ((global::Loreline.Runtime.Position) (dynargs[3]) ));
+						return this.performOperation(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ), ((object) (dynargs[2]) ), ((global::Loreline.Runtime.Position) (((object) (dynargs[3]) )) ));
 					}
 					
 					
 					case 1539193051:
 					{
-						return this.getTypeName(((global::Loreline.Internal.Root.ValueType) (dynargs[0]) ));
+						return this.getTypeName(((global::Loreline.Internal.Root.ValueType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1193153968:
 					{
-						return this.resolveAccess(((global::Loreline.Runtime.NAccess) (dynargs[0]) ), ((global::Loreline.Runtime.NExpr) (( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[2]));
+						return this.resolveAccess(((global::Loreline.Runtime.NAccess) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NExpr) (( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[2]) )));
 					}
 					
 					
 					case 678409610:
 					{
-						return this.resolveAssignmentTarget(((global::Loreline.Runtime.NExpr) (dynargs[0]) ));
+						return this.resolveAssignmentTarget(((global::Loreline.Runtime.NExpr) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 536864739:
 					{
-						this.writeAccess(((global::Loreline.Runtime.RuntimeAccess) (dynargs[0]) ), dynargs[1]);
+						this.writeAccess(((global::Loreline.Runtime.RuntimeAccess) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 						break;
 					}
 					
 					
 					case 75659674:
 					{
-						return this.readAccess(((global::Loreline.Runtime.RuntimeAccess) (dynargs[0]) ));
+						return this.readAccess(((global::Loreline.Runtime.RuntimeAccess) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 539737937:
 					{
-						return this.evaluateExpression(((global::Loreline.Runtime.NExpr) (dynargs[0]) ));
+						return this.evaluateExpression(((global::Loreline.Runtime.NExpr) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1694639191:
 					{
-						return this.evaluateObjectLiteral(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						return this.evaluateObjectLiteral(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 903448271:
 					{
-						return this.evaluateArrayLiteral(((global::Loreline.Internal.Root.Array) (dynargs[0]) ));
+						return this.evaluateArrayLiteral(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 420719055:
 					{
-						return this.evaluateFunctionCall(((global::Loreline.Runtime.NCall) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						return this.evaluateFunctionCall(((global::Loreline.Runtime.NCall) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 965613058:
 					{
-						return this.evaluateCondition(((global::Loreline.Runtime.NExpr) (dynargs[0]) ));
+						return this.evaluateCondition(((global::Loreline.Runtime.NExpr) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1094936605:
 					{
-						return this.stripStringComments(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.stripStringComments(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 1041440533:
 					{
-						return this.stripStringIndent(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.stripStringIndent(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
+					}
+					
+					
+					case 112322256:
+					{
+						return this.makePluralCall(((global::Loreline.Runtime.NExpr) (((object) (dynargs[0]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[2]) )), ((global::Loreline.Runtime.Position) (((object) (dynargs[3]) )) ));
+					}
+					
+					
+					case 473213518:
+					{
+						this.transformPipeRaw(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((global::Loreline.Runtime.NExpr) (((object) (dynargs[1]) )) ), ((global::Loreline.Runtime.Position) (((object) (dynargs[2]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[3]) )) ));
+						break;
+					}
+					
+					
+					case 1187003123:
+					{
+						return this.rawTextHasUnescapedPipe(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
+					}
+					
+					
+					case 51091901:
+					{
+						return this.pluralPipeProcess(((global::Loreline.Runtime.NStringLiteral) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 613631498:
 					{
-						return this.evaluateString(((global::Loreline.Runtime.NStringLiteral) (dynargs[0]) ));
+						return this.evaluateString(((global::Loreline.Runtime.NStringLiteral) (((object) (dynargs[0]) )) ));
+					}
+					
+					
+					case 900638323:
+					{
+						return this.findHashCommentId(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NStringLiteral) (((object) (dynargs[1]) )) ));
+					}
+					
+					
+					case 2112173949:
+					{
+						return this.getTranslatedString(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NStringLiteral) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 198842449:
 					{
-						this.evalTransition(((global::Loreline.Runtime.NTransition) (dynargs[0]) ));
+						this.evalTransition(((global::Loreline.Runtime.NTransition) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1615048282:
 					{
-						this.evalCall(((global::Loreline.Runtime.NCall) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalCall(((global::Loreline.Runtime.NCall) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 60029898:
 					{
-						return this.resolveBeatFromCall(((global::Loreline.Runtime.NCall) (dynargs[0]) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.resolveBeatFromCall(((global::Loreline.Runtime.NCall) (((object) (dynargs[0]) )) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 128133950:
 					{
-						return this.isBeatCall(((global::Loreline.Runtime.AstNode) (dynargs[0]) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.isBeatCall(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 1050036222:
 					{
-						return this.isOriginalScriptExpression(((global::Loreline.Runtime.NExpr) (dynargs[0]) ));
+						return this.isOriginalScriptExpression(((global::Loreline.Runtime.NExpr) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1593465353:
 					{
-						this.evalAssignment(((global::Loreline.Runtime.NAssign) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalAssignment(((global::Loreline.Runtime.NAssign) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 331598489:
 					{
-						this.evalIf(((global::Loreline.Runtime.NIfStatement) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalIf(((global::Loreline.Runtime.NIfStatement) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1311373170:
 					{
-						this.evalChoiceOption(((global::Loreline.Runtime.NChoiceOption) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalChoiceOption(((global::Loreline.Runtime.NChoiceOption) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
+						break;
+					}
+					
+					
+					case 37614835:
+					{
+						this.evalInsertion(((global::Loreline.Runtime.RuntimeInsertion) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
+						break;
+					}
+					
+					
+					case 2071430554:
+					{
+						this.evalChoiceOptionsAndInsertions(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NChoiceStatement) (((object) (dynargs[1]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[2]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[3]) )) ));
 						break;
 					}
 					
 					
 					case 1159150621:
 					{
-						this.evalChoice(((global::Loreline.Runtime.NChoiceStatement) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalChoice(((global::Loreline.Runtime.NChoiceStatement) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 845238484:
 					{
-						this.evalDialogue(((global::Loreline.Runtime.NDialogueStatement) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalDialogue(((global::Loreline.Runtime.NDialogueStatement) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1803772521:
 					{
-						this.evalText(((global::Loreline.Runtime.NTextStatement) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalText(((global::Loreline.Runtime.NTextStatement) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 230682591:
 					{
-						this.evalStateDecl(((global::Loreline.Runtime.NStateDecl) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalStateDecl(((global::Loreline.Runtime.NStateDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1244803897:
 					{
-						this.evalBeatRun(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalBeatRun(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1969618304:
 					{
-						this.evalNodeBody(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ), ((global::Loreline.Runtime.AstNode) (dynargs[1]) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[2]) ))) ), ((global::Loreline.Internal.Lang.Function) (dynargs[3]) ));
+						this.evalNodeBody(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.AstNode) (((object) (dynargs[1]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[2]) )) ), ((global::Loreline.Runtime.RuntimeInsertion) (( (( dynargs.Length > 3 )) ? (((object) (dynargs[3]) )) : (null) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[4]) )) ));
 						break;
 					}
 					
 					
 					case 409826492:
 					{
-						this.evalBeatDecl(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalBeatDecl(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1737727934:
 					{
-						this.evalNode(((global::Loreline.Runtime.AstNode) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						this.evalNode(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 934751238:
 					{
-						this.transitionToBeat(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ));
+						this.transitionToBeat(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
@@ -5368,35 +6664,35 @@ namespace Loreline.Runtime {
 					
 					case 500757153:
 					{
-						this.initializeState(((global::Loreline.Runtime.NStateDecl) (dynargs[0]) ), ((global::Loreline.Runtime.RuntimeScope) (dynargs[1]) ));
+						this.initializeState(((global::Loreline.Runtime.NStateDecl) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.RuntimeScope) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1849909130:
 					{
-						this.initializeTopLevelCharacter(((global::Loreline.Runtime.NCharacterDecl) (dynargs[0]) ));
+						this.initializeTopLevelCharacter(((global::Loreline.Runtime.NCharacterDecl) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1777527093:
 					{
-						this.initializeTopLevelBeat(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ));
+						this.initializeTopLevelBeat(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 508769650:
 					{
-						this.initializeTopLevelState(((global::Loreline.Runtime.NStateDecl) (dynargs[0]) ));
+						this.initializeTopLevelState(((global::Loreline.Runtime.NStateDecl) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1247875546:
 					{
-						this.push(((global::Loreline.Runtime.RuntimeScope) (dynargs[0]) ));
+						this.push(((global::Loreline.Runtime.RuntimeScope) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
@@ -5416,161 +6712,187 @@ namespace Loreline.Runtime {
 					
 					case 341612509:
 					{
-						return this.wrapNext(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						return this.wrapNext(((global::Loreline.Internal.Lang.Function) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1615461975:
 					{
-						this.initializeTopLevelFunction(((global::Loreline.Runtime.NFunctionDecl) (dynargs[0]) ));
+						this.initializeTopLevelFunction(((global::Loreline.Runtime.NFunctionDecl) (((object) (dynargs[0]) )) ));
+						break;
+					}
+					
+					
+					case 8050095:
+					{
+						this.initializeStringLiteralProcessors(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1618251324:
 					{
-						this.initializeTopLevelFunctions(((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (dynargs[0]) ))) ));
+						this.initializeTopLevelFunctions(((global::Loreline.Internal.Ds.StringMap) (((object) (dynargs[0]) )) ));
 						break;
-					}
-					
-					
-					case 932127235:
-					{
-						return this.random();
 					}
 					
 					
 					case 238439747:
 					{
-						return this.restoreValue(dynargs[0]);
+						return this.restoreValue(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 304404583:
 					{
-						return this.restoreFields(dynargs[0], dynargs[1]);
+						return this.restoreFields(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 803207803:
 					{
-						return this.restoreCharacter(((global::Loreline.Runtime.RuntimeCharacter) (dynargs[0]) ), dynargs[1]);
+						return this.restoreCharacter(((global::Loreline.Runtime.RuntimeCharacter) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1865784786:
 					{
-						this.restoreNodeStates(dynargs[0]);
+						this.restoreNodeStates(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 874197400:
 					{
-						this.restoreCharacters(dynargs[0]);
+						this.restoreCharacters(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 1619608547:
 					{
-						return this.restoreState(((global::Loreline.Runtime.RuntimeState) (dynargs[0]) ), dynargs[1]);
+						return this.restoreState(((global::Loreline.Runtime.RuntimeState) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1570649060:
 					{
-						return this.restoreBeat(dynargs[0]);
+						return this.restoreBeat(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 1704221808:
 					{
-						return this.restoreNode(dynargs[0], ((long) (dynargs[1]) ), ((global::Loreline.Runtime.NBeatDecl) (dynargs[2]) ));
+						return this.restoreNode(((object) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toLong(((object) (dynargs[1]) )), ((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[2]) )) ));
 					}
 					
 					
 					case 738166156:
 					{
-						return this.restoreBeatToResume(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						return this.restoreBeatToResume(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
+					}
+					
+					
+					case 1092728356:
+					{
+						return this.restoreChoiceOption(((object) (dynargs[0]) ), ((object) (dynargs[1]) ), ((global::Loreline.Internal.Ds.IntMap) (((object) (dynargs[2]) )) ));
+					}
+					
+					
+					case 127529729:
+					{
+						return this.restoreInsertion(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((object) (dynargs[1]) ), ((global::Loreline.Internal.Ds.IntMap) (((object) (dynargs[2]) )) ));
+					}
+					
+					
+					case 1994054553:
+					{
+						return this.restoreScopeItem(((object) (dynargs[0]) ), ((object) (dynargs[1]) ), ((global::Loreline.Internal.Ds.IntMap) (((object) (dynargs[2]) )) ));
 					}
 					
 					
 					case 1619604762:
 					{
-						return this.restoreStack(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						return this.restoreStack(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 1985120491:
 					{
-						this.resumeCall(((global::Loreline.Runtime.NCall) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.resumeCall(((global::Loreline.Runtime.NCall) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 28585706:
 					{
-						this.resumeIf(((global::Loreline.Runtime.NIfStatement) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.resumeIf(((global::Loreline.Runtime.NIfStatement) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
+						break;
+					}
+					
+					
+					case 545168622:
+					{
+						this.resumeChoice(((global::Loreline.Runtime.NChoiceStatement) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 811551491:
 					{
-						this.resumeChoiceOption(((global::Loreline.Runtime.NChoiceOption) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.resumeChoiceOption(((global::Loreline.Runtime.NChoiceOption) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 1765771592:
 					{
-						this.resumeBeatRun(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.resumeBeatRun(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 33813649:
 					{
-						this.resumeNodeBody(((global::Loreline.Runtime.AstNode) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[2]) ))) ), ((global::Loreline.Internal.Lang.Function) (dynargs[3]) ));
+						this.resumeNodeBody(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[2]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[3]) )) ));
 						break;
 					}
 					
 					
 					case 2107800143:
 					{
-						this.resumeNode(((global::Loreline.Runtime.AstNode) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.resumeNode(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 1664304497:
 					{
-						return this.serializeValue(dynargs[0]);
+						return this.serializeValue(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 444663929:
 					{
-						return this.serializeFields(dynargs[0], ( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) ));
+						return this.serializeFields(((object) (dynargs[0]) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 254255529:
 					{
-						return this.serializeCharacter(((global::Loreline.Runtime.RuntimeCharacter) (dynargs[0]) ));
+						return this.serializeCharacter(((global::Loreline.Runtime.RuntimeCharacter) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 507663209:
 					{
-						return this.serializeNodeReference(((global::Loreline.Runtime.AstNode) (dynargs[0]) ));
+						return this.serializeNodeReference(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 159640949:
 					{
-						return this.serializeBeatReference(((global::Loreline.Runtime.NBeatDecl) (dynargs[0]) ));
+						return this.serializeBeatReference(((global::Loreline.Runtime.NBeatDecl) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -5588,25 +6910,57 @@ namespace Loreline.Runtime {
 					
 					case 897989649:
 					{
-						return this.serializeState(((global::Loreline.Runtime.RuntimeState) (dynargs[0]) ));
+						return this.serializeState(((global::Loreline.Runtime.RuntimeState) (((object) (dynargs[0]) )) ));
+					}
+					
+					
+					case 956298669:
+					{
+						return this.serializeTextTag(((global::Loreline.Runtime.TextTag) (((object) (dynargs[0]) )) ));
+					}
+					
+					
+					case 1766080438:
+					{
+						return this.serializeChoiceOption(((global::Loreline.Runtime.ChoiceOption) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
+					}
+					
+					
+					case 1726061103:
+					{
+						return this.serializeInsertion(((global::Loreline.Runtime.RuntimeInsertion) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 710162324:
 					{
-						return this.serializeScope(((global::Loreline.Runtime.RuntimeScope) (dynargs[0]) ));
+						return this.serializeScope(((global::Loreline.Runtime.RuntimeScope) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
+					}
+					
+					
+					case 1820773267:
+					{
+						this.setCharacterField(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), ((object) (dynargs[2]) ));
+						break;
 					}
 					
 					
 					case 1226371975:
 					{
-						return this.getCharacterField(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]));
+						return this.getCharacterField(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )));
 					}
 					
 					
 					case 1361606707:
 					{
-						return this.getCharacter(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.getCharacter(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
+					}
+					
+					
+					case 221796429:
+					{
+						this.resumeFromLevel(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
+						break;
 					}
 					
 					
@@ -5619,7 +6973,7 @@ namespace Loreline.Runtime {
 					
 					case 1789945678:
 					{
-						this.restore(dynargs[0]);
+						this.restore(((object) (dynargs[0]) ));
 						break;
 					}
 					
@@ -5632,8 +6986,21 @@ namespace Loreline.Runtime {
 					
 					case 67859554:
 					{
-						this.start(global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
+						this.start(global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 0 )) ? (((object) (dynargs[0]) )) : (null) )));
 						break;
+					}
+					
+					
+					case 402360602:
+					{
+						this.removeCurrentInsertion();
+						break;
+					}
+					
+					
+					case 723955135:
+					{
+						return this.get_currentInsertion();
 					}
 					
 					
@@ -5655,19 +7022,24 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
-			baseArr.push("_random");
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("wrapper");
 			baseArr.push("customCreateFields");
 			baseArr.push("beatToResume");
 			baseArr.push("finishTrigger");
 			baseArr.push("flushing");
 			baseArr.push("syncCallbacks");
+			baseArr.push("nextInsertionId");
 			baseArr.push("nextScopeId");
+			baseArr.push("currentInsertion");
 			baseArr.push("currentScope");
 			baseArr.push("strictAccess");
 			baseArr.push("lens");
 			baseArr.push("stack");
+			baseArr.push("stringLiteralProcessors");
+			baseArr.push("mapHelpers");
+			baseArr.push("arrayHelpers");
+			baseArr.push("stringHelpers");
 			baseArr.push("topLevelFunctions");
 			baseArr.push("nodeStates");
 			baseArr.push("topLevelBeats");
@@ -5676,6 +7048,7 @@ namespace Loreline.Runtime {
 			baseArr.push("handleFinish");
 			baseArr.push("handleChoice");
 			baseArr.push("handleDialogue");
+			baseArr.push("translations");
 			baseArr.push("script");
 			base.__hx_getFields(baseArr);
 		}
@@ -5688,9 +7061,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_resumeNodeBody_1018__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_resumeNodeBody_1251__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_resumeNodeBody_1018__Fun(int scopeLevel, int[] resumeIndex, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeScope currentScope, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_resumeNodeBody_1251__Fun(int scopeLevel, int[] resumeIndex, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeScope currentScope, global::Loreline.Internal.Root.Array body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.scopeLevel = scopeLevel;
 			this.resumeIndex = resumeIndex;
 			this.next = next;
@@ -5704,18 +7077,18 @@ namespace Loreline.Runtime {
 		
 		public override object __hx_invoke0_o() {
 			unchecked {
-				if (( ( this.index[0] != -1 ) && ( this.index[0] == this.resumeIndex[0] ) )) {
-					global::Loreline.Runtime.AstNode childNode = ((global::Loreline.Runtime.AstNode) (this.body[this.index[0]]) );
+				if (( ( ((int) (this.index[0]) ) != -1 ) && ( ((int) (this.index[0]) ) == ((int) (this.resumeIndex[0]) ) ) )) {
+					global::Loreline.Runtime.AstNode childNode = ((global::Loreline.Runtime.AstNode) (this.body.__get(((int) (this.index[0]) ))) );
 					this.index[0]++;
-					global::Loreline.Runtime.EvalNext done = this._gthis.wrapNext(this.moveNext[0]);
+					global::Loreline.Runtime.EvalNext done = this._gthis.wrapNext(((global::Loreline.Internal.Lang.Function) (this.moveNext[0]) ));
 					this._gthis.resumeNode(childNode, ( this.scopeLevel + 1 ), done.cb);
 					done.sync = false;
 				}
-				else if (( this.index[0] < this.body.length )) {
-					global::Loreline.Runtime.AstNode childNode1 = ((global::Loreline.Runtime.AstNode) (this.body[this.index[0]]) );
+				else if (( ((int) (this.index[0]) ) < this.body.length )) {
+					global::Loreline.Runtime.AstNode childNode1 = ((global::Loreline.Runtime.AstNode) (this.body.__get(((int) (this.index[0]) ))) );
 					this.currentScope.head = childNode1;
 					this.index[0]++;
-					global::Loreline.Runtime.EvalNext done1 = this._gthis.wrapNext(this.moveNext[0]);
+					global::Loreline.Runtime.EvalNext done1 = this._gthis.wrapNext(((global::Loreline.Internal.Lang.Function) (this.moveNext[0]) ));
 					this._gthis.evalNode(childNode1, done1.cb);
 					done1.sync = false;
 				}
@@ -5741,7 +7114,7 @@ namespace Loreline.Runtime {
 		
 		public global::Loreline.Runtime.RuntimeScope currentScope;
 		
-		public global::Loreline.Internal.Root.Array<object> body;
+		public global::Loreline.Internal.Root.Array body;
 		
 		public global::Loreline.Runtime.Interpreter _gthis;
 		
@@ -5752,41 +7125,16 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1502__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_initializeStringLiteralProcessors_1883__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1502__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(2, 1) {
-			this._gthis = _gthis;
-		}
-		
-		
-		public override double __hx_invoke2_f(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
-			unchecked {
-				int max = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((int) (__fn_float2) )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(__fn_dyn2)) )) );
-				int min = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((int) (__fn_float1) )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(__fn_dyn1)) )) );
-				return ((double) (((int) (global::System.Math.Floor(((double) (( min + ( this._gthis.random() * (( ( max + 1 ) - min )) ) )) ))) )) );
-			}
-		}
-		
-		
-		public global::Loreline.Runtime.Interpreter _gthis;
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1506__Fun : global::Loreline.Internal.Lang.Function {
-		
-		public Interpreter_initializeTopLevelFunctions_1506__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(1, 0) {
+		public Interpreter_initializeStringLiteralProcessors_1883__Fun(global::Loreline.Runtime.Interpreter _gthis) : base(1, 0) {
 			this._gthis = _gthis;
 		}
 		
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
-			int n = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((int) (__fn_float1) )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(__fn_dyn1)) )) );
-			return ( ((int) (global::System.Math.Floor(((double) (( this._gthis.random() * n )) ))) ) == 0 );
+			global::Loreline.Runtime.NStringLiteral str = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Runtime.NStringLiteral) (((object) (__fn_float1) )) )) : (((global::Loreline.Runtime.NStringLiteral) (__fn_dyn1) )) );
+			return this._gthis.pluralPipeProcess(str);
 		}
 		
 		
@@ -5799,56 +7147,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1511__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_wrapNext_1953__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_initializeTopLevelFunctions_1511__Fun(double seconds) : base(1, 0) {
-			this.seconds = seconds;
-		}
-		
-		
-		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
-			unchecked {
-				global::Loreline.Internal.Lang.Function done = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Lang.Function) (((object) (__fn_float1) )) )) : (((global::Loreline.Internal.Lang.Function) (__fn_dyn1) )) );
-				global::System.Threading.Thread.Sleep(((int) (((int) (( this.seconds * 1000 )) )) ));
-				done.__hx_invoke0_o();
-				return null;
-			}
-		}
-		
-		
-		public double seconds;
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime {
-	public class Interpreter_initializeTopLevelFunctions_1510__Fun : global::Loreline.Internal.Lang.Function {
-		
-		public Interpreter_initializeTopLevelFunctions_1510__Fun() : base(1, 0) {
-		}
-		
-		
-		public static global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1510__Fun __hx_current;
-		
-		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
-			double seconds = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((double) (__fn_float1) )) : (((double) (global::Loreline.Internal.Lang.Runtime.toDouble(__fn_dyn1)) )) );
-			return new global::Loreline.Runtime.Async(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Runtime.Interpreter_initializeTopLevelFunctions_1511__Fun(seconds)) ));
-		}
-		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime {
-	public class Interpreter_wrapNext_1592__Fun : global::Loreline.Internal.Lang.Function {
-		
-		public Interpreter_wrapNext_1592__Fun(global::Loreline.Runtime.EvalNext wrapped, global::Loreline.Internal.Lang.Function cb, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_wrapNext_1953__Fun(global::Loreline.Runtime.EvalNext wrapped, global::Loreline.Internal.Lang.Function cb, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.wrapped = wrapped;
 			this.cb = cb;
 			this._gthis = _gthis;
@@ -5858,7 +7159,7 @@ namespace Loreline.Runtime {
 		public override object __hx_invoke0_o() {
 			if (this.wrapped.sync) {
 				if (( this._gthis.syncCallbacks == null )) {
-					this._gthis.syncCallbacks = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+					this._gthis.syncCallbacks = new global::Loreline.Internal.Root.Array(new object[]{});
 				}
 				
 				this._gthis.syncCallbacks.push(this.wrapped.cb);
@@ -5890,23 +7191,28 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalNodeBody_1909__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalNodeBody_2280__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalNodeBody_1909__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Internal.Root.Array<object> body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalNodeBody_2280__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeInsertion currentInsertion, global::Loreline.Internal.Root.Array body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.next = next;
 			this.moveNext = moveNext;
 			this.index = index;
+			this.currentInsertion = currentInsertion;
 			this.body = body;
 			this._gthis = _gthis;
 		}
 		
 		
 		public override object __hx_invoke0_o() {
-			if (( this.index[0] < this.body.length )) {
-				global::Loreline.Runtime.AstNode childNode = ((global::Loreline.Runtime.AstNode) (this.body[this.index[0]]) );
+			if (( (( (( this.currentInsertion != null )) ? (this.currentInsertion.options) : (null) )) != null )) {
+				this._gthis.pop();
+				this.next.__hx_invoke0_o();
+			}
+			else if (( ((int) (this.index[0]) ) < this.body.length )) {
+				global::Loreline.Runtime.AstNode childNode = ((global::Loreline.Runtime.AstNode) (this.body.__get(((int) (this.index[0]) ))) );
 				this._gthis.get_currentScope().head = childNode;
 				this.index[0]++;
-				global::Loreline.Runtime.EvalNext done = this._gthis.wrapNext(this.moveNext[0]);
+				global::Loreline.Runtime.EvalNext done = this._gthis.wrapNext(((global::Loreline.Internal.Lang.Function) (this.moveNext[0]) ));
 				this._gthis.evalNode(childNode, done.cb);
 				done.sync = false;
 			}
@@ -5925,7 +7231,9 @@ namespace Loreline.Runtime {
 		
 		public int[] index;
 		
-		public global::Loreline.Internal.Root.Array<object> body;
+		public global::Loreline.Runtime.RuntimeInsertion currentInsertion;
+		
+		public global::Loreline.Internal.Root.Array body;
 		
 		public global::Loreline.Runtime.Interpreter _gthis;
 		
@@ -5936,33 +7244,64 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_2031__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2425__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_2031__Fun(global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalChoice_2425__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+			this.options = options;
 			this.next = next;
 			this.index = index;
-			this.choice = choice;
 			this._gthis = _gthis;
 		}
 		
 		
 		public override object __hx_invoke0_o() {
-			if (( ( this.index[0] >= 0 ) && ( this.index[0] < this.choice.options.length ) )) {
-				this._gthis.evalChoiceOption(((global::Loreline.Runtime.NChoiceOption) (this.choice.options[this.index[0]]) ), this.next);
+			unchecked {
+				if (( ( ((int) (this.index[0]) ) >= 0 ) && ( ((int) (this.index[0]) ) < this.options.length ) )) {
+					global::Loreline.Runtime.ChoiceOption option = ((global::Loreline.Runtime.ChoiceOption) (this.options.__get(((int) (this.index[0]) ))) );
+					if (( option.insertion != null )) {
+						int scopeLevel = this._gthis.stack.length;
+						while (( this._gthis.stack.length > 0 )) {
+							global::Loreline.Runtime.RuntimeScope __temp_expr1 = ((global::Loreline.Runtime.RuntimeScope) (this._gthis.stack.pop()) );
+						}
+						
+						{
+							int _g = 0;
+							global::Loreline.Internal.Root.Array _g1 = option.insertion.stack;
+							while (( _g < _g1.length )) {
+								global::Loreline.Runtime.RuntimeScope scope = ((global::Loreline.Runtime.RuntimeScope) (_g1.__get(_g)) );
+								 ++ _g;
+								if (( scope.insertion == option.insertion )) {
+									scope.insertion = null;
+								}
+								
+								this._gthis.stack.push(scope);
+							}
+							
+						}
+						
+						global::Loreline.Runtime.RuntimeScope lastScope = ((global::Loreline.Runtime.RuntimeScope) (this._gthis.stack.__get(( this._gthis.stack.length - 1 ))) );
+						this._gthis.push(new global::Loreline.Runtime.RuntimeScope(default(object), ((global::Loreline.Runtime.NBeatDecl) (lastScope.beat) ), ((global::Loreline.Runtime.AstNode) (this._gthis.lens.getParentNode(option.node)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Runtime.RuntimeState), ((global::Loreline.Runtime.AstNode) (option.node) ), default(global::Loreline.Runtime.RuntimeInsertion)));
+						this._gthis.resumeFromLevel(scopeLevel, this.next);
+					}
+					else {
+						this._gthis.evalChoiceOption(option.node, this.next);
+					}
+					
+				}
+				else {
+					this.next.__hx_invoke0_o();
+				}
+				
+				return null;
 			}
-			else {
-				this.next.__hx_invoke0_o();
-			}
-			
-			return null;
 		}
 		
+		
+		public global::Loreline.Internal.Root.Array options;
 		
 		public global::Loreline.Internal.Lang.Function next;
 		
 		public int[] index;
-		
-		public global::Loreline.Runtime.NChoiceStatement choice;
 		
 		public global::Loreline.Runtime.Interpreter _gthis;
 		
@@ -5973,9 +7312,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_2042__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2460__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_2042__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
+		public Interpreter_evalChoice_2460__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
 			this.index = index;
 			this.choiceCallback = choiceCallback;
 		}
@@ -5992,6 +7331,128 @@ namespace Loreline.Runtime {
 		public int[] index;
 		
 		public global::Loreline.Runtime.EvalNext choiceCallback;
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime {
+	public class Interpreter_evalChoice_2402__Fun : global::Loreline.Internal.Lang.Function {
+		
+		public Interpreter_evalChoice_2402__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+			this.options = options;
+			this.next = next;
+			this._gthis = _gthis;
+		}
+		
+		
+		public override object __hx_invoke0_o() {
+			unchecked {
+				global::Loreline.Runtime.RuntimeInsertion currentInsertion = this._gthis.get_currentInsertion();
+				if (( ( currentInsertion != null ) && ( currentInsertion.options == null ) )) {
+					currentInsertion.stack = new global::Loreline.Internal.Root.Array(new object[]{}).concat(this._gthis.stack);
+					currentInsertion.options = this.options;
+					this.next.__hx_invoke0_o();
+					return null;
+				}
+				
+				int[] index = new int[]{-1};
+				global::Loreline.Runtime.EvalNext choiceCallback = this._gthis.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2425__Fun(this.options, this.next, index, this._gthis));
+				this._gthis.handleChoice.__hx_invoke3_o(default(double), this._gthis, default(double), this.options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_2460__Fun(index, choiceCallback));
+				choiceCallback.sync = false;
+				return null;
+			}
+		}
+		
+		
+		public global::Loreline.Internal.Root.Array options;
+		
+		public global::Loreline.Internal.Lang.Function next;
+		
+		public global::Loreline.Runtime.Interpreter _gthis;
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime {
+	public class Interpreter_evalChoiceOptionsAndInsertions_2483__Fun : global::Loreline.Internal.Lang.Function {
+		
+		public Interpreter_evalChoiceOptionsAndInsertions_2483__Fun(global::Loreline.Internal.Root.Array result, global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, global::Loreline.Runtime.RuntimeInsertion[] insertion, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+			this.result = result;
+			this.options = options;
+			this.next = next;
+			this.moveNext = moveNext;
+			this.insertion = insertion;
+			this.index = index;
+			this._gthis = _gthis;
+		}
+		
+		
+		public override object __hx_invoke0_o() {
+			if (( ( ((global::Loreline.Runtime.RuntimeInsertion) (this.insertion[0]) ) != null ) && ( ((global::Loreline.Runtime.RuntimeInsertion) (this.insertion[0]) ).options != null ) )) {
+				{
+					int _g = 0;
+					int _g1 = ((global::Loreline.Runtime.RuntimeInsertion) (this.insertion[0]) ).options.length;
+					while (( _g < _g1 )) {
+						int i = _g++;
+						global::Loreline.Runtime.ChoiceOption opt = ((global::Loreline.Runtime.ChoiceOption) (((global::Loreline.Runtime.RuntimeInsertion) (this.insertion[0]) ).options.__get(i)) );
+						this.result.push(opt);
+					}
+					
+				}
+				
+				this.insertion[0] = null;
+			}
+			
+			if (( ((int) (this.index[0]) ) < this.options.length )) {
+				global::Loreline.Runtime.NChoiceOption option = ((global::Loreline.Runtime.NChoiceOption) (this.options.__get(((int) (this.index[0]) ))) );
+				this.index[0]++;
+				bool enabled = ( ( option.condition == null ) || this._gthis.evaluateCondition(option.condition) );
+				if (( option.text != null )) {
+					global::Loreline.Runtime.EvalNext done = this._gthis.wrapNext(((global::Loreline.Internal.Lang.Function) (this.moveNext[0]) ));
+					global::Loreline.Runtime.NStringLiteral str = this._gthis.getTranslatedString(option, option.text);
+					object content = this._gthis.evaluateString(str);
+					this.result.push(new global::Loreline.Runtime.ChoiceOption(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(content, "text", 1291439277, true)), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(content, "tags", 1291236569, true)) ), enabled, option, this._gthis.get_currentInsertion()));
+					done.cb.__hx_invoke0_o();
+					done.sync = false;
+				}
+				else if (( option.insertion != null )) {
+					global::Loreline.Runtime.EvalNext done1 = this._gthis.wrapNext(((global::Loreline.Internal.Lang.Function) (this.moveNext[0]) ));
+					this.insertion[0] = new global::Loreline.Runtime.RuntimeInsertion(((int) (this._gthis.nextInsertionId++) ), ((global::Loreline.Runtime.NInsertion) (option.insertion) ));
+					this._gthis.evalInsertion(((global::Loreline.Runtime.RuntimeInsertion) (this.insertion[0]) ), done1.cb);
+					done1.sync = false;
+				}
+				else {
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.RuntimeError(((string) ("Invalid choice option") ), ((global::Loreline.Runtime.Position) (option.pos) )))) );
+				}
+				
+			}
+			else {
+				this.next.__hx_invoke0_o();
+			}
+			
+			return null;
+		}
+		
+		
+		public global::Loreline.Internal.Root.Array result;
+		
+		public global::Loreline.Internal.Root.Array options;
+		
+		public global::Loreline.Internal.Lang.Function next;
+		
+		public global::Loreline.Internal.Lang.Function[] moveNext;
+		
+		public global::Loreline.Runtime.RuntimeInsertion[] insertion;
+		
+		public int[] index;
+		
+		public global::Loreline.Runtime.Interpreter _gthis;
 		
 	}
 }

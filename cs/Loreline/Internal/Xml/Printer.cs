@@ -20,9 +20,9 @@ namespace Loreline.Internal.Xml {
 		}
 		
 		
-		public static string print(global::Loreline.Internal.Root.Xml xml, global::Loreline.Internal.Lang.Null<bool> pretty) {
-			global::Loreline.Internal.Lang.Null<bool> pretty1 = ( ( ! (pretty.hasValue) ) ? (new global::Loreline.Internal.Lang.Null<bool>(false, true)) : (pretty) );
-			global::Loreline.Internal.Xml.Printer printer = new global::Loreline.Internal.Xml.Printer((pretty1).@value);
+		public static string print(global::Loreline.Internal.Root.Xml xml, object pretty) {
+			object pretty1 = ( (( pretty == default(object) )) ? (((object) (false) )) : (pretty) );
+			global::Loreline.Internal.Xml.Printer printer = new global::Loreline.Internal.Xml.Printer(global::Loreline.Internal.Lang.Runtime.toBool(pretty1));
 			printer.writeNode(xml, "");
 			return printer.output.b.ToString();
 		}
@@ -37,23 +37,23 @@ namespace Loreline.Internal.Xml {
 				switch (@value.nodeType) {
 					case 0:
 					{
-						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(tabs, "<"))) ));
+						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(tabs, "<")) ))) ));
 						{
 							if (( @value.nodeType != global::Loreline.Internal.Root.Xml.Element )) {
 								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(@value.nodeType)))) );
 							}
 							
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(@value.nodeName)) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (@value.nodeName) ))) ));
 						}
 						
 						{
 							object attribute = @value.attributes();
 							while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(attribute, "hasNext", 407283053, null))) {
 								string attribute1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(attribute, "next", 1224901875, null));
-								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(" ", attribute1), "=\""))) ));
+								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(" ", attribute1), "=\"")) ))) ));
 								{
-									string input = global::Loreline.Internal.Root.StringTools.htmlEscape(@value.@get(attribute1), new global::Loreline.Internal.Lang.Null<bool>(true, true));
-									this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(input)) ));
+									string input = global::Loreline.Internal.Root.StringTools.htmlEscape(@value.@get(attribute1), true);
+									this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (input) ))) ));
 								}
 								
 								this.output.b.Append(((string) ("\"") ));
@@ -73,21 +73,21 @@ namespace Loreline.Internal.Xml {
 								}
 								
 								int _g_current = 0;
-								global::Loreline.Internal.Root.Array<object> _g_array = @value.children;
+								global::Loreline.Internal.Root.Array _g_array = @value.children;
 								while (( _g_current < _g_array.length )) {
-									global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g_array[_g_current++]) );
+									global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g_array.__get(_g_current++)) );
 									this.writeNode(child, ( (this.pretty) ? (global::Loreline.Internal.Lang.Runtime.concat(tabs, "\t")) : (tabs) ));
 								}
 								
 							}
 							
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(tabs, "</"))) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(tabs, "</")) ))) ));
 							{
 								if (( @value.nodeType != global::Loreline.Internal.Root.Xml.Element )) {
 									throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(@value.nodeType)))) );
 								}
 								
-								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(@value.nodeName)) ));
+								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (@value.nodeName) ))) ));
 							}
 							
 							this.output.b.Append(((string) (">") ));
@@ -117,8 +117,8 @@ namespace Loreline.Internal.Xml {
 						string nodeValue = @value.nodeValue;
 						if (( nodeValue.Length != 0 )) {
 							{
-								string input1 = global::Loreline.Internal.Lang.Runtime.concat(tabs, global::Loreline.Internal.Root.StringTools.htmlEscape(nodeValue, default(global::Loreline.Internal.Lang.Null<bool>)));
-								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(input1)) ));
+								string input1 = global::Loreline.Internal.Lang.Runtime.concat(tabs, global::Loreline.Internal.Root.StringTools.htmlEscape(nodeValue, null));
+								this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (input1) ))) ));
 							}
 							
 							if (this.pretty) {
@@ -133,13 +133,13 @@ namespace Loreline.Internal.Xml {
 					
 					case 2:
 					{
-						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(tabs, "<![CDATA["))) ));
+						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(tabs, "<![CDATA[")) ))) ));
 						{
 							if (( ( @value.nodeType == global::Loreline.Internal.Root.Xml.Document ) || ( @value.nodeType == global::Loreline.Internal.Root.Xml.Element ) )) {
 								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, unexpected ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(@value.nodeType)))) );
 							}
 							
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(@value.nodeValue)) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (@value.nodeValue) ))) ));
 						}
 						
 						this.output.b.Append(((string) ("]]>") ));
@@ -160,10 +160,10 @@ namespace Loreline.Internal.Xml {
 						string commentContent = @value.nodeValue;
 						commentContent = new global::Loreline.Internal.Root.EReg(((string) ("[\n\r\t]+") ), ((string) ("g") )).replace(commentContent, "");
 						commentContent = global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("<!--", commentContent), "-->");
-						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(tabs)) ));
+						this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (tabs) ))) ));
 						{
 							string input2 = commentContent.Trim();
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(input2)) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (input2) ))) ));
 						}
 						
 						if (this.pretty) {
@@ -181,7 +181,7 @@ namespace Loreline.Internal.Xml {
 								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, unexpected ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(@value.nodeType)))) );
 							}
 							
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("<!DOCTYPE ", @value.nodeValue), ">"))) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("<!DOCTYPE ", @value.nodeValue), ">")) ))) ));
 						}
 						
 						if (this.pretty) {
@@ -199,7 +199,7 @@ namespace Loreline.Internal.Xml {
 								throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, unexpected ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(@value.nodeType)))) );
 							}
 							
-							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("<?", @value.nodeValue), "?>"))) ));
+							this.output.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("<?", @value.nodeValue), "?>")) ))) ));
 						}
 						
 						if (this.pretty) {
@@ -217,9 +217,9 @@ namespace Loreline.Internal.Xml {
 						}
 						
 						int _g_current1 = 0;
-						global::Loreline.Internal.Root.Array<object> _g_array1 = @value.children;
+						global::Loreline.Internal.Root.Array _g_array1 = @value.children;
 						while (( _g_current1 < _g_array1.length )) {
-							global::Loreline.Internal.Root.Xml child1 = ((global::Loreline.Internal.Root.Xml) (_g_array1[_g_current1++]) );
+							global::Loreline.Internal.Root.Xml child1 = ((global::Loreline.Internal.Root.Xml) (_g_array1.__get(_g_current1++)) );
 							this.writeNode(child1, tabs);
 						}
 						
@@ -241,9 +241,9 @@ namespace Loreline.Internal.Xml {
 					}
 					
 					int _g_current = 0;
-					global::Loreline.Internal.Root.Array<object> _g_array = @value.children;
+					global::Loreline.Internal.Root.Array _g_array = @value.children;
 					while (( _g_current < _g_array.length )) {
-						global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g_array[_g_current++]) );
+						global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g_array.__get(_g_current++)) );
 						switch (child.nodeType) {
 							case 0:
 							case 1:
@@ -354,13 +354,13 @@ namespace Loreline.Internal.Xml {
 				switch (hash) {
 					case 1126235833:
 					{
-						return this.hasChildren(((global::Loreline.Internal.Root.Xml) (dynargs[0]) ));
+						return this.hasChildren(((global::Loreline.Internal.Root.Xml) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1371405953:
 					{
-						this.writeNode(((global::Loreline.Internal.Root.Xml) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]));
+						this.writeNode(((global::Loreline.Internal.Root.Xml) (((object) (dynargs[0]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )));
 						break;
 					}
 					
@@ -377,7 +377,7 @@ namespace Loreline.Internal.Xml {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("pretty");
 			baseArr.push("output");
 			base.__hx_getFields(baseArr);

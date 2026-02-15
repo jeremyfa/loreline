@@ -17,7 +17,7 @@ class Objects {
         else if (value is IntMap) {
             return false;
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (isCsDict(value)) {
             return true;
         }
@@ -44,12 +44,15 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).get(name);
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (isCsDict(fields)) {
             getCsDictField(fields, name);
         }
         else if (isCsFields(fields)) {
             getCsFieldsValue(interpreter, fields, name);
+        }
+        else if (Arrays.isArray(fields)) {
+            if (name == "length") Arrays.arrayLength(fields) else null;
         }
         #end
         else {
@@ -66,7 +69,7 @@ class Objects {
         else if (fields is StringMap) {
             [for (key in (cast fields:StringMap<Any>).keys()) key];
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (isCsDict(fields)) {
             getCsDictKeys(fields);
         }
@@ -88,7 +91,7 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).set(name, value);
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (isCsDict(fields)) {
             setCsDictField(fields, name, value);
         }
@@ -110,7 +113,7 @@ class Objects {
         else if (fields is StringMap) {
             (cast fields:StringMap<Any>).exists(name);
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (isCsDict(fields)) {
             csDictFieldExists(fields, name);
         }
@@ -155,74 +158,74 @@ class Objects {
             return instance;
         }
 
-        #if (loreline_cs_api && loreline_use_cs_types)
-        return untyped __cs__('new System.Collections.Generic.Dictionary<string,object>()');
+        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        return cs.Syntax.code('new System.Collections.Generic.Dictionary<string,object>()');
         #else
         return new Map<String,Any>();
         #end
     }
 
-    #if loreline_cs_api
+    #if (loreline_cs_api && !macro)
 
     public static function isCsDict(fields:Any):Bool {
-        return untyped __cs__('{0} is global::System.Collections.IDictionary', fields);
+        return cs.Syntax.code('{0} is global::System.Collections.IDictionary', fields);
     }
 
     public static function getCsDictField(fields:Any, name:String):Any {
-        untyped __cs__('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
-        return untyped __cs__('dict[{0}]', name);
+        cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
+        return cs.Syntax.code('dict[{0}]', name);
     }
 
     public static function setCsDictField(fields:Any, name:String, value:Any):Void {
-        untyped __cs__('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
-        untyped __cs__('dict[{0}] = {1}', name, value);
+        cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
+        cs.Syntax.code('dict[{0}] = {1}', name, value);
     }
 
     public static function csDictFieldExists(fields:Any, name:String):Bool {
-        untyped __cs__('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
-        return untyped __cs__('dict.Contains({0})', name);
+        cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
+        return cs.Syntax.code('dict.Contains({0})', name);
     }
 
     public static function getCsDictKeys(fields:Any):Array<String> {
-        untyped __cs__('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
+        cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
         final keys:Array<String> = [];
-        untyped __cs__('foreach (var dictKey in dict.Keys) {');
-        untyped __cs__('if (dictKey is string) {');
+        cs.Syntax.code('foreach (var dictKey in dict.Keys) {');
+        cs.Syntax.code('if (dictKey is string) {');
         final key:String = null;
-        untyped __cs__('{0} = (string)dictKey', key);
+        cs.Syntax.code('{0} = (string)dictKey', key);
         keys.push(key);
-        untyped __cs__('}');
-        untyped __cs__('}');
+        cs.Syntax.code('}');
+        cs.Syntax.code('}');
         return keys;
     }
 
     public static function isCsFields(fields:Any):Bool {
-        return untyped __cs__('{0} is global::Loreline.IFields', fields);
+        return cs.Syntax.code('{0} is global::Loreline.IFields', fields);
     }
 
     public static function getCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String):Any {
-        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
-        return untyped __cs__('f.LorelineGet((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
+        cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        return cs.Syntax.code('f.LorelineGet((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
     }
 
     public static function setCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String, value:Any):Void {
-        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
-        untyped __cs__('f.LorelineSet((global::Loreline.Interpreter)({0}), {1}, {2})', @:privateAccess interpreter?.wrapper, name, value);
+        cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        cs.Syntax.code('f.LorelineSet((global::Loreline.Interpreter)({0}), {1}, {2})', @:privateAccess interpreter?.wrapper, name, value);
     }
 
     public static function csFieldsKeyExists(?interpreter:Interpreter, fields:Any, name:String):Bool {
-        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
-        return untyped __cs__('f.LorelineExists((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
+        cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        return cs.Syntax.code('f.LorelineExists((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
     }
 
     public static function getCsFieldsKeys(?interpreter:Interpreter, fields:Any):Array<String> {
-        untyped __cs__('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
         final keys:Array<String> = [];
-        untyped __cs__('foreach (string fieldsKey in f.LorelineFields((global::Loreline.Interpreter)({0}))) {', @:privateAccess interpreter?.wrapper);
+        cs.Syntax.code('foreach (string fieldsKey in f.LorelineFields((global::Loreline.Interpreter)({0}))) {', @:privateAccess interpreter?.wrapper);
         final key:String = null;
-        untyped __cs__('{0} = fieldsKey', key);
+        cs.Syntax.code('{0} = fieldsKey', key);
         keys.push(key);
-        untyped __cs__('}');
+        cs.Syntax.code('}');
         return keys;
     }
 

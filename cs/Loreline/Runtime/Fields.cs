@@ -13,7 +13,7 @@ namespace Loreline.Runtime {
 		
 		bool lorelineExists(global::Loreline.Runtime.Interpreter interpreter, string key);
 		
-		global::Loreline.Internal.Root.Array<string> lorelineFields(global::Loreline.Runtime.Interpreter interpreter);
+		global::Loreline.Internal.Root.Array lorelineFields(global::Loreline.Runtime.Interpreter interpreter);
 		
 	}
 }

@@ -86,8 +86,8 @@ namespace Loreline.Internal.Root {
 		
 		protected static void __hx_ctor__Xml(global::Loreline.Internal.Root.Xml __hx_this, int nodeType) {
 			__hx_this.nodeType = nodeType;
-			__hx_this.children = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-			__hx_this.attributeMap = new global::Loreline.Internal.Ds.StringMap<string>();
+			__hx_this.children = new global::Loreline.Internal.Root.Array(new object[]{});
+			__hx_this.attributeMap = new global::Loreline.Internal.Ds.StringMap();
 		}
 		
 		
@@ -105,16 +105,16 @@ namespace Loreline.Internal.Root {
 		
 		public string nodeValue;
 		
-		public global::Loreline.Internal.Root.Array<object> children;
+		public global::Loreline.Internal.Root.Array children;
 		
-		public global::Loreline.Internal.Ds.StringMap<string> attributeMap;
+		public global::Loreline.Internal.Ds.StringMap attributeMap;
 		
 		public virtual string @get(string att) {
 			if (( this.nodeType != global::Loreline.Internal.Root.Xml.Element )) {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(this.nodeType)))) );
 			}
 			
-			return global::Loreline.Internal.Lang.Runtime.toString((((global::Loreline.Internal.Ds.StringMap<string>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<string>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, string>) (this.attributeMap) )) ))) ).@get(att)).toDynamic());
+			return global::Loreline.Internal.Lang.Runtime.toString(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.attributeMap) )) ).@get(((string) (att) )));
 		}
 		
 		
@@ -123,7 +123,7 @@ namespace Loreline.Internal.Root {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(this.nodeType)))) );
 			}
 			
-			return ((global::Loreline.Internal.Ds.StringMap<string>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<string>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, string>) (this.attributeMap) )) ))) ).exists(att);
+			return ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.attributeMap) )) ).exists(att);
 		}
 		
 		
@@ -132,7 +132,7 @@ namespace Loreline.Internal.Root {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(this.nodeType)))) );
 			}
 			
-			return ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<string>(((global::Loreline.Internal.Ds.StringMap<string>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<string>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, string>) (this.attributeMap) )) ))) ))) );
+			return ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.attributeMap) )) ))) );
 		}
 		
 		
@@ -141,12 +141,12 @@ namespace Loreline.Internal.Root {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element or Document but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(this.nodeType)))) );
 			}
 			
-			global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = this.children;
+				global::Loreline.Internal.Root.Array _g2 = this.children;
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g2[_g1]) );
+					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g2.__get(_g1)) );
 					 ++ _g1;
 					if (( child.nodeType == global::Loreline.Internal.Root.Xml.Element )) {
 						_g.push(child);
@@ -156,8 +156,8 @@ namespace Loreline.Internal.Root {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array<object> ret = _g;
-			return new global::Loreline.Internal.Iterators.ArrayIterator<object>(((global::Loreline.Internal.Root.Array<object>) (ret) ));
+			global::Loreline.Internal.Root.Array ret = _g;
+			return new global::Loreline.Internal.Iterators.ArrayIterator(((global::Loreline.Internal.Root.Array) (ret) ));
 		}
 		
 		
@@ -166,12 +166,12 @@ namespace Loreline.Internal.Root {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat("Bad node type, expected Element or Document but found ", global::Loreline.Internal.Root._Xml.XmlType_Impl_.toString(this.nodeType)))) );
 			}
 			
-			global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = this.children;
+				global::Loreline.Internal.Root.Array _g2 = this.children;
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g2[_g1]) );
+					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g2.__get(_g1)) );
 					 ++ _g1;
 					bool tmp = default(bool);
 					if (( child.nodeType == global::Loreline.Internal.Root.Xml.Element )) {
@@ -193,8 +193,8 @@ namespace Loreline.Internal.Root {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array<object> ret = _g;
-			return new global::Loreline.Internal.Iterators.ArrayIterator<object>(((global::Loreline.Internal.Root.Array<object>) (ret) ));
+			global::Loreline.Internal.Root.Array ret = _g;
+			return new global::Loreline.Internal.Iterators.ArrayIterator(((global::Loreline.Internal.Root.Array) (ret) ));
 		}
 		
 		
@@ -205,9 +205,9 @@ namespace Loreline.Internal.Root {
 			
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = this.children;
+				global::Loreline.Internal.Root.Array _g1 = this.children;
 				while (( _g < _g1.length )) {
-					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g1[_g]) );
+					global::Loreline.Internal.Root.Xml child = ((global::Loreline.Internal.Root.Xml) (_g1.__get(_g)) );
 					 ++ _g;
 					if (( child.nodeType == global::Loreline.Internal.Root.Xml.Element )) {
 						return child;
@@ -222,7 +222,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public string toString() {
-			return global::Loreline.Internal.Xml.Printer.print(this, default(global::Loreline.Internal.Lang.Null<bool>));
+			return global::Loreline.Internal.Xml.Printer.print(this, null);
 		}
 		
 		
@@ -252,14 +252,14 @@ namespace Loreline.Internal.Root {
 				switch (hash) {
 					case 364006368:
 					{
-						this.attributeMap = ((global::Loreline.Internal.Ds.StringMap<string>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<string>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.attributeMap = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 1886001471:
 					{
-						this.children = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.children = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -419,7 +419,7 @@ namespace Loreline.Internal.Root {
 					
 					case 1116398082:
 					{
-						return this.elementsNamed(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.elementsNamed(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
@@ -437,13 +437,13 @@ namespace Loreline.Internal.Root {
 					
 					case 1071652316:
 					{
-						return this.exists(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.exists(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 5144726:
 					{
-						return this.@get(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.@get(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
@@ -458,7 +458,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("attributeMap");
 			baseArr.push("children");
 			baseArr.push("nodeValue");

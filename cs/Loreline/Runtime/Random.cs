@@ -9,14 +9,14 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public Random(global::Loreline.Internal.Lang.Null<double> seed) {
+		public Random(object seed) {
 			global::Loreline.Runtime.Random.__hx_ctor_loreline_Random(this, seed);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_Random(global::Loreline.Runtime.Random __hx_this, global::Loreline.Internal.Lang.Null<double> seed) {
+		protected static void __hx_ctor_loreline_Random(global::Loreline.Runtime.Random __hx_this, object seed) {
 			unchecked {
-				double seed1 = ( ( ! (seed.hasValue) ) ? (((double) (-1) )) : ((seed).@value) );
+				double seed1 = ( (( seed == default(object) )) ? (((double) (-1) )) : (((double) (global::Loreline.Internal.Lang.Runtime.toDouble(seed)) )) );
 				if (( seed1 < 0 )) {
 					double now = global::Loreline.Internal.Root.Sys.time();
 					seed1 = ( now * 1000000 );
@@ -49,9 +49,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public void reset(global::Loreline.Internal.Lang.Null<double> initialSeed) {
-			if (initialSeed.hasValue) {
-				this.initialSeed = (initialSeed).@value;
+		public void reset(object initialSeed) {
+			if (( initialSeed != default(object) )) {
+				this.initialSeed = ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(initialSeed)) );
 			}
 			
 			this.seed = this.initialSeed;
@@ -189,14 +189,14 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 1724402127:
 					{
-						this.reset(global::Loreline.Internal.Lang.Null<object>.ofDynamic<double>(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
+						this.reset(( (( dynargs.Length > 0 )) ? (((object) (dynargs[0]) )) : (null) ));
 						break;
 					}
 					
 					
 					case 1723044296:
 					{
-						return this.between(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this.between(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
@@ -218,7 +218,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("initialSeed");
 			baseArr.push("seed");
 			base.__hx_getFields(baseArr);

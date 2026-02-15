@@ -62,7 +62,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("func");
 			base.__hx_getFields(baseArr);
 		}

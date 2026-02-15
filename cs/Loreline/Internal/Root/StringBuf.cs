@@ -87,7 +87,7 @@ namespace Loreline.Internal.Root {
 				switch (hash) {
 					case 2113708439:
 					{
-						this.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.addChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
@@ -104,7 +104,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("b");
 			base.__hx_getFields(baseArr);
 		}

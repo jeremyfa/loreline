@@ -28,13 +28,6 @@ namespace Loreline.Internal.Cs {
 		}
 		
 		
-		public static void p_nativeArray<T>(global::Loreline.Internal.Root.Array<T> arr, global::System.Array ret) {
-			T[] native = arr.__a;
-			int len = arr.length;
-			global::System.Array.Copy(((global::System.Array) (native) ), ((int) (0) ), ((global::System.Array) (ret) ), ((int) (0) ), ((int) (len) ));
-		}
-		
-		
 	}
 }
 

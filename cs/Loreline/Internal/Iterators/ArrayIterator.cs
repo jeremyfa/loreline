@@ -3,18 +3,18 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Iterators {
-	public class ArrayIterator<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Iterators.ArrayIterator {
+	public class ArrayIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public ArrayIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public ArrayIterator(global::Loreline.Internal.Root.Array<T> array) {
-			global::Loreline.Internal.Iterators.ArrayIterator<object>.__hx_ctor_haxe_iterators_ArrayIterator<T>(((global::Loreline.Internal.Iterators.ArrayIterator<T>) (this) ), ((global::Loreline.Internal.Root.Array<T>) (array) ));
+		public ArrayIterator(global::Loreline.Internal.Root.Array array) {
+			global::Loreline.Internal.Iterators.ArrayIterator.__hx_ctor_haxe_iterators_ArrayIterator(((global::Loreline.Internal.Iterators.ArrayIterator) (this) ), ((global::Loreline.Internal.Root.Array) (array) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_iterators_ArrayIterator<T_c>(global::Loreline.Internal.Iterators.ArrayIterator<T_c> __hx_this, global::Loreline.Internal.Root.Array<T_c> array) {
+		protected static void __hx_ctor_haxe_iterators_ArrayIterator(global::Loreline.Internal.Iterators.ArrayIterator __hx_this, global::Loreline.Internal.Root.Array array) {
 			__hx_this.current = 0;
 			{
 				__hx_this.array = array;
@@ -23,29 +23,7 @@ namespace Loreline.Internal.Iterators {
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Iterators.ArrayIterator me) {
-			return ( (( me != null )) ? (me.haxe_iterators_ArrayIterator_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object haxe_iterators_ArrayIterator_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Iterators.ArrayIterator<T_c> new_me = new global::Loreline.Internal.Iterators.ArrayIterator<T_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Internal.Root.Array<T> array;
+		public global::Loreline.Internal.Root.Array array;
 		
 		public int current;
 		
@@ -54,8 +32,8 @@ namespace Loreline.Internal.Iterators {
 		}
 		
 		
-		public T next() {
-			return this.array[this.current++];
+		public object next() {
+			return this.array.__get(this.current++);
 		}
 		
 		
@@ -92,7 +70,7 @@ namespace Loreline.Internal.Iterators {
 					
 					case 630156697:
 					{
-						this.array = ((global::Loreline.Internal.Root.Array<T>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<T>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.array = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -192,26 +170,12 @@ namespace Loreline.Internal.Iterators {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("current");
 			baseArr.push("array");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Iterators {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Iterators.ArrayIterator<object>))]
-	public interface ArrayIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_iterators_ArrayIterator_cast<T_c>();
-		
-		bool hasNext();
 		
 	}
 }

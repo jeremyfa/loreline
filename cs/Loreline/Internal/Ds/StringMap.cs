@@ -3,81 +3,21 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds {
-	public class StringMap<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds.StringMap, global::Loreline.Internal.IMap<string, T> {
+	public class StringMap : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.IMap {
 		
 		public StringMap(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
 		public StringMap() {
-			global::Loreline.Internal.Ds.StringMap<object>.__hx_ctor_haxe_ds_StringMap<T>(((global::Loreline.Internal.Ds.StringMap<T>) (this) ));
+			global::Loreline.Internal.Ds.StringMap.__hx_ctor_haxe_ds_StringMap(((global::Loreline.Internal.Ds.StringMap) (this) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds_StringMap<T_c>(global::Loreline.Internal.Ds.StringMap<T_c> __hx_this) {
+		protected static void __hx_ctor_haxe_ds_StringMap(global::Loreline.Internal.Ds.StringMap __hx_this) {
 			unchecked {
 				__hx_this.cachedIndex = -1;
 			}
-		}
-		
-		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Ds.StringMap me) {
-			return ( (( me != null )) ? (me.haxe_ds_StringMap_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object haxe_ds_StringMap_cast<T_c>() {
-			unchecked {
-				if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-					return this;
-				}
-				
-				global::Loreline.Internal.Ds.StringMap<T_c> new_me = new global::Loreline.Internal.Ds.StringMap<T_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-				global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-				int i = 0;
-				while (( i < fields.length )) {
-					string field = fields[i++];
-					switch (field) {
-						case "vals":
-						{
-							if (( this.vals != null )) {
-								T_c[] __temp_new_arr1 = new T_c[this.vals.Length];
-								int __temp_i2 = -1;
-								while ((  ++ __temp_i2 < this.vals.Length )) {
-									object __temp_obj3 = ((object) (this.vals[__temp_i2]) );
-									if (( __temp_obj3 != null )) {
-										__temp_new_arr1[__temp_i2] = global::Loreline.Internal.Lang.Runtime.genericCast<T_c>(__temp_obj3);
-									}
-									
-								}
-								
-								new_me.vals = __temp_new_arr1;
-							}
-							else {
-								new_me.vals = null;
-							}
-							
-							break;
-						}
-						
-						
-						default:
-						{
-							global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-							break;
-						}
-						
-					}
-					
-				}
-				
-				return new_me;
-			}
-		}
-		
-		
-		public virtual object haxe_IMap_cast<K_c, V_c>() {
-			return this.haxe_ds_StringMap_cast<T>();
 		}
 		
 		
@@ -85,7 +25,7 @@ namespace Loreline.Internal.Ds {
 		
 		public string[] _keys;
 		
-		public T[] vals;
+		public object[] vals;
 		
 		public int nBuckets;
 		
@@ -99,7 +39,12 @@ namespace Loreline.Internal.Ds {
 		
 		public int cachedIndex;
 		
-		public virtual void @set(string key, T @value) {
+		public virtual void @set(object k, object v) {
+			this.@set(global::Loreline.Internal.Lang.Runtime.toString(k), ((object) (v) ));
+		}
+		
+		
+		public virtual void @set(string key, object @value) {
 			unchecked {
 				int x = default(int);
 				int k = default(int);
@@ -142,14 +87,14 @@ namespace Loreline.Internal.Ds {
 					int i = ( k & mask );
 					int nProbes = 0;
 					int delKey = -1;
-					if (( hashes1[i] == 0 )) {
+					if (( ((int) (hashes1[i]) ) == 0 )) {
 						x = i;
 					}
 					else {
 						int last = i;
 						int flag = default(int);
 						while (true) {
-							flag = hashes1[i];
+							flag = ((int) (hashes1[i]) );
 							if (( ( flag == 0 ) || ( ( flag == k ) && ( ((string) (this._keys[i]) ) == key ) ) )) {
 								break;
 							}
@@ -172,7 +117,7 @@ namespace Loreline.Internal.Ds {
 					
 				}
 				
-				int flag1 = hashes1[x];
+				int flag1 = ((int) (hashes1[x]) );
 				if (( flag1 == 0 )) {
 					keys[x] = key;
 					this.vals[x] = @value;
@@ -227,7 +172,7 @@ namespace Loreline.Internal.Ds {
 					int last = i;
 					int flag = default(int);
 					while (true) {
-						flag = hashes[i];
+						flag = ((int) (hashes[i]) );
 						if ( ! ((( ( flag != 0 ) && (( ( ( flag == 1 ) || ( flag != k1 ) ) || ( ((string) (keys[i]) ) != key ) )) ))) ) {
 							break;
 						}
@@ -280,7 +225,7 @@ namespace Loreline.Internal.Ds {
 							}
 							
 							this._keys = k;
-							T[] v = new T[newNBuckets];
+							object[] v = new object[newNBuckets];
 							if (( this.vals != null )) {
 								global::System.Array.Copy(((global::System.Array) (this.vals) ), ((int) (0) ), ((global::System.Array) (v) ), ((int) (0) ), ((int) (this.nBuckets) ));
 							}
@@ -298,28 +243,28 @@ namespace Loreline.Internal.Ds {
 					j = -1;
 					int nBuckets = this.nBuckets;
 					string[] _keys = this._keys;
-					T[] vals = this.vals;
+					object[] vals = this.vals;
 					int[] hashes = this.hashes;
 					int newMask = ( newNBuckets - 1 );
 					while ((  ++ j < nBuckets )) {
-						int k1 = hashes[j];
+						int k1 = ((int) (hashes[j]) );
 						if (( (( k1 & -2 )) != 0 )) {
 							string key = ((string) (_keys[j]) );
-							T val = global::Loreline.Internal.Lang.Runtime.genericCast<T>(vals[j]);
+							object val = ((object) (vals[j]) );
 							_keys[j] = null;
-							vals[j] = default(T);
+							vals[j] = null;
 							hashes[j] = 1;
 							while (true) {
 								int nProbes = 0;
 								int i = ( k1 & newMask );
-								while (( newHash[i] != 0 )) {
+								while (( ((int) (newHash[i]) ) != 0 )) {
 									i = ( ( i +  ++ nProbes ) & newMask );
 								}
 								
 								newHash[i] = k1;
 								bool tmp = default(bool);
 								if (( i < nBuckets )) {
-									k1 = hashes[i];
+									k1 = ((int) (hashes[i]) );
 									tmp = ( (( k1 & -2 )) != 0 );
 								}
 								else {
@@ -334,7 +279,7 @@ namespace Loreline.Internal.Ds {
 									}
 									
 									{
-										T tmp2 = global::Loreline.Internal.Lang.Runtime.genericCast<T>(vals[i]);
+										object tmp2 = ((object) (vals[i]) );
 										vals[i] = val;
 										val = tmp2;
 									}
@@ -361,7 +306,7 @@ namespace Loreline.Internal.Ds {
 						}
 						
 						{
-							T[] v1 = new T[newNBuckets];
+							object[] v1 = new object[newNBuckets];
 							global::System.Array.Copy(((global::System.Array) (vals) ), ((int) (0) ), ((global::System.Array) (v1) ), ((int) (0) ), ((int) (newNBuckets) ));
 							this.vals = v1;
 						}
@@ -378,7 +323,12 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Lang.Null<T> @get(string key) {
+		public virtual object @get(object k) {
+			return ((object) (this.@get(global::Loreline.Internal.Lang.Runtime.toString(k))) );
+		}
+		
+		
+		public virtual object @get(string key) {
 			unchecked {
 				int idx = -1;
 				bool tmp = default(bool);
@@ -391,17 +341,17 @@ namespace Loreline.Internal.Ds {
 				}
 				
 				if (tmp) {
-					return new global::Loreline.Internal.Lang.Null<T>(global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.vals[idx]), true);
+					return ((object) (this.vals[idx]) );
 				}
 				
 				idx = this.lookup(key);
 				if (( idx != -1 )) {
 					this.cachedKey = key;
 					this.cachedIndex = idx;
-					return new global::Loreline.Internal.Lang.Null<T>(global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.vals[idx]), true);
+					return ((object) (this.vals[idx]) );
 				}
 				
-				return default(global::Loreline.Internal.Lang.Null<T>);
+				return null;
 			}
 		}
 		
@@ -460,7 +410,7 @@ namespace Loreline.Internal.Ds {
 					
 					this.hashes[idx] = 1;
 					this._keys[idx] = null;
-					this.vals[idx] = default(T);
+					this.vals[idx] = null;
 					 -- this.size;
 					return true;
 				}
@@ -470,7 +420,7 @@ namespace Loreline.Internal.Ds {
 		
 		
 		public object keys() {
-			return new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T>(((global::Loreline.Internal.Ds.StringMap<T>) (this) ));
+			return new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (this) ));
 		}
 		
 		
@@ -570,7 +520,7 @@ namespace Loreline.Internal.Ds {
 					
 					case 1313416818:
 					{
-						this.vals = ((T[]) (@value) );
+						this.vals = ((object[]) (@value) );
 						return @value;
 					}
 					
@@ -765,38 +715,38 @@ namespace Loreline.Internal.Ds {
 					
 					case 76061764:
 					{
-						return this.@remove(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.@remove(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 1071652316:
 					{
-						return this.exists(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.exists(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 5144726:
 					{
-						return (this.@get(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]))).toDynamic();
+						return this.@get(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 142301684:
 					{
-						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
 					
 					case 1639293562:
 					{
-						return this.lookup(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.lookup(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 5741474:
 					{
-						this.@set(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[1]));
+						this.@set(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((object) (dynargs[1]) ));
 						break;
 					}
 					
@@ -813,7 +763,7 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("cachedIndex");
 			baseArr.push("cachedKey");
 			baseArr.push("upperBound");
@@ -833,72 +783,26 @@ namespace Loreline.Internal.Ds {
 
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds.StringMap<object>))]
-	public interface StringMap : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds_StringMap_cast<T_c>();
-		
-		object haxe_IMap_cast<K_c, V_c>();
-		
-		int lookup(string key);
-		
-		void resize(int newNBuckets);
-		
-		bool exists(string key);
-		
-		bool @remove(string key);
-		
-		object keys();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds._StringMap {
-	public sealed class StringMapKeyIterator<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator {
+	public sealed class StringMapKeyIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public StringMapKeyIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public StringMapKeyIterator(global::Loreline.Internal.Ds.StringMap<T> m) {
-			global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>.__hx_ctor_haxe_ds__StringMap_StringMapKeyIterator<T>(((global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T>) (this) ), ((global::Loreline.Internal.Ds.StringMap<T>) (m) ));
+		public StringMapKeyIterator(global::Loreline.Internal.Ds.StringMap m) {
+			global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator.__hx_ctor_haxe_ds__StringMap_StringMapKeyIterator(((global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator) (this) ), ((global::Loreline.Internal.Ds.StringMap) (m) ));
 		}
 		
 		
-		private static void __hx_ctor_haxe_ds__StringMap_StringMapKeyIterator<T_c>(global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T_c> __hx_this, global::Loreline.Internal.Ds.StringMap<T_c> m) {
+		private static void __hx_ctor_haxe_ds__StringMap_StringMapKeyIterator(global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator __hx_this, global::Loreline.Internal.Ds.StringMap m) {
 			__hx_this.m = m;
 			__hx_this.i = 0;
 			__hx_this.len = m.nBuckets;
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator me) {
-			return ( (( me != null )) ? (me.haxe_ds__StringMap_StringMapKeyIterator_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public object haxe_ds__StringMap_StringMapKeyIterator_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T_c> new_me = new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<T_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Internal.Ds.StringMap<T> m;
+		public global::Loreline.Internal.Ds.StringMap m;
 		
 		public int i;
 		
@@ -911,7 +815,7 @@ namespace Loreline.Internal.Ds._StringMap {
 					int _g1 = this.len;
 					while (( _g < _g1 )) {
 						int j = _g++;
-						if (( (( this.m.hashes[j] & -2 )) != 0 )) {
+						if (( (( ((int) (this.m.hashes[j]) ) & -2 )) != 0 )) {
 							this.i = j;
 							return true;
 						}
@@ -981,7 +885,7 @@ namespace Loreline.Internal.Ds._StringMap {
 					
 					case 109:
 					{
-						this.m = ((global::Loreline.Internal.Ds.StringMap<T>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<T>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.m = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -1093,7 +997,7 @@ namespace Loreline.Internal.Ds._StringMap {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("len");
 			baseArr.push("i");
 			baseArr.push("m");
@@ -1108,63 +1012,25 @@ namespace Loreline.Internal.Ds._StringMap {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds._StringMap {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>))]
-	public interface StringMapKeyIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds__StringMap_StringMapKeyIterator_cast<T_c>();
-		
-		bool hasNext();
-		
-		string next();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds._StringMap {
-	public sealed class StringMapValueIterator<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds._StringMap.StringMapValueIterator {
+	public sealed class StringMapValueIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public StringMapValueIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public StringMapValueIterator(global::Loreline.Internal.Ds.StringMap<T> m) {
-			global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<object>.__hx_ctor_haxe_ds__StringMap_StringMapValueIterator<T>(((global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<T>) (this) ), ((global::Loreline.Internal.Ds.StringMap<T>) (m) ));
+		public StringMapValueIterator(global::Loreline.Internal.Ds.StringMap m) {
+			global::Loreline.Internal.Ds._StringMap.StringMapValueIterator.__hx_ctor_haxe_ds__StringMap_StringMapValueIterator(((global::Loreline.Internal.Ds._StringMap.StringMapValueIterator) (this) ), ((global::Loreline.Internal.Ds.StringMap) (m) ));
 		}
 		
 		
-		private static void __hx_ctor_haxe_ds__StringMap_StringMapValueIterator<T_c>(global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<T_c> __hx_this, global::Loreline.Internal.Ds.StringMap<T_c> m) {
+		private static void __hx_ctor_haxe_ds__StringMap_StringMapValueIterator(global::Loreline.Internal.Ds._StringMap.StringMapValueIterator __hx_this, global::Loreline.Internal.Ds.StringMap m) {
 			__hx_this.m = m;
 			__hx_this.i = 0;
 			__hx_this.len = m.nBuckets;
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Ds._StringMap.StringMapValueIterator me) {
-			return ( (( me != null )) ? (me.haxe_ds__StringMap_StringMapValueIterator_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public object haxe_ds__StringMap_StringMapValueIterator_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<T_c> new_me = new global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<T_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Internal.Ds.StringMap<T> m;
+		public global::Loreline.Internal.Ds.StringMap m;
 		
 		public int i;
 		
@@ -1177,7 +1043,7 @@ namespace Loreline.Internal.Ds._StringMap {
 					int _g1 = this.len;
 					while (( _g < _g1 )) {
 						int j = _g++;
-						if (( (( this.m.hashes[j] & -2 )) != 0 )) {
+						if (( (( ((int) (this.m.hashes[j]) ) & -2 )) != 0 )) {
 							this.i = j;
 							return true;
 						}
@@ -1191,8 +1057,8 @@ namespace Loreline.Internal.Ds._StringMap {
 		}
 		
 		
-		public T next() {
-			return global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.m.vals[this.i++]);
+		public object next() {
+			return ((object) (this.m.vals[this.i++]) );
 		}
 		
 		
@@ -1243,7 +1109,7 @@ namespace Loreline.Internal.Ds._StringMap {
 					
 					case 109:
 					{
-						this.m = ((global::Loreline.Internal.Ds.StringMap<T>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<T>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.m = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -1355,27 +1221,13 @@ namespace Loreline.Internal.Ds._StringMap {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("len");
 			baseArr.push("i");
 			baseArr.push("m");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds._StringMap {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<object>))]
-	public interface StringMapValueIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds__StringMap_StringMapValueIterator_cast<T_c>();
-		
-		bool hasNext();
 		
 	}
 }

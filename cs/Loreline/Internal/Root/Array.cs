@@ -3,15 +3,15 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Root {
-	public sealed class Array<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Root.Array {
+	public sealed class Array : global::Loreline.Internal.Lang.HxObject {
 		
 		static bool __hx_init_called = false;
 		static Array() {
-			if(global::Loreline.Internal.Root.Array<object>.__hx_init_called) return;
-			global::Loreline.Internal.Root.Array<object>.__hx_init_called = true;
+			if(global::Loreline.Internal.Root.Array.__hx_init_called) return;
+			global::Loreline.Internal.Root.Array.__hx_init_called = true;
 			unchecked{
-				global::Loreline.Internal.Root.Array<object>.__hx_toString_depth = 0;
-				global::Loreline.Internal.Root.Array<object>.__hx_defaultCapacity = 4;
+				global::Loreline.Internal.Root.Array.__hx_toString_depth = 0;
+				global::Loreline.Internal.Root.Array.__hx_defaultCapacity = 4;
 			}
 			
 		}
@@ -21,30 +21,25 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public Array(T[] native) {
-			global::Loreline.Internal.Root.Array<object>.__hx_ctor__Array<T>(((global::Loreline.Internal.Root.Array<T>) (this) ), ((T[]) (native) ));
+		public Array(object[] native) {
+			global::Loreline.Internal.Root.Array.__hx_ctor__Array(((global::Loreline.Internal.Root.Array) (this) ), ((object[]) (native) ));
 		}
 		
 		
 		public Array() {
-			global::Loreline.Internal.Root.Array<object>.__hx_ctor__Array<T>(((global::Loreline.Internal.Root.Array<T>) (this) ));
+			global::Loreline.Internal.Root.Array.__hx_ctor__Array(((global::Loreline.Internal.Root.Array) (this) ));
 		}
 		
 		
-		private static void __hx_ctor__Array<T_c>(global::Loreline.Internal.Root.Array<T_c> __hx_this, T_c[] native) {
+		private static void __hx_ctor__Array(global::Loreline.Internal.Root.Array __hx_this, object[] native) {
 			__hx_this.length = ( native as global::System.Array ).Length;
 			__hx_this.__a = native;
 		}
 		
 		
-		private static void __hx_ctor__Array<T_c>(global::Loreline.Internal.Root.Array<T_c> __hx_this) {
+		private static void __hx_ctor__Array(global::Loreline.Internal.Root.Array __hx_this) {
 			__hx_this.length = 0;
-			__hx_this.__a = new T_c[0];
-		}
-		
-		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Root.Array me) {
-			return ( (( me != null )) ? (me.Array_cast<T_c_c>()) : default(object) );
+			__hx_this.__a = new object[0];
 		}
 		
 		
@@ -52,87 +47,37 @@ namespace Loreline.Internal.Root {
 		
 		public static int __hx_defaultCapacity;
 		
-		public static global::Loreline.Internal.Root.Array<X> ofNative<X>(X[] native) {
-			return new global::Loreline.Internal.Root.Array<X>(((X[]) (native) ));
+		public static global::Loreline.Internal.Root.Array ofNative(object[] native) {
+			return new global::Loreline.Internal.Root.Array(((object[]) (native) ));
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<Y> alloc<Y>(int size) {
-			return new global::Loreline.Internal.Root.Array<Y>(((Y[]) (new Y[size]) ));
-		}
-		
-		
-		public object Array_cast<T_c>() {
-			unchecked {
-				if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-					return this;
-				}
-				
-				global::Loreline.Internal.Root.Array<T_c> new_me = new global::Loreline.Internal.Root.Array<T_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-				global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-				int i = 0;
-				while (( i < fields.length )) {
-					string field = fields[i++];
-					switch (field) {
-						case "__a":
-						{
-							if (( this.__a != null )) {
-								T_c[] __temp_new_arr1 = new T_c[this.__a.Length];
-								int __temp_i2 = -1;
-								while ((  ++ __temp_i2 < this.__a.Length )) {
-									object __temp_obj3 = ((object) (this.__a[__temp_i2]) );
-									if (( __temp_obj3 != null )) {
-										__temp_new_arr1[__temp_i2] = global::Loreline.Internal.Lang.Runtime.genericCast<T_c>(__temp_obj3);
-									}
-									
-								}
-								
-								new_me.__a = __temp_new_arr1;
-							}
-							else {
-								new_me.__a = null;
-							}
-							
-							break;
-						}
-						
-						
-						default:
-						{
-							global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-							break;
-						}
-						
-					}
-					
-				}
-				
-				return new_me;
-			}
+		public static global::Loreline.Internal.Root.Array alloc(int size) {
+			return new global::Loreline.Internal.Root.Array(((object[]) (new object[size]) ));
 		}
 		
 		
 		public int length;
 		
-		public T[] __a;
+		public object[] __a;
 		
-		public global::Loreline.Internal.Root.Array<T> concat(global::Loreline.Internal.Root.Array<T> a) {
+		public global::Loreline.Internal.Root.Array concat(global::Loreline.Internal.Root.Array a) {
 			int len = ( this.length + a.length );
-			T[] retarr = new T[len];
+			object[] retarr = new object[len];
 			global::System.Array.Copy(((global::System.Array) (this.__a) ), ((int) (0) ), ((global::System.Array) (retarr) ), ((int) (0) ), ((int) (this.length) ));
 			global::System.Array.Copy(((global::System.Array) (a.__a) ), ((int) (0) ), ((global::System.Array) (retarr) ), ((int) (this.length) ), ((int) (a.length) ));
-			return new global::Loreline.Internal.Root.Array<T>(((T[]) (retarr) ));
+			return new global::Loreline.Internal.Root.Array(((object[]) (retarr) ));
 		}
 		
 		
-		public void concatNative(T[] a) {
-			T[] __a = this.__a;
+		public void concatNative(object[] a) {
+			object[] __a = this.__a;
 			int len = ( this.length + ( a as global::System.Array ).Length );
 			if (( ( __a as global::System.Array ).Length >= len )) {
 				global::System.Array.Copy(((global::System.Array) (a) ), ((int) (0) ), ((global::System.Array) (__a) ), ((int) (this.length) ), ((int) (this.length) ));
 			}
 			else {
-				T[] newarr = new T[len];
+				object[] newarr = new object[len];
 				global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (0) ), ((global::System.Array) (newarr) ), ((int) (0) ), ((int) (this.length) ));
 				global::System.Array.Copy(((global::System.Array) (a) ), ((int) (0) ), ((global::System.Array) (newarr) ), ((int) (this.length) ), ((int) (( a as global::System.Array ).Length) ));
 				this.__a = newarr;
@@ -142,10 +87,10 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public int indexOf(T x, global::Loreline.Internal.Lang.Null<int> fromIndex) {
+		public int indexOf(object x, object fromIndex) {
 			unchecked {
 				int len = this.length;
-				int i = ( ( ! (fromIndex.hasValue) ) ? (0) : ((fromIndex).@value) );
+				int i = ( (( fromIndex == default(object) )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(fromIndex)) )) );
 				if (( i < 0 )) {
 					i += len;
 					if (( i < 0 )) {
@@ -157,15 +102,15 @@ namespace Loreline.Internal.Root {
 					return -1;
 				}
 				
-				return global::System.Array.IndexOf<T>(((T[]) (this.__a) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(x), ((int) (i) ), ((int) (( len - i )) ));
+				return global::System.Array.IndexOf<object>(((object[]) (this.__a) ), ((object) (x) ), ((int) (i) ), ((int) (( len - i )) ));
 			}
 		}
 		
 		
-		public int lastIndexOf(T x, global::Loreline.Internal.Lang.Null<int> fromIndex) {
+		public int lastIndexOf(object x, object fromIndex) {
 			unchecked {
 				int len = this.length;
-				int i = ( ( ! (fromIndex.hasValue) ) ? (( len - 1 )) : ((fromIndex).@value) );
+				int i = ( (( fromIndex == default(object) )) ? (( len - 1 )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(fromIndex)) )) );
 				if (( i >= len )) {
 					i = ( len - 1 );
 				}
@@ -177,7 +122,7 @@ namespace Loreline.Internal.Root {
 					
 				}
 				
-				return global::System.Array.LastIndexOf<T>(((T[]) (this.__a) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(x), ((int) (i) ), ((int) (( i + 1 )) ));
+				return global::System.Array.LastIndexOf<object>(((object[]) (this.__a) ), ((object) (x) ), ((int) (i) ), ((int) (( i + 1 )) ));
 			}
 		}
 		
@@ -193,10 +138,10 @@ namespace Loreline.Internal.Root {
 						first = false;
 					}
 					else {
-						buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(sep)) ));
+						buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (sep) ))) ));
 					}
 					
-					buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.__a[i]))) ));
+					buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((object) (this.__a[i]) ))) ));
 				}
 				
 				return buf_b.ToString();
@@ -204,27 +149,27 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Lang.Null<T> pop() {
-			T[] __a = this.__a;
+		public object pop() {
+			object[] __a = this.__a;
 			int length = this.length;
 			if (( length > 0 )) {
-				T val = global::Loreline.Internal.Lang.Runtime.genericCast<T>(__a[ -- length]);
-				__a[length] = default(T);
+				object val = ((object) (__a[ -- length]) );
+				__a[length] = null;
 				this.length = length;
-				return new global::Loreline.Internal.Lang.Null<T>(val, true);
+				return val;
 			}
 			else {
-				return default(global::Loreline.Internal.Lang.Null<T>);
+				return null;
 			}
 			
 		}
 		
 		
-		public int push(T x) {
+		public int push(object x) {
 			unchecked {
 				if (( this.length >= ( this.__a as global::System.Array ).Length )) {
 					int newLen = ( (( this.length == 0 )) ? (4) : (( this.length << 1 )) );
-					T[] newarr = new T[newLen];
+					object[] newarr = new object[newLen];
 					( this.__a as global::System.Array ).CopyTo(((global::System.Array) (newarr) ), ((int) (0) ));
 					this.__a = newarr;
 				}
@@ -239,12 +184,12 @@ namespace Loreline.Internal.Root {
 			unchecked {
 				int i = 0;
 				int l = this.length;
-				T[] a = this.__a;
+				object[] a = this.__a;
 				int half = ( l >> 1 );
 				 -- l;
 				while (( i < half )) {
-					T tmp = global::Loreline.Internal.Lang.Runtime.genericCast<T>(a[i]);
-					a[i] = global::Loreline.Internal.Lang.Runtime.genericCast<T>(a[( l - i )]);
+					object tmp = ((object) (a[i]) );
+					a[i] = ((object) (a[( l - i )]) );
 					a[( l - i )] = tmp;
 					 ++ i;
 				}
@@ -253,25 +198,25 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Lang.Null<T> shift() {
+		public object shift() {
 			unchecked {
 				int l = this.length;
 				if (( l == 0 )) {
-					return default(global::Loreline.Internal.Lang.Null<T>);
+					return null;
 				}
 				
-				T[] a = this.__a;
-				T x = global::Loreline.Internal.Lang.Runtime.genericCast<T>(a[0]);
+				object[] a = this.__a;
+				object x = ((object) (a[0]) );
 				 -- l;
 				global::System.Array.Copy(((global::System.Array) (a) ), ((int) (1) ), ((global::System.Array) (a) ), ((int) (0) ), ((int) (( this.length - 1 )) ));
-				a[l] = default(T);
+				a[l] = null;
 				this.length = l;
-				return new global::Loreline.Internal.Lang.Null<T>(x, true);
+				return x;
 			}
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<T> slice(int pos, global::Loreline.Internal.Lang.Null<int> end) {
+		public global::Loreline.Internal.Root.Array slice(int pos, object end) {
 			if (( pos < 0 )) {
 				pos = ( this.length + pos );
 				if (( pos < 0 )) {
@@ -280,25 +225,25 @@ namespace Loreline.Internal.Root {
 				
 			}
 			
-			if ( ! (end.hasValue) ) {
-				end = new global::Loreline.Internal.Lang.Null<int>(this.length, true);
+			if (( end == default(object) )) {
+				end = this.length;
 			}
-			else if (( (end).@value < 0 )) {
-				end = new global::Loreline.Internal.Lang.Null<int>(( this.length + (end).@value ), true);
-			}
-			
-			if (( (end).@value > this.length )) {
-				end = new global::Loreline.Internal.Lang.Null<int>(this.length, true);
+			else if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(end)) ) < 0 )) {
+				end = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.plus(this.length, end))) );
 			}
 			
-			int len = ( (end).@value - pos );
+			if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(end)) ) > this.length )) {
+				end = this.length;
+			}
+			
+			int len = ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(end)) ) - ((int) (pos) ) );
 			if (( len < 0 )) {
-				return new global::Loreline.Internal.Root.Array<T>();
+				return new global::Loreline.Internal.Root.Array();
 			}
 			
-			T[] newarr = new T[len];
+			object[] newarr = new object[len];
 			global::System.Array.Copy(((global::System.Array) (this.__a) ), ((int) (pos) ), ((global::System.Array) (newarr) ), ((int) (0) ), ((int) (len) ));
-			return new global::Loreline.Internal.Root.Array<T>(((T[]) (newarr) ));
+			return new global::Loreline.Internal.Root.Array(((object[]) (newarr) ));
 		}
 		
 		
@@ -315,22 +260,22 @@ namespace Loreline.Internal.Root {
 		
 		public void quicksort(int lo, int hi, global::Loreline.Internal.Lang.Function f) {
 			unchecked {
-				T[] buf = this.__a;
+				object[] buf = this.__a;
 				int i = lo;
 				int j = hi;
-				T p = global::Loreline.Internal.Lang.Runtime.genericCast<T>(buf[( ( i + j ) >> 1 )]);
+				object p = ((object) (buf[( ( i + j ) >> 1 )]) );
 				while (( i <= j )) {
-					while (( ( i < hi ) && ( ((int) (f.__hx_invoke2_f(default(double), global::Loreline.Internal.Lang.Runtime.genericCast<T>(buf[i]), default(double), p)) ) < 0 ) )) {
+					while (( ( i < hi ) && ( ((int) (f.__hx_invoke2_f(default(double), ((object) (buf[i]) ), default(double), p)) ) < 0 ) )) {
 						 ++ i;
 					}
 					
-					while (( ( j > lo ) && ( ((int) (f.__hx_invoke2_f(default(double), global::Loreline.Internal.Lang.Runtime.genericCast<T>(buf[j]), default(double), p)) ) > 0 ) )) {
+					while (( ( j > lo ) && ( ((int) (f.__hx_invoke2_f(default(double), ((object) (buf[j]) ), default(double), p)) ) > 0 ) )) {
 						 -- j;
 					}
 					
 					if (( i <= j )) {
-						T t = global::Loreline.Internal.Lang.Runtime.genericCast<T>(buf[i]);
-						buf[i++] = global::Loreline.Internal.Lang.Runtime.genericCast<T>(buf[j]);
+						object t = ((object) (buf[i]) );
+						buf[i++] = ((object) (buf[j]) );
 						buf[j--] = t;
 					}
 					
@@ -348,9 +293,9 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<T> splice(int pos, int len) {
+		public global::Loreline.Internal.Root.Array splice(int pos, int len) {
 			if (( len < 0 )) {
-				return new global::Loreline.Internal.Root.Array<T>();
+				return new global::Loreline.Internal.Root.Array();
 			}
 			
 			if (( pos < 0 )) {
@@ -373,15 +318,15 @@ namespace Loreline.Internal.Root {
 				
 			}
 			
-			T[] a = this.__a;
-			T[] ret = new T[len];
+			object[] a = this.__a;
+			object[] ret = new object[len];
 			global::System.Array.Copy(((global::System.Array) (a) ), ((int) (pos) ), ((global::System.Array) (ret) ), ((int) (0) ), ((int) (len) ));
-			global::Loreline.Internal.Root.Array<T> ret1 = new global::Loreline.Internal.Root.Array<T>(((T[]) (ret) ));
+			global::Loreline.Internal.Root.Array ret1 = new global::Loreline.Internal.Root.Array(((object[]) (ret) ));
 			int end = ( pos + len );
 			global::System.Array.Copy(((global::System.Array) (a) ), ((int) (end) ), ((global::System.Array) (a) ), ((int) (pos) ), ((int) (( this.length - end )) ));
 			this.length -= len;
 			while ((  -- len >= 0 )) {
-				a[( this.length + len )] = default(T);
+				a[( this.length + len )] = null;
 			}
 			
 			return ret1;
@@ -413,12 +358,12 @@ namespace Loreline.Internal.Root {
 				
 			}
 			
-			T[] a = this.__a;
+			object[] a = this.__a;
 			int end = ( pos + len );
 			global::System.Array.Copy(((global::System.Array) (a) ), ((int) (end) ), ((global::System.Array) (a) ), ((int) (pos) ), ((int) (( this.length - end )) ));
 			this.length -= len;
 			while ((  -- len >= 0 )) {
-				a[( this.length + len )] = default(T);
+				a[( this.length + len )] = null;
 			}
 			
 		}
@@ -426,19 +371,19 @@ namespace Loreline.Internal.Root {
 		
 		public string toString() {
 			unchecked {
-				if (( global::Loreline.Internal.Root.Array<object>.__hx_toString_depth >= 5 )) {
+				if (( global::Loreline.Internal.Root.Array.__hx_toString_depth >= 5 )) {
 					return "...";
 				}
 				
-				 ++ global::Loreline.Internal.Root.Array<object>.__hx_toString_depth;
+				 ++ global::Loreline.Internal.Root.Array.__hx_toString_depth;
 				try {
 					string s = this.__hx_toString();
-					 -- global::Loreline.Internal.Root.Array<object>.__hx_toString_depth;
+					 -- global::Loreline.Internal.Root.Array.__hx_toString_depth;
 					return s;
 				}
 				catch (global::System.Exception _g){
 					object e = ((object) (global::Loreline.Internal.Exception.caught(_g).unwrap()) );
-					 -- global::Loreline.Internal.Root.Array<object>.__hx_toString_depth;
+					 -- global::Loreline.Internal.Root.Array.__hx_toString_depth;
 					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(e)) );
 				}
 				
@@ -449,7 +394,7 @@ namespace Loreline.Internal.Root {
 		
 		public string __hx_toString() {
 			global::System.Text.StringBuilder ret_b = new global::System.Text.StringBuilder();
-			T[] a = this.__a;
+			object[] a = this.__a;
 			ret_b.Append(((string) ("[") ));
 			bool first = true;
 			{
@@ -464,7 +409,7 @@ namespace Loreline.Internal.Root {
 						ret_b.Append(((string) (",") ));
 					}
 					
-					ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.genericCast<T>(a[i]))) ));
+					ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((object) (a[i]) ))) ));
 				}
 				
 			}
@@ -474,13 +419,13 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public void unshift(T x) {
+		public void unshift(object x) {
 			unchecked {
-				T[] __a = this.__a;
+				object[] __a = this.__a;
 				int length = this.length;
 				if (( length >= ( __a as global::System.Array ).Length )) {
 					int newLen = ( (( length << 1 )) + 1 );
-					T[] newarr = new T[newLen];
+					object[] newarr = new object[newLen];
 					global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (0) ), ((global::System.Array) (newarr) ), ((int) (1) ), ((int) (length) ));
 					this.__a = newarr;
 				}
@@ -494,7 +439,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public void insert(int pos, T x) {
+		public void insert(int pos, object x) {
 			unchecked {
 				int l = this.length;
 				if (( pos < 0 )) {
@@ -516,7 +461,7 @@ namespace Loreline.Internal.Root {
 				
 				if (( l >= ( this.__a as global::System.Array ).Length )) {
 					int newLen = ( (( this.length << 1 )) + 1 );
-					T[] newarr = new T[newLen];
+					object[] newarr = new object[newLen];
 					global::System.Array.Copy(((global::System.Array) (this.__a) ), ((int) (0) ), ((global::System.Array) (newarr) ), ((int) (0) ), ((int) (pos) ));
 					newarr[pos] = x;
 					global::System.Array.Copy(((global::System.Array) (this.__a) ), ((int) (pos) ), ((global::System.Array) (newarr) ), ((int) (( pos + 1 )) ), ((int) (( l - pos )) ));
@@ -524,7 +469,7 @@ namespace Loreline.Internal.Root {
 					 ++ this.length;
 				}
 				else {
-					T[] __a = this.__a;
+					object[] __a = this.__a;
 					global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (pos) ), ((global::System.Array) (__a) ), ((int) (( pos + 1 )) ), ((int) (( l - pos )) ));
 					global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (0) ), ((global::System.Array) (__a) ), ((int) (0) ), ((int) (pos) ));
 					__a[pos] = x;
@@ -535,15 +480,15 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public bool @remove(T x) {
+		public bool @remove(object x) {
 			unchecked {
-				T[] __a = this.__a;
+				object[] __a = this.__a;
 				int i = -1;
 				int length = this.length;
 				while ((  ++ i < length )) {
-					if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.Runtime.genericCast<T>(__a[i]), x)) {
+					if (global::Loreline.Internal.Lang.Runtime.eq(((object) (__a[i]) ), x)) {
 						global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (( i + 1 )) ), ((global::System.Array) (__a) ), ((int) (i) ), ((int) (( ( length - i ) - 1 )) ));
-						__a[ -- this.length] = default(T);
+						__a[ -- this.length] = null;
 						return true;
 					}
 					
@@ -554,15 +499,15 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<S> map<S>(global::Loreline.Internal.Lang.Function f) {
-			global::Loreline.Internal.Root.Array<S> ret = new global::Loreline.Internal.Root.Array<S>(((S[]) (new S[this.length]) ));
+		public global::Loreline.Internal.Root.Array map(global::Loreline.Internal.Lang.Function f) {
+			global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(((object[]) (new object[this.length]) ));
 			{
 				int _g = 0;
 				int _g1 = this.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
 					{
-						S val = global::Loreline.Internal.Lang.Runtime.genericCast<S>(f.__hx_invoke1_o(default(double), global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.__a[i])));
+						object val = ((object) (f.__hx_invoke1_o(default(double), ((object) (this.__a[i]) ))) );
 						ret.__a[i] = val;
 					}
 					
@@ -574,13 +519,13 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public bool contains(T x) {
+		public bool contains(object x) {
 			unchecked {
-				T[] __a = this.__a;
+				object[] __a = this.__a;
 				int i = -1;
 				int length = this.length;
 				while ((  ++ i < length )) {
-					if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.Runtime.genericCast<T>(__a[i]), x)) {
+					if (global::Loreline.Internal.Lang.Runtime.eq(((object) (__a[i]) ), x)) {
 						return true;
 					}
 					
@@ -591,14 +536,14 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<T> filter(global::Loreline.Internal.Lang.Function f) {
-			global::Loreline.Internal.Root.Array<T> ret = new global::Loreline.Internal.Root.Array<T>(new T[]{});
+		public global::Loreline.Internal.Root.Array filter(global::Loreline.Internal.Lang.Function f) {
+			global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g = 0;
 				int _g1 = this.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					T elt = global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.__a[i]);
+					object elt = ((object) (this.__a[i]) );
 					if (global::Loreline.Internal.Lang.Runtime.toBool(f.__hx_invoke1_o(default(double), elt))) {
 						ret.push(elt);
 					}
@@ -611,29 +556,29 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<T> copy() {
+		public global::Loreline.Internal.Root.Array copy() {
 			int len = this.length;
-			T[] __a = this.__a;
-			T[] newarr = new T[len];
+			object[] __a = this.__a;
+			object[] newarr = new object[len];
 			global::System.Array.Copy(((global::System.Array) (__a) ), ((int) (0) ), ((global::System.Array) (newarr) ), ((int) (0) ), ((int) (len) ));
-			return new global::Loreline.Internal.Root.Array<T>(((T[]) (newarr) ));
+			return new global::Loreline.Internal.Root.Array(((object[]) (newarr) ));
 		}
 		
 		
-		public global::Loreline.Internal.Iterators.ArrayIterator<T> iterator() {
-			return new global::Loreline.Internal.Iterators.ArrayIterator<T>(((global::Loreline.Internal.Root.Array<T>) (this) ));
+		public global::Loreline.Internal.Iterators.ArrayIterator iterator() {
+			return new global::Loreline.Internal.Iterators.ArrayIterator(((global::Loreline.Internal.Root.Array) (this) ));
 		}
 		
 		
-		public global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T> keyValueIterator() {
-			return new global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T>(((global::Loreline.Internal.Root.Array<T>) (this) ));
+		public global::Loreline.Internal.Iterators.ArrayKeyValueIterator keyValueIterator() {
+			return new global::Loreline.Internal.Iterators.ArrayKeyValueIterator(((global::Loreline.Internal.Root.Array) (this) ));
 		}
 		
 		
 		public void resize(int len) {
 			if (( this.length < len )) {
 				if (( ( this.__a as global::System.Array ).Length < len )) {
-					global::System.Array.Resize<T>(ref this.__a, ((int) (len) ));
+					global::System.Array.Resize<object>(ref this.__a, ((int) (len) ));
 				}
 				
 				this.length = len;
@@ -645,28 +590,28 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public T __get(int idx) {
+		public object __get(int idx) {
 			if (( ((uint) (idx) ) >= this.length )) {
-				return default(T);
+				return null;
 			}
 			else {
-				return global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.__a[idx]);
+				return ((object) (this.__a[idx]) );
 			}
 			
 		}
 		
 		
-		public T __set(int idx, T v) {
+		public object __set(int idx, object v) {
 			unchecked {
 				uint idx1 = ((uint) (idx) );
-				T[] __a = this.__a;
+				object[] __a = this.__a;
 				if (( idx1 >= ( __a as global::System.Array ).Length )) {
 					uint len = ((uint) (( idx1 + 1 )) );
 					if (( idx1 == ( __a as global::System.Array ).Length )) {
 						len = ((uint) (( (( idx1 << 1 )) + 1 )) );
 					}
 					
-					T[] newArr = new T[((int) (len) )];
+					object[] newArr = new object[((int) (len) )];
 					( __a as global::System.Array ).CopyTo(((global::System.Array) (newArr) ), ((int) (0) ));
 					__a = newArr;
 					this.__a = __a;
@@ -681,12 +626,12 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public T __unsafe_get(int idx) {
-			return global::Loreline.Internal.Lang.Runtime.genericCast<T>(this.__a[idx]);
+		public object __unsafe_get(int idx) {
+			return ((object) (this.__a[idx]) );
 		}
 		
 		
-		public T __unsafe_set(int idx, T val) {
+		public object __unsafe_set(int idx, object val) {
 			return this.__a[idx] = val;
 		}
 		
@@ -717,7 +662,7 @@ namespace Loreline.Internal.Root {
 				switch (hash) {
 					case 4745537:
 					{
-						this.__a = ((T[]) (@value) );
+						this.__a = ((object[]) (@value) );
 						return @value;
 					}
 					
@@ -965,31 +910,31 @@ namespace Loreline.Internal.Root {
 				switch (hash) {
 					case 1621420777:
 					{
-						return this.__unsafe_set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[1]));
+						return this.__unsafe_set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1620824029:
 					{
-						return this.__unsafe_get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.__unsafe_get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 					}
 					
 					
 					case 1916009602:
 					{
-						return this.__set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[1]));
+						return this.__set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1915412854:
 					{
-						return this.__get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.__get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 					}
 					
 					
 					case 142301684:
 					{
-						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
@@ -1014,38 +959,38 @@ namespace Loreline.Internal.Root {
 					
 					case 87367608:
 					{
-						return this.filter(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						return this.filter(((global::Loreline.Internal.Lang.Function) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 746281503:
 					{
-						return this.contains(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						return this.contains(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 5442204:
 					{
-						return this.map<object>(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						return this.map(((global::Loreline.Internal.Lang.Function) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 76061764:
 					{
-						return this.@remove(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						return this.@remove(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 501039929:
 					{
-						this.insert(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[1]));
+						this.insert(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((object) (dynargs[1]) ));
 						break;
 					}
 					
 					
 					case 2025055113:
 					{
-						this.unshift(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						this.unshift(((object) (dynargs[0]) ));
 						break;
 					}
 					
@@ -1058,40 +1003,40 @@ namespace Loreline.Internal.Root {
 					
 					case 1352786672:
 					{
-						this.spliceVoid(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						this.spliceVoid(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 						break;
 					}
 					
 					
 					case 1067353468:
 					{
-						return this.splice(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this.splice(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
 					case 1282943179:
 					{
-						this.quicksort(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((global::Loreline.Internal.Lang.Function) (dynargs[2]) ));
+						this.quicksort(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[2]) )) ));
 						break;
 					}
 					
 					
 					case 1280845662:
 					{
-						this.sort(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						this.sort(((global::Loreline.Internal.Lang.Function) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 2127021138:
 					{
-						return this.slice(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.slice(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 2082663554:
 					{
-						return (this.shift()).toDynamic();
+						return this.shift();
 					}
 					
 					
@@ -1104,44 +1049,44 @@ namespace Loreline.Internal.Root {
 					
 					case 1247875546:
 					{
-						return this.push(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						return this.push(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 5594513:
 					{
-						return (this.pop()).toDynamic();
+						return this.pop();
 					}
 					
 					
 					case 1181037546:
 					{
-						return this.@join(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.@join(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 359333139:
 					{
-						return this.lastIndexOf(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.lastIndexOf(((object) (dynargs[0]) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 1623148745:
 					{
-						return this.indexOf(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.indexOf(((object) (dynargs[0]) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 1532710347:
 					{
-						this.concatNative(((T[]) (dynargs[0]) ));
+						this.concatNative(((object[]) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1204816148:
 					{
-						return this.concat(((global::Loreline.Internal.Root.Array<T>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<T>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						return this.concat(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -1157,14 +1102,14 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("__a");
 			baseArr.push("length");
 			base.__hx_getFields(baseArr);
 		}
 		
 		
-		public T this[int index]{
+		public object this[int index]{
 			get{
 				return this.__get(index);
 			}
@@ -1172,48 +1117,8 @@ namespace Loreline.Internal.Root {
 				this.__set(index,value);
 			}
 		}
-		object global::Loreline.Internal.Root.Array.this[int key]{
-			get{
-				return ((object) this.__get(key));
-			}
-			set{
-				this.__set(key, (T) value);
-			}
-		}
-		
-		
 		public override string ToString(){
 			return this.toString();
-		}
-		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Root {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Root.Array<object>))]
-	public interface Array : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object Array_cast<T_c>();
-		
-		string @join(string sep);
-		
-		void reverse();
-		
-		void spliceVoid(int pos, int len);
-		
-		string toString();
-		
-		string __hx_toString();
-		
-		void resize(int len);
-		
-		object this[int key]{
-			get;
-			set;
 		}
 		
 		

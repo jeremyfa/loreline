@@ -3,18 +3,18 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Iterators {
-	public class ArrayKeyValueIterator<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Iterators.ArrayKeyValueIterator {
+	public class ArrayKeyValueIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public ArrayKeyValueIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public ArrayKeyValueIterator(global::Loreline.Internal.Root.Array<T> array) {
-			global::Loreline.Internal.Iterators.ArrayKeyValueIterator<object>.__hx_ctor_haxe_iterators_ArrayKeyValueIterator<T>(((global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T>) (this) ), ((global::Loreline.Internal.Root.Array<T>) (array) ));
+		public ArrayKeyValueIterator(global::Loreline.Internal.Root.Array array) {
+			global::Loreline.Internal.Iterators.ArrayKeyValueIterator.__hx_ctor_haxe_iterators_ArrayKeyValueIterator(((global::Loreline.Internal.Iterators.ArrayKeyValueIterator) (this) ), ((global::Loreline.Internal.Root.Array) (array) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_iterators_ArrayKeyValueIterator<T_c>(global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T_c> __hx_this, global::Loreline.Internal.Root.Array<T_c> array) {
+		protected static void __hx_ctor_haxe_iterators_ArrayKeyValueIterator(global::Loreline.Internal.Iterators.ArrayKeyValueIterator __hx_this, global::Loreline.Internal.Root.Array array) {
 			__hx_this.current = 0;
 			{
 				__hx_this.array = array;
@@ -23,31 +23,9 @@ namespace Loreline.Internal.Iterators {
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Iterators.ArrayKeyValueIterator me) {
-			return ( (( me != null )) ? (me.haxe_iterators_ArrayKeyValueIterator_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object haxe_iterators_ArrayKeyValueIterator_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T_c> new_me = new global::Loreline.Internal.Iterators.ArrayKeyValueIterator<T_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
 		public int current;
 		
-		public global::Loreline.Internal.Root.Array<T> array;
+		public global::Loreline.Internal.Root.Array array;
 		
 		public bool hasNext() {
 			return ( this.current < this.array.length );
@@ -55,7 +33,7 @@ namespace Loreline.Internal.Iterators {
 		
 		
 		public object next() {
-			T tmp = this.array[this.current];
+			object tmp = this.array.__get(this.current);
 			{
 				int __temp_odecl1 = this.current++;
 				return new global::Loreline.Internal.Lang.DynamicObject(new int[]{834174833}, new object[]{tmp}, new int[]{5343647}, new double[]{((double) (__temp_odecl1) )});
@@ -90,7 +68,7 @@ namespace Loreline.Internal.Iterators {
 				switch (hash) {
 					case 630156697:
 					{
-						this.array = ((global::Loreline.Internal.Root.Array<T>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<T>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.array = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -197,28 +175,12 @@ namespace Loreline.Internal.Iterators {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("array");
 			baseArr.push("current");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Iterators {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Iterators.ArrayKeyValueIterator<object>))]
-	public interface ArrayKeyValueIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_iterators_ArrayKeyValueIterator_cast<T_c>();
-		
-		bool hasNext();
-		
-		object next();
 		
 	}
 }

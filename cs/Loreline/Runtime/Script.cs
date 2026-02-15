@@ -3,40 +3,48 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Script : global::Loreline.Runtime.Node {
+	public class Script : global::Loreline.Runtime.AstNode {
 		
 		public Script(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 		}
 		
 		
-		public Script(long id, global::Loreline.Runtime.Position pos, global::Loreline.Internal.Root.Array<object> body) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+		public Script(long id, global::Loreline.Runtime.Position pos, global::Loreline.Internal.Root.Array body) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 			global::Loreline.Runtime.Script.__hx_ctor_loreline_Script(this, id, pos, body);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_Script(global::Loreline.Runtime.Script __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Internal.Root.Array<object> body) {
-			global::Loreline.Runtime.Node.__hx_ctor_loreline_Node(__hx_this, id, pos);
-			__hx_this.body = body;
+		protected static void __hx_ctor_loreline_Script(global::Loreline.Runtime.Script __hx_this, long id, global::Loreline.Runtime.Position pos, global::Loreline.Internal.Root.Array body) {
+			unchecked {
+				__hx_this.indentSize = 2;
+				global::Loreline.Runtime.AstNode.__hx_ctor_loreline_AstNode(__hx_this, id, pos, null, null);
+				{
+					__hx_this.body = body;
+				}
+				
+			}
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<object> body;
+		public int indentSize;
+		
+		public global::Loreline.Internal.Root.Array body;
 		
 		public override object toJson() {
 			object json = base.toJson();
-			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = this.body;
+				global::Loreline.Internal.Root.Array _g2 = this.body;
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Runtime.AstNode decl = ((global::Loreline.Runtime.AstNode) (_g2[_g1]) );
+					global::Loreline.Runtime.AstNode decl = ((global::Loreline.Runtime.AstNode) (_g2.__get(_g1)) );
 					 ++ _g1;
-					int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g, "push", 1247875546, new object[]{decl.toJson()}))) );
+					_g.push(decl.toJson());
 				}
 				
 			}
 			
-			global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g)) );
+			global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(json, "body", 1092319906, _g)) );
 			return json;
 		}
 		
@@ -50,9 +58,9 @@ namespace Loreline.Runtime {
 			base.each(handleNode);
 			if (( this.body != null )) {
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = this.body;
+				global::Loreline.Internal.Root.Array _g1 = this.body;
 				while (( _g < _g1.length )) {
-					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1[_g]) );
+					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1.__get(_g)) );
 					 ++ _g;
 					handleNode.__hx_invoke2_o(default(double), child, default(double), this);
 					if ( ! (( child is global::Loreline.Runtime.NImportStatement )) ) {
@@ -70,9 +78,9 @@ namespace Loreline.Runtime {
 			base.each(handleNode);
 			if (( this.body != null )) {
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = this.body;
+				global::Loreline.Internal.Root.Array _g1 = this.body;
 				while (( _g < _g1.length )) {
-					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1[_g]) );
+					global::Loreline.Runtime.AstNode child = ((global::Loreline.Runtime.AstNode) (_g1.__get(_g)) );
 					 ++ _g;
 					handleNode.__hx_invoke2_o(default(double), child, default(double), this);
 					child.each(handleNode);
@@ -84,7 +92,28 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual global::Loreline.Runtime._Script.ScriptBodyIterator iterator() {
-			return new global::Loreline.Runtime._Script.ScriptBodyIterator(((global::Loreline.Internal.Root.Array<object>) (this.body) ));
+			return new global::Loreline.Runtime._Script.ScriptBodyIterator(((global::Loreline.Internal.Root.Array) (this.body) ));
+		}
+		
+		
+		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1054637901:
+					{
+						this.indentSize = ((int) (@value) );
+						return @value;
+					}
+					
+					
+					default:
+					{
+						return base.__hx_setField_f(field, hash, @value, handleProperties);
+					}
+					
+				}
+				
+			}
 		}
 		
 		
@@ -93,7 +122,14 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 1092319906:
 					{
-						this.body = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.body = ((global::Loreline.Internal.Root.Array) (@value) );
+						return @value;
+					}
+					
+					
+					case 1054637901:
+					{
+						this.indentSize = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(@value)) );
 						return @value;
 					}
 					
@@ -148,9 +184,35 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1054637901:
+					{
+						return this.indentSize;
+					}
+					
+					
 					default:
 					{
 						return base.__hx_getField(field, hash, throwErrors, isCheck, handleProperties);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
+			unchecked {
+				switch (hash) {
+					case 1054637901:
+					{
+						return ((double) (this.indentSize) );
+					}
+					
+					
+					default:
+					{
+						return base.__hx_getField_f(field, hash, throwErrors, handleProperties);
 					}
 					
 				}
@@ -178,7 +240,7 @@ namespace Loreline.Runtime {
 					
 					case 627641210:
 					{
-						this.eachExcludingImported(((global::Loreline.Internal.Lang.Function) (dynargs[0]) ));
+						this.eachExcludingImported(((global::Loreline.Internal.Lang.Function) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
@@ -195,8 +257,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("body");
+			baseArr.push("indentSize");
 			base.__hx_getFields(baseArr);
 		}
 		
@@ -214,31 +277,31 @@ namespace Loreline.Runtime._Script {
 		}
 		
 		
-		public ScriptBodyIterator(global::Loreline.Internal.Root.Array<object> body) {
+		public ScriptBodyIterator(global::Loreline.Internal.Root.Array body) {
 			global::Loreline.Runtime._Script.ScriptBodyIterator.__hx_ctor_loreline__Script_ScriptBodyIterator(this, body);
 		}
 		
 		
-		protected static void __hx_ctor_loreline__Script_ScriptBodyIterator(global::Loreline.Runtime._Script.ScriptBodyIterator __hx_this, global::Loreline.Internal.Root.Array<object> body) {
+		protected static void __hx_ctor_loreline__Script_ScriptBodyIterator(global::Loreline.Runtime._Script.ScriptBodyIterator __hx_this, global::Loreline.Internal.Root.Array body) {
 			__hx_this.body = body;
 			__hx_this.index = 0;
-			__hx_this.flatBody = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			__hx_this.flatBody = new global::Loreline.Internal.Root.Array(new object[]{});
 			__hx_this.fillBody(body);
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<object> body;
+		public global::Loreline.Internal.Root.Array body;
 		
 		public int index;
 		
-		public global::Loreline.Internal.Root.Array<object> flatBody;
+		public global::Loreline.Internal.Root.Array flatBody;
 		
-		public virtual void fillBody(global::Loreline.Internal.Root.Array<object> body) {
+		public virtual void fillBody(global::Loreline.Internal.Root.Array body) {
 			int _g = 0;
 			int _g1 = body.length;
 			while (( _g < _g1 )) {
 				int i = _g++;
-				global::Loreline.Runtime.AstNode node = ((global::Loreline.Runtime.AstNode) (body[i]) );
+				global::Loreline.Runtime.AstNode node = ((global::Loreline.Runtime.AstNode) (body.__get(i)) );
 				if (( node is global::Loreline.Runtime.NImportStatement )) {
 					global::Loreline.Runtime.NImportStatement importNode = ((global::Loreline.Runtime.NImportStatement) (node) );
 					if (( importNode.script != null )) {
@@ -247,7 +310,7 @@ namespace Loreline.Runtime._Script {
 					
 				}
 				
-				this.flatBody.push(((global::Loreline.Runtime.AstNode) (body[i]) ));
+				this.flatBody.push(((global::Loreline.Runtime.AstNode) (body.__get(i)) ));
 			}
 			
 		}
@@ -259,7 +322,7 @@ namespace Loreline.Runtime._Script {
 		
 		
 		public virtual global::Loreline.Runtime.AstNode next() {
-			global::Loreline.Runtime.AstNode v = ((global::Loreline.Runtime.AstNode) (this.flatBody[this.index]) );
+			global::Loreline.Runtime.AstNode v = ((global::Loreline.Runtime.AstNode) (this.flatBody.__get(this.index)) );
 			this.index++;
 			return v;
 		}
@@ -291,7 +354,7 @@ namespace Loreline.Runtime._Script {
 				switch (hash) {
 					case 339051259:
 					{
-						this.flatBody = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.flatBody = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -305,7 +368,7 @@ namespace Loreline.Runtime._Script {
 					
 					case 1092319906:
 					{
-						this.body = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.body = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -408,7 +471,7 @@ namespace Loreline.Runtime._Script {
 					
 					case 1647145669:
 					{
-						this.fillBody(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						this.fillBody(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
@@ -425,7 +488,7 @@ namespace Loreline.Runtime._Script {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("flatBody");
 			baseArr.push("index");
 			baseArr.push("body");

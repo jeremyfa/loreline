@@ -62,11 +62,11 @@ namespace Loreline.Internal.Hscript {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+						global::Loreline.Internal.Root.Array el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
 						{
 							int _g5 = 0;
 							while (( _g5 < el.length )) {
-								object e3 = el[_g5];
+								object e3 = el.__get(_g5);
 								 ++ _g5;
 								f.__hx_invoke1_o(default(double), e3);
 							}
@@ -122,13 +122,13 @@ namespace Loreline.Internal.Hscript {
 					case 8:
 					{
 						object e6 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).e;
-						global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
+						global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
 						{
 							f.__hx_invoke1_o(default(double), e6);
 							{
 								int _g10 = 0;
 								while (( _g10 < args.length )) {
-									object a = args[_g10];
+									object a = args.__get(_g10);
 									 ++ _g10;
 									f.__hx_invoke1_o(default(double), a);
 								}
@@ -198,7 +198,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> _g12 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+						global::Loreline.Internal.Root.Array _g12 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 						string _g13 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 						global::Loreline.Internal.Hscript.CType _g14 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
 						{
@@ -236,11 +236,11 @@ namespace Loreline.Internal.Hscript {
 					
 					case 17:
 					{
-						global::Loreline.Internal.Root.Array<object> el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
+						global::Loreline.Internal.Root.Array el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
 						{
 							int _g15 = 0;
 							while (( _g15 < el1.length )) {
-								object e14 = el1[_g15];
+								object e14 = el1.__get(_g15);
 								 ++ _g15;
 								f.__hx_invoke1_o(default(double), e14);
 							}
@@ -255,11 +255,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						string _g16 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).cl;
 						{
-							global::Loreline.Internal.Root.Array<object> el2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
+							global::Loreline.Internal.Root.Array el2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
 							{
 								int _g17 = 0;
 								while (( _g17 < el2.length )) {
-									object e15 = el2[_g17];
+									object e15 = el2.__get(_g17);
 									 ++ _g17;
 									f.__hx_invoke1_o(default(double), e15);
 								}
@@ -300,11 +300,11 @@ namespace Loreline.Internal.Hscript {
 					
 					case 21:
 					{
-						global::Loreline.Internal.Root.Array<object> fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
+						global::Loreline.Internal.Root.Array fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
 						{
 							int _g20 = 0;
 							while (( _g20 < fl.length )) {
-								object fi = fl[_g20];
+								object fi = fl.__get(_g20);
 								 ++ _g20;
 								f.__hx_invoke1_o(default(double), global::Loreline.Internal.Lang.Runtime.getField(fi, "e", 101, true));
 							}
@@ -333,20 +333,20 @@ namespace Loreline.Internal.Hscript {
 					case 23:
 					{
 						object e19 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).e;
-						global::Loreline.Internal.Root.Array<object> cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
+						global::Loreline.Internal.Root.Array cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
 						object def = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).defaultExpr;
 						{
 							f.__hx_invoke1_o(default(double), e19);
 							{
 								int _g21 = 0;
 								while (( _g21 < cases.length )) {
-									object c4 = cases[_g21];
+									object c4 = cases.__get(_g21);
 									 ++ _g21;
 									{
 										int _g22 = 0;
-										global::Loreline.Internal.Root.Array<object> _g23 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c4, "values", 1337394146, true)) ))) );
+										global::Loreline.Internal.Root.Array _g23 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c4, "values", 1337394146, true)) );
 										while (( _g22 < _g23.length )) {
-											object v = _g23[_g22];
+											object v = _g23.__get(_g22);
 											 ++ _g22;
 											f.__hx_invoke1_o(default(double), v);
 										}
@@ -384,13 +384,13 @@ namespace Loreline.Internal.Hscript {
 					case 25:
 					{
 						string name = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
-						global::Loreline.Internal.Root.Array<object> args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+						global::Loreline.Internal.Root.Array args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 						object e24 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
 						{
 							if (( args1 != null )) {
 								int _g24 = 0;
 								while (( _g24 < args1.length )) {
-									object a1 = args1[_g24];
+									object a1 = args1.__get(_g24);
 									 ++ _g24;
 									f.__hx_invoke1_o(default(double), a1);
 								}
@@ -463,12 +463,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
-						global::Loreline.Internal.Root.Array<object> _g3 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+						global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g4 = 0;
 							while (( _g4 < el.length )) {
-								object e3 = el[_g4];
+								object e3 = el.__get(_g4);
 								 ++ _g4;
 								_g3.push(((object) (f.__hx_invoke1_o(default(double), e3)) ));
 							}
@@ -512,13 +512,13 @@ namespace Loreline.Internal.Hscript {
 					case 8:
 					{
 						object e6 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).e;
-						global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
+						global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
 						object edef1 = ((object) (f.__hx_invoke1_o(default(double), e6)) );
-						global::Loreline.Internal.Root.Array<object> _g5 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g5 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g6 = 0;
 							while (( _g6 < args.length )) {
-								object a = args[_g6];
+								object a = args.__get(_g6);
 								 ++ _g6;
 								_g5.push(((object) (f.__hx_invoke1_o(default(double), a)) ));
 							}
@@ -569,7 +569,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+						global::Loreline.Internal.Root.Array args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 						object e9 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
 						string name = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 						global::Loreline.Internal.Hscript.CType t1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
@@ -597,12 +597,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 17:
 					{
-						global::Loreline.Internal.Root.Array<object> el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
-						global::Loreline.Internal.Root.Array<object> _g7 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
+						global::Loreline.Internal.Root.Array _g7 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g8 = 0;
 							while (( _g8 < el1.length )) {
-								object e14 = el1[_g8];
+								object e14 = el1.__get(_g8);
 								 ++ _g8;
 								_g7.push(((object) (f.__hx_invoke1_o(default(double), e14)) ));
 							}
@@ -617,12 +617,12 @@ namespace Loreline.Internal.Hscript {
 					case 18:
 					{
 						string cl = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).cl;
-						global::Loreline.Internal.Root.Array<object> el2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
-						global::Loreline.Internal.Root.Array<object> _g9 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array el2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
+						global::Loreline.Internal.Root.Array _g9 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g10 = 0;
 							while (( _g10 < el2.length )) {
-								object e15 = el2[_g10];
+								object e15 = el2.__get(_g10);
 								 ++ _g10;
 								_g9.push(((object) (f.__hx_invoke1_o(default(double), e15)) ));
 							}
@@ -655,12 +655,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 21:
 					{
-						global::Loreline.Internal.Root.Array<object> fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
-						global::Loreline.Internal.Root.Array<object> _g11 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
+						global::Loreline.Internal.Root.Array _g11 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g12 = 0;
 							while (( _g12 < fl.length )) {
-								object fi1 = fl[_g12];
+								object fi1 = fl.__get(_g12);
 								 ++ _g12;
 								string fi2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(fi1, "name", 1224700491, true));
 								object __temp_stmt7 = null;
@@ -692,21 +692,21 @@ namespace Loreline.Internal.Hscript {
 					case 23:
 					{
 						object e19 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).e;
-						global::Loreline.Internal.Root.Array<object> cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
+						global::Loreline.Internal.Root.Array cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
 						object def = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).defaultExpr;
 						object edef2 = ((object) (f.__hx_invoke1_o(default(double), e19)) );
-						global::Loreline.Internal.Root.Array<object> _g13 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g13 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g14 = 0;
 							while (( _g14 < cases.length )) {
-								object c4 = cases[_g14];
+								object c4 = cases.__get(_g14);
 								 ++ _g14;
-								global::Loreline.Internal.Root.Array<object> _g15 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+								global::Loreline.Internal.Root.Array _g15 = new global::Loreline.Internal.Root.Array(new object[]{});
 								{
 									int _g16 = 0;
-									global::Loreline.Internal.Root.Array<object> _g17 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c4, "values", 1337394146, true)) ))) );
+									global::Loreline.Internal.Root.Array _g17 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c4, "values", 1337394146, true)) );
 									while (( _g16 < _g17.length )) {
-										object v2 = _g17[_g16];
+										object v2 = _g17.__get(_g16);
 										 ++ _g16;
 										_g15.push(((object) (f.__hx_invoke1_o(default(double), v2)) ));
 									}
@@ -741,18 +741,18 @@ namespace Loreline.Internal.Hscript {
 					case 25:
 					{
 						string name1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
-						global::Loreline.Internal.Root.Array<object> args2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+						global::Loreline.Internal.Root.Array args2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 						object e24 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
-						global::Loreline.Internal.Root.Array<object> edef3 = null;
+						global::Loreline.Internal.Root.Array edef3 = null;
 						if (( args2 == null )) {
 							edef3 = null;
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> _g18 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g18 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g19 = 0;
 								while (( _g19 < args2.length )) {
-									object a1 = args2[_g19];
+									object a1 = args2.__get(_g19);
 									 ++ _g19;
 									_g18.push(((object) (f.__hx_invoke1_o(default(double), a1)) ));
 								}

@@ -98,8 +98,8 @@ namespace Loreline.Internal.Xml._Access {
 namespace Loreline.Internal.Xml._Access {
 	public sealed class NodeListAccess_Impl_ {
 		
-		public static global::Loreline.Internal.Root.Array<object> resolve(global::Loreline.Internal.Root.Xml this1, string name) {
-			global::Loreline.Internal.Root.Array<object> l = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+		public static global::Loreline.Internal.Root.Array resolve(global::Loreline.Internal.Root.Xml this1, string name) {
+			global::Loreline.Internal.Root.Array l = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				object x = this1.elementsNamed(name);
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(x, "hasNext", 407283053, null))) {
@@ -136,7 +136,7 @@ namespace Loreline.Internal.Xml._Access {
 			}
 			
 			int it_current = 0;
-			global::Loreline.Internal.Root.Array<object> it_array = this1.children;
+			global::Loreline.Internal.Root.Array it_array = this1.children;
 			if (( it_current >= it_array.length )) {
 				string tmp = null;
 				if (( ((global::Loreline.Internal.Root.Xml) (this1) ).nodeType == global::Loreline.Internal.Root.Xml.Document )) {
@@ -153,9 +153,9 @@ namespace Loreline.Internal.Xml._Access {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat(tmp, " does not have data"))) );
 			}
 			
-			global::Loreline.Internal.Root.Xml v = ((global::Loreline.Internal.Root.Xml) (it_array[it_current++]) );
+			global::Loreline.Internal.Root.Xml v = ((global::Loreline.Internal.Root.Xml) (it_array.__get(it_current++)) );
 			if (( it_current < it_array.length )) {
-				global::Loreline.Internal.Root.Xml n = ((global::Loreline.Internal.Root.Xml) (it_array[it_current++]) );
+				global::Loreline.Internal.Root.Xml n = ((global::Loreline.Internal.Root.Xml) (it_array.__get(it_current++)) );
 				bool tmp1 = default(bool);
 				if (( ( v.nodeType == global::Loreline.Internal.Root.Xml.PCData ) && ( n.nodeType == global::Loreline.Internal.Root.Xml.CData ) )) {
 					if (( ( v.nodeType == global::Loreline.Internal.Root.Xml.Document ) || ( v.nodeType == global::Loreline.Internal.Root.Xml.Element ) )) {
@@ -177,7 +177,7 @@ namespace Loreline.Internal.Xml._Access {
 						return n.nodeValue;
 					}
 					
-					global::Loreline.Internal.Root.Xml n2 = ((global::Loreline.Internal.Root.Xml) (it_array[it_current++]) );
+					global::Loreline.Internal.Root.Xml n2 = ((global::Loreline.Internal.Root.Xml) (it_array.__get(it_current++)) );
 					bool tmp2 = default(bool);
 					if (( n2.nodeType == global::Loreline.Internal.Root.Xml.PCData )) {
 						if (( ( n2.nodeType == global::Loreline.Internal.Root.Xml.Document ) || ( n2.nodeType == global::Loreline.Internal.Root.Xml.Element ) )) {
@@ -247,10 +247,10 @@ namespace Loreline.Internal.Xml._Access {
 				}
 				
 				int _g_current = 0;
-				global::Loreline.Internal.Root.Array<object> _g_array = this1.children;
+				global::Loreline.Internal.Root.Array _g_array = this1.children;
 				while (( _g_current < _g_array.length )) {
-					global::Loreline.Internal.Root.Xml x = ((global::Loreline.Internal.Root.Xml) (_g_array[_g_current++]) );
-					s_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Xml.Printer.print(x, default(global::Loreline.Internal.Lang.Null<bool>)))) ));
+					global::Loreline.Internal.Root.Xml x = ((global::Loreline.Internal.Root.Xml) (_g_array.__get(_g_current++)) );
+					s_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Xml.Printer.print(x, null))) ));
 				}
 				
 			}

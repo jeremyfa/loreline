@@ -23,25 +23,25 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public static global::Loreline.Internal.Lang.Null<int> charCodeAt(global::System.String me, int index) {
+		public static object charCodeAt(global::System.String me, int index) {
 			if (( ((uint) (index) ) >= me.Length )) {
-				return default(global::Loreline.Internal.Lang.Null<int>);
+				return null;
 			}
 			else {
-				return new global::Loreline.Internal.Lang.Null<int>(((int) (me[index]) ), true);
+				return ((int) (me[index]) );
 			}
 			
 		}
 		
 		
 		public static int indexOf(global::System.String me, string str) {
-			return global::Loreline.Internal.Lang.StringExt.indexOf(me, str, default(global::Loreline.Internal.Lang.Null<int>));
+			return global::Loreline.Internal.Lang.StringExt.indexOf(me, str, default(object));
 		}
 		
 		
-		public static int indexOf(global::System.String me, string str, global::Loreline.Internal.Lang.Null<int> startIndex) {
+		public static int indexOf(global::System.String me, string str, object startIndex) {
 			unchecked {
-				int sIndex = ( (startIndex.hasValue) ? ((startIndex).@value) : (0) );
+				int sIndex = ( (( startIndex != default(object) )) ? (((int) (global::Loreline.Internal.Lang.Runtime.toInt(startIndex)) )) : (0) );
 				if (( str == "" )) {
 					if (( sIndex < 0 )) {
 						sIndex = ( me.Length + sIndex );
@@ -70,13 +70,13 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static int lastIndexOf(global::System.String me, global::System.String str) {
-			return global::Loreline.Internal.Lang.StringExt.lastIndexOf(me, str, default(global::Loreline.Internal.Lang.Null<int>));
+			return global::Loreline.Internal.Lang.StringExt.lastIndexOf(me, str, default(object));
 		}
 		
 		
-		public static int lastIndexOf(global::System.String me, global::System.String str, global::Loreline.Internal.Lang.Null<int> startIndex) {
+		public static int lastIndexOf(global::System.String me, global::System.String str, object startIndex) {
 			unchecked {
-				int sIndex = ( ( ! (startIndex.hasValue) ) ? (( me.Length - 1 )) : ((startIndex).@value) );
+				int sIndex = ( (( startIndex == default(object) )) ? (( me.Length - 1 )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(startIndex)) )) );
 				if (( sIndex >= me.Length )) {
 					sIndex = ( me.Length - 1 );
 				}
@@ -85,16 +85,16 @@ namespace Loreline.Internal.Lang {
 				}
 				
 				if (( str.Length == 0 )) {
-					if ((  ! (startIndex.hasValue)  || ( (startIndex).@value > me.Length ) )) {
+					if (( ( startIndex == default(object) ) || ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(startIndex)) ) > me.Length ) )) {
 						return me.Length;
 					}
 					else {
-						return (startIndex).@value;
+						return ((int) (global::Loreline.Internal.Lang.Runtime.toInt(startIndex)) );
 					}
 					
 				}
 				
-				if (startIndex.hasValue) {
+				if (( startIndex != default(object) )) {
 					int d = ( ( me.Length - sIndex ) - str.Length );
 					if (( d < 0 )) {
 						sIndex += d;
@@ -133,7 +133,7 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> split(global::System.String me, global::System.String delimiter) {
+		public static global::Loreline.Internal.Root.Array split(global::System.String me, global::System.String delimiter) {
 			unchecked {
 				string[] native = null;
 				if (( delimiter.Length == 0 )) {
@@ -156,21 +156,33 @@ namespace Loreline.Internal.Lang {
 					native = me.Split(((string[]) (str) ), ((global::System.StringSplitOptions) (global::System.StringSplitOptions.None) ));
 				}
 				
-				return new global::Loreline.Internal.Root.Array<string>(((string[]) (native) ));
+				object[] ret = new object[( native as global::System.Array ).Length];
+				{
+					int _g2 = 0;
+					int _g3 = ( native as global::System.Array ).Length;
+					while (( _g2 < _g3 )) {
+						int i1 = _g2++;
+						ret[i1] = ((string) (native[i1]) );
+					}
+					
+				}
+				
+				object[] dyn = ret;
+				return new global::Loreline.Internal.Root.Array(((object[]) (dyn) ));
 			}
 		}
 		
 		
 		public static string substr(global::System.String me, int pos) {
-			return global::Loreline.Internal.Lang.StringExt.substr(me, pos, default(global::Loreline.Internal.Lang.Null<int>));
+			return global::Loreline.Internal.Lang.StringExt.substr(me, pos, default(object));
 		}
 		
 		
-		public static string substr(global::System.String me, int pos, global::Loreline.Internal.Lang.Null<int> len) {
+		public static string substr(global::System.String me, int pos, object len) {
 			int meLen = me.Length;
 			int targetLen = meLen;
-			if (len.hasValue) {
-				targetLen = (len).@value;
+			if (( len != default(object) )) {
+				targetLen = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(len)) );
 				if (( ( targetLen == 0 ) || ( ( pos != 0 ) && ( targetLen < 0 ) ) )) {
 					return "";
 				}
@@ -201,18 +213,18 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static string substring(global::System.String me, int startIndex) {
-			return global::Loreline.Internal.Lang.StringExt.substring(me, startIndex, default(global::Loreline.Internal.Lang.Null<int>));
+			return global::Loreline.Internal.Lang.StringExt.substring(me, startIndex, default(object));
 		}
 		
 		
-		public static string substring(global::System.String me, int startIndex, global::Loreline.Internal.Lang.Null<int> endIndex) {
+		public static string substring(global::System.String me, int startIndex, object endIndex) {
 			int len = me.Length;
 			int endIdx = default(int);
-			if ( ! (endIndex.hasValue) ) {
+			if (( endIndex == default(object) )) {
 				endIdx = len;
 			}
 			else {
-				endIdx = (endIndex).@value;
+				endIdx = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(endIndex)) );
 				if (( endIdx < 0 )) {
 					endIdx = 0;
 				}
@@ -274,7 +286,7 @@ namespace Loreline.Internal.Lang {
 	public class StringRefl {
 		
 		static StringRefl() {
-			global::Loreline.Internal.Lang.StringRefl.fields = new global::Loreline.Internal.Root.Array<string>(new string[]{"length", "toUpperCase", "toLowerCase", "charAt", "charCodeAt", "indexOf", "lastIndexOf", "split", "substr", "substring"});
+			global::Loreline.Internal.Lang.StringRefl.fields = new global::Loreline.Internal.Root.Array(new object[]{"length", "toUpperCase", "toLowerCase", "charAt", "charCodeAt", "indexOf", "lastIndexOf", "split", "substr", "substring"});
 		}
 		
 		
@@ -282,7 +294,7 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> fields;
+		public static global::Loreline.Internal.Root.Array fields;
 		
 		public static object handleGetField(string str, string f, bool throwErrors) {
 			switch (f) {
@@ -335,7 +347,7 @@ namespace Loreline.Internal.Lang {
 						int _g1 = ( args as global::System.Array ).Length;
 						while (( _g < _g1 )) {
 							int i = _g++;
-							_args[( i + 1 )] = args[i];
+							_args[( i + 1 )] = ((object) (args[i]) );
 						}
 						
 					}

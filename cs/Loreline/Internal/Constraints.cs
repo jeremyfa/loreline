@@ -2,30 +2,11 @@
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal {
-	public interface IMap<K, V> : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.IMap {
+	public interface IMap : global::Loreline.Internal.Lang.IHxObject {
 		
-		global::Loreline.Internal.Lang.Null<V> @get(K k);
+		object @get(object k);
 		
-		void @set(K k, V v);
-		
-	}
-	public class IMap__Statics_{
-		public static object __hx_cast<K_c_c, V_c_c>(global::Loreline.Internal.IMap me) {
-			return ( (( me != null )) ? (me.haxe_IMap_cast<K_c_c, V_c_c>()) : default(object) );
-		}
-		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.IMap<object, object>))]
-	public interface IMap : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_IMap_cast<K_c, V_c>();
+		void @set(object k, object v);
 		
 		object keys();
 		

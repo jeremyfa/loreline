@@ -18,6 +18,17 @@ export type ImportsErrorHandler = (error: Error) => void;
 export type Tokens = Array<any>;
 
 /**
+ * Opaque type for saved game data.
+ */
+export type SaveData = any;
+
+/**
+ * Opaque type for a translations map.
+ * Obtained from `Loreline.extractTranslations()` and passed to `InterpreterOptions.translations`.
+ */
+export type Translations = any;
+
+/**
  * Represents an error in the Loreline system.
  */
 export interface Error {
@@ -166,6 +177,12 @@ export interface InterpreterOptions {
      * A custom instantiator to create fields objects.
      */
     customCreateFields?: (interpreter: Interpreter, type: string, node: Node) => any;
+
+    /**
+     * Optional translations map for localization.
+     * Built from a parsed translation file using `Loreline.extractTranslations()`.
+     */
+    translations?: Translations;
 }
 
 /**
@@ -241,6 +258,17 @@ export class Loreline {
         beatName?: string,
         options?: InterpreterOptions
     ): Interpreter;
+
+    /**
+     * Extracts translations from a parsed translation script.
+     *
+     * Given a translation file parsed with `parse()`, this returns a translations map
+     * that can be passed as `options.translations` to `play()` or `resume()`.
+     *
+     * @param script The parsed translation script (result from `parse()` on a `.XX.lor` file)
+     * @returns A translations map to pass as `InterpreterOptions.translations`
+     */
+    static extractTranslations(script: Script): Translations;
 }
 
 export class Interpreter {

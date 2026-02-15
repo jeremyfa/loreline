@@ -60,9 +60,9 @@ namespace Loreline.Internal.Lang {
 				return false;
 			}
 			
-			global::System.IConvertible v1c = ( v1 as global::System.IConvertible );
+			global::System.IConvertible v1c = ((global::System.IConvertible) (( v1 as global::System.IConvertible )) );
 			if (( v1c != null )) {
-				global::System.IConvertible v2c = ( v2 as global::System.IConvertible );
+				global::System.IConvertible v2c = ((global::System.IConvertible) (( v2 as global::System.IConvertible )) );
 				if (( v2c == null )) {
 					return false;
 				}
@@ -230,21 +230,9 @@ namespace Loreline.Internal.Lang {
 				
 			}
 			
-			global::System.ValueType v1v = ( v1 as global::System.ValueType );
+			global::System.ValueType v1v = ((global::System.ValueType) (( v1 as global::System.ValueType )) );
 			if (( v1v != null )) {
 				return v1.Equals(v2);
-			}
-			else {
-				global::System.Type v1t = ( v1 as global::System.Type );
-				if (( v1t != null )) {
-					global::System.Type v2t = ( v2 as global::System.Type );
-					if (( v2t != null )) {
-						return global::Loreline.Internal.Lang.Runtime.typeEq(v1t, v2t);
-					}
-					
-					return false;
-				}
-				
 			}
 			
 			return false;
@@ -252,10 +240,6 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static bool refEq(object v1, object v2) {
-			if (( v1 is global::System.Type )) {
-				return global::Loreline.Internal.Lang.Runtime.typeEq(( ((object) (v1) ) as global::System.Type ), ( ((object) (v2) ) as global::System.Type ));
-			}
-			
 			return global::System.Object.ReferenceEquals(((object) (v1) ), ((object) (v2) ));
 		}
 		
@@ -268,7 +252,7 @@ namespace Loreline.Internal.Lang {
 				return ((double) (obj) );
 			}
 			else {
-				return ( obj as global::System.IConvertible ).ToDouble(default(global::System.IFormatProvider));
+				return ((global::System.IConvertible) (( obj as global::System.IConvertible )) ).ToDouble(default(global::System.IFormatProvider));
 			}
 			
 		}
@@ -282,14 +266,28 @@ namespace Loreline.Internal.Lang {
 				return ((int) (obj) );
 			}
 			else {
-				return ( obj as global::System.IConvertible ).ToInt32(default(global::System.IFormatProvider));
+				return ((global::System.IConvertible) (( obj as global::System.IConvertible )) ).ToInt32(default(global::System.IFormatProvider));
+			}
+			
+		}
+		
+		
+		public static long toLong(object obj) {
+			if (( obj == null )) {
+				return ((long) (0) );
+			}
+			else if (( obj is long )) {
+				return ((long) (obj) );
+			}
+			else {
+				return ((global::System.IConvertible) (( obj as global::System.IConvertible )) ).ToInt64(default(global::System.IFormatProvider));
 			}
 			
 		}
 		
 		
 		public static bool isInt(object obj) {
-			global::System.IConvertible cv1 = ( obj as global::System.IConvertible );
+			global::System.IConvertible cv1 = ((global::System.IConvertible) (( obj as global::System.IConvertible )) );
 			if (( cv1 != null )) {
 				switch (cv1.GetTypeCode()) {
 					case global::System.TypeCode.Int32:
@@ -326,7 +324,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static bool isUInt(object obj) {
-			global::System.IConvertible cv1 = ( obj as global::System.IConvertible );
+			global::System.IConvertible cv1 = ((global::System.IConvertible) (( obj as global::System.IConvertible )) );
 			if (( cv1 != null )) {
 				switch (cv1.GetTypeCode()) {
 					case global::System.TypeCode.UInt32:
@@ -375,9 +373,9 @@ namespace Loreline.Internal.Lang {
 					return 1;
 				}
 				
-				global::System.IConvertible cv1 = ( v1 as global::System.IConvertible );
+				global::System.IConvertible cv1 = ((global::System.IConvertible) (( v1 as global::System.IConvertible )) );
 				if (( cv1 != null )) {
-					global::System.IConvertible cv2 = ( v2 as global::System.IConvertible );
+					global::System.IConvertible cv2 = ((global::System.IConvertible) (( v2 as global::System.IConvertible )) );
 					if (( cv2 == null )) {
 						throw new global::System.ArgumentException(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Cannot compare ", v1.GetType().ToString()), " and "), v2.GetType().ToString()));
 					}
@@ -406,8 +404,8 @@ namespace Loreline.Internal.Lang {
 								throw new global::System.ArgumentException(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Cannot compare ", v1.GetType().ToString()), " and "), v2.GetType().ToString()));
 							}
 							
-							string s1 = ( v1 as string );
-							string s2 = ( v2 as string );
+							string s1 = ((string) (( v1 as string )) );
+							string s2 = ((string) (( v2 as string )) );
 							return string.Compare(((string) (s1) ), ((string) (s2) ), ((global::System.StringComparison) (global::System.StringComparison.Ordinal) ));
 						}
 						
@@ -432,8 +430,8 @@ namespace Loreline.Internal.Lang {
 					
 				}
 				
-				global::System.IComparable c1 = ( v1 as global::System.IComparable );
-				global::System.IComparable c2 = ( v2 as global::System.IComparable );
+				global::System.IComparable c1 = ((global::System.IComparable) (( v1 as global::System.IComparable )) );
+				global::System.IComparable c2 = ((global::System.IComparable) (( v2 as global::System.IComparable )) );
 				if (( ( c1 == null ) || ( c2 == null ) )) {
 					throw new global::System.ArgumentException(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Cannot compare ", v1.GetType().ToString()), " and "), v2.GetType().ToString()));
 				}
@@ -459,9 +457,9 @@ namespace Loreline.Internal.Lang {
 				v2 = 0;
 			}
 			
-			global::System.IConvertible cv1 = ( v1 as global::System.IConvertible );
+			global::System.IConvertible cv1 = ((global::System.IConvertible) (( v1 as global::System.IConvertible )) );
 			if (( cv1 != null )) {
-				global::System.IConvertible cv2 = ( v2 as global::System.IConvertible );
+				global::System.IConvertible cv2 = ((global::System.IConvertible) (( v2 as global::System.IConvertible )) );
 				if (( cv2 == null )) {
 					throw new global::System.ArgumentException(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Cannot dynamically add ", v1.GetType().ToString()), " and "), v2.GetType().ToString()));
 				}
@@ -484,19 +482,19 @@ namespace Loreline.Internal.Lang {
 				
 			}
 			
-			global::System.Type t = ( obj as global::System.Type );
+			global::System.Type t = ((global::System.Type) (( obj as global::System.Type )) );
 			global::System.Reflection.BindingFlags bf = default(global::System.Reflection.BindingFlags);
 			if (( t == null )) {
-				string s = ( obj as string );
+				string s = ((string) (( obj as string )) );
 				if (( s != null )) {
 					return global::Loreline.Internal.Lang.StringRefl.handleGetField(s, field, throwErrors);
 				}
 				
 				t = ((global::System.Type) (obj.GetType()) );
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Instance, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) );
+				object initial = global::System.Reflection.BindingFlags.Instance;
+				object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) );
 			}
 			else {
 				if (( ( t == ((global::System.Type) (typeof(string)) ) ) && ( field == "fromCharCode" ) )) {
@@ -504,9 +502,9 @@ namespace Loreline.Internal.Lang {
 				}
 				
 				obj = null;
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial3 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Static, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial4 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial3.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial3).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial4.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial4).@value) )) );
+				object initial3 = global::System.Reflection.BindingFlags.Static;
+				object initial4 = ( (((global::System.Reflection.BindingFlags) (( (( initial3 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial3) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial4 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial4) )) )) );
 			}
 			
 			global::System.Reflection.FieldInfo f = t.GetField(((string) (field) ), ((global::System.Reflection.BindingFlags) (bf) ));
@@ -557,19 +555,19 @@ namespace Loreline.Internal.Lang {
 				return false;
 			}
 			
-			global::System.Type t = ( obj as global::System.Type );
+			global::System.Type t = ((global::System.Type) (( obj as global::System.Type )) );
 			global::System.Reflection.BindingFlags bf = default(global::System.Reflection.BindingFlags);
 			if (( t == null )) {
-				string s = ( obj as string );
+				string s = ((string) (( obj as string )) );
 				if (( s != null )) {
 					return ( global::Loreline.Internal.Lang.StringRefl.handleGetField(s, field, false) != null );
 				}
 				
 				t = ((global::System.Type) (obj.GetType()) );
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Instance, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) );
+				object initial = global::System.Reflection.BindingFlags.Instance;
+				object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) );
 			}
 			else {
 				if (( t == ((global::System.Type) (typeof(string)) ) )) {
@@ -577,9 +575,9 @@ namespace Loreline.Internal.Lang {
 				}
 				
 				obj = null;
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial3 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Static, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial4 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial3.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial3).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial4.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial4).@value) )) );
+				object initial3 = global::System.Reflection.BindingFlags.Static;
+				object initial4 = ( (((global::System.Reflection.BindingFlags) (( (( initial3 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial3) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial4 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial4) )) )) );
 			}
 			
 			global::System.Reflection.MemberInfo[] mi = t.GetMember(((string) (field) ), ((global::System.Reflection.BindingFlags) (bf) ));
@@ -598,20 +596,20 @@ namespace Loreline.Internal.Lang {
 				throw new global::System.NullReferenceException(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Cannot access field \'", field), "\' of null."));
 			}
 			
-			global::System.Type t = ( obj as global::System.Type );
+			global::System.Type t = ((global::System.Type) (( obj as global::System.Type )) );
 			global::System.Reflection.BindingFlags bf = default(global::System.Reflection.BindingFlags);
 			if (( t == null )) {
 				t = ((global::System.Type) (obj.GetType()) );
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Instance, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) );
+				object initial = global::System.Reflection.BindingFlags.Instance;
+				object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) );
 			}
 			else {
 				obj = null;
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial3 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Static, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial4 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial3.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial3).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial4.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial4).@value) )) );
+				object initial3 = global::System.Reflection.BindingFlags.Static;
+				object initial4 = ( (((global::System.Reflection.BindingFlags) (( (( initial3 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial3) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial4 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial4) )) )) );
 			}
 			
 			global::System.Reflection.FieldInfo f = t.GetField(((string) (field) ), ((global::System.Reflection.BindingFlags) (bf) ));
@@ -621,7 +619,7 @@ namespace Loreline.Internal.Lang {
 				}
 				
 				if (( ( ( @value != null ) && global::System.Object.ReferenceEquals(((global::System.Type) (typeof(global::System.Double)) ), ((object) (@value.GetType()) )) ) &&  ! (global::System.Object.ReferenceEquals(((object) (t) ), ((object) (f.FieldType) )))  )) {
-					global::System.IConvertible ic = ( @value as global::System.IConvertible );
+					global::System.IConvertible ic = ((global::System.IConvertible) (( @value as global::System.IConvertible )) );
 					@value = ic.ToType(((global::System.Type) (f.FieldType) ), default(global::System.IFormatProvider));
 				}
 				
@@ -649,7 +647,7 @@ namespace Loreline.Internal.Lang {
 				}
 				
 				if (( global::System.Object.ReferenceEquals(((global::System.Type) (typeof(global::System.Double)) ), ((object) (@value.GetType()) )) &&  ! (global::System.Object.ReferenceEquals(((object) (t) ), ((object) (prop.PropertyType) )))  )) {
-					global::System.IConvertible ic1 = ( @value as global::System.IConvertible );
+					global::System.IConvertible ic1 = ((global::System.IConvertible) (( @value as global::System.IConvertible )) );
 					@value = ic1.ToType(((global::System.Type) (prop.PropertyType) ), default(global::System.IFormatProvider));
 				}
 				
@@ -675,9 +673,9 @@ namespace Loreline.Internal.Lang {
 					int _g1 = length;
 					while (( _g < _g1 )) {
 						int i = _g++;
-						oargs[i] = args[i];
-						if (( args[i] != null )) {
-							ts[i] = args[i].GetType();
+						oargs[i] = ((object) (args[i]) );
+						if (( ((object) (args[i]) ) != null )) {
+							ts[i] = ((object) (args[i]) ).GetType();
 						}
 						
 					}
@@ -708,7 +706,7 @@ namespace Loreline.Internal.Lang {
 										if (( param.IsAssignableFrom(((global::System.Type) (ts[i2]) )) || ( ( ((global::System.Type) (ts[i2]) ) == null ) &&  ! (param.IsValueType)  ) )) {
 											continue;
 										}
-										else if (( strParam.StartsWith("global::Loreline.Internal.Lang.Null") || ( (( ( oargs[i2] == null ) || ( oargs[i2] is global::System.IConvertible ) )) && (((global::System.Type) (typeof(global::System.IConvertible)) )).IsAssignableFrom(((global::System.Type) (param) )) ) )) {
+										else if (( strParam.StartsWith("global::Loreline.Internal.Lang.Null") || ( (( ( ((object) (oargs[i2]) ) == null ) || ( ((object) (oargs[i2]) ) is global::System.IConvertible ) )) && (((global::System.Type) (typeof(global::System.IConvertible)) )).IsAssignableFrom(((global::System.Type) (param) )) ) )) {
 											 ++ crate;
 											continue;
 										}
@@ -749,9 +747,9 @@ namespace Loreline.Internal.Lang {
 					int _g7 = methodLength;
 					while (( _g6 < _g7 )) {
 						int i3 = _g6++;
-						if (( rates[i3] < best )) {
+						if (( ((int) (rates[i3]) ) < best )) {
 							bestMethod = i3;
-							best = ((double) (rates[i3]) );
+							best = ((double) (((int) (rates[i3]) )) );
 						}
 						
 					}
@@ -767,7 +765,7 @@ namespace Loreline.Internal.Lang {
 						int i4 = _g8++;
 						global::System.Type param1 = ((global::System.Reflection.ParameterInfo) (params1[i4]) ).ParameterType;
 						string strParam1 = global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Root.Std.@string(param1), "");
-						object arg = oargs[i4];
+						object arg = ((object) (oargs[i4]) );
 						if (strParam1.StartsWith("global::Loreline.Internal.Lang.Null")) {
 							oargs[i4] = global::Loreline.Internal.Lang.Runtime.mkNullable(arg, param1);
 						}
@@ -853,12 +851,8 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public static object mkNullable(object obj, global::System.Type nullableType) {
-			
-		if (nullableType.ContainsGenericParameters)
-			return global::Loreline.Internal.Lang.Null<object>.ofDynamic<object>(obj);
-		return nullableType.GetMethod("_ofDynamic").Invoke(null, new object[] { obj });
-	
+		public static object mkNullable(object obj, global::System.Type nullable) {
+			return obj;
 		}
 		
 		
@@ -872,28 +866,28 @@ namespace Loreline.Internal.Lang {
 			}
 			
 			global::System.Reflection.BindingFlags bf = default(global::System.Reflection.BindingFlags);
-			global::System.Type t = ( obj as global::System.Type );
+			global::System.Type t = ((global::System.Type) (( obj as global::System.Type )) );
 			if (( t == null )) {
-				string s = ( obj as string );
+				string s = ((string) (( obj as string )) );
 				if (( s != null )) {
 					return global::Loreline.Internal.Lang.StringRefl.handleCallField(s, field, args);
 				}
 				
 				t = obj.GetType();
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Instance, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) );
+				object initial = global::System.Reflection.BindingFlags.Instance;
+				object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) );
 			}
 			else {
 				if (( ( t == ((global::System.Type) (typeof(string)) ) ) && ( field == "fromCharCode" ) )) {
-					return global::Loreline.Internal.Lang.StringExt.fromCharCode(global::Loreline.Internal.Lang.Runtime.toInt(args[0]));
+					return global::Loreline.Internal.Lang.StringExt.fromCharCode(global::Loreline.Internal.Lang.Runtime.toInt(((object) (args[0]) )));
 				}
 				
 				obj = null;
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial3 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Static, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial4 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial3.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial3).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) ), true);
-				bf = ((global::System.Reflection.BindingFlags) (( ( ! (initial4.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial4).@value) )) );
+				object initial3 = global::System.Reflection.BindingFlags.Static;
+				object initial4 = ( (((global::System.Reflection.BindingFlags) (( (( initial3 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial3) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Public) ) );
+				bf = ((global::System.Reflection.BindingFlags) (( (( initial4 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial4) )) )) );
 			}
 			
 			global::System.Reflection.MethodBase[] mis = t.GetMethods(((global::System.Reflection.BindingFlags) (bf) ));
@@ -943,7 +937,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static object callField(object obj, string field, int fieldHash, object[] args) {
-			global::Loreline.Internal.Lang.HxObject hxObj = ( obj as global::Loreline.Internal.Lang.HxObject );
+			global::Loreline.Internal.Lang.HxObject hxObj = ((global::Loreline.Internal.Lang.HxObject) (( obj as global::Loreline.Internal.Lang.HxObject )) );
 			if (( hxObj != null )) {
 				return hxObj.__hx_invokeField(field, ( (( fieldHash == 0 )) ? (global::Loreline.Internal.Lang.FieldLookup.hash(field)) : (fieldHash) ), args);
 			}
@@ -953,7 +947,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static object getField(object obj, string field, int fieldHash, bool throwErrors) {
-			global::Loreline.Internal.Lang.HxObject hxObj = ( obj as global::Loreline.Internal.Lang.HxObject );
+			global::Loreline.Internal.Lang.HxObject hxObj = ((global::Loreline.Internal.Lang.HxObject) (( obj as global::Loreline.Internal.Lang.HxObject )) );
 			if (( hxObj != null )) {
 				return hxObj.__hx_getField(field, ( (( fieldHash == 0 )) ? (global::Loreline.Internal.Lang.FieldLookup.hash(field)) : (fieldHash) ), throwErrors, false, false);
 			}
@@ -963,7 +957,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static double getField_f(object obj, string field, int fieldHash, bool throwErrors) {
-			global::Loreline.Internal.Lang.HxObject hxObj = ( obj as global::Loreline.Internal.Lang.HxObject );
+			global::Loreline.Internal.Lang.HxObject hxObj = ((global::Loreline.Internal.Lang.HxObject) (( obj as global::Loreline.Internal.Lang.HxObject )) );
 			if (( hxObj != null )) {
 				return hxObj.__hx_getField_f(field, ( (( fieldHash == 0 )) ? (global::Loreline.Internal.Lang.FieldLookup.hash(field)) : (fieldHash) ), throwErrors, false);
 			}
@@ -973,7 +967,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static object setField(object obj, string field, int fieldHash, object @value) {
-			global::Loreline.Internal.Lang.HxObject hxObj = ( obj as global::Loreline.Internal.Lang.HxObject );
+			global::Loreline.Internal.Lang.HxObject hxObj = ((global::Loreline.Internal.Lang.HxObject) (( obj as global::Loreline.Internal.Lang.HxObject )) );
 			if (( hxObj != null )) {
 				return hxObj.__hx_setField(field, ( (( fieldHash == 0 )) ? (global::Loreline.Internal.Lang.FieldLookup.hash(field)) : (fieldHash) ), @value, false);
 			}
@@ -983,7 +977,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public static double setField_f(object obj, string field, int fieldHash, double @value) {
-			global::Loreline.Internal.Lang.HxObject hxObj = ( obj as global::Loreline.Internal.Lang.HxObject );
+			global::Loreline.Internal.Lang.HxObject hxObj = ((global::Loreline.Internal.Lang.HxObject) (( obj as global::Loreline.Internal.Lang.HxObject )) );
 			if (( hxObj != null )) {
 				return hxObj.__hx_setField_f(field, ( (( fieldHash == 0 )) ? (global::Loreline.Internal.Lang.FieldLookup.hash(field)) : (fieldHash) ), @value, false);
 			}
@@ -1016,26 +1010,6 @@ namespace Loreline.Internal.Lang {
 				return ( t1 == t2 );
 			}
 			
-			bool t1i = t1.IsInterface;
-			bool t2i = t2.IsInterface;
-			if (( t1i != t2i )) {
-				if (t1i) {
-					global::Loreline.Internal.Lang.GenericInterface g = global::Loreline.Internal.Lang.Runtime.getGenericAttr(t1);
-					if (( g != null )) {
-						t1 = g.generic;
-					}
-					
-				}
-				else {
-					global::Loreline.Internal.Lang.GenericInterface g1 = global::Loreline.Internal.Lang.Runtime.getGenericAttr(t2);
-					if (( g1 != null )) {
-						t2 = g1.generic;
-					}
-					
-				}
-				
-			}
-			
 			if (( ( t1.GetGenericArguments() as global::System.Array ).Length > 0 )) {
 				t1 = t1.GetGenericTypeDefinition();
 			}
@@ -1045,47 +1019,6 @@ namespace Loreline.Internal.Lang {
 			}
 			
 			return global::System.Object.ReferenceEquals(((object) (t1) ), ((object) (t2) ));
-		}
-		
-		
-		public static global::Loreline.Internal.Lang.GenericInterface getGenericAttr(global::System.Type t) {
-			unchecked {
-				{
-					object[] _g_arr = ( t as global::System.Reflection.MemberInfo ).GetCustomAttributes(((bool) (true) ));
-					uint _g_idx = ((uint) (0) );
-					while (( _g_idx < ( _g_arr as global::System.Array ).Length )) {
-						_g_idx += ((uint) (1) );
-						object attr = ((object) (_g_arr[((int) (((uint) (( _g_idx - 1 )) )) )]) );
-						if (( attr is global::Loreline.Internal.Lang.GenericInterface )) {
-							return ((global::Loreline.Internal.Lang.GenericInterface) (attr) );
-						}
-						
-					}
-					
-				}
-				
-				return null;
-			}
-		}
-		
-		
-		public static To genericCast<To>(object obj) {
-			
-		if (obj is To)
-			return (To) obj;
-		else if (obj == null)
-			return default(To);
-		if (typeof(To) == typeof(double))
-			return (To)(object) toDouble(obj);
-		else if (typeof(To) == typeof(int))
-			return (To)(object) toInt(obj);
-		else if (typeof(To) == typeof(float))
-			return (To)(object)(float)toDouble(obj);
-		else if (typeof(To) == typeof(long))
-			return (To)(object)(long)toDouble(obj);
-		else
-			return (To) obj;
-	
 		}
 		
 		

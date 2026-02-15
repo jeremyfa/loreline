@@ -244,6 +244,21 @@ namespace Loreline
             return interpreter;
         }
 
+        /// <summary>
+        /// Extracts translations from a parsed translation script.
+        /// </summary>
+        /// <remarks>
+        /// Given a translation file parsed with <see cref="Parse"/>, this returns a translations map
+        /// that can be passed as <see cref="Interpreter.InterpreterOptions.Translations"/> to
+        /// Play() or Resume().
+        /// </remarks>
+        /// <param name="script">The parsed translation script (result from <see cref="Parse"/> on a .XX.lor file)</param>
+        /// <returns>A translations object to pass as <see cref="Interpreter.InterpreterOptions.Translations"/></returns>
+        public static object ExtractTranslations(Script script)
+        {
+            return Runtime.Loreline.extractTranslations(script.RuntimeScript);
+        }
+
         private class ImportsFileHandlerWrap : Internal.Lang.Function
         {
             private ImportsFileHandler handler;

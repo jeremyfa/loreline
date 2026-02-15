@@ -180,7 +180,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("max");
 			baseArr.push("min");
 			base.__hx_getFields(baseArr);

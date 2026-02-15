@@ -237,7 +237,7 @@ class RuntimeInsertion {
  * Represents a tag in text content, which can be used for styling or other purposes.
  */
 @:structInit
-#if loreline_cs_api
+#if (loreline_cs_api && !macro)
 @:struct
 #end
 class TextTag {
@@ -261,7 +261,7 @@ class TextTag {
  * Represents a choice option presented to the user.
  */
 @:structInit
-#if loreline_cs_api
+#if (loreline_cs_api && !macro)
 @:struct
 #end
 class ChoiceOption {
@@ -364,7 +364,7 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if loreline_cs_api
+    #if (loreline_cs_api && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -582,7 +582,7 @@ typedef InterpreterOptions = {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if loreline_cs_api
+    #if (loreline_cs_api && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -611,7 +611,7 @@ typedef InterpreterOptions = {
         this.strictAccess = options?.strictAccess ?? false;
         this.translations = options?.translations;
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         this.wrapper = options?.wrapper;
         #end
 
@@ -1088,7 +1088,7 @@ typedef InterpreterOptions = {
                 }
             }
         }
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         else if (Objects.isCsDict(fields)) {
             type = 'System.Collections.IDictionary';
             final keys = Objects.getCsDictKeys(fields);
@@ -3322,9 +3322,15 @@ typedef InterpreterOptions = {
         else if (value is String) {
             (value:String).length > 0;
         }
+        #if (loreline_cs_api && !macro)
+        else if (Arrays.isArray(value)) {
+            Arrays.arrayLength(value) > 0;
+        }
+        #else
         else if (value is Array) {
             (value:Array<Any>).length > 0;
         }
+        #end
         else if (value is Int) {
             (value:Int) != 0;
         }
@@ -3480,13 +3486,13 @@ typedef InterpreterOptions = {
      */
     function evaluateArrayLiteral(expr:Array<Dynamic>):Any {
 
-        #if (loreline_cs_api && loreline_use_cs_types)
-        untyped __cs__('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', expr.length);
+        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        cs.Syntax.code('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', expr.length);
         for (elem in expr) {
             final val = evaluateExpression(elem);
-            untyped __cs__('result.Add({0})', val);
+            cs.Syntax.code('result.Add({0})', val);
         }
-        return untyped __cs__('result');
+        return cs.Syntax.code('result');
         #else
         return [for (elem in expr) evaluateExpression(elem)];
         #end
@@ -3502,13 +3508,13 @@ typedef InterpreterOptions = {
      */
     function evaluateObjectLiteral(expr:Array<NObjectField>):Any {
 
-        #if (loreline_cs_api && loreline_use_cs_types)
-        untyped __cs__('System.Collections.Generic.Dictionary<string,object> result = new System.Collections.Generic.Dictionary<string,object>()', expr.length);
+        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        cs.Syntax.code('System.Collections.Generic.Dictionary<string,object> result = new System.Collections.Generic.Dictionary<string,object>()');
         for (field in expr) {
             final val = evaluateExpression(field.value);
-            untyped __cs__('result[{0}] = {1}', field.name, val);
+            cs.Syntax.code('result[{0}] = {1}', field.name, val);
         }
-        return untyped __cs__('result');
+        return cs.Syntax.code('result');
         #else
         final obj = new Map<String, Any>();
         for (field in expr) {
@@ -3609,10 +3615,16 @@ typedef InterpreterOptions = {
                         final v:String = operand;
                         (v == null || v.length == 0);
                     }
+                    #if (loreline_cs_api && !macro)
+                    case OpNot if (Arrays.isArray(operand)): {
+                        Arrays.arrayLength(operand) == 0;
+                    }
+                    #else
                     case OpNot if (operand is Array): {
                         final v:Array<Any> = operand;
                         (v == null || v.length == 0);
                     }
+                    #end
                     case OpNot if (operand is Int): {
                         final v:Int = operand;
                         (v == 0);
@@ -3952,6 +3964,11 @@ typedef InterpreterOptions = {
      */
     function valueToString(value:Any):String {
 
+        #if (loreline_cs_api && !macro)
+        if (value is Float && !(value is Int)) {
+            return cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', value);
+        }
+        #end
         return Std.string(value);
 
     }

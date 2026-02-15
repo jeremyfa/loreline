@@ -38,32 +38,32 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TInst(object c, global::Loreline.Internal.Root.Array<object> args) {
+		public static global::Loreline.Internal.Hscript.TType TInst(object c, global::Loreline.Internal.Root.Array args) {
 			return new global::Loreline.Internal.Hscript.TType_TInst(c, args);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TEnum(object e, global::Loreline.Internal.Root.Array<object> args) {
+		public static global::Loreline.Internal.Hscript.TType TEnum(object e, global::Loreline.Internal.Root.Array args) {
 			return new global::Loreline.Internal.Hscript.TType_TEnum(e, args);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TType_TType(object t, global::Loreline.Internal.Root.Array<object> args) {
+		public static global::Loreline.Internal.Hscript.TType TType_TType(object t, global::Loreline.Internal.Root.Array args) {
 			return new global::Loreline.Internal.Hscript.TType_TType(t, args);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TAbstract(object a, global::Loreline.Internal.Root.Array<object> args) {
+		public static global::Loreline.Internal.Hscript.TType TAbstract(object a, global::Loreline.Internal.Root.Array args) {
 			return new global::Loreline.Internal.Hscript.TType_TAbstract(a, args);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TFun(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.TType ret) {
+		public static global::Loreline.Internal.Hscript.TType TFun(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Hscript.TType ret) {
 			return new global::Loreline.Internal.Hscript.TType_TFun(args, ret);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.TType TAnon(global::Loreline.Internal.Root.Array<object> fields) {
+		public static global::Loreline.Internal.Hscript.TType TAnon(global::Loreline.Internal.Root.Array fields) {
 			return new global::Loreline.Internal.Hscript.TType_TAnon(fields);
 		}
 		
@@ -87,8 +87,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.r});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.r});
 		}
 		
 		
@@ -112,7 +112,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.r) ), ((object) (en.r) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.r) ), ((object) (en.r) ))) ) {
 				return false;
 			}
 			
@@ -231,8 +231,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name});
 		}
 		
 		
@@ -258,7 +258,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
@@ -287,8 +287,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name});
 		}
 		
 		
@@ -314,7 +314,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
@@ -343,8 +343,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -370,7 +370,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -394,14 +394,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TInst : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TInst(object c, global::Loreline.Internal.Root.Array<object> args) : base(9) {
+		public TType_TInst(object c, global::Loreline.Internal.Root.Array args) : base(9) {
 			this.c = c;
 			this.args = args;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c, this.args});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c, this.args});
 		}
 		
 		
@@ -427,11 +427,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
@@ -446,7 +446,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object c;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 	}
 }
@@ -457,14 +457,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TEnum : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TEnum(object e, global::Loreline.Internal.Root.Array<object> args) : base(10) {
+		public TType_TEnum(object e, global::Loreline.Internal.Root.Array args) : base(10) {
 			this.e = e;
 			this.args = args;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.args});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.args});
 		}
 		
 		
@@ -490,11 +490,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
@@ -509,7 +509,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object e;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 	}
 }
@@ -520,14 +520,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TType : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TType(object t, global::Loreline.Internal.Root.Array<object> args) : base(11) {
+		public TType_TType(object t, global::Loreline.Internal.Root.Array args) : base(11) {
 			this.t = t;
 			this.args = args;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t, this.args});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t, this.args});
 		}
 		
 		
@@ -553,11 +553,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
@@ -572,7 +572,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object t;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 	}
 }
@@ -583,14 +583,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TAbstract : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TAbstract(object a, global::Loreline.Internal.Root.Array<object> args) : base(12) {
+		public TType_TAbstract(object a, global::Loreline.Internal.Root.Array args) : base(12) {
 			this.a = a;
 			this.args = args;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.a, this.args});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.a, this.args});
 		}
 		
 		
@@ -616,11 +616,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.a) ), ((object) (en.a) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.a) ), ((object) (en.a) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
@@ -635,7 +635,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object a;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 	}
 }
@@ -646,14 +646,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TFun : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TFun(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.TType ret) : base(13) {
+		public TType_TFun(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Hscript.TType ret) : base(13) {
 			this.args = args;
 			this.ret = ret;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.args, this.ret});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.args, this.ret});
 		}
 		
 		
@@ -679,11 +679,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.ret) ), ((object) (en.ret) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.ret) ), ((object) (en.ret) ))) ) {
 				return false;
 			}
 			
@@ -696,7 +696,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 		public readonly global::Loreline.Internal.Hscript.TType ret;
 		
@@ -709,13 +709,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class TType_TAnon : global::Loreline.Internal.Hscript.TType {
 		
-		public TType_TAnon(global::Loreline.Internal.Root.Array<object> fields) : base(14) {
+		public TType_TAnon(global::Loreline.Internal.Root.Array fields) : base(14) {
 			this.fields = fields;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.fields});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.fields});
 		}
 		
 		
@@ -741,7 +741,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.fields) ), ((object) (en.fields) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.fields) ), ((object) (en.fields) ))) ) {
 				return false;
 			}
 			
@@ -754,7 +754,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> fields;
+		public readonly global::Loreline.Internal.Root.Array fields;
 		
 	}
 }
@@ -770,8 +770,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.f});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.f});
 		}
 		
 		
@@ -797,7 +797,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.f) ), ((object) (en.f) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.f) ), ((object) (en.f) ))) ) {
 				return false;
 			}
 			
@@ -884,8 +884,8 @@ namespace Loreline.Internal.Hscript._Checker {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -911,7 +911,7 @@ namespace Loreline.Internal.Hscript._Checker {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -978,8 +978,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -1003,7 +1003,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -1032,8 +1032,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -1059,7 +1059,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1088,8 +1088,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -1115,7 +1115,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -1144,8 +1144,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -1171,7 +1171,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -1200,8 +1200,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.a});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.a});
 		}
 		
 		
@@ -1227,7 +1227,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.a) ), ((object) (en.a) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.a) ), ((object) (en.a) ))) ) {
 				return false;
 			}
 			
@@ -1365,7 +1365,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("t");
 			baseArr.push("expr");
 			base.__hx_getFields(baseArr);
@@ -1391,37 +1391,37 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		protected static void __hx_ctor_hscript_CheckerTypes(global::Loreline.Internal.Hscript.CheckerTypes __hx_this) {
-			__hx_this.types = new global::Loreline.Internal.Ds.StringMap<object>();
+			__hx_this.types = new global::Loreline.Internal.Ds.StringMap();
 			{
-				__hx_this.types = new global::Loreline.Internal.Ds.StringMap<object>();
-				((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (__hx_this.types) )) ))) ).@set("Void", global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TVoid));
-				((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (__hx_this.types) )) ))) ).@set("Int", global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TInt));
-				((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (__hx_this.types) )) ))) ).@set("Float", global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TFloat));
-				((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (__hx_this.types) )) ))) ).@set("Bool", global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TBool));
-				((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (__hx_this.types) )) ))) ).@set("Dynamic", global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TDynamic));
+				__hx_this.types = new global::Loreline.Internal.Ds.StringMap();
+				((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.types) )) ).@set(((string) ("Void") ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TVoid)) ));
+				((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.types) )) ).@set(((string) ("Int") ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TInt)) ));
+				((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.types) )) ).@set(((string) ("Float") ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TFloat)) ));
+				((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.types) )) ).@set(((string) ("Bool") ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TBool)) ));
+				((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.types) )) ).@set(((string) ("Dynamic") ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAlias(global::Loreline.Internal.Hscript.TType.TDynamic)) ));
 				__hx_this.parser = new global::Loreline.Internal.Hscript.Parser();
 			}
 			
 		}
 		
 		
-		public global::Loreline.Internal.Ds.StringMap<object> types;
+		public global::Loreline.Internal.Ds.StringMap types;
 		
 		public global::Loreline.Internal.Hscript.TType t_string;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> localParams;
+		public global::Loreline.Internal.Ds.StringMap localParams;
 		
 		public global::Loreline.Internal.Hscript.Parser parser;
 		
 		public virtual void addXmlApi(global::Loreline.Internal.Root.Xml api) {
 			global::Loreline.Internal.Rtti.XmlParser types = new global::Loreline.Internal.Rtti.XmlParser();
 			types.process(api, "");
-			global::Loreline.Internal.Root.Array<object> todo = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array todo = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = types.root;
+				global::Loreline.Internal.Root.Array _g1 = types.root;
 				while (( _g < _g1.length )) {
-					global::Loreline.Internal.Rtti.TypeTree v = ((global::Loreline.Internal.Rtti.TypeTree) (_g1[_g]) );
+					global::Loreline.Internal.Rtti.TypeTree v = ((global::Loreline.Internal.Rtti.TypeTree) (_g1.__get(_g)) );
 					 ++ _g;
 					this.addXmlType(v, todo);
 				}
@@ -1431,7 +1431,7 @@ namespace Loreline.Internal.Hscript {
 			{
 				int _g2 = 0;
 				while (( _g2 < todo.length )) {
-					global::Loreline.Internal.Lang.Function f = ((global::Loreline.Internal.Lang.Function) (todo[_g2]) );
+					global::Loreline.Internal.Lang.Function f = ((global::Loreline.Internal.Lang.Function) (todo.__get(_g2)) );
 					 ++ _g2;
 					f.__hx_invoke0_o();
 				}
@@ -1444,20 +1444,20 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual object defineClass(string name, object ct) {
 			if (( ct == null )) {
-				global::Loreline.Internal.Ds.StringMap<object> ct1 = new global::Loreline.Internal.Ds.StringMap<object>();
+				global::Loreline.Internal.Ds.StringMap ct1 = new global::Loreline.Internal.Ds.StringMap();
 				{
-					global::Loreline.Internal.Ds.StringMap<object> __temp_odecl1 = new global::Loreline.Internal.Ds.StringMap<object>();
-					ct = new global::Loreline.Internal.Lang.DynamicObject(new int[]{9342585, 912604165, 1224700491, 1836776262}, new object[]{ct1, __temp_odecl1, name, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+					global::Loreline.Internal.Ds.StringMap __temp_odecl1 = new global::Loreline.Internal.Ds.StringMap();
+					ct = new global::Loreline.Internal.Lang.DynamicObject(new int[]{9342585, 912604165, 1224700491, 1836776262}, new object[]{ct1, __temp_odecl1, name, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 				}
 				
 			}
 			
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@set(name, global::Loreline.Internal.Hscript.CTypedecl.CTClass(ct));
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@set(((string) (name) ), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTClass(ct)) ));
 			return ct;
 		}
 		
 		
-		public virtual void addXmlType(global::Loreline.Internal.Rtti.TypeTree x, global::Loreline.Internal.Root.Array<object> todo) {
+		public virtual void addXmlType(global::Loreline.Internal.Rtti.TypeTree x, global::Loreline.Internal.Root.Array todo) {
 			unchecked {
 				global::Loreline.Internal.Hscript.CheckerTypes _gthis = this;
 				switch (x._hx_index) {
@@ -1465,11 +1465,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						string name = ( x as global::Loreline.Internal.Rtti.TypeTree_TPackage ).name;
 						string full = ( x as global::Loreline.Internal.Rtti.TypeTree_TPackage ).full;
-						global::Loreline.Internal.Root.Array<object> subs = ( x as global::Loreline.Internal.Rtti.TypeTree_TPackage ).subs;
+						global::Loreline.Internal.Root.Array subs = ( x as global::Loreline.Internal.Rtti.TypeTree_TPackage ).subs;
 						{
 							int _g = 0;
 							while (( _g < subs.length )) {
-								global::Loreline.Internal.Rtti.TypeTree s = ((global::Loreline.Internal.Rtti.TypeTree) (subs[_g]) );
+								global::Loreline.Internal.Rtti.TypeTree s = ((global::Loreline.Internal.Rtti.TypeTree) (subs.__get(_g)) );
 								 ++ _g;
 								this.addXmlType(s, todo);
 							}
@@ -1484,36 +1484,36 @@ namespace Loreline.Internal.Hscript {
 					{
 						object c = ( x as global::Loreline.Internal.Rtti.TypeTree_TClassdecl ).c;
 						{
-							if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c, "path", 1246881189, true)))) {
+							if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c, "path", 1246881189, true)))) {
 								return;
 							}
 							
 							string c1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c, "path", 1246881189, true));
-							global::Loreline.Internal.Ds.StringMap<object> cl = new global::Loreline.Internal.Ds.StringMap<object>();
+							global::Loreline.Internal.Ds.StringMap cl = new global::Loreline.Internal.Ds.StringMap();
 							object cl1 = null;
 							{
-								global::Loreline.Internal.Ds.StringMap<object> __temp_odecl1 = new global::Loreline.Internal.Ds.StringMap<object>();
-								cl1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{9342585, 912604165, 1224700491, 1836776262}, new object[]{cl, __temp_odecl1, c1, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+								global::Loreline.Internal.Ds.StringMap __temp_odecl1 = new global::Loreline.Internal.Ds.StringMap();
+								cl1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{9342585, 912604165, 1224700491, 1836776262}, new object[]{cl, __temp_odecl1, c1, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 							}
 							
 							this.addMeta(c, cl1);
 							if (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(c, "isInterface", 408610927, true))) {
-								global::Loreline.Internal.Lang.Null<bool> __temp_expr5 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.setField(cl1, "isInterface", 408610927, true));
+								global::Loreline.Internal.Lang.Runtime.setField(cl1, "isInterface", 408610927, true);
 							}
 							
 							{
 								int _g1 = 0;
-								global::Loreline.Internal.Root.Array<string> _g2 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) );
 								while (( _g1 < _g2.length )) {
-									string p = _g2[_g1];
+									string p = global::Loreline.Internal.Lang.Runtime.toString(_g2.__get(_g1));
 									 ++ _g1;
-									((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ))) ).push(global::Loreline.Internal.Hscript.TType.TParam(p));
+									((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ).push(global::Loreline.Internal.Hscript.TType.TParam(p));
 								}
 								
 							}
 							
 							todo.push(new global::Loreline.Internal.Hscript.CheckerTypes_addXmlType_149__Fun(cl1, c, _gthis));
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(cl1, "name", 1224700491, true)), global::Loreline.Internal.Hscript.CTypedecl.CTClass(cl1));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(cl1, "name", 1224700491, true)), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTClass(cl1)) ));
 						}
 						
 						break;
@@ -1524,30 +1524,30 @@ namespace Loreline.Internal.Hscript {
 					{
 						object e = ( x as global::Loreline.Internal.Rtti.TypeTree_TEnumdecl ).e;
 						{
-							if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(e, "path", 1246881189, true)))) {
+							if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(e, "path", 1246881189, true)))) {
 								return;
 							}
 							
 							object en = null;
 							{
 								string __temp_odecl2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(e, "path", 1246881189, true));
-								en = new global::Loreline.Internal.Lang.DynamicObject(new int[]{885141049, 1224700491, 1836776262}, new object[]{new global::Loreline.Internal.Root.Array<object>(new object[]{}), __temp_odecl2, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+								en = new global::Loreline.Internal.Lang.DynamicObject(new int[]{885141049, 1224700491, 1836776262}, new object[]{new global::Loreline.Internal.Root.Array(new object[]{}), __temp_odecl2, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 							}
 							
 							this.addMeta(e, en);
 							{
 								int _g3 = 0;
-								global::Loreline.Internal.Root.Array<string> _g4 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array _g4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "params", 1836776262, true)) );
 								while (( _g3 < _g4.length )) {
-									string p1 = _g4[_g3];
+									string p1 = global::Loreline.Internal.Lang.Runtime.toString(_g4.__get(_g3));
 									 ++ _g3;
-									((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(en, "params", 1836776262, true)) ))) ).push(global::Loreline.Internal.Hscript.TType.TParam(p1));
+									((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(en, "params", 1836776262, true)) ).push(global::Loreline.Internal.Hscript.TType.TParam(p1));
 								}
 								
 							}
 							
 							todo.push(new global::Loreline.Internal.Hscript.CheckerTypes_addXmlType_206__Fun(en, e, _gthis));
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(en, "name", 1224700491, true)), global::Loreline.Internal.Hscript.CTypedecl.CTEnum(en));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(en, "name", 1224700491, true)), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTEnum(en)) ));
 						}
 						
 						break;
@@ -1558,33 +1558,33 @@ namespace Loreline.Internal.Hscript {
 					{
 						object t = ( x as global::Loreline.Internal.Rtti.TypeTree_TTypedecl ).t;
 						{
-							if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true)))) {
+							if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true)))) {
 								return;
 							}
 							
 							object td = null;
 							{
 								string __temp_odecl3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true));
-								td = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491, 1836776262}, new object[]{null, __temp_odecl3, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+								td = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491, 1836776262}, new object[]{null, __temp_odecl3, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 							}
 							
 							{
 								int _g5 = 0;
-								global::Loreline.Internal.Root.Array<string> _g6 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array _g6 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t, "params", 1836776262, true)) );
 								while (( _g5 < _g6.length )) {
-									string p2 = _g6[_g5];
+									string p2 = global::Loreline.Internal.Lang.Runtime.toString(_g6.__get(_g5));
 									 ++ _g5;
-									((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(td, "params", 1836776262, true)) ))) ).push(global::Loreline.Internal.Hscript.TType.TParam(p2));
+									((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(td, "params", 1836776262, true)) ).push(global::Loreline.Internal.Hscript.TType.TParam(p2));
 								}
 								
 							}
 							
 							if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true)) == "global::Loreline.Internal.Hscript.TypeCheck" )) {
-								((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(td, "params", 1836776262, true)) ))) ).reverse();
+								((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(td, "params", 1836776262, true)) ).reverse();
 							}
 							
 							todo.push(new global::Loreline.Internal.Hscript.CheckerTypes_addXmlType_224__Fun(td, t, _gthis));
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true)), global::Loreline.Internal.Hscript.CTypedecl.CTTypedef(td));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t, "path", 1246881189, true)), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTTypedef(td)) ));
 						}
 						
 						break;
@@ -1595,30 +1595,30 @@ namespace Loreline.Internal.Hscript {
 					{
 						object a = ( x as global::Loreline.Internal.Rtti.TypeTree_TAbstractdecl ).a;
 						{
-							if (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "path", 1246881189, true)))) {
+							if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).exists(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "path", 1246881189, true)))) {
 								return;
 							}
 							
 							object ta = null;
 							{
 								string __temp_odecl4 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "path", 1246881189, true));
-								ta = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491, 1836776262}, new object[]{null, __temp_odecl4, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+								ta = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491, 1836776262}, new object[]{null, __temp_odecl4, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 							}
 							
 							this.addMeta(a, ta);
 							{
 								int _g7 = 0;
-								global::Loreline.Internal.Root.Array<string> _g8 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(a, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array _g8 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(a, "params", 1836776262, true)) );
 								while (( _g7 < _g8.length )) {
-									string p3 = _g8[_g7];
+									string p3 = global::Loreline.Internal.Lang.Runtime.toString(_g8.__get(_g7));
 									 ++ _g7;
-									((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(ta, "params", 1836776262, true)) ))) ).push(global::Loreline.Internal.Hscript.TType.TParam(p3));
+									((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(ta, "params", 1836776262, true)) ).push(global::Loreline.Internal.Hscript.TType.TParam(p3));
 								}
 								
 							}
 							
 							todo.push(new global::Loreline.Internal.Hscript.CheckerTypes_addXmlType_240__Fun(ta, a, _gthis));
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "path", 1246881189, true)), global::Loreline.Internal.Hscript.CTypedecl.CTAbstract(ta));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "path", 1246881189, true)), ((object) (global::Loreline.Internal.Hscript.CTypedecl.CTAbstract(ta)) ));
 						}
 						
 						break;
@@ -1632,29 +1632,29 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public virtual void addMeta(object src, object to) {
-			if (( ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) ))) ) == null ) || ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) ))) ).length == 0 ) )) {
+			if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) ) == null ) || ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) ).length == 0 ) )) {
 				return;
 			}
 			
-			global::Loreline.Internal.Root.Array<object> __temp_expr1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(to, "meta", 1213811397, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+			global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(to, "meta", 1213811397, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<object> _g1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) ))) );
+				global::Loreline.Internal.Root.Array _g1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(src, "meta", 1213811397, true)) );
 				while (( _g < _g1.length )) {
-					object m = _g1[_g];
+					object m = _g1.__get(_g);
 					 ++ _g;
-					global::Loreline.Internal.Root.Array<object> to1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(to, "meta", 1213811397, true)) ))) );
+					global::Loreline.Internal.Root.Array to1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(to, "meta", 1213811397, true)) );
 					string m1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(m, "name", 1224700491, true));
-					global::Loreline.Internal.Root.Array<object> _g2 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+					global::Loreline.Internal.Root.Array _g2 = new global::Loreline.Internal.Root.Array(new object[]{});
 					{
 						int _g3 = 0;
-						global::Loreline.Internal.Root.Array<string> _g4 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(m, "params", 1836776262, true)) ))) );
+						global::Loreline.Internal.Root.Array _g4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(m, "params", 1836776262, true)) );
 						while (( _g3 < _g4.length )) {
-							string p = _g4[_g3];
+							string p = global::Loreline.Internal.Lang.Runtime.toString(_g4.__get(_g3));
 							 ++ _g3;
 							object tmp = null;
 							try {
-								tmp = this.parser.parseString(p, null, default(global::Loreline.Internal.Lang.Null<int>));
+								tmp = this.parser.parseString(p, null, null);
 							}
 							catch (global::System.Exception _g5){
 								if (( ((object) (global::Loreline.Internal.Exception.caught(_g5).unwrap()) ) is global::Loreline.Internal.Hscript.Error )) {
@@ -1692,12 +1692,12 @@ namespace Loreline.Internal.Hscript {
 					case 1:
 					{
 						string name = ( t as global::Loreline.Internal.Rtti.CType_CEnum ).name;
-						global::Loreline.Internal.Root.Array<object> @params = ( t as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
-						global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array @params = ( t as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
+						global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g1 = 0;
 							while (( _g1 < @params.length )) {
-								global::Loreline.Internal.Rtti.CType t1 = ((global::Loreline.Internal.Rtti.CType) (@params[_g1]) );
+								global::Loreline.Internal.Rtti.CType t1 = ((global::Loreline.Internal.Rtti.CType) (@params.__get(_g1)) );
 								 ++ _g1;
 								_g.push(this.makeXmlType(t1));
 							}
@@ -1711,12 +1711,12 @@ namespace Loreline.Internal.Hscript {
 					case 2:
 					{
 						string name1 = ( t as global::Loreline.Internal.Rtti.CType_CClass ).name;
-						global::Loreline.Internal.Root.Array<object> params1 = ( t as global::Loreline.Internal.Rtti.CType_CClass ).@params;
-						global::Loreline.Internal.Root.Array<object> _g2 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array params1 = ( t as global::Loreline.Internal.Rtti.CType_CClass ).@params;
+						global::Loreline.Internal.Root.Array _g2 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g3 = 0;
 							while (( _g3 < params1.length )) {
-								global::Loreline.Internal.Rtti.CType t2 = ((global::Loreline.Internal.Rtti.CType) (params1[_g3]) );
+								global::Loreline.Internal.Rtti.CType t2 = ((global::Loreline.Internal.Rtti.CType) (params1.__get(_g3)) );
 								 ++ _g3;
 								_g2.push(this.makeXmlType(t2));
 							}
@@ -1730,12 +1730,12 @@ namespace Loreline.Internal.Hscript {
 					case 3:
 					{
 						string name2 = ( t as global::Loreline.Internal.Rtti.CType_CTypedef ).name;
-						global::Loreline.Internal.Root.Array<object> params2 = ( t as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
-						global::Loreline.Internal.Root.Array<object> _g4 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array params2 = ( t as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
+						global::Loreline.Internal.Root.Array _g4 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g5 = 0;
 							while (( _g5 < params2.length )) {
-								global::Loreline.Internal.Rtti.CType t3 = ((global::Loreline.Internal.Rtti.CType) (params2[_g5]) );
+								global::Loreline.Internal.Rtti.CType t3 = ((global::Loreline.Internal.Rtti.CType) (params2.__get(_g5)) );
 								 ++ _g5;
 								_g4.push(this.makeXmlType(t3));
 							}
@@ -1748,13 +1748,13 @@ namespace Loreline.Internal.Hscript {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Rtti.CType_CFunction ).args;
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Rtti.CType_CFunction ).args;
 						global::Loreline.Internal.Rtti.CType ret = ( t as global::Loreline.Internal.Rtti.CType_CFunction ).ret;
-						global::Loreline.Internal.Root.Array<object> _g6 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g6 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g7 = 0;
 							while (( _g7 < args.length )) {
-								object a = args[_g7];
+								object a = args.__get(_g7);
 								 ++ _g7;
 								string a1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "name", 1224700491, true));
 								bool a2 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a, "opt", 5545011, true));
@@ -1775,16 +1775,16 @@ namespace Loreline.Internal.Hscript {
 					
 					case 5:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
-						global::Loreline.Internal.Root.Array<object> _g8 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array fields = ( t as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
+						global::Loreline.Internal.Root.Array _g8 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g9 = 0;
 							while (( _g9 < fields.length )) {
-								object f = fields[_g9];
+								object f = fields.__get(_g9);
 								 ++ _g9;
 								string f1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true));
 								global::Loreline.Internal.Hscript.TType tmp = this.makeXmlType(((global::Loreline.Internal.Rtti.CType) (global::Loreline.Internal.Lang.Runtime.getField(f, "type", 1292432058, true)) ));
-								global::Loreline.Internal.Root.Array<object> m = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ))) );
+								global::Loreline.Internal.Root.Array m = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) );
 								bool tmp1 = default(bool);
 								if (( m == null )) {
 									tmp1 = false;
@@ -1794,7 +1794,7 @@ namespace Loreline.Internal.Hscript {
 									{
 										int _g10 = 0;
 										while (( _g10 < m.length )) {
-											object m1 = m[_g10];
+											object m1 = m.__get(_g10);
 											 ++ _g10;
 											if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(m1, "name", 1224700491, true)) == ":optional" )) {
 												b = true;
@@ -1827,12 +1827,12 @@ namespace Loreline.Internal.Hscript {
 					case 7:
 					{
 						string name3 = ( t as global::Loreline.Internal.Rtti.CType_CAbstract ).name;
-						global::Loreline.Internal.Root.Array<object> params3 = ( t as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
-						global::Loreline.Internal.Root.Array<object> _g11 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array params3 = ( t as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
+						global::Loreline.Internal.Root.Array _g11 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g12 = 0;
 							while (( _g12 < params3.length )) {
-								global::Loreline.Internal.Rtti.CType t5 = ((global::Loreline.Internal.Rtti.CType) (params3[_g12]) );
+								global::Loreline.Internal.Rtti.CType t5 = ((global::Loreline.Internal.Rtti.CType) (params3.__get(_g12)) );
 								 ++ _g12;
 								_g11.push(this.makeXmlType(t5));
 							}
@@ -1850,10 +1850,10 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Hscript.TType getType(string name, global::Loreline.Internal.Root.Array<object> args) {
+		public virtual global::Loreline.Internal.Hscript.TType getType(string name, global::Loreline.Internal.Root.Array args) {
 			unchecked {
 				if (( this.localParams != null )) {
-					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.localParams) )) ))) ).@get(name)).@value) );
+					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.localParams) )) ).@get(((string) (name) ))) );
 					if (( t != null )) {
 						return t;
 					}
@@ -1862,10 +1862,10 @@ namespace Loreline.Internal.Hscript {
 				
 				global::Loreline.Internal.Hscript.TType t1 = this.resolve(name, args);
 				if (( t1 == null )) {
-					global::Loreline.Internal.Root.Array<string> pack = global::Loreline.Internal.Lang.StringExt.split(name, ".");
+					global::Loreline.Internal.Root.Array pack = global::Loreline.Internal.Lang.StringExt.split(name, ".");
 					if (( pack.length > 1 )) {
-						string priv = pack[( pack.length - 2 )];
-						if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(priv, 0)).toDynamic(), 95)) {
+						string priv = global::Loreline.Internal.Lang.Runtime.toString(pack.__get(( pack.length - 2 )));
+						if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(priv, 0), 95)) {
 							pack.@remove(priv);
 							return this.getType(pack.@join("."), args);
 						}
@@ -1880,23 +1880,23 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Hscript.TType resolve(string name, global::Loreline.Internal.Root.Array<object> args) {
+		public virtual global::Loreline.Internal.Hscript.TType resolve(string name, global::Loreline.Internal.Root.Array args) {
 			unchecked {
 				if (( name == "Null" )) {
 					if (( ( args == null ) || ( args.length != 1 ) )) {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown("Missing Null<T> parameter")) );
 					}
 					
-					return global::Loreline.Internal.Hscript.TType.TNull(((global::Loreline.Internal.Hscript.TType) (args[0]) ));
+					return global::Loreline.Internal.Hscript.TType.TNull(((global::Loreline.Internal.Hscript.TType) (args.__get(0)) ));
 				}
 				
-				global::Loreline.Internal.Hscript.CTypedecl t = ((global::Loreline.Internal.Hscript.CTypedecl) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.types) )) ))) ).@get(name)).@value) );
+				global::Loreline.Internal.Hscript.CTypedecl t = ((global::Loreline.Internal.Hscript.CTypedecl) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.types) )) ).@get(((string) (name) ))) );
 				if (( t == null )) {
 					return null;
 				}
 				
 				if (( args == null )) {
-					args = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+					args = new global::Loreline.Internal.Root.Array(new object[]{});
 				}
 				
 				switch (t._hx_index) {
@@ -1954,7 +1954,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 716544785:
 					{
-						this.localParams = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.localParams = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -1968,7 +1968,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 449540217:
 					{
-						this.types = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.types = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -2069,45 +2069,45 @@ namespace Loreline.Internal.Hscript {
 				switch (hash) {
 					case 1734349548:
 					{
-						return this.resolve(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )) ))) ));
+						return this.resolve(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((global::Loreline.Internal.Root.Array) (( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )) ));
 					}
 					
 					
 					case 529244784:
 					{
-						return this.getType(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )) ))) ));
+						return this.getType(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((global::Loreline.Internal.Root.Array) (( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )) ));
 					}
 					
 					
 					case 1042869219:
 					{
-						return this.makeXmlType(((global::Loreline.Internal.Rtti.CType) (dynargs[0]) ));
+						return this.makeXmlType(((global::Loreline.Internal.Rtti.CType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 76975494:
 					{
-						this.addMeta(dynargs[0], dynargs[1]);
+						this.addMeta(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 						break;
 					}
 					
 					
 					case 1638461456:
 					{
-						this.addXmlType(((global::Loreline.Internal.Rtti.TypeTree) (dynargs[0]) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[1]) ))) ));
+						this.addXmlType(((global::Loreline.Internal.Rtti.TypeTree) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1374565885:
 					{
-						return this.defineClass(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) ));
+						return this.defineClass(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
 					case 1027177476:
 					{
-						this.addXmlApi(((global::Loreline.Internal.Root.Xml) (dynargs[0]) ));
+						this.addXmlApi(((global::Loreline.Internal.Root.Xml) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
@@ -2124,7 +2124,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("parser");
 			baseArr.push("localParams");
 			baseArr.push("t_string");
@@ -2142,7 +2142,7 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public class CheckerTypes_addXmlType_159__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public CheckerTypes_addXmlType_159__Fun(global::Loreline.Internal.Root.Array<string> pkeys, object cl1, global::Loreline.Internal.Hscript.CheckerTypes _gthis) : base(2, 0) {
+		public CheckerTypes_addXmlType_159__Fun(global::Loreline.Internal.Root.Array pkeys, object cl1, global::Loreline.Internal.Hscript.CheckerTypes _gthis) : base(2, 0) {
 			this.pkeys = pkeys;
 			this.cl1 = cl1;
 			this._gthis = _gthis;
@@ -2153,16 +2153,16 @@ namespace Loreline.Internal.Hscript {
 			unchecked {
 				object fields = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float2) )) : (((object) (__fn_dyn2) )) );
 				object f = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float1) )) : (((object) (__fn_dyn1) )) );
-				if (( ( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "isOverride", 1138177110, true)) || ((bool) (( global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), 0, new global::Loreline.Internal.Lang.Null<int>(4, true)) == "get_" )) ) ) || ( global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), 0, new global::Loreline.Internal.Lang.Null<int>(4, true)) == "set_" ) )) {
+				if (( ( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "isOverride", 1138177110, true)) || ((bool) (( global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), 0, 4) == "get_" )) ) ) || ( global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), 0, 4) == "set_" ) )) {
 					return null;
 				}
 				
 				bool complete =  ! (global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)).StartsWith("__")) ;
 				{
 					int _g = 0;
-					global::Loreline.Internal.Root.Array<object> _g1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ))) );
+					global::Loreline.Internal.Root.Array _g1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) );
 					while (( _g < _g1.length )) {
-						object m = _g1[_g];
+						object m = _g1.__get(_g);
 						 ++ _g;
 						if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(m, "name", 1224700491, true)) == ":noScript" )) {
 							return null;
@@ -2207,45 +2207,45 @@ namespace Loreline.Internal.Hscript {
 				{
 					bool __temp_odecl1 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "isPublic", 1063066675, true));
 					string __temp_odecl2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true));
-					fl1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1055698607, 1063066675, 1224700491, 1836776262, 2143813817}, new object[]{null, fl, __temp_odecl1, __temp_odecl2, new global::Loreline.Internal.Root.Array<object>(new object[]{}), complete}, new int[]{}, new double[]{});
+					fl1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1055698607, 1063066675, 1224700491, 1836776262, 2143813817}, new object[]{null, fl, __temp_odecl1, __temp_odecl2, new global::Loreline.Internal.Root.Array(new object[]{}), complete}, new int[]{}, new double[]{});
 				}
 				
 				{
 					int _g4 = 0;
-					global::Loreline.Internal.Root.Array<string> _g5 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "params", 1836776262, true)) ))) );
+					global::Loreline.Internal.Root.Array _g5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "params", 1836776262, true)) );
 					while (( _g4 < _g5.length )) {
-						string p = _g5[_g4];
+						string p = global::Loreline.Internal.Lang.Runtime.toString(_g5.__get(_g4));
 						 ++ _g4;
 						global::Loreline.Internal.Hscript.TType pt = global::Loreline.Internal.Hscript.TType.TParam(p);
 						string key = global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), "."), p);
 						this.pkeys.push(key);
-						((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(fl1, "params", 1836776262, true)) ))) ).push(pt);
-						((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this._gthis.localParams) )) ))) ).@set(key, pt);
+						((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(fl1, "params", 1836776262, true)) ).push(pt);
+						((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this._gthis.localParams) )) ).@set(((string) (key) ), ((object) (pt) ));
 					}
 					
 				}
 				
 				global::Loreline.Internal.Hscript.TType __temp_expr3 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.setField(fl1, "t", 116, this._gthis.makeXmlType(((global::Loreline.Internal.Rtti.CType) (global::Loreline.Internal.Lang.Runtime.getField(f, "type", 1292432058, true)) )))) );
-				if (( ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ))) ) != null ) && ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ))) ).length > 0 ) )) {
-					global::Loreline.Internal.Root.Array<object> __temp_expr4 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(fl1, "meta", 1213811397, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+				if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ) != null ) && ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ).length > 0 ) )) {
+					global::Loreline.Internal.Root.Array __temp_expr4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(fl1, "meta", 1213811397, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 					{
 						int _g6 = 0;
-						global::Loreline.Internal.Root.Array<object> _g7 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) ))) );
+						global::Loreline.Internal.Root.Array _g7 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f, "meta", 1213811397, true)) );
 						while (( _g6 < _g7.length )) {
-							object m1 = _g7[_g6];
+							object m1 = _g7.__get(_g6);
 							 ++ _g6;
-							global::Loreline.Internal.Root.Array<object> fl2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(fl1, "meta", 1213811397, true)) ))) );
+							global::Loreline.Internal.Root.Array fl2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(fl1, "meta", 1213811397, true)) );
 							string m2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(m1, "name", 1224700491, true));
-							global::Loreline.Internal.Root.Array<object> _g8 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g8 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g9 = 0;
-								global::Loreline.Internal.Root.Array<string> _g10 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(m1, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array _g10 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(m1, "params", 1836776262, true)) );
 								while (( _g9 < _g10.length )) {
-									string p1 = _g10[_g9];
+									string p1 = global::Loreline.Internal.Lang.Runtime.toString(_g10.__get(_g9));
 									 ++ _g9;
 									object initField = null;
 									try {
-										initField = this._gthis.parser.parseString(p1, null, default(global::Loreline.Internal.Lang.Null<int>));
+										initField = this._gthis.parser.parseString(p1, null, null);
 									}
 									catch (global::System.Exception _g11){
 										if (( ((object) (global::Loreline.Internal.Exception.caught(_g11).unwrap()) ) is global::Loreline.Internal.Hscript.Error )) {
@@ -2271,7 +2271,7 @@ namespace Loreline.Internal.Hscript {
 				}
 				
 				while (( this.pkeys.length > 0 )) {
-					((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this._gthis.localParams) )) ))) ).@remove(global::Loreline.Internal.Lang.Runtime.toString((this.pkeys.pop()).toDynamic()));
+					((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this._gthis.localParams) )) ).@remove(global::Loreline.Internal.Lang.Runtime.toString(this.pkeys.pop()));
 				}
 				
 				if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(fl1, "name", 1224700491, true)) == "new" )) {
@@ -2286,7 +2286,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<string> pkeys;
+		public global::Loreline.Internal.Root.Array pkeys;
 		
 		public object cl1;
 		
@@ -2309,14 +2309,14 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public override object __hx_invoke0_o() {
-			global::Loreline.Internal.Ds.StringMap<object> _g = new global::Loreline.Internal.Ds.StringMap<object>();
+			global::Loreline.Internal.Ds.StringMap _g = new global::Loreline.Internal.Ds.StringMap();
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "params", 1836776262, true)) ))) );
+				global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "params", 1836776262, true)) );
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2[_g1]) );
+					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(_g1)) );
 					 ++ _g1;
-					_g.@set(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.c, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t)), t);
+					_g.@set(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.c, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t))) ), ((object) (t) ));
 				}
 				
 			}
@@ -2325,12 +2325,12 @@ namespace Loreline.Internal.Hscript {
 			if (( global::Loreline.Internal.Lang.Runtime.getField(this.c, "superClass", 671590589, true) != null )) {
 				global::Loreline.Internal.Hscript.CheckerTypes _gthis1 = this._gthis;
 				string c1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(this.c, "superClass", 671590589, true), "path", 1246881189, true));
-				global::Loreline.Internal.Root.Array<object> _g3 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g4 = 0;
-					global::Loreline.Internal.Root.Array<object> _g5 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(this.c, "superClass", 671590589, true), "params", 1836776262, true)) ))) );
+					global::Loreline.Internal.Root.Array _g5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(global::Loreline.Internal.Lang.Runtime.getField(this.c, "superClass", 671590589, true), "params", 1836776262, true)) );
 					while (( _g4 < _g5.length )) {
-						global::Loreline.Internal.Rtti.CType t1 = ((global::Loreline.Internal.Rtti.CType) (_g5[_g4]) );
+						global::Loreline.Internal.Rtti.CType t1 = ((global::Loreline.Internal.Rtti.CType) (_g5.__get(_g4)) );
 						 ++ _g4;
 						_g3.push(this._gthis.makeXmlType(t1));
 					}
@@ -2340,23 +2340,23 @@ namespace Loreline.Internal.Hscript {
 				global::Loreline.Internal.Hscript.TType __temp_expr1 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.setField(this.cl1, "superClass", 671590589, _gthis1.getType(c1, _g3))) );
 			}
 			
-			if (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "interfaces", 1695633562, true)) ))) ) != null )) {
-				global::Loreline.Internal.Root.Array<object> __temp_expr2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(this.cl1, "interfaces", 1695633562, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+			if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "interfaces", 1695633562, true)) ) != null )) {
+				global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(this.cl1, "interfaces", 1695633562, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 				{
 					int _g6 = 0;
-					global::Loreline.Internal.Root.Array<object> _g7 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "interfaces", 1695633562, true)) ))) );
+					global::Loreline.Internal.Root.Array _g7 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "interfaces", 1695633562, true)) );
 					while (( _g6 < _g7.length )) {
-						object i = _g7[_g6];
+						object i = _g7.__get(_g6);
 						 ++ _g6;
-						global::Loreline.Internal.Root.Array<object> cl = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "interfaces", 1695633562, true)) ))) );
+						global::Loreline.Internal.Root.Array cl = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "interfaces", 1695633562, true)) );
 						global::Loreline.Internal.Hscript.CheckerTypes _gthis2 = this._gthis;
 						string i1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(i, "path", 1246881189, true));
-						global::Loreline.Internal.Root.Array<object> _g8 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g8 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g9 = 0;
-							global::Loreline.Internal.Root.Array<object> _g10 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(i, "params", 1836776262, true)) ))) );
+							global::Loreline.Internal.Root.Array _g10 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(i, "params", 1836776262, true)) );
 							while (( _g9 < _g10.length )) {
-								global::Loreline.Internal.Rtti.CType t2 = ((global::Loreline.Internal.Rtti.CType) (_g10[_g9]) );
+								global::Loreline.Internal.Rtti.CType t2 = ((global::Loreline.Internal.Rtti.CType) (_g10.__get(_g9)) );
 								 ++ _g9;
 								_g8.push(this._gthis.makeXmlType(t2));
 							}
@@ -2370,13 +2370,13 @@ namespace Loreline.Internal.Hscript {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array<string> pkeys = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+			global::Loreline.Internal.Root.Array pkeys = new global::Loreline.Internal.Root.Array(new object[]{});
 			global::Loreline.Internal.Lang.Function initField = new global::Loreline.Internal.Hscript.CheckerTypes_addXmlType_159__Fun(pkeys, this.cl1, this._gthis);
 			{
 				int _g11 = 0;
-				global::Loreline.Internal.Root.Array<object> _g12 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "fields", 9342585, true)) ))) );
+				global::Loreline.Internal.Root.Array _g12 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "fields", 9342585, true)) );
 				while (( _g11 < _g12.length )) {
-					object f = _g12[_g11];
+					object f = _g12.__get(_g11);
 					 ++ _g11;
 					initField.__hx_invoke2_o(default(double), f, default(double), ((object) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "fields", 9342585, true)) ));
 				}
@@ -2385,9 +2385,9 @@ namespace Loreline.Internal.Hscript {
 			
 			{
 				int _g13 = 0;
-				global::Loreline.Internal.Root.Array<object> _g14 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "statics", 912604165, true)) ))) );
+				global::Loreline.Internal.Root.Array _g14 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c, "statics", 912604165, true)) );
 				while (( _g13 < _g14.length )) {
-					object f1 = _g14[_g13];
+					object f1 = _g14.__get(_g13);
 					 ++ _g13;
 					initField.__hx_invoke2_o(default(double), f1, default(double), ((object) (global::Loreline.Internal.Lang.Runtime.getField(this.cl1, "statics", 912604165, true)) ));
 				}
@@ -2422,14 +2422,14 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public override object __hx_invoke0_o() {
-			global::Loreline.Internal.Ds.StringMap<object> _g = new global::Loreline.Internal.Ds.StringMap<object>();
+			global::Loreline.Internal.Ds.StringMap _g = new global::Loreline.Internal.Ds.StringMap();
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.en, "params", 1836776262, true)) ))) );
+				global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.en, "params", 1836776262, true)) );
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2[_g1]) );
+					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(_g1)) );
 					 ++ _g1;
-					_g.@set(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.e, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t)), t);
+					_g.@set(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.e, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t))) ), ((object) (t) ));
 				}
 				
 			}
@@ -2437,23 +2437,23 @@ namespace Loreline.Internal.Hscript {
 			this._gthis.localParams = _g;
 			{
 				int _g3 = 0;
-				global::Loreline.Internal.Root.Array<object> _g4 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.e, "constructors", 885141049, true)) ))) );
+				global::Loreline.Internal.Root.Array _g4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.e, "constructors", 885141049, true)) );
 				while (( _g3 < _g4.length )) {
-					object c = _g4[_g3];
+					object c = _g4.__get(_g3);
 					 ++ _g3;
-					global::Loreline.Internal.Root.Array<object> en1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.en, "constructors", 885141049, true)) ))) );
+					global::Loreline.Internal.Root.Array en1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.en, "constructors", 885141049, true)) );
 					string c1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c, "name", 1224700491, true));
-					global::Loreline.Internal.Root.Array<object> tmp = null;
-					if (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "args", 1081380189, true)) ))) ) == null )) {
+					global::Loreline.Internal.Root.Array tmp = null;
+					if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "args", 1081380189, true)) ) == null )) {
 						tmp = null;
 					}
 					else {
-						global::Loreline.Internal.Root.Array<object> _g5 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g5 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g6 = 0;
-							global::Loreline.Internal.Root.Array<object> _g7 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "args", 1081380189, true)) ))) );
+							global::Loreline.Internal.Root.Array _g7 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "args", 1081380189, true)) );
 							while (( _g6 < _g7.length )) {
-								object a = _g7[_g6];
+								object a = _g7.__get(_g6);
 								 ++ _g6;
 								string a1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "name", 1224700491, true));
 								bool a2 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a, "opt", 5545011, true));
@@ -2504,14 +2504,14 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public override object __hx_invoke0_o() {
-			global::Loreline.Internal.Ds.StringMap<object> _g = new global::Loreline.Internal.Ds.StringMap<object>();
+			global::Loreline.Internal.Ds.StringMap _g = new global::Loreline.Internal.Ds.StringMap();
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.td, "params", 1836776262, true)) ))) );
+				global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.td, "params", 1836776262, true)) );
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Hscript.TType pt = ((global::Loreline.Internal.Hscript.TType) (_g2[_g1]) );
+					global::Loreline.Internal.Hscript.TType pt = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(_g1)) );
 					 ++ _g1;
-					_g.@set(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.t, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(pt)), pt);
+					_g.@set(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.t, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(pt))) ), ((object) (pt) ));
 				}
 				
 			}
@@ -2546,14 +2546,14 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public override object __hx_invoke0_o() {
-			global::Loreline.Internal.Ds.StringMap<object> _g = new global::Loreline.Internal.Ds.StringMap<object>();
+			global::Loreline.Internal.Ds.StringMap _g = new global::Loreline.Internal.Ds.StringMap();
 			{
 				int _g1 = 0;
-				global::Loreline.Internal.Root.Array<object> _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.ta, "params", 1836776262, true)) ))) );
+				global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.ta, "params", 1836776262, true)) );
 				while (( _g1 < _g2.length )) {
-					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2[_g1]) );
+					global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(_g1)) );
 					 ++ _g1;
-					_g.@set(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.a, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t)), t);
+					_g.@set(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(this.a, "path", 1246881189, true)), "."), global::Loreline.Internal.Hscript.Checker.typeStr(t))) ), ((object) (t) ));
 				}
 				
 			}
@@ -2590,8 +2590,8 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		protected static void __hx_ctor_hscript_Checker(global::Loreline.Internal.Hscript.Checker __hx_this, global::Loreline.Internal.Hscript.CheckerTypes types) {
-			__hx_this.events = new global::Loreline.Internal.Ds.StringMap<object>();
-			__hx_this.globals = new global::Loreline.Internal.Ds.StringMap<object>();
+			__hx_this.events = new global::Loreline.Internal.Ds.StringMap();
+			__hx_this.globals = new global::Loreline.Internal.Ds.StringMap();
 			__hx_this.onTopDownEnum = ( (( global::Loreline.Internal.Hscript.Checker___hx_ctor_hscript_Checker_371__Fun.__hx_current != null )) ? (global::Loreline.Internal.Hscript.Checker___hx_ctor_hscript_Checker_371__Fun.__hx_current) : (global::Loreline.Internal.Hscript.Checker___hx_ctor_hscript_Checker_371__Fun.__hx_current = ((global::Loreline.Internal.Hscript.Checker___hx_ctor_hscript_Checker_371__Fun) (new global::Loreline.Internal.Hscript.Checker___hx_ctor_hscript_Checker_371__Fun()) )) );
 			{
 				if (( types == null )) {
@@ -2644,18 +2644,18 @@ namespace Loreline.Internal.Hscript {
 					case 9:
 					{
 						object c = ( t as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						string c1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c, "name", 1224700491, true));
 						string tmp = null;
 						if (( args.length == 0 )) {
 							tmp = "";
 						}
 						else {
-							global::Loreline.Internal.Root.Array<string> _g = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+							global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g1 = 0;
 								while (( _g1 < args.length )) {
-									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (args[_g1]) );
+									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (args.__get(_g1)) );
 									 ++ _g1;
 									_g.push(global::Loreline.Internal.Hscript.Checker.typeStr(t2));
 								}
@@ -2672,18 +2672,18 @@ namespace Loreline.Internal.Hscript {
 					case 10:
 					{
 						object e = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-						global::Loreline.Internal.Root.Array<object> args1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+						global::Loreline.Internal.Root.Array args1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 						string e1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(e, "name", 1224700491, true));
 						string tmp1 = null;
 						if (( args1.length == 0 )) {
 							tmp1 = "";
 						}
 						else {
-							global::Loreline.Internal.Root.Array<string> _g2 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+							global::Loreline.Internal.Root.Array _g2 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g3 = 0;
 								while (( _g3 < args1.length )) {
-									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (args1[_g3]) );
+									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (args1.__get(_g3)) );
 									 ++ _g3;
 									_g2.push(global::Loreline.Internal.Hscript.Checker.typeStr(t3));
 								}
@@ -2700,9 +2700,9 @@ namespace Loreline.Internal.Hscript {
 					case 11:
 					{
 						object t4 = ( t as global::Loreline.Internal.Hscript.TType_TType ).t;
-						global::Loreline.Internal.Root.Array<object> args2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
+						global::Loreline.Internal.Root.Array args2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
 						if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t4, "name", 1224700491, true)) == "global::Loreline.Internal.Hscript.TypeCheck" )) {
-							return global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (args2[1]) ));
+							return global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (args2.__get(1)) ));
 						}
 						else {
 							string t5 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(t4, "name", 1224700491, true));
@@ -2711,11 +2711,11 @@ namespace Loreline.Internal.Hscript {
 								tmp2 = "";
 							}
 							else {
-								global::Loreline.Internal.Root.Array<string> _g4 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+								global::Loreline.Internal.Root.Array _g4 = new global::Loreline.Internal.Root.Array(new object[]{});
 								{
 									int _g5 = 0;
 									while (( _g5 < args2.length )) {
-										global::Loreline.Internal.Hscript.TType t6 = ((global::Loreline.Internal.Hscript.TType) (args2[_g5]) );
+										global::Loreline.Internal.Hscript.TType t6 = ((global::Loreline.Internal.Hscript.TType) (args2.__get(_g5)) );
 										 ++ _g5;
 										_g4.push(global::Loreline.Internal.Hscript.Checker.typeStr(t6));
 									}
@@ -2734,18 +2734,18 @@ namespace Loreline.Internal.Hscript {
 					case 12:
 					{
 						object a = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-						global::Loreline.Internal.Root.Array<object> args3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+						global::Loreline.Internal.Root.Array args3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 						string a1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "name", 1224700491, true));
 						string tmp3 = null;
 						if (( args3.length == 0 )) {
 							tmp3 = "";
 						}
 						else {
-							global::Loreline.Internal.Root.Array<string> _g6 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+							global::Loreline.Internal.Root.Array _g6 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g7 = 0;
 								while (( _g7 < args3.length )) {
-									global::Loreline.Internal.Hscript.TType t7 = ((global::Loreline.Internal.Hscript.TType) (args3[_g7]) );
+									global::Loreline.Internal.Hscript.TType t7 = ((global::Loreline.Internal.Hscript.TType) (args3.__get(_g7)) );
 									 ++ _g7;
 									_g6.push(global::Loreline.Internal.Hscript.Checker.typeStr(t7));
 								}
@@ -2761,13 +2761,13 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> args4 = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array args4 = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType ret = ( t as global::Loreline.Internal.Hscript.TType_TFun ).ret;
-						global::Loreline.Internal.Root.Array<string> _g8 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+						global::Loreline.Internal.Root.Array _g8 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g9 = 0;
 							while (( _g9 < args4.length )) {
-								object a2 = args4[_g9];
+								object a2 = args4.__get(_g9);
 								 ++ _g9;
 								_g8.push(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat((( (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a2, "opt", 5545011, true))) ? ("?") : ("") )), (( (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a2, "name", 1224700491, true)) == "" )) ? ("") : (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a2, "name", 1224700491, true)), ":")) ))), global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a2, "t", 116, true)) ))));
 							}
@@ -2780,12 +2780,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
-						global::Loreline.Internal.Root.Array<string> _g10 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+						global::Loreline.Internal.Root.Array fields = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array _g10 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g11 = 0;
 							while (( _g11 < fields.length )) {
-								object f = fields[_g11];
+								object f = fields.__get(_g11);
 								 ++ _g11;
 								_g10.push(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat((( (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "opt", 5545011, true))) ? ("?") : ("") )), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true))), ":"), global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f, "t", 116, true)) ))));
 							}
@@ -2798,7 +2798,7 @@ namespace Loreline.Internal.Hscript {
 					
 					default:
 					{
-						return global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Root.Type.enumConstructor(t), 1, default(global::Loreline.Internal.Lang.Null<int>));
+						return global::Loreline.Internal.Lang.StringExt.substr(global::Loreline.Internal.Root.Type.enumConstructor(t), 1, null);
 					}
 					
 				}
@@ -2833,11 +2833,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						object _g = ( t as global::Loreline.Internal.Hscript.TType_TInst ).c;
 						{
-							global::Loreline.Internal.Root.Array<object> tl = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
+							global::Loreline.Internal.Root.Array tl = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
 							{
 								int _g1 = 0;
 								while (( _g1 < tl.length )) {
-									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (tl[_g1]) );
+									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (tl.__get(_g1)) );
 									 ++ _g1;
 									callb.__hx_invoke1_o(default(double), t2);
 								}
@@ -2854,11 +2854,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						object _g2 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).e;
 						{
-							global::Loreline.Internal.Root.Array<object> tl1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+							global::Loreline.Internal.Root.Array tl1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 							{
 								int _g3 = 0;
 								while (( _g3 < tl1.length )) {
-									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (tl1[_g3]) );
+									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (tl1.__get(_g3)) );
 									 ++ _g3;
 									callb.__hx_invoke1_o(default(double), t3);
 								}
@@ -2875,11 +2875,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						object _g4 = ( t as global::Loreline.Internal.Hscript.TType_TType ).t;
 						{
-							global::Loreline.Internal.Root.Array<object> tl2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
+							global::Loreline.Internal.Root.Array tl2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
 							{
 								int _g5 = 0;
 								while (( _g5 < tl2.length )) {
-									global::Loreline.Internal.Hscript.TType t4 = ((global::Loreline.Internal.Hscript.TType) (tl2[_g5]) );
+									global::Loreline.Internal.Hscript.TType t4 = ((global::Loreline.Internal.Hscript.TType) (tl2.__get(_g5)) );
 									 ++ _g5;
 									callb.__hx_invoke1_o(default(double), t4);
 								}
@@ -2896,11 +2896,11 @@ namespace Loreline.Internal.Hscript {
 					{
 						object _g6 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
 						{
-							global::Loreline.Internal.Root.Array<object> tl3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+							global::Loreline.Internal.Root.Array tl3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 							{
 								int _g7 = 0;
 								while (( _g7 < tl3.length )) {
-									global::Loreline.Internal.Hscript.TType t5 = ((global::Loreline.Internal.Hscript.TType) (tl3[_g7]) );
+									global::Loreline.Internal.Hscript.TType t5 = ((global::Loreline.Internal.Hscript.TType) (tl3.__get(_g7)) );
 									 ++ _g7;
 									callb.__hx_invoke1_o(default(double), t5);
 								}
@@ -2915,13 +2915,13 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType ret = ( t as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 						{
 							{
 								int _g8 = 0;
 								while (( _g8 < args.length )) {
-									object t6 = args[_g8];
+									object t6 = args.__get(_g8);
 									 ++ _g8;
 									callb.__hx_invoke1_o(default(double), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t6, "t", 116, true)) ));
 								}
@@ -2937,11 +2937,11 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> fl = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array fl = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 						{
 							int _g9 = 0;
 							while (( _g9 < fl.length )) {
-								object f = fl[_g9];
+								object f = fl.__get(_g9);
 								 ++ _g9;
 								callb.__hx_invoke1_o(default(double), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f, "t", 116, true)) ));
 							}
@@ -2973,11 +2973,11 @@ namespace Loreline.Internal.Hscript {
 		
 		public global::Loreline.Internal.Hscript.CheckerTypes types;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> locals;
+		public global::Loreline.Internal.Ds.StringMap locals;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> globals;
+		public global::Loreline.Internal.Ds.StringMap globals;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> events;
+		public global::Loreline.Internal.Ds.StringMap events;
 		
 		public global::Loreline.Internal.Hscript.TType currentFunType;
 		
@@ -2995,17 +2995,17 @@ namespace Loreline.Internal.Hscript {
 		
 		public bool allowUntypedMeta;
 		
-		public virtual void setGlobals(object cl, global::Loreline.Internal.Lang.Null<bool> allowPrivate) {
+		public virtual void setGlobals(object cl, object allowPrivate) {
 			unchecked {
-				bool allowPrivate1 = ( ( ! (allowPrivate.hasValue) ) ? (false) : ((allowPrivate).@value) );
+				bool allowPrivate1 = ( (( allowPrivate == default(object) )) ? (false) : (global::Loreline.Internal.Lang.Runtime.toBool(allowPrivate)) );
 				global::Loreline.Internal.Hscript.Checker _gthis = this;
 				while (true) {
 					{
-						object f = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapValueIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(cl, "fields", 9342585, true)) )) ))) ))) );
+						object f = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapValueIterator(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(cl, "fields", 9342585, true)) )) )) ))) );
 						while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(f, "hasNext", 407283053, null))) {
 							object f1 = ((object) (global::Loreline.Internal.Lang.Runtime.callField(f, "next", 1224901875, null)) );
 							if (( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f1, "isPublic", 1063066675, true)) || ((bool) (allowPrivate1) ) )) {
-								global::Loreline.Internal.Hscript.TType tmp = ( (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ))) ).length == 0 )) ? (((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f1, "t", 116, true)) )) : (global::Loreline.Internal.Hscript.TType.TLazy(new global::Loreline.Internal.Hscript.Checker_setGlobals_345__Fun(f1, _gthis))) );
+								global::Loreline.Internal.Hscript.TType tmp = ( (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ).length == 0 )) ? (((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f1, "t", 116, true)) )) : (global::Loreline.Internal.Hscript.TType.TLazy(new global::Loreline.Internal.Hscript.Checker_setGlobals_345__Fun(f1, _gthis))) );
 								this.setGlobal(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f1, "name", 1224700491, true)), tmp);
 							}
 							
@@ -3022,7 +3022,7 @@ namespace Loreline.Internal.Hscript {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown("assert")) );
 					}
 					else if (( _g._hx_index == 9 )) {
-						global::Loreline.Internal.Root.Array<object> _g1 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array _g1 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						object c = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).c;
 						cl = c;
 					}
@@ -3037,41 +3037,41 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public virtual void removeGlobal(string name) {
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.globals) )) ))) ).@remove(name);
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.globals) )) ).@remove(name);
 		}
 		
 		
 		public virtual void setGlobal(string name, global::Loreline.Internal.Hscript.TType type) {
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.globals) )) ))) ).@set(name, type);
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.globals) )) ).@set(((string) (name) ), ((object) (type) ));
 		}
 		
 		
 		public virtual void setEvent(string name, global::Loreline.Internal.Hscript.TType type) {
-			((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.events) )) ))) ).@set(name, type);
+			((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.events) )) ).@set(((string) (name) ), ((object) (type) ));
 		}
 		
 		
-		public virtual global::Loreline.Internal.Ds.StringMap<object> getGlobals() {
+		public virtual global::Loreline.Internal.Ds.StringMap getGlobals() {
 			return this.globals;
 		}
 		
 		
 		public global::Loreline.Internal.Lang.Function onTopDownEnum;
 		
-		public virtual global::Loreline.Internal.Root.Array<object> typeArgs(global::Loreline.Internal.Root.Array<object> args, object pos) {
-			global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+		public virtual global::Loreline.Internal.Root.Array typeArgs(global::Loreline.Internal.Root.Array args, object pos) {
+			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g1 = 0;
 				int _g2 = args.length;
 				while (( _g1 < _g2 )) {
 					int i = _g1++;
-					object a = args[i];
+					object a = args.__get(i);
 					global::Loreline.Internal.Hscript.TType at = ( (( ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(a, "t", 116, true)) ) == null )) ? (this.makeMono()) : (this.makeType(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(a, "t", 116, true)) ), pos)) );
 					object __temp_stmt3 = null;
 					{
 						string __temp_odecl1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a, "name", 1224700491, true));
-						global::Loreline.Internal.Lang.Null<bool> __temp_odecl2 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(a, "opt", 5545011, true));
-						__temp_stmt3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 5545011, 1224700491}, new object[]{at, (__temp_odecl2).toDynamic(), __temp_odecl1}, new int[]{}, new double[]{});
+						object __temp_odecl2 = global::Loreline.Internal.Lang.Runtime.getField(a, "opt", 5545011, true);
+						__temp_stmt3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 5545011, 1224700491}, new object[]{at, __temp_odecl2, __temp_odecl1}, new int[]{}, new double[]{});
 					}
 					
 					_g.push(__temp_stmt3);
@@ -3083,24 +3083,24 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Hscript.TType check(object expr, global::Loreline.Internal.Hscript._Checker.WithType withType, global::Loreline.Internal.Lang.Null<bool> isCompletion) {
+		public virtual global::Loreline.Internal.Hscript.TType check(object expr, global::Loreline.Internal.Hscript._Checker.WithType withType, object isCompletion) {
 			unchecked {
-				global::Loreline.Internal.Lang.Null<bool> isCompletion1 = ( ( ! (isCompletion.hasValue) ) ? (new global::Loreline.Internal.Lang.Null<bool>(false, true)) : (isCompletion) );
+				object isCompletion1 = ( (( isCompletion == default(object) )) ? (((object) (false) )) : (isCompletion) );
 				if (( withType == null )) {
 					withType = global::Loreline.Internal.Hscript._Checker.WithType.NoValue;
 				}
 				
-				this.locals = new global::Loreline.Internal.Ds.StringMap<object>();
+				this.locals = new global::Loreline.Internal.Ds.StringMap();
 				if (( this.types.t_string == null )) {
 					this.types.t_string = this.types.getType("String", null);
 				}
 				
 				this.allowDefine = this.allowGlobalsDefine;
-				this.isCompletion = (isCompletion1).@value;
+				this.isCompletion = global::Loreline.Internal.Lang.Runtime.toBool(isCompletion1);
 				global::Loreline.Internal.Hscript.ExprDef _g = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(expr, "e", 101, true)) );
 				bool tmp = default(bool);
 				if (( _g._hx_index == 14 )) {
-					global::Loreline.Internal.Root.Array<object> _g1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+					global::Loreline.Internal.Root.Array _g1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 					object _g2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
 					string _g3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 					global::Loreline.Internal.Hscript.CType _g4 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
@@ -3111,26 +3111,26 @@ namespace Loreline.Internal.Hscript {
 				}
 				
 				if (tmp) {
-					expr = this.mk(global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{expr})), expr);
+					expr = this.mk(global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{expr})), expr);
 				}
 				
 				global::Loreline.Internal.Hscript.Checker _gthis = this;
 				{
 					global::Loreline.Internal.Hscript.ExprDef _g5 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(expr, "e", 101, true)) );
 					if (( _g5._hx_index == 4 )) {
-						global::Loreline.Internal.Root.Array<object> el = ( _g5 as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
-						global::Loreline.Internal.Root.Array<object> delayed = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array el = ( _g5 as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+						global::Loreline.Internal.Root.Array delayed = new global::Loreline.Internal.Root.Array(new object[]{});
 						global::Loreline.Internal.Hscript.TType last = global::Loreline.Internal.Hscript.TType.TVoid;
 						{
 							int _g6 = 0;
 							while (( _g6 < el.length )) {
-								object[] e = new object[]{el[_g6]};
+								object[] e = new object[]{el.__get(_g6)};
 								 ++ _g6;
 								while (true) {
-									global::Loreline.Internal.Hscript.ExprDef _g7 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e[0], "e", 101, true)) );
+									global::Loreline.Internal.Hscript.ExprDef _g7 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(((object) (e[0]) ), "e", 101, true)) );
 									if (( _g7._hx_index == 25 )) {
 										string _g8 = ( _g7 as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
-										global::Loreline.Internal.Root.Array<object> _g9 = ( _g7 as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+										global::Loreline.Internal.Root.Array _g9 = ( _g7 as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 										{
 											object e2 = ( _g7 as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
 											e[0] = e2;
@@ -3144,36 +3144,36 @@ namespace Loreline.Internal.Hscript {
 								}
 								
 								{
-									global::Loreline.Internal.Hscript.ExprDef _g10 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e[0], "e", 101, true)) );
+									global::Loreline.Internal.Hscript.ExprDef _g10 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(((object) (e[0]) ), "e", 101, true)) );
 									if (( _g10._hx_index == 14 )) {
 										object _g11 = ( _g10 as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
 										{
-											global::Loreline.Internal.Root.Array<object> args = ( _g10 as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+											global::Loreline.Internal.Root.Array args = ( _g10 as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 											string name = ( _g10 as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 											global::Loreline.Internal.Hscript.CType ret = ( _g10 as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
 											if (( name != null )) {
-												global::Loreline.Internal.Hscript.TType tret = ( (( ret == null )) ? (this.makeMono()) : (this.makeType(ret, e[0])) );
-												global::Loreline.Internal.Hscript.TType ft = global::Loreline.Internal.Hscript.TType.TFun(this.typeArgs(args, e[0]), tret);
-												((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(name, ft);
+												global::Loreline.Internal.Hscript.TType tret = ( (( ret == null )) ? (this.makeMono()) : (this.makeType(ret, ((object) (e[0]) ))) );
+												global::Loreline.Internal.Hscript.TType ft = global::Loreline.Internal.Hscript.TType.TFun(this.typeArgs(args, ((object) (e[0]) )), tret);
+												((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (name) ), ((object) (ft) ));
 												delayed.push(new global::Loreline.Internal.Hscript.Checker_check_408__Fun(ft, e, _gthis));
 											}
 											else {
 												{
 													int _g12 = 0;
 													while (( _g12 < delayed.length )) {
-														global::Loreline.Internal.Lang.Function f = ((global::Loreline.Internal.Lang.Function) (delayed[_g12]) );
+														global::Loreline.Internal.Lang.Function f = ((global::Loreline.Internal.Lang.Function) (delayed.__get(_g12)) );
 														 ++ _g12;
 														global::Loreline.Internal.Hscript.TType __temp_expr2 = ((global::Loreline.Internal.Hscript.TType) (f.__hx_invoke0_o()) );
 													}
 													
 												}
 												
-												delayed = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-												if (global::Loreline.Internal.Lang.Runtime.refEq(el[( el.length - 1 )], e[0])) {
-													last = this.typeExpr(e[0], withType);
+												delayed = new global::Loreline.Internal.Root.Array(new object[]{});
+												if (global::Loreline.Internal.Lang.Runtime.refEq(el.__get(( el.length - 1 )), ((object) (e[0]) ))) {
+													last = this.typeExpr(((object) (e[0]) ), withType);
 												}
 												else {
-													this.typeExpr(e[0], global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
+													this.typeExpr(((object) (e[0]) ), global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
 												}
 												
 											}
@@ -3185,19 +3185,19 @@ namespace Loreline.Internal.Hscript {
 										{
 											int _g13 = 0;
 											while (( _g13 < delayed.length )) {
-												global::Loreline.Internal.Lang.Function f1 = ((global::Loreline.Internal.Lang.Function) (delayed[_g13]) );
+												global::Loreline.Internal.Lang.Function f1 = ((global::Loreline.Internal.Lang.Function) (delayed.__get(_g13)) );
 												 ++ _g13;
 												global::Loreline.Internal.Hscript.TType __temp_expr1 = ((global::Loreline.Internal.Hscript.TType) (f1.__hx_invoke0_o()) );
 											}
 											
 										}
 										
-										delayed = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-										if (global::Loreline.Internal.Lang.Runtime.refEq(el[( el.length - 1 )], e[0])) {
-											last = this.typeExpr(e[0], withType);
+										delayed = new global::Loreline.Internal.Root.Array(new object[]{});
+										if (global::Loreline.Internal.Lang.Runtime.refEq(el.__get(( el.length - 1 )), ((object) (e[0]) ))) {
+											last = this.typeExpr(((object) (e[0]) ), withType);
 										}
 										else {
-											this.typeExpr(e[0], global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
+											this.typeExpr(((object) (e[0]) ), global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
 										}
 										
 									}
@@ -3211,7 +3211,7 @@ namespace Loreline.Internal.Hscript {
 						{
 							int _g14 = 0;
 							while (( _g14 < delayed.length )) {
-								global::Loreline.Internal.Lang.Function f2 = ((global::Loreline.Internal.Lang.Function) (delayed[_g14]) );
+								global::Loreline.Internal.Lang.Function f2 = ((global::Loreline.Internal.Lang.Function) (delayed.__get(_g14)) );
 								 ++ _g14;
 								last = ((global::Loreline.Internal.Hscript.TType) (f2.__hx_invoke0_o()) );
 							}
@@ -3243,13 +3243,13 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Ds.StringMap<object> saveLocals() {
-			global::Loreline.Internal.Ds.StringMap<object> _g = new global::Loreline.Internal.Ds.StringMap<object>();
+		public virtual global::Loreline.Internal.Ds.StringMap saveLocals() {
+			global::Loreline.Internal.Ds.StringMap _g = new global::Loreline.Internal.Ds.StringMap();
 			{
-				object k = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ))) );
+				object k = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ))) );
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(k, "hasNext", 407283053, null))) {
 					string k1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(k, "next", 1224901875, null));
-					_g.@set(k1, ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@get(k1)).@value) ));
+					_g.@set(((string) (k1) ), ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@get(((string) (k1) ))) ));
 				}
 				
 			}
@@ -3263,20 +3263,20 @@ namespace Loreline.Internal.Hscript {
 				switch (t._hx_index) {
 					case 0:
 					{
-						global::Loreline.Internal.Root.Array<string> path = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).path;
-						global::Loreline.Internal.Root.Array<object> @params = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).@params;
+						global::Loreline.Internal.Root.Array path = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).path;
+						global::Loreline.Internal.Root.Array @params = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).@params;
 						global::Loreline.Internal.Hscript.CheckerTypes ct = this.types;
 						string ct1 = path.@join(".");
-						global::Loreline.Internal.Root.Array<object> ct2 = null;
+						global::Loreline.Internal.Root.Array ct2 = null;
 						if (( @params == null )) {
-							ct2 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							ct2 = new global::Loreline.Internal.Root.Array(new object[]{});
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g1 = 0;
 								while (( _g1 < @params.length )) {
-									global::Loreline.Internal.Hscript.CType p = ((global::Loreline.Internal.Hscript.CType) (@params[_g1]) );
+									global::Loreline.Internal.Hscript.CType p = ((global::Loreline.Internal.Hscript.CType) (@params.__get(_g1)) );
 									 ++ _g1;
 									_g.push(this.makeType(p, e));
 								}
@@ -3306,14 +3306,14 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1:
 					{
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).args;
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).args;
 						global::Loreline.Internal.Hscript.CType ret = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).ret;
 						int i = 0;
-						global::Loreline.Internal.Root.Array<object> _g2 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g2 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g3 = 0;
 							while (( _g3 < args.length )) {
-								global::Loreline.Internal.Hscript.CType a = ((global::Loreline.Internal.Hscript.CType) (args[_g3]) );
+								global::Loreline.Internal.Hscript.CType a = ((global::Loreline.Internal.Hscript.CType) (args.__get(_g3)) );
 								 ++ _g3;
 								object __temp_stmt4 = null;
 								{
@@ -3333,12 +3333,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 2:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
-						global::Loreline.Internal.Root.Array<object> _g4 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array fields = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
+						global::Loreline.Internal.Root.Array _g4 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g5 = 0;
 							while (( _g5 < fields.length )) {
-								object f = fields[_g5];
+								object f = fields.__get(_g5);
 								 ++ _g5;
 								string f1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true));
 								object __temp_stmt5 = null;
@@ -3416,11 +3416,11 @@ namespace Loreline.Internal.Hscript {
 					case 9:
 					{
 						object _g = ( t as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> tl = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array tl = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						{
 							int _g1 = 0;
 							while (( _g1 < tl.length )) {
-								global::Loreline.Internal.Hscript.TType t1 = ((global::Loreline.Internal.Hscript.TType) (tl[_g1]) );
+								global::Loreline.Internal.Hscript.TType t1 = ((global::Loreline.Internal.Hscript.TType) (tl.__get(_g1)) );
 								 ++ _g1;
 								if (this.linkLoop(a, t1)) {
 									return true;
@@ -3437,11 +3437,11 @@ namespace Loreline.Internal.Hscript {
 					case 10:
 					{
 						object _g2 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-						global::Loreline.Internal.Root.Array<object> tl1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+						global::Loreline.Internal.Root.Array tl1 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 						{
 							int _g3 = 0;
 							while (( _g3 < tl1.length )) {
-								global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (tl1[_g3]) );
+								global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (tl1.__get(_g3)) );
 								 ++ _g3;
 								if (this.linkLoop(a, t2)) {
 									return true;
@@ -3458,11 +3458,11 @@ namespace Loreline.Internal.Hscript {
 					case 11:
 					{
 						object _g4 = ( t as global::Loreline.Internal.Hscript.TType_TType ).t;
-						global::Loreline.Internal.Root.Array<object> tl2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
+						global::Loreline.Internal.Root.Array tl2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
 						{
 							int _g5 = 0;
 							while (( _g5 < tl2.length )) {
-								global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (tl2[_g5]) );
+								global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (tl2.__get(_g5)) );
 								 ++ _g5;
 								if (this.linkLoop(a, t3)) {
 									return true;
@@ -3479,11 +3479,11 @@ namespace Loreline.Internal.Hscript {
 					case 12:
 					{
 						object _g6 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-						global::Loreline.Internal.Root.Array<object> tl3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+						global::Loreline.Internal.Root.Array tl3 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 						{
 							int _g7 = 0;
 							while (( _g7 < tl3.length )) {
-								global::Loreline.Internal.Hscript.TType t4 = ((global::Loreline.Internal.Hscript.TType) (tl3[_g7]) );
+								global::Loreline.Internal.Hscript.TType t4 = ((global::Loreline.Internal.Hscript.TType) (tl3.__get(_g7)) );
 								 ++ _g7;
 								if (this.linkLoop(a, t4)) {
 									return true;
@@ -3499,12 +3499,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType ret = ( t as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 						{
 							int _g8 = 0;
 							while (( _g8 < args.length )) {
-								object arg = args[_g8];
+								object arg = args.__get(_g8);
 								 ++ _g8;
 								if (this.linkLoop(a, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(arg, "t", 116, true)) ))) {
 									return true;
@@ -3520,11 +3520,11 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> fl = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array fl = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 						{
 							int _g9 = 0;
 							while (( _g9 < fl.length )) {
-								object f = fl[_g9];
+								object f = fl.__get(_g9);
 								 ++ _g9;
 								if (this.linkLoop(a, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f, "t", 116, true)) ))) {
 									return true;
@@ -3617,8 +3617,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t22, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t22, "params", 1836776262, true)) ))) ), pl2));
+								global::Loreline.Internal.Root.Array pl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t22, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t22, "params", 1836776262, true)) ), pl2));
 							}
 							
 							
@@ -3636,7 +3636,7 @@ namespace Loreline.Internal.Hscript {
 					case 9:
 					{
 						object _g1 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> _g2 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array _g2 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -3664,8 +3664,8 @@ namespace Loreline.Internal.Hscript {
 							case 9:
 							{
 								object cl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-								global::Loreline.Internal.Root.Array<object> pl21 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).args;
-								global::Loreline.Internal.Root.Array<object> pl1 = _g2;
+								global::Loreline.Internal.Root.Array pl21 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+								global::Loreline.Internal.Root.Array pl1 = _g2;
 								object cl1 = _g1;
 								if (global::Loreline.Internal.Lang.Runtime.refEq(cl1, cl2)) {
 									{
@@ -3673,7 +3673,7 @@ namespace Loreline.Internal.Hscript {
 										int _g4 = pl1.length;
 										while (( _g3 < _g4 )) {
 											int i = _g3++;
-											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl1[i]) ), ((global::Loreline.Internal.Hscript.TType) (pl21[i]) ))) ) {
+											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl1.__get(i)) ), ((global::Loreline.Internal.Hscript.TType) (pl21.__get(i)) ))) ) {
 												return false;
 											}
 											
@@ -3691,8 +3691,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t24, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t24, "params", 1836776262, true)) ))) ), pl22));
+								global::Loreline.Internal.Root.Array pl22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t24, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t24, "params", 1836776262, true)) ), pl22));
 							}
 							
 							
@@ -3710,7 +3710,7 @@ namespace Loreline.Internal.Hscript {
 					case 10:
 					{
 						object _g5 = ( t1 as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-						global::Loreline.Internal.Root.Array<object> _g6 = ( t1 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+						global::Loreline.Internal.Root.Array _g6 = ( t1 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -3738,8 +3738,8 @@ namespace Loreline.Internal.Hscript {
 							case 10:
 							{
 								object e2 = ( t2 as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-								global::Loreline.Internal.Root.Array<object> pl23 = ( t2 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
-								global::Loreline.Internal.Root.Array<object> pl11 = _g6;
+								global::Loreline.Internal.Root.Array pl23 = ( t2 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+								global::Loreline.Internal.Root.Array pl11 = _g6;
 								object e1 = _g5;
 								if (global::Loreline.Internal.Lang.Runtime.refEq(e1, e2)) {
 									{
@@ -3747,7 +3747,7 @@ namespace Loreline.Internal.Hscript {
 										int _g8 = pl11.length;
 										while (( _g7 < _g8 )) {
 											int i1 = _g7++;
-											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl11[i1]) ), ((global::Loreline.Internal.Hscript.TType) (pl23[i1]) ))) ) {
+											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl11.__get(i1)) ), ((global::Loreline.Internal.Hscript.TType) (pl23.__get(i1)) ))) ) {
 												return false;
 											}
 											
@@ -3765,8 +3765,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t26 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t26, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t26, "params", 1836776262, true)) ))) ), pl24));
+								global::Loreline.Internal.Root.Array pl24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t26, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t26, "params", 1836776262, true)) ), pl24));
 							}
 							
 							
@@ -3784,7 +3784,7 @@ namespace Loreline.Internal.Hscript {
 					case 11:
 					{
 						object _g9 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).t;
-						global::Loreline.Internal.Root.Array<object> _g10 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).args;
+						global::Loreline.Internal.Root.Array _g10 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -3805,17 +3805,17 @@ namespace Loreline.Internal.Hscript {
 							case 8:
 							{
 								global::Loreline.Internal.Hscript.TType _g11 = ( t2 as global::Loreline.Internal.Hscript.TType_TNull ).t;
-								global::Loreline.Internal.Root.Array<object> pl12 = _g10;
+								global::Loreline.Internal.Root.Array pl12 = _g10;
 								object t13 = _g9;
-								return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t13, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t13, "params", 1836776262, true)) ))) ), pl12), t2);
+								return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t13, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t13, "params", 1836776262, true)) ), pl12), t2);
 							}
 							
 							
 							case 11:
 							{
 								object t27 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl25 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								global::Loreline.Internal.Root.Array<object> pl13 = _g10;
+								global::Loreline.Internal.Root.Array pl25 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								global::Loreline.Internal.Root.Array pl13 = _g10;
 								object t14 = _g9;
 								if (global::Loreline.Internal.Lang.Runtime.refEq(t14, t27)) {
 									{
@@ -3823,7 +3823,7 @@ namespace Loreline.Internal.Hscript {
 										int _g13 = pl13.length;
 										while (( _g12 < _g13 )) {
 											int i2 = _g12++;
-											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl13[i2]) ), ((global::Loreline.Internal.Hscript.TType) (pl25[i2]) ))) ) {
+											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl13.__get(i2)) ), ((global::Loreline.Internal.Hscript.TType) (pl25.__get(i2)) ))) ) {
 												return false;
 											}
 											
@@ -3834,9 +3834,9 @@ namespace Loreline.Internal.Hscript {
 									return true;
 								}
 								else {
-									global::Loreline.Internal.Root.Array<object> pl14 = _g10;
+									global::Loreline.Internal.Root.Array pl14 = _g10;
 									object t15 = _g9;
-									return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t15, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t15, "params", 1836776262, true)) ))) ), pl14), t2);
+									return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t15, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t15, "params", 1836776262, true)) ), pl14), t2);
 								}
 								
 							}
@@ -3844,9 +3844,9 @@ namespace Loreline.Internal.Hscript {
 							
 							default:
 							{
-								global::Loreline.Internal.Root.Array<object> pl15 = _g10;
+								global::Loreline.Internal.Root.Array pl15 = _g10;
 								object t16 = _g9;
-								return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t16, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t16, "params", 1836776262, true)) ))) ), pl15), t2);
+								return this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t16, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t16, "params", 1836776262, true)) ), pl15), t2);
 							}
 							
 						}
@@ -3857,7 +3857,7 @@ namespace Loreline.Internal.Hscript {
 					case 12:
 					{
 						object _g14 = ( t1 as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-						global::Loreline.Internal.Root.Array<object> _g15 = ( t1 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+						global::Loreline.Internal.Root.Array _g15 = ( t1 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -3885,16 +3885,16 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t29 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl26 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t29, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t29, "params", 1836776262, true)) ))) ), pl26));
+								global::Loreline.Internal.Root.Array pl26 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t29, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t29, "params", 1836776262, true)) ), pl26));
 							}
 							
 							
 							case 12:
 							{
 								object a2 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-								global::Loreline.Internal.Root.Array<object> pl27 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
-								global::Loreline.Internal.Root.Array<object> pl16 = _g15;
+								global::Loreline.Internal.Root.Array pl27 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+								global::Loreline.Internal.Root.Array pl16 = _g15;
 								object a1 = _g14;
 								if (global::Loreline.Internal.Lang.Runtime.refEq(a1, a2)) {
 									{
@@ -3902,7 +3902,7 @@ namespace Loreline.Internal.Hscript {
 										int _g17 = pl16.length;
 										while (( _g16 < _g17 )) {
 											int i3 = _g16++;
-											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl16[i3]) ), ((global::Loreline.Internal.Hscript.TType) (pl27[i3]) ))) ) {
+											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl16.__get(i3)) ), ((global::Loreline.Internal.Hscript.TType) (pl27.__get(i3)) ))) ) {
 												return false;
 											}
 											
@@ -3930,7 +3930,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> _g18 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array _g18 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType _g19 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 						switch (t2._hx_index) {
 							case 0:
@@ -3959,24 +3959,24 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t211 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl28 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t211, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t211, "params", 1836776262, true)) ))) ), pl28));
+								global::Loreline.Internal.Root.Array pl28 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t211, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t211, "params", 1836776262, true)) ), pl28));
 							}
 							
 							
 							case 13:
 							{
-								global::Loreline.Internal.Root.Array<object> args2 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+								global::Loreline.Internal.Root.Array args2 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 								global::Loreline.Internal.Hscript.TType r21 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 								global::Loreline.Internal.Hscript.TType r11 = _g19;
-								global::Loreline.Internal.Root.Array<object> args1 = _g18;
+								global::Loreline.Internal.Root.Array args1 = _g18;
 								if (( args1.length == args2.length )) {
 									{
 										int _g20 = 0;
 										int _g21 = args1.length;
 										while (( _g20 < _g21 )) {
 											int i4 = _g20++;
-											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args1[i4], "t", 116, true)) ), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args2[i4], "t", 116, true)) ))) ) {
+											if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args1.__get(i4), "t", 116, true)) ), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args2.__get(i4), "t", 116, true)) ))) ) {
 												return false;
 											}
 											
@@ -4004,7 +4004,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> _g22 = ( t1 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array _g22 = ( t1 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -4032,23 +4032,23 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t213 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl29 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t213, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t213, "params", 1836776262, true)) ))) ), pl29));
+								global::Loreline.Internal.Root.Array pl29 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t213, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t213, "params", 1836776262, true)) ), pl29));
 							}
 							
 							
 							case 14:
 							{
-								global::Loreline.Internal.Root.Array<object> a21 = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
-								global::Loreline.Internal.Root.Array<object> a11 = _g22;
+								global::Loreline.Internal.Root.Array a21 = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+								global::Loreline.Internal.Root.Array a11 = _g22;
 								if (( a11.length == a21.length )) {
-									global::Loreline.Internal.Ds.StringMap<object> m = new global::Loreline.Internal.Ds.StringMap<object>();
+									global::Loreline.Internal.Ds.StringMap m = new global::Loreline.Internal.Ds.StringMap();
 									{
 										int _g23 = 0;
 										while (( _g23 < a21.length )) {
-											object f = a21[_g23];
+											object f = a21.__get(_g23);
 											 ++ _g23;
-											m.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), f);
+											m.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), ((object) (f) ));
 										}
 										
 									}
@@ -4056,9 +4056,9 @@ namespace Loreline.Internal.Hscript {
 									{
 										int _g24 = 0;
 										while (( _g24 < a11.length )) {
-											object f1 = a11[_g24];
+											object f1 = a11.__get(_g24);
 											 ++ _g24;
-											object f2 = (m.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f1, "name", 1224700491, true)))).@value;
+											object f2 = m.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f1, "name", 1224700491, true)));
 											if (( f2 == null )) {
 												return false;
 											}
@@ -4118,8 +4118,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t215 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl210 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t215, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t215, "params", 1836776262, true)) ))) ), pl210));
+								global::Loreline.Internal.Root.Array pl210 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.typeEq(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t215, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t215, "params", 1836776262, true)) ), pl210));
 							}
 							
 							
@@ -4204,8 +4204,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t22, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t22, "params", 1836776262, true)) ))) ), pl2));
+								global::Loreline.Internal.Root.Array pl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t22, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t22, "params", 1836776262, true)) ), pl2));
 							}
 							
 							
@@ -4255,8 +4255,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl21 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t24, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t24, "params", 1836776262, true)) ))) ), pl21));
+								global::Loreline.Internal.Root.Array pl21 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t24, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t24, "params", 1836776262, true)) ), pl21));
 							}
 							
 							
@@ -4308,8 +4308,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t25 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t25, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t25, "params", 1836776262, true)) ))) ), pl22));
+								global::Loreline.Internal.Root.Array pl22 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t25, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t25, "params", 1836776262, true)) ), pl22));
 							}
 							
 							
@@ -4327,7 +4327,7 @@ namespace Loreline.Internal.Hscript {
 					case 9:
 					{
 						object _g2 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> _g3 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array _g3 = ( t1 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -4361,27 +4361,27 @@ namespace Loreline.Internal.Hscript {
 							case 9:
 							{
 								object cl2 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-								global::Loreline.Internal.Root.Array<object> pl23 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).args;
-								global::Loreline.Internal.Root.Array<object> pl1 = _g3;
+								global::Loreline.Internal.Root.Array pl23 = ( t2 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+								global::Loreline.Internal.Root.Array pl1 = _g3;
 								object cl1 = _g2;
 								while (( ! (global::Loreline.Internal.Lang.Runtime.refEq(cl1, cl2)) )) {
-									if (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "interfaces", 1695633562, true)) ))) ) != null )) {
+									if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "interfaces", 1695633562, true)) ) != null )) {
 										int _g4 = 0;
-										global::Loreline.Internal.Root.Array<object> _g5 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "interfaces", 1695633562, true)) ))) );
+										global::Loreline.Internal.Root.Array _g5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "interfaces", 1695633562, true)) );
 										while (( _g4 < _g5.length )) {
-											global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g5[_g4]) );
+											global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g5.__get(_g4)) );
 											 ++ _g4;
 											if (( i._hx_index == 9 )) {
 												object cli = ( i as global::Loreline.Internal.Hscript.TType_TInst ).c;
-												global::Loreline.Internal.Root.Array<object> args = ( i as global::Loreline.Internal.Hscript.TType_TInst ).args;
+												global::Loreline.Internal.Root.Array args = ( i as global::Loreline.Internal.Hscript.TType_TInst ).args;
 												{
-													global::Loreline.Internal.Root.Array<object> _g6 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+													global::Loreline.Internal.Root.Array _g6 = new global::Loreline.Internal.Root.Array(new object[]{});
 													{
 														int _g7 = 0;
 														while (( _g7 < args.length )) {
-															global::Loreline.Internal.Hscript.TType a = ((global::Loreline.Internal.Hscript.TType) (args[_g7]) );
+															global::Loreline.Internal.Hscript.TType a = ((global::Loreline.Internal.Hscript.TType) (args.__get(_g7)) );
 															 ++ _g7;
-															_g6.push(this.apply(a, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ))) ), pl1));
+															_g6.push(this.apply(a, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ), pl1));
 														}
 														
 													}
@@ -4409,15 +4409,15 @@ namespace Loreline.Internal.Hscript {
 										}
 										else if (( _g8._hx_index == 9 )) {
 											object c = ( _g8 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-											global::Loreline.Internal.Root.Array<object> args1 = ( _g8 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+											global::Loreline.Internal.Root.Array args1 = ( _g8 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 											{
-												global::Loreline.Internal.Root.Array<object> _g9 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+												global::Loreline.Internal.Root.Array _g9 = new global::Loreline.Internal.Root.Array(new object[]{});
 												{
 													int _g10 = 0;
 													while (( _g10 < args1.length )) {
-														global::Loreline.Internal.Hscript.TType a1 = ((global::Loreline.Internal.Hscript.TType) (args1[_g10]) );
+														global::Loreline.Internal.Hscript.TType a1 = ((global::Loreline.Internal.Hscript.TType) (args1.__get(_g10)) );
 														 ++ _g10;
-														_g9.push(this.apply(a1, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ))) ), pl1));
+														_g9.push(this.apply(a1, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl1, "params", 1836776262, true)) ), pl1));
 													}
 													
 												}
@@ -4440,7 +4440,7 @@ namespace Loreline.Internal.Hscript {
 									int _g12 = pl1.length;
 									while (( _g11 < _g12 )) {
 										int i2 = _g11++;
-										if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl1[i2]) ), ((global::Loreline.Internal.Hscript.TType) (pl23[i2]) ))) ) {
+										if ( ! (this.typeEq(((global::Loreline.Internal.Hscript.TType) (pl1.__get(i2)) ), ((global::Loreline.Internal.Hscript.TType) (pl23.__get(i2)) ))) ) {
 											return false;
 										}
 										
@@ -4455,26 +4455,26 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t27 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t27, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t27, "params", 1836776262, true)) ))) ), pl24));
+								global::Loreline.Internal.Root.Array pl24 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t27, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t27, "params", 1836776262, true)) ), pl24));
 							}
 							
 							
 							case 14:
 							{
-								global::Loreline.Internal.Root.Array<object> fl = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
-								global::Loreline.Internal.Root.Array<object> pl11 = _g3;
+								global::Loreline.Internal.Root.Array fl = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+								global::Loreline.Internal.Root.Array pl11 = _g3;
 								object cl11 = _g2;
 								{
 									int _g13 = 0;
 									int _g14 = fl.length;
 									while (( _g13 < _g14 )) {
 										int i3 = _g13++;
-										object f2 = fl[i3];
+										object f2 = fl.__get(i3);
 										object f1 = null;
 										object cl = cl11;
 										while (true) {
-											f1 = (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(cl, "fields", 9342585, true)) )) ))) ).@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f2, "name", 1224700491, true)))).toDynamic();
+											f1 = ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(cl, "fields", 9342585, true)) )) )) ).@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f2, "name", 1224700491, true)));
 											if (( f1 != null )) {
 												break;
 											}
@@ -4488,7 +4488,7 @@ namespace Loreline.Internal.Hscript {
 												throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown("assert")) );
 											}
 											else if (( _g15._hx_index == 9 )) {
-												global::Loreline.Internal.Root.Array<object> _g16 = ( _g15 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+												global::Loreline.Internal.Root.Array _g16 = ( _g15 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 												object c1 = ( _g15 as global::Loreline.Internal.Hscript.TType_TInst ).c;
 												cl = c1;
 											}
@@ -4498,7 +4498,7 @@ namespace Loreline.Internal.Hscript {
 											
 										}
 										
-										if ( ! (this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f1, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl11, "params", 1836776262, true)) ))) ), pl11), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f2, "t", 116, true)) ))) ) {
+										if ( ! (this.typeEq(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f1, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cl11, "params", 1836776262, true)) ), pl11), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f2, "t", 116, true)) ))) ) {
 											return false;
 										}
 										
@@ -4524,7 +4524,7 @@ namespace Loreline.Internal.Hscript {
 					case 11:
 					{
 						object _g17 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).t;
-						global::Loreline.Internal.Root.Array<object> _g18 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).args;
+						global::Loreline.Internal.Root.Array _g18 = ( t1 as global::Loreline.Internal.Hscript.TType_TType ).args;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -4544,36 +4544,36 @@ namespace Loreline.Internal.Hscript {
 							
 							case 5:
 							{
-								global::Loreline.Internal.Root.Array<object> pl12 = _g18;
+								global::Loreline.Internal.Root.Array pl12 = _g18;
 								object t14 = _g17;
-								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t14, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t14, "params", 1836776262, true)) ))) ), pl12), t2);
+								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t14, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t14, "params", 1836776262, true)) ), pl12), t2);
 							}
 							
 							
 							case 8:
 							{
 								global::Loreline.Internal.Hscript.TType _g19 = ( t2 as global::Loreline.Internal.Hscript.TType_TNull ).t;
-								global::Loreline.Internal.Root.Array<object> pl13 = _g18;
+								global::Loreline.Internal.Root.Array pl13 = _g18;
 								object t15 = _g17;
-								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t15, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t15, "params", 1836776262, true)) ))) ), pl13), t2);
+								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t15, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t15, "params", 1836776262, true)) ), pl13), t2);
 							}
 							
 							
 							case 11:
 							{
 								object _g20 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> _g21 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								global::Loreline.Internal.Root.Array<object> pl14 = _g18;
+								global::Loreline.Internal.Root.Array _g21 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								global::Loreline.Internal.Root.Array pl14 = _g18;
 								object t16 = _g17;
-								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t16, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t16, "params", 1836776262, true)) ))) ), pl14), t2);
+								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t16, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t16, "params", 1836776262, true)) ), pl14), t2);
 							}
 							
 							
 							default:
 							{
-								global::Loreline.Internal.Root.Array<object> pl15 = _g18;
+								global::Loreline.Internal.Root.Array pl15 = _g18;
 								object t17 = _g17;
-								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t17, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t17, "params", 1836776262, true)) ))) ), pl15), t2);
+								return this.tryUnify(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t17, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t17, "params", 1836776262, true)) ), pl15), t2);
 							}
 							
 						}
@@ -4583,7 +4583,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> _g22 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array _g22 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType _g23 = ( t1 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 						switch (t2._hx_index) {
 							case 0:
@@ -4618,18 +4618,18 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t29 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl25 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t29, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t29, "params", 1836776262, true)) ))) ), pl25));
+								global::Loreline.Internal.Root.Array pl25 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t29, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t29, "params", 1836776262, true)) ), pl25));
 							}
 							
 							
 							case 12:
 							{
 								object _g24 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-								global::Loreline.Internal.Root.Array<object> _g25 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+								global::Loreline.Internal.Root.Array _g25 = ( t2 as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 								{
-									global::Loreline.Internal.Root.Array<object> _g26 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g24, "meta", 1213811397, true)) ))) );
-									global::Loreline.Internal.Root.Array<object> _g27 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g24, "params", 1836776262, true)) ))) );
+									global::Loreline.Internal.Root.Array _g26 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g24, "meta", 1213811397, true)) );
+									global::Loreline.Internal.Root.Array _g27 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g24, "params", 1836776262, true)) );
 									global::Loreline.Internal.Hscript.TType _g28 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(_g24, "t", 116, true)) );
 									if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(_g24, "name", 1224700491, true)) == "global::Loreline.Internal.Function" )) {
 										return true;
@@ -4643,18 +4643,18 @@ namespace Loreline.Internal.Hscript {
 							
 							case 13:
 							{
-								global::Loreline.Internal.Root.Array<object> args2 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+								global::Loreline.Internal.Root.Array args2 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 								global::Loreline.Internal.Hscript.TType r21 = ( t2 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 								global::Loreline.Internal.Hscript.TType r11 = _g23;
-								global::Loreline.Internal.Root.Array<object> args11 = _g22;
+								global::Loreline.Internal.Root.Array args11 = _g22;
 								if (( args11.length == args2.length )) {
 									{
 										int _g29 = 0;
 										int _g30 = args11.length;
 										while (( _g29 < _g30 )) {
 											int i4 = _g29++;
-											object a11 = args11[i4];
-											object a2 = args2[i4];
+											object a11 = args11.__get(i4);
+											object a2 = args2.__get(i4);
 											if (( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a2, "opt", 5545011, true)) && ((bool) (( ! (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a11, "opt", 5545011, true))) )) ) )) {
 												return false;
 											}
@@ -4687,7 +4687,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> _g31 = ( t1 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array _g31 = ( t1 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 						switch (t2._hx_index) {
 							case 0:
 							{
@@ -4721,26 +4721,26 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t211 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl26 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t211, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t211, "params", 1836776262, true)) ))) ), pl26));
+								global::Loreline.Internal.Root.Array pl26 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t211, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t211, "params", 1836776262, true)) ), pl26));
 							}
 							
 							
 							case 14:
 							{
-								global::Loreline.Internal.Root.Array<object> a21 = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
-								global::Loreline.Internal.Root.Array<object> a12 = _g31;
+								global::Loreline.Internal.Root.Array a21 = ( t2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+								global::Loreline.Internal.Root.Array a12 = _g31;
 								if (( a21.length == 0 )) {
 									return true;
 								}
 								
-								global::Loreline.Internal.Ds.StringMap<object> m = new global::Loreline.Internal.Ds.StringMap<object>();
+								global::Loreline.Internal.Ds.StringMap m = new global::Loreline.Internal.Ds.StringMap();
 								{
 									int _g32 = 0;
 									while (( _g32 < a12.length )) {
-										object f = a12[_g32];
+										object f = a12.__get(_g32);
 										 ++ _g32;
-										m.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), f);
+										m.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), ((object) (f) ));
 									}
 									
 								}
@@ -4748,9 +4748,9 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g33 = 0;
 									while (( _g33 < a21.length )) {
-										object f21 = a21[_g33];
+										object f21 = a21.__get(_g33);
 										 ++ _g33;
-										object f11 = (m.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f21, "name", 1224700491, true)))).@value;
+										object f11 = m.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f21, "name", 1224700491, true)));
 										if (( f11 == null )) {
 											if (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f21, "opt", 5545011, true))) {
 												continue;
@@ -4817,8 +4817,8 @@ namespace Loreline.Internal.Hscript {
 							case 11:
 							{
 								object t213 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).t;
-								global::Loreline.Internal.Root.Array<object> pl27 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
-								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t213, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t213, "params", 1836776262, true)) ))) ), pl27));
+								global::Loreline.Internal.Root.Array pl27 = ( t2 as global::Loreline.Internal.Hscript.TType_TType ).args;
+								return this.tryUnify(t1, this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t213, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t213, "params", 1836776262, true)) ), pl27));
 							}
 							
 							
@@ -4852,7 +4852,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Hscript.TType apply(global::Loreline.Internal.Hscript.TType t, global::Loreline.Internal.Root.Array<object> @params, global::Loreline.Internal.Root.Array<object> args) {
+		public virtual global::Loreline.Internal.Hscript.TType apply(global::Loreline.Internal.Hscript.TType t, global::Loreline.Internal.Root.Array @params, global::Loreline.Internal.Root.Array args) {
 			if (( args.length != @params.length )) {
 				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown("Invalid number of type parameters")) );
 			}
@@ -4861,13 +4861,13 @@ namespace Loreline.Internal.Hscript {
 				return t;
 			}
 			
-			global::Loreline.Internal.Ds.EnumValueMap<object, object> subst = new global::Loreline.Internal.Ds.EnumValueMap<object, object>();
+			global::Loreline.Internal.Ds.EnumValueMap subst = new global::Loreline.Internal.Ds.EnumValueMap();
 			{
 				int _g = 0;
 				int _g1 = @params.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					subst.@set(((global::Loreline.Internal.Hscript.TType) (@params[i]) ), ((global::Loreline.Internal.Hscript.TType) (args[i]) ));
+					subst.@set(((global::Loreline.Internal.Hscript.TType) (@params.__get(i)) ), ((global::Loreline.Internal.Hscript.TType) (args.__get(i)) ));
 				}
 				
 			}
@@ -4926,18 +4926,18 @@ namespace Loreline.Internal.Hscript {
 					
 					case 9:
 					{
-						global::Loreline.Internal.Root.Array<object> _g2 = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array _g2 = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						if (( _g2.length == 0 )) {
 							return t;
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> args = _g2;
+							global::Loreline.Internal.Root.Array args = _g2;
 							object c = ( t as global::Loreline.Internal.Hscript.TType_TInst ).c;
-							global::Loreline.Internal.Root.Array<object> _g3 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g4 = 0;
 								while (( _g4 < args.length )) {
-									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (args[_g4]) );
+									global::Loreline.Internal.Hscript.TType t2 = ((global::Loreline.Internal.Hscript.TType) (args.__get(_g4)) );
 									 ++ _g4;
 									_g3.push(((global::Loreline.Internal.Hscript.TType) (f.__hx_invoke1_o(default(double), t2)) ));
 								}
@@ -4952,18 +4952,18 @@ namespace Loreline.Internal.Hscript {
 					
 					case 10:
 					{
-						global::Loreline.Internal.Root.Array<object> _g5 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+						global::Loreline.Internal.Root.Array _g5 = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 						if (( _g5.length == 0 )) {
 							return t;
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> args1 = _g5;
+							global::Loreline.Internal.Root.Array args1 = _g5;
 							object e = ( t as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-							global::Loreline.Internal.Root.Array<object> _g6 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g6 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g7 = 0;
 								while (( _g7 < args1.length )) {
-									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (args1[_g7]) );
+									global::Loreline.Internal.Hscript.TType t3 = ((global::Loreline.Internal.Hscript.TType) (args1.__get(_g7)) );
 									 ++ _g7;
 									_g6.push(((global::Loreline.Internal.Hscript.TType) (f.__hx_invoke1_o(default(double), t3)) ));
 								}
@@ -4978,18 +4978,18 @@ namespace Loreline.Internal.Hscript {
 					
 					case 11:
 					{
-						global::Loreline.Internal.Root.Array<object> _g8 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
+						global::Loreline.Internal.Root.Array _g8 = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
 						if (( _g8.length == 0 )) {
 							return t;
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> args2 = _g8;
+							global::Loreline.Internal.Root.Array args2 = _g8;
 							object t4 = ( t as global::Loreline.Internal.Hscript.TType_TType ).t;
-							global::Loreline.Internal.Root.Array<object> _g9 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g9 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g10 = 0;
 								while (( _g10 < args2.length )) {
-									global::Loreline.Internal.Hscript.TType t5 = ((global::Loreline.Internal.Hscript.TType) (args2[_g10]) );
+									global::Loreline.Internal.Hscript.TType t5 = ((global::Loreline.Internal.Hscript.TType) (args2.__get(_g10)) );
 									 ++ _g10;
 									_g9.push(((global::Loreline.Internal.Hscript.TType) (f.__hx_invoke1_o(default(double), t5)) ));
 								}
@@ -5004,18 +5004,18 @@ namespace Loreline.Internal.Hscript {
 					
 					case 12:
 					{
-						global::Loreline.Internal.Root.Array<object> _g11 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+						global::Loreline.Internal.Root.Array _g11 = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
 						if (( _g11.length == 0 )) {
 							return t;
 						}
 						else {
-							global::Loreline.Internal.Root.Array<object> args3 = _g11;
+							global::Loreline.Internal.Root.Array args3 = _g11;
 							object a = ( t as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-							global::Loreline.Internal.Root.Array<object> _g12 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							global::Loreline.Internal.Root.Array _g12 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g13 = 0;
 								while (( _g13 < args3.length )) {
-									global::Loreline.Internal.Hscript.TType t6 = ((global::Loreline.Internal.Hscript.TType) (args3[_g13]) );
+									global::Loreline.Internal.Hscript.TType t6 = ((global::Loreline.Internal.Hscript.TType) (args3.__get(_g13)) );
 									 ++ _g13;
 									_g12.push(((global::Loreline.Internal.Hscript.TType) (f.__hx_invoke1_o(default(double), t6)) ));
 								}
@@ -5030,13 +5030,13 @@ namespace Loreline.Internal.Hscript {
 					
 					case 13:
 					{
-						global::Loreline.Internal.Root.Array<object> args4 = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array args4 = ( t as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType ret = ( t as global::Loreline.Internal.Hscript.TType_TFun ).ret;
-						global::Loreline.Internal.Root.Array<object> _g14 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array _g14 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g15 = 0;
 							while (( _g15 < args4.length )) {
-								object a1 = args4[_g15];
+								object a1 = args4.__get(_g15);
 								 ++ _g15;
 								string a2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a1, "name", 1224700491, true));
 								bool a3 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(a1, "opt", 5545011, true));
@@ -5057,12 +5057,12 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
-						global::Loreline.Internal.Root.Array<object> _g16 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array fields = ( t as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array _g16 = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							int _g17 = 0;
 							while (( _g17 < fields.length )) {
-								object af = fields[_g17];
+								object af = fields.__get(_g17);
 								 ++ _g17;
 								string af1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(af, "name", 1224700491, true));
 								bool af2 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(af, "opt", 5545011, true));
@@ -5121,8 +5121,8 @@ namespace Loreline.Internal.Hscript {
 					case 11:
 					{
 						object t2 = ( t as global::Loreline.Internal.Hscript.TType_TType ).t;
-						global::Loreline.Internal.Root.Array<object> args = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
-						return this.follow(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t2, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t2, "params", 1836776262, true)) ))) ), args));
+						global::Loreline.Internal.Root.Array args = ( t as global::Loreline.Internal.Hscript.TType_TType ).args;
+						return this.follow(this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(t2, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(t2, "params", 1836776262, true)) ), args));
 					}
 					
 					
@@ -5144,9 +5144,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> getFields(global::Loreline.Internal.Hscript.TType t) {
+		public virtual global::Loreline.Internal.Root.Array getFields(global::Loreline.Internal.Hscript.TType t) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> fields = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array fields = new global::Loreline.Internal.Root.Array(new object[]{});
 				global::Loreline.Internal.Hscript.Checker _gthis = this;
 				{
 					global::Loreline.Internal.Hscript.TType _g = this.follow(t);
@@ -5156,15 +5156,15 @@ namespace Loreline.Internal.Hscript {
 							object _g1 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).c;
 							{
 								object[] c = new object[]{_g1};
-								global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
+								global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
 								{
 									global::Loreline.Internal.Lang.Function map = new global::Loreline.Internal.Hscript.Checker_getFields_792__Fun(c, args, _gthis);
-									while (( c[0] != null )) {
+									while (( ((object) (c[0]) ) != null )) {
 										{
-											object fname = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "fields", 9342585, true)) )) ))) ))) );
+											object fname = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "fields", 9342585, true)) )) )) ))) );
 											while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(fname, "hasNext", 407283053, null))) {
 												string fname1 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(fname, "next", 1224901875, null));
-												object f = (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "fields", 9342585, true)) )) ))) ).@get(fname1)).toDynamic();
+												object f = ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "fields", 9342585, true)) )) )) ).@get(((string) (fname1) ));
 												if (( ( ! (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "isPublic", 1063066675, true))) ) || ( ! (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(f, "complete", 2143813817, true))) ) )) {
 													continue;
 												}
@@ -5173,7 +5173,7 @@ namespace Loreline.Internal.Hscript {
 												global::Loreline.Internal.Hscript.TType t1 = ((global::Loreline.Internal.Hscript.TType) (map.__hx_invoke1_o(default(double), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(f, "t", 116, true)) ))) );
 												if (( this.allowAsync && name.StartsWith("a_") )) {
 													t1 = this.unasync(t1);
-													name = global::Loreline.Internal.Lang.StringExt.substr(name, 2, default(global::Loreline.Internal.Lang.Null<int>));
+													name = global::Loreline.Internal.Lang.StringExt.substr(name, 2, null);
 												}
 												
 												fields.push(new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491}, new object[]{t1, name}, new int[]{}, new double[]{}));
@@ -5181,17 +5181,17 @@ namespace Loreline.Internal.Hscript {
 											
 										}
 										
-										if (( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(c[0], "isInterface", 408610927, true)) && ((bool) (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "interfaces", 1695633562, true)) ))) ) != null )) ) )) {
+										if (( global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "isInterface", 408610927, true)) && ((bool) (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "interfaces", 1695633562, true)) ) != null )) ) )) {
 											int _g2 = 0;
-											global::Loreline.Internal.Root.Array<object> _g3 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "interfaces", 1695633562, true)) ))) );
+											global::Loreline.Internal.Root.Array _g3 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "interfaces", 1695633562, true)) );
 											while (( _g2 < _g3.length )) {
-												global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g3[_g2]) );
+												global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g3.__get(_g2)) );
 												 ++ _g2;
 												{
 													int _g4 = 0;
-													global::Loreline.Internal.Root.Array<object> _g5 = this.getFields(i);
+													global::Loreline.Internal.Root.Array _g5 = this.getFields(i);
 													while (( _g4 < _g5.length )) {
-														object f1 = _g5[_g4];
+														object f1 = _g5.__get(_g4);
 														 ++ _g4;
 														string f2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f1, "name", 1224700491, true));
 														object __temp_stmt5 = null;
@@ -5209,18 +5209,18 @@ namespace Loreline.Internal.Hscript {
 											
 										}
 										
-										if (( ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "superClass", 671590589, true)) ) == null )) {
+										if (( ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "superClass", 671590589, true)) ) == null )) {
 											break;
 										}
 										
 										{
-											global::Loreline.Internal.Hscript.TType _g6 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(c[0], "superClass", 671590589, true)) );
+											global::Loreline.Internal.Hscript.TType _g6 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(((object) (c[0]) ), "superClass", 671590589, true)) );
 											if (( _g6 == null )) {
 												break;
 											}
 											else if (( _g6._hx_index == 9 )) {
 												object csup = ( _g6 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-												global::Loreline.Internal.Root.Array<object> args1 = ( _g6 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+												global::Loreline.Internal.Root.Array args1 = ( _g6 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 												{
 													global::Loreline.Internal.Lang.Function curMap = map;
 													map = new global::Loreline.Internal.Hscript.Checker_getFields_814__Fun(curMap, csup, args1, _gthis);
@@ -5246,7 +5246,7 @@ namespace Loreline.Internal.Hscript {
 						
 						case 13:
 						{
-							global::Loreline.Internal.Root.Array<object> args2 = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).args;
+							global::Loreline.Internal.Root.Array args2 = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).args;
 							global::Loreline.Internal.Hscript.TType ret = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 							if (this.isCompletion) {
 								object __temp_stmt6 = null;
@@ -5264,11 +5264,11 @@ namespace Loreline.Internal.Hscript {
 						
 						case 14:
 						{
-							global::Loreline.Internal.Root.Array<object> fl = ( _g as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+							global::Loreline.Internal.Root.Array fl = ( _g as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 							{
 								int _g7 = 0;
 								while (( _g7 < fl.length )) {
-									object f3 = fl[_g7];
+									object f3 = fl.__get(_g7);
 									 ++ _g7;
 									object __temp_stmt7 = null;
 									{
@@ -5300,9 +5300,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Hscript.TType getField(global::Loreline.Internal.Hscript.TType t, string f, object e, global::Loreline.Internal.Lang.Null<bool> forWrite) {
+		public virtual global::Loreline.Internal.Hscript.TType getField(global::Loreline.Internal.Hscript.TType t, string f, object e, object forWrite) {
 			unchecked {
-				bool forWrite1 = ( ( ! (forWrite.hasValue) ) ? (false) : ((forWrite).@value) );
+				bool forWrite1 = ( (( forWrite == default(object) )) ? (false) : (global::Loreline.Internal.Lang.Runtime.toBool(forWrite)) );
 				global::Loreline.Internal.Hscript.TType _g = this.follow(t);
 				switch (_g._hx_index) {
 					case 5:
@@ -5314,13 +5314,13 @@ namespace Loreline.Internal.Hscript {
 					case 9:
 					{
 						object c = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
-						object cf = (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(c, "fields", 9342585, true)) )) ))) ).@get(f)).toDynamic();
+						global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						object cf = ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(c, "fields", 9342585, true)) )) )) ).@get(((string) (f) ));
 						if (( ( cf == null ) && this.allowAsync )) {
-							cf = (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (global::Loreline.Internal.Lang.Runtime.getField(c, "fields", 9342585, true)) )) ))) ).@get(global::Loreline.Internal.Lang.Runtime.concat("a_", f))).toDynamic();
+							cf = ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(c, "fields", 9342585, true)) )) )) ).@get(((string) (global::Loreline.Internal.Lang.Runtime.concat("a_", f)) ));
 							if (( cf != null )) {
 								bool isPublic = true;
-								global::Loreline.Internal.Root.Array<object> cf1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ))) );
+								global::Loreline.Internal.Root.Array cf1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) );
 								string cf2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(cf, "name", 1224700491, true));
 								global::Loreline.Internal.Hscript.TType cf3 = this.unasync(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(cf, "t", 116, true)) ));
 								{
@@ -5336,15 +5336,15 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						
-						if (( ( ((bool) (( cf == null )) ) && global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(c, "isInterface", 408610927, true)) ) && ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "interfaces", 1695633562, true)) ))) ) != null ) )) {
+						if (( ( ((bool) (( cf == null )) ) && global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(c, "isInterface", 408610927, true)) ) && ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "interfaces", 1695633562, true)) ) != null ) )) {
 							int _g1 = 0;
-							global::Loreline.Internal.Root.Array<object> _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "interfaces", 1695633562, true)) ))) );
+							global::Loreline.Internal.Root.Array _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "interfaces", 1695633562, true)) );
 							while (( _g1 < _g2.length )) {
-								global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g2[_g1]) );
+								global::Loreline.Internal.Hscript.TType i = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(_g1)) );
 								 ++ _g1;
-								global::Loreline.Internal.Hscript.TType ft = this.getField(i, f, e, new global::Loreline.Internal.Lang.Null<bool>(forWrite1, true));
+								global::Loreline.Internal.Hscript.TType ft = this.getField(i, f, e, forWrite1);
 								if (( ft != null )) {
-									return this.apply(ft, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ))) ), args);
+									return this.apply(ft, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ), args);
 								}
 								
 							}
@@ -5356,9 +5356,9 @@ namespace Loreline.Internal.Hscript {
 								return null;
 							}
 							
-							global::Loreline.Internal.Hscript.TType ft1 = this.getField(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(c, "superClass", 671590589, true)) ), f, e, new global::Loreline.Internal.Lang.Null<bool>(forWrite1, true));
+							global::Loreline.Internal.Hscript.TType ft1 = this.getField(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(c, "superClass", 671590589, true)) ), f, e, forWrite1);
 							if (( ft1 != null )) {
-								ft1 = this.apply(ft1, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ))) ), args);
+								ft1 = this.apply(ft1, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ), args);
 							}
 							
 							return ft1;
@@ -5383,12 +5383,12 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.TType t1 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(cf, "t", 116, true)) );
-						if (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ))) ) != null )) {
-							global::Loreline.Internal.Root.Array<object> cf4 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ))) );
-							global::Loreline.Internal.Root.Array<object> _g3 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ) != null )) {
+							global::Loreline.Internal.Root.Array cf4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) );
+							global::Loreline.Internal.Root.Array _g3 = new global::Loreline.Internal.Root.Array(new object[]{});
 							{
 								int _g4 = 0;
-								int _g5 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ))) ).length;
+								int _g5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(cf, "params", 1836776262, true)) ).length;
 								while (( _g4 < _g5 )) {
 									int i1 = _g4++;
 									_g3.push(this.makeMono());
@@ -5399,17 +5399,17 @@ namespace Loreline.Internal.Hscript {
 							t1 = this.apply(t1, cf4, _g3);
 						}
 						
-						return this.apply(t1, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ))) ), args);
+						return this.apply(t1, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "params", 1836776262, true)) ), args);
 					}
 					
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( _g as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+						global::Loreline.Internal.Root.Array fields = ( _g as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 						{
 							int _g6 = 0;
 							while (( _g6 < fields.length )) {
-								object af = fields[_g6];
+								object af = fields.__get(_g6);
 								 ++ _g6;
 								if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(af, "name", 1224700491, true)) == f )) {
 									return ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(af, "t", 116, true)) );
@@ -5439,17 +5439,17 @@ namespace Loreline.Internal.Hscript {
 				{
 					global::Loreline.Internal.Hscript.TType _g = this.follow(t);
 					if (( _g._hx_index == 13 )) {
-						global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).args;
+						global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).args;
 						global::Loreline.Internal.Hscript.TType ret = ( _g as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 						if (( args.length > 0 )) {
-							global::Loreline.Internal.Root.Array<object> rargs = args.copy();
+							global::Loreline.Internal.Root.Array rargs = args.copy();
 							{
-								global::Loreline.Internal.Hscript.TType _g1 = this.follow(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField((rargs.shift()).@value, "t", 116, true)) ));
+								global::Loreline.Internal.Hscript.TType _g1 = this.follow(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(rargs.shift(), "t", 116, true)) ));
 								if (( _g1._hx_index == 13 )) {
-									global::Loreline.Internal.Root.Array<object> _g2 = ( _g1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+									global::Loreline.Internal.Root.Array _g2 = ( _g1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 									global::Loreline.Internal.Hscript.TType _g3 = ( _g1 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 									if (( _g2.length == 1 )) {
-										object r = _g2[0];
+										object r = _g2.__get(0);
 										return global::Loreline.Internal.Hscript.TType.TFun(rargs, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(r, "t", 116, true)) ));
 									}
 									
@@ -5483,17 +5483,17 @@ namespace Loreline.Internal.Hscript {
 		public virtual global::Loreline.Internal.Hscript.TType makeIterator(global::Loreline.Internal.Hscript.TType t) {
 			object __temp_stmt3 = null;
 			{
-				global::Loreline.Internal.Hscript.TType __temp_odecl1 = global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array<object>(new object[]{}), t);
+				global::Loreline.Internal.Hscript.TType __temp_odecl1 = global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array(new object[]{}), t);
 				__temp_stmt3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 5545011, 1224700491}, new object[]{__temp_odecl1, false, "next"}, new int[]{}, new double[]{});
 			}
 			
 			object __temp_stmt4 = null;
 			{
-				global::Loreline.Internal.Hscript.TType __temp_odecl2 = global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array<object>(new object[]{}), global::Loreline.Internal.Hscript.TType.TBool);
+				global::Loreline.Internal.Hscript.TType __temp_odecl2 = global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array(new object[]{}), global::Loreline.Internal.Hscript.TType.TBool);
 				__temp_stmt4 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 5545011, 1224700491}, new object[]{__temp_odecl2, false, "hasNext"}, new int[]{}, new double[]{});
 			}
 			
-			return global::Loreline.Internal.Hscript.TType.TAnon(new global::Loreline.Internal.Root.Array<object>(new object[]{__temp_stmt3, __temp_stmt4}));
+			return global::Loreline.Internal.Hscript.TType.TAnon(new global::Loreline.Internal.Root.Array(new object[]{__temp_stmt3, __temp_stmt4}));
 		}
 		
 		
@@ -5514,14 +5514,14 @@ namespace Loreline.Internal.Hscript {
 				t = this.follow(t);
 				if (( t._hx_index == 9 )) {
 					object _g = ( t as global::Loreline.Internal.Hscript.TType_TInst ).c;
-					global::Loreline.Internal.Root.Array<object> _g1 = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
+					global::Loreline.Internal.Root.Array _g1 = ( t as global::Loreline.Internal.Hscript.TType_TInst ).args;
 					object _g2 = global::Loreline.Internal.Lang.Runtime.getField(_g, "constructor", 398798074, true);
-					global::Loreline.Internal.Ds.StringMap<object> _g3 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g, "fields", 9342585, true)) ))) );
-					global::Loreline.Internal.Root.Array<object> _g4 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "interfaces", 1695633562, true)) ))) );
-					global::Loreline.Internal.Lang.Null<bool> _g5 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(_g, "isInterface", 408610927, true));
-					global::Loreline.Internal.Root.Array<object> _g6 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "meta", 1213811397, true)) ))) );
-					global::Loreline.Internal.Root.Array<object> _g7 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "params", 1836776262, true)) ))) );
-					global::Loreline.Internal.Ds.StringMap<object> _g8 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g, "statics", 912604165, true)) ))) );
+					global::Loreline.Internal.Ds.StringMap _g3 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g, "fields", 9342585, true)) );
+					global::Loreline.Internal.Root.Array _g4 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "interfaces", 1695633562, true)) );
+					object _g5 = global::Loreline.Internal.Lang.Runtime.getField(_g, "isInterface", 408610927, true);
+					global::Loreline.Internal.Root.Array _g6 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "meta", 1213811397, true)) );
+					global::Loreline.Internal.Root.Array _g7 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g, "params", 1836776262, true)) );
+					global::Loreline.Internal.Ds.StringMap _g8 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g, "statics", 912604165, true)) );
 					global::Loreline.Internal.Hscript.TType _g9 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(_g, "superClass", 671590589, true)) );
 					if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(_g, "name", 1224700491, true)) == "String" )) {
 						return true;
@@ -5553,7 +5553,7 @@ namespace Loreline.Internal.Hscript {
 				this.onCompletion(expr, ot);
 			}
 			
-			global::Loreline.Internal.Hscript.TType ft = this.getField(ot, f, expr, new global::Loreline.Internal.Lang.Null<bool>(forWrite, true));
+			global::Loreline.Internal.Hscript.TType ft = this.getField(ot, f, expr, forWrite);
 			if (( ft == null )) {
 				{
 					global::Loreline.Internal.Hscript.ErrorDef e = global::Loreline.Internal.Hscript.ErrorDef.ECustom(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Hscript.Checker.typeStr(ot), " has no field "), f));
@@ -5623,12 +5623,12 @@ namespace Loreline.Internal.Hscript {
 						{
 							string v = ( _g as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
 							{
-								global::Loreline.Internal.Hscript.TType l = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@get(v)).@value) );
+								global::Loreline.Internal.Hscript.TType l = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@get(((string) (v) ))) );
 								if (( l != null )) {
 									return l;
 								}
 								
-								global::Loreline.Internal.Hscript.TType g = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.globals) )) ))) ).@get(v)).@value) );
+								global::Loreline.Internal.Hscript.TType g = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.globals) )) ).@get(((string) (v) ))) );
 								if (( g != null )) {
 									if (( g == null )) {
 										return g;
@@ -5644,7 +5644,7 @@ namespace Loreline.Internal.Hscript {
 								}
 								
 								if (this.allowAsync) {
-									g = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.globals) )) ))) ).@get(global::Loreline.Internal.Lang.Runtime.concat("a_", v))).@value) );
+									g = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.globals) )) ).@get(((string) (global::Loreline.Internal.Lang.Runtime.concat("a_", v)) ))) );
 									if (( g != null )) {
 										g = this.unasync(g);
 									}
@@ -5682,17 +5682,17 @@ namespace Loreline.Internal.Hscript {
 											if (( _g4._hx_index == 10 )) {
 												global::Loreline.Internal.Hscript.TType et = _g4;
 												object e = ( _g4 as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-												global::Loreline.Internal.Root.Array<object> args = ( _g4 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+												global::Loreline.Internal.Root.Array args = ( _g4 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 												{
 													int _g5 = 0;
-													global::Loreline.Internal.Root.Array<object> _g6 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "constructors", 885141049, true)) ))) );
+													global::Loreline.Internal.Root.Array _g6 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "constructors", 885141049, true)) );
 													while (( _g5 < _g6.length )) {
-														object c1 = _g6[_g5];
+														object c1 = _g6.__get(_g5);
 														 ++ _g5;
 														if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(c1, "name", 1224700491, true)) == v )) {
 															if (global::Loreline.Internal.Lang.Runtime.toBool(this.onTopDownEnum.__hx_invoke2_o(default(double), e, default(double), v))) {
-																global::Loreline.Internal.Hscript.TType ct = ( (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ))) ) == null )) ? (et) : (global::Loreline.Internal.Hscript.TType.TFun(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ))) ), et)) );
-																return this.apply(ct, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "params", 1836776262, true)) ))) ), args);
+																global::Loreline.Internal.Hscript.TType ct = ( (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ) == null )) ? (et) : (global::Loreline.Internal.Hscript.TType.TFun(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ), et)) );
+																return this.apply(ct, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(e, "params", 1836776262, true)) ), args);
 															}
 															
 															break;
@@ -5747,7 +5747,7 @@ namespace Loreline.Internal.Hscript {
 								
 							}
 							
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(n, vt);
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (n) ), ((object) (vt) ));
 							return global::Loreline.Internal.Hscript.TType.TVoid;
 						}
 						
@@ -5761,15 +5761,15 @@ namespace Loreline.Internal.Hscript {
 						
 						case 4:
 						{
-							global::Loreline.Internal.Root.Array<object> el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+							global::Loreline.Internal.Root.Array el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
 							global::Loreline.Internal.Hscript.TType t2 = global::Loreline.Internal.Hscript.TType.TVoid;
-							global::Loreline.Internal.Ds.StringMap<object> locals = this.saveLocals();
+							global::Loreline.Internal.Ds.StringMap locals = this.saveLocals();
 							{
 								int _g7 = 0;
 								while (( _g7 < el.length )) {
-									object e4 = el[_g7];
+									object e4 = el.__get(_g7);
 									 ++ _g7;
-									t2 = this.typeExpr(e4, ( (global::Loreline.Internal.Lang.Runtime.refEq(e4, el[( el.length - 1 )])) ? (withType) : (global::Loreline.Internal.Hscript._Checker.WithType.NoValue) ));
+									t2 = this.typeExpr(e4, ( (global::Loreline.Internal.Lang.Runtime.refEq(e4, el.__get(( el.length - 1 )))) ? (withType) : (global::Loreline.Internal.Hscript._Checker.WithType.NoValue) ));
 								}
 								
 							}
@@ -6089,15 +6089,15 @@ namespace Loreline.Internal.Hscript {
 											case 9:
 											{
 												object _g13 = ( _g12 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-												global::Loreline.Internal.Root.Array<object> _g14 = ( _g12 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+												global::Loreline.Internal.Root.Array _g14 = ( _g12 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 												{
 													object _g15 = global::Loreline.Internal.Lang.Runtime.getField(_g13, "constructor", 398798074, true);
-													global::Loreline.Internal.Ds.StringMap<object> _g16 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "fields", 9342585, true)) ))) );
-													global::Loreline.Internal.Root.Array<object> _g17 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "interfaces", 1695633562, true)) ))) );
-													global::Loreline.Internal.Lang.Null<bool> _g18 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(_g13, "isInterface", 408610927, true));
-													global::Loreline.Internal.Root.Array<object> _g19 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "meta", 1213811397, true)) ))) );
-													global::Loreline.Internal.Root.Array<object> _g20 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "params", 1836776262, true)) ))) );
-													global::Loreline.Internal.Ds.StringMap<object> _g21 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "statics", 912604165, true)) ))) );
+													global::Loreline.Internal.Ds.StringMap _g16 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "fields", 9342585, true)) );
+													global::Loreline.Internal.Root.Array _g17 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "interfaces", 1695633562, true)) );
+													object _g18 = global::Loreline.Internal.Lang.Runtime.getField(_g13, "isInterface", 408610927, true);
+													global::Loreline.Internal.Root.Array _g19 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "meta", 1213811397, true)) );
+													global::Loreline.Internal.Root.Array _g20 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "params", 1836776262, true)) );
+													global::Loreline.Internal.Ds.StringMap _g21 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "statics", 912604165, true)) );
 													global::Loreline.Internal.Hscript.TType _g22 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(_g13, "superClass", 671590589, true)) );
 													if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(_g13, "name", 1224700491, true)) == "String" )) {
 													}
@@ -6141,9 +6141,9 @@ namespace Loreline.Internal.Hscript {
 										global::Loreline.Internal.Hscript.ExprDef _g23 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e11, "e", 101, true)) );
 										if (( _g23._hx_index == 1 )) {
 											string i = ( _g23 as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
-											if ((  ! (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).exists(i))  &&  ! (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.globals) )) ))) ).exists(i))  )) {
+											if ((  ! (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).exists(i))  &&  ! (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.globals) )) ).exists(i))  )) {
 												global::Loreline.Internal.Hscript.TType vt1 = this.typeExpr(e21, global::Loreline.Internal.Hscript._Checker.WithType.Value);
-												((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(i, vt1);
+												((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (i) ), ((object) (vt1) ));
 												return vt1;
 											}
 											
@@ -6178,8 +6178,8 @@ namespace Loreline.Internal.Hscript {
 								
 								default:
 								{
-									if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(op, ( op.Length - 1 ))).toDynamic(), 61)) {
-										global::Loreline.Internal.Hscript.TType t3 = this.typeExpr(this.mk(global::Loreline.Internal.Hscript.ExprDef.EBinop(global::Loreline.Internal.Lang.StringExt.substr(op, 0, new global::Loreline.Internal.Lang.Null<int>(( op.Length - 1 ), true)), e11, e21), expr), withType);
+									if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(op, ( op.Length - 1 )), 61)) {
+										global::Loreline.Internal.Hscript.TType t3 = this.typeExpr(this.mk(global::Loreline.Internal.Hscript.ExprDef.EBinop(global::Loreline.Internal.Lang.StringExt.substr(op, 0, ( op.Length - 1 )), e11, e21), expr), withType);
 										return this.typeExpr(this.mk(global::Loreline.Internal.Hscript.ExprDef.EBinop("=", e11, e21), expr), withType);
 									}
 									
@@ -6244,7 +6244,7 @@ namespace Loreline.Internal.Hscript {
 						case 8:
 						{
 							object e13 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).e;
-							global::Loreline.Internal.Root.Array<object> @params = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
+							global::Loreline.Internal.Root.Array @params = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
 							{
 								global::Loreline.Internal.Hscript.ExprDef _g26 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e13, "e", 101, true)) );
 								if (( _g26._hx_index == 5 )) {
@@ -6253,15 +6253,15 @@ namespace Loreline.Internal.Hscript {
 										{
 											global::Loreline.Internal.Hscript.TType ft = this.typeExpr(val, global::Loreline.Internal.Hscript._Checker.WithType.Value);
 											if (( ft._hx_index == 13 )) {
-												global::Loreline.Internal.Root.Array<object> args1 = ( ft as global::Loreline.Internal.Hscript.TType_TFun ).args;
+												global::Loreline.Internal.Root.Array args1 = ( ft as global::Loreline.Internal.Hscript.TType_TFun ).args;
 												global::Loreline.Internal.Hscript.TType ret = ( ft as global::Loreline.Internal.Hscript.TType_TFun ).ret;
-												global::Loreline.Internal.Root.Array<object> remainArgs = args1.copy();
+												global::Loreline.Internal.Root.Array remainArgs = args1.copy();
 												{
 													int _g27 = 0;
 													while (( _g27 < @params.length )) {
-														object p = @params[_g27];
+														object p = @params.__get(_g27);
 														 ++ _g27;
-														object a = (remainArgs.shift()).@value;
+														object a = remainArgs.shift();
 														if (( a == null )) {
 															{
 																global::Loreline.Internal.Hscript.ErrorDef e14 = global::Loreline.Internal.Hscript.ErrorDef.ECustom("Too many arguments");
@@ -6272,7 +6272,7 @@ namespace Loreline.Internal.Hscript {
 																
 															}
 															
-															return global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array<object>(new object[]{}), ret);
+															return global::Loreline.Internal.Hscript.TType.TFun(new global::Loreline.Internal.Root.Array(new object[]{}), ret);
 														}
 														
 														this.typeExprWith(p, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a, "t", 116, true)) ));
@@ -6299,7 +6299,7 @@ namespace Loreline.Internal.Hscript {
 									global::Loreline.Internal.Hscript.TType _g30 = ( withType as global::Loreline.Internal.Hscript._Checker.WithType_WithType ).t;
 									if (( _g30._hx_index == 10 )) {
 										object _g31 = ( _g30 as global::Loreline.Internal.Hscript.TType_TEnum ).e;
-										global::Loreline.Internal.Root.Array<object> _g32 = ( _g30 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
+										global::Loreline.Internal.Root.Array _g32 = ( _g30 as global::Loreline.Internal.Hscript.TType_TEnum ).args;
 										ft1 = withType;
 									}
 									else {
@@ -6324,7 +6324,7 @@ namespace Loreline.Internal.Hscript {
 									{
 										int _g34 = 0;
 										while (( _g34 < @params.length )) {
-											object p1 = @params[_g34];
+											object p1 = @params.__get(_g34);
 											 ++ _g34;
 											this.typeExpr(p1, global::Loreline.Internal.Hscript._Checker.WithType.Value);
 										}
@@ -6337,17 +6337,17 @@ namespace Loreline.Internal.Hscript {
 								
 								case 13:
 								{
-									global::Loreline.Internal.Root.Array<object> args2 = ( _g33 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+									global::Loreline.Internal.Root.Array args2 = ( _g33 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 									global::Loreline.Internal.Hscript.TType ret1 = ( _g33 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 									{
 										int _g35 = 0;
 										int _g36 = @params.length;
 										while (( _g35 < _g36 )) {
 											int i1 = _g35++;
-											object a1 = args2[i1];
+											object a1 = args2.__get(i1);
 											if (( a1 == null )) {
 												{
-													object curExpr = @params[i1];
+													object curExpr = @params.__get(i1);
 													global::Loreline.Internal.Hscript.ErrorDef e16 = global::Loreline.Internal.Hscript.ErrorDef.ECustom("Too many arguments");
 													global::Loreline.Internal.Hscript.Error e17 = new global::Loreline.Internal.Hscript.Error(((global::Loreline.Internal.Hscript.ErrorDef) (e16) ), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(curExpr, "pmin", 1247475490, true)) ), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(curExpr, "pmax", 1247473716, true)) ), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(curExpr, "origin", 1258363366, true)), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(curExpr, "line", 1202919412, true)) ));
 													if ( ! (this.isCompletion) ) {
@@ -6359,8 +6359,8 @@ namespace Loreline.Internal.Hscript {
 												break;
 											}
 											
-											global::Loreline.Internal.Hscript.TType t4 = this.typeExpr(@params[i1], ( (( a1 == null )) ? (global::Loreline.Internal.Hscript._Checker.WithType.Value) : (global::Loreline.Internal.Hscript._Checker.WithType.WithType_WithType(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a1, "t", 116, true)) ))) ));
-											this.unify(t4, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a1, "t", 116, true)) ), @params[i1]);
+											global::Loreline.Internal.Hscript.TType t4 = this.typeExpr(@params.__get(i1), ( (( a1 == null )) ? (global::Loreline.Internal.Hscript._Checker.WithType.Value) : (global::Loreline.Internal.Hscript._Checker.WithType.WithType_WithType(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a1, "t", 116, true)) ))) ));
+											this.unify(t4, ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a1, "t", 116, true)) ), @params.__get(i1));
 										}
 										
 									}
@@ -6370,8 +6370,8 @@ namespace Loreline.Internal.Hscript {
 										int _g38 = args2.length;
 										while (( _g37 < _g38 )) {
 											int i2 = _g37++;
-											if (( ! (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(args2[i2], "opt", 5545011, true))) )) {
-												global::Loreline.Internal.Hscript.ErrorDef e18 = global::Loreline.Internal.Hscript.ErrorDef.ECustom(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Missing argument ", global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(args2[i2], "name", 1224700491, true))), ":"), global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args2[i2], "t", 116, true)) ))));
+											if (( ! (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(args2.__get(i2), "opt", 5545011, true))) )) {
+												global::Loreline.Internal.Hscript.ErrorDef e18 = global::Loreline.Internal.Hscript.ErrorDef.ECustom(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Missing argument ", global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(args2.__get(i2), "name", 1224700491, true))), ":"), global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(args2.__get(i2), "t", 116, true)) ))));
 												global::Loreline.Internal.Hscript.Error e19 = new global::Loreline.Internal.Hscript.Error(((global::Loreline.Internal.Hscript.ErrorDef) (e18) ), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(expr, "pmin", 1247475490, true)) ), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(expr, "pmax", 1247473716, true)) ), global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(expr, "origin", 1258363366, true)), ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(expr, "line", 1202919412, true)) ));
 												if ( ! (this.isCompletion) ) {
 													throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(e19)) );
@@ -6453,10 +6453,10 @@ namespace Loreline.Internal.Hscript {
 							string v1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFor ).v;
 							object it = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFor ).it;
 							object e25 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFor ).e;
-							global::Loreline.Internal.Ds.StringMap<object> locals1 = this.saveLocals();
+							global::Loreline.Internal.Ds.StringMap locals1 = this.saveLocals();
 							global::Loreline.Internal.Hscript.TType itt = this.typeExpr(it, global::Loreline.Internal.Hscript._Checker.WithType.Value);
 							global::Loreline.Internal.Hscript.TType vt3 = this.getIteratorType(it, itt);
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(v1, vt3);
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (v1) ), ((object) (vt3) ));
 							this.typeExpr(e25, global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
 							this.locals = locals1;
 							return global::Loreline.Internal.Hscript.TType.TVoid;
@@ -6472,18 +6472,18 @@ namespace Loreline.Internal.Hscript {
 						
 						case 14:
 						{
-							global::Loreline.Internal.Root.Array<object> args3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+							global::Loreline.Internal.Root.Array args3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 							object body = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
 							string name = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 							global::Loreline.Internal.Hscript.CType ret2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
 							global::Loreline.Internal.Hscript.TType ft3 = null;
 							global::Loreline.Internal.Hscript.TType tret = null;
-							global::Loreline.Internal.Root.Array<object> targs = null;
+							global::Loreline.Internal.Root.Array targs = null;
 							if (( this.currentFunType != null )) {
 								{
 									global::Loreline.Internal.Hscript.TType _g39 = this.currentFunType;
 									if (( _g39._hx_index == 13 )) {
-										global::Loreline.Internal.Root.Array<object> args4 = ( _g39 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+										global::Loreline.Internal.Root.Array args4 = ( _g39 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 										global::Loreline.Internal.Hscript.TType ret3 = ( _g39 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 										{
 											ft3 = this.currentFunType;
@@ -6504,21 +6504,21 @@ namespace Loreline.Internal.Hscript {
 								tret = ( (( ret2 == null )) ? (this.makeMono()) : (this.makeType(ret2, expr)) );
 							}
 							
-							global::Loreline.Internal.Ds.StringMap<object> locals2 = this.saveLocals();
+							global::Loreline.Internal.Ds.StringMap locals2 = this.saveLocals();
 							global::Loreline.Internal.Hscript.TType oldRet = this.allowReturn;
 							bool oldGDef = this.allowDefine;
 							bool oldHasRet = this.hasReturn;
 							this.allowReturn = tret;
 							this.allowDefine = false;
 							this.hasReturn = false;
-							global::Loreline.Internal.Root.Array<object> withArgs = null;
+							global::Loreline.Internal.Root.Array withArgs = null;
 							bool tmp = default(bool);
 							if (( name != null )) {
 								bool tmp1 = default(bool);
 								if (( withType._hx_index == 2 )) {
 									global::Loreline.Internal.Hscript.TType _hx_tmp = this.follow(( withType as global::Loreline.Internal.Hscript._Checker.WithType_WithType ).t);
 									if (( _hx_tmp._hx_index == 13 )) {
-										global::Loreline.Internal.Root.Array<object> _g40 = ( _hx_tmp as global::Loreline.Internal.Hscript.TType_TFun ).args;
+										global::Loreline.Internal.Root.Array _g40 = ( _hx_tmp as global::Loreline.Internal.Hscript.TType_TFun ).args;
 										global::Loreline.Internal.Hscript.TType _g41 = ( _hx_tmp as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 										tmp1 = true;
 									}
@@ -6538,7 +6538,7 @@ namespace Loreline.Internal.Hscript {
 							}
 							
 							if (tmp) {
-								global::Loreline.Internal.Hscript.TType ev = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.events) )) ))) ).@get(name)).@value) );
+								global::Loreline.Internal.Hscript.TType ev = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.events) )) ).@get(((string) (name) ))) );
 								if (( ev != null )) {
 									withType = global::Loreline.Internal.Hscript._Checker.WithType.WithType_WithType(ev);
 								}
@@ -6548,7 +6548,7 @@ namespace Loreline.Internal.Hscript {
 							if (( withType._hx_index == 2 )) {
 								global::Loreline.Internal.Hscript.TType _hx_tmp1 = this.follow(( withType as global::Loreline.Internal.Hscript._Checker.WithType_WithType ).t);
 								if (( _hx_tmp1._hx_index == 13 )) {
-									global::Loreline.Internal.Root.Array<object> args5 = ( _hx_tmp1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
+									global::Loreline.Internal.Root.Array args5 = ( _hx_tmp1 as global::Loreline.Internal.Hscript.TType_TFun ).args;
 									global::Loreline.Internal.Hscript.TType ret4 = ( _hx_tmp1 as global::Loreline.Internal.Hscript.TType_TFun ).ret;
 									{
 										withArgs = args5;
@@ -6568,10 +6568,10 @@ namespace Loreline.Internal.Hscript {
 								int _g43 = targs.length;
 								while (( _g42 < _g43 )) {
 									int i3 = _g42++;
-									object a2 = targs[i3];
+									object a2 = targs.__get(i3);
 									if (( withArgs != null )) {
 										if (( i3 < withArgs.length )) {
-											this.unify(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(withArgs[i3], "t", 116, true)) ), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a2, "t", 116, true)) ), expr);
+											this.unify(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(withArgs.__get(i3), "t", 116, true)) ), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a2, "t", 116, true)) ), expr);
 										}
 										else {
 											global::Loreline.Internal.Hscript.ErrorDef e26 = global::Loreline.Internal.Hscript.ErrorDef.ECustom(global::Loreline.Internal.Lang.Runtime.concat("Extra argument ", global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a2, "name", 1224700491, true))));
@@ -6584,20 +6584,20 @@ namespace Loreline.Internal.Hscript {
 										
 									}
 									
-									((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a2, "name", 1224700491, true)), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a2, "t", 116, true)) ));
+									((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(a2, "name", 1224700491, true)), ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a2, "t", 116, true)) ));
 								}
 								
 							}
 							
 							if (( ( withArgs != null ) && ( targs.length < withArgs.length ) )) {
 								string msg = global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Missing ", global::Loreline.Internal.Lang.Runtime.toString((( withArgs.length - targs.length )))), " arguments (");
-								global::Loreline.Internal.Root.Array<string> _g44 = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+								global::Loreline.Internal.Root.Array _g44 = new global::Loreline.Internal.Root.Array(new object[]{});
 								{
 									int _g45 = targs.length;
 									int _g46 = withArgs.length;
 									while (( _g45 < _g46 )) {
 										int i4 = _g45++;
-										_g44.push(global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(withArgs[i4], "t", 116, true)) )));
+										_g44.push(global::Loreline.Internal.Hscript.Checker.typeStr(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(withArgs.__get(i4), "t", 116, true)) )));
 									}
 									
 								}
@@ -6627,7 +6627,7 @@ namespace Loreline.Internal.Hscript {
 							if (( ft3 == null )) {
 								ft3 = global::Loreline.Internal.Hscript.TType.TFun(targs, tret);
 								if (( name != null )) {
-									locals2.@set(name, ft3);
+									locals2.@set(((string) (name) ), ((object) (ft3) ));
 								}
 								
 							}
@@ -6668,19 +6668,19 @@ namespace Loreline.Internal.Hscript {
 									global::Loreline.Internal.Hscript.TType _g47 = this.follow(at);
 									if (( _g47._hx_index == 9 )) {
 										object _g48 = ( _g47 as global::Loreline.Internal.Hscript.TType_TInst ).c;
-										global::Loreline.Internal.Root.Array<object> _g49 = ( _g47 as global::Loreline.Internal.Hscript.TType_TInst ).args;
+										global::Loreline.Internal.Root.Array _g49 = ( _g47 as global::Loreline.Internal.Hscript.TType_TInst ).args;
 										{
 											object _g50 = global::Loreline.Internal.Lang.Runtime.getField(_g48, "constructor", 398798074, true);
-											global::Loreline.Internal.Ds.StringMap<object> _g51 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "fields", 9342585, true)) ))) );
-											global::Loreline.Internal.Root.Array<object> _g52 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "interfaces", 1695633562, true)) ))) );
-											global::Loreline.Internal.Lang.Null<bool> _g53 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(_g48, "isInterface", 408610927, true));
-											global::Loreline.Internal.Root.Array<object> _g54 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "meta", 1213811397, true)) ))) );
-											global::Loreline.Internal.Root.Array<object> _g55 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "params", 1836776262, true)) ))) );
-											global::Loreline.Internal.Ds.StringMap<object> _g56 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "statics", 912604165, true)) ))) );
+											global::Loreline.Internal.Ds.StringMap _g51 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "fields", 9342585, true)) );
+											global::Loreline.Internal.Root.Array _g52 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "interfaces", 1695633562, true)) );
+											object _g53 = global::Loreline.Internal.Lang.Runtime.getField(_g48, "isInterface", 408610927, true);
+											global::Loreline.Internal.Root.Array _g54 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "meta", 1213811397, true)) );
+											global::Loreline.Internal.Root.Array _g55 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "params", 1836776262, true)) );
+											global::Loreline.Internal.Ds.StringMap _g56 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "statics", 912604165, true)) );
 											global::Loreline.Internal.Hscript.TType _g57 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(_g48, "superClass", 671590589, true)) );
 											if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(_g48, "name", 1224700491, true)) == "Array" )) {
 												if (( _g49.length == 1 )) {
-													global::Loreline.Internal.Hscript.TType et4 = ((global::Loreline.Internal.Hscript.TType) (_g49[0]) );
+													global::Loreline.Internal.Hscript.TType et4 = ((global::Loreline.Internal.Hscript.TType) (_g49.__get(0)) );
 													return et4;
 												}
 												else {
@@ -6724,12 +6724,12 @@ namespace Loreline.Internal.Hscript {
 						
 						case 17:
 						{
-							global::Loreline.Internal.Root.Array<object> el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
+							global::Loreline.Internal.Root.Array el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
 							global::Loreline.Internal.Hscript.TType et5 = null;
 							{
 								int _g58 = 0;
 								while (( _g58 < el1.length )) {
-									object v3 = el1[_g58];
+									object v3 = el1.__get(_g58);
 									 ++ _g58;
 									global::Loreline.Internal.Hscript.TType t5 = this.typeExpr(v3, ( (( et5 == null )) ? (global::Loreline.Internal.Hscript._Checker.WithType.Value) : (global::Loreline.Internal.Hscript._Checker.WithType.WithType_WithType(et5)) ));
 									if (( et5 == null )) {
@@ -6753,14 +6753,14 @@ namespace Loreline.Internal.Hscript {
 								et5 = this.makeMono();
 							}
 							
-							return this.types.getType("Array", new global::Loreline.Internal.Root.Array<object>(new object[]{et5}));
+							return this.types.getType("Array", new global::Loreline.Internal.Root.Array(new object[]{et5}));
 						}
 						
 						
 						case 18:
 						{
 							string cl = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).cl;
-							global::Loreline.Internal.Root.Array<object> params1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
+							global::Loreline.Internal.Root.Array params1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
 							break;
 						}
 						
@@ -6780,14 +6780,14 @@ namespace Loreline.Internal.Hscript {
 							global::Loreline.Internal.Hscript.CType et6 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETry ).t;
 							object ecatch = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETry ).ecatch;
 							global::Loreline.Internal.Hscript.TType vt4 = this.typeExpr(etry, withType);
-							global::Loreline.Internal.Hscript.TType old = ((global::Loreline.Internal.Hscript.TType) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@get(v4)).@value) );
-							((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(v4, this.makeType(et6, ecatch));
+							global::Loreline.Internal.Hscript.TType old = ((global::Loreline.Internal.Hscript.TType) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@get(((string) (v4) ))) );
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (v4) ), ((object) (this.makeType(et6, ecatch)) ));
 							global::Loreline.Internal.Hscript.TType ct1 = this.typeExpr(ecatch, withType);
 							if (( old != null )) {
-								((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@set(v4, old);
+								((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@set(((string) (v4) ), ((object) (old) ));
 							}
 							else {
-								((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.locals) )) ))) ).@remove(v4);
+								((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.locals) )) ).@remove(v4);
 							}
 							
 							if (( withType == global::Loreline.Internal.Hscript._Checker.WithType.NoValue )) {
@@ -6805,31 +6805,31 @@ namespace Loreline.Internal.Hscript {
 						
 						case 21:
 						{
-							global::Loreline.Internal.Root.Array<object> fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
+							global::Loreline.Internal.Root.Array fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
 							if (( withType._hx_index == 2 )) {
 								global::Loreline.Internal.Hscript.TType _hx_tmp2 = this.follow(( withType as global::Loreline.Internal.Hscript._Checker.WithType_WithType ).t);
 								if (( _hx_tmp2._hx_index == 14 )) {
-									global::Loreline.Internal.Root.Array<object> tfields = ( _hx_tmp2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
+									global::Loreline.Internal.Root.Array tfields = ( _hx_tmp2 as global::Loreline.Internal.Hscript.TType_TAnon ).fields;
 									if (( tfields.length > 0 )) {
-										global::Loreline.Internal.Ds.StringMap<object> _g59 = new global::Loreline.Internal.Ds.StringMap<object>();
+										global::Loreline.Internal.Ds.StringMap _g59 = new global::Loreline.Internal.Ds.StringMap();
 										{
 											int _g60 = 0;
 											while (( _g60 < tfields.length )) {
-												object f3 = tfields[_g60];
+												object f3 = tfields.__get(_g60);
 												 ++ _g60;
-												_g59.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f3, "name", 1224700491, true)), f3);
+												_g59.@set(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f3, "name", 1224700491, true)), ((object) (f3) ));
 											}
 											
 										}
 										
-										global::Loreline.Internal.Ds.StringMap<object> map = _g59;
-										global::Loreline.Internal.Root.Array<object> _g61 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+										global::Loreline.Internal.Ds.StringMap map = _g59;
+										global::Loreline.Internal.Root.Array _g61 = new global::Loreline.Internal.Root.Array(new object[]{});
 										{
 											int _g62 = 0;
 											while (( _g62 < fl.length )) {
-												object f4 = fl[_g62];
+												object f4 = fl.__get(_g62);
 												 ++ _g62;
-												object ft4 = (map.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f4, "name", 1224700491, true)))).@value;
+												object ft4 = map.@get(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f4, "name", 1224700491, true)));
 												global::Loreline.Internal.Hscript.TType ft5 = null;
 												if (( ft4 == null )) {
 													{
@@ -6863,11 +6863,11 @@ namespace Loreline.Internal.Hscript {
 										return global::Loreline.Internal.Hscript.TType.TAnon(_g61);
 									}
 									else {
-										global::Loreline.Internal.Root.Array<object> _g63 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+										global::Loreline.Internal.Root.Array _g63 = new global::Loreline.Internal.Root.Array(new object[]{});
 										{
 											int _g64 = 0;
 											while (( _g64 < fl.length )) {
-												object f5 = fl[_g64];
+												object f5 = fl.__get(_g64);
 												 ++ _g64;
 												global::Loreline.Internal.Hscript.TType tmp3 = this.typeExpr(global::Loreline.Internal.Lang.Runtime.getField(f5, "e", 101, true), global::Loreline.Internal.Hscript._Checker.WithType.Value);
 												object __temp_stmt7 = null;
@@ -6886,11 +6886,11 @@ namespace Loreline.Internal.Hscript {
 									
 								}
 								else {
-									global::Loreline.Internal.Root.Array<object> _g65 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									global::Loreline.Internal.Root.Array _g65 = new global::Loreline.Internal.Root.Array(new object[]{});
 									{
 										int _g66 = 0;
 										while (( _g66 < fl.length )) {
-											object f6 = fl[_g66];
+											object f6 = fl.__get(_g66);
 											 ++ _g66;
 											global::Loreline.Internal.Hscript.TType tmp4 = this.typeExpr(global::Loreline.Internal.Lang.Runtime.getField(f6, "e", 101, true), global::Loreline.Internal.Hscript._Checker.WithType.Value);
 											object __temp_stmt6 = null;
@@ -6909,11 +6909,11 @@ namespace Loreline.Internal.Hscript {
 								
 							}
 							else {
-								global::Loreline.Internal.Root.Array<object> _g67 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+								global::Loreline.Internal.Root.Array _g67 = new global::Loreline.Internal.Root.Array(new object[]{});
 								{
 									int _g68 = 0;
 									while (( _g68 < fl.length )) {
-										object f7 = fl[_g68];
+										object f7 = fl.__get(_g68);
 										 ++ _g68;
 										global::Loreline.Internal.Hscript.TType tmp5 = this.typeExpr(global::Loreline.Internal.Lang.Runtime.getField(f7, "e", 101, true), global::Loreline.Internal.Hscript._Checker.WithType.Value);
 										object __temp_stmt5 = null;
@@ -6968,20 +6968,20 @@ namespace Loreline.Internal.Hscript {
 						case 23:
 						{
 							object @value = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).e;
-							global::Loreline.Internal.Root.Array<object> cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
+							global::Loreline.Internal.Root.Array cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
 							object defaultExpr = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).defaultExpr;
 							global::Loreline.Internal.Hscript.TType tmin = null;
 							global::Loreline.Internal.Hscript.TType vt5 = this.typeExpr(@value, global::Loreline.Internal.Hscript._Checker.WithType.Value);
 							{
 								int _g69 = 0;
 								while (( _g69 < cases.length )) {
-									object c2 = cases[_g69];
+									object c2 = cases.__get(_g69);
 									 ++ _g69;
 									{
 										int _g70 = 0;
-										global::Loreline.Internal.Root.Array<object> _g71 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "values", 1337394146, true)) ))) );
+										global::Loreline.Internal.Root.Array _g71 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "values", 1337394146, true)) );
 										while (( _g70 < _g71.length )) {
-											object v5 = _g71[_g70];
+											object v5 = _g71.__get(_g70);
 											 ++ _g70;
 											global::Loreline.Internal.Hscript.TType ct2 = this.typeExpr(v5, global::Loreline.Internal.Hscript._Checker.WithType.WithType_WithType(vt5));
 											this.unify(ct2, vt5, v5);
@@ -7049,7 +7049,7 @@ namespace Loreline.Internal.Hscript {
 						
 						case 25:
 						{
-							global::Loreline.Internal.Root.Array<object> _g72 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+							global::Loreline.Internal.Root.Array _g72 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 							string m = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
 							object e44 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
 							if (( ( m == ":untyped" ) && this.allowUntypedMeta )) {
@@ -7095,19 +7095,19 @@ namespace Loreline.Internal.Hscript {
 					global::Loreline.Internal.Hscript.TType _g = this.follow(itt);
 					if (( _g._hx_index == 9 )) {
 						object _g1 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).c;
-						global::Loreline.Internal.Root.Array<object> _g2 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
+						global::Loreline.Internal.Root.Array _g2 = ( _g as global::Loreline.Internal.Hscript.TType_TInst ).args;
 						{
 							object _g3 = global::Loreline.Internal.Lang.Runtime.getField(_g1, "constructor", 398798074, true);
-							global::Loreline.Internal.Ds.StringMap<object> _g4 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "fields", 9342585, true)) ))) );
-							global::Loreline.Internal.Root.Array<object> _g5 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "interfaces", 1695633562, true)) ))) );
-							global::Loreline.Internal.Lang.Null<bool> _g6 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(_g1, "isInterface", 408610927, true));
-							global::Loreline.Internal.Root.Array<object> _g7 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "meta", 1213811397, true)) ))) );
-							global::Loreline.Internal.Root.Array<object> _g8 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "params", 1836776262, true)) ))) );
-							global::Loreline.Internal.Ds.StringMap<object> _g9 = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "statics", 912604165, true)) ))) );
+							global::Loreline.Internal.Ds.StringMap _g4 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "fields", 9342585, true)) );
+							global::Loreline.Internal.Root.Array _g5 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "interfaces", 1695633562, true)) );
+							object _g6 = global::Loreline.Internal.Lang.Runtime.getField(_g1, "isInterface", 408610927, true);
+							global::Loreline.Internal.Root.Array _g7 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "meta", 1213811397, true)) );
+							global::Loreline.Internal.Root.Array _g8 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "params", 1836776262, true)) );
+							global::Loreline.Internal.Ds.StringMap _g9 = ((global::Loreline.Internal.Ds.StringMap) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "statics", 912604165, true)) );
 							global::Loreline.Internal.Hscript.TType _g10 = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(_g1, "superClass", 671590589, true)) );
 							if (( global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(_g1, "name", 1224700491, true)) == "Array" )) {
 								if (( _g2.length == 1 )) {
-									global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2[0]) );
+									global::Loreline.Internal.Hscript.TType t = ((global::Loreline.Internal.Hscript.TType) (_g2.__get(0)) );
 									return t;
 								}
 								
@@ -7119,12 +7119,12 @@ namespace Loreline.Internal.Hscript {
 					
 				}
 				
-				global::Loreline.Internal.Hscript.TType ft = this.getField(itt, "iterator", it, default(global::Loreline.Internal.Lang.Null<bool>));
+				global::Loreline.Internal.Hscript.TType ft = this.getField(itt, "iterator", it, null);
 				if (( ft == null )) {
 					if (( itt._hx_index == 12 )) {
 						object a = ( itt as global::Loreline.Internal.Hscript.TType_TAbstract ).a;
-						global::Loreline.Internal.Root.Array<object> args = ( itt as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
-						global::Loreline.Internal.Hscript.TType at = this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(a, "params", 1836776262, true)) ))) ), args);
+						global::Loreline.Internal.Root.Array args = ( itt as global::Loreline.Internal.Hscript.TType_TAbstract ).args;
+						global::Loreline.Internal.Hscript.TType at = this.apply(((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(a, "t", 116, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(a, "params", 1836776262, true)) ), args);
 						return this.getIteratorType(it, at);
 					}
 					
@@ -7223,21 +7223,21 @@ namespace Loreline.Internal.Hscript {
 					
 					case 376065817:
 					{
-						this.events = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.events = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 339281328:
 					{
-						this.globals = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.globals = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 1505719464:
 					{
-						this.locals = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.locals = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -7543,44 +7543,44 @@ namespace Loreline.Internal.Hscript {
 				switch (hash) {
 					case 220024190:
 					{
-						return this.getIteratorType(dynargs[0], ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						return this.getIteratorType(((object) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 803799311:
 					{
-						return this.typeExpr(dynargs[0], ((global::Loreline.Internal.Hscript._Checker.WithType) (dynargs[1]) ));
+						return this.typeExpr(((object) (dynargs[0]) ), ((global::Loreline.Internal.Hscript._Checker.WithType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 1164701600:
 					{
-						return this.typeField(dynargs[0], global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]), dynargs[2], global::Loreline.Internal.Lang.Runtime.toBool(dynargs[3]));
+						return this.typeField(((object) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), ((object) (dynargs[2]) ), global::Loreline.Internal.Lang.Runtime.toBool(((object) (dynargs[3]) )));
 					}
 					
 					
 					case 1520135451:
 					{
-						this.onCompletion(dynargs[0], ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						this.onCompletion(((object) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 1771684955:
 					{
-						return this.isString(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ));
+						return this.isString(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 24414:
 					{
-						return this.mk(((global::Loreline.Internal.Hscript.ExprDef) (dynargs[0]) ), dynargs[1]);
+						return this.mk(((global::Loreline.Internal.Hscript.ExprDef) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1483922940:
 					{
-						return this.makeIterator(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ));
+						return this.makeIterator(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -7592,80 +7592,80 @@ namespace Loreline.Internal.Hscript {
 					
 					case 466736821:
 					{
-						return this.typeExprWith(dynargs[0], ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						return this.typeExprWith(((object) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 583988803:
 					{
-						return this.unasync(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ));
+						return this.unasync(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1617601604:
 					{
-						return this.getField(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]), dynargs[2], global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 3 )) ? (dynargs[3]) : (null) )));
+						return this.getField(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), ((object) (dynargs[2]) ), ( (( dynargs.Length > 3 )) ? (((object) (dynargs[3]) )) : (null) ));
 					}
 					
 					
 					case 2095388591:
 					{
-						return this.getFields(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ));
+						return this.getFields(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 2039910769:
 					{
-						return this.follow(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ));
+						return this.follow(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 839165814:
 					{
-						return this.mapType(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Lang.Function) (dynargs[1]) ));
+						return this.mapType(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Lang.Function) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 607880558:
 					{
-						return this.apply(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[1]) ))) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[2]) ))) ));
+						return this.apply(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[1]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[2]) )) ));
 					}
 					
 					
 					case 652696899:
 					{
-						this.unify(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ), dynargs[2]);
+						this.unify(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ), ((object) (dynargs[2]) ));
 						break;
 					}
 					
 					
 					case 179179016:
 					{
-						return this.tryUnify(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						return this.tryUnify(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 1463210438:
 					{
-						return this.typeEq(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						return this.typeEq(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 1202919418:
 					{
-						return this.link(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ), dynargs[2]);
+						return this.link(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ), ((object) (dynargs[2]) ));
 					}
 					
 					
 					case 2034790270:
 					{
-						return this.linkLoop(((global::Loreline.Internal.Hscript.TType) (dynargs[0]) ), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						return this.linkLoop(((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 1135011784:
 					{
-						return this.makeType(((global::Loreline.Internal.Hscript.CType) (dynargs[0]) ), dynargs[1]);
+						return this.makeType(((global::Loreline.Internal.Hscript.CType) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
@@ -7677,26 +7677,26 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1932118984:
 					{
-						this.error(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), dynargs[1]);
+						this.error(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((object) (dynargs[1]) ));
 						break;
 					}
 					
 					
 					case 1125041792:
 					{
-						return this.edef(dynargs[0]);
+						return this.edef(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 1169594568:
 					{
-						return this.check(dynargs[0], ((global::Loreline.Internal.Hscript._Checker.WithType) (( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )));
+						return this.check(((object) (dynargs[0]) ), ((global::Loreline.Internal.Hscript._Checker.WithType) (( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )) ), ( (( dynargs.Length > 2 )) ? (((object) (dynargs[2]) )) : (null) ));
 					}
 					
 					
 					case 759140663:
 					{
-						return this.typeArgs(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ), dynargs[1]);
+						return this.typeArgs(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
@@ -7708,28 +7708,28 @@ namespace Loreline.Internal.Hscript {
 					
 					case 66662680:
 					{
-						this.setEvent(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						this.setEvent(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 123315877:
 					{
-						this.setGlobal(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((global::Loreline.Internal.Hscript.TType) (dynargs[1]) ));
+						this.setGlobal(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((global::Loreline.Internal.Hscript.TType) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 383765703:
 					{
-						this.removeGlobal(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						this.removeGlobal(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 						break;
 					}
 					
 					
 					case 1729636910:
 					{
-						this.setGlobals(dynargs[0], global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						this.setGlobals(((object) (dynargs[0]) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 						break;
 					}
 					
@@ -7746,7 +7746,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("onTopDownEnum");
 			baseArr.push("allowUntypedMeta");
 			baseArr.push("allowGlobalsDefine");
@@ -7782,11 +7782,11 @@ namespace Loreline.Internal.Hscript {
 		public override object __hx_invoke0_o() {
 			global::Loreline.Internal.Hscript.Checker _gthis1 = this._gthis;
 			global::Loreline.Internal.Hscript.TType f = ((global::Loreline.Internal.Hscript.TType) (global::Loreline.Internal.Lang.Runtime.getField(this.f1, "t", 116, true)) );
-			global::Loreline.Internal.Root.Array<object> f2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.f1, "params", 1836776262, true)) ))) );
-			global::Loreline.Internal.Root.Array<object> _g = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array f2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.f1, "params", 1836776262, true)) );
+			global::Loreline.Internal.Root.Array _g = new global::Loreline.Internal.Root.Array(new object[]{});
 			{
 				int _g1 = 0;
-				int _g2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.f1, "params", 1836776262, true)) ))) ).length;
+				int _g2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.f1, "params", 1836776262, true)) ).length;
 				while (( _g1 < _g2 )) {
 					int i = _g1++;
 					_g.push(this._gthis.makeMono());
@@ -7820,7 +7820,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public override object __hx_invoke0_o() {
 			this._gthis.currentFunType = this.ft;
-			this._gthis.typeExpr(this.e[0], global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
+			this._gthis.typeExpr(((object) (this.e[0]) ), global::Loreline.Internal.Hscript._Checker.WithType.NoValue);
 			return this.ft;
 		}
 		
@@ -7840,7 +7840,7 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public class Checker_apply_742__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Checker_apply_742__Fun(global::Loreline.Internal.Ds.EnumValueMap<object, object> subst, global::Loreline.Internal.Lang.Function[] map, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
+		public Checker_apply_742__Fun(global::Loreline.Internal.Ds.EnumValueMap subst, global::Loreline.Internal.Lang.Function[] map, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
 			this.subst = subst;
 			this.map = map;
 			this._gthis = _gthis;
@@ -7849,16 +7849,16 @@ namespace Loreline.Internal.Hscript {
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			global::Loreline.Internal.Hscript.TType t = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Hscript.TType) (((object) (__fn_float1) )) )) : (((global::Loreline.Internal.Hscript.TType) (__fn_dyn1) )) );
-			global::Loreline.Internal.Hscript.TType st = ((global::Loreline.Internal.Hscript.TType) ((this.subst.@get(t)).@value) );
+			global::Loreline.Internal.Hscript.TType st = ((global::Loreline.Internal.Hscript.TType) (this.subst.@get(t)) );
 			if (( st != null )) {
 				return st;
 			}
 			
-			return this._gthis.mapType(t, this.map[0]);
+			return this._gthis.mapType(t, ((global::Loreline.Internal.Lang.Function) (this.map[0]) ));
 		}
 		
 		
-		public global::Loreline.Internal.Ds.EnumValueMap<object, object> subst;
+		public global::Loreline.Internal.Ds.EnumValueMap subst;
 		
 		public global::Loreline.Internal.Lang.Function[] map;
 		
@@ -7873,7 +7873,7 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public class Checker_getFields_792__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Checker_getFields_792__Fun(object[] c, global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
+		public Checker_getFields_792__Fun(object[] c, global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
 			this.c = c;
 			this.args = args;
 			this._gthis = _gthis;
@@ -7882,13 +7882,13 @@ namespace Loreline.Internal.Hscript {
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			global::Loreline.Internal.Hscript.TType t = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Hscript.TType) (((object) (__fn_float1) )) )) : (((global::Loreline.Internal.Hscript.TType) (__fn_dyn1) )) );
-			return this._gthis.apply(t, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.c[0], "params", 1836776262, true)) ))) ), this.args);
+			return this._gthis.apply(t, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(((object) (this.c[0]) ), "params", 1836776262, true)) ), this.args);
 		}
 		
 		
 		public object[] c;
 		
-		public global::Loreline.Internal.Root.Array<object> args;
+		public global::Loreline.Internal.Root.Array args;
 		
 		public global::Loreline.Internal.Hscript.Checker _gthis;
 		
@@ -7901,7 +7901,7 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public class Checker_getFields_814__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Checker_getFields_814__Fun(global::Loreline.Internal.Lang.Function curMap, object csup, global::Loreline.Internal.Root.Array<object> args1, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
+		public Checker_getFields_814__Fun(global::Loreline.Internal.Lang.Function curMap, object csup, global::Loreline.Internal.Root.Array args1, global::Loreline.Internal.Hscript.Checker _gthis) : base(1, 0) {
 			this.curMap = curMap;
 			this.csup = csup;
 			this.args1 = args1;
@@ -7911,7 +7911,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			global::Loreline.Internal.Hscript.TType t = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Hscript.TType) (((object) (__fn_float1) )) )) : (((global::Loreline.Internal.Hscript.TType) (__fn_dyn1) )) );
-			return ((global::Loreline.Internal.Hscript.TType) (this.curMap.__hx_invoke1_o(default(double), this._gthis.apply(t, ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.csup, "params", 1836776262, true)) ))) ), this.args1))) );
+			return ((global::Loreline.Internal.Hscript.TType) (this.curMap.__hx_invoke1_o(default(double), this._gthis.apply(t, ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(this.csup, "params", 1836776262, true)) ), this.args1))) );
 		}
 		
 		
@@ -7919,7 +7919,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public object csup;
 		
-		public global::Loreline.Internal.Root.Array<object> args1;
+		public global::Loreline.Internal.Root.Array args1;
 		
 		public global::Loreline.Internal.Hscript.Checker _gthis;
 		

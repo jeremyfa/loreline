@@ -32,13 +32,13 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public ParserContext(string rootPath, string path, global::Loreline.Internal.Ds.StringMap<object> imports, global::Loreline.Internal.Ds.StringMap<bool> imported) {
+		public ParserContext(string rootPath, string path, global::Loreline.Internal.Ds.StringMap imports, global::Loreline.Internal.Ds.StringMap imported) {
 			global::Loreline.Runtime.ParserContext.__hx_ctor_loreline_ParserContext(this, rootPath, path, imports, imported);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_ParserContext(global::Loreline.Runtime.ParserContext __hx_this, string rootPath, string path, global::Loreline.Internal.Ds.StringMap<object> imports, global::Loreline.Internal.Ds.StringMap<bool> imported) {
-			__hx_this.imported = new global::Loreline.Internal.Ds.StringMap<bool>();
+		protected static void __hx_ctor_loreline_ParserContext(global::Loreline.Runtime.ParserContext __hx_this, string rootPath, string path, global::Loreline.Internal.Ds.StringMap imports, global::Loreline.Internal.Ds.StringMap imported) {
+			__hx_this.imported = new global::Loreline.Internal.Ds.StringMap();
 			{
 				__hx_this.rootPath = rootPath;
 				__hx_this.path = path;
@@ -56,23 +56,23 @@ namespace Loreline.Runtime {
 		
 		public string path;
 		
-		public global::Loreline.Internal.Ds.StringMap<object> imports;
+		public global::Loreline.Internal.Ds.StringMap imports;
 		
-		public global::Loreline.Internal.Ds.StringMap<bool> imported;
+		public global::Loreline.Internal.Ds.StringMap imported;
 		
 		public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
 					case 662297860:
 					{
-						this.imported = ((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.imported = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 1774884718:
 					{
-						this.imports = ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.imports = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -140,7 +140,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("imported");
 			baseArr.push("imports");
 			baseArr.push("path");
@@ -158,27 +158,22 @@ namespace Loreline.Runtime {
 namespace Loreline.Runtime {
 	public class Parser : global::Loreline.Internal.Lang.HxObject {
 		
-		static Parser() {
-			global::Loreline.Runtime.Parser.parse_parsing = false;
-		}
-		
-		
 		public Parser(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public Parser(global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Runtime.ParserContext context) {
+		public Parser(global::Loreline.Internal.Root.Array tokens, global::Loreline.Runtime.ParserContext context) {
 			global::Loreline.Runtime.Parser.__hx_ctor_loreline_Parser(this, tokens, context);
 		}
 		
 		
-		protected static void __hx_ctor_loreline_Parser(global::Loreline.Runtime.Parser __hx_this, global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Runtime.ParserContext context) {
+		protected static void __hx_ctor_loreline_Parser(global::Loreline.Runtime.Parser __hx_this, global::Loreline.Internal.Root.Array tokens, global::Loreline.Runtime.ParserContext context) {
 			unchecked {
 				__hx_this.tokens = tokens;
 				__hx_this.current = 0;
 				__hx_this.errors = null;
 				__hx_this.pendingComments = null;
-				__hx_this.lastTokenEnd = new global::Loreline.Runtime.Position(((int) (1) ), ((int) (1) ), ((int) (0) ), default(global::Loreline.Internal.Lang.Null<int>));
+				__hx_this.lastTokenEnd = new global::Loreline.Runtime.Position(((int) (1) ), ((int) (1) ), ((int) (0) ), default(object));
 				__hx_this.lastLineBreak = null;
 				__hx_this.lineBreakAfterToken = false;
 				__hx_this.currentNodeId = global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED;
@@ -188,15 +183,13 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static bool parse_parsing;
-		
-		public global::Loreline.Internal.Root.Array<object> tokens;
+		public global::Loreline.Internal.Root.Array tokens;
 		
 		public int current;
 		
-		public global::Loreline.Internal.Root.Array<object> errors;
+		public global::Loreline.Internal.Root.Array errors;
 		
-		public global::Loreline.Internal.Root.Array<object> pendingComments;
+		public global::Loreline.Internal.Root.Array pendingComments;
 		
 		public global::Loreline.Runtime.Position lastTokenEnd;
 		
@@ -212,23 +205,17 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.Script parse() {
 			unchecked {
-				bool rootParsing =  ! (global::Loreline.Runtime.Parser.parse_parsing) ;
-				if (rootParsing) {
-					global::Loreline.Runtime.Parser.parse_parsing = true;
-					this.currentNodeId = global::Loreline.Runtime._Node.NodeId_Impl_.UNDEFINED;
-				}
-				
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Internal.Root.Array<object> nodes = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-				global::Loreline.Runtime.Script script = new global::Loreline.Runtime.Script(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((global::Loreline.Internal.Root.Array<object>) (nodes) ));
+				global::Loreline.Internal.Root.Array nodes = new global::Loreline.Internal.Root.Array(new object[]{});
+				global::Loreline.Runtime.Script script = new global::Loreline.Runtime.Script(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((global::Loreline.Internal.Root.Array) (nodes) ));
 				while ( ! (this.isAtEnd()) ) {
 					try {
-						global::Loreline.Runtime.AstNode node = this.parseNode(new global::Loreline.Internal.Lang.Null<bool>(true, true));
+						global::Loreline.Runtime.AstNode node = this.parseNode(true);
 						if (( node != null )) {
 							nodes.push(node);
 						}
 						
-						while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+						while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 						}
 						
 					}
@@ -251,18 +238,15 @@ namespace Loreline.Runtime {
 					
 				}
 				
-				if (rootParsing) {
-					global::Loreline.Runtime.Parser.parse_parsing = false;
-				}
-				
+				global::Loreline.Runtime.Script __temp_expr1 = ((global::Loreline.Runtime.Script) (this.attachComments(((object) (script) ))) );
 				return script;
 			}
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> getErrors() {
+		public virtual global::Loreline.Internal.Root.Array getErrors() {
 			if (( this.errors == null )) {
-				this.errors = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				this.errors = new global::Loreline.Internal.Root.Array(new object[]{});
 			}
 			
 			return this.errors;
@@ -313,7 +297,7 @@ namespace Loreline.Runtime {
 			unchecked {
 				int i = ( this.current + 1 );
 				while (( i < this.tokens.length )) {
-					global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[i]) ).type;
+					global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(i)) ).type;
 					switch (_g._hx_index) {
 						case 43:
 						{
@@ -331,7 +315,15 @@ namespace Loreline.Runtime {
 						}
 						
 						
-						case 47:
+						case 45:
+						{
+							string _g3 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+							 ++ i;
+							break;
+						}
+						
+						
+						case 48:
 						{
 							 ++ i;
 							break;
@@ -340,39 +332,39 @@ namespace Loreline.Runtime {
 						
 						default:
 						{
-							return ((global::Loreline.Runtime.Token) (this.tokens[i]) );
+							return ((global::Loreline.Runtime.Token) (this.tokens.__get(i)) );
 						}
 						
 					}
 					
 				}
 				
-				return ((global::Loreline.Runtime.Token) (this.tokens[( this.tokens.length - 1 )]) );
+				return ((global::Loreline.Runtime.Token) (this.tokens.__get(( this.tokens.length - 1 ))) );
 			}
 		}
 		
 		
-		public virtual global::Loreline.Runtime.Token advance(global::Loreline.Internal.Lang.Null<bool> advanceLineBreaks) {
+		public virtual global::Loreline.Runtime.Token advance(object advanceLineBreaks) {
 			unchecked {
-				bool advanceLineBreaks1 = ( ( ! (advanceLineBreaks.hasValue) ) ? (true) : ((advanceLineBreaks).@value) );
-				global::Loreline.Runtime.Token prev = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) );
+				bool advanceLineBreaks1 = ( (( advanceLineBreaks == default(object) )) ? (true) : (global::Loreline.Internal.Lang.Runtime.toBool(advanceLineBreaks)) );
+				global::Loreline.Runtime.Token prev = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) );
 				if ( ! (this.isAtEnd()) ) {
 					this.lastTokenEnd = prev.pos;
 					this.lineBreakAfterToken = false;
-					while (( (  ! (this.isAtEnd())  && ( ((global::Loreline.Runtime.Token) (this.tokens[( this.current + 1 )]) ) != null ) ) && (( this.isComment(((global::Loreline.Runtime.Token) (this.tokens[( this.current + 1 )]) ).type) || ( advanceLineBreaks1 && ( ((global::Loreline.Runtime.Token) (this.tokens[( this.current + 1 )]) ).type == global::Loreline.Runtime.TokenType.LineBreak ) ) )) )) {
+					while (( (  ! (this.isAtEnd())  && ( ((global::Loreline.Runtime.Token) (this.tokens.__get(( this.current + 1 ))) ) != null ) ) && (( this.isComment(((global::Loreline.Runtime.Token) (this.tokens.__get(( this.current + 1 ))) ).type) || ( advanceLineBreaks1 && ( ((global::Loreline.Runtime.Token) (this.tokens.__get(( this.current + 1 ))) ).type == global::Loreline.Runtime.TokenType.LineBreak ) ) )) )) {
 						this.current++;
 						{
-							global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+							global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 							switch (_g._hx_index) {
 								case 43:
 								{
 									string content = ( _g as global::Loreline.Runtime.TokenType_CommentLine ).content;
 									{
 										if (( this.pendingComments == null )) {
-											this.pendingComments = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+											this.pendingComments = new global::Loreline.Internal.Root.Array(new object[]{});
 										}
 										
-										this.pendingComments.push(new global::Loreline.Runtime.Comment(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((string) (content) ), ((bool) (false) )));
+										this.pendingComments.push(new global::Loreline.Runtime.Comment(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((string) (content) ), ((bool) (false) ), default(object)));
 									}
 									
 									break;
@@ -384,17 +376,32 @@ namespace Loreline.Runtime {
 									string content1 = ( _g as global::Loreline.Runtime.TokenType_CommentMultiLine ).content;
 									{
 										if (( this.pendingComments == null )) {
-											this.pendingComments = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+											this.pendingComments = new global::Loreline.Internal.Root.Array(new object[]{});
 										}
 										
-										this.pendingComments.push(new global::Loreline.Runtime.Comment(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((string) (content1) ), ((bool) (true) )));
+										this.pendingComments.push(new global::Loreline.Runtime.Comment(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((string) (content1) ), ((bool) (true) ), default(object)));
 									}
 									
 									break;
 								}
 								
 								
-								case 47:
+								case 45:
+								{
+									string content2 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+									{
+										if (( this.pendingComments == null )) {
+											this.pendingComments = new global::Loreline.Internal.Root.Array(new object[]{});
+										}
+										
+										this.pendingComments.push(new global::Loreline.Runtime.Comment(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((string) (content2) ), ((bool) (false) ), ((object) (true) )));
+									}
+									
+									break;
+								}
+								
+								
+								case 48:
 								{
 									this.lastLineBreak = this.currentPos();
 									this.lineBreakAfterToken = true;
@@ -423,7 +430,7 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.Token previous() {
 			unchecked {
-				return ((global::Loreline.Runtime.Token) (this.tokens[( this.current - 1 )]) );
+				return ((global::Loreline.Runtime.Token) (this.tokens.__get(( this.current - 1 ))) );
 			}
 		}
 		
@@ -432,8 +439,8 @@ namespace Loreline.Runtime {
 			unchecked {
 				int n = ( this.current - 1 );
 				while (( n >= 0 )) {
-					if (global::Loreline.Runtime.TokenTypeHelpers.@equals(((global::Loreline.Runtime.Token) (this.tokens[n]) ).type, type)) {
-						return ((global::Loreline.Runtime.Token) (this.tokens[n]) );
+					if (global::Loreline.Runtime.TokenTypeHelpers.@equals(((global::Loreline.Runtime.Token) (this.tokens.__get(n)) ).type, type)) {
+						return ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) );
 					}
 					
 					 -- n;
@@ -449,10 +456,10 @@ namespace Loreline.Runtime {
 				int n = ( this.current - 1 );
 				while (( n >= 0 )) {
 					{
-						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[n]) ).type;
+						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) ).type;
 						if (( _g._hx_index == 13 )) {
 							string _g1 = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
-							return ((global::Loreline.Runtime.Token) (this.tokens[n]) );
+							return ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) );
 						}
 						
 					}
@@ -470,7 +477,7 @@ namespace Loreline.Runtime {
 				int n = ( this.current - 1 );
 				while (( n >= 0 )) {
 					{
-						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[n]) ).type;
+						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) ).type;
 						switch (_g._hx_index) {
 							case 43:
 							{
@@ -487,8 +494,15 @@ namespace Loreline.Runtime {
 							
 							
 							case 45:
+							{
+								string _g3 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+								break;
+							}
+							
+							
 							case 46:
 							case 47:
+							case 48:
 							{
 								break;
 							}
@@ -496,7 +510,7 @@ namespace Loreline.Runtime {
 							
 							default:
 							{
-								return ((global::Loreline.Runtime.Token) (this.tokens[n]) );
+								return ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) );
 							}
 							
 						}
@@ -516,7 +530,7 @@ namespace Loreline.Runtime {
 				int n = this.current;
 				while (( n < this.tokens.length )) {
 					{
-						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[n]) ).type;
+						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) ).type;
 						switch (_g._hx_index) {
 							case 43:
 							{
@@ -533,8 +547,15 @@ namespace Loreline.Runtime {
 							
 							
 							case 45:
+							{
+								string _g3 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+								break;
+							}
+							
+							
 							case 46:
 							case 47:
+							case 48:
 							{
 								break;
 							}
@@ -542,7 +563,7 @@ namespace Loreline.Runtime {
 							
 							default:
 							{
-								return ((global::Loreline.Runtime.Token) (this.tokens[n]) );
+								return ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) );
 							}
 							
 						}
@@ -562,7 +583,7 @@ namespace Loreline.Runtime {
 				int n = this.current;
 				while (( n < this.tokens.length )) {
 					{
-						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[n]) ).type;
+						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) ).type;
 						switch (_g._hx_index) {
 							case 43:
 							{
@@ -578,7 +599,14 @@ namespace Loreline.Runtime {
 							}
 							
 							
-							case 47:
+							case 45:
+							{
+								string _g3 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+								break;
+							}
+							
+							
+							case 48:
 							{
 								break;
 							}
@@ -586,7 +614,7 @@ namespace Loreline.Runtime {
 							
 							default:
 							{
-								return ((global::Loreline.Runtime.Token) (this.tokens[n]) );
+								return ((global::Loreline.Runtime.Token) (this.tokens.__get(n)) );
 							}
 							
 						}
@@ -603,16 +631,33 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.Position currentPos() {
 			unchecked {
-				global::Loreline.Runtime.Token tmp = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) );
+				global::Loreline.Runtime.Token tmp = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) );
 				global::Loreline.Runtime.Position tmp1 = ( (( tmp != null )) ? (tmp.pos) : (null) );
 				if (( tmp1 != null )) {
 					return tmp1;
 				}
 				else {
-					return new global::Loreline.Runtime.Position(((int) (1) ), ((int) (1) ), ((int) (0) ), new global::Loreline.Internal.Lang.Null<int>(0, true));
+					return new global::Loreline.Runtime.Position(((int) (1) ), ((int) (1) ), ((int) (0) ), ((object) (0) ));
 				}
 				
 			}
+		}
+		
+		
+		public virtual string currentTokenTypeToString() {
+			if (( ( this.tokens != null ) && ( this.current >= 0 ) )) {
+				global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) );
+				global::Loreline.Runtime.TokenType tmp = ( (( token != null )) ? (token.type) : (null) );
+				if (( tmp != null )) {
+					return global::Loreline.Runtime.TokenTypeHelpers.toCodeString(tmp);
+				}
+				else {
+					return null;
+				}
+				
+			}
+			
+			return null;
 		}
 		
 		
@@ -623,10 +668,10 @@ namespace Loreline.Runtime {
 				}
 				
 				if (( type._hx_index == 34 )) {
-					return ( ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type == global::Loreline.Runtime.TokenType.Colon );
+					return ( ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type == global::Loreline.Runtime.TokenType.Colon );
 				}
 				else {
-					return global::Loreline.Runtime.TokenTypeHelpers.@equals(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type, type);
+					return global::Loreline.Runtime.TokenTypeHelpers.@equals(((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type, type);
 				}
 				
 			}
@@ -635,9 +680,9 @@ namespace Loreline.Runtime {
 		
 		public virtual bool checkString() {
 			unchecked {
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				if (( _g._hx_index == 9 )) {
-					global::Loreline.Internal.Root.Array<object> _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+					global::Loreline.Internal.Root.Array _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
 					int s = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 					string attachments = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
 					return true;
@@ -652,7 +697,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool isAtEnd() {
 			if (( this.current < this.tokens.length )) {
-				return ( ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type == global::Loreline.Runtime.TokenType.Eof );
+				return ( ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type == global::Loreline.Runtime.TokenType.Eof );
 			}
 			else {
 				return true;
@@ -678,6 +723,13 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 45:
+					{
+						string _g2 = ( type as global::Loreline.Runtime.TokenType_CommentHash ).content;
+						return true;
+					}
+					
+					
 					default:
 					{
 						return false;
@@ -689,19 +741,19 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime.AstNode parseNode(global::Loreline.Internal.Lang.Null<bool> topLevel) {
+		public virtual global::Loreline.Runtime.AstNode parseNode(object topLevel) {
 			unchecked {
-				bool topLevel1 = ( ( ! (topLevel.hasValue) ) ? (false) : ((topLevel).@value) );
-				while (( this.isComment(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type) || ( ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type == global::Loreline.Runtime.TokenType.LineBreak ) )) {
-					if (this.isComment(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type)) {
+				bool topLevel1 = ( (( topLevel == default(object) )) ? (false) : (global::Loreline.Internal.Lang.Runtime.toBool(topLevel)) );
+				while (( this.isComment(((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type) || ( ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type == global::Loreline.Runtime.TokenType.LineBreak ) )) {
+					if (this.isComment(((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type)) {
 						if (( this.pendingComments == null )) {
-							this.pendingComments = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							this.pendingComments = new global::Loreline.Internal.Root.Array(new object[]{});
 						}
 						
-						global::Loreline.Internal.Root.Array<object> tmp = this.pendingComments;
+						global::Loreline.Internal.Root.Array tmp = this.pendingComments;
 						long tmp1 = this.nextNodeId(((int) (4) ));
 						global::Loreline.Runtime.Position tmp2 = this.currentPos();
-						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+						global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 						string tmp3 = null;
 						switch (_g._hx_index) {
 							case 43:
@@ -720,6 +772,14 @@ namespace Loreline.Runtime {
 							}
 							
 							
+							case 45:
+							{
+								string content2 = ( _g as global::Loreline.Runtime.TokenType_CommentHash ).content;
+								tmp3 = content2;
+								break;
+							}
+							
+							
 							default:
 							{
 								tmp3 = "";
@@ -728,7 +788,7 @@ namespace Loreline.Runtime {
 							
 						}
 						
-						global::Loreline.Runtime.TokenType _g1 = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+						global::Loreline.Runtime.TokenType _g1 = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 						bool tmp4 = default(bool);
 						if (( _g1._hx_index == 44 )) {
 							string _g2 = ( _g1 as global::Loreline.Runtime.TokenType_CommentMultiLine ).content;
@@ -738,10 +798,20 @@ namespace Loreline.Runtime {
 							tmp4 = false;
 						}
 						
-						tmp.push(new global::Loreline.Runtime.Comment(((long) (tmp1) ), ((global::Loreline.Runtime.Position) (tmp2) ), ((string) (tmp3) ), ((bool) (tmp4) )));
+						global::Loreline.Runtime.TokenType _g3 = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
+						bool tmp5 = default(bool);
+						if (( _g3._hx_index == 45 )) {
+							string _g4 = ( _g3 as global::Loreline.Runtime.TokenType_CommentHash ).content;
+							tmp5 = true;
+						}
+						else {
+							tmp5 = false;
+						}
+						
+						tmp.push(new global::Loreline.Runtime.Comment(((long) (tmp1) ), ((global::Loreline.Runtime.Position) (tmp2) ), ((string) (tmp3) ), ((bool) (tmp4) ), ((object) (tmp5) )));
 					}
 					
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+					this.advance(null);
 					if (this.isAtEnd()) {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Unexpected end of file") ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 					}
@@ -753,8 +823,8 @@ namespace Loreline.Runtime {
 				}
 				
 				global::Loreline.Runtime.Parser _gthis = this;
-				global::Loreline.Runtime.TokenType _g3 = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
-				switch (_g3._hx_index) {
+				global::Loreline.Runtime.TokenType _g5 = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
+				switch (_g5._hx_index) {
 					case 0:
 					{
 						return this.parseImport();
@@ -779,9 +849,9 @@ namespace Loreline.Runtime {
 							return this.parseCharacterDecl();
 						}
 						else {
-							this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
-							this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+							this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
+							this.advance(null);
+							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						}
 						
 					}
@@ -815,7 +885,7 @@ namespace Loreline.Runtime {
 					
 					case 7:
 					{
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+						this.advance(null);
 						if ( ! (this.check(global::Loreline.Runtime.TokenType.KwState)) ) {
 							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Expected \'state\' after \'new\'") ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 						}
@@ -833,16 +903,17 @@ namespace Loreline.Runtime {
 					
 					case 8:
 					{
-						string _g4 = ( _g3 as global::Loreline.Runtime.TokenType_Function ).name;
-						global::Loreline.Internal.Root.Array<string> _g5 = ( _g3 as global::Loreline.Runtime.TokenType_Function ).args;
-						string _g6 = ( _g3 as global::Loreline.Runtime.TokenType_Function ).code;
+						string _g6 = ( _g5 as global::Loreline.Runtime.TokenType_Function ).name;
+						global::Loreline.Internal.Root.Array _g7 = ( _g5 as global::Loreline.Runtime.TokenType_Function ).args;
+						string _g8 = ( _g5 as global::Loreline.Runtime.TokenType_Function ).code;
+						bool _g9 = ( _g5 as global::Loreline.Runtime.TokenType_Function ).external;
 						if (topLevel1) {
 							return this.parseFunction();
 						}
 						else {
-							this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
-							this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+							this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
+							this.advance(null);
+							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						}
 						
 					}
@@ -850,9 +921,9 @@ namespace Loreline.Runtime {
 					
 					case 9:
 					{
-						int _g7 = ( _g3 as global::Loreline.Runtime.TokenType_LString ).quotes;
-						string _g8 = ( _g3 as global::Loreline.Runtime.TokenType_LString ).s;
-						global::Loreline.Internal.Root.Array<object> _g9 = ( _g3 as global::Loreline.Runtime.TokenType_LString ).attachments;
+						int _g10 = ( _g5 as global::Loreline.Runtime.TokenType_LString ).quotes;
+						string _g11 = ( _g5 as global::Loreline.Runtime.TokenType_LString ).s;
+						global::Loreline.Internal.Root.Array _g12 = ( _g5 as global::Loreline.Runtime.TokenType_LString ).attachments;
 						global::Loreline.Runtime.AstNode node3 = this.parseTextStatement();
 						if (topLevel1) {
 							return _gthis.wrapInRootBeat(node3);
@@ -866,33 +937,67 @@ namespace Loreline.Runtime {
 					
 					case 10:
 					{
-						double _g10 = ( _g3 as global::Loreline.Runtime.TokenType_LNumber ).n;
-						return this.parseExpressionStatement();
+						double _g13 = ( _g5 as global::Loreline.Runtime.TokenType_LNumber ).n;
+						global::Loreline.Runtime.AstNode node4 = this.parseExpressionStatement();
+						if (topLevel1) {
+							return _gthis.wrapInRootBeat(node4);
+						}
+						else {
+							return node4;
+						}
+						
 					}
 					
 					
 					case 11:
 					{
-						bool _g11 = ( _g3 as global::Loreline.Runtime.TokenType_LBoolean ).b;
-						return this.parseExpressionStatement();
+						bool _g14 = ( _g5 as global::Loreline.Runtime.TokenType_LBoolean ).b;
+						global::Loreline.Runtime.AstNode node5 = this.parseExpressionStatement();
+						if (topLevel1) {
+							return _gthis.wrapInRootBeat(node5);
+						}
+						else {
+							return node5;
+						}
+						
 					}
 					
 					
 					case 13:
 					{
-						string _g12 = ( _g3 as global::Loreline.Runtime.TokenType_Identifier ).name;
+						string _g15 = ( _g5 as global::Loreline.Runtime.TokenType_Identifier ).name;
 						if (( this.peek().type == global::Loreline.Runtime.TokenType.Colon )) {
-							global::Loreline.Runtime.AstNode node4 = this.parseDialogueStatement();
+							global::Loreline.Runtime.AstNode node6 = this.parseDialogueStatement();
 							if (topLevel1) {
-								return _gthis.wrapInRootBeat(node4);
+								return _gthis.wrapInRootBeat(node6);
 							}
 							else {
-								return node4;
+								return node6;
 							}
 							
 						}
 						else {
-							return this.parseExpressionStatement();
+							global::Loreline.Runtime.AstNode node7 = this.parseExpressionStatement();
+							if (topLevel1) {
+								return _gthis.wrapInRootBeat(node7);
+							}
+							else {
+								return node7;
+							}
+							
+						}
+						
+					}
+					
+					
+					case 19:
+					{
+						global::Loreline.Runtime.AstNode node8 = this.parseInsertion();
+						if (topLevel1) {
+							return _gthis.wrapInRootBeat(node8);
+						}
+						else {
+							return node8;
 						}
 						
 					}
@@ -905,18 +1010,25 @@ namespace Loreline.Runtime {
 					case 39:
 					case 41:
 					{
-						return this.parseExpressionStatement();
+						global::Loreline.Runtime.AstNode node9 = this.parseExpressionStatement();
+						if (topLevel1) {
+							return _gthis.wrapInRootBeat(node9);
+						}
+						else {
+							return node9;
+						}
+						
 					}
 					
 					
 					case 33:
 					{
-						global::Loreline.Runtime.AstNode node5 = this.parseTransition();
+						global::Loreline.Runtime.AstNode node10 = this.parseTransition();
 						if (topLevel1) {
-							return _gthis.wrapInRootBeat(node5);
+							return _gthis.wrapInRootBeat(node10);
 						}
 						else {
-							return node5;
+							return node10;
 						}
 						
 					}
@@ -924,9 +1036,9 @@ namespace Loreline.Runtime {
 					
 					default:
 					{
-						this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+						this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected: ", this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
+						this.advance(null);
+						return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 					}
 					
 				}
@@ -937,12 +1049,12 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.NBeatDecl wrapInRootBeat(global::Loreline.Runtime.AstNode node) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> body = null;
+				global::Loreline.Internal.Root.Array body = null;
 				global::Loreline.Runtime.NBeatDecl result = null;
 				if (( this.rootBeat == null )) {
 					global::Loreline.Runtime.Position startPos = this.currentPos();
-					body = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-					this.rootBeat = new global::Loreline.Runtime.NBeatDecl(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) ("_") ), ((global::Loreline.Internal.Root.Array<object>) (body) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+					body = new global::Loreline.Internal.Root.Array(new object[]{});
+					this.rootBeat = new global::Loreline.Runtime.NBeatDecl(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) ("_") ), ((global::Loreline.Internal.Root.Array) (body) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 					result = this.rootBeat;
 				}
 				else {
@@ -964,11 +1076,11 @@ namespace Loreline.Runtime {
 				}
 				
 				int quotes = ((int) (0) );
-				global::Loreline.Runtime.Token pathToken = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) );
+				global::Loreline.Runtime.Token pathToken = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) );
 				string rawImportPath = null;
 				global::Loreline.Runtime.TokenType _g = pathToken.type;
 				if (( _g._hx_index == 9 )) {
-					global::Loreline.Internal.Root.Array<object> _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+					global::Loreline.Internal.Root.Array _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
 					int q = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 					string s = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
 					quotes = q;
@@ -980,7 +1092,7 @@ namespace Loreline.Runtime {
 				
 				string importPath = rawImportPath;
 				if ( ! (global::Loreline.Internal.Io.Path.isAbsolute(importPath)) ) {
-					importPath = global::Loreline.Internal.Io.Path.@join(new global::Loreline.Internal.Root.Array<string>(new string[]{global::Loreline.Internal.Io.Path.directory(this.context.rootPath), importPath}));
+					importPath = global::Loreline.Internal.Io.Path.@join(new global::Loreline.Internal.Root.Array(new object[]{global::Loreline.Internal.Io.Path.directory(this.context.rootPath), importPath}));
 				}
 				
 				importPath = global::Loreline.Internal.Io.Path.normalize(importPath);
@@ -993,26 +1105,26 @@ namespace Loreline.Runtime {
 					importPath = global::Loreline.Internal.Lang.Runtime.concat(importPath, ext);
 				}
 				
-				if (((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, bool>) (this.context.imported) )) ))) ).exists(importPath)) {
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-					global::Loreline.Runtime.NImportStatement node = new global::Loreline.Runtime.NImportStatement(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Runtime.Script), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-					node.path = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(rawImportPath)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-					return ((global::Loreline.Runtime.NImportStatement) (this.attachComments<object>(((object) (node) ))) );
+				if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.context.imported) )) ).exists(importPath)) {
+					this.advance(null);
+					global::Loreline.Runtime.NImportStatement node = new global::Loreline.Runtime.NImportStatement(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Runtime.Script), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+					node.path = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(rawImportPath)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+					return ((global::Loreline.Runtime.NImportStatement) (this.attachComments(((object) (node) ))) );
 				}
 				
-				global::Loreline.Internal.Root.Array<object> importedTokens = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) ((((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, object>) (this.context.imports) )) ))) ).@get(importPath)).@value) ))) );
+				global::Loreline.Internal.Root.Array importedTokens = ((global::Loreline.Internal.Root.Array) (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.context.imports) )) ).@get(((string) (importPath) ))) );
 				if (( importedTokens == null )) {
 					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Failed to import file at path ", importPath), " ("), rawImportPath), ")")) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 				}
 				
-				global::Loreline.Runtime.Parser tempParser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (importedTokens) ), ((global::Loreline.Runtime.ParserContext) (new global::Loreline.Runtime.ParserContext(((string) (this.context.rootPath) ), ((string) (importPath) ), ((global::Loreline.Internal.Ds.StringMap<object>) (this.context.imports) ), ((global::Loreline.Internal.Ds.StringMap<bool>) (this.context.imported) ))) ));
+				global::Loreline.Runtime.Parser tempParser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (importedTokens) ), ((global::Loreline.Runtime.ParserContext) (new global::Loreline.Runtime.ParserContext(((string) (this.context.rootPath) ), ((string) (importPath) ), ((global::Loreline.Internal.Ds.StringMap) (this.context.imports) ), ((global::Loreline.Internal.Ds.StringMap) (this.context.imported) ))) ));
 				tempParser.currentNodeId = this.currentNodeId;
 				global::Loreline.Runtime.Script importedScript = tempParser.parse();
 				this.currentNodeId = tempParser.currentNodeId;
-				this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-				global::Loreline.Runtime.NImportStatement node1 = new global::Loreline.Runtime.NImportStatement(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), default(global::Loreline.Runtime.NStringLiteral), ((global::Loreline.Runtime.Script) (importedScript) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-				node1.path = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(rawImportPath)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-				return ((global::Loreline.Runtime.NImportStatement) (this.attachComments<object>(((object) (node1) ))) );
+				this.advance(null);
+				global::Loreline.Runtime.NImportStatement node1 = new global::Loreline.Runtime.NImportStatement(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), default(global::Loreline.Runtime.NStringLiteral), ((global::Loreline.Runtime.Script) (importedScript) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				node1.path = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pathToken.pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(rawImportPath)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				return ((global::Loreline.Runtime.NImportStatement) (this.attachComments(((object) (node1) ))) );
 			}
 		}
 		
@@ -1020,8 +1132,8 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NDialogueStatement parseDialogueStatement() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NDialogueStatement dialogue = new global::Loreline.Runtime.NDialogueStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), default(global::Loreline.Runtime.Position), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.NDialogueStatement dialogue = new global::Loreline.Runtime.NDialogueStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), default(global::Loreline.Runtime.Position), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				string tmp = null;
 				if (( _g._hx_index == 13 )) {
 					string name = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
@@ -1032,10 +1144,10 @@ namespace Loreline.Runtime {
 				}
 				
 				dialogue.character = tmp;
-				dialogue.characterPos = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).pos;
-				this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+				dialogue.characterPos = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).pos;
+				this.advance(null);
 				this.expect(global::Loreline.Runtime.TokenType.Colon);
-				global::Loreline.Runtime.NDialogueStatement __temp_expr1 = ((global::Loreline.Runtime.NDialogueStatement) (this.attachComments<object>(((object) (dialogue) ))) );
+				global::Loreline.Runtime.NDialogueStatement __temp_expr1 = ((global::Loreline.Runtime.NDialogueStatement) (this.attachComments(((object) (dialogue) ))) );
 				bool indented = false;
 				if (this.checkBlockStart()) {
 					global::Loreline.Runtime.Token blockToken = this.parseBlockStart();
@@ -1046,9 +1158,28 @@ namespace Loreline.Runtime {
 					indented = true;
 				}
 				
-				dialogue.content = this.parseStringLiteral();
+				try {
+					dialogue.content = this.parseStringLiteral();
+				}
+				catch (global::System.Exception _g1){
+					object _g2 = global::Loreline.Internal.Exception.caught(_g1).unwrap();
+					if (( _g2 is global::Loreline.Runtime.ParseError )) {
+						global::Loreline.Runtime.ParseError e = ((global::Loreline.Runtime.ParseError) (_g2) );
+						{
+							this.addError(e);
+							dialogue.content = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw("?")) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+						}
+						
+					}
+					else {
+						throw;
+					}
+					
+				}
+				
+				
 				if (indented) {
-					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 					}
 					
 					this.expect(global::Loreline.Runtime.TokenType.Unindent);
@@ -1060,11 +1191,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual int parseStatementBlock(global::Loreline.Internal.Root.Array<object> statements) {
+		public virtual int parseStatementBlock(global::Loreline.Internal.Root.Array statements) {
 			unchecked {
 				global::Loreline.Runtime.TokenType blockEnd = ( (( this.parseBlockStart().type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 					if (this.check(blockEnd)) {
@@ -1072,7 +1203,7 @@ namespace Loreline.Runtime {
 					}
 					
 					try {
-						statements.push(this.parseNode(default(global::Loreline.Internal.Lang.Null<bool>)));
+						statements.push(this.parseNode(null));
 					}
 					catch (global::System.Exception _g){
 						object _g1 = global::Loreline.Internal.Exception.caught(_g).unwrap();
@@ -1080,7 +1211,7 @@ namespace Loreline.Runtime {
 							global::Loreline.Runtime.ParseError e = ((global::Loreline.Runtime.ParseError) (_g1) );
 							{
 								if (( this.errors == null )) {
-									this.errors = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									this.errors = new global::Loreline.Internal.Root.Array(new object[]{});
 								}
 								
 								this.errors.push(e);
@@ -1099,7 +1230,7 @@ namespace Loreline.Runtime {
 					}
 					
 					
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 				}
@@ -1119,22 +1250,22 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NStateDecl parseStateDecl(bool temporary) {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NStateDecl stateNode = new global::Loreline.Runtime.NStateDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((bool) (temporary) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NStateDecl stateNode = new global::Loreline.Runtime.NStateDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((bool) (temporary) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.KwState);
 				global::Loreline.Runtime.TokenType blockEnd = ( (( this.parseBlockStart().type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				stateNode.style = ( (( blockEnd == global::Loreline.Runtime.TokenType.RBrace )) ? (((int) (1) )) : (((int) (0) )) );
-				global::Loreline.Runtime.NStateDecl __temp_expr1 = ((global::Loreline.Runtime.NStateDecl) (this.attachComments<object>(((object) (stateNode) ))) );
+				global::Loreline.Runtime.NStateDecl __temp_expr1 = ((global::Loreline.Runtime.NStateDecl) (this.attachComments(((object) (stateNode) ))) );
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 					stateNode.fields.push(this.parseObjectField());
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 				}
 				
-				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 				}
 				
 				this.expect(blockEnd);
@@ -1148,9 +1279,9 @@ namespace Loreline.Runtime {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
 				string name = this.expectIdentifier();
-				global::Loreline.Runtime.NObjectField objectField = new global::Loreline.Runtime.NObjectField(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) (name) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NObjectField objectField = new global::Loreline.Runtime.NObjectField(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) (name) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.Colon);
-				global::Loreline.Runtime.NObjectField __temp_expr1 = ((global::Loreline.Runtime.NObjectField) (this.attachComments<object>(((object) (objectField) ))) );
+				global::Loreline.Runtime.NObjectField __temp_expr1 = ((global::Loreline.Runtime.NObjectField) (this.attachComments(((object) (objectField) ))) );
 				if (this.checkBlockStart()) {
 					objectField.@value = this.parseObjectLiteral();
 				}
@@ -1167,25 +1298,25 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NBeatDecl parseBeatDecl() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NBeatDecl beatNode = new global::Loreline.Runtime.NBeatDecl(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NBeatDecl beatNode = new global::Loreline.Runtime.NBeatDecl(((long) (this.nextNodeId(((int) (1) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.KwBeat);
 				beatNode.pos = startPos.extendedTo(this.currentPos());
 				beatNode.name = this.expectIdentifier();
 				global::Loreline.Runtime.Token blockStart = this.parseBlockStart();
 				global::Loreline.Runtime.TokenType blockEnd = ( (( blockStart.type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				beatNode.style = ( (( blockEnd == global::Loreline.Runtime.TokenType.RBrace )) ? (((int) (1) )) : (((int) (0) )) );
-				global::Loreline.Runtime.NBeatDecl __temp_expr1 = ((global::Loreline.Runtime.NBeatDecl) (this.attachComments<object>(((object) (beatNode) ))) );
+				global::Loreline.Runtime.NBeatDecl __temp_expr1 = ((global::Loreline.Runtime.NBeatDecl) (this.attachComments(((object) (beatNode) ))) );
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
-					beatNode.body.push(this.parseNode(default(global::Loreline.Internal.Lang.Null<bool>)));
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					beatNode.body.push(this.parseNode(null));
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 				}
 				
-				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 				}
 				
 				this.expect(blockEnd);
@@ -1202,7 +1333,7 @@ namespace Loreline.Runtime {
 				int numIndents = 0;
 				int i = 0;
 				while (( ( this.current + i ) < this.tokens.length )) {
-					global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (this.tokens[( this.current + i )]) );
+					global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (this.tokens.__get(( this.current + i ))) );
 					 ++ i;
 					if (( token.type == global::Loreline.Runtime.TokenType.LineBreak )) {
 						continue;
@@ -1249,17 +1380,17 @@ namespace Loreline.Runtime {
 				global::Loreline.Runtime.Token braceToken = null;
 				int numIndents = 0;
 				while ( ! (this.isAtEnd()) ) {
-					if (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					if (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 						continue;
 					}
 					
-					if (this.match(global::Loreline.Runtime.TokenType.Indent, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					if (this.match(global::Loreline.Runtime.TokenType.Indent, null)) {
 						 ++ numIndents;
 						indentToken = this.prevWithType(global::Loreline.Runtime.TokenType.Indent);
 						continue;
 					}
 					
-					if (this.match(global::Loreline.Runtime.TokenType.LBrace, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					if (this.match(global::Loreline.Runtime.TokenType.LBrace, null)) {
 						if (( braceToken == null )) {
 							braceToken = this.prevWithType(global::Loreline.Runtime.TokenType.LBrace);
 						}
@@ -1281,7 +1412,7 @@ namespace Loreline.Runtime {
 					return indentToken;
 				}
 				else {
-					this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Expected ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(global::Loreline.Runtime.TokenType.LBrace)), " or "), global::Loreline.Runtime.TokenTypeHelpers.toCodeString(global::Loreline.Runtime.TokenType.Indent)), ", got "), global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
+					this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Expected ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(global::Loreline.Runtime.TokenType.LBrace)), " or "), global::Loreline.Runtime.TokenTypeHelpers.toCodeString(global::Loreline.Runtime.TokenType.Indent)), ", got "), this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )));
 					return new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (global::Loreline.Runtime.TokenType.Indent) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ));
 				}
 				
@@ -1292,24 +1423,24 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NCharacterDecl parseCharacterDecl() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NCharacterDecl characterNode = new global::Loreline.Runtime.NCharacterDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), default(global::Loreline.Runtime.Position), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NCharacterDecl characterNode = new global::Loreline.Runtime.NCharacterDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(string), default(global::Loreline.Runtime.Position), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.KwCharacter);
 				characterNode.name = this.expectIdentifier();
 				characterNode.namePos = this.prevNonWhitespaceOrComment().pos;
 				global::Loreline.Runtime.TokenType blockEnd = ( (( this.parseBlockStart().type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				characterNode.style = ( (( blockEnd == global::Loreline.Runtime.TokenType.RBrace )) ? (((int) (1) )) : (((int) (0) )) );
-				global::Loreline.Runtime.NCharacterDecl __temp_expr1 = ((global::Loreline.Runtime.NCharacterDecl) (this.attachComments<object>(((object) (characterNode) ))) );
+				global::Loreline.Runtime.NCharacterDecl __temp_expr1 = ((global::Loreline.Runtime.NCharacterDecl) (this.attachComments(((object) (characterNode) ))) );
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 					characterNode.fields.push(this.parseObjectField());
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 				}
 				
-				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 				}
 				
 				this.expect(blockEnd);
@@ -1322,7 +1453,7 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NTextStatement parseTextStatement() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NTextStatement statement = ((global::Loreline.Runtime.NTextStatement) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NTextStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+				global::Loreline.Runtime.NTextStatement statement = ((global::Loreline.Runtime.NTextStatement) (this.attachComments(((object) (new global::Loreline.Runtime.NTextStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 				statement.content = this.parseStringLiteral();
 				return statement;
 			}
@@ -1332,17 +1463,17 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NChoiceStatement parseChoiceStatement() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NChoiceStatement choiceNode = new global::Loreline.Runtime.NChoiceStatement(((long) (this.nextNodeId(((int) (2) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NChoiceStatement choiceNode = new global::Loreline.Runtime.NChoiceStatement(((long) (this.nextNodeId(((int) (2) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.KwChoice);
 				global::Loreline.Runtime.TokenType blockEnd = ( (( this.parseBlockStart().type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				choiceNode.style = ( (( blockEnd == global::Loreline.Runtime.TokenType.RBrace )) ? (((int) (1) )) : (((int) (0) )) );
-				global::Loreline.Runtime.NChoiceStatement __temp_expr1 = ((global::Loreline.Runtime.NChoiceStatement) (this.attachComments<object>(((object) (choiceNode) ))) );
+				global::Loreline.Runtime.NChoiceStatement __temp_expr1 = ((global::Loreline.Runtime.NChoiceStatement) (this.attachComments(((object) (choiceNode) ))) );
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 					choiceNode.options.push(this.parseChoiceOption(blockEnd));
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 				}
@@ -1357,10 +1488,18 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NChoiceOption parseChoiceOption(global::Loreline.Runtime.TokenType blockEnd) {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NChoiceOption choiceOption = ((global::Loreline.Runtime.NChoiceOption) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NChoiceOption(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Runtime.NExpr), ((int) (0) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+				global::Loreline.Runtime.NChoiceOption choiceOption = ((global::Loreline.Runtime.NChoiceOption) (this.attachComments(((object) (new global::Loreline.Runtime.NChoiceOption(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NStringLiteral), default(global::Loreline.Runtime.NInsertion), default(global::Loreline.Runtime.NExpr), ((int) (0) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 				global::Loreline.Runtime.Position errorPos = null;
+				bool isInsertion = false;
 				try {
-					choiceOption.text = this.parseStringLiteral();
+					if (this.check(global::Loreline.Runtime.TokenType.OpPlus)) {
+						isInsertion = true;
+						choiceOption.insertion = this.parseInsertion();
+					}
+					else {
+						choiceOption.text = this.parseStringLiteral();
+					}
+					
 				}
 				catch (global::System.Exception _g){
 					object _g1 = global::Loreline.Internal.Exception.caught(_g).unwrap();
@@ -1370,10 +1509,10 @@ namespace Loreline.Runtime {
 							this.addError(e);
 							errorPos = this.currentPos();
 							if (( this.currentPos().offset == startPos.offset )) {
-								this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+								this.advance(null);
 							}
 							
-							choiceOption.text = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw("?")) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+							choiceOption.text = new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw("?")) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						}
 						
 					}
@@ -1384,108 +1523,111 @@ namespace Loreline.Runtime {
 				}
 				
 				
-				if (this.match(global::Loreline.Runtime.TokenType.KwIf, default(global::Loreline.Internal.Lang.Null<bool>))) {
-					int offset = this.currentPos().offset;
-					try {
-						if (this.check(global::Loreline.Runtime.TokenType.LParen)) {
-							choiceOption.conditionStyle = ((int) (2) );
+				if ( ! (isInsertion) ) {
+					if (this.match(global::Loreline.Runtime.TokenType.KwIf, null)) {
+						int offset = this.currentPos().offset;
+						try {
+							if (this.check(global::Loreline.Runtime.TokenType.LParen)) {
+								choiceOption.conditionStyle = ((int) (2) );
+							}
+							
+							choiceOption.condition = this.parseConditionExpression();
 						}
-						
-						choiceOption.condition = this.parseConditionExpression();
-					}
-					catch (global::System.Exception _g2){
-						object _g3 = global::Loreline.Internal.Exception.caught(_g2).unwrap();
-						if (( _g3 is global::Loreline.Runtime.ParseError )) {
-							global::Loreline.Runtime.ParseError e1 = ((global::Loreline.Runtime.ParseError) (_g3) );
-							{
-								this.addError(e1);
-								errorPos = this.currentPos();
-								if (( this.currentPos().offset == offset )) {
-									this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+						catch (global::System.Exception _g2){
+							object _g3 = global::Loreline.Internal.Exception.caught(_g2).unwrap();
+							if (( _g3 is global::Loreline.Runtime.ParseError )) {
+								global::Loreline.Runtime.ParseError e1 = ((global::Loreline.Runtime.ParseError) (_g3) );
+								{
+									this.addError(e1);
+									errorPos = this.currentPos();
+									if (( this.currentPos().offset == offset )) {
+										this.advance(null);
+									}
+									
 								}
 								
 							}
-							
-						}
-						else {
-							throw;
-						}
-						
-					}
-					
-					
-				}
-				
-				if (this.checkBlockStart()) {
-					choiceOption.body = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-					int offset1 = this.currentPos().offset;
-					try {
-						choiceOption.style = this.parseStatementBlock(choiceOption.body);
-					}
-					catch (global::System.Exception _g4){
-						object _g5 = global::Loreline.Internal.Exception.caught(_g4).unwrap();
-						if (( _g5 is global::Loreline.Runtime.ParseError )) {
-							global::Loreline.Runtime.ParseError e2 = ((global::Loreline.Runtime.ParseError) (_g5) );
-							{
-								this.addError(e2);
-								errorPos = this.currentPos();
-								if (( this.currentPos().offset == offset1 )) {
-									this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-								}
-								
-								if (( choiceOption.body.length == 0 )) {
-									choiceOption.body = new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))});
-								}
-								
+							else {
+								throw;
 							}
 							
 						}
-						else {
-							throw;
-						}
+						
 						
 					}
 					
-					
-				}
-				else if ( ! (this.check(blockEnd)) ) {
-					int offset2 = this.currentPos().offset;
-					try {
-						choiceOption.body = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-						choiceOption.body.push(this.parseNode(default(global::Loreline.Internal.Lang.Null<bool>)));
-					}
-					catch (global::System.Exception _g6){
-						object _g7 = global::Loreline.Internal.Exception.caught(_g6).unwrap();
-						if (( _g7 is global::Loreline.Runtime.ParseError )) {
-							global::Loreline.Runtime.ParseError e3 = ((global::Loreline.Runtime.ParseError) (_g7) );
-							{
-								this.addError(e3);
-								errorPos = this.currentPos();
-								if (( this.currentPos().offset == offset2 )) {
-									this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-								}
-								
-								if (( choiceOption.body.length == 0 )) {
-									choiceOption.body = new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))});
+					if (this.checkBlockStart()) {
+						choiceOption.body = new global::Loreline.Internal.Root.Array(new object[]{});
+						int offset1 = this.currentPos().offset;
+						try {
+							choiceOption.style = this.parseStatementBlock(choiceOption.body);
+						}
+						catch (global::System.Exception _g4){
+							object _g5 = global::Loreline.Internal.Exception.caught(_g4).unwrap();
+							if (( _g5 is global::Loreline.Runtime.ParseError )) {
+								global::Loreline.Runtime.ParseError e2 = ((global::Loreline.Runtime.ParseError) (_g5) );
+								{
+									this.addError(e2);
+									errorPos = this.currentPos();
+									if (( this.currentPos().offset == offset1 )) {
+										this.advance(null);
+									}
+									
+									if (( choiceOption.body.length == 0 )) {
+										choiceOption.body = new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))});
+									}
+									
 								}
 								
 							}
+							else {
+								throw;
+							}
 							
 						}
-						else {
-							throw;
-						}
+						
 						
 					}
+					else if (this.check(global::Loreline.Runtime.TokenType.Arrow)) {
+						int offset2 = this.currentPos().offset;
+						try {
+							choiceOption.body = new global::Loreline.Internal.Root.Array(new object[]{});
+							choiceOption.body.push(this.parseNode(null));
+						}
+						catch (global::System.Exception _g6){
+							object _g7 = global::Loreline.Internal.Exception.caught(_g6).unwrap();
+							if (( _g7 is global::Loreline.Runtime.ParseError )) {
+								global::Loreline.Runtime.ParseError e3 = ((global::Loreline.Runtime.ParseError) (_g7) );
+								{
+									this.addError(e3);
+									errorPos = this.currentPos();
+									if (( this.currentPos().offset == offset2 )) {
+										this.advance(null);
+									}
+									
+									if (( choiceOption.body.length == 0 )) {
+										choiceOption.body = new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))});
+									}
+									
+								}
+								
+							}
+							else {
+								throw;
+							}
+							
+						}
+						
+						
+						choiceOption.style = ((int) (0) );
+					}
 					
-					
-					choiceOption.style = ((int) (0) );
 				}
 				
 				choiceOption.pos = choiceOption.pos.extendedTo(this.prevNonWhitespaceOrComment().pos);
 				if (( errorPos != null )) {
 					while ((  ! (this.isAtEnd())  && ( this.currentPos().line <= ( errorPos.line + 1 ) ) )) {
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+						this.advance(null);
 					}
 					
 				}
@@ -1497,13 +1639,13 @@ namespace Loreline.Runtime {
 		
 		public virtual bool isExpressionStart() {
 			unchecked {
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				switch (_g._hx_index) {
 					case 9:
 					{
 						int _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 						string _g2 = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
-						global::Loreline.Internal.Root.Array<object> _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+						global::Loreline.Internal.Root.Array _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
 						return true;
 					}
 					
@@ -1560,28 +1702,28 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.AstNode parseExpressionStatement() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseExpression();
-				if (( ( ( ( this.match(global::Loreline.Runtime.TokenType.OpAssign, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpPlusAssign, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpMinusAssign, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpMultiplyAssign, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpDivideAssign, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				if (( ( ( ( this.match(global::Loreline.Runtime.TokenType.OpAssign, null) || this.match(global::Loreline.Runtime.TokenType.OpPlusAssign, null) ) || this.match(global::Loreline.Runtime.TokenType.OpMinusAssign, null) ) || this.match(global::Loreline.Runtime.TokenType.OpMultiplyAssign, null) ) || this.match(global::Loreline.Runtime.TokenType.OpDivideAssign, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NAssign assignment = ((global::Loreline.Runtime.NAssign) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NAssign(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NAssign assignment = ((global::Loreline.Runtime.NAssign) (this.attachComments(((object) (new global::Loreline.Runtime.NAssign(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					assignment.@value = this.parseExpression();
 					assignment.pos = assignment.pos.extendedTo(assignment.@value.pos);
 					return assignment;
 				}
 				
-				return ((global::Loreline.Runtime.NExpr) (this.attachComments<object>(((object) (expr) ))) );
+				return ((global::Loreline.Runtime.NExpr) (this.attachComments(((object) (expr) ))) );
 			}
 		}
 		
 		
 		public virtual bool isKnownNodeStart() {
 			unchecked {
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				switch (_g._hx_index) {
 					case 9:
 					{
 						int _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 						string _g2 = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
-						global::Loreline.Internal.Root.Array<object> _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+						global::Loreline.Internal.Root.Array _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
 						return true;
 					}
 					
@@ -1627,36 +1769,36 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NIfStatement parseIfStatement() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.NIfStatement ifNode = new global::Loreline.Runtime.NIfStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NExpr), ((int) (0) ), default(global::Loreline.Runtime.NBlock), default(global::Loreline.Runtime.NBlock), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.NIfStatement ifNode = new global::Loreline.Runtime.NIfStatement(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(global::Loreline.Runtime.NExpr), ((int) (0) ), default(global::Loreline.Runtime.NBlock), default(global::Loreline.Runtime.NBlock), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.KwIf);
 				if (this.check(global::Loreline.Runtime.TokenType.LParen)) {
 					ifNode.conditionStyle = ((int) (2) );
 				}
 				
 				ifNode.condition = this.parseConditionExpression();
-				while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+				while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 				}
 				
-				global::Loreline.Runtime.NIfStatement __temp_expr1 = ((global::Loreline.Runtime.NIfStatement) (this.attachComments<object>(((object) (ifNode) ))) );
-				ifNode.thenBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-				ifNode.thenBranch.body = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Runtime.NIfStatement __temp_expr1 = ((global::Loreline.Runtime.NIfStatement) (this.attachComments(((object) (ifNode) ))) );
+				ifNode.thenBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				ifNode.thenBranch.body = new global::Loreline.Internal.Root.Array(new object[]{});
 				ifNode.thenBranch.style = this.parseStatementBlock(ifNode.thenBranch.body);
-				global::Loreline.Runtime.Token elseToken = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) );
+				global::Loreline.Runtime.Token elseToken = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) );
 				if (( ( elseToken != null ) && ( elseToken.type == global::Loreline.Runtime.TokenType.KwElse ) )) {
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					this.advance(null);
+					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 					}
 					
-					global::Loreline.Runtime.NIfStatement __temp_expr2 = ((global::Loreline.Runtime.NIfStatement) (this.attachElseComments<object>(((object) (ifNode) ), ((global::Loreline.Runtime.Token) (elseToken) ))) );
+					global::Loreline.Runtime.NIfStatement __temp_expr2 = ((global::Loreline.Runtime.NIfStatement) (this.attachElseComments(((object) (ifNode) ), ((global::Loreline.Runtime.Token) (elseToken) ))) );
 					if (this.check(global::Loreline.Runtime.TokenType.KwIf)) {
-						ifNode.elseBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+						ifNode.elseBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						global::Loreline.Runtime.NIfStatement tmp = this.parseIfStatement();
-						ifNode.elseBranch.body = new global::Loreline.Internal.Root.Array<object>(new object[]{tmp});
+						ifNode.elseBranch.body = new global::Loreline.Internal.Root.Array(new object[]{tmp});
 						ifNode.elseBranch.style = ((int) (0) );
 					}
 					else {
-						ifNode.elseBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-						ifNode.elseBranch.body = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						ifNode.elseBranch = new global::Loreline.Runtime.NBlock(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+						ifNode.elseBranch.body = new global::Loreline.Internal.Root.Array(new object[]{});
 						ifNode.elseBranch.style = this.parseStatementBlock(ifNode.elseBranch.body);
 					}
 					
@@ -1672,12 +1814,22 @@ namespace Loreline.Runtime {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
 				this.expect(global::Loreline.Runtime.TokenType.Arrow);
-				if (this.match(global::Loreline.Runtime.TokenType.Dot, default(global::Loreline.Internal.Lang.Null<bool>))) {
-					return ((global::Loreline.Runtime.NTransition) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NTransition(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((string) (".") ), ((global::Loreline.Runtime.Position) (this.prevNonWhitespaceOrComment().pos) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+				if (this.match(global::Loreline.Runtime.TokenType.Dot, null)) {
+					return ((global::Loreline.Runtime.NTransition) (this.attachComments(((object) (new global::Loreline.Runtime.NTransition(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((string) (".") ), ((global::Loreline.Runtime.Position) (this.prevNonWhitespaceOrComment().pos) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 				}
 				
 				string target = this.expectIdentifier();
-				return ((global::Loreline.Runtime.NTransition) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NTransition(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((string) (target) ), ((global::Loreline.Runtime.Position) (this.prevNonWhitespaceOrComment().pos) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+				return ((global::Loreline.Runtime.NTransition) (this.attachComments(((object) (new global::Loreline.Runtime.NTransition(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((string) (target) ), ((global::Loreline.Runtime.Position) (this.prevNonWhitespaceOrComment().pos) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
+			}
+		}
+		
+		
+		public virtual global::Loreline.Runtime.NInsertion parseInsertion() {
+			unchecked {
+				global::Loreline.Runtime.Position startPos = this.currentPos();
+				this.expect(global::Loreline.Runtime.TokenType.OpPlus);
+				string target = this.expectIdentifier();
+				return ((global::Loreline.Runtime.NInsertion) (this.attachComments(((object) (new global::Loreline.Runtime.NInsertion(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((string) (target) ), ((global::Loreline.Runtime.Position) (this.prevNonWhitespaceOrComment().pos) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 			}
 		}
 		
@@ -1685,13 +1837,14 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NFunctionDecl parseFunction() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				if (( _g._hx_index == 8 )) {
 					string name = ( _g as global::Loreline.Runtime.TokenType_Function ).name;
-					global::Loreline.Internal.Root.Array<string> args = ( _g as global::Loreline.Runtime.TokenType_Function ).args;
-					string body = ( _g as global::Loreline.Runtime.TokenType_Function ).code;
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-					return ((global::Loreline.Runtime.NFunctionDecl) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NFunctionDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) (name) ), ((global::Loreline.Internal.Root.Array<string>) (new global::Loreline.Internal.Root.Array<string>(new string[]{}).concat(args)) ), ((string) (body) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Runtime.TokenType_Function ).args;
+					string code = ( _g as global::Loreline.Runtime.TokenType_Function ).code;
+					bool external = ( _g as global::Loreline.Runtime.TokenType_Function ).external;
+					this.advance(null);
+					return ((global::Loreline.Runtime.NFunctionDecl) (this.attachComments(((object) (new global::Loreline.Runtime.NFunctionDecl(((long) (this.nextNodeId(((int) (3) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((string) (name) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{}).concat(args)) ), ((string) (code) ), ((bool) (external) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 				}
 				else {
 					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Unexpected token in expression") ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
@@ -1706,9 +1859,9 @@ namespace Loreline.Runtime {
 				try {
 					global::Loreline.Runtime.NExpr expr = this.parseLogicalOr();
 					if (( ( ( ( this.check(global::Loreline.Runtime.TokenType.OpAssign) || this.check(global::Loreline.Runtime.TokenType.OpPlusAssign) ) || this.check(global::Loreline.Runtime.TokenType.OpMinusAssign) ) || this.check(global::Loreline.Runtime.TokenType.OpMultiplyAssign) ) || this.check(global::Loreline.Runtime.TokenType.OpDivideAssign) )) {
-						global::Loreline.Runtime.TokenType op = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						global::Loreline.Runtime.NAssign assignment = ((global::Loreline.Runtime.NAssign) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NAssign(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						global::Loreline.Runtime.TokenType op = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
+						this.advance(null);
+						global::Loreline.Runtime.NAssign assignment = ((global::Loreline.Runtime.NAssign) (this.attachComments(((object) (new global::Loreline.Runtime.NAssign(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 						assignment.@value = this.parseExpression();
 						assignment.pos = assignment.pos.extendedTo(assignment.@value.pos);
 						return assignment;
@@ -1722,7 +1875,7 @@ namespace Loreline.Runtime {
 						this.addError(((global::Loreline.Runtime.ParseError) (e) ));
 					}
 					
-					return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+					return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				}
 				
 				
@@ -1733,9 +1886,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseLogicalOr() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseLogicalAnd();
-				while (this.match(global::Loreline.Runtime.TokenType.OpOr(false), default(global::Loreline.Internal.Lang.Null<bool>))) {
+				while (this.match(global::Loreline.Runtime.TokenType.OpOr(false), null)) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseLogicalAnd();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1749,9 +1902,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseLogicalAnd() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseEquality();
-				while (this.match(global::Loreline.Runtime.TokenType.OpAnd(false), default(global::Loreline.Internal.Lang.Null<bool>))) {
+				while (this.match(global::Loreline.Runtime.TokenType.OpAnd(false), null)) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseEquality();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1765,9 +1918,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseEquality() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseComparison();
-				while (( this.match(global::Loreline.Runtime.TokenType.OpEquals, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpNotEquals, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.OpEquals, null) || this.match(global::Loreline.Runtime.TokenType.OpNotEquals, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseComparison();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1781,9 +1934,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseComparison() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseAdditive();
-				while (( ( ( this.match(global::Loreline.Runtime.TokenType.OpGreater, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpGreaterEq, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpLess, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpLessEq, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				while (( ( ( this.match(global::Loreline.Runtime.TokenType.OpGreater, null) || this.match(global::Loreline.Runtime.TokenType.OpGreaterEq, null) ) || this.match(global::Loreline.Runtime.TokenType.OpLess, null) ) || this.match(global::Loreline.Runtime.TokenType.OpLessEq, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseAdditive();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1797,9 +1950,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseAdditive() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseMultiplicative();
-				while (( this.match(global::Loreline.Runtime.TokenType.OpPlus, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpMinus, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.OpPlus, null) || this.match(global::Loreline.Runtime.TokenType.OpMinus, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseMultiplicative();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1813,9 +1966,9 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseMultiplicative() {
 			unchecked {
 				global::Loreline.Runtime.NExpr expr = this.parseUnary();
-				while (( ( this.match(global::Loreline.Runtime.TokenType.OpMultiply, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpDivide, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.OpModulo, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				while (( ( this.match(global::Loreline.Runtime.TokenType.OpMultiply, null) || this.match(global::Loreline.Runtime.TokenType.OpDivide, null) ) || this.match(global::Loreline.Runtime.TokenType.OpModulo, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NBinary binary = ((global::Loreline.Runtime.NBinary) (this.attachComments(((object) (new global::Loreline.Runtime.NBinary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (expr.pos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					binary.right = this.parseUnary();
 					binary.pos = binary.pos.extendedTo(binary.right.pos);
 					expr = binary;
@@ -1828,9 +1981,9 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.NExpr parseUnary() {
 			unchecked {
-				if (( this.match(global::Loreline.Runtime.TokenType.OpNot, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.OpMinus, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				if (( this.match(global::Loreline.Runtime.TokenType.OpNot, null) || this.match(global::Loreline.Runtime.TokenType.OpMinus, null) )) {
 					global::Loreline.Runtime.TokenType op = this.previous().type;
-					global::Loreline.Runtime.NUnary unary = ((global::Loreline.Runtime.NUnary) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NUnary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.previous().pos) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NUnary unary = ((global::Loreline.Runtime.NUnary) (this.attachComments(((object) (new global::Loreline.Runtime.NUnary(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.previous().pos) ), ((global::Loreline.Runtime.TokenType) (op) ), default(global::Loreline.Runtime.NExpr), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					unary.operand = this.parseUnary();
 					unary.pos = unary.pos.extendedTo(unary.operand.pos);
 					return unary;
@@ -1844,37 +1997,37 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parsePrimary() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				switch (_g._hx_index) {
 					case 9:
 					{
 						int _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 						string _g2 = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
-						global::Loreline.Internal.Root.Array<object> _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
-						return this.parseStringLiteral();
+						global::Loreline.Internal.Root.Array _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+						return this.parsePostfix(startPos, this.parseStringLiteral());
 					}
 					
 					
 					case 10:
 					{
 						double n = ( _g as global::Loreline.Runtime.TokenType_LNumber ).n;
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						return ((global::Loreline.Runtime.NLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (n) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Number) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						this.advance(null);
+						return ((global::Loreline.Runtime.NLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (n) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Number) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
 					
 					
 					case 11:
 					{
 						bool b = ( _g as global::Loreline.Runtime.TokenType_LBoolean ).b;
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						return ((global::Loreline.Runtime.NLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (b) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Boolean) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						this.advance(null);
+						return ((global::Loreline.Runtime.NLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (b) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Boolean) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
 					
 					
 					case 12:
 					{
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						return ((global::Loreline.Runtime.NLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						this.advance(null);
+						return ((global::Loreline.Runtime.NLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
 					
 					
@@ -1882,11 +2035,11 @@ namespace Loreline.Runtime {
 					{
 						string name = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
 						if (( this.peek().type == global::Loreline.Runtime.TokenType.Colon )) {
-							global::Loreline.Internal.Root.Array<object> fields = new global::Loreline.Internal.Root.Array<object>(new object[]{this.parseObjectField()});
-							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((object) (fields) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Object(((int) (0) ))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+							global::Loreline.Internal.Root.Array fields = new global::Loreline.Internal.Root.Array(new object[]{this.parseObjectField()});
+							return new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.prevNonWhitespaceOrComment().pos)) ), ((object) (fields) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Object(((int) (0) ))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						}
 						else {
-							this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+							this.advance(null);
 							return this.parseIdentifierExpression(startPos, name);
 						}
 						
@@ -1895,22 +2048,22 @@ namespace Loreline.Runtime {
 					
 					case 37:
 					{
-						return this.parseObjectLiteral();
+						return this.parsePostfix(startPos, this.parseObjectLiteral());
 					}
 					
 					
 					case 39:
 					{
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+						this.advance(null);
 						global::Loreline.Runtime.NExpr expr = this.parseExpression();
 						this.expect(global::Loreline.Runtime.TokenType.RParen);
-						return expr;
+						return this.parsePostfix(startPos, expr);
 					}
 					
 					
 					case 41:
 					{
-						return this.parseArrayLiteral();
+						return this.parsePostfix(startPos, this.parseArrayLiteral());
 					}
 					
 					
@@ -1928,38 +2081,38 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NStringLiteral parseStringLiteral() {
 			unchecked {
 				global::Loreline.Runtime.Position stringLiteralPos = this.currentPos();
-				global::Loreline.Internal.Root.Array<object> parts = new global::Loreline.Internal.Root.Array<object>();
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Internal.Root.Array parts = new global::Loreline.Internal.Root.Array();
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				if (( _g._hx_index == 9 )) {
 					int quotes = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 					string content = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
-					global::Loreline.Internal.Root.Array<object> attachments = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
-					global::Loreline.Runtime.Position startPos = ( (( quotes != ((int) (0) ) )) ? (stringLiteralPos.withOffset(content, 1, new global::Loreline.Internal.Lang.Null<int>(( stringLiteralPos.length - 2 ), true), default(global::Loreline.Internal.Lang.Null<int>))) : (stringLiteralPos) );
+					global::Loreline.Internal.Root.Array attachments = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+					global::Loreline.Runtime.Position startPos = ( (( quotes != ((int) (0) ) )) ? (stringLiteralPos.withOffset(content, 1, ( stringLiteralPos.length - 2 ), null)) : (stringLiteralPos) );
 					int currentPos = 0;
 					if (( ( attachments == null ) || ( attachments.length == 0 ) )) {
 						global::Loreline.Runtime.Position partPos = this.makeStringPartPosition(startPos, content, 0);
 						partPos.length = startPos.length;
 						long literalId = this.nextNodeId(((int) (4) ));
 						long partId = this.nextNodeId(((int) (4) ));
-						parts.push(new global::Loreline.Runtime.NStringPart(((long) (partId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(content)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
-						this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-						return ((global::Loreline.Runtime.NStringLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (literalId) ), ((global::Loreline.Runtime.Position) (stringLiteralPos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array<object>) (parts) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						parts.push(new global::Loreline.Runtime.NStringPart(((long) (partId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(content)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
+						this.advance(null);
+						return ((global::Loreline.Runtime.NStringLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (literalId) ), ((global::Loreline.Runtime.Position) (stringLiteralPos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array) (parts) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
 					
-					global::Loreline.Runtime.NStringLiteral stringLiteral = ((global::Loreline.Runtime.NStringLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (stringLiteralPos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array<object>) (parts) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					global::Loreline.Runtime.NStringLiteral stringLiteral = ((global::Loreline.Runtime.NStringLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (stringLiteralPos) ), ((int) (quotes) ), ((global::Loreline.Internal.Root.Array) (parts) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					{
 						int _g1 = 0;
 						int _g2 = attachments.length;
 						while (( _g1 < _g2 )) {
 							int i = _g1++;
 							{
-								global::Loreline.Runtime.LStringAttachment _g3 = ((global::Loreline.Runtime.LStringAttachment) (attachments[i]) );
+								global::Loreline.Runtime.LStringAttachment _g3 = ((global::Loreline.Runtime.LStringAttachment) (attachments.__get(i)) );
 								switch (_g3._hx_index) {
 									case 0:
 									{
 										bool braces = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).braces;
 										bool inTag = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).inTag;
-										global::Loreline.Internal.Root.Array<object> tokens = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
+										global::Loreline.Internal.Root.Array tokens = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
 										int start = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).start;
 										int length = ( _g3 as global::Loreline.Runtime.LStringAttachment_Interpolation ).length;
 										{
@@ -1970,7 +2123,7 @@ namespace Loreline.Runtime {
 											if (( start > currentPos )) {
 												global::Loreline.Runtime.Position partPos1 = this.makeStringPartPosition(startPos, content, currentPos);
 												partPos1.length = ( start - currentPos );
-												parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos1) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, new global::Loreline.Internal.Lang.Null<int>(( start - currentPos ), true)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
+												parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos1) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, ( start - currentPos )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
 											}
 											
 											parts.push(this.parseStringInterpolation(braces, inTag, tokens, start, length, content));
@@ -1994,7 +2147,7 @@ namespace Loreline.Runtime {
 											if (( start1 > currentPos )) {
 												global::Loreline.Runtime.Position partPos2 = this.makeStringPartPosition(startPos, content, currentPos);
 												partPos2.length = ( start1 - currentPos );
-												parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos2) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, new global::Loreline.Internal.Lang.Null<int>(( start1 - currentPos ), true)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
+												parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos2) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, ( start1 - currentPos )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
 											}
 											
 											parts.push(this.parseStringTag(closing, start1, length1, content, quotes, attachments));
@@ -2016,15 +2169,45 @@ namespace Loreline.Runtime {
 					if (( currentPos < content.Length )) {
 						global::Loreline.Runtime.Position partPos3 = this.makeStringPartPosition(startPos, content, currentPos);
 						partPos3.length = ( content.Length - currentPos );
-						global::Loreline.Internal.Lang.Null<int> len = default(global::Loreline.Internal.Lang.Null<int>);
-						parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos3) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, len))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
+						object len = null;
+						parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos3) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, len))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
 					}
 					
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+					this.advance(null);
+					if (( this.pendingComments != null )) {
+						global::Loreline.Internal.Root.Array remaining = null;
+						{
+							int _g4 = 0;
+							global::Loreline.Internal.Root.Array _g5 = this.pendingComments;
+							while (( _g4 < _g5.length )) {
+								global::Loreline.Runtime.Comment c = ((global::Loreline.Runtime.Comment) (_g5.__get(_g4)) );
+								 ++ _g4;
+								if (( c.pos.line == stringLiteralPos.line )) {
+									if (( stringLiteral.trailingComments == null )) {
+										stringLiteral.trailingComments = new global::Loreline.Internal.Root.Array(new object[]{});
+									}
+									
+									stringLiteral.trailingComments.push(c);
+								}
+								else {
+									if (( remaining == null )) {
+										remaining = new global::Loreline.Internal.Root.Array(new object[]{});
+									}
+									
+									remaining.push(c);
+								}
+								
+							}
+							
+						}
+						
+						this.pendingComments = remaining;
+					}
+					
 					return stringLiteral;
 				}
 				else {
-					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Expected text, got ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Expected text, got ", this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 				}
 				
 			}
@@ -2040,7 +2223,7 @@ namespace Loreline.Runtime {
 					int _g1 = offset;
 					while (( _g < _g1 )) {
 						int i = _g++;
-						if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i)).toDynamic(), 10)) {
+						if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(content, i), 10)) {
 							 ++ line;
 							column = 1;
 						}
@@ -2052,7 +2235,7 @@ namespace Loreline.Runtime {
 					
 				}
 				
-				return new global::Loreline.Runtime.Position(((int) (line) ), ((int) (column) ), ((int) (( stringStart.offset + offset )) ), default(global::Loreline.Internal.Lang.Null<int>));
+				return new global::Loreline.Runtime.Position(((int) (line) ), ((int) (column) ), ((int) (( stringStart.offset + offset )) ), default(object));
 			}
 		}
 		
@@ -2069,7 +2252,7 @@ namespace Loreline.Runtime {
 					
 					if (( target != null )) {
 						if (( namePos != null )) {
-							pos = new global::Loreline.Runtime.Position(((int) (target.pos.line) ), ((int) (target.pos.column) ), ((int) (target.pos.offset) ), new global::Loreline.Internal.Lang.Null<int>(( ( namePos.offset + name.Length ) - target.pos.offset ), true));
+							pos = new global::Loreline.Runtime.Position(((int) (target.pos.line) ), ((int) (target.pos.column) ), ((int) (target.pos.offset) ), ((object) (( ( namePos.offset + name.Length ) - target.pos.offset )) ));
 						}
 						else {
 							throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Invalid access (missing name position)") ), ((global::Loreline.Runtime.Position) (pos) )))) );
@@ -2077,32 +2260,32 @@ namespace Loreline.Runtime {
 						
 					}
 					else if (( pos.length == 0 )) {
-						global::Loreline.Internal.Lang.Null<int> tmp = ( (( namePos != null )) ? (new global::Loreline.Internal.Lang.Null<int>(namePos.length, true)) : (default(global::Loreline.Internal.Lang.Null<int>)) );
-						pos = new global::Loreline.Runtime.Position(((int) (pos.line) ), ((int) (pos.column) ), ((int) (pos.offset) ), new global::Loreline.Internal.Lang.Null<int>(( (tmp.hasValue) ? ((tmp).@value) : (name.Length) ), true));
+						object tmp = ( (( namePos != null )) ? (((object) (namePos.length) )) : (null) );
+						pos = new global::Loreline.Runtime.Position(((int) (pos.line) ), ((int) (pos.column) ), ((int) (pos.offset) ), ((object) (( (( tmp != default(object) )) ? (((int) (global::Loreline.Internal.Lang.Runtime.toInt(tmp)) )) : (name.Length) )) ));
 					}
 					
 				}
 				
-				return new global::Loreline.Runtime.NAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.NExpr) (target) ), ((string) (name) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				return new global::Loreline.Runtime.NAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.NExpr) (target) ), ((string) (name) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 			}
 		}
 		
 		
-		public virtual global::Loreline.Runtime.NStringPart parseStringInterpolation(bool braces, bool inTag, global::Loreline.Internal.Root.Array<object> tokens, int start, int length, string content) {
+		public virtual global::Loreline.Runtime.NStringPart parseStringInterpolation(bool braces, bool inTag, global::Loreline.Internal.Root.Array tokens, int start, int length, string content) {
 			unchecked {
-				global::Loreline.Runtime.Token tmp = ((global::Loreline.Runtime.Token) (tokens[0]) );
+				global::Loreline.Runtime.Token tmp = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 				global::Loreline.Runtime.Position tmp1 = ( (( tmp != null )) ? (tmp.pos) : (null) );
 				global::Loreline.Runtime.Position pos = this.makeStringPartPosition(( (( tmp1 != null )) ? (tmp1) : (this.currentPos()) ), content, start);
 				pos.length = length;
 				if (( tokens.length == 0 )) {
-					global::Loreline.Runtime.Token tmp2 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+					global::Loreline.Runtime.Token tmp2 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 					global::Loreline.Runtime.Position tmp3 = ( (( tmp2 != null )) ? (tmp2.pos) : (null) );
 					this.addError(new global::Loreline.Runtime.ParseError(((string) ("Empty interpolation") ), ((global::Loreline.Runtime.Position) (( (( tmp3 != null )) ? (tmp3) : (this.currentPos()) )) )));
 					long tmp4 = this.nextNodeId(((int) (4) ));
 					long tmp5 = this.nextNodeId(((int) (4) ));
-					global::Loreline.Runtime.Token tmp6 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+					global::Loreline.Runtime.Token tmp6 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 					global::Loreline.Runtime.Position tmp7 = ( (( tmp6 != null )) ? (tmp6.pos) : (null) );
-					return new global::Loreline.Runtime.NStringPart(((long) (tmp4) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp5) ), ((global::Loreline.Runtime.Position) (( (( tmp7 != null )) ? (tmp7) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+					return new global::Loreline.Runtime.NStringPart(((long) (tmp4) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp5) ), ((global::Loreline.Runtime.Position) (( (( tmp7 != null )) ? (tmp7) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				}
 				
 				global::Loreline.Runtime.NExpr expr = null;
@@ -2111,7 +2294,7 @@ namespace Loreline.Runtime {
 					int i = 0;
 					bool prevIsDot = false;
 					while (( i < tokens.length )) {
-						global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (tokens[i]) );
+						global::Loreline.Runtime.Token token = ((global::Loreline.Runtime.Token) (tokens.__get(i)) );
 						 ++ i;
 						{
 							global::Loreline.Runtime.TokenType _g = token.type;
@@ -2121,18 +2304,18 @@ namespace Loreline.Runtime {
 									string name = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
 									{
 										if (( target == null )) {
-											target = ((global::Loreline.Runtime.NAccess) (this.attachComments<object>(((object) (this.makeAccess(token.pos, null, name, null)) ))) );
+											target = ((global::Loreline.Runtime.NAccess) (this.attachComments(((object) (this.makeAccess(token.pos, null, name, null)) ))) );
 										}
 										else if (prevIsDot) {
-											target = ((global::Loreline.Runtime.NAccess) (this.attachComments<object>(((object) (this.makeAccess(token.pos, target, name, token.pos)) ))) );
+											target = ((global::Loreline.Runtime.NAccess) (this.attachComments(((object) (this.makeAccess(token.pos, target, name, token.pos)) ))) );
 										}
 										else {
 											this.addError(new global::Loreline.Runtime.ParseError(((string) ("Missing dot in field access") ), ((global::Loreline.Runtime.Position) (token.pos) )));
 											long tmp8 = this.nextNodeId(((int) (4) ));
 											long tmp9 = this.nextNodeId(((int) (4) ));
-											global::Loreline.Runtime.Token tmp10 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+											global::Loreline.Runtime.Token tmp10 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 											global::Loreline.Runtime.Position tmp11 = ( (( tmp10 != null )) ? (tmp10.pos) : (null) );
-											return new global::Loreline.Runtime.NStringPart(((long) (tmp8) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp9) ), ((global::Loreline.Runtime.Position) (( (( tmp11 != null )) ? (tmp11) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+											return new global::Loreline.Runtime.NStringPart(((long) (tmp8) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp9) ), ((global::Loreline.Runtime.Position) (( (( tmp11 != null )) ? (tmp11) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 										}
 										
 										prevIsDot = false;
@@ -2148,9 +2331,9 @@ namespace Loreline.Runtime {
 										this.addError(new global::Loreline.Runtime.ParseError(((string) ("Leading dot in field access") ), ((global::Loreline.Runtime.Position) (token.pos) )));
 										long tmp12 = this.nextNodeId(((int) (4) ));
 										long tmp13 = this.nextNodeId(((int) (4) ));
-										global::Loreline.Runtime.Token tmp14 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+										global::Loreline.Runtime.Token tmp14 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 										global::Loreline.Runtime.Position tmp15 = ( (( tmp14 != null )) ? (tmp14.pos) : (null) );
-										return new global::Loreline.Runtime.NStringPart(((long) (tmp12) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp13) ), ((global::Loreline.Runtime.Position) (( (( tmp15 != null )) ? (tmp15) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+										return new global::Loreline.Runtime.NStringPart(((long) (tmp12) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp13) ), ((global::Loreline.Runtime.Position) (( (( tmp15 != null )) ? (tmp15) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 									}
 									
 									prevIsDot = true;
@@ -2164,17 +2347,17 @@ namespace Loreline.Runtime {
 										this.addError(new global::Loreline.Runtime.ParseError(((string) ("Function call without target") ), ((global::Loreline.Runtime.Position) (token.pos) )));
 										long tmp16 = this.nextNodeId(((int) (4) ));
 										long tmp17 = this.nextNodeId(((int) (4) ));
-										global::Loreline.Runtime.Token tmp18 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+										global::Loreline.Runtime.Token tmp18 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 										global::Loreline.Runtime.Position tmp19 = ( (( tmp18 != null )) ? (tmp18.pos) : (null) );
-										return new global::Loreline.Runtime.NStringPart(((long) (tmp16) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp17) ), ((global::Loreline.Runtime.Position) (( (( tmp19 != null )) ? (tmp19) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+										return new global::Loreline.Runtime.NStringPart(((long) (tmp16) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp17) ), ((global::Loreline.Runtime.Position) (( (( tmp19 != null )) ? (tmp19) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 									}
 									
 									global::Loreline.Runtime.Position callStart = token.pos;
-									global::Loreline.Internal.Root.Array<object> argTokens = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-									global::Loreline.Internal.Root.Array<object> currentArgTokens = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									global::Loreline.Internal.Root.Array argTokens = new global::Loreline.Internal.Root.Array(new object[]{});
+									global::Loreline.Internal.Root.Array currentArgTokens = new global::Loreline.Internal.Root.Array(new object[]{});
 									int parenLevel = 1;
 									while (( ( i < tokens.length ) && ( parenLevel > 0 ) )) {
-										global::Loreline.Runtime.Token t = ((global::Loreline.Runtime.Token) (tokens[i]) );
+										global::Loreline.Runtime.Token t = ((global::Loreline.Runtime.Token) (tokens.__get(i)) );
 										 ++ i;
 										switch (t.type._hx_index) {
 											case 35:
@@ -2182,7 +2365,7 @@ namespace Loreline.Runtime {
 												if (( parenLevel == 1 )) {
 													if (( currentArgTokens.length > 0 )) {
 														argTokens.push(currentArgTokens);
-														currentArgTokens = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+														currentArgTokens = new global::Loreline.Internal.Root.Array(new object[]{});
 													}
 													
 												}
@@ -2230,18 +2413,18 @@ namespace Loreline.Runtime {
 										this.addError(new global::Loreline.Runtime.ParseError(((string) ("Unterminated function call") ), ((global::Loreline.Runtime.Position) (callStart) )));
 										long tmp20 = this.nextNodeId(((int) (4) ));
 										long tmp21 = this.nextNodeId(((int) (4) ));
-										global::Loreline.Runtime.Token tmp22 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+										global::Loreline.Runtime.Token tmp22 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 										global::Loreline.Runtime.Position tmp23 = ( (( tmp22 != null )) ? (tmp22.pos) : (null) );
-										return new global::Loreline.Runtime.NStringPart(((long) (tmp20) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp21) ), ((global::Loreline.Runtime.Position) (( (( tmp23 != null )) ? (tmp23) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+										return new global::Loreline.Runtime.NStringPart(((long) (tmp20) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp21) ), ((global::Loreline.Runtime.Position) (( (( tmp23 != null )) ? (tmp23) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 									}
 									
-									global::Loreline.Internal.Root.Array<object> args = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									global::Loreline.Internal.Root.Array args = new global::Loreline.Internal.Root.Array(new object[]{});
 									{
 										int _g1 = 0;
 										while (( _g1 < argTokens.length )) {
-											global::Loreline.Internal.Root.Array<object> argTokenGroup = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (argTokens[_g1]) ))) );
+											global::Loreline.Internal.Root.Array argTokenGroup = ((global::Loreline.Internal.Root.Array) (argTokens.__get(_g1)) );
 											 ++ _g1;
-											global::Loreline.Runtime.Parser tempParser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (argTokenGroup) ), default(global::Loreline.Runtime.ParserContext));
+											global::Loreline.Runtime.Parser tempParser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (argTokenGroup) ), default(global::Loreline.Runtime.ParserContext));
 											tempParser.currentNodeId = this.currentNodeId;
 											global::Loreline.Runtime.NExpr arg = tempParser.parseExpression();
 											args.push(arg);
@@ -2250,7 +2433,7 @@ namespace Loreline.Runtime {
 										
 									}
 									
-									target = ((global::Loreline.Runtime.NCall) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NCall(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (callStart.extendedTo(((global::Loreline.Runtime.Token) (tokens[( i - 1 )]) ).pos)) ), ((global::Loreline.Runtime.NExpr) (target) ), ((global::Loreline.Internal.Root.Array<object>) (args) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+									target = ((global::Loreline.Runtime.NCall) (this.attachComments(((object) (new global::Loreline.Runtime.NCall(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (callStart.extendedTo(((global::Loreline.Runtime.Token) (tokens.__get(( i - 1 ))) ).pos)) ), ((global::Loreline.Runtime.NExpr) (target) ), ((global::Loreline.Internal.Root.Array) (args) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 									prevIsDot = false;
 									break;
 								}
@@ -2262,17 +2445,17 @@ namespace Loreline.Runtime {
 										this.addError(new global::Loreline.Runtime.ParseError(((string) ("Array access without target") ), ((global::Loreline.Runtime.Position) (token.pos) )));
 										long tmp24 = this.nextNodeId(((int) (4) ));
 										long tmp25 = this.nextNodeId(((int) (4) ));
-										global::Loreline.Runtime.Token tmp26 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+										global::Loreline.Runtime.Token tmp26 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 										global::Loreline.Runtime.Position tmp27 = ( (( tmp26 != null )) ? (tmp26.pos) : (null) );
-										return new global::Loreline.Runtime.NStringPart(((long) (tmp24) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp25) ), ((global::Loreline.Runtime.Position) (( (( tmp27 != null )) ? (tmp27) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+										return new global::Loreline.Runtime.NStringPart(((long) (tmp24) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp25) ), ((global::Loreline.Runtime.Position) (( (( tmp27 != null )) ? (tmp27) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 									}
 									
 									global::Loreline.Runtime.Position arrayStart = token.pos;
-									global::Loreline.Internal.Root.Array<object> arrayTokens = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									global::Loreline.Internal.Root.Array arrayTokens = new global::Loreline.Internal.Root.Array(new object[]{});
 									int bracketLevel = 1;
 									global::Loreline.Runtime.Token lastRBracket = null;
 									while (( ( i < tokens.length ) && ( bracketLevel > 0 ) )) {
-										global::Loreline.Runtime.Token t1 = ((global::Loreline.Runtime.Token) (tokens[i]) );
+										global::Loreline.Runtime.Token t1 = ((global::Loreline.Runtime.Token) (tokens.__get(i)) );
 										 ++ i;
 										switch (t1.type._hx_index) {
 											case 41:
@@ -2309,18 +2492,18 @@ namespace Loreline.Runtime {
 										this.addError(new global::Loreline.Runtime.ParseError(((string) ("Unterminated array access") ), ((global::Loreline.Runtime.Position) (arrayStart) )));
 										long tmp28 = this.nextNodeId(((int) (4) ));
 										long tmp29 = this.nextNodeId(((int) (4) ));
-										global::Loreline.Runtime.Token tmp30 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+										global::Loreline.Runtime.Token tmp30 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 										global::Loreline.Runtime.Position tmp31 = ( (( tmp30 != null )) ? (tmp30.pos) : (null) );
-										return new global::Loreline.Runtime.NStringPart(((long) (tmp28) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp29) ), ((global::Loreline.Runtime.Position) (( (( tmp31 != null )) ? (tmp31) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+										return new global::Loreline.Runtime.NStringPart(((long) (tmp28) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp29) ), ((global::Loreline.Runtime.Position) (( (( tmp31 != null )) ? (tmp31) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 									}
 									
-									global::Loreline.Runtime.Parser tempParser1 = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (arrayTokens) ), default(global::Loreline.Runtime.ParserContext));
+									global::Loreline.Runtime.Parser tempParser1 = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (arrayTokens) ), default(global::Loreline.Runtime.ParserContext));
 									tempParser1.currentNodeId = this.currentNodeId;
 									global::Loreline.Runtime.NExpr indexExpr = tempParser1.parseExpression();
 									this.currentNodeId = tempParser1.currentNodeId;
-									global::Loreline.Runtime.Position accessPos = pos.extendedTo(((global::Loreline.Runtime.Token) (tokens[( i - 1 )]) ).pos);
+									global::Loreline.Runtime.Position accessPos = pos.extendedTo(((global::Loreline.Runtime.Token) (tokens.__get(( i - 1 ))) ).pos);
 									accessPos.length += 1;
-									target = ((global::Loreline.Runtime.NArrayAccess) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NArrayAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (accessPos) ), ((global::Loreline.Runtime.NExpr) (target) ), ((global::Loreline.Runtime.NExpr) (indexExpr) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+									target = ((global::Loreline.Runtime.NArrayAccess) (this.attachComments(((object) (new global::Loreline.Runtime.NArrayAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (accessPos) ), ((global::Loreline.Runtime.NExpr) (target) ), ((global::Loreline.Runtime.NExpr) (indexExpr) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 									prevIsDot = false;
 									break;
 								}
@@ -2331,9 +2514,9 @@ namespace Loreline.Runtime {
 									this.addError(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Unexpected token in field access: ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(token.type))) ), ((global::Loreline.Runtime.Position) (token.pos) )));
 									long tmp32 = this.nextNodeId(((int) (4) ));
 									long tmp33 = this.nextNodeId(((int) (4) ));
-									global::Loreline.Runtime.Token tmp34 = ((global::Loreline.Runtime.Token) (tokens[0]) );
+									global::Loreline.Runtime.Token tmp34 = ((global::Loreline.Runtime.Token) (tokens.__get(0)) );
 									global::Loreline.Runtime.Position tmp35 = ( (( tmp34 != null )) ? (tmp34.pos) : (null) );
-									return new global::Loreline.Runtime.NStringPart(((long) (tmp32) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp33) ), ((global::Loreline.Runtime.Position) (( (( tmp35 != null )) ? (tmp35) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+									return new global::Loreline.Runtime.NStringPart(((long) (tmp32) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(new global::Loreline.Runtime.NLiteral(((long) (tmp33) ), ((global::Loreline.Runtime.Position) (( (( tmp35 != null )) ? (tmp35) : (this.currentPos()) )) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 								}
 								
 							}
@@ -2343,36 +2526,37 @@ namespace Loreline.Runtime {
 					}
 					
 					if (prevIsDot) {
-						this.addError(new global::Loreline.Runtime.ParseError(((string) ("Trailing dot in field access") ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (tokens[( tokens.length - 1 )]) ).pos) )));
+						this.addError(new global::Loreline.Runtime.ParseError(((string) ("Trailing dot in field access") ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (tokens.__get(( tokens.length - 1 ))) ).pos) )));
 					}
 					
 					expr = target;
 				}
 				else {
-					global::Loreline.Runtime.Parser tempParser2 = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (tokens) ), default(global::Loreline.Runtime.ParserContext));
+					global::Loreline.Runtime.Parser tempParser2 = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (tokens) ), default(global::Loreline.Runtime.ParserContext));
 					tempParser2.currentNodeId = this.currentNodeId;
 					expr = tempParser2.parseExpression();
 					this.currentNodeId = tempParser2.currentNodeId;
 					if ( ! (tempParser2.isAtEnd()) ) {
-						this.addError(new global::Loreline.Runtime.ParseError(((string) ("Unexpected tokens after interpolation expression") ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (tempParser2.tokens[tempParser2.current]) ).pos) )));
+						this.addError(new global::Loreline.Runtime.ParseError(((string) ("Unexpected tokens after interpolation expression") ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (tempParser2.tokens.__get(tempParser2.current)) ).pos) )));
 					}
 					
 				}
 				
-				global::Loreline.Runtime.Position partPos = new global::Loreline.Runtime.Position(((int) (pos.line) ), ((int) (( pos.column + (( (braces) ? (1) : (0) )) )) ), ((int) (( pos.offset - (( (braces) ? (2) : (0) )) )) ), new global::Loreline.Internal.Lang.Null<int>(length, true));
-				return new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(expr)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Runtime.Position partPos = new global::Loreline.Runtime.Position(((int) (pos.line) ), ((int) (( pos.column + (( (braces) ? (1) : (0) )) )) ), ((int) (( pos.offset - (( (braces) ? (2) : (0) )) )) ), ((object) (length) ));
+				return new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Expr(expr)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 			}
 		}
 		
 		
-		public virtual global::Loreline.Runtime.NStringPart parseStringTag(bool closing, int start, int length, string content, int quotes, global::Loreline.Internal.Root.Array<object> attachments) {
+		public virtual global::Loreline.Runtime.NStringPart parseStringTag(bool closing, int start, int length, string content, int quotes, global::Loreline.Internal.Root.Array attachments) {
 			unchecked {
-				global::Loreline.Runtime.Position pos = this.makeStringPartPosition(this.currentPos(), content, start);
-				pos.length = length;
+				global::Loreline.Runtime.Position strPos = this.currentPos();
 				if (( quotes != ((int) (0) ) )) {
-					pos = pos.withOffset(content, 1, new global::Loreline.Internal.Lang.Null<int>(pos.length, true), default(global::Loreline.Internal.Lang.Null<int>));
+					strPos = strPos.withOffset(content, 1, ( strPos.length - 2 ), null);
 				}
 				
+				global::Loreline.Runtime.Position pos = this.makeStringPartPosition(strPos, content, start);
+				pos.length = length;
 				int offsetStart = ( (closing) ? (2) : (1) );
 				int innerStart = ( start + offsetStart );
 				int innerLength = ( length - (( (closing) ? (3) : (2) )) );
@@ -2385,13 +2569,13 @@ namespace Loreline.Runtime {
 					while (( _g < _g1 )) {
 						int i = _g++;
 						{
-							global::Loreline.Runtime.LStringAttachment _g2 = ((global::Loreline.Runtime.LStringAttachment) (attachments[i]) );
+							global::Loreline.Runtime.LStringAttachment _g2 = ((global::Loreline.Runtime.LStringAttachment) (attachments.__get(i)) );
 							switch (_g2._hx_index) {
 								case 0:
 								{
 									bool _g3 = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).braces;
 									bool _g4 = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).inTag;
-									global::Loreline.Internal.Root.Array<object> _g5 = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
+									global::Loreline.Internal.Root.Array _g5 = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
 									{
 										int aStart = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).start;
 										int aLength = ( _g2 as global::Loreline.Runtime.LStringAttachment_Interpolation ).length;
@@ -2428,15 +2612,15 @@ namespace Loreline.Runtime {
 				}
 				
 				if ( ! (hasAttachmentsInRange) ) {
-					global::Loreline.Runtime.Position partPos = this.makeStringPartPosition(pos, content, innerStart);
+					global::Loreline.Runtime.Position partPos = this.makeStringPartPosition(strPos, content, innerStart);
 					partPos.length = innerLength;
 					long literalId = this.nextNodeId(((int) (4) ));
 					long partId = this.nextNodeId(((int) (4) ));
-					return new global::Loreline.Runtime.NStringPart(((long) (tagId) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Tag(closing, ((global::Loreline.Runtime.NStringLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (literalId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array<object>) (new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Runtime.NStringPart(((long) (partId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, innerStart, new global::Loreline.Internal.Lang.Null<int>(innerLength, true)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))})) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) ))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+					return new global::Loreline.Runtime.NStringPart(((long) (tagId) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Tag(closing, ((global::Loreline.Runtime.NStringLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (literalId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array) (new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Runtime.NStringPart(((long) (partId) ), ((global::Loreline.Runtime.Position) (partPos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, innerStart, innerLength))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))})) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) ))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				}
 				
-				global::Loreline.Internal.Root.Array<object> parts = new global::Loreline.Internal.Root.Array<object>();
-				global::Loreline.Runtime.NStringLiteral stringLiteral = ((global::Loreline.Runtime.NStringLiteral) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pos) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array<object>) (parts) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+				global::Loreline.Internal.Root.Array parts = new global::Loreline.Internal.Root.Array();
+				global::Loreline.Runtime.NStringLiteral stringLiteral = ((global::Loreline.Runtime.NStringLiteral) (this.attachComments(((object) (new global::Loreline.Runtime.NStringLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (pos) ), ((int) (0) ), ((global::Loreline.Internal.Root.Array) (parts) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 				int currentPos = innerStart;
 				if (( attachments != null )) {
 					int _g9 = 0;
@@ -2444,27 +2628,29 @@ namespace Loreline.Runtime {
 					while (( _g9 < _g10 )) {
 						int i1 = _g9++;
 						{
-							global::Loreline.Runtime.LStringAttachment _g11 = ((global::Loreline.Runtime.LStringAttachment) (attachments[i1]) );
+							global::Loreline.Runtime.LStringAttachment _g11 = ((global::Loreline.Runtime.LStringAttachment) (attachments.__get(i1)) );
 							switch (_g11._hx_index) {
 								case 0:
 								{
 									bool _g12 = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).inTag;
 									{
 										bool braces = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).braces;
-										global::Loreline.Internal.Root.Array<object> tokens = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
+										global::Loreline.Internal.Root.Array tokens = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).expr;
 										int aStart1 = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).start;
 										int aLength1 = ( _g11 as global::Loreline.Runtime.LStringAttachment_Interpolation ).length;
 										{
 											int aEnd1 = ( aStart1 + aLength1 );
 											if (( ( aStart1 >= innerStart ) && ( aEnd1 <= innerEnd ) )) {
 												if (( aStart1 > currentPos )) {
-													global::Loreline.Internal.Lang.Null<int> len = default(global::Loreline.Internal.Lang.Null<int>);
-													global::Loreline.Runtime.Position partPos1 = this.makeStringPartPosition(pos, global::Loreline.Internal.Lang.StringExt.substr(content, start, len), ( ( currentPos - start ) + offsetStart ));
-													partPos1.length = ( aStart1 - currentPos );
-													parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos1) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, new global::Loreline.Internal.Lang.Null<int>(( aStart1 - currentPos ), true)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
+													global::Loreline.Runtime.Position partPos1 = this.makeStringPartPosition(strPos, content, innerStart);
+													partPos1.length = ( aStart1 - innerStart );
+													parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos1) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, ( aStart1 - currentPos )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
 												}
 												
-												parts.push(this.parseStringInterpolation(braces, true, tokens, aStart1, aLength1, content));
+												global::Loreline.Runtime.NStringPart interpPart = this.parseStringInterpolation(braces, true, tokens, aStart1, aLength1, content);
+												interpPart.pos = this.makeStringPartPosition(strPos, content, aStart1);
+												interpPart.pos.length = aLength1;
+												parts.push(interpPart);
 												currentPos = aEnd1;
 											}
 											
@@ -2494,22 +2680,27 @@ namespace Loreline.Runtime {
 				}
 				
 				if (( currentPos < innerEnd )) {
-					global::Loreline.Internal.Lang.Null<int> len1 = default(global::Loreline.Internal.Lang.Null<int>);
-					global::Loreline.Runtime.Position partPos2 = this.makeStringPartPosition(pos, global::Loreline.Internal.Lang.StringExt.substr(content, start, len1), ( ( currentPos - start ) + offsetStart ));
+					object len = null;
+					global::Loreline.Runtime.Position partPos2 = this.makeStringPartPosition(pos, global::Loreline.Internal.Lang.StringExt.substr(content, start, len), ( ( currentPos - start ) + offsetStart ));
 					partPos2.length = ( ( innerStart + innerEnd ) - currentPos );
-					parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos2) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, new global::Loreline.Internal.Lang.Null<int>(( innerEnd - currentPos ), true)))) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>)));
+					parts.push(new global::Loreline.Runtime.NStringPart(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (partPos2) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Raw(global::Loreline.Internal.Lang.StringExt.substr(content, currentPos, ( innerEnd - currentPos )))) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array)));
 				}
 				
-				return new global::Loreline.Runtime.NStringPart(((long) (tagId) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Tag(closing, stringLiteral)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				return new global::Loreline.Runtime.NStringPart(((long) (tagId) ), ((global::Loreline.Runtime.Position) (pos) ), ((global::Loreline.Runtime.StringPartType) (global::Loreline.Runtime.StringPartType.Tag(closing, stringLiteral)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 			}
 		}
 		
 		
 		public virtual global::Loreline.Runtime.NExpr parseIdentifierExpression(global::Loreline.Runtime.Position startPos, string name) {
+			global::Loreline.Runtime.NExpr expr = ((global::Loreline.Runtime.NAccess) (this.attachComments(((object) (this.makeAccess(startPos, null, name, null)) ))) );
+			return this.parsePostfix(startPos, expr);
+		}
+		
+		
+		public virtual global::Loreline.Runtime.NExpr parsePostfix(global::Loreline.Runtime.Position startPos, global::Loreline.Runtime.NExpr expr) {
 			unchecked {
-				global::Loreline.Runtime.NExpr expr = ((global::Loreline.Runtime.NAccess) (this.attachComments<object>(((object) (this.makeAccess(startPos, null, name, null)) ))) );
 				while (true) {
-					if (this.match(global::Loreline.Runtime.TokenType.Dot, new global::Loreline.Internal.Lang.Null<bool>(false, true))) {
+					if (this.match(global::Loreline.Runtime.TokenType.Dot, false)) {
 						string prop = null;
 						global::Loreline.Runtime.Position propPos = this.currentPos();
 						if (this.checkIdentifier()) {
@@ -2520,17 +2711,17 @@ namespace Loreline.Runtime {
 							prop = "";
 						}
 						
-						expr = ((global::Loreline.Runtime.NAccess) (this.attachComments<object>(((object) (this.makeAccess(startPos, expr, prop, propPos)) ))) );
+						expr = ((global::Loreline.Runtime.NAccess) (this.attachComments(((object) (this.makeAccess(startPos, expr, prop, propPos)) ))) );
 					}
-					else if (this.match(global::Loreline.Runtime.TokenType.LBracket, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					else if (this.match(global::Loreline.Runtime.TokenType.LBracket, null)) {
 						global::Loreline.Runtime.NExpr index = this.parseExpression();
 						this.expect(global::Loreline.Runtime.TokenType.RBracket);
 						global::Loreline.Runtime.Position accessPos = startPos.extendedTo(this.previous().pos);
-						expr = ((global::Loreline.Runtime.NArrayAccess) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NArrayAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (accessPos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.NExpr) (index) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+						expr = ((global::Loreline.Runtime.NArrayAccess) (this.attachComments(((object) (new global::Loreline.Runtime.NArrayAccess(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (accessPos) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Runtime.NExpr) (index) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
-					else if (this.match(global::Loreline.Runtime.TokenType.LParen, default(global::Loreline.Internal.Lang.Null<bool>))) {
-						global::Loreline.Internal.Root.Array<object> args = this.parseCallArguments();
-						expr = ((global::Loreline.Runtime.NCall) (this.attachComments<object>(((object) (new global::Loreline.Runtime.NCall(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.previous().pos)) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Internal.Root.Array<object>) (args) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>))) ))) );
+					else if (this.match(global::Loreline.Runtime.TokenType.LParen, null)) {
+						global::Loreline.Internal.Root.Array args = this.parseCallArguments();
+						expr = ((global::Loreline.Runtime.NCall) (this.attachComments(((object) (new global::Loreline.Runtime.NCall(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos.extendedTo(this.previous().pos)) ), ((global::Loreline.Runtime.NExpr) (expr) ), ((global::Loreline.Internal.Root.Array) (args) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array))) ))) );
 					}
 					else {
 						break;
@@ -2546,24 +2737,24 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseArrayLiteral() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Internal.Root.Array<object> elements = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-				global::Loreline.Runtime.NLiteral literal = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (elements) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Array) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+				global::Loreline.Internal.Root.Array elements = new global::Loreline.Internal.Root.Array(new object[]{});
+				global::Loreline.Runtime.NLiteral literal = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (startPos) ), ((object) (elements) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Array) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 				this.expect(global::Loreline.Runtime.TokenType.LBracket);
-				global::Loreline.Runtime.NLiteral __temp_expr1 = ((global::Loreline.Runtime.NLiteral) (this.attachComments<object>(((object) (literal) ))) );
+				global::Loreline.Runtime.NLiteral __temp_expr1 = ((global::Loreline.Runtime.NLiteral) (this.attachComments(((object) (literal) ))) );
 				bool needsSeparator = false;
 				while ((  ! (this.check(global::Loreline.Runtime.TokenType.RBracket))  &&  ! (this.isAtEnd())  )) {
 					if (needsSeparator) {
-						while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+						while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 							needsSeparator = false;
 						}
 						
-						if (this.match(global::Loreline.Runtime.TokenType.Comma, default(global::Loreline.Internal.Lang.Null<bool>))) {
+						if (this.match(global::Loreline.Runtime.TokenType.Comma, null)) {
 							needsSeparator = false;
 						}
 						
 					}
 					
-					while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.Indent, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+					while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || this.match(global::Loreline.Runtime.TokenType.Indent, null) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, null) )) {
 						needsSeparator = false;
 					}
 					
@@ -2571,7 +2762,7 @@ namespace Loreline.Runtime {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Expected comma or line break between elements") ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 					}
 					
-					while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.Indent, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+					while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || this.match(global::Loreline.Runtime.TokenType.Indent, null) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, null) )) {
 					}
 					
 					if ( ! (this.check(global::Loreline.Runtime.TokenType.RBracket)) ) {
@@ -2582,7 +2773,7 @@ namespace Loreline.Runtime {
 					needsSeparator = ( ( prev.type != global::Loreline.Runtime.TokenType.Colon ) && ( prev.type != global::Loreline.Runtime.TokenType.LineBreak ) );
 				}
 				
-				while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || this.match(global::Loreline.Runtime.TokenType.Indent, default(global::Loreline.Internal.Lang.Null<bool>)) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) )) {
+				while (( ( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || this.match(global::Loreline.Runtime.TokenType.Indent, null) ) || this.match(global::Loreline.Runtime.TokenType.Unindent, null) )) {
 				}
 				
 				this.expect(global::Loreline.Runtime.TokenType.RBracket);
@@ -2595,25 +2786,25 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.NExpr parseObjectLiteral() {
 			unchecked {
 				global::Loreline.Runtime.Position startPos = this.currentPos();
-				global::Loreline.Internal.Root.Array<object> fields = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array fields = new global::Loreline.Internal.Root.Array(new object[]{});
 				global::Loreline.Runtime.TokenType blockEnd = ( (( this.parseBlockStart().type == global::Loreline.Runtime.TokenType.Indent )) ? (global::Loreline.Runtime.TokenType.Unindent) : (global::Loreline.Runtime.TokenType.RBrace) );
 				int style = ( (( blockEnd == global::Loreline.Runtime.TokenType.RBrace )) ? (((int) (1) )) : (((int) (0) )) );
-				global::Loreline.Runtime.NLiteral literal = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (( (( blockEnd != global::Loreline.Runtime.TokenType.RBrace )) ? (this.nextNonWhitespaceOrComment().pos) : (startPos) )) ), ((object) (fields) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Object(style)) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
-				global::Loreline.Runtime.NLiteral __temp_expr1 = ((global::Loreline.Runtime.NLiteral) (this.attachComments<object>(((object) (literal) ))) );
+				global::Loreline.Runtime.NLiteral literal = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (( (( blockEnd != global::Loreline.Runtime.TokenType.RBrace )) ? (this.nextNonWhitespaceOrComment().pos) : (startPos) )) ), ((object) (fields) ), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Object(style)) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
+				global::Loreline.Runtime.NLiteral __temp_expr1 = ((global::Loreline.Runtime.NLiteral) (this.attachComments(((object) (literal) ))) );
 				bool needsSeparator = false;
 				while ((  ! (this.check(blockEnd))  &&  ! (this.isAtEnd())  )) {
 					if (needsSeparator) {
-						while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+						while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 							needsSeparator = false;
 						}
 						
-						if (this.match(global::Loreline.Runtime.TokenType.Comma, default(global::Loreline.Internal.Lang.Null<bool>))) {
+						if (this.match(global::Loreline.Runtime.TokenType.Comma, null)) {
 							needsSeparator = false;
 						}
 						
 					}
 					
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 						needsSeparator = false;
 					}
 					
@@ -2621,7 +2812,7 @@ namespace Loreline.Runtime {
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) ("Expected comma or line break between fields") ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 					}
 					
-					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+					while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 					}
 					
 					if ( ! (this.check(blockEnd)) ) {
@@ -2632,7 +2823,7 @@ namespace Loreline.Runtime {
 					needsSeparator = ( ( prev.type != global::Loreline.Runtime.TokenType.Colon ) && ( prev.type != global::Loreline.Runtime.TokenType.LineBreak ) );
 				}
 				
-				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>)) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, default(global::Loreline.Internal.Lang.Null<bool>)) ) )) {
+				while (( this.match(global::Loreline.Runtime.TokenType.LineBreak, null) || ( ( blockEnd != global::Loreline.Runtime.TokenType.Unindent ) && this.match(global::Loreline.Runtime.TokenType.Unindent, null) ) )) {
 				}
 				
 				this.expect(blockEnd);
@@ -2642,19 +2833,19 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseCallArguments() {
-			global::Loreline.Internal.Root.Array<object> args = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+		public virtual global::Loreline.Internal.Root.Array parseCallArguments() {
+			global::Loreline.Internal.Root.Array args = new global::Loreline.Internal.Root.Array(new object[]{});
 			if ( ! (this.check(global::Loreline.Runtime.TokenType.RParen)) ) {
 				do {
-					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 					}
 					
 					args.push(this.parseExpression());
-					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, default(global::Loreline.Internal.Lang.Null<bool>))) {
+					while (this.match(global::Loreline.Runtime.TokenType.LineBreak, null)) {
 					}
 					
 				}
-				while (this.match(global::Loreline.Runtime.TokenType.Comma, default(global::Loreline.Internal.Lang.Null<bool>)));
+				while (this.match(global::Loreline.Runtime.TokenType.Comma, null));
 			}
 			
 			this.expect(global::Loreline.Runtime.TokenType.RParen);
@@ -2664,12 +2855,12 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.NExpr parseConditionExpression() {
 			unchecked {
-				bool hasParen = this.match(global::Loreline.Runtime.TokenType.LParen, default(global::Loreline.Internal.Lang.Null<bool>));
+				bool hasParen = this.match(global::Loreline.Runtime.TokenType.LParen, null);
 				global::Loreline.Runtime.NExpr expr = null;
 				try {
 					expr = this.parseExpression();
 					if (( expr != null )) {
-						if (global::Loreline.Internal.Lang.Runtime.refEq(global::Loreline.Internal.Root.Type.getClass<object>(((object) (expr) )), typeof(global::Loreline.Runtime.NAssign))) {
+						if (global::Loreline.Internal.Lang.Runtime.refEq(global::Loreline.Internal.Root.Type.getClass(((object) (expr) )), typeof(global::Loreline.Runtime.NAssign))) {
 							this.addError(new global::Loreline.Runtime.ParseError(((string) ("Invalid condition expression: can\'t assign a variable here. Did you want to use \'==\' instead?") ), ((global::Loreline.Runtime.Position) (expr.pos) )));
 						}
 						
@@ -2682,7 +2873,7 @@ namespace Loreline.Runtime {
 						global::Loreline.Runtime.ParseError e = ((global::Loreline.Runtime.ParseError) (_g1) );
 						{
 							this.addError(e);
-							expr = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array<object>), default(global::Loreline.Internal.Root.Array<object>));
+							expr = new global::Loreline.Runtime.NLiteral(((long) (this.nextNodeId(((int) (4) ))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ), default(object), ((global::Loreline.Runtime.LiteralType) (global::Loreline.Runtime.LiteralType.Null) ), default(global::Loreline.Internal.Root.Array), default(global::Loreline.Internal.Root.Array));
 						}
 						
 					}
@@ -2702,10 +2893,10 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual bool match(global::Loreline.Runtime.TokenType type, global::Loreline.Internal.Lang.Null<bool> advanceLineBreaks) {
-			bool advanceLineBreaks1 = ( ( ! (advanceLineBreaks.hasValue) ) ? (true) : ((advanceLineBreaks).@value) );
+		public virtual bool match(global::Loreline.Runtime.TokenType type, object advanceLineBreaks) {
+			bool advanceLineBreaks1 = ( (( advanceLineBreaks == default(object) )) ? (true) : (global::Loreline.Internal.Lang.Runtime.toBool(advanceLineBreaks)) );
 			if (this.check(type)) {
-				this.advance(new global::Loreline.Internal.Lang.Null<bool>(advanceLineBreaks1, true));
+				this.advance(advanceLineBreaks1);
 				return true;
 			}
 			
@@ -2715,7 +2906,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool isAtLineBreak() {
 			if ( ! (this.lineBreakAfterToken) ) {
-				return ( ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type == global::Loreline.Runtime.TokenType.LineBreak );
+				return ( ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type == global::Loreline.Runtime.TokenType.LineBreak );
 			}
 			else {
 				return true;
@@ -2727,14 +2918,14 @@ namespace Loreline.Runtime {
 		public virtual global::Loreline.Runtime.Token expect(global::Loreline.Runtime.TokenType type) {
 			unchecked {
 				if (this.check(type)) {
-					return this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+					return this.advance(null);
 				}
 				else {
-					global::Loreline.Runtime.ParseError error = new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Expected ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(type)), ", got "), (( (this.isAtEnd()) ? ("end of file") : (global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type)) )))) ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (this.tokens[((int) (global::System.Math.Min(((double) (this.current) ), ((double) (( this.tokens.length - 1 )) ))) )]) ).pos) ));
+					global::Loreline.Runtime.ParseError error = new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Expected ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(type)), ", got "), (( (this.isAtEnd()) ? ("end of file") : (this.currentTokenTypeToString()) )))) ), ((global::Loreline.Runtime.Position) (((global::Loreline.Runtime.Token) (this.tokens.__get(((int) (global::System.Math.Min(((double) (this.current) ), ((double) (( this.tokens.length - 1 )) ))) ))) ).pos) ));
 					switch (type._hx_index) {
 						case 38:
 						case 40:
-						case 46:
+						case 47:
 						{
 							this.addError(error);
 							return new global::Loreline.Runtime.Token(((global::Loreline.Runtime.TokenType) (type) ), ((global::Loreline.Runtime.Position) (this.currentPos()) ));
@@ -2757,7 +2948,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool checkIdentifier() {
 			unchecked {
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				if (( _g._hx_index == 13 )) {
 					string name = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
 					return true;
@@ -2772,50 +2963,50 @@ namespace Loreline.Runtime {
 		
 		public virtual string expectIdentifier() {
 			unchecked {
-				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+				global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 				if (( _g._hx_index == 13 )) {
 					string name = ( _g as global::Loreline.Runtime.TokenType_Identifier ).name;
-					this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+					this.advance(null);
 					return name;
 				}
 				else {
-					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Expected identifier, got ", global::Loreline.Runtime.TokenTypeHelpers.toCodeString(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type))) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(new global::Loreline.Runtime.ParseError(((string) (global::Loreline.Internal.Lang.Runtime.concat("Expected identifier, got ", this.currentTokenTypeToString())) ), ((global::Loreline.Runtime.Position) (this.currentPos()) )))) );
 				}
 				
 			}
 		}
 		
 		
-		public virtual T attachComments<T>(T node) {
+		public virtual object attachComments(object node) {
 			if (( ( this.pendingComments == null ) || ( this.pendingComments.length == 0 ) )) {
 				return node;
 			}
 			
-			global::Loreline.Runtime.Position nodeStart = ((global::Loreline.Runtime.AstNode) (((object) (node) )) ).pos;
-			global::Loreline.Internal.Root.Array<object> remainingComments = null;
+			global::Loreline.Runtime.Position nodeStart = ((global::Loreline.Runtime.AstNode) (node) ).pos;
+			global::Loreline.Internal.Root.Array remainingComments = null;
 			{
 				int _g = 0;
 				int _g1 = this.pendingComments.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					global::Loreline.Runtime.Comment comment = ((global::Loreline.Runtime.Comment) (this.pendingComments[i]) );
+					global::Loreline.Runtime.Comment comment = ((global::Loreline.Runtime.Comment) (this.pendingComments.__get(i)) );
 					if (( comment.pos.line < nodeStart.line )) {
-						if (( ((global::Loreline.Runtime.AstNode) (((object) (node) )) ).leadingComments == null )) {
-							global::Loreline.Internal.Root.Array<object> __temp_expr2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "leadingComments", 977714714, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+						if (( ((global::Loreline.Runtime.AstNode) (node) ).leadingComments == null )) {
+							global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "leadingComments", 977714714, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 						}
 						
-						((global::Loreline.Runtime.AstNode) (((object) (node) )) ).leadingComments.push(comment);
+						((global::Loreline.Runtime.AstNode) (node) ).leadingComments.push(comment);
 					}
-					else if (( comment.pos.line == nodeStart.line )) {
-						if (( ((global::Loreline.Runtime.AstNode) (((object) (node) )) ).trailingComments == null )) {
-							global::Loreline.Internal.Root.Array<object> __temp_expr1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "trailingComments", 726215216, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+					else if (( ( comment.pos.line == nodeStart.line ) || this.isAtEnd() )) {
+						if (( ((global::Loreline.Runtime.AstNode) (node) ).trailingComments == null )) {
+							global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "trailingComments", 726215216, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 						}
 						
-						((global::Loreline.Runtime.AstNode) (((object) (node) )) ).trailingComments.push(comment);
+						((global::Loreline.Runtime.AstNode) (node) ).trailingComments.push(comment);
 					}
 					else {
 						if (( remainingComments == null )) {
-							remainingComments = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+							remainingComments = new global::Loreline.Internal.Root.Array(new object[]{});
 						}
 						
 						remainingComments.push(comment);
@@ -2830,29 +3021,29 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual T attachElseComments<T>(T node, global::Loreline.Runtime.Token elseToken) {
+		public virtual object attachElseComments(object node, global::Loreline.Runtime.Token elseToken) {
 			if (( this.pendingComments != null )) {
 				global::Loreline.Runtime.Position nodeStart = elseToken.pos;
-				global::Loreline.Internal.Root.Array<object> remainingComments = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array remainingComments = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g = 0;
-					global::Loreline.Internal.Root.Array<object> _g1 = this.pendingComments;
+					global::Loreline.Internal.Root.Array _g1 = this.pendingComments;
 					while (( _g < _g1.length )) {
-						global::Loreline.Runtime.Comment comment = ((global::Loreline.Runtime.Comment) (_g1[_g]) );
+						global::Loreline.Runtime.Comment comment = ((global::Loreline.Runtime.Comment) (_g1.__get(_g)) );
 						 ++ _g;
 						if (( comment.pos.line < nodeStart.line )) {
-							if (( ((global::Loreline.Runtime.NIfStatement) (((object) (node) )) ).elseLeadingComments == null )) {
-								global::Loreline.Internal.Root.Array<object> __temp_expr2 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "elseLeadingComments", 1152129377, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+							if (( ((global::Loreline.Runtime.NIfStatement) (node) ).elseLeadingComments == null )) {
+								global::Loreline.Internal.Root.Array __temp_expr2 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "elseLeadingComments", 1152129377, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 							}
 							
-							((global::Loreline.Runtime.NIfStatement) (((object) (node) )) ).elseLeadingComments.push(comment);
+							((global::Loreline.Runtime.NIfStatement) (node) ).elseLeadingComments.push(comment);
 						}
 						else if (( comment.pos.line == nodeStart.line )) {
-							if (( ((global::Loreline.Runtime.NIfStatement) (((object) (node) )) ).elseTrailingComments == null )) {
-								global::Loreline.Internal.Root.Array<object> __temp_expr1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "elseTrailingComments", 965979401, new global::Loreline.Internal.Root.Array<object>(new object[]{}))) ))) );
+							if (( ((global::Loreline.Runtime.NIfStatement) (node) ).elseTrailingComments == null )) {
+								global::Loreline.Internal.Root.Array __temp_expr1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.setField(node, "elseTrailingComments", 965979401, new global::Loreline.Internal.Root.Array(new object[]{}))) );
 							}
 							
-							((global::Loreline.Runtime.NIfStatement) (((object) (node) )) ).elseTrailingComments.push(comment);
+							((global::Loreline.Runtime.NIfStatement) (node) ).elseTrailingComments.push(comment);
 						}
 						else {
 							remainingComments.push(comment);
@@ -2871,21 +3062,21 @@ namespace Loreline.Runtime {
 		
 		public virtual void synchronize() {
 			unchecked {
-				this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+				this.advance(null);
 				while ( ! (this.isAtEnd()) ) {
-					global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type;
+					global::Loreline.Runtime.TokenType _g = ((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type;
 					switch (_g._hx_index) {
 						case 9:
 						{
 							int _g1 = ( _g as global::Loreline.Runtime.TokenType_LString ).quotes;
 							string _g2 = ( _g as global::Loreline.Runtime.TokenType_LString ).s;
-							global::Loreline.Internal.Root.Array<object> _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
+							global::Loreline.Internal.Root.Array _g3 = ( _g as global::Loreline.Runtime.TokenType_LString ).attachments;
 							{
 								if (( this.previous().type == global::Loreline.Runtime.TokenType.RBrace )) {
 									return;
 								}
 								
-								this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+								this.advance(null);
 							}
 							
 							break;
@@ -2894,9 +3085,9 @@ namespace Loreline.Runtime {
 						
 						case 33:
 						{
-							this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
-							if (( this.check(global::Loreline.Runtime.TokenType.Dot) || global::Loreline.Runtime.TokenTypeHelpers.isIdentifier(((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type) )) {
-								this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+							this.advance(null);
+							if (( this.check(global::Loreline.Runtime.TokenType.Dot) || global::Loreline.Runtime.TokenTypeHelpers.isIdentifier(((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type) )) {
+								this.advance(null);
 							}
 							
 							return;
@@ -2909,7 +3100,7 @@ namespace Loreline.Runtime {
 						case 4:
 						case 5:
 						case 38:
-						case 45:
+						case 46:
 						{
 							return;
 						}
@@ -2917,7 +3108,7 @@ namespace Loreline.Runtime {
 						
 						default:
 						{
-							this.advance(default(global::Loreline.Internal.Lang.Null<bool>));
+							this.advance(null);
 							break;
 						}
 						
@@ -2931,7 +3122,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool requiresNewLine() {
 			unchecked {
-				switch (((global::Loreline.Runtime.Token) (this.tokens[this.current]) ).type._hx_index) {
+				switch (((global::Loreline.Runtime.Token) (this.tokens.__get(this.current)) ).type._hx_index) {
 					case 6:
 					case 33:
 					case 38:
@@ -2953,7 +3144,7 @@ namespace Loreline.Runtime {
 		
 		public virtual global::Loreline.Runtime.ParseError addError(global::Loreline.Runtime.ParseError error) {
 			if (( this.errors == null )) {
-				this.errors = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				this.errors = new global::Loreline.Internal.Root.Array(new object[]{});
 			}
 			
 			if ( ! (this.errors.contains(error)) ) {
@@ -3004,7 +3195,7 @@ namespace Loreline.Runtime {
 					
 					case 176082838:
 					{
-						this.currentNodeId = ((long) (@value) );
+						this.currentNodeId = global::Loreline.Internal.Lang.Runtime.toLong(@value);
 						return @value;
 					}
 					
@@ -3032,14 +3223,14 @@ namespace Loreline.Runtime {
 					
 					case 419142827:
 					{
-						this.pendingComments = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.pendingComments = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
 					
 					case 1365803947:
 					{
-						this.errors = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.errors = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -3053,7 +3244,7 @@ namespace Loreline.Runtime {
 					
 					case 300357466:
 					{
-						this.tokens = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.tokens = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -3156,6 +3347,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1894419842:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "parsePostfix", 1894419842)) );
+					}
+					
+					
 					case 1234125620:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "parseIdentifierExpression", 1234125620)) );
@@ -3249,6 +3446,12 @@ namespace Loreline.Runtime {
 					case 1501684331:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "parseFunction", 1501684331)) );
+					}
+					
+					
+					case 1571620220:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "parseInsertion", 1571620220)) );
 					}
 					
 					
@@ -3387,6 +3590,12 @@ namespace Loreline.Runtime {
 					case 1169594568:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "check", 1169594568)) );
+					}
+					
+					
+					case 1821867430:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "currentTokenTypeToString", 1821867430)) );
 					}
 					
 					
@@ -3558,7 +3767,7 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 1820783079:
 					{
-						return this.addError(((global::Loreline.Runtime.ParseError) (dynargs[0]) ));
+						return this.addError(((global::Loreline.Runtime.ParseError) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3577,13 +3786,13 @@ namespace Loreline.Runtime {
 					
 					case 1854502514:
 					{
-						return this.attachElseComments<object>(((object) (dynargs[0]) ), ((global::Loreline.Runtime.Token) (dynargs[1]) ));
+						return this.attachElseComments(((object) (dynargs[0]) ), ((global::Loreline.Runtime.Token) (((object) (dynargs[1]) )) ));
 					}
 					
 					
 					case 661986841:
 					{
-						return this.attachComments<object>(((object) (dynargs[0]) ));
+						return this.attachComments(((object) (dynargs[0]) ));
 					}
 					
 					
@@ -3601,7 +3810,7 @@ namespace Loreline.Runtime {
 					
 					case 1148579289:
 					{
-						return this.expect(((global::Loreline.Runtime.TokenType) (dynargs[0]) ));
+						return this.expect(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3613,7 +3822,7 @@ namespace Loreline.Runtime {
 					
 					case 52644165:
 					{
-						return this.match(((global::Loreline.Runtime.TokenType) (dynargs[0]) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )));
+						return this.match(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ));
 					}
 					
 					
@@ -3641,33 +3850,39 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1894419842:
+					{
+						return this.parsePostfix(((global::Loreline.Runtime.Position) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NExpr) (((object) (dynargs[1]) )) ));
+					}
+					
+					
 					case 1234125620:
 					{
-						return this.parseIdentifierExpression(((global::Loreline.Runtime.Position) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]));
+						return this.parseIdentifierExpression(((global::Loreline.Runtime.Position) (((object) (dynargs[0]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )));
 					}
 					
 					
 					case 199209814:
 					{
-						return this.parseStringTag(global::Loreline.Internal.Lang.Runtime.toBool(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[2])) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[3]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[4])) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[5]) ))) ));
+						return this.parseStringTag(global::Loreline.Internal.Lang.Runtime.toBool(((object) (dynargs[0]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[2]) ))) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[3]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[4]) ))) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[5]) )) ));
 					}
 					
 					
 					case 456957216:
 					{
-						return this.parseStringInterpolation(global::Loreline.Internal.Lang.Runtime.toBool(dynargs[0]), global::Loreline.Internal.Lang.Runtime.toBool(dynargs[1]), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[2]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[3])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[4])) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[5]));
+						return this.parseStringInterpolation(global::Loreline.Internal.Lang.Runtime.toBool(((object) (dynargs[0]) )), global::Loreline.Internal.Lang.Runtime.toBool(((object) (dynargs[1]) )), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[2]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[3]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[4]) ))) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[5]) )));
 					}
 					
 					
 					case 1557555762:
 					{
-						return this.makeAccess(((global::Loreline.Runtime.Position) (dynargs[0]) ), ((global::Loreline.Runtime.NExpr) (dynargs[1]) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[2]), ((global::Loreline.Runtime.Position) (dynargs[3]) ));
+						return this.makeAccess(((global::Loreline.Runtime.Position) (((object) (dynargs[0]) )) ), ((global::Loreline.Runtime.NExpr) (((object) (dynargs[1]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[2]) )), ((global::Loreline.Runtime.Position) (((object) (dynargs[3]) )) ));
 					}
 					
 					
 					case 1061701563:
 					{
-						return this.makeStringPartPosition(((global::Loreline.Runtime.Position) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(dynargs[1]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[2])) ));
+						return this.makeStringPartPosition(((global::Loreline.Runtime.Position) (((object) (dynargs[0]) )) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[2]) ))) ));
 					}
 					
 					
@@ -3737,6 +3952,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1571620220:
+					{
+						return this.parseInsertion();
+					}
+					
+					
 					case 832143272:
 					{
 						return this.parseTransition();
@@ -3769,7 +3990,7 @@ namespace Loreline.Runtime {
 					
 					case 1880302217:
 					{
-						return this.parseChoiceOption(((global::Loreline.Runtime.TokenType) (dynargs[0]) ));
+						return this.parseChoiceOption(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3817,13 +4038,13 @@ namespace Loreline.Runtime {
 					
 					case 1764687976:
 					{
-						return this.parseStateDecl(global::Loreline.Internal.Lang.Runtime.toBool(dynargs[0]));
+						return this.parseStateDecl(global::Loreline.Internal.Lang.Runtime.toBool(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 245971505:
 					{
-						return this.parseStatementBlock(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						return this.parseStatementBlock(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3841,19 +4062,19 @@ namespace Loreline.Runtime {
 					
 					case 68474919:
 					{
-						return this.wrapInRootBeat(((global::Loreline.Runtime.AstNode) (dynargs[0]) ));
+						return this.wrapInRootBeat(((global::Loreline.Runtime.AstNode) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1353735125:
 					{
-						return this.parseNode(global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
+						return this.parseNode(( (( dynargs.Length > 0 )) ? (((object) (dynargs[0]) )) : (null) ));
 					}
 					
 					
 					case 91158421:
 					{
-						return this.isComment(((global::Loreline.Runtime.TokenType) (dynargs[0]) ));
+						return this.isComment(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3871,7 +4092,13 @@ namespace Loreline.Runtime {
 					
 					case 1169594568:
 					{
-						return this.check(((global::Loreline.Runtime.TokenType) (dynargs[0]) ));
+						return this.check(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ));
+					}
+					
+					
+					case 1821867430:
+					{
+						return this.currentTokenTypeToString();
 					}
 					
 					
@@ -3907,7 +4134,7 @@ namespace Loreline.Runtime {
 					
 					case 953824755:
 					{
-						return this.prevWithType(((global::Loreline.Runtime.TokenType) (dynargs[0]) ));
+						return this.prevWithType(((global::Loreline.Runtime.TokenType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -3919,7 +4146,7 @@ namespace Loreline.Runtime {
 					
 					case 1863059586:
 					{
-						return this.advance(global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(( (( dynargs.Length > 0 )) ? (dynargs[0]) : (null) )));
+						return this.advance(( (( dynargs.Length > 0 )) ? (((object) (dynargs[0]) )) : (null) ));
 					}
 					
 					
@@ -3931,7 +4158,7 @@ namespace Loreline.Runtime {
 					
 					case 1549008848:
 					{
-						return this.nextNodeId(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.nextNodeId(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 					}
 					
 					
@@ -3959,7 +4186,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("context");
 			baseArr.push("rootBeat");
 			baseArr.push("currentNodeId");

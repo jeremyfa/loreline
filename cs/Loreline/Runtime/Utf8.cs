@@ -23,32 +23,32 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static string uSubstr(string str, int pos, global::Loreline.Internal.Lang.Null<int> len) {
+		public static string uSubstr(string str, int pos, object len) {
 			return global::Loreline.Internal.Lang.StringExt.substr(str, pos, len);
 		}
 		
 		
-		public static string uSubstring(string str, int startIndex, global::Loreline.Internal.Lang.Null<int> endIndex) {
+		public static string uSubstring(string str, int startIndex, object endIndex) {
 			return global::Loreline.Internal.Lang.StringExt.substring(str, startIndex, endIndex);
 		}
 		
 		
-		public static global::Loreline.Internal.Lang.Null<int> uCharCodeAt(string str, int pos) {
+		public static object uCharCodeAt(string str, int pos) {
 			return global::Loreline.Internal.Lang.StringExt.charCodeAt(str, pos);
 		}
 		
 		
-		public static int uIndexOf(string str, string substr, global::Loreline.Internal.Lang.Null<int> startIndex) {
+		public static int uIndexOf(string str, string substr, object startIndex) {
 			return global::Loreline.Internal.Lang.StringExt.indexOf(str, substr, startIndex);
 		}
 		
 		
-		public static int uLastIndexOf(string str, string substr, global::Loreline.Internal.Lang.Null<int> startIndex) {
+		public static int uLastIndexOf(string str, string substr, object startIndex) {
 			return global::Loreline.Internal.Lang.StringExt.lastIndexOf(str, substr, startIndex);
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> uToChars(string str) {
+		public static global::Loreline.Internal.Root.Array uToChars(string str) {
 			return global::Loreline.Internal.Lang.StringExt.split(str, "");
 		}
 		

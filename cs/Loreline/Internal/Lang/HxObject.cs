@@ -22,7 +22,7 @@ namespace Loreline.Internal.Lang {
 		
 		object __hx_invokeField(string field, int hash, object[] dynargs);
 		
-		void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr);
+		void __hx_getFields(global::Loreline.Internal.Root.Array baseArr);
 		
 	}
 }
@@ -147,7 +147,7 @@ namespace Loreline.Internal.Lang {
 				switch (hash) {
 					case 1937159360:
 					{
-						return this.__hx_deleteField(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this.__hx_deleteField(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
@@ -162,7 +162,7 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public virtual void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public virtual void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 		}
 		
 		
@@ -266,12 +266,12 @@ namespace Loreline.Internal.Lang {
 			
 			int res = global::Loreline.Internal.Lang.FieldLookup.findHash(hash, this.__hx_hashes, this.__hx_length);
 			if (( res >= 0 )) {
-				return this.__hx_dynamics[res];
+				return ((object) (this.__hx_dynamics[res]) );
 			}
 			
 			res = global::Loreline.Internal.Lang.FieldLookup.findHash(hash, this.__hx_hashes_f, this.__hx_length_f);
 			if (( res >= 0 )) {
-				return this.__hx_dynamics_f[res];
+				return ((double) (this.__hx_dynamics_f[res]) );
 			}
 			
 			if (isCheck) {
@@ -326,12 +326,12 @@ namespace Loreline.Internal.Lang {
 			
 			int res = global::Loreline.Internal.Lang.FieldLookup.findHash(hash, this.__hx_hashes_f, this.__hx_length_f);
 			if (( res >= 0 )) {
-				return this.__hx_dynamics_f[res];
+				return ((double) (this.__hx_dynamics_f[res]) );
 			}
 			
 			res = global::Loreline.Internal.Lang.FieldLookup.findHash(hash, this.__hx_hashes, this.__hx_length);
 			if (( res >= 0 )) {
-				return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(this.__hx_dynamics[res])) );
+				return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (this.__hx_dynamics[res]) ))) );
 			}
 			
 			return 0.0;
@@ -365,13 +365,13 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			{
 				int _g = 0;
 				int _g1 = this.__hx_length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					baseArr.push(global::Loreline.Internal.Lang.FieldLookup.lookupHash(this.__hx_hashes[i]));
+					baseArr.push(global::Loreline.Internal.Lang.FieldLookup.lookupHash(((int) (this.__hx_hashes[i]) )));
 				}
 				
 			}
@@ -381,7 +381,7 @@ namespace Loreline.Internal.Lang {
 				int _g3 = this.__hx_length_f;
 				while (( _g2 < _g3 )) {
 					int i1 = _g2++;
-					baseArr.push(global::Loreline.Internal.Lang.FieldLookup.lookupHash(this.__hx_hashes_f[i1]));
+					baseArr.push(global::Loreline.Internal.Lang.FieldLookup.lookupHash(((int) (this.__hx_hashes_f[i1]) )));
 				}
 				
 			}
@@ -438,9 +438,9 @@ namespace Loreline.Internal.Lang {
 			bool first = true;
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Internal.Root.Reflect.fields(this);
+				global::Loreline.Internal.Root.Array _g1 = global::Loreline.Internal.Root.Reflect.fields(this);
 				while (( _g < _g1.length )) {
-					string f = _g1[_g];
+					string f = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 					 ++ _g;
 					if (first) {
 						first = false;
@@ -450,7 +450,7 @@ namespace Loreline.Internal.Lang {
 					}
 					
 					ret_b.Append(((string) (" ") ));
-					ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(f)) ));
+					ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (f) ))) ));
 					ret_b.Append(((string) (" : ") ));
 					ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((object) (global::Loreline.Internal.Root.Reflect.field(this, f)) ))) ));
 				}
@@ -478,31 +478,6 @@ namespace Loreline.Internal.Lang {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Lang {
-	public interface IGenericObject : global::Loreline.Internal.Lang.IHxObject {
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Lang {
-	public class GenericInterface : global::System.Attribute {
-		
-		public GenericInterface(global::System.Type generic) : base() {
-			this.generic = generic;
-		}
-		
-		
-		public readonly global::System.Type generic;
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Lang {
 	public class Enum {
 		
 		protected Enum(int index) {
@@ -512,13 +487,13 @@ namespace Loreline.Internal.Lang {
 		
 		protected static string paramsToString(string tag, object[] @params) {
 			global::System.Text.StringBuilder ret_b = new global::System.Text.StringBuilder();
-			ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(tag)) ));
+			ret_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (tag) ))) ));
 			ret_b.Append(((string) ("(") ));
 			bool first = true;
 			{
 				int _g = 0;
 				while (( _g < ( ((object[]) (@params) ) as global::System.Array ).Length )) {
-					object p = ((object[]) (@params) )[_g];
+					object p = ((object) (((object[]) (@params) )[_g]) );
 					 ++ _g;
 					if (first) {
 						first = false;
@@ -543,7 +518,7 @@ namespace Loreline.Internal.Lang {
 				if (( @params != null )) {
 					int _g = 0;
 					while (( _g < ( ((object[]) (@params) ) as global::System.Array ).Length )) {
-						object p = ((object[]) (@params) )[_g];
+						object p = ((object) (((object[]) (@params) )[_g]) );
 						 ++ _g;
 						h *= 31;
 						if (( p != null )) {
@@ -569,8 +544,8 @@ namespace Loreline.Internal.Lang {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{});
+		public virtual global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{});
 		}
 		
 		

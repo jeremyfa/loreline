@@ -3,53 +3,31 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class WrappedError<T> : global::Loreline.Runtime.Error, global::Loreline.Runtime.WrappedError {
+	public class WrappedError : global::Loreline.Runtime.Error {
 		
 		public WrappedError(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 		}
 		
 		
-		public WrappedError(T wrapped, string message, global::Loreline.Runtime.Position pos) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Runtime.WrappedError<object>.__hx_ctor_loreline_WrappedError<T>(((global::Loreline.Runtime.WrappedError<T>) (this) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(wrapped), ((string) (message) ), ((global::Loreline.Runtime.Position) (pos) ));
+		public WrappedError(object wrapped, string message, global::Loreline.Runtime.Position pos) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
+			global::Loreline.Runtime.WrappedError.__hx_ctor_loreline_WrappedError(((global::Loreline.Runtime.WrappedError) (this) ), ((object) (wrapped) ), ((string) (message) ), ((global::Loreline.Runtime.Position) (pos) ));
 		}
 		
 		
-		protected static void __hx_ctor_loreline_WrappedError<T_c>(global::Loreline.Runtime.WrappedError<T_c> __hx_this, T_c wrapped, string message, global::Loreline.Runtime.Position pos) {
+		protected static void __hx_ctor_loreline_WrappedError(global::Loreline.Runtime.WrappedError __hx_this, object wrapped, string message, global::Loreline.Runtime.Position pos) {
 			global::Loreline.Runtime.Error.__hx_ctor_loreline_Error(__hx_this, message, pos);
 			__hx_this.wrapped = wrapped;
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Runtime.WrappedError me) {
-			return ( (( me != null )) ? (me.loreline_WrappedError_cast<T_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object loreline_WrappedError_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Runtime.WrappedError<T_c> new_me = new global::Loreline.Runtime.WrappedError<T_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public T wrapped;
+		public object wrapped;
 		
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
 					case 224712005:
 					{
-						this.wrapped = global::Loreline.Internal.Lang.Runtime.genericCast<T>(((object) (@value) ));
+						this.wrapped = ((object) (@value) );
 						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (@value) ))) );
 					}
 					
@@ -70,7 +48,7 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 224712005:
 					{
-						this.wrapped = global::Loreline.Internal.Lang.Runtime.genericCast<T>(@value);
+						this.wrapped = ((object) (@value) );
 						return @value;
 					}
 					
@@ -126,23 +104,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("wrapped");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Runtime.WrappedError<object>))]
-	public interface WrappedError : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object loreline_WrappedError_cast<T_c>();
 		
 	}
 }

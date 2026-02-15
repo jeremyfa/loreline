@@ -10,27 +10,27 @@ namespace Loreline.Internal.Rtti {
 		
 		public static readonly global::Loreline.Internal.Rtti.CType CUnknown = new global::Loreline.Internal.Rtti.CType_CUnknown();
 		
-		public static global::Loreline.Internal.Rtti.CType CEnum(string name, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Rtti.CType CEnum(string name, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Rtti.CType_CEnum(name, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.CType CClass(string name, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Rtti.CType CClass(string name, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Rtti.CType_CClass(name, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.CType CTypedef(string name, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Rtti.CType CTypedef(string name, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Rtti.CType_CTypedef(name, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.CType CFunction(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Rtti.CType ret) {
+		public static global::Loreline.Internal.Rtti.CType CFunction(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Rtti.CType ret) {
 			return new global::Loreline.Internal.Rtti.CType_CFunction(args, ret);
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.CType CAnonymous(global::Loreline.Internal.Root.Array<object> fields) {
+		public static global::Loreline.Internal.Rtti.CType CAnonymous(global::Loreline.Internal.Root.Array fields) {
 			return new global::Loreline.Internal.Rtti.CType_CAnonymous(fields);
 		}
 		
@@ -40,7 +40,7 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.CType CAbstract(string name, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Rtti.CType CAbstract(string name, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Rtti.CType_CAbstract(name, @params);
 		}
 		
@@ -72,14 +72,14 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CEnum : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CEnum(string name, global::Loreline.Internal.Root.Array<object> @params) : base(1) {
+		public CType_CEnum(string name, global::Loreline.Internal.Root.Array @params) : base(1) {
 			this.name = name;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.@params});
 		}
 		
 		
@@ -105,11 +105,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -124,7 +124,7 @@ namespace Loreline.Internal.Rtti {
 		
 		public readonly string name;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -135,14 +135,14 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CClass : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CClass(string name, global::Loreline.Internal.Root.Array<object> @params) : base(2) {
+		public CType_CClass(string name, global::Loreline.Internal.Root.Array @params) : base(2) {
 			this.name = name;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.@params});
 		}
 		
 		
@@ -168,11 +168,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -187,7 +187,7 @@ namespace Loreline.Internal.Rtti {
 		
 		public readonly string name;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -198,14 +198,14 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CTypedef : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CTypedef(string name, global::Loreline.Internal.Root.Array<object> @params) : base(3) {
+		public CType_CTypedef(string name, global::Loreline.Internal.Root.Array @params) : base(3) {
 			this.name = name;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.@params});
 		}
 		
 		
@@ -231,11 +231,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -250,7 +250,7 @@ namespace Loreline.Internal.Rtti {
 		
 		public readonly string name;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -261,14 +261,14 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CFunction : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CFunction(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Rtti.CType ret) : base(4) {
+		public CType_CFunction(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Rtti.CType ret) : base(4) {
 			this.args = args;
 			this.ret = ret;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.args, this.ret});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.args, this.ret});
 		}
 		
 		
@@ -294,11 +294,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.ret) ), ((object) (en.ret) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.ret) ), ((object) (en.ret) ))) ) {
 				return false;
 			}
 			
@@ -311,7 +311,7 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 		public readonly global::Loreline.Internal.Rtti.CType ret;
 		
@@ -324,13 +324,13 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CAnonymous : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CAnonymous(global::Loreline.Internal.Root.Array<object> fields) : base(5) {
+		public CType_CAnonymous(global::Loreline.Internal.Root.Array fields) : base(5) {
 			this.fields = fields;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.fields});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.fields});
 		}
 		
 		
@@ -356,7 +356,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.fields) ), ((object) (en.fields) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.fields) ), ((object) (en.fields) ))) ) {
 				return false;
 			}
 			
@@ -369,7 +369,7 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> fields;
+		public readonly global::Loreline.Internal.Root.Array fields;
 		
 	}
 }
@@ -385,8 +385,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -412,7 +412,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -436,14 +436,14 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class CType_CAbstract : global::Loreline.Internal.Rtti.CType {
 		
-		public CType_CAbstract(string name, global::Loreline.Internal.Root.Array<object> @params) : base(7) {
+		public CType_CAbstract(string name, global::Loreline.Internal.Root.Array @params) : base(7) {
 			this.name = name;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.@params});
 		}
 		
 		
@@ -469,11 +469,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -488,7 +488,7 @@ namespace Loreline.Internal.Rtti {
 		
 		public readonly string name;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -568,8 +568,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.m});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.m});
 		}
 		
 		
@@ -595,7 +595,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.m) ), ((object) (en.m) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.m) ), ((object) (en.m) ))) ) {
 				return false;
 			}
 			
@@ -677,7 +677,7 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public static global::Loreline.Internal.Rtti.TypeTree TPackage(string name, string full, global::Loreline.Internal.Root.Array<object> subs) {
+		public static global::Loreline.Internal.Rtti.TypeTree TPackage(string name, string full, global::Loreline.Internal.Root.Array subs) {
 			return new global::Loreline.Internal.Rtti.TypeTree_TPackage(name, full, subs);
 		}
 		
@@ -711,15 +711,15 @@ namespace Loreline.Internal.Rtti {
 namespace Loreline.Internal.Rtti {
 	public sealed class TypeTree_TPackage : global::Loreline.Internal.Rtti.TypeTree {
 		
-		public TypeTree_TPackage(string name, string full, global::Loreline.Internal.Root.Array<object> subs) : base(0) {
+		public TypeTree_TPackage(string name, string full, global::Loreline.Internal.Root.Array subs) : base(0) {
 			this.name = name;
 			this.full = full;
 			this.subs = subs;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.full, this.subs});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.full, this.subs});
 		}
 		
 		
@@ -743,15 +743,15 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.full) ), ((object) (en.full) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.full) ), ((object) (en.full) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.subs) ), ((object) (en.subs) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.subs) ), ((object) (en.subs) ))) ) {
 				return false;
 			}
 			
@@ -768,7 +768,7 @@ namespace Loreline.Internal.Rtti {
 		
 		public readonly string full;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> subs;
+		public readonly global::Loreline.Internal.Root.Array subs;
 		
 	}
 }
@@ -784,8 +784,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -811,7 +811,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -840,8 +840,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -867,7 +867,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -896,8 +896,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -923,7 +923,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -952,8 +952,8 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.a});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.a});
 		}
 		
 		
@@ -979,7 +979,7 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.a) ), ((object) (en.a) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.a) ), ((object) (en.a) ))) ) {
 				return false;
 			}
 			
@@ -1024,7 +1024,7 @@ namespace Loreline.Internal.Rtti {
 					{
 						string _g = ( t as global::Loreline.Internal.Rtti.TypeTree_TPackage ).name;
 						string _g1 = ( t as global::Loreline.Internal.Rtti.TypeTree_TPackage ).full;
-						global::Loreline.Internal.Root.Array<object> _g2 = ( t as global::Loreline.Internal.Rtti.TypeTree_TPackage ).subs;
+						global::Loreline.Internal.Root.Array _g2 = ( t as global::Loreline.Internal.Rtti.TypeTree_TPackage ).subs;
 						throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown("Unexpected Package")) );
 					}
 					
@@ -1068,19 +1068,19 @@ namespace Loreline.Internal.Rtti {
 		}
 		
 		
-		public static bool leq<T>(global::Loreline.Internal.Lang.Function f, global::Loreline.Internal.Root.Array<T> l1, global::Loreline.Internal.Root.Array<T> l2) {
+		public static bool leq(global::Loreline.Internal.Lang.Function f, global::Loreline.Internal.Root.Array l1, global::Loreline.Internal.Root.Array l2) {
 			int it_current = 0;
-			global::Loreline.Internal.Root.Array<T> it_array = l2;
+			global::Loreline.Internal.Root.Array it_array = l2;
 			{
 				int _g = 0;
 				while (( _g < l1.length )) {
-					T e1 = l1[_g];
+					object e1 = l1.__get(_g);
 					 ++ _g;
 					if (( it_current >= it_array.length )) {
 						return false;
 					}
 					
-					T e2 = it_array[it_current++];
+					object e2 = ((object) (it_array.__get(it_current++)) );
 					if ( ! (global::Loreline.Internal.Lang.Runtime.toBool(f.__hx_invoke2_o(default(double), e1, default(double), e2))) ) {
 						return false;
 					}
@@ -1129,12 +1129,12 @@ namespace Loreline.Internal.Rtti {
 					case 1:
 					{
 						string name = ( t1 as global::Loreline.Internal.Rtti.CType_CEnum ).name;
-						global::Loreline.Internal.Root.Array<object> @params = ( t1 as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
+						global::Loreline.Internal.Root.Array @params = ( t1 as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
 						if (( t2._hx_index == 1 )) {
 							string name2 = ( t2 as global::Loreline.Internal.Rtti.CType_CEnum ).name;
-							global::Loreline.Internal.Root.Array<object> params2 = ( t2 as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
+							global::Loreline.Internal.Root.Array params2 = ( t2 as global::Loreline.Internal.Rtti.CType_CEnum ).@params;
 							if (( name == name2 )) {
-								return global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array<object>) (@params) ), ((global::Loreline.Internal.Root.Array<object>) (params2) ));
+								return global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array) (@params) ), ((global::Loreline.Internal.Root.Array) (params2) ));
 							}
 							else {
 								return false;
@@ -1149,12 +1149,12 @@ namespace Loreline.Internal.Rtti {
 					case 2:
 					{
 						string name1 = ( t1 as global::Loreline.Internal.Rtti.CType_CClass ).name;
-						global::Loreline.Internal.Root.Array<object> params1 = ( t1 as global::Loreline.Internal.Rtti.CType_CClass ).@params;
+						global::Loreline.Internal.Root.Array params1 = ( t1 as global::Loreline.Internal.Rtti.CType_CClass ).@params;
 						if (( t2._hx_index == 2 )) {
 							string name21 = ( t2 as global::Loreline.Internal.Rtti.CType_CClass ).name;
-							global::Loreline.Internal.Root.Array<object> params21 = ( t2 as global::Loreline.Internal.Rtti.CType_CClass ).@params;
+							global::Loreline.Internal.Root.Array params21 = ( t2 as global::Loreline.Internal.Rtti.CType_CClass ).@params;
 							if (( name1 == name21 )) {
-								return global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array<object>) (params1) ), ((global::Loreline.Internal.Root.Array<object>) (params21) ));
+								return global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array) (params1) ), ((global::Loreline.Internal.Root.Array) (params21) ));
 							}
 							else {
 								return false;
@@ -1169,12 +1169,12 @@ namespace Loreline.Internal.Rtti {
 					case 3:
 					{
 						string name3 = ( t1 as global::Loreline.Internal.Rtti.CType_CTypedef ).name;
-						global::Loreline.Internal.Root.Array<object> params3 = ( t1 as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
+						global::Loreline.Internal.Root.Array params3 = ( t1 as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
 						if (( t2._hx_index == 3 )) {
 							string name22 = ( t2 as global::Loreline.Internal.Rtti.CType_CTypedef ).name;
-							global::Loreline.Internal.Root.Array<object> params22 = ( t2 as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
+							global::Loreline.Internal.Root.Array params22 = ( t2 as global::Loreline.Internal.Rtti.CType_CTypedef ).@params;
 							if (( name3 == name22 )) {
-								return global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array<object>) (params3) ), ((global::Loreline.Internal.Root.Array<object>) (params22) ));
+								return global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array) (params3) ), ((global::Loreline.Internal.Root.Array) (params22) ));
 							}
 							else {
 								return false;
@@ -1188,12 +1188,12 @@ namespace Loreline.Internal.Rtti {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> args = ( t1 as global::Loreline.Internal.Rtti.CType_CFunction ).args;
+						global::Loreline.Internal.Root.Array args = ( t1 as global::Loreline.Internal.Rtti.CType_CFunction ).args;
 						global::Loreline.Internal.Rtti.CType ret = ( t1 as global::Loreline.Internal.Rtti.CType_CFunction ).ret;
 						if (( t2._hx_index == 4 )) {
-							global::Loreline.Internal.Root.Array<object> args2 = ( t2 as global::Loreline.Internal.Rtti.CType_CFunction ).args;
+							global::Loreline.Internal.Root.Array args2 = ( t2 as global::Loreline.Internal.Rtti.CType_CFunction ).args;
 							global::Loreline.Internal.Rtti.CType ret2 = ( t2 as global::Loreline.Internal.Rtti.CType_CFunction ).ret;
-							if (global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun) (new global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array<object>) (args) ), ((global::Loreline.Internal.Root.Array<object>) (args2) ))) {
+							if (global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun) (new global::Loreline.Internal.Rtti.TypeApi_typeEq_477__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array) (args) ), ((global::Loreline.Internal.Root.Array) (args2) ))) {
 								return global::Loreline.Internal.Rtti.TypeApi.typeEq(ret, ret2);
 							}
 							else {
@@ -1208,10 +1208,10 @@ namespace Loreline.Internal.Rtti {
 					
 					case 5:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t1 as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
+						global::Loreline.Internal.Root.Array fields = ( t1 as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
 						if (( t2._hx_index == 5 )) {
-							global::Loreline.Internal.Root.Array<object> fields2 = ( t2 as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
-							return global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun) (new global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array<object>) (fields) ), ((global::Loreline.Internal.Root.Array<object>) (fields2) ));
+							global::Loreline.Internal.Root.Array fields2 = ( t2 as global::Loreline.Internal.Rtti.CType_CAnonymous ).fields;
+							return global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun) (new global::Loreline.Internal.Rtti.TypeApi_typeEq_485__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array) (fields) ), ((global::Loreline.Internal.Root.Array) (fields2) ));
 						}
 						
 						break;
@@ -1243,12 +1243,12 @@ namespace Loreline.Internal.Rtti {
 					case 7:
 					{
 						string name4 = ( t1 as global::Loreline.Internal.Rtti.CType_CAbstract ).name;
-						global::Loreline.Internal.Root.Array<object> params4 = ( t1 as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
+						global::Loreline.Internal.Root.Array params4 = ( t1 as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
 						if (( t2._hx_index == 7 )) {
 							string name23 = ( t2 as global::Loreline.Internal.Rtti.CType_CAbstract ).name;
-							global::Loreline.Internal.Root.Array<object> params23 = ( t2 as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
+							global::Loreline.Internal.Root.Array params23 = ( t2 as global::Loreline.Internal.Rtti.CType_CAbstract ).@params;
 							if (( name4 == name23 )) {
-								return global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array<object>) (params4) ), ((global::Loreline.Internal.Root.Array<object>) (params23) ));
+								return global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(typeof(global::Loreline.Internal.Rtti.TypeApi), "typeEq", 1463210438)) ), ((global::Loreline.Internal.Root.Array) (params4) ), ((global::Loreline.Internal.Root.Array) (params23) ));
 							}
 							else {
 								return false;
@@ -1292,11 +1292,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if (( ( ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ))) ) == null ) != (( ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f2, "params", 1836776262, true)) ))) ) == null )) )) {
+			if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ) == null ) != (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f2, "params", 1836776262, true)) ) == null )) )) {
 				return false;
 			}
 			
-			if (( ( ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ))) ) != null ) && ( ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ))) ).@join(":") != ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f2, "params", 1836776262, true)) ))) ).@join(":") ) )) {
+			if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ) != null ) && ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f1, "params", 1836776262, true)) ).@join(":") != ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(f2, "params", 1836776262, true)) ).@join(":") ) )) {
 				return false;
 			}
 			
@@ -1313,11 +1313,11 @@ namespace Loreline.Internal.Rtti {
 				return false;
 			}
 			
-			if (( ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ))) ) == null ) != (( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "args", 1081380189, true)) ))) ) == null )) )) {
+			if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ) == null ) != (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "args", 1081380189, true)) ) == null )) )) {
 				return false;
 			}
 			
-			if (( ( ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ))) ) != null ) &&  ! (global::Loreline.Internal.Rtti.TypeApi.leq<object>(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun) (new global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ))) ), ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "args", 1081380189, true)) ))) )))  )) {
+			if (( ( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ) != null ) &&  ! (global::Loreline.Internal.Rtti.TypeApi.leq(((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current != null )) ? (global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current) : (global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun.__hx_current = ((global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun) (new global::Loreline.Internal.Rtti.TypeApi_constructorEq_539__Fun()) )) )) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c1, "args", 1081380189, true)) ), ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "args", 1081380189, true)) )))  )) {
 				return false;
 			}
 			

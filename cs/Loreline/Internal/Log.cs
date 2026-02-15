@@ -33,8 +33,8 @@ namespace Loreline.Internal {
 			if (( ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(infos, "customParams", 1830310359, true)) ) != null )) {
 				int _g = 0;
 				global::Loreline.Internal.Root.Array _g1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(infos, "customParams", 1830310359, true)) );
-				while (( _g < ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(_g1, "length", 520590566, true)) ) )) {
-					object v1 = _g1[_g];
+				while (( _g < _g1.length )) {
+					object v1 = _g1.__get(_g);
 					 ++ _g;
 					str = global::Loreline.Internal.Lang.Runtime.concat(str, global::Loreline.Internal.Lang.Runtime.concat(", ", global::Loreline.Internal.Root.Std.@string(v1)));
 				}

@@ -202,7 +202,7 @@ namespace Loreline.Internal.Format {
 								
 							}
 							while ( ! (end) );
-							double f = global::Loreline.Internal.Root.Std.parseFloat(global::Loreline.Internal.Lang.StringExt.substr(this.str, start, new global::Loreline.Internal.Lang.Null<int>(( this.pos - start ), true)));
+							double f = global::Loreline.Internal.Root.Std.parseFloat(global::Loreline.Internal.Lang.StringExt.substr(this.str, start, ( this.pos - start )));
 							if (point) {
 								return f;
 							}
@@ -222,8 +222,8 @@ namespace Loreline.Internal.Format {
 						
 						case 91:
 						{
-							global::Loreline.Internal.Root.Array arr = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-							global::Loreline.Internal.Lang.Null<bool> comma = default(global::Loreline.Internal.Lang.Null<bool>);
+							global::Loreline.Internal.Root.Array arr = new global::Loreline.Internal.Root.Array(new object[]{});
+							object comma = null;
 							while (true) {
 								string s2 = this.str;
 								int index2 = this.pos++;
@@ -240,8 +240,8 @@ namespace Loreline.Internal.Format {
 									
 									case 44:
 									{
-										if (((comma)).@value) {
-											comma = new global::Loreline.Internal.Lang.Null<bool>(false, true);
+										if (global::Loreline.Internal.Lang.Runtime.toBool((comma))) {
+											comma = false;
 										}
 										else {
 											this.invalidChar();
@@ -253,7 +253,7 @@ namespace Loreline.Internal.Format {
 									
 									case 93:
 									{
-										if (global::Loreline.Internal.Lang.Runtime.eq((comma).toDynamic(), false)) {
+										if (global::Loreline.Internal.Lang.Runtime.eq(comma, false)) {
 											this.invalidChar();
 										}
 										
@@ -263,13 +263,13 @@ namespace Loreline.Internal.Format {
 									
 									default:
 									{
-										if (((comma)).@value) {
+										if (global::Loreline.Internal.Lang.Runtime.toBool((comma))) {
 											this.invalidChar();
 										}
 										
 										this.pos--;
-										int __temp_expr1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(arr, "push", 1247875546, new object[]{this.parseRec()}))) );
-										comma = new global::Loreline.Internal.Lang.Null<bool>(true, true);
+										arr.push(this.parseRec());
+										comma = true;
 										break;
 									}
 									
@@ -397,7 +397,7 @@ namespace Loreline.Internal.Format {
 						{
 							object obj = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
 							string field = null;
-							global::Loreline.Internal.Lang.Null<bool> comma1 = default(global::Loreline.Internal.Lang.Null<bool>);
+							object comma1 = null;
 							while (true) {
 								string s13 = this.str;
 								int index13 = this.pos++;
@@ -414,7 +414,7 @@ namespace Loreline.Internal.Format {
 									
 									case 34:
 									{
-										if (( ( field != null ) || (comma1).@value )) {
+										if (( ((bool) (( field != null )) ) || global::Loreline.Internal.Lang.Runtime.toBool(comma1) )) {
 											this.invalidChar();
 										}
 										
@@ -425,8 +425,8 @@ namespace Loreline.Internal.Format {
 									
 									case 44:
 									{
-										if (((comma1)).@value) {
-											comma1 = new global::Loreline.Internal.Lang.Null<bool>(false, true);
+										if (global::Loreline.Internal.Lang.Runtime.toBool((comma1))) {
+											comma1 = false;
 										}
 										else {
 											this.invalidChar();
@@ -444,14 +444,14 @@ namespace Loreline.Internal.Format {
 										
 										global::Loreline.Internal.Root.Reflect.setField(obj, field, this.parseRec());
 										field = null;
-										comma1 = new global::Loreline.Internal.Lang.Null<bool>(true, true);
+										comma1 = true;
 										break;
 									}
 									
 									
 									case 125:
 									{
-										if (( ( field != null ) || global::Loreline.Internal.Lang.Runtime.eq((comma1).toDynamic(), false) )) {
+										if (( ( field != null ) || global::Loreline.Internal.Lang.Runtime.eq(comma1, false) )) {
 											this.invalidChar();
 										}
 										
@@ -508,8 +508,8 @@ namespace Loreline.Internal.Format {
 						
 						{
 							string s1 = this.str;
-							global::Loreline.Internal.Lang.Null<int> len = new global::Loreline.Internal.Lang.Null<int>(( ( this.pos - start ) - 1 ), true);
-							buf.b.Append(((string) (s1) ), ((int) (start) ), ((int) (( ( ! (len.hasValue) ) ? (( s1.Length - start )) : ((len).@value) )) ));
+							object len = ( ( this.pos - start ) - 1 );
+							buf.b.Append(((string) (s1) ), ((int) (start) ), ((int) (( (( len == default(object) )) ? (( s1.Length - start )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(len)) )) )) ));
 						}
 						
 						string s2 = this.str;
@@ -567,7 +567,7 @@ namespace Loreline.Internal.Format {
 							
 							case 117:
 							{
-								int uc = (global::Loreline.Internal.Root.Std.parseInt(global::Loreline.Internal.Lang.Runtime.concat("0x", global::Loreline.Internal.Lang.StringExt.substr(this.str, this.pos, new global::Loreline.Internal.Lang.Null<int>(4, true))))).@value;
+								int uc = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Root.Std.parseInt(global::Loreline.Internal.Lang.Runtime.concat("0x", global::Loreline.Internal.Lang.StringExt.substr(this.str, this.pos, 4))))) );
 								this.pos += 4;
 								if (( prev != -1 )) {
 									if (( ( uc < 56320 ) || ( uc > 57343 ) )) {
@@ -612,13 +612,13 @@ namespace Loreline.Internal.Format {
 				}
 				
 				if (( buf == null )) {
-					return global::Loreline.Internal.Lang.StringExt.substr(this.str, start, new global::Loreline.Internal.Lang.Null<int>(( ( this.pos - start ) - 1 ), true));
+					return global::Loreline.Internal.Lang.StringExt.substr(this.str, start, ( ( this.pos - start ) - 1 ));
 				}
 				else {
 					{
 						string s3 = this.str;
-						global::Loreline.Internal.Lang.Null<int> len1 = new global::Loreline.Internal.Lang.Null<int>(( ( this.pos - start ) - 1 ), true);
-						buf.b.Append(((string) (s3) ), ((int) (start) ), ((int) (( ( ! (len1.hasValue) ) ? (( s3.Length - start )) : ((len1).@value) )) ));
+						object len1 = ( ( this.pos - start ) - 1 );
+						buf.b.Append(((string) (s3) ), ((int) (start) ), ((int) (( (( len1 == default(object) )) ? (( s3.Length - start )) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(len1)) )) )) ));
 					}
 					
 					return buf.b.ToString();
@@ -639,7 +639,7 @@ namespace Loreline.Internal.Format {
 		
 		
 		public virtual void invalidNumber(int start) {
-			throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Invalid number at position ", global::Loreline.Internal.Lang.Runtime.toString(start)), ": "), global::Loreline.Internal.Lang.StringExt.substr(this.str, start, new global::Loreline.Internal.Lang.Null<int>(( this.pos - start ), true))))) );
+			throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("Invalid number at position ", global::Loreline.Internal.Lang.Runtime.toString(start)), ": "), global::Loreline.Internal.Lang.StringExt.substr(this.str, start, ( this.pos - start ))))) );
 		}
 		
 		
@@ -773,7 +773,7 @@ namespace Loreline.Internal.Format {
 				switch (hash) {
 					case 652994848:
 					{
-						this.invalidNumber(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.invalidNumber(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
@@ -815,7 +815,7 @@ namespace Loreline.Internal.Format {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("pos");
 			baseArr.push("str");
 			base.__hx_getFields(baseArr);

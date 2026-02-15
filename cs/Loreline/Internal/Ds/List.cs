@@ -3,53 +3,31 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds {
-	public class List<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds.List {
+	public class List : global::Loreline.Internal.Lang.HxObject {
 		
 		public List(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
 		public List() {
-			global::Loreline.Internal.Ds.List<object>.__hx_ctor_haxe_ds_List<T>(((global::Loreline.Internal.Ds.List<T>) (this) ));
+			global::Loreline.Internal.Ds.List.__hx_ctor_haxe_ds_List(((global::Loreline.Internal.Ds.List) (this) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds_List<T_c>(global::Loreline.Internal.Ds.List<T_c> __hx_this) {
+		protected static void __hx_ctor_haxe_ds_List(global::Loreline.Internal.Ds.List __hx_this) {
 			__hx_this.length = 0;
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Ds.List me) {
-			return ( (( me != null )) ? (me.haxe_ds_List_cast<T_c_c>()) : default(object) );
-		}
+		public global::Loreline.Internal.Ds._List.ListNode h;
 		
-		
-		public virtual object haxe_ds_List_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds.List<T_c> new_me = new global::Loreline.Internal.Ds.List<T_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Internal.Ds._List.ListNode<T> h;
-		
-		public global::Loreline.Internal.Ds._List.ListNode<T> q;
+		public global::Loreline.Internal.Ds._List.ListNode q;
 		
 		public int length;
 		
-		public virtual void @add(T item) {
-			global::Loreline.Internal.Ds._List.ListNode<T> next = null;
-			global::Loreline.Internal.Ds._List.ListNode<T> x = new global::Loreline.Internal.Ds._List.ListNode<T>(global::Loreline.Internal.Lang.Runtime.genericCast<T>(item), ((global::Loreline.Internal.Ds._List.ListNode<T>) (next) ));
+		public virtual void @add(object item) {
+			global::Loreline.Internal.Ds._List.ListNode next = null;
+			global::Loreline.Internal.Ds._List.ListNode x = new global::Loreline.Internal.Ds._List.ListNode(((object) (item) ), ((global::Loreline.Internal.Ds._List.ListNode) (next) ));
 			if (( this.h == null )) {
 				this.h = x;
 			}
@@ -62,8 +40,8 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public virtual void push(T item) {
-			global::Loreline.Internal.Ds._List.ListNode<T> x = new global::Loreline.Internal.Ds._List.ListNode<T>(global::Loreline.Internal.Lang.Runtime.genericCast<T>(item), ((global::Loreline.Internal.Ds._List.ListNode<T>) (this.h) ));
+		public virtual void push(object item) {
+			global::Loreline.Internal.Ds._List.ListNode x = new global::Loreline.Internal.Ds._List.ListNode(((object) (item) ), ((global::Loreline.Internal.Ds._List.ListNode) (this.h) ));
 			this.h = x;
 			if (( this.q == null )) {
 				this.q = x;
@@ -73,19 +51,19 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Lang.Null<T> pop() {
+		public virtual object pop() {
 			if (( this.h == null )) {
-				return default(global::Loreline.Internal.Lang.Null<T>);
+				return null;
 			}
 			
-			T x = this.h.item;
+			object x = this.h.item;
 			this.h = this.h.next;
 			if (( this.h == null )) {
 				this.q = null;
 			}
 			
 			this.length--;
-			return new global::Loreline.Internal.Lang.Null<T>(x, true);
+			return x;
 		}
 		
 		
@@ -122,14 +100,14 @@ namespace Loreline.Internal.Ds {
 					
 					case 113:
 					{
-						this.q = ((global::Loreline.Internal.Ds._List.ListNode<T>) (global::Loreline.Internal.Ds._List.ListNode<object>.__hx_cast<T>(((global::Loreline.Internal.Ds._List.ListNode) (@value) ))) );
+						this.q = ((global::Loreline.Internal.Ds._List.ListNode) (@value) );
 						return @value;
 					}
 					
 					
 					case 104:
 					{
-						this.h = ((global::Loreline.Internal.Ds._List.ListNode<T>) (global::Loreline.Internal.Ds._List.ListNode<object>.__hx_cast<T>(((global::Loreline.Internal.Ds._List.ListNode) (@value) ))) );
+						this.h = ((global::Loreline.Internal.Ds._List.ListNode) (@value) );
 						return @value;
 					}
 					
@@ -220,20 +198,20 @@ namespace Loreline.Internal.Ds {
 				switch (hash) {
 					case 5594513:
 					{
-						return (this.pop()).toDynamic();
+						return this.pop();
 					}
 					
 					
 					case 1247875546:
 					{
-						this.push(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						this.push(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 4846113:
 					{
-						this.@add(global::Loreline.Internal.Lang.Runtime.genericCast<T>(dynargs[0]));
+						this.@add(((object) (dynargs[0]) ));
 						break;
 					}
 					
@@ -250,7 +228,7 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("length");
 			baseArr.push("q");
 			baseArr.push("h");
@@ -264,68 +242,34 @@ namespace Loreline.Internal.Ds {
 
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds.List<object>))]
-	public interface List : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds_List_cast<T_c>();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds._List {
-	public class ListNode<T> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds._List.ListNode {
+	public class ListNode : global::Loreline.Internal.Lang.HxObject {
 		
 		public ListNode(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public ListNode(T item, global::Loreline.Internal.Ds._List.ListNode<T> next) {
-			global::Loreline.Internal.Ds._List.ListNode<object>.__hx_ctor_haxe_ds__List_ListNode<T>(((global::Loreline.Internal.Ds._List.ListNode<T>) (this) ), global::Loreline.Internal.Lang.Runtime.genericCast<T>(item), ((global::Loreline.Internal.Ds._List.ListNode<T>) (next) ));
+		public ListNode(object item, global::Loreline.Internal.Ds._List.ListNode next) {
+			global::Loreline.Internal.Ds._List.ListNode.__hx_ctor_haxe_ds__List_ListNode(((global::Loreline.Internal.Ds._List.ListNode) (this) ), ((object) (item) ), ((global::Loreline.Internal.Ds._List.ListNode) (next) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds__List_ListNode<T_c>(global::Loreline.Internal.Ds._List.ListNode<T_c> __hx_this, T_c item, global::Loreline.Internal.Ds._List.ListNode<T_c> next) {
+		protected static void __hx_ctor_haxe_ds__List_ListNode(global::Loreline.Internal.Ds._List.ListNode __hx_this, object item, global::Loreline.Internal.Ds._List.ListNode next) {
 			__hx_this.item = item;
 			__hx_this.next = next;
 		}
 		
 		
-		public static object __hx_cast<T_c_c>(global::Loreline.Internal.Ds._List.ListNode me) {
-			return ( (( me != null )) ? (me.haxe_ds__List_ListNode_cast<T_c_c>()) : default(object) );
-		}
+		public object item;
 		
-		
-		public virtual object haxe_ds__List_ListNode_cast<T_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(T), typeof(T_c))) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds._List.ListNode<T_c> new_me = new global::Loreline.Internal.Ds._List.ListNode<T_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public T item;
-		
-		public global::Loreline.Internal.Ds._List.ListNode<T> next;
+		public global::Loreline.Internal.Ds._List.ListNode next;
 		
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
 					case 1170195731:
 					{
-						this.item = global::Loreline.Internal.Lang.Runtime.genericCast<T>(((object) (@value) ));
+						this.item = ((object) (@value) );
 						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (@value) ))) );
 					}
 					
@@ -346,14 +290,14 @@ namespace Loreline.Internal.Ds._List {
 				switch (hash) {
 					case 1224901875:
 					{
-						this.next = ((global::Loreline.Internal.Ds._List.ListNode<T>) (global::Loreline.Internal.Ds._List.ListNode<object>.__hx_cast<T>(((global::Loreline.Internal.Ds._List.ListNode) (@value) ))) );
+						this.next = ((global::Loreline.Internal.Ds._List.ListNode) (@value) );
 						return @value;
 					}
 					
 					
 					case 1170195731:
 					{
-						this.item = global::Loreline.Internal.Lang.Runtime.genericCast<T>(@value);
+						this.item = ((object) (@value) );
 						return @value;
 					}
 					
@@ -415,24 +359,12 @@ namespace Loreline.Internal.Ds._List {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("next");
 			baseArr.push("item");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds._List {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds._List.ListNode<object>))]
-	public interface ListNode : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds__List_ListNode_cast<T_c>();
 		
 	}
 }

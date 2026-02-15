@@ -137,7 +137,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("dateUTC");
 			baseArr.push("date");
 			base.__hx_getFields(baseArr);

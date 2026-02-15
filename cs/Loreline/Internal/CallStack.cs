@@ -15,7 +15,7 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public static global::Loreline.Internal.StackItem FilePos(global::Loreline.Internal.StackItem s, string file, int line, global::Loreline.Internal.Lang.Null<int> column) {
+		public static global::Loreline.Internal.StackItem FilePos(global::Loreline.Internal.StackItem s, string file, int line, object column) {
 			return new global::Loreline.Internal.StackItem_FilePos(s, file, line, column);
 		}
 		
@@ -25,7 +25,7 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public static global::Loreline.Internal.StackItem LocalFunction(global::Loreline.Internal.Lang.Null<int> v) {
+		public static global::Loreline.Internal.StackItem LocalFunction(object v) {
 			return new global::Loreline.Internal.StackItem_LocalFunction(v);
 		}
 		
@@ -62,8 +62,8 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.m});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.m});
 		}
 		
 		
@@ -89,7 +89,7 @@ namespace Loreline.Internal {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.m) ), ((object) (en.m) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.m) ), ((object) (en.m) ))) ) {
 				return false;
 			}
 			
@@ -113,7 +113,7 @@ namespace Loreline.Internal {
 namespace Loreline.Internal {
 	public sealed class StackItem_FilePos : global::Loreline.Internal.StackItem {
 		
-		public StackItem_FilePos(global::Loreline.Internal.StackItem s, string file, int line, global::Loreline.Internal.Lang.Null<int> column) : base(2) {
+		public StackItem_FilePos(global::Loreline.Internal.StackItem s, string file, int line, object column) : base(2) {
 			this.s = s;
 			this.file = file;
 			this.line = line;
@@ -121,8 +121,8 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s, this.file, this.line, (this.column).toDynamic()});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s, this.file, this.line, this.column});
 		}
 		
 		
@@ -133,7 +133,7 @@ namespace Loreline.Internal {
 		
 		public override int GetHashCode() {
 			unchecked {
-				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(2, new object[]{this.s, this.file, this.line, (this.column).toDynamic()});
+				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(2, new object[]{this.s, this.file, this.line, this.column});
 			}
 		}
 		
@@ -148,19 +148,19 @@ namespace Loreline.Internal {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.file) ), ((object) (en.file) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.file) ), ((object) (en.file) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.line) ), ((object) (en.line) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.line) ), ((object) (en.line) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>((this.column).toDynamic(), (en.column).toDynamic())) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.column) ), ((object) (en.column) ))) ) {
 				return false;
 			}
 			
@@ -169,7 +169,7 @@ namespace Loreline.Internal {
 		
 		
 		public override string toString() {
-			return global::Loreline.Internal.Lang.Enum.paramsToString("FilePos", new object[]{this.s, this.file, this.line, (this.column).toDynamic()});
+			return global::Loreline.Internal.Lang.Enum.paramsToString("FilePos", new object[]{this.s, this.file, this.line, this.column});
 		}
 		
 		
@@ -179,7 +179,7 @@ namespace Loreline.Internal {
 		
 		public readonly int line;
 		
-		public readonly global::Loreline.Internal.Lang.Null<int> column;
+		public readonly object column;
 		
 	}
 }
@@ -196,8 +196,8 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.classname, this.method});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.classname, this.method});
 		}
 		
 		
@@ -223,11 +223,11 @@ namespace Loreline.Internal {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.classname) ), ((object) (en.classname) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.classname) ), ((object) (en.classname) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.method) ), ((object) (en.method) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.method) ), ((object) (en.method) ))) ) {
 				return false;
 			}
 			
@@ -253,13 +253,13 @@ namespace Loreline.Internal {
 namespace Loreline.Internal {
 	public sealed class StackItem_LocalFunction : global::Loreline.Internal.StackItem {
 		
-		public StackItem_LocalFunction(global::Loreline.Internal.Lang.Null<int> v) : base(4) {
+		public StackItem_LocalFunction(object v) : base(4) {
 			this.v = v;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{(this.v).toDynamic()});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -270,7 +270,7 @@ namespace Loreline.Internal {
 		
 		public override int GetHashCode() {
 			unchecked {
-				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(4, new object[]{(this.v).toDynamic()});
+				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(4, new object[]{this.v});
 			}
 		}
 		
@@ -285,7 +285,7 @@ namespace Loreline.Internal {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>((this.v).toDynamic(), (en.v).toDynamic())) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
@@ -294,11 +294,11 @@ namespace Loreline.Internal {
 		
 		
 		public override string toString() {
-			return global::Loreline.Internal.Lang.Enum.paramsToString("LocalFunction", new object[]{(this.v).toDynamic()});
+			return global::Loreline.Internal.Lang.Enum.paramsToString("LocalFunction", new object[]{this.v});
 		}
 		
 		
-		public readonly global::Loreline.Internal.Lang.Null<int> v;
+		public readonly object v;
 		
 	}
 }
@@ -309,9 +309,9 @@ namespace Loreline.Internal {
 namespace Loreline.Internal._CallStack {
 	public sealed class CallStack_Impl_ {
 		
-		public static global::Loreline.Internal.Root.Array<object> callStack() {
+		public static global::Loreline.Internal.Root.Array callStack() {
 			unchecked {
-				return global::Loreline.Internal.NativeStackTrace.toHaxe(new global::System.Diagnostics.StackTrace(((int) (1) ), ((bool) (true) )), default(global::Loreline.Internal.Lang.Null<int>));
+				return global::Loreline.Internal.NativeStackTrace.toHaxe(new global::System.Diagnostics.StackTrace(((int) (1) ), ((bool) (true) )), null);
 			}
 		}
 		

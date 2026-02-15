@@ -20,24 +20,25 @@ namespace Loreline.Runtime {
 		
 		public static global::Loreline.Runtime.Script parse(string input, string filePath, global::Loreline.Internal.Lang.Function handleFile, global::Loreline.Internal.Lang.Function callback) {
 			global::Loreline.Runtime.Lexer lexer = new global::Loreline.Runtime.Lexer(((string) (input) ));
-			global::Loreline.Internal.Root.Array<object> tokens = lexer.tokenize();
-			global::Loreline.Internal.Root.Array<object> lexerErrors = lexer.getErrors();
+			global::Loreline.Internal.Root.Array tokens = lexer.tokenize();
+			global::Loreline.Internal.Root.Array lexerErrors = lexer.getErrors();
 			if (( ( lexerErrors != null ) && ( lexerErrors.length > 0 ) )) {
-				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.LexerError) (lexerErrors[0]) ))) );
+				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.LexerError) (lexerErrors.__get(0)) ))) );
 			}
 			
 			global::Loreline.Runtime.Script[] result = new global::Loreline.Runtime.Script[]{null};
 			if (( ( filePath != null ) && ( handleFile != null ) )) {
 				global::Loreline.Runtime.Imports imports = new global::Loreline.Runtime.Imports();
-				imports.resolve(filePath, tokens, handleFile, ( (( global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current) : (global::Loreline.Runtime.Loreline_parse_55__Fun.__hx_current = ((global::Loreline.Runtime.Loreline_parse_55__Fun) (new global::Loreline.Runtime.Loreline_parse_55__Fun()) )) ), new global::Loreline.Runtime.Loreline_parse_58__Fun(tokens, result, filePath, callback));
+				imports.resolve(filePath, tokens, handleFile, ( (( global::Loreline.Runtime.Loreline_parse_57__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Loreline_parse_57__Fun.__hx_current) : (global::Loreline.Runtime.Loreline_parse_57__Fun.__hx_current = ((global::Loreline.Runtime.Loreline_parse_57__Fun) (new global::Loreline.Runtime.Loreline_parse_57__Fun()) )) ), new global::Loreline.Runtime.Loreline_parse_60__Fun(tokens, result, lexer, filePath, callback));
 				return ((global::Loreline.Runtime.Script) (result[0]) );
 			}
 			
-			global::Loreline.Runtime.Parser parser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (tokens) ), default(global::Loreline.Runtime.ParserContext));
+			global::Loreline.Runtime.Parser parser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (tokens) ), default(global::Loreline.Runtime.ParserContext));
 			result[0] = parser.parse();
-			global::Loreline.Internal.Root.Array<object> parseErrors = parser.getErrors();
+			((global::Loreline.Runtime.Script) (result[0]) ).indentSize = lexer.detectedIndentSize;
+			global::Loreline.Internal.Root.Array parseErrors = parser.getErrors();
 			if (( ( parseErrors != null ) && ( parseErrors.length > 0 ) )) {
-				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.ParseError) (parseErrors[0]) ))) );
+				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.ParseError) (parseErrors.__get(0)) ))) );
 			}
 			
 			if (( callback != null )) {
@@ -69,6 +70,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static global::Loreline.Internal.Ds.StringMap extractTranslations(global::Loreline.Runtime.Script script) {
+			return global::Loreline.Runtime.AstUtils.extractTranslations(script);
+		}
+		
+		
 	}
 }
 
@@ -76,13 +82,13 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Loreline_parse_55__Fun : global::Loreline.Internal.Lang.Function {
+	public class Loreline_parse_57__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Loreline_parse_55__Fun() : base(1, 0) {
+		public Loreline_parse_57__Fun() : base(1, 0) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Loreline_parse_55__Fun __hx_current;
+		public static global::Loreline.Runtime.Loreline_parse_57__Fun __hx_current;
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			global::Loreline.Runtime.Error error = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Runtime.Error) (((object) (__fn_float1) )) )) : (((global::Loreline.Runtime.Error) (__fn_dyn1) )) );
@@ -97,24 +103,26 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Loreline_parse_58__Fun : global::Loreline.Internal.Lang.Function {
+	public class Loreline_parse_60__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Loreline_parse_58__Fun(global::Loreline.Internal.Root.Array<object> tokens, global::Loreline.Runtime.Script[] result, string filePath, global::Loreline.Internal.Lang.Function callback) : base(2, 0) {
+		public Loreline_parse_60__Fun(global::Loreline.Internal.Root.Array tokens, global::Loreline.Runtime.Script[] result, global::Loreline.Runtime.Lexer lexer, string filePath, global::Loreline.Internal.Lang.Function callback) : base(2, 0) {
 			this.tokens = tokens;
 			this.result = result;
+			this.lexer = lexer;
 			this.filePath = filePath;
 			this.callback = callback;
 		}
 		
 		
 		public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
-			global::Loreline.Internal.Ds.StringMap<object> resolvedImports = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (((object) (__fn_float2) )) ))) )) : (((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (__fn_dyn2) ))) )) );
+			global::Loreline.Internal.Ds.StringMap resolvedImports = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Ds.StringMap) (((object) (__fn_float2) )) )) : (((global::Loreline.Internal.Ds.StringMap) (__fn_dyn2) )) );
 			bool hasErrors = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (global::Loreline.Internal.Lang.Runtime.toBool(((object) (__fn_float1) ))) : (global::Loreline.Internal.Lang.Runtime.toBool(__fn_dyn1)) );
-			global::Loreline.Runtime.Parser parser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array<object>) (this.tokens) ), ((global::Loreline.Runtime.ParserContext) (new global::Loreline.Runtime.ParserContext(((string) (this.filePath) ), ((string) (this.filePath) ), ((global::Loreline.Internal.Ds.StringMap<object>) (resolvedImports) ), default(global::Loreline.Internal.Ds.StringMap<bool>))) ));
+			global::Loreline.Runtime.Parser parser = new global::Loreline.Runtime.Parser(((global::Loreline.Internal.Root.Array) (this.tokens) ), ((global::Loreline.Runtime.ParserContext) (new global::Loreline.Runtime.ParserContext(((string) (this.filePath) ), ((string) (this.filePath) ), ((global::Loreline.Internal.Ds.StringMap) (resolvedImports) ), default(global::Loreline.Internal.Ds.StringMap))) ));
 			this.result[0] = parser.parse();
-			global::Loreline.Internal.Root.Array<object> parseErrors = parser.getErrors();
+			((global::Loreline.Runtime.Script) (this.result[0]) ).indentSize = this.lexer.detectedIndentSize;
+			global::Loreline.Internal.Root.Array parseErrors = parser.getErrors();
 			if (( ( parseErrors != null ) && ( parseErrors.length > 0 ) )) {
-				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.ParseError) (parseErrors[0]) ))) );
+				throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(((global::Loreline.Runtime.ParseError) (parseErrors.__get(0)) ))) );
 			}
 			
 			if (( this.callback != null )) {
@@ -125,9 +133,11 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<object> tokens;
+		public global::Loreline.Internal.Root.Array tokens;
 		
 		public global::Loreline.Runtime.Script[] result;
+		
+		public global::Loreline.Runtime.Lexer lexer;
 		
 		public string filePath;
 		

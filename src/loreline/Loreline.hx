@@ -1,8 +1,10 @@
 package loreline;
 
+import loreline.AstUtils;
 import loreline.Imports;
 import loreline.Interpreter;
 import loreline.Lexer;
+import loreline.Node.NStringLiteral;
 import loreline.Parser;
 
 /**
@@ -177,6 +179,19 @@ class Loreline {
         }
 
         return interpreter;
+    }
+
+    /**
+     * Extracts translations from a parsed translation script.
+     *
+     * Given a translation file parsed with `parse()`, this returns a translations map
+     * that can be passed as `options.translations` to `play()` or `resume()`.
+     *
+     * @param script The parsed translation script (result from `parse()` on a `.XX.lor` file)
+     * @return A translations map to pass as `InterpreterOptions.translations`
+     */
+    public static function extractTranslations(script:Script):Map<String, NStringLiteral> {
+        return AstUtils.extractTranslations(script);
     }
 
 }

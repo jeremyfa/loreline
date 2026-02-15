@@ -4,7 +4,7 @@ class Arrays {
 
     public static function isArray(array:Any):Bool {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return true;
         }
@@ -20,7 +20,7 @@ class Arrays {
 
     public static function arrayLength(array:Any):Int {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListLength(array);
         }
@@ -35,7 +35,7 @@ class Arrays {
 
         final i:Int = Std.int(index);
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListGet(array, index);
         }
@@ -55,7 +55,7 @@ class Arrays {
 
         final i:Int = Std.int(index);
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListSet(array, index, value);
         }
@@ -67,8 +67,8 @@ class Arrays {
     }
 
     public static function createArray():Any {
-        #if (loreline_cs_api && loreline_use_cs_types)
-        return untyped __cs__('new System.Collections.Generic.List<object>()');
+        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        return cs.Syntax.code('new System.Collections.Generic.List<object>()');
         #else
         final arr:Array<Dynamic> = [];
         return arr;
@@ -77,7 +77,7 @@ class Arrays {
 
     public static function arrayPush(array:Any, value:Any):Void {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListPush(array, value);
         }
@@ -89,7 +89,7 @@ class Arrays {
 
     public static function arrayPop(array:Any):Any {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) return csListPop(array);
         #end
 
@@ -100,7 +100,7 @@ class Arrays {
 
     public static function arrayShift(array:Any):Any {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) return csListShift(array);
         #end
 
@@ -111,7 +111,7 @@ class Arrays {
 
     public static function arrayInsert(array:Any, index:Int, value:Any):Void {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) { csListInsert(array, index, value); return; }
         #end
 
@@ -122,7 +122,7 @@ class Arrays {
 
     public static function arrayRemoveAt(array:Any, index:Int):Void {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) { csListRemoveAt(array, index); return; }
         #end
 
@@ -133,7 +133,7 @@ class Arrays {
 
     public static function getIterator(array:Any):Iterator<Dynamic> {
 
-        #if loreline_cs_api
+        #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListIterator(array);
         }
@@ -151,6 +151,23 @@ class Arrays {
     }
 
     public static function arraySort(array:Any, cmp:(Any, Any) -> Int):Void {
+        #if (loreline_cs_api && !macro)
+        if (isCsList(array)) {
+            final len = csListLength(array);
+            for (i in 1...len) {
+                final key = csListGet(array, i);
+                var j = i - 1;
+                while (j >= 0) {
+                    final jVal = csListGet(array, j);
+                    if (cmp(jVal, key) <= 0) break;
+                    csListSet(array, j + 1, jVal);
+                    j--;
+                }
+                csListSet(array, j + 1, key);
+            }
+            return;
+        }
+        #end
         final len = arrayLength(array);
         for (i in 1...len) {
             final key = arrayGet(array, i);
@@ -164,6 +181,20 @@ class Arrays {
     }
 
     public static function arrayReverse(array:Any):Void {
+        #if (loreline_cs_api && !macro)
+        if (isCsList(array)) {
+            var i = 0;
+            var j = csListLength(array) - 1;
+            while (i < j) {
+                final tmp = csListGet(array, i);
+                csListSet(array, i, csListGet(array, j));
+                csListSet(array, j, tmp);
+                i++;
+                j--;
+            }
+            return;
+        }
+        #end
         var i = 0;
         var j = arrayLength(array) - 1;
         while (i < j) {
@@ -185,61 +216,61 @@ class Arrays {
         return buf.toString();
     }
 
-    #if loreline_cs_api
+    #if (loreline_cs_api && !macro)
 
     static function isCsList(array:Any):Bool {
-        return untyped __cs__('{0} is global::System.Collections.IList', array);
+        return cs.Syntax.code('{0} is global::System.Collections.IList', array);
     }
 
     static function csListLength(array:Any):Int {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        return untyped __cs__('list.Count');
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        return cs.Syntax.code('list.Count');
     }
 
     static function csListGet(array:Any, index:Int):Any {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        return untyped __cs__('list[{0}]', index);
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        return cs.Syntax.code('list[{0}]', index);
     }
 
     static function csListSet(array:Any, index:Int, value:Any):Void {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('int len = list.Count;
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('int len = list.Count;
         while (len < {0}) {
             list.Add(default(object));
             len++;
         }', index);
-        untyped __cs__('list[{0}] = {1}', index, value);
+        cs.Syntax.code('list[{0}] = {1}', index, value);
     }
 
     static function csListPush(array:Any, value:Any):Void {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('list.Add({1})', index, value);
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('list.Add({0})', value);
     }
 
     static function csListPop(array:Any):Any {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('if (list.Count == 0) return null');
-        untyped __cs__('object last = list[list.Count - 1]');
-        untyped __cs__('list.RemoveAt(list.Count - 1)');
-        return untyped __cs__('last');
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('if (list.Count == 0) return null');
+        cs.Syntax.code('object last = list[list.Count - 1]');
+        cs.Syntax.code('list.RemoveAt(list.Count - 1)');
+        return cs.Syntax.code('last');
     }
 
     static function csListShift(array:Any):Any {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('if (list.Count == 0) return null');
-        untyped __cs__('object first = list[0]');
-        untyped __cs__('list.RemoveAt(0)');
-        return untyped __cs__('first');
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('if (list.Count == 0) return null');
+        cs.Syntax.code('object first = list[0]');
+        cs.Syntax.code('list.RemoveAt(0)');
+        return cs.Syntax.code('first');
     }
 
     static function csListInsert(array:Any, index:Int, value:Any):Void {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('list.Insert({0}, {1})', index, value);
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('list.Insert({0}, {1})', index, value);
     }
 
     static function csListRemoveAt(array:Any, index:Int):Void {
-        untyped __cs__('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
-        untyped __cs__('list.RemoveAt({0})', index);
+        cs.Syntax.code('global::System.Collections.IList list = (global::System.Collections.IList){0}', array);
+        cs.Syntax.code('list.RemoveAt({0})', index);
     }
 
     static function csListIterator(array:Any):Iterator<Dynamic> {
@@ -250,7 +281,7 @@ class Arrays {
 
 }
 
-#if loreline_cs_api
+#if (loreline_cs_api && !macro)
 class CSListIterator {
     private var list:Any;
     private var index:Int;

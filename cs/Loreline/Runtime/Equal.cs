@@ -32,14 +32,14 @@ namespace Loreline.Runtime {
 			}
 			else if (( a is global::Loreline.Internal.Ds.StringMap )) {
 				if (( b is global::Loreline.Internal.Ds.StringMap )) {
-					return global::Loreline.Runtime.Equal.stringMapEqual(interpreter, ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (a) ))) ), ((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (b) ))) ));
+					return global::Loreline.Runtime.Equal.stringMapEqual(interpreter, ((global::Loreline.Internal.Ds.StringMap) (a) ), ((global::Loreline.Internal.Ds.StringMap) (b) ));
 				}
 				
 				return false;
 			}
 			else if (( a is global::Loreline.Internal.Ds.IntMap )) {
 				if (( b is global::Loreline.Internal.Ds.IntMap )) {
-					return global::Loreline.Runtime.Equal.intMapEqual(interpreter, ((global::Loreline.Internal.Ds.IntMap<object>) (global::Loreline.Internal.Ds.IntMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.IntMap) (a) ))) ), ((global::Loreline.Internal.Ds.IntMap<object>) (global::Loreline.Internal.Ds.IntMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.IntMap) (b) ))) ));
+					return global::Loreline.Runtime.Equal.intMapEqual(interpreter, ((global::Loreline.Internal.Ds.IntMap) (a) ), ((global::Loreline.Internal.Ds.IntMap) (b) ));
 				}
 				
 				return false;
@@ -59,9 +59,9 @@ namespace Loreline.Runtime {
 		public static bool objectFieldsEqual(global::Loreline.Runtime.Interpreter interpreter, object a, object b) {
 			{
 				int _g = 0;
-				global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Runtime.Objects.getFields(interpreter, a);
+				global::Loreline.Internal.Root.Array _g1 = global::Loreline.Runtime.Objects.getFields(interpreter, a);
 				while (( _g < _g1.length )) {
-					string field = _g1[_g];
+					string field = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 					 ++ _g;
 					if ((  ! (global::Loreline.Runtime.Objects.fieldExists(interpreter, b, field))  ||  ! (global::Loreline.Runtime.Equal.equal(interpreter, global::Loreline.Runtime.Objects.getField(interpreter, a, field), global::Loreline.Runtime.Objects.getField(interpreter, b, field)))  )) {
 						return false;
@@ -73,9 +73,9 @@ namespace Loreline.Runtime {
 			
 			{
 				int _g2 = 0;
-				global::Loreline.Internal.Root.Array<string> _g3 = global::Loreline.Runtime.Objects.getFields(interpreter, b);
+				global::Loreline.Internal.Root.Array _g3 = global::Loreline.Runtime.Objects.getFields(interpreter, b);
 				while (( _g2 < _g3.length )) {
-					string field1 = _g3[_g2];
+					string field1 = global::Loreline.Internal.Lang.Runtime.toString(_g3.__get(_g2));
 					 ++ _g2;
 					if ( ! (global::Loreline.Runtime.Objects.fieldExists(interpreter, a, field1)) ) {
 						return false;
@@ -113,14 +113,14 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static bool stringMapEqual(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Internal.Ds.StringMap<object> a, global::Loreline.Internal.Ds.StringMap<object> b) {
+		public static bool stringMapEqual(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Internal.Ds.StringMap a, global::Loreline.Internal.Ds.StringMap b) {
 			{
-				global::Loreline.Internal.IMap<string, object> map = a;
-				global::Loreline.Internal.IMap<string, object> _g_map = map;
+				global::Loreline.Internal.IMap map = ((global::Loreline.Internal.IMap) (a) );
+				global::Loreline.Internal.IMap _g_map = map;
 				object _g_keys = map.keys();
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "hasNext", 407283053, null))) {
 					string key = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "next", 1224901875, null));
-					object _g_value = (_g_map.@get(key)).toDynamic();
+					object _g_value = ((object) (_g_map.@get(key)) );
 					string _g_key = key;
 					string key1 = _g_key;
 					object val = _g_value;
@@ -129,7 +129,7 @@ namespace Loreline.Runtime {
 							return false;
 						}
 						
-						if ( ! (global::Loreline.Runtime.Equal.equal(interpreter, (b.@get(key1)).toDynamic(), val)) ) {
+						if ( ! (global::Loreline.Runtime.Equal.equal(interpreter, b.@get(((string) (key1) )), val)) ) {
 							return false;
 						}
 						
@@ -140,7 +140,7 @@ namespace Loreline.Runtime {
 			}
 			
 			{
-				object key2 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (b) ))) );
+				object key2 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (b) ))) );
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(key2, "hasNext", 407283053, null))) {
 					string key3 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(key2, "next", 1224901875, null));
 					if ( ! (a.exists(key3)) ) {
@@ -155,14 +155,14 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static bool intMapEqual(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Internal.Ds.IntMap<object> a, global::Loreline.Internal.Ds.IntMap<object> b) {
+		public static bool intMapEqual(global::Loreline.Runtime.Interpreter interpreter, global::Loreline.Internal.Ds.IntMap a, global::Loreline.Internal.Ds.IntMap b) {
 			{
-				global::Loreline.Internal.IMap<int, object> map = a;
-				global::Loreline.Internal.IMap<int, object> _g_map = map;
+				global::Loreline.Internal.IMap map = ((global::Loreline.Internal.IMap) (a) );
+				global::Loreline.Internal.IMap _g_map = map;
 				object _g_keys = map.keys();
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "hasNext", 407283053, null))) {
 					int key = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(_g_keys, "next", 1224901875, null))) );
-					object _g_value = (_g_map.@get(key)).toDynamic();
+					object _g_value = ((object) (_g_map.@get(key)) );
 					int _g_key = key;
 					int key1 = _g_key;
 					object val = _g_value;
@@ -171,7 +171,7 @@ namespace Loreline.Runtime {
 							return false;
 						}
 						
-						if ( ! (global::Loreline.Runtime.Equal.equal(interpreter, (b.@get(key1)).toDynamic(), val)) ) {
+						if ( ! (global::Loreline.Runtime.Equal.equal(interpreter, b.@get(((int) (key1) )), val)) ) {
 							return false;
 						}
 						
@@ -182,7 +182,7 @@ namespace Loreline.Runtime {
 			}
 			
 			{
-				object key2 = ((object) (new global::Loreline.Internal.Ds._IntMap.IntMapKeyIterator<object>(((global::Loreline.Internal.Ds.IntMap<object>) (b) ))) );
+				object key2 = ((object) (new global::Loreline.Internal.Ds._IntMap.IntMapKeyIterator(((global::Loreline.Internal.Ds.IntMap) (b) ))) );
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(key2, "hasNext", 407283053, null))) {
 					int key3 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.Runtime.callField(key2, "next", 1224901875, null))) );
 					if ( ! (a.exists(key3)) ) {

@@ -133,8 +133,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public void @add<T>(T s) {
-			this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(s)) ));
+		public void @add(object s) {
+			this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((object) (s) ))) ));
 		}
 		
 		
@@ -143,12 +143,12 @@ namespace Loreline.Internal.Hscript {
 				switch (t._hx_index) {
 					case 0:
 					{
-						global::Loreline.Internal.Root.Array<string> path = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).path;
-						global::Loreline.Internal.Root.Array<object> @params = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).@params;
+						global::Loreline.Internal.Root.Array path = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).path;
+						global::Loreline.Internal.Root.Array @params = ( t as global::Loreline.Internal.Hscript.CType_CTPath ).@params;
 						{
 							{
 								string s = path.@join(".");
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(s)) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (s) ))) ));
 							}
 							
 							if (( @params != null )) {
@@ -157,7 +157,7 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g = 0;
 									while (( _g < @params.length )) {
-										global::Loreline.Internal.Hscript.CType p = ((global::Loreline.Internal.Hscript.CType) (@params[_g]) );
+										global::Loreline.Internal.Hscript.CType p = ((global::Loreline.Internal.Hscript.CType) (@params.__get(_g)) );
 										 ++ _g;
 										if (first) {
 											first = false;
@@ -182,17 +182,17 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1:
 					{
-						global::Loreline.Internal.Root.Array<object> _g1 = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).args;
+						global::Loreline.Internal.Root.Array _g1 = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).args;
 						global::Loreline.Internal.Hscript.CType _g2 = ( t as global::Loreline.Internal.Hscript.CType_CTFun ).ret;
 						{
-							global::Loreline.Internal.Root.Array<object> args = _g1;
+							global::Loreline.Internal.Root.Array args = _g1;
 							global::Loreline.Internal.Hscript.CType ret = _g2;
-							if (global::Loreline.Internal.Root.Lambda.exists<object>(((object) (args) ), ((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current != null )) ? (global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current) : (global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current = ((global::Loreline.Internal.Hscript.Printer_type_69__Fun) (new global::Loreline.Internal.Hscript.Printer_type_69__Fun()) )) )) ))) {
+							if (global::Loreline.Internal.Root.Lambda.exists(((object) (args) ), ((global::Loreline.Internal.Lang.Function) (( (( global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current != null )) ? (global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current) : (global::Loreline.Internal.Hscript.Printer_type_69__Fun.__hx_current = ((global::Loreline.Internal.Hscript.Printer_type_69__Fun) (new global::Loreline.Internal.Hscript.Printer_type_69__Fun()) )) )) ))) {
 								this.buf.b.Append(((string) ("(") ));
 								{
 									int _g3 = 0;
 									while (( _g3 < args.length )) {
-										global::Loreline.Internal.Hscript.CType a = ((global::Loreline.Internal.Hscript.CType) (args[_g3]) );
+										global::Loreline.Internal.Hscript.CType a = ((global::Loreline.Internal.Hscript.CType) (args.__get(_g3)) );
 										 ++ _g3;
 										if (( a._hx_index == 5 )) {
 											string _g4 = ( a as global::Loreline.Internal.Hscript.CType_CTNamed ).n;
@@ -211,7 +211,7 @@ namespace Loreline.Internal.Hscript {
 								this.type(ret);
 							}
 							else {
-								global::Loreline.Internal.Root.Array<object> args1 = _g1;
+								global::Loreline.Internal.Root.Array args1 = _g1;
 								global::Loreline.Internal.Hscript.CType ret1 = _g2;
 								{
 									if (( args1.length == 0 )) {
@@ -220,7 +220,7 @@ namespace Loreline.Internal.Hscript {
 									else {
 										int _g6 = 0;
 										while (( _g6 < args1.length )) {
-											global::Loreline.Internal.Hscript.CType a1 = ((global::Loreline.Internal.Hscript.CType) (args1[_g6]) );
+											global::Loreline.Internal.Hscript.CType a1 = ((global::Loreline.Internal.Hscript.CType) (args1.__get(_g6)) );
 											 ++ _g6;
 											this.type(a1);
 											this.buf.b.Append(((string) (" -> ") ));
@@ -241,14 +241,14 @@ namespace Loreline.Internal.Hscript {
 					
 					case 2:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
+						global::Loreline.Internal.Root.Array fields = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
 						{
 							this.buf.b.Append(((string) ("{") ));
 							bool first1 = true;
 							{
 								int _g7 = 0;
 								while (( _g7 < fields.length )) {
-									object f = fields[_g7];
+									object f = fields.__get(_g7);
 									 ++ _g7;
 									if (first1) {
 										first1 = false;
@@ -258,13 +258,13 @@ namespace Loreline.Internal.Hscript {
 										this.buf.b.Append(((string) (", ") ));
 									}
 									
-									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), " : "))) ));
+									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f, "name", 1224700491, true)), " : ")) ))) ));
 									this.type(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(f, "t", 116, true)) ));
 								}
 								
 							}
 							
-							this.buf.b.Append(((string) (( (first1) ? ("}") : (" }") )) ));
+							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (( (first1) ? ("}") : (" }") )) ))) ));
 						}
 						
 						break;
@@ -301,7 +301,7 @@ namespace Loreline.Internal.Hscript {
 						string name = ( t as global::Loreline.Internal.Hscript.CType_CTNamed ).n;
 						global::Loreline.Internal.Hscript.CType t3 = ( t as global::Loreline.Internal.Hscript.CType_CTNamed ).t;
 						{
-							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(name)) ));
+							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (name) ))) ));
 							this.buf.b.Append(((string) (":") ));
 							this.type(t3);
 						}
@@ -342,7 +342,7 @@ namespace Loreline.Internal.Hscript {
 								case 0:
 								{
 									int i = ( c as global::Loreline.Internal.Hscript.Const_CInt ).v;
-									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(i)) ));
+									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((int) (i) ))) ));
 									break;
 								}
 								
@@ -350,7 +350,7 @@ namespace Loreline.Internal.Hscript {
 								case 1:
 								{
 									double f = ( c as global::Loreline.Internal.Hscript.Const_CFloat ).f;
-									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(f)) ));
+									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((double) (f) ))) ));
 									break;
 								}
 								
@@ -362,7 +362,7 @@ namespace Loreline.Internal.Hscript {
 										this.buf.b.Append(((string) ("\"") ));
 										{
 											string s1 = global::Loreline.Internal.Lang.StringExt.split(global::Loreline.Internal.Lang.StringExt.split(global::Loreline.Internal.Lang.StringExt.split(global::Loreline.Internal.Lang.StringExt.split(s, "\"").@join("\\\""), "\n").@join("\\n"), "\r").@join("\\r"), "\t").@join("\\t");
-											this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(s1)) ));
+											this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (s1) ))) ));
 										}
 										
 										this.buf.b.Append(((string) ("\"") ));
@@ -381,7 +381,7 @@ namespace Loreline.Internal.Hscript {
 						case 1:
 						{
 							string v = ( _g as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
-							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v)) ));
+							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v) ))) ));
 							break;
 						}
 						
@@ -392,7 +392,7 @@ namespace Loreline.Internal.Hscript {
 							global::Loreline.Internal.Hscript.CType t = ( _g as global::Loreline.Internal.Hscript.ExprDef_EVar ).t;
 							object e1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EVar ).e;
 							{
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat("var ", n))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat("var ", n)) ))) ));
 								this.addType(t);
 								if (( e1 != null )) {
 									this.buf.b.Append(((string) (" = ") ));
@@ -420,7 +420,7 @@ namespace Loreline.Internal.Hscript {
 						
 						case 4:
 						{
-							global::Loreline.Internal.Root.Array<object> el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+							global::Loreline.Internal.Root.Array el = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
 							if (( el.length == 0 )) {
 								this.buf.b.Append(((string) ("{}") ));
 							}
@@ -434,16 +434,16 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g1 = 0;
 									while (( _g1 < el.length )) {
-										object e3 = el[_g1];
+										object e3 = el.__get(_g1);
 										 ++ _g1;
-										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(this.tabs)) ));
+										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (this.tabs) ))) ));
 										this.expr(e3);
 										this.buf.b.Append(((string) (";\n") ));
 									}
 									
 								}
 								
-								this.tabs = global::Loreline.Internal.Lang.StringExt.substr(this.tabs, 1, default(global::Loreline.Internal.Lang.Null<int>));
+								this.tabs = global::Loreline.Internal.Lang.StringExt.substr(this.tabs, 1, null);
 								this.buf.b.Append(((string) ("}") ));
 							}
 							
@@ -457,7 +457,7 @@ namespace Loreline.Internal.Hscript {
 							string f1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EField ).f;
 							{
 								this.expr(e4);
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(".", f1))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(".", f1)) ))) ));
 							}
 							
 							break;
@@ -471,7 +471,7 @@ namespace Loreline.Internal.Hscript {
 							object e21 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).e2;
 							{
 								this.expr(e11);
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(" ", op), " "))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(" ", op), " ")) ))) ));
 								this.expr(e21);
 							}
 							
@@ -485,12 +485,12 @@ namespace Loreline.Internal.Hscript {
 							bool pre = ( _g as global::Loreline.Internal.Hscript.ExprDef_EUnop ).prefix;
 							object e5 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EUnop ).e;
 							if (pre) {
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(op1)) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (op1) ))) ));
 								this.expr(e5);
 							}
 							else {
 								this.expr(e5);
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(op1)) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (op1) ))) ));
 							}
 							
 							break;
@@ -500,7 +500,7 @@ namespace Loreline.Internal.Hscript {
 						case 8:
 						{
 							object e6 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).e;
-							global::Loreline.Internal.Root.Array<object> args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
+							global::Loreline.Internal.Root.Array args = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECall ).@params;
 							{
 								if (( e6 == null )) {
 									this.expr(e6);
@@ -550,7 +550,7 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g7 = 0;
 									while (( _g7 < args.length )) {
-										object a = args[_g7];
+										object a = args.__get(_g7);
 										 ++ _g7;
 										if (first) {
 											first = false;
@@ -613,7 +613,7 @@ namespace Loreline.Internal.Hscript {
 							object it = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFor ).it;
 							object e8 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFor ).e;
 							{
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("for( ", v1), " in "))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("for( ", v1), " in ")) ))) ));
 								this.expr(it);
 								this.buf.b.Append(((string) (" ) ") ));
 								this.expr(e8);
@@ -639,14 +639,14 @@ namespace Loreline.Internal.Hscript {
 						
 						case 14:
 						{
-							global::Loreline.Internal.Root.Array<object> @params = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+							global::Loreline.Internal.Root.Array @params = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 							object e9 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
 							string name = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 							global::Loreline.Internal.Hscript.CType ret = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
 							{
 								this.buf.b.Append(((string) ("function") ));
 								if (( name != null )) {
-									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(" ", name))) ));
+									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(" ", name)) ))) ));
 								}
 								
 								this.buf.b.Append(((string) ("(") ));
@@ -654,7 +654,7 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g8 = 0;
 									while (( _g8 < @params.length )) {
-										object a1 = @params[_g8];
+										object a1 = @params.__get(_g8);
 										 ++ _g8;
 										if (first1) {
 											first1 = false;
@@ -663,7 +663,7 @@ namespace Loreline.Internal.Hscript {
 											this.buf.b.Append(((string) (", ") ));
 										}
 										
-										if (((global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(a1, "opt", 5545011, true)))).@value) {
+										if (global::Loreline.Internal.Lang.Runtime.toBool((global::Loreline.Internal.Lang.Runtime.getField(a1, "opt", 5545011, true)))) {
 											this.buf.b.Append(((string) ("?") ));
 										}
 										
@@ -716,14 +716,14 @@ namespace Loreline.Internal.Hscript {
 						
 						case 17:
 						{
-							global::Loreline.Internal.Root.Array<object> el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
+							global::Loreline.Internal.Root.Array el1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EArrayDecl ).e;
 							{
 								this.buf.b.Append(((string) ("[") ));
 								bool first2 = true;
 								{
 									int _g9 = 0;
 									while (( _g9 < el1.length )) {
-										object e14 = el1[_g9];
+										object e14 = el1.__get(_g9);
 										 ++ _g9;
 										if (first2) {
 											first2 = false;
@@ -747,14 +747,14 @@ namespace Loreline.Internal.Hscript {
 						case 18:
 						{
 							string cl = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).cl;
-							global::Loreline.Internal.Root.Array<object> args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
+							global::Loreline.Internal.Root.Array args1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ENew ).@params;
 							{
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("new ", cl), "("))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("new ", cl), "(")) ))) ));
 								bool first3 = true;
 								{
 									int _g10 = 0;
 									while (( _g10 < args1.length )) {
-										object e15 = args1[_g10];
+										object e15 = args1.__get(_g10);
 										 ++ _g10;
 										if (first3) {
 											first3 = false;
@@ -796,7 +796,7 @@ namespace Loreline.Internal.Hscript {
 							{
 								this.buf.b.Append(((string) ("try ") ));
 								this.expr(e17);
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(" catch( ", v2))) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(" catch( ", v2)) ))) ));
 								this.addType(t1);
 								this.buf.b.Append(((string) (") ") ));
 								this.expr(ecatch);
@@ -808,7 +808,7 @@ namespace Loreline.Internal.Hscript {
 						
 						case 21:
 						{
-							global::Loreline.Internal.Root.Array<object> fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
+							global::Loreline.Internal.Root.Array fl = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
 							if (( fl.length == 0 )) {
 								this.buf.b.Append(((string) ("{}") ));
 							}
@@ -822,17 +822,17 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g11 = 0;
 									while (( _g11 < fl.length )) {
-										object f2 = fl[_g11];
+										object f2 = fl.__get(_g11);
 										 ++ _g11;
-										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(this.tabs)) ));
-										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f2, "name", 1224700491, true)), " : "))) ));
+										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (this.tabs) ))) ));
+										this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(f2, "name", 1224700491, true)), " : ")) ))) ));
 										this.expr(global::Loreline.Internal.Lang.Runtime.getField(f2, "e", 101, true));
 										this.buf.b.Append(((string) (",\n") ));
 									}
 									
 								}
 								
-								this.tabs = global::Loreline.Internal.Lang.StringExt.substr(this.tabs, 1, default(global::Loreline.Internal.Lang.Null<int>));
+								this.tabs = global::Loreline.Internal.Lang.StringExt.substr(this.tabs, 1, null);
 								this.buf.b.Append(((string) ("}") ));
 							}
 							
@@ -860,7 +860,7 @@ namespace Loreline.Internal.Hscript {
 						case 23:
 						{
 							object e19 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).e;
-							global::Loreline.Internal.Root.Array<object> cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
+							global::Loreline.Internal.Root.Array cases = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
 							object def = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).defaultExpr;
 							{
 								this.buf.b.Append(((string) ("switch( ") ));
@@ -869,15 +869,15 @@ namespace Loreline.Internal.Hscript {
 								{
 									int _g12 = 0;
 									while (( _g12 < cases.length )) {
-										object c2 = cases[_g12];
+										object c2 = cases.__get(_g12);
 										 ++ _g12;
 										this.buf.b.Append(((string) ("case ") ));
 										bool first4 = true;
 										{
 											int _g13 = 0;
-											global::Loreline.Internal.Root.Array<object> _g14 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "values", 1337394146, true)) ))) );
+											global::Loreline.Internal.Root.Array _g14 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c2, "values", 1337394146, true)) );
 											while (( _g13 < _g14.length )) {
-												object v3 = _g14[_g13];
+												object v3 = _g14.__get(_g13);
 												 ++ _g13;
 												if (first4) {
 													first4 = false;
@@ -930,18 +930,18 @@ namespace Loreline.Internal.Hscript {
 						case 25:
 						{
 							string name1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
-							global::Loreline.Internal.Root.Array<object> args2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+							global::Loreline.Internal.Root.Array args2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 							object e24 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
 							{
 								this.buf.b.Append(((string) ("@") ));
-								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(name1)) ));
+								this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (name1) ))) ));
 								if (( ( args2 != null ) && ( args2.length > 0 ) )) {
 									this.buf.b.Append(((string) ("(") ));
 									bool first5 = true;
 									{
 										int _g15 = 0;
 										while (( _g15 < args2.length )) {
-											object a2 = args2[_g15];
+											object a2 = args2.__get(_g15);
 											 ++ _g15;
 											if (first5) {
 												first5 = false;
@@ -1085,41 +1085,41 @@ namespace Loreline.Internal.Hscript {
 				switch (hash) {
 					case 1126038837:
 					{
-						this.expr(dynargs[0]);
+						this.expr(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 155596155:
 					{
-						this.addType(((global::Loreline.Internal.Hscript.CType) (dynargs[0]) ));
+						this.addType(((global::Loreline.Internal.Hscript.CType) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1292432058:
 					{
-						this.type(((global::Loreline.Internal.Hscript.CType) (dynargs[0]) ));
+						this.type(((global::Loreline.Internal.Hscript.CType) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 4846113:
 					{
-						this.@add<object>(((object) (dynargs[0]) ));
+						this.@add(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 533842310:
 					{
-						return this.typeToString(((global::Loreline.Internal.Hscript.CType) (dynargs[0]) ));
+						return this.typeToString(((global::Loreline.Internal.Hscript.CType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 2063484673:
 					{
-						return this.exprToString(dynargs[0]);
+						return this.exprToString(((object) (dynargs[0]) ));
 					}
 					
 					
@@ -1135,7 +1135,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("tabs");
 			baseArr.push("buf");
 			base.__hx_getFields(baseArr);

@@ -36,7 +36,7 @@ namespace Loreline.Runtime {
 				return global::Loreline.Runtime.Arrays.csListLength(array);
 			}
 			
-			global::Loreline.Internal.Root.Array<object> arr = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (array) )) ))) );
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
 			return arr.length;
 		}
 		
@@ -47,9 +47,9 @@ namespace Loreline.Runtime {
 				return global::Loreline.Runtime.Arrays.csListGet(array, index);
 			}
 			
-			global::Loreline.Internal.Root.Array<object> arr = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (array) )) ))) );
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
 			if (( ( i >= 0 ) && ( i < arr.length ) )) {
-				return arr[i];
+				return arr.__get(i);
 			}
 			else {
 				return null;
@@ -65,8 +65,8 @@ namespace Loreline.Runtime {
 				return;
 			}
 			
-			global::Loreline.Internal.Root.Array<object> arr = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (array) )) ))) );
-			arr[i] = @value;
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
+			arr.__set(i, @value);
 		}
 		
 		
@@ -81,8 +81,52 @@ namespace Loreline.Runtime {
 				return;
 			}
 			
-			global::Loreline.Internal.Root.Array<object> arr = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (array) )) ))) );
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
 			arr.push(@value);
+		}
+		
+		
+		public static object arrayPop(object array) {
+			if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+				return global::Loreline.Runtime.Arrays.csListPop(array);
+			}
+			
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
+			return arr.pop();
+		}
+		
+		
+		public static object arrayShift(object array) {
+			if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+				return global::Loreline.Runtime.Arrays.csListShift(array);
+			}
+			
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
+			return arr.shift();
+		}
+		
+		
+		public static void arrayInsert(object array, int index, object @value) {
+			if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+				global::Loreline.Runtime.Arrays.csListInsert(array, index, @value);
+				return;
+			}
+			
+			global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
+			arr.insert(index, @value);
+		}
+		
+		
+		public static void arrayRemoveAt(object array, int index) {
+			unchecked {
+				if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+					global::Loreline.Runtime.Arrays.csListRemoveAt(array, index);
+					return;
+				}
+				
+				global::Loreline.Internal.Root.Array arr = ((global::Loreline.Internal.Root.Array) (((object) (array) )) );
+				arr.spliceVoid(index, 1);
+			}
 		}
 		
 		
@@ -91,18 +135,137 @@ namespace Loreline.Runtime {
 				return global::Loreline.Runtime.Arrays.csListIterator(array);
 			}
 			
-			return new global::Loreline.Internal.Iterators.ArrayIterator<object>(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((global::Loreline.Internal.Root.Array) (((object) (array) )) )) ))) ));
+			return new global::Loreline.Internal.Iterators.ArrayIterator(((global::Loreline.Internal.Root.Array) (((object) (array) )) ));
+		}
+		
+		
+		public static object arrayCopy(object array) {
+			int len = global::Loreline.Runtime.Arrays.arrayLength(array);
+			object copy = global::Loreline.Runtime.Arrays.createArray();
+			{
+				int _g = 0;
+				int _g1 = len;
+				while (( _g < _g1 )) {
+					int i = _g++;
+					global::Loreline.Runtime.Arrays.arrayPush(copy, global::Loreline.Runtime.Arrays.arrayGet(array, i));
+				}
+				
+			}
+			
+			return copy;
+		}
+		
+		
+		public static void arraySort(object array, global::Loreline.Internal.Lang.Function cmp) {
+			unchecked {
+				if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+					int len = global::Loreline.Runtime.Arrays.csListLength(array);
+					{
+						int _g = 1;
+						int _g1 = len;
+						while (( _g < _g1 )) {
+							int i = _g++;
+							object key = global::Loreline.Runtime.Arrays.csListGet(array, i);
+							int j = ( i - 1 );
+							while (( j >= 0 )) {
+								object jVal = global::Loreline.Runtime.Arrays.csListGet(array, j);
+								if (( ((int) (cmp.__hx_invoke2_f(default(double), jVal, default(double), key)) ) <= 0 )) {
+									break;
+								}
+								
+								global::Loreline.Runtime.Arrays.csListSet(array, ( j + 1 ), jVal);
+								 -- j;
+							}
+							
+							global::Loreline.Runtime.Arrays.csListSet(array, ( j + 1 ), key);
+						}
+						
+					}
+					
+					return;
+				}
+				
+				int len1 = global::Loreline.Runtime.Arrays.arrayLength(array);
+				{
+					int _g2 = 1;
+					int _g3 = len1;
+					while (( _g2 < _g3 )) {
+						int i1 = _g2++;
+						object key1 = global::Loreline.Runtime.Arrays.arrayGet(array, i1);
+						int j1 = ( i1 - 1 );
+						while (( ( j1 >= 0 ) && ( ((int) (cmp.__hx_invoke2_f(default(double), global::Loreline.Runtime.Arrays.arrayGet(array, j1), default(double), key1)) ) > 0 ) )) {
+							global::Loreline.Runtime.Arrays.arraySet(array, ( j1 + 1 ), global::Loreline.Runtime.Arrays.arrayGet(array, j1));
+							 -- j1;
+						}
+						
+						global::Loreline.Runtime.Arrays.arraySet(array, ( j1 + 1 ), key1);
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		public static void arrayReverse(object array) {
+			unchecked {
+				if (global::Loreline.Runtime.Arrays.isCsList(array)) {
+					int i = 0;
+					int j = ( global::Loreline.Runtime.Arrays.csListLength(array) - 1 );
+					while (( i < j )) {
+						object tmp = global::Loreline.Runtime.Arrays.csListGet(array, i);
+						global::Loreline.Runtime.Arrays.csListSet(array, i, global::Loreline.Runtime.Arrays.csListGet(array, j));
+						global::Loreline.Runtime.Arrays.csListSet(array, j, tmp);
+						 ++ i;
+						 -- j;
+					}
+					
+					return;
+				}
+				
+				int i1 = 0;
+				int j1 = ( global::Loreline.Runtime.Arrays.arrayLength(array) - 1 );
+				while (( i1 < j1 )) {
+					object tmp1 = global::Loreline.Runtime.Arrays.arrayGet(array, i1);
+					global::Loreline.Runtime.Arrays.arraySet(array, i1, global::Loreline.Runtime.Arrays.arrayGet(array, j1));
+					global::Loreline.Runtime.Arrays.arraySet(array, j1, tmp1);
+					 ++ i1;
+					 -- j1;
+				}
+				
+			}
+		}
+		
+		
+		public static string arrayJoin(object array, string sep) {
+			int len = global::Loreline.Runtime.Arrays.arrayLength(array);
+			global::System.Text.StringBuilder buf_b = new global::System.Text.StringBuilder();
+			{
+				int _g = 0;
+				int _g1 = len;
+				while (( _g < _g1 )) {
+					int i = _g++;
+					if (( i > 0 )) {
+						buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (sep) ))) ));
+					}
+					
+					buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(( (( global::Loreline.Runtime.Arrays.arrayGet(array, i) == null )) ? ("null") : (global::Loreline.Internal.Root.Std.@string(((object) (global::Loreline.Runtime.Arrays.arrayGet(array, i)) ))) ))) ));
+				}
+				
+			}
+			
+			return buf_b.ToString();
 		}
 		
 		
 		public static bool isCsList(object array) {
-			return array is global::System.Collections.IList;
+			return global::Loreline.Internal.Lang.Runtime.toBool(array is global::System.Collections.IList);
 		}
 		
 		
 		public static int csListLength(object array) {
 			global::System.Collections.IList list = (global::System.Collections.IList)array;
-			return list.Count;
+			return ((int) (global::Loreline.Internal.Lang.Runtime.toInt(list.Count)) );
 		}
 		
 		
@@ -126,6 +289,36 @@ namespace Loreline.Runtime {
 		public static void csListPush(object array, object @value) {
 			global::System.Collections.IList list = (global::System.Collections.IList)array;
 			list.Add(@value);
+		}
+		
+		
+		public static object csListPop(object array) {
+			global::System.Collections.IList list = (global::System.Collections.IList)array;
+			if (list.Count == 0) return null;
+			object last = list[list.Count - 1];
+			list.RemoveAt(list.Count - 1);
+			return last;
+		}
+		
+		
+		public static object csListShift(object array) {
+			global::System.Collections.IList list = (global::System.Collections.IList)array;
+			if (list.Count == 0) return null;
+			object first = list[0];
+			list.RemoveAt(0);
+			return first;
+		}
+		
+		
+		public static void csListInsert(object array, int index, object @value) {
+			global::System.Collections.IList list = (global::System.Collections.IList)array;
+			list.Insert(index, @value);
+		}
+		
+		
+		public static void csListRemoveAt(object array, int index) {
+			global::System.Collections.IList list = (global::System.Collections.IList)array;
+			list.RemoveAt(index);
 		}
 		
 		
@@ -349,7 +542,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("length");
 			baseArr.push("index");
 			baseArr.push("list");

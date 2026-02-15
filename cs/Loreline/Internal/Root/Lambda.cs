@@ -18,11 +18,11 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static bool exists<A>(object it, global::Loreline.Internal.Lang.Function f) {
+		public static bool exists(object it, global::Loreline.Internal.Lang.Function f) {
 			{
 				object x = ((object) (global::Loreline.Internal.Lang.Runtime.callField(it, "iterator", 328878574, null)) );
 				while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(x, "hasNext", 407283053, null))) {
-					A x1 = global::Loreline.Internal.Lang.Runtime.genericCast<A>(global::Loreline.Internal.Lang.Runtime.callField(x, "next", 1224901875, null));
+					object x1 = ((object) (global::Loreline.Internal.Lang.Runtime.callField(x, "next", 1224901875, null)) );
 					if (global::Loreline.Internal.Lang.Runtime.toBool(f.__hx_invoke1_o(default(double), x1))) {
 						return true;
 					}

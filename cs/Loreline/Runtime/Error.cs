@@ -25,10 +25,16 @@ namespace Loreline.Runtime {
 		
 		public global::Loreline.Runtime.Position pos;
 		
-		public global::Loreline.Internal.Root.Array<object> stack;
+		public global::Loreline.Internal.Root.Array stack;
 		
 		public virtual string toString() {
-			return global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("", this.message), " at "), this.pos.toString());
+			if (( this.pos != null )) {
+				return global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat(global::Loreline.Internal.Lang.Runtime.concat("", this.message), " at "), this.pos.toString());
+			}
+			else {
+				return this.message;
+			}
+			
 		}
 		
 		
@@ -37,7 +43,7 @@ namespace Loreline.Runtime {
 				switch (hash) {
 					case 67856200:
 					{
-						this.stack = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.stack = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -125,7 +131,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("stack");
 			baseArr.push("pos");
 			baseArr.push("message");

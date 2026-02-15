@@ -18,9 +18,9 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<object> toHaxe(global::System.Diagnostics.StackTrace native, global::Loreline.Internal.Lang.Null<int> skip) {
-			int skip1 = ( ( ! (skip.hasValue) ) ? (0) : ((skip).@value) );
-			global::Loreline.Internal.Root.Array<object> stack = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+		public static global::Loreline.Internal.Root.Array toHaxe(global::System.Diagnostics.StackTrace native, object skip) {
+			int skip1 = ( (( skip == default(object) )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(skip)) )) );
+			global::Loreline.Internal.Root.Array stack = new global::Loreline.Internal.Root.Array(new object[]{});
 			if (( native == null )) {
 				return stack;
 			}
@@ -45,7 +45,7 @@ namespace Loreline.Internal {
 					string fileName = frame.GetFileName();
 					int lineNumber = frame.GetFileLineNumber();
 					if (( ( fileName != null ) || ( lineNumber >= 0 ) )) {
-						stack.push(global::Loreline.Internal.StackItem.FilePos(method, fileName, lineNumber, default(global::Loreline.Internal.Lang.Null<int>)));
+						stack.push(global::Loreline.Internal.StackItem.FilePos(method, fileName, lineNumber, null));
 					}
 					else {
 						stack.push(method);

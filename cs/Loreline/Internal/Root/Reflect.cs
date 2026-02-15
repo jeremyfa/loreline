@@ -19,7 +19,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static bool hasField(object o, string field) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
 				return ( ihx.__hx_getField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field), false, true, false) != global::Loreline.Internal.Lang.Runtime.undefined );
 			}
@@ -29,7 +29,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static object field(object o, string field) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
 				return ihx.__hx_getField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field), false, false, false);
 			}
@@ -39,7 +39,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static void setField(object o, string field, object @value) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
 				ihx.__hx_setField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field), @value, false);
 			}
@@ -51,7 +51,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static object getProperty(object o, string field) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
 				return ihx.__hx_getField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field), false, false, true);
 			}
@@ -65,7 +65,7 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static void setProperty(object o, string field, object @value) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
 				ihx.__hx_setField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field), @value, true);
 			}
@@ -80,17 +80,26 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static object callMethod(object o, object func, global::Loreline.Internal.Root.Array args) {
-			object[] ret = new object[((int) (global::Loreline.Internal.Lang.Runtime.getField_f(args, "length", 520590566, true)) )];
-			global::Loreline.Internal.Cs.Lib.p_nativeArray<object>(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (args) ))) ), ((global::System.Array) (ret) ));
+			object[] ret = new object[args.length];
+			{
+				int _g = 0;
+				int _g1 = args.length;
+				while (( _g < _g1 )) {
+					int i = _g++;
+					ret[i] = args.__get(i);
+				}
+				
+			}
+			
 			object[] args1 = ret;
 			return (((global::Loreline.Internal.Lang.Function) (func) )).__hx_invokeDynamic(args1);
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> fields(object o) {
-			global::Loreline.Internal.Lang.IHxObject ihx = ( o as global::Loreline.Internal.Lang.IHxObject );
+		public static global::Loreline.Internal.Root.Array fields(object o) {
+			global::Loreline.Internal.Lang.IHxObject ihx = ((global::Loreline.Internal.Lang.IHxObject) (( o as global::Loreline.Internal.Lang.IHxObject )) );
 			if (( ihx != null )) {
-				global::Loreline.Internal.Root.Array<string> ret = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+				global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
 				ihx.__hx_getFields(ret);
 				return ret;
 			}
@@ -104,13 +113,13 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> instanceFields(global::System.Type c) {
+		public static global::Loreline.Internal.Root.Array instanceFields(global::System.Type c) {
 			global::System.Type c1 = ((global::System.Type) (c) );
-			global::Loreline.Internal.Root.Array<string> ret = new global::Loreline.Internal.Root.Array<string>(new string[]{});
-			global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Public, true);
-			global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Instance) ) ), true);
-			global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-			global::System.Reflection.FieldInfo[] mis = c1.GetFields(((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) ));
+			global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
+			object initial = global::System.Reflection.BindingFlags.Public;
+			object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Instance) ) );
+			object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+			global::System.Reflection.FieldInfo[] mis = c1.GetFields(((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) ));
 			{
 				int _g = 0;
 				int _g1 = ( mis as global::System.Array ).Length;
@@ -126,7 +135,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static int compare<T>(T a, T b) {
+		public static int compare(object a, object b) {
 			return global::Loreline.Internal.Lang.Runtime.compare(a, b);
 		}
 		

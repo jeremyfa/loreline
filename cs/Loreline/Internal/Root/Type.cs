@@ -154,8 +154,8 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -181,7 +181,7 @@ namespace Loreline.Internal.Root {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -210,8 +210,8 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -237,7 +237,7 @@ namespace Loreline.Internal.Root {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -292,7 +292,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static global::System.Type getClass<T>(T o) {
+		public static global::System.Type getClass(object o) {
 			if (( ( global::System.Object.ReferenceEquals(((object) (o) ), default(object)) || ( o is global::Loreline.Internal.Lang.DynamicObject ) ) || ( o is global::System.Type ) )) {
 				return null;
 			}
@@ -305,7 +305,7 @@ namespace Loreline.Internal.Root {
 			unchecked {
 				string ret = ((global::System.Type) (c) ).ToString();
 				if (( ( ret.Length > 10 ) && ret.StartsWith("global::Loreline.Internal.Root.") )) {
-					ret = global::Loreline.Internal.Lang.StringExt.substr(ret, 10, default(global::Loreline.Internal.Lang.Null<int>));
+					ret = global::Loreline.Internal.Lang.StringExt.substr(ret, 10, null);
 				}
 				
 				switch (ret) {
@@ -360,7 +360,7 @@ namespace Loreline.Internal.Root {
 			unchecked {
 				string ret = ((global::System.Type) (e) ).ToString();
 				if (( ( ret.Length > 10 ) && ret.StartsWith("global::Loreline.Internal.Root.") )) {
-					ret = global::Loreline.Internal.Lang.StringExt.substr(ret, 10, default(global::Loreline.Internal.Lang.Null<int>));
+					ret = global::Loreline.Internal.Lang.StringExt.substr(ret, 10, null);
 				}
 				
 				return ret;
@@ -370,7 +370,7 @@ namespace Loreline.Internal.Root {
 		
 		public static global::System.Type resolveClass(string name) {
 			unchecked {
-				if (( global::Loreline.Internal.Lang.StringExt.indexOf(name, ".", default(global::Loreline.Internal.Lang.Null<int>)) == -1 )) {
+				if (( global::Loreline.Internal.Lang.StringExt.indexOf(name, ".", null) == -1 )) {
 					name = global::Loreline.Internal.Lang.Runtime.concat("global::Loreline.Internal.Root.", name);
 				}
 				
@@ -434,24 +434,6 @@ namespace Loreline.Internal.Root {
 					}
 					
 				}
-				else if (( t.IsInterface && (((global::System.Type) (typeof(global::Loreline.Internal.Lang.IGenericObject)) )).IsAssignableFrom(((global::System.Type) (t) )) )) {
-					{
-						object[] _g_arr = ( t as global::System.Reflection.MemberInfo ).GetCustomAttributes(((bool) (true) ));
-						uint _g_idx = ((uint) (0) );
-						while (( _g_idx < ( _g_arr as global::System.Array ).Length )) {
-							_g_idx += ((uint) (1) );
-							object attr = ((object) (_g_arr[((int) (((uint) (( _g_idx - 1 )) )) )]) );
-							global::Loreline.Internal.Lang.GenericInterface g = ( ((object) (attr) ) as global::Loreline.Internal.Lang.GenericInterface );
-							if (( g != null )) {
-								return ((global::System.Type) (g.generic) );
-							}
-							
-						}
-						
-					}
-					
-					return ((global::System.Type) (t) );
-				}
 				else {
 					return ((global::System.Type) (t) );
 				}
@@ -460,9 +442,9 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static T createInstance<T>(global::System.Type cl, global::Loreline.Internal.Root.Array args) {
+		public static object createInstance(global::System.Type cl, global::Loreline.Internal.Root.Array args) {
 			if (global::System.Object.ReferenceEquals(((object) (cl) ), ((object) (typeof(string)) ))) {
-				return global::Loreline.Internal.Lang.Runtime.genericCast<T>(args[0]);
+				return args.__get(0);
 			}
 			
 			global::System.Type t = ((global::System.Type) (cl) );
@@ -472,21 +454,30 @@ namespace Loreline.Internal.Root {
 			
 			global::System.Reflection.ConstructorInfo[] ctors = t.GetConstructors();
 			int tmp = ( ctors as global::System.Array ).Length;
-			object[] ret = new object[((int) (global::Loreline.Internal.Lang.Runtime.getField_f(args, "length", 520590566, true)) )];
-			global::Loreline.Internal.Cs.Lib.p_nativeArray<object>(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (args) ))) ), ((global::System.Array) (ret) ));
-			return global::Loreline.Internal.Lang.Runtime.genericCast<T>(global::Loreline.Internal.Lang.Runtime.callMethod(null, ((global::System.Reflection.MethodBase[]) (ctors) ), tmp, ret));
+			object[] ret = new object[args.length];
+			{
+				int _g = 0;
+				int _g1 = args.length;
+				while (( _g < _g1 )) {
+					int i = _g++;
+					ret[i] = args.__get(i);
+				}
+				
+			}
+			
+			return global::Loreline.Internal.Lang.Runtime.callMethod(null, ((global::System.Reflection.MethodBase[]) (ctors) ), tmp, ret);
 		}
 		
 		
 		protected static readonly object[] __createEmptyInstance_EMPTY_ARGS = new object[]{((object) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) )};
 		
-		public static T createEmptyInstance<T>(global::System.Type cl) {
+		public static object createEmptyInstance(global::System.Type cl) {
 			global::System.Type t = ((global::System.Type) (cl) );
 			if (global::System.Object.ReferenceEquals(((object) (t) ), ((object) (typeof(string)) ))) {
-				return (T)(object)"";
+				return "";
 			}
 			
-			object res = null;
+			object res = default(object);
 			try {
 				res = global::System.Activator.CreateInstance(((global::System.Type) (t) ), ((object[]) (global::Loreline.Internal.Root.Type.__createEmptyInstance_EMPTY_ARGS) ));
 			}
@@ -495,22 +486,22 @@ namespace Loreline.Internal.Root {
 			}
 			
 			
-			return (T)res;
+			return res;
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> getInstanceFields(global::System.Type c) {
+		public static global::Loreline.Internal.Root.Array getInstanceFields(global::System.Type c) {
 			unchecked {
 				if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(string))) {
 					return global::Loreline.Internal.Lang.StringRefl.fields;
 				}
 				
 				global::System.Type c1 = ((global::System.Type) (c) );
-				global::Loreline.Internal.Root.Array<string> ret = new global::Loreline.Internal.Root.Array<string>(new string[]{});
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Public, true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Instance) ) ), true);
-				global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial2 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) ), true);
-				global::System.Reflection.MemberInfo[] mis = c1.GetMembers(((global::System.Reflection.BindingFlags) (( ( ! (initial2.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial2).@value) )) ));
+				global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
+				object initial = global::System.Reflection.BindingFlags.Public;
+				object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Instance) ) );
+				object initial2 = ( (((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.FlattenHierarchy) ) );
+				global::System.Reflection.MemberInfo[] mis = c1.GetMembers(((global::System.Reflection.BindingFlags) (( (( initial2 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial2) )) )) ));
 				{
 					int _g = 0;
 					int _g1 = ( mis as global::System.Array ).Length;
@@ -552,15 +543,15 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static global::Loreline.Internal.Root.Array<string> getClassFields(global::System.Type c) {
+		public static global::Loreline.Internal.Root.Array getClassFields(global::System.Type c) {
 			if (global::System.Object.ReferenceEquals(((object) (c) ), ((object) (typeof(string)) ))) {
-				return new global::Loreline.Internal.Root.Array<string>(new string[]{"fromCharCode"});
+				return new global::Loreline.Internal.Root.Array(new object[]{"fromCharCode"});
 			}
 			
-			global::Loreline.Internal.Root.Array<string> ret = new global::Loreline.Internal.Root.Array<string>(new string[]{});
-			global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(global::System.Reflection.BindingFlags.Public, true);
-			global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags> initial1 = new global::Loreline.Internal.Lang.Null<global::System.Reflection.BindingFlags>(( (((global::System.Reflection.BindingFlags) (( ( ! (initial.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial).@value) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Static) ) ), true);
-			global::System.Reflection.MemberInfo[] infos = ((global::System.Type) (c) ).GetMembers(((global::System.Reflection.BindingFlags) (( ( ! (initial1.hasValue) ) ? (default(global::System.Reflection.BindingFlags)) : ((initial1).@value) )) ));
+			global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
+			object initial = global::System.Reflection.BindingFlags.Public;
+			object initial1 = ( (((global::System.Reflection.BindingFlags) (( (( initial == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial) )) )) )) | ((global::System.Reflection.BindingFlags) (global::System.Reflection.BindingFlags.Static) ) );
+			global::System.Reflection.MemberInfo[] infos = ((global::System.Type) (c) ).GetMembers(((global::System.Reflection.BindingFlags) (( (( initial1 == default(object) )) ? (default(global::System.Reflection.BindingFlags)) : (((global::System.Reflection.BindingFlags) (initial1) )) )) ));
 			{
 				int _g = 0;
 				int _g1 = ( infos as global::System.Array ).Length;
@@ -584,7 +575,7 @@ namespace Loreline.Internal.Root {
 				return global::Loreline.Internal.Root.ValueType.TNull;
 			}
 			
-			global::System.Type t = ( v as global::System.Type );
+			global::System.Type t = ((global::System.Type) (( v as global::System.Type )) );
 			if ( ! (global::System.Object.ReferenceEquals(((object) (t) ), default(object))) ) {
 				return global::Loreline.Internal.Root.ValueType.TObject;
 			}
@@ -599,7 +590,7 @@ namespace Loreline.Internal.Root {
 			}
 			
 			if (t.IsValueType) {
-				global::System.IConvertible vc = ( ((object) (v) ) as global::System.IConvertible );
+				global::System.IConvertible vc = ((global::System.IConvertible) (( ((object) (v) ) as global::System.IConvertible )) );
 				if (( vc != null )) {
 					switch (vc.GetTypeCode()) {
 						case global::System.TypeCode.Boolean:
@@ -658,11 +649,11 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static bool enumEq<T>(T a, T b) {
-			if (global::Loreline.Internal.Lang.Runtime.eq(a, default(T))) {
-				return global::Loreline.Internal.Lang.Runtime.eq(b, default(T));
+		public static bool enumEq(object a, object b) {
+			if (global::Loreline.Internal.Lang.Runtime.eq(a, null)) {
+				return global::Loreline.Internal.Lang.Runtime.eq(b, null);
 			}
-			else if (global::Loreline.Internal.Lang.Runtime.eq(b, default(T))) {
+			else if (global::Loreline.Internal.Lang.Runtime.eq(b, null)) {
 				return false;
 			}
 			else {
@@ -685,7 +676,7 @@ namespace Loreline.Internal.Root {
 		
 		public static global::Loreline.Internal.Root.Array enumParameters(object e) {
 			if (( e is global::System.Enum )) {
-				return new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				return new global::Loreline.Internal.Root.Array(new object[]{});
 			}
 			else {
 				return (((global::Loreline.Internal.Lang.Enum) (e) )).getParams();

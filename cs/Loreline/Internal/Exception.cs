@@ -358,7 +358,7 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public virtual void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public virtual void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("__previousException");
 			baseArr.push("__nativeException");
 			baseArr.push("__skipStack");

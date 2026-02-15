@@ -3,57 +3,23 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds {
-	public class EnumValueMap<K, V> : global::Loreline.Internal.Ds.BalancedTree<K, V>, global::Loreline.Internal.Ds.EnumValueMap, global::Loreline.Internal.IMap<K, V> {
+	public class EnumValueMap : global::Loreline.Internal.Ds.BalancedTree, global::Loreline.Internal.IMap {
 		
 		public EnumValueMap(global::Loreline.Internal.Lang.EmptyObject empty) : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
 		}
 		
 		
 		public EnumValueMap() : base(global::Loreline.Internal.Lang.EmptyObject.EMPTY) {
-			global::Loreline.Internal.Ds.EnumValueMap<object, object>.__hx_ctor_haxe_ds_EnumValueMap<K, V>(((global::Loreline.Internal.Ds.EnumValueMap<K, V>) (this) ));
+			global::Loreline.Internal.Ds.EnumValueMap.__hx_ctor_haxe_ds_EnumValueMap(((global::Loreline.Internal.Ds.EnumValueMap) (this) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds_EnumValueMap<K_c, V_c>(global::Loreline.Internal.Ds.EnumValueMap<K_c, V_c> __hx_this) {
-			global::Loreline.Internal.Ds.BalancedTree<object, object>.__hx_ctor_haxe_ds_BalancedTree<K_c, V_c>(((global::Loreline.Internal.Ds.BalancedTree<K_c, V_c>) (__hx_this) ));
+		protected static void __hx_ctor_haxe_ds_EnumValueMap(global::Loreline.Internal.Ds.EnumValueMap __hx_this) {
+			global::Loreline.Internal.Ds.BalancedTree.__hx_ctor_haxe_ds_BalancedTree(((global::Loreline.Internal.Ds.BalancedTree) (__hx_this) ));
 		}
 		
 		
-		public static new object __hx_cast<K_c_c, V_c_c>(global::Loreline.Internal.Ds.EnumValueMap me) {
-			return ( (( me != null )) ? (me.haxe_ds_EnumValueMap_cast<K_c_c, V_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object haxe_ds_EnumValueMap_cast<K_c, V_c>() {
-			if (( global::Loreline.Internal.Lang.Runtime.eq(typeof(K), typeof(K_c)) && global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c)) )) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds.EnumValueMap<K_c, V_c> new_me = new global::Loreline.Internal.Ds.EnumValueMap<K_c, V_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public override object haxe_IMap_cast<K_c, V_c>() {
-			return this.haxe_ds_EnumValueMap_cast<K, V>();
-		}
-		
-		
-		public override object haxe_ds_BalancedTree_cast<K_c, V_c>() {
-			return this.haxe_ds_EnumValueMap_cast<K, V>();
-		}
-		
-		
-		public override int compare(K __temp_k11, K __temp_k22) {
-			object k2 = ((object) (__temp_k22) );
-			object k1 = ((object) (__temp_k11) );
+		public override int compare(object k1, object k2) {
 			int d = ( global::Loreline.Internal.Root.Type.enumIndex(k1) - global::Loreline.Internal.Root.Type.enumIndex(k2) );
 			if (( d != 0 )) {
 				return d;
@@ -61,7 +27,7 @@ namespace Loreline.Internal.Ds {
 			
 			global::Loreline.Internal.Root.Array p1 = global::Loreline.Internal.Root.Type.enumParameters(k1);
 			global::Loreline.Internal.Root.Array p2 = global::Loreline.Internal.Root.Type.enumParameters(k2);
-			if (( ( ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(p1, "length", 520590566, true)) ) == 0 ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(p2, "length", 520590566, true)) ) == 0 ) )) {
+			if (( ( p1.length == 0 ) && ( p2.length == 0 ) )) {
 				return 0;
 			}
 			
@@ -70,17 +36,17 @@ namespace Loreline.Internal.Ds {
 		
 		
 		public virtual int compareArgs(global::Loreline.Internal.Root.Array a1, global::Loreline.Internal.Root.Array a2) {
-			int ld = ( ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(a1, "length", 520590566, true)) ) - ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(a2, "length", 520590566, true)) ) );
+			int ld = ( a1.length - a2.length );
 			if (( ld != 0 )) {
 				return ld;
 			}
 			
 			{
 				int _g = 0;
-				int _g1 = ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(a1, "length", 520590566, true)) );
+				int _g1 = a1.length;
 				while (( _g < _g1 )) {
 					int i = _g++;
-					int d = this.compareArg(a1[i], a2[i]);
+					int d = this.compareArg(a1.__get(i), a2.__get(i));
 					if (( d != 0 )) {
 						return d;
 					}
@@ -95,13 +61,13 @@ namespace Loreline.Internal.Ds {
 		
 		public virtual int compareArg(object v1, object v2) {
 			if (( global::Loreline.Internal.Root.Reflect.isEnumValue(v1) && global::Loreline.Internal.Root.Reflect.isEnumValue(v2) )) {
-				return this.compare(global::Loreline.Internal.Lang.Runtime.genericCast<K>(v1), global::Loreline.Internal.Lang.Runtime.genericCast<K>(v2));
+				return this.compare(v1, v2);
 			}
 			else if (( ( v1 is global::Loreline.Internal.Root.Array ) && ( v2 is global::Loreline.Internal.Root.Array ) )) {
 				return this.compareArgs(((global::Loreline.Internal.Root.Array) (v1) ), ((global::Loreline.Internal.Root.Array) (v2) ));
 			}
 			else {
-				return global::Loreline.Internal.Root.Reflect.compare<object>(((object) (v1) ), ((object) (v2) ));
+				return global::Loreline.Internal.Root.Reflect.compare(((object) (v1) ), ((object) (v2) ));
 			}
 			
 		}
@@ -150,13 +116,13 @@ namespace Loreline.Internal.Ds {
 					
 					case 244830897:
 					{
-						return this.compareArg(dynargs[0], dynargs[1]);
+						return this.compareArg(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 910198946:
 					{
-						return this.compareArgs(((global::Loreline.Internal.Root.Array) (dynargs[0]) ), ((global::Loreline.Internal.Root.Array) (dynargs[1]) ));
+						return this.compareArgs(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[1]) )) ));
 					}
 					
 					
@@ -170,24 +136,6 @@ namespace Loreline.Internal.Ds {
 			}
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds.EnumValueMap<object, object>))]
-	public interface EnumValueMap : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Ds.BalancedTree, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds_EnumValueMap_cast<K_c, V_c>();
-		
-		object haxe_ds_BalancedTree_cast<K_c, V_c>();
-		
-		int compareArgs(global::Loreline.Internal.Root.Array a1, global::Loreline.Internal.Root.Array a2);
-		
-		int compareArg(object v1, object v2);
 		
 	}
 }

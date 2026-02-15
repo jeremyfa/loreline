@@ -170,7 +170,9 @@ namespace Loreline
                 return new InterpreterOptions
                 {
                     Functions = null,
-                    StrictAccess = false
+                    StrictAccess = false,
+                    CustomCreateFields = null,
+                    Translations = null
                 };
             }
 
@@ -186,9 +188,15 @@ namespace Loreline
             public bool StrictAccess;
 
             /// <summary>
-            /// A custom instanciator to create fields objects.
+            /// A custom instantiator to create fields objects.
             /// </summary>
             public CreateFields CustomCreateFields;
+
+            /// <summary>
+            /// Optional translations map for localization.
+            /// Built from a parsed translation file using Engine.ExtractTranslations().
+            /// </summary>
+            public object Translations;
         }
 
         /// <summary>
@@ -226,7 +234,7 @@ namespace Loreline
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
-            Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
+            Internal.Ds.StringMap functionsWrap = WrapFunctions(this, options.Functions);
             CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
 
             RuntimeInterpreter = new Runtime.Interpreter(
@@ -234,7 +242,7 @@ namespace Loreline
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, null, null)
             );
         }
 
@@ -257,15 +265,16 @@ namespace Loreline
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
-            Internal.Ds.StringMap<object> functionsWrap = WrapFunctions(this, options.Functions);
+            Internal.Ds.StringMap functionsWrap = WrapFunctions(this, options.Functions);
             CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
+            Internal.Ds.StringMap translationsWrap = WrapTranslations(options.Translations);
 
             RuntimeInterpreter = new Runtime.Interpreter(
                 script.RuntimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, translationsWrap, null)
             );
         }
 
@@ -332,12 +341,12 @@ namespace Loreline
             return RuntimeInterpreter.getCharacterField(character, name);
         }
 
-        private static TextTag[] WrapTags(Internal.Root.Array<Runtime.TextTag> rawTags)
+        private static TextTag[] WrapTags(Internal.Root.Array rawTags)
         {
             TextTag[] tags = new TextTag[rawTags.length];
             for (int i = 0; i < rawTags.length; i++)
             {
-                Runtime.TextTag rawTag = rawTags.__a[i];
+                Runtime.TextTag rawTag = (Runtime.TextTag)rawTags.__a[i];
                 tags[i] = new TextTag
                 {
                     Closing = rawTag.closing,
@@ -348,12 +357,12 @@ namespace Loreline
             return tags;
         }
 
-        private static ChoiceOption[] WrapChoiceOptions(Internal.Root.Array<Runtime.ChoiceOption> rawOptions)
+        private static ChoiceOption[] WrapChoiceOptions(Internal.Root.Array rawOptions)
         {
             ChoiceOption[] options = new ChoiceOption[rawOptions.length];
             for (int i = 0; i < rawOptions.length; i++)
             {
-                Runtime.ChoiceOption rawOption = rawOptions.__a[i];
+                Runtime.ChoiceOption rawOption = (Runtime.ChoiceOption)rawOptions.__a[i];
                 options[i] = new ChoiceOption
                 {
                     Text = rawOption.text,
@@ -364,11 +373,11 @@ namespace Loreline
             return options;
         }
 
-        private static Internal.Ds.StringMap<object> WrapFunctions(Interpreter interpreter, Dictionary<string, Function> functions)
+        private static Internal.Ds.StringMap WrapFunctions(Interpreter interpreter, Dictionary<string, Function> functions)
         {
             if (functions == null) return null;
 
-            Internal.Ds.StringMap<object> result = new Internal.Ds.StringMap<object>();
+            Internal.Ds.StringMap result = new Internal.Ds.StringMap();
 
             foreach (KeyValuePair<string, Function> pair in functions)
             {
@@ -383,6 +392,15 @@ namespace Loreline
             if (createFields == null) return null;
 
             return new CreateFieldsWrap(interpreter, createFields);
+        }
+
+        private static Internal.Ds.StringMap WrapTranslations(object translations)
+        {
+            if (translations == null) return null;
+
+            // Translations is an opaque object returned by Engine.ExtractTranslations(),
+            // which is already a StringMap internally.
+            return (Internal.Ds.StringMap)translations;
         }
 
         private class FunctionWrap : Internal.Lang.Function
@@ -437,7 +455,7 @@ namespace Loreline
                     Interpreter = interpreter,
                     Character = (string)__fn_dyn2,
                     Text = (string)__fn_dyn3,
-                    Tags = WrapTags((Internal.Root.Array<Runtime.TextTag>)__fn_dyn4),
+                    Tags = WrapTags((Internal.Root.Array)__fn_dyn4),
                     Callback = () =>
                     {
                         ((Internal.Lang.Function)__fn_dyn5).__hx_invoke0_o();
@@ -462,7 +480,7 @@ namespace Loreline
                 handler(new Choice
                 {
                     Interpreter = interpreter,
-                    Options = WrapChoiceOptions((Internal.Root.Array<Runtime.ChoiceOption>)__fn_dyn2),
+                    Options = WrapChoiceOptions((Internal.Root.Array)__fn_dyn2),
                     Callback = (int index) =>
                     {
                         ((Internal.Lang.Function)__fn_dyn3).__hx_invoke1_o((double)index, Internal.Lang.Runtime.undefined);

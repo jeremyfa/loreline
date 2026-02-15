@@ -109,7 +109,7 @@ namespace Loreline.Internal {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("value");
 			base.__hx_getFields(baseArr);
 		}

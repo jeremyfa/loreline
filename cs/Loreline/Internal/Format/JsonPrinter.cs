@@ -67,7 +67,7 @@ namespace Loreline.Internal.Format {
 						{
 							double f = ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(v)) );
 							string v1 = ( ((  ! (global::System.Double.IsInfinity(((double) (f) )))  &&  ! (global::System.Double.IsNaN(((double) (f) )))  )) ? (global::Loreline.Internal.Root.Std.@string(v)) : ("null") );
-							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v1)) ));
+							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v1) ))) ));
 							break;
 						}
 						
@@ -99,10 +99,10 @@ namespace Loreline.Internal.Format {
 							if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(string))) {
 								this.quote(global::Loreline.Internal.Lang.Runtime.toString(v));
 							}
-							else if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(global::Loreline.Internal.Root.Array<object>))) {
+							else if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(global::Loreline.Internal.Root.Array))) {
 								global::Loreline.Internal.Root.Array v2 = ((global::Loreline.Internal.Root.Array) (v) );
 								this.buf.addChar(91);
-								int len = ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(v2, "length", 520590566, true)) );
+								int len = v2.length;
 								int last = ( len - 1 );
 								{
 									int _g1 = 0;
@@ -122,10 +122,10 @@ namespace Loreline.Internal.Format {
 										
 										if (this.pretty) {
 											string v3 = global::Loreline.Internal.Root.StringTools.lpad("", this.indent, ( this.nind * this.indent.Length ));
-											this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v3)) ));
+											this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v3) ))) ));
 										}
 										
-										this.write(i, v2[i]);
+										this.write(i, v2.__get(i));
 										if (( i == last )) {
 											this.nind--;
 											if (this.pretty) {
@@ -134,7 +134,7 @@ namespace Loreline.Internal.Format {
 											
 											if (this.pretty) {
 												string v4 = global::Loreline.Internal.Root.StringTools.lpad("", this.indent, ( this.nind * this.indent.Length ));
-												this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v4)) ));
+												this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v4) ))) ));
 											}
 											
 										}
@@ -145,14 +145,14 @@ namespace Loreline.Internal.Format {
 								
 								this.buf.addChar(93);
 							}
-							else if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(global::Loreline.Internal.Ds.StringMap<object>))) {
+							else if (global::Loreline.Internal.Lang.Runtime.refEq(c, typeof(global::Loreline.Internal.Ds.StringMap))) {
 								global::Loreline.Internal.Ds.StringMap v5 = ((global::Loreline.Internal.Ds.StringMap) (v) );
 								object o = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{}, new double[]{});
 								{
-									object k1 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator<object>(((global::Loreline.Internal.Ds.StringMap<object>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.StringMap) (v5) ))) ))) );
+									object k1 = ((object) (new global::Loreline.Internal.Ds._StringMap.StringMapKeyIterator(((global::Loreline.Internal.Ds.StringMap) (v5) ))) );
 									while (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.callField(k1, "hasNext", 407283053, null))) {
 										string k2 = global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.callField(k1, "next", 1224901875, null));
-										global::Loreline.Internal.Root.Reflect.setField(o, k2, ((object) (global::Loreline.Internal.Lang.Runtime.callField(v5, "get", 5144726, new object[]{k2})) ));
+										global::Loreline.Internal.Root.Reflect.setField(o, k2, v5.@get(((string) (k2) )));
 									}
 									
 								}
@@ -182,7 +182,7 @@ namespace Loreline.Internal.Format {
 								int i1 = global::Loreline.Internal.Root.Type.enumIndex(v);
 								{
 									string v8 = global::Loreline.Internal.Root.Std.@string(i1);
-									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v8)) ));
+									this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v8) ))) ));
 								}
 								
 							}
@@ -207,11 +207,11 @@ namespace Loreline.Internal.Format {
 		
 		
 		public virtual void classString(object v) {
-			this.fieldsString(v, global::Loreline.Internal.Root.Type.getInstanceFields(global::Loreline.Internal.Root.Type.getClass<object>(((object) (v) ))));
+			this.fieldsString(v, global::Loreline.Internal.Root.Type.getInstanceFields(global::Loreline.Internal.Root.Type.getClass(((object) (v) ))));
 		}
 		
 		
-		public virtual void fieldsString(object v, global::Loreline.Internal.Root.Array<string> fields) {
+		public virtual void fieldsString(object v, global::Loreline.Internal.Root.Array fields) {
 			unchecked {
 				this.buf.addChar(123);
 				int len = fields.length;
@@ -221,7 +221,7 @@ namespace Loreline.Internal.Format {
 					int _g1 = len;
 					while (( _g < _g1 )) {
 						int i = _g++;
-						string f = fields[i];
+						string f = global::Loreline.Internal.Lang.Runtime.toString(fields.__get(i));
 						object @value = global::Loreline.Internal.Root.Reflect.field(v, f);
 						if (( ((object) (@value) ) is global::Loreline.Internal.Lang.Function )) {
 							continue;
@@ -241,7 +241,7 @@ namespace Loreline.Internal.Format {
 						
 						if (this.pretty) {
 							string v1 = global::Loreline.Internal.Root.StringTools.lpad("", this.indent, ( this.nind * this.indent.Length ));
-							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v1)) ));
+							this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v1) ))) ));
 						}
 						
 						this.quote(f);
@@ -263,7 +263,7 @@ namespace Loreline.Internal.Format {
 					
 					if (this.pretty) {
 						string v2 = global::Loreline.Internal.Root.StringTools.lpad("", this.indent, ( this.nind * this.indent.Length ));
-						this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(v2)) ));
+						this.buf.b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (v2) ))) ));
 					}
 					
 				}
@@ -508,28 +508,28 @@ namespace Loreline.Internal.Format {
 				switch (hash) {
 					case 1576149820:
 					{
-						this.quote(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						this.quote(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 						break;
 					}
 					
 					
 					case 878103594:
 					{
-						this.fieldsString(dynargs[0], ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (dynargs[1]) ))) ));
+						this.fieldsString(((object) (dynargs[0]) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 142151465:
 					{
-						this.classString(dynargs[0]);
+						this.classString(((object) (dynargs[0]) ));
 						break;
 					}
 					
 					
 					case 1348037855:
 					{
-						this.write(dynargs[0], dynargs[1]);
+						this.write(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 						break;
 					}
 					
@@ -546,7 +546,7 @@ namespace Loreline.Internal.Format {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("nind");
 			baseArr.push("pretty");
 			baseArr.push("indent");

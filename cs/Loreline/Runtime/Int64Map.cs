@@ -3,15 +3,15 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Int64Map<V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Runtime.Int64Map {
+	public class Int64Map : global::Loreline.Internal.Lang.HxObject {
 		
 		static bool __hx_init_called = false;
 		static Int64Map() {
-			if(global::Loreline.Runtime.Int64Map<object>.__hx_init_called) return;
-			global::Loreline.Runtime.Int64Map<object>.__hx_init_called = true;
+			if(global::Loreline.Runtime.Int64Map.__hx_init_called) return;
+			global::Loreline.Runtime.Int64Map.__hx_init_called = true;
 			unchecked{
-				global::Loreline.Runtime.Int64Map<object>.INITIAL_SIZE = 16;
-				global::Loreline.Runtime.Int64Map<object>.LOAD_FACTOR = 0.75;
+				global::Loreline.Runtime.Int64Map.INITIAL_SIZE = 16;
+				global::Loreline.Runtime.Int64Map.LOAD_FACTOR = 0.75;
 			}
 			
 		}
@@ -22,11 +22,11 @@ namespace Loreline.Runtime {
 		
 		
 		public Int64Map() {
-			global::Loreline.Runtime.Int64Map<object>.__hx_ctor_loreline_Int64Map<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
+			global::Loreline.Runtime.Int64Map.__hx_ctor_loreline_Int64Map(((global::Loreline.Runtime.Int64Map) (this) ));
 		}
 		
 		
-		protected static void __hx_ctor_loreline_Int64Map<V_c>(global::Loreline.Runtime.Int64Map<V_c> __hx_this) {
+		protected static void __hx_ctor_loreline_Int64Map(global::Loreline.Runtime.Int64Map __hx_this) {
 			unchecked {
 				__hx_this.mask = 0;
 				__hx_this.size = 0;
@@ -48,8 +48,8 @@ namespace Loreline.Runtime {
 							int _g1 = ( ((int[]) (oldK1) ) as global::System.Array ).Length;
 							while (( _g < _g1 )) {
 								int i = _g++;
-								if (( ((object[]) (oldVals) )[i] != null )) {
-									__hx_this._set(((int[]) (oldK1) )[i], ((int[]) (oldK2) )[i], global::Loreline.Internal.Lang.Runtime.genericCast<V_c>(((object) (((object[]) (oldVals) )[i]) )));
+								if (( ((object) (((object[]) (oldVals) )[i]) ) != null )) {
+									__hx_this._set(((int) (((int[]) (oldK1) )[i]) ), ((int) (((int[]) (oldK2) )[i]) ), ((object) (((object[]) (oldVals) )[i]) ));
 								}
 								
 							}
@@ -64,31 +64,9 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static object __hx_cast<V_c_c>(global::Loreline.Runtime.Int64Map me) {
-			return ( (( me != null )) ? (me.loreline_Int64Map_cast<V_c_c>()) : default(object) );
-		}
-		
-		
 		public static int INITIAL_SIZE;
 		
 		public static double LOAD_FACTOR;
-		
-		public virtual object loreline_Int64Map_cast<V_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c))) {
-				return this;
-			}
-			
-			global::Loreline.Runtime.Int64Map<V_c> new_me = new global::Loreline.Runtime.Int64Map<V_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
 		
 		public int[] _keys1;
 		
@@ -116,8 +94,8 @@ namespace Loreline.Runtime {
 						int _g1 = ( ((int[]) (oldK1) ) as global::System.Array ).Length;
 						while (( _g < _g1 )) {
 							int i = _g++;
-							if (( ((object[]) (oldVals) )[i] != null )) {
-								this._set(((int[]) (oldK1) )[i], ((int[]) (oldK2) )[i], global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (((object[]) (oldVals) )[i]) )));
+							if (( ((object) (((object[]) (oldVals) )[i]) ) != null )) {
+								this._set(((int) (((int[]) (oldK1) )[i]) ), ((int) (((int[]) (oldK2) )[i]) ), ((object) (((object[]) (oldVals) )[i]) ));
 							}
 							
 						}
@@ -160,8 +138,8 @@ namespace Loreline.Runtime {
 							int _g1 = ( ((int[]) (oldK1) ) as global::System.Array ).Length;
 							while (( _g < _g1 )) {
 								int i = _g++;
-								if (( ((object[]) (oldVals) )[i] != null )) {
-									this._set(((int[]) (oldK1) )[i], ((int[]) (oldK2) )[i], global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (((object[]) (oldVals) )[i]) )));
+								if (( ((object) (((object[]) (oldVals) )[i]) ) != null )) {
+									this._set(((int) (((int[]) (oldK1) )[i]) ), ((int) (((int[]) (oldK2) )[i]) ), ((object) (((object[]) (oldVals) )[i]) ));
 								}
 								
 							}
@@ -177,8 +155,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Runtime.Int64Map<V> copy() {
-			global::Loreline.Runtime.Int64Map<V> result = new global::Loreline.Runtime.Int64Map<V>();
+		public virtual global::Loreline.Runtime.Int64Map copy() {
+			global::Loreline.Runtime.Int64Map result = new global::Loreline.Runtime.Int64Map();
 			int[] this1 = this._keys1;
 			int[] r = ((int[]) (new int[( ((int[]) (this1) ) as global::System.Array ).Length]) );
 			global::System.Array.Copy(((global::System.Array) (this1) ), ((int) (0) ), ((global::System.Array) (r) ), ((int) (0) ), ((int) (( ((int[]) (this1) ) as global::System.Array ).Length) ));
@@ -197,7 +175,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual void _set(int high, int low, V @value) {
+		public virtual void _set(int high, int low, object @value) {
 			unchecked {
 				if (( this.size >= ( (( this.mask + 1 )) * 0.75 ) )) {
 					int newCapacity = ( ( this.mask + 1 ) << 1 );
@@ -215,8 +193,8 @@ namespace Loreline.Runtime {
 							int _g1 = ( ((int[]) (oldK1) ) as global::System.Array ).Length;
 							while (( _g < _g1 )) {
 								int i = _g++;
-								if (( ((object[]) (oldVals) )[i] != null )) {
-									this._set(((int[]) (oldK1) )[i], ((int[]) (oldK2) )[i], global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (((object[]) (oldVals) )[i]) )));
+								if (( ((object) (((object[]) (oldVals) )[i]) ) != null )) {
+									this._set(((int) (((int[]) (oldK1) )[i]) ), ((int) (((int[]) (oldK2) )[i]) ), ((object) (((object[]) (oldVals) )[i]) ));
 								}
 								
 							}
@@ -233,7 +211,7 @@ namespace Loreline.Runtime {
 				int hash = ( h ^ ((int) (( ((uint) (h) ) >> 16 )) ) );
 				int index = ( hash & this.mask );
 				while (true) {
-					if (( ((object[]) (this._values) )[index] == null )) {
+					if (( ((object) (((object[]) (this._values) )[index]) ) == null )) {
 						((int[]) (this._keys1) )[index] = high;
 						((int[]) (this._keys2) )[index] = low;
 						((object[]) (this._values) )[index] = @value;
@@ -241,7 +219,7 @@ namespace Loreline.Runtime {
 						return;
 					}
 					
-					if (( ( ((int[]) (this._keys1) )[index] == high ) && ( ((int[]) (this._keys2) )[index] == low ) )) {
+					if (( ( ((int) (((int[]) (this._keys1) )[index]) ) == high ) && ( ((int) (((int[]) (this._keys2) )[index]) ) == low ) )) {
 						((object[]) (this._values) )[index] = @value;
 						return;
 					}
@@ -253,7 +231,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Lang.Null<V> _get(int high, int low) {
+		public virtual object _get(int high, int low) {
 			unchecked {
 				int h = ( high + (( low << 16 )) );
 				h = ( (( h ^ ((int) (( ((uint) (h) ) >> 16 )) ) )) * -2048144789 );
@@ -261,18 +239,18 @@ namespace Loreline.Runtime {
 				int hash = ( h ^ ((int) (( ((uint) (h) ) >> 16 )) ) );
 				int index = ( hash & this.mask );
 				while (true) {
-					if (( ((object[]) (this._values) )[index] == null )) {
-						return default(global::Loreline.Internal.Lang.Null<V>);
+					if (( ((object) (((object[]) (this._values) )[index]) ) == null )) {
+						return null;
 					}
 					
-					if (( ( ((int[]) (this._keys1) )[index] == high ) && ( ((int[]) (this._keys2) )[index] == low ) )) {
-						return global::Loreline.Internal.Lang.Null<object>.ofDynamic<V>(((object) (((object[]) (this._values) )[index]) ));
+					if (( ( ((int) (((int[]) (this._keys1) )[index]) ) == high ) && ( ((int) (((int[]) (this._keys2) )[index]) ) == low ) )) {
+						return ((object) (((object[]) (this._values) )[index]) );
 					}
 					
 					index = ( ( index + 1 ) & this.mask );
 				}
 				
-				return default(global::Loreline.Internal.Lang.Null<V>);
+				return default(object);
 			}
 		}
 		
@@ -285,11 +263,11 @@ namespace Loreline.Runtime {
 				int hash = ( h ^ ((int) (( ((uint) (h) ) >> 16 )) ) );
 				int index = ( hash & this.mask );
 				while (true) {
-					if (( ((object[]) (this._values) )[index] == null )) {
+					if (( ((object) (((object[]) (this._values) )[index]) ) == null )) {
 						return false;
 					}
 					
-					if (( ( ((int[]) (this._keys1) )[index] == high ) && ( ((int[]) (this._keys2) )[index] == low ) )) {
+					if (( ( ((int) (((int[]) (this._keys1) )[index]) ) == high ) && ( ((int) (((int[]) (this._keys2) )[index]) ) == low ) )) {
 						return true;
 					}
 					
@@ -309,11 +287,11 @@ namespace Loreline.Runtime {
 				int hash = ( h ^ ((int) (( ((uint) (h) ) >> 16 )) ) );
 				int index = ( hash & this.mask );
 				while (true) {
-					if (( ((object[]) (this._values) )[index] == null )) {
+					if (( ((object) (((object[]) (this._values) )[index]) ) == null )) {
 						return false;
 					}
 					
-					if (( ( ((int[]) (this._keys1) )[index] == high ) && ( ((int[]) (this._keys2) )[index] == low ) )) {
+					if (( ( ((int) (((int[]) (this._keys1) )[index]) ) == high ) && ( ((int) (((int[]) (this._keys2) )[index]) ) == low ) )) {
 						{
 							object val = null;
 							((object[]) (this._values) )[index] = val;
@@ -321,17 +299,17 @@ namespace Loreline.Runtime {
 						
 						this.size--;
 						index = ( ( index + 1 ) & this.mask );
-						while (( ((object[]) (this._values) )[index] != null )) {
-							int k1 = ((int[]) (this._keys1) )[index];
-							int k2 = ((int[]) (this._keys2) )[index];
-							object v = ((object[]) (this._values) )[index];
+						while (( ((object) (((object[]) (this._values) )[index]) ) != null )) {
+							int k1 = ((int) (((int[]) (this._keys1) )[index]) );
+							int k2 = ((int) (((int[]) (this._keys2) )[index]) );
+							object v = ((object) (((object[]) (this._values) )[index]) );
 							{
 								object val1 = null;
 								((object[]) (this._values) )[index] = val1;
 							}
 							
 							this.size--;
-							this._set(k1, k2, global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (v) )));
+							this._set(k1, k2, ((object) (v) ));
 							index = ( ( index + 1 ) & this.mask );
 						}
 						
@@ -346,18 +324,18 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public global::Loreline.Runtime._Int64Map.Int64MapIterator<V> iterator() {
-			return new global::Loreline.Runtime._Int64Map.Int64MapIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
+		public global::Loreline.Runtime._Int64Map.Int64MapIterator iterator() {
+			return new global::Loreline.Runtime._Int64Map.Int64MapIterator(((global::Loreline.Runtime.Int64Map) (this) ));
 		}
 		
 		
-		public global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V> keyIterator() {
-			return new global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
+		public global::Loreline.Runtime._Int64Map.Int64MapKeyIterator keyIterator() {
+			return new global::Loreline.Runtime._Int64Map.Int64MapKeyIterator(((global::Loreline.Runtime.Int64Map) (this) ));
 		}
 		
 		
-		public global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V> keyValueIterator() {
-			return new global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V>(((global::Loreline.Runtime.Int64Map<V>) (this) ));
+		public global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator keyValueIterator() {
+			return new global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator(((global::Loreline.Runtime.Int64Map) (this) ));
 		}
 		
 		
@@ -614,25 +592,25 @@ namespace Loreline.Runtime {
 					
 					case 1929358819:
 					{
-						return this._remove(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this._remove(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
 					case 777465723:
 					{
-						return this._exists(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this._exists(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
 					case 1058653591:
 					{
-						return (this._get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ))).toDynamic();
+						return this._get(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
 					case 1059250339:
 					{
-						this._set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), global::Loreline.Internal.Lang.Runtime.genericCast<V>(dynargs[2]));
+						this._set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((object) (dynargs[2]) ));
 						break;
 					}
 					
@@ -652,13 +630,13 @@ namespace Loreline.Runtime {
 					
 					case 523507340:
 					{
-						return this.hashCoords(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this.hashCoords(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
 					case 142301684:
 					{
-						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.resize(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
@@ -675,7 +653,7 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("mask");
 			baseArr.push("size");
 			baseArr.push("_values");
@@ -691,80 +669,34 @@ namespace Loreline.Runtime {
 
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Runtime.Int64Map<object>))]
-	public interface Int64Map : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object loreline_Int64Map_cast<V_c>();
-		
-		void resize(int newCapacity);
-		
-		int hashCoords(int high, int low);
-		
-		void clear();
-		
-		bool _exists(int high, int low);
-		
-		bool _remove(int high, int low);
-		
-		int length();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime._Int64Map {
-	public class Int64MapIterator<V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Runtime._Int64Map.Int64MapIterator {
+	public class Int64MapIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public Int64MapIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public Int64MapIterator(global::Loreline.Runtime.Int64Map<V> map) {
-			global::Loreline.Runtime._Int64Map.Int64MapIterator<object>.__hx_ctor_loreline__Int64Map_Int64MapIterator<V>(((global::Loreline.Runtime._Int64Map.Int64MapIterator<V>) (this) ), ((global::Loreline.Runtime.Int64Map<V>) (map) ));
+		public Int64MapIterator(global::Loreline.Runtime.Int64Map map) {
+			global::Loreline.Runtime._Int64Map.Int64MapIterator.__hx_ctor_loreline__Int64Map_Int64MapIterator(((global::Loreline.Runtime._Int64Map.Int64MapIterator) (this) ), ((global::Loreline.Runtime.Int64Map) (map) ));
 		}
 		
 		
-		protected static void __hx_ctor_loreline__Int64Map_Int64MapIterator<V_c>(global::Loreline.Runtime._Int64Map.Int64MapIterator<V_c> __hx_this, global::Loreline.Runtime.Int64Map<V_c> map) {
+		protected static void __hx_ctor_loreline__Int64Map_Int64MapIterator(global::Loreline.Runtime._Int64Map.Int64MapIterator __hx_this, global::Loreline.Runtime.Int64Map map) {
 			__hx_this.map = map;
 			__hx_this.index = 0;
-			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (__hx_this.map._values) )[__hx_this.index] == null ) )) {
+			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (__hx_this.map._values) )[__hx_this.index]) ) == null ) )) {
 				__hx_this.index++;
 			}
 			
 		}
 		
 		
-		public static object __hx_cast<V_c_c>(global::Loreline.Runtime._Int64Map.Int64MapIterator me) {
-			return ( (( me != null )) ? (me.loreline__Int64Map_Int64MapIterator_cast<V_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object loreline__Int64Map_Int64MapIterator_cast<V_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c))) {
-				return this;
-			}
-			
-			global::Loreline.Runtime._Int64Map.Int64MapIterator<V_c> new_me = new global::Loreline.Runtime._Int64Map.Int64MapIterator<V_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Runtime.Int64Map<V> map;
+		public global::Loreline.Runtime.Int64Map map;
 		
 		public int index;
 		
 		public void skipNulls() {
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
@@ -776,14 +708,14 @@ namespace Loreline.Runtime._Int64Map {
 		}
 		
 		
-		public V next() {
-			object v = ((object[]) (this.map._values) )[this.index];
+		public object next() {
+			object v = ((object) (((object[]) (this.map._values) )[this.index]) );
 			this.index++;
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
-			return global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (v) ));
+			return ((object) (v) );
 		}
 		
 		
@@ -820,7 +752,7 @@ namespace Loreline.Runtime._Int64Map {
 					
 					case 5442204:
 					{
-						this.map = ((global::Loreline.Runtime.Int64Map<V>) (global::Loreline.Runtime.Int64Map<object>.__hx_cast<V>(((global::Loreline.Runtime.Int64Map) (@value) ))) );
+						this.map = ((global::Loreline.Runtime.Int64Map) (@value) );
 						return @value;
 					}
 					
@@ -934,7 +866,7 @@ namespace Loreline.Runtime._Int64Map {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("index");
 			baseArr.push("map");
 			base.__hx_getFields(baseArr);
@@ -948,71 +880,33 @@ namespace Loreline.Runtime._Int64Map {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime._Int64Map {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Runtime._Int64Map.Int64MapIterator<object>))]
-	public interface Int64MapIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object loreline__Int64Map_Int64MapIterator_cast<V_c>();
-		
-		void skipNulls();
-		
-		bool hasNext();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime._Int64Map {
-	public class Int64MapKeyIterator<V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Runtime._Int64Map.Int64MapKeyIterator {
+	public class Int64MapKeyIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public Int64MapKeyIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public Int64MapKeyIterator(global::Loreline.Runtime.Int64Map<V> map) {
-			global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<object>.__hx_ctor_loreline__Int64Map_Int64MapKeyIterator<V>(((global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V>) (this) ), ((global::Loreline.Runtime.Int64Map<V>) (map) ));
+		public Int64MapKeyIterator(global::Loreline.Runtime.Int64Map map) {
+			global::Loreline.Runtime._Int64Map.Int64MapKeyIterator.__hx_ctor_loreline__Int64Map_Int64MapKeyIterator(((global::Loreline.Runtime._Int64Map.Int64MapKeyIterator) (this) ), ((global::Loreline.Runtime.Int64Map) (map) ));
 		}
 		
 		
-		protected static void __hx_ctor_loreline__Int64Map_Int64MapKeyIterator<V_c>(global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V_c> __hx_this, global::Loreline.Runtime.Int64Map<V_c> map) {
+		protected static void __hx_ctor_loreline__Int64Map_Int64MapKeyIterator(global::Loreline.Runtime._Int64Map.Int64MapKeyIterator __hx_this, global::Loreline.Runtime.Int64Map map) {
 			__hx_this.map = map;
 			__hx_this.index = 0;
-			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (__hx_this.map._values) )[__hx_this.index] == null ) )) {
+			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (__hx_this.map._values) )[__hx_this.index]) ) == null ) )) {
 				__hx_this.index++;
 			}
 			
 		}
 		
 		
-		public static object __hx_cast<V_c_c>(global::Loreline.Runtime._Int64Map.Int64MapKeyIterator me) {
-			return ( (( me != null )) ? (me.loreline__Int64Map_Int64MapKeyIterator_cast<V_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object loreline__Int64Map_Int64MapKeyIterator_cast<V_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c))) {
-				return this;
-			}
-			
-			global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V_c> new_me = new global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<V_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Runtime.Int64Map<V> map;
+		public global::Loreline.Runtime.Int64Map map;
 		
 		public int index;
 		
 		public void skipNulls() {
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
@@ -1025,10 +919,10 @@ namespace Loreline.Runtime._Int64Map {
 		
 		
 		public object next() {
-			int k1 = ((int[]) (this.map._keys1) )[this.index];
-			int k2 = ((int[]) (this.map._keys2) )[this.index];
+			int k1 = ((int) (((int[]) (this.map._keys1) )[this.index]) );
+			int k2 = ((int) (((int[]) (this.map._keys2) )[this.index]) );
 			this.index++;
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
@@ -1069,7 +963,7 @@ namespace Loreline.Runtime._Int64Map {
 					
 					case 5442204:
 					{
-						this.map = ((global::Loreline.Runtime.Int64Map<V>) (global::Loreline.Runtime.Int64Map<object>.__hx_cast<V>(((global::Loreline.Runtime.Int64Map) (@value) ))) );
+						this.map = ((global::Loreline.Runtime.Int64Map) (@value) );
 						return @value;
 					}
 					
@@ -1183,7 +1077,7 @@ namespace Loreline.Runtime._Int64Map {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("index");
 			baseArr.push("map");
 			base.__hx_getFields(baseArr);
@@ -1197,73 +1091,33 @@ namespace Loreline.Runtime._Int64Map {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime._Int64Map {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Runtime._Int64Map.Int64MapKeyIterator<object>))]
-	public interface Int64MapKeyIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object loreline__Int64Map_Int64MapKeyIterator_cast<V_c>();
-		
-		void skipNulls();
-		
-		bool hasNext();
-		
-		object next();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime._Int64Map {
-	public class Int64MapKeyValueIterator<V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator {
+	public class Int64MapKeyValueIterator : global::Loreline.Internal.Lang.HxObject {
 		
 		public Int64MapKeyValueIterator(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public Int64MapKeyValueIterator(global::Loreline.Runtime.Int64Map<V> map) {
-			global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<object>.__hx_ctor_loreline__Int64Map_Int64MapKeyValueIterator<V>(((global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V>) (this) ), ((global::Loreline.Runtime.Int64Map<V>) (map) ));
+		public Int64MapKeyValueIterator(global::Loreline.Runtime.Int64Map map) {
+			global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator.__hx_ctor_loreline__Int64Map_Int64MapKeyValueIterator(((global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator) (this) ), ((global::Loreline.Runtime.Int64Map) (map) ));
 		}
 		
 		
-		protected static void __hx_ctor_loreline__Int64Map_Int64MapKeyValueIterator<V_c>(global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V_c> __hx_this, global::Loreline.Runtime.Int64Map<V_c> map) {
+		protected static void __hx_ctor_loreline__Int64Map_Int64MapKeyValueIterator(global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator __hx_this, global::Loreline.Runtime.Int64Map map) {
 			__hx_this.map = map;
 			__hx_this.index = 0;
-			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (__hx_this.map._values) )[__hx_this.index] == null ) )) {
+			while (( ( __hx_this.index < ( ((object[]) (__hx_this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (__hx_this.map._values) )[__hx_this.index]) ) == null ) )) {
 				__hx_this.index++;
 			}
 			
 		}
 		
 		
-		public static object __hx_cast<V_c_c>(global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator me) {
-			return ( (( me != null )) ? (me.loreline__Int64Map_Int64MapKeyValueIterator_cast<V_c_c>()) : default(object) );
-		}
-		
-		
-		public virtual object loreline__Int64Map_Int64MapKeyValueIterator_cast<V_c>() {
-			if (global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c))) {
-				return this;
-			}
-			
-			global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V_c> new_me = new global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<V_c>(((global::Loreline.Internal.Lang.EmptyObject) (global::Loreline.Internal.Lang.EmptyObject.EMPTY) ));
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public global::Loreline.Runtime.Int64Map<V> map;
+		public global::Loreline.Runtime.Int64Map map;
 		
 		public int index;
 		
 		public void skipNulls() {
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
@@ -1276,17 +1130,17 @@ namespace Loreline.Runtime._Int64Map {
 		
 		
 		public object next() {
-			int k1 = ((int[]) (this.map._keys1) )[this.index];
-			int k2 = ((int[]) (this.map._keys2) )[this.index];
-			object v = ((object[]) (this.map._values) )[this.index];
+			int k1 = ((int) (((int[]) (this.map._keys1) )[this.index]) );
+			int k2 = ((int) (((int[]) (this.map._keys2) )[this.index]) );
+			object v = ((object) (((object[]) (this.map._values) )[this.index]) );
 			this.index++;
-			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object[]) (this.map._values) )[this.index] == null ) )) {
+			while (( ( this.index < ( ((object[]) (this.map._values) ) as global::System.Array ).Length ) && ( ((object) (((object[]) (this.map._values) )[this.index]) ) == null ) )) {
 				this.index++;
 			}
 			
 			{
 				object __temp_odecl1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{}, new object[]{}, new int[]{5395604, 1158559586}, new double[]{((double) (k2) ), ((double) (k1) )});
-				return new global::Loreline.Internal.Lang.DynamicObject(new int[]{5343647, 834174833}, new object[]{__temp_odecl1, global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (v) ))}, new int[]{}, new double[]{});
+				return new global::Loreline.Internal.Lang.DynamicObject(new int[]{5343647, 834174833}, new object[]{__temp_odecl1, ((object) (v) )}, new int[]{}, new double[]{});
 			}
 			
 		}
@@ -1325,7 +1179,7 @@ namespace Loreline.Runtime._Int64Map {
 					
 					case 5442204:
 					{
-						this.map = ((global::Loreline.Runtime.Int64Map<V>) (global::Loreline.Runtime.Int64Map<object>.__hx_cast<V>(((global::Loreline.Runtime.Int64Map) (@value) ))) );
+						this.map = ((global::Loreline.Runtime.Int64Map) (@value) );
 						return @value;
 					}
 					
@@ -1439,30 +1293,12 @@ namespace Loreline.Runtime._Int64Map {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("index");
 			baseArr.push("map");
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Runtime._Int64Map {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Runtime._Int64Map.Int64MapKeyValueIterator<object>))]
-	public interface Int64MapKeyValueIterator : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object loreline__Int64Map_Int64MapKeyValueIterator_cast<V_c>();
-		
-		void skipNulls();
-		
-		bool hasNext();
-		
-		object next();
 		
 	}
 }

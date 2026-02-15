@@ -91,8 +91,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -118,7 +118,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -147,8 +147,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -174,7 +174,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -203,8 +203,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -230,7 +230,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -475,8 +475,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -502,7 +502,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -531,8 +531,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -558,7 +558,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -594,14 +594,14 @@ namespace Loreline.Internal.Hscript {
 		protected static void __hx_ctor_hscript_Parser(global::Loreline.Internal.Hscript.Parser __hx_this) {
 			unchecked {
 				__hx_this.uid = 0;
-				__hx_this.preprocesorValues = new global::Loreline.Internal.Ds.StringMap<object>();
+				__hx_this.preprocesorValues = new global::Loreline.Internal.Ds.StringMap();
 				{
 					__hx_this.line = 1;
 					__hx_this.opChars = "+*/-=!><&|^%~";
 					__hx_this.identChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
-					global::Loreline.Internal.Root.Array<object> priorities = new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Root.Array<string>(new string[]{"%"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"*", "/"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"+", "-"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"<<", ">>", ">>>"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"|", "&", "^"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"==", "!=", ">", "<", ">=", "<="}), new global::Loreline.Internal.Root.Array<string>(new string[]{"..."}), new global::Loreline.Internal.Root.Array<string>(new string[]{"&&"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"||"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "|=", "&=", "^=", "=>"}), new global::Loreline.Internal.Root.Array<string>(new string[]{"->"})});
-					__hx_this.opPriority = new global::Loreline.Internal.Ds.StringMap<int>();
-					__hx_this.opRightAssoc = new global::Loreline.Internal.Ds.StringMap<bool>();
+					global::Loreline.Internal.Root.Array priorities = new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Root.Array(new object[]{"%"}), new global::Loreline.Internal.Root.Array(new object[]{"*", "/"}), new global::Loreline.Internal.Root.Array(new object[]{"+", "-"}), new global::Loreline.Internal.Root.Array(new object[]{"<<", ">>", ">>>"}), new global::Loreline.Internal.Root.Array(new object[]{"|", "&", "^"}), new global::Loreline.Internal.Root.Array(new object[]{"==", "!=", ">", "<", ">=", "<="}), new global::Loreline.Internal.Root.Array(new object[]{"..."}), new global::Loreline.Internal.Root.Array(new object[]{"&&"}), new global::Loreline.Internal.Root.Array(new object[]{"||"}), new global::Loreline.Internal.Root.Array(new object[]{"=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "|=", "&=", "^=", "=>"}), new global::Loreline.Internal.Root.Array(new object[]{"->"})});
+					__hx_this.opPriority = new global::Loreline.Internal.Ds.StringMap();
+					__hx_this.opRightAssoc = new global::Loreline.Internal.Ds.StringMap();
 					{
 						int _g = 0;
 						int _g1 = priorities.length;
@@ -609,13 +609,13 @@ namespace Loreline.Internal.Hscript {
 							int i = _g++;
 							{
 								int _g2 = 0;
-								global::Loreline.Internal.Root.Array<string> _g3 = ((global::Loreline.Internal.Root.Array<string>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<string>(((global::Loreline.Internal.Root.Array) (priorities[i]) ))) );
+								global::Loreline.Internal.Root.Array _g3 = ((global::Loreline.Internal.Root.Array) (priorities.__get(i)) );
 								while (( _g2 < _g3.length )) {
-									string x = _g3[_g2];
+									string x = global::Loreline.Internal.Lang.Runtime.toString(_g3.__get(_g2));
 									 ++ _g2;
-									((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (__hx_this.opPriority) )) ))) ).@set(x, i);
+									((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opPriority) )) ).@set(((string) (x) ), ((object) (i) ));
 									if (( i == 9 )) {
-										((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, bool>) (__hx_this.opRightAssoc) )) ))) ).@set(x, true);
+										((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opRightAssoc) )) ).@set(((string) (x) ), ((object) (true) ));
 									}
 									
 								}
@@ -629,22 +629,22 @@ namespace Loreline.Internal.Hscript {
 					{
 						{
 							string x1 = "!";
-							((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (__hx_this.opPriority) )) ))) ).@set(x1, ( (( ( x1 == "++" ) || ( x1 == "--" ) )) ? (-1) : (-2) ));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opPriority) )) ).@set(((string) (x1) ), ((object) (( (( ( x1 == "++" ) || ( x1 == "--" ) )) ? (-1) : (-2) )) ));
 						}
 						
 						{
 							string x2 = "++";
-							((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (__hx_this.opPriority) )) ))) ).@set(x2, ( (( ( x2 == "++" ) || ( x2 == "--" ) )) ? (-1) : (-2) ));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opPriority) )) ).@set(((string) (x2) ), ((object) (( (( ( x2 == "++" ) || ( x2 == "--" ) )) ? (-1) : (-2) )) ));
 						}
 						
 						{
 							string x3 = "--";
-							((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (__hx_this.opPriority) )) ))) ).@set(x3, ( (( ( x3 == "++" ) || ( x3 == "--" ) )) ? (-1) : (-2) ));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opPriority) )) ).@set(((string) (x3) ), ((object) (( (( ( x3 == "++" ) || ( x3 == "--" ) )) ? (-1) : (-2) )) ));
 						}
 						
 						{
 							string x4 = "~";
-							((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (__hx_this.opPriority) )) ))) ).@set(x4, ( (( ( x4 == "++" ) || ( x4 == "--" ) )) ? (-1) : (-2) ));
+							((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (__hx_this.opPriority) )) ).@set(((string) (x4) ), ((object) (( (( ( x4 == "++" ) || ( x4 == "--" ) )) ? (-1) : (-2) )) ));
 						}
 						
 					}
@@ -661,9 +661,9 @@ namespace Loreline.Internal.Hscript {
 		
 		public string identChars;
 		
-		public global::Loreline.Internal.Ds.StringMap<int> opPriority;
+		public global::Loreline.Internal.Ds.StringMap opPriority;
 		
-		public global::Loreline.Internal.Ds.StringMap<bool> opRightAssoc;
+		public global::Loreline.Internal.Ds.StringMap opRightAssoc;
 		
 		public global::Loreline.Internal.Ds.StringMap preprocesorValues;
 		
@@ -685,9 +685,9 @@ namespace Loreline.Internal.Hscript {
 		
 		public int @char;
 		
-		public global::Loreline.Internal.Root.Array<bool> ops;
+		public global::Loreline.Internal.Root.Array ops;
 		
-		public global::Loreline.Internal.Root.Array<bool> idents;
+		public global::Loreline.Internal.Root.Array idents;
 		
 		public int uid;
 		
@@ -701,7 +701,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public int oldTokenMax;
 		
-		public global::Loreline.Internal.Ds.List<object> tokens;
+		public global::Loreline.Internal.Ds.List tokens;
 		
 		public int get_currentPos() {
 			return ( this.readPos + this.offset );
@@ -728,23 +728,23 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual void initParser(string origin, int pos) {
 			unchecked {
-				this.preprocStack = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				this.preprocStack = new global::Loreline.Internal.Root.Array(new object[]{});
 				this.origin = origin;
 				this.readPos = 0;
 				this.tokenMin = this.oldTokenMin = pos;
 				this.tokenMax = this.oldTokenMax = pos;
-				this.tokens = new global::Loreline.Internal.Ds.List<object>();
+				this.tokens = new global::Loreline.Internal.Ds.List();
 				this.offset = pos;
 				this.@char = -1;
-				this.ops = new global::Loreline.Internal.Root.Array<bool>();
-				this.idents = new global::Loreline.Internal.Root.Array<bool>();
+				this.ops = new global::Loreline.Internal.Root.Array();
+				this.idents = new global::Loreline.Internal.Root.Array();
 				this.uid = 0;
 				{
 					int _g = 0;
 					int _g1 = this.opChars.Length;
 					while (( _g < _g1 )) {
 						int i = _g++;
-						this.ops[(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.opChars, i)).@value] = true;
+						bool __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toBool(this.ops.__set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.opChars, i))) ), true));
 					}
 					
 				}
@@ -754,7 +754,7 @@ namespace Loreline.Internal.Hscript {
 					int _g3 = this.identChars.Length;
 					while (( _g2 < _g3 )) {
 						int i1 = _g2++;
-						this.idents[(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.identChars, i1)).@value] = true;
+						bool __temp_expr2 = global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__set(((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.identChars, i1))) ), true));
 					}
 					
 				}
@@ -763,17 +763,17 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual object parseString(string s, string origin, global::Loreline.Internal.Lang.Null<int> position) {
+		public virtual object parseString(string s, string origin, object position) {
 			unchecked {
-				global::Loreline.Internal.Lang.Null<int> position1 = ( ( ! (position.hasValue) ) ? (new global::Loreline.Internal.Lang.Null<int>(0, true)) : (position) );
+				object position1 = ( (( position == default(object) )) ? (((object) (0) )) : (position) );
 				if (( origin == null )) {
 					origin = "global::Loreline.Internal.Hscript";
 				}
 				
-				this.initParser(origin, (position1).@value);
+				this.initParser(origin, ((int) (global::Loreline.Internal.Lang.Runtime.toInt(position1)) ));
 				this.input = s;
 				this.readPos = 0;
-				global::Loreline.Internal.Root.Array<object> a = new global::Loreline.Internal.Root.Array<object>();
+				global::Loreline.Internal.Root.Array a = new global::Loreline.Internal.Root.Array();
 				while (true) {
 					global::Loreline.Internal.Hscript.Token tk = this.token();
 					if (( tk == global::Loreline.Internal.Hscript.Token.TEof )) {
@@ -790,25 +790,25 @@ namespace Loreline.Internal.Hscript {
 				}
 				
 				if (( a.length == 1 )) {
-					return a[0];
+					return a.__get(0);
 				}
 				else {
 					global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EBlock(a);
-					global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(0, true);
-					global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+					object pmin = 0;
+					object pmax = null;
 					if (( e == null )) {
 						return null;
 					}
 					else {
-						if ( ! (pmin.hasValue) ) {
-							pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+						if (( pmin == default(object) )) {
+							pmin = this.tokenMin;
 						}
 						
-						if ( ! (pmax.hasValue) ) {
-							pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+						if (( pmax == default(object) )) {
+							pmax = this.tokenMax;
 						}
 						
-						return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+						return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 					}
 					
 				}
@@ -848,7 +848,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public void ensureToken(global::Loreline.Internal.Hscript.Token tk) {
 			global::Loreline.Internal.Hscript.Token t = this.token();
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t) ), ((object) (tk) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t) ), ((object) (tk) ))) ) {
 				this.unexpected(t);
 			}
 			
@@ -857,7 +857,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual bool maybe(global::Loreline.Internal.Hscript.Token tk) {
 			global::Loreline.Internal.Hscript.Token t = this.token();
-			if (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t) ), ((object) (tk) ))) {
+			if (global::Loreline.Internal.Root.Type.enumEq(((object) (t) ), ((object) (tk) ))) {
 				return true;
 			}
 			
@@ -914,20 +914,20 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public object mk(global::Loreline.Internal.Hscript.ExprDef e, global::Loreline.Internal.Lang.Null<int> pmin, global::Loreline.Internal.Lang.Null<int> pmax) {
+		public object mk(global::Loreline.Internal.Hscript.ExprDef e, object pmin, object pmax) {
 			if (( e == null )) {
 				return null;
 			}
 			
-			if ( ! (pmin.hasValue) ) {
-				pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+			if (( pmin == default(object) )) {
+				pmin = this.tokenMin;
 			}
 			
-			if ( ! (pmax.hasValue) ) {
-				pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+			if (( pmax == default(object) )) {
+				pmax = this.tokenMax;
 			}
 			
-			return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+			return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 		}
 		
 		
@@ -952,7 +952,7 @@ namespace Loreline.Internal.Hscript {
 								return false;
 							}
 							else if (( t._hx_index == 2 )) {
-								global::Loreline.Internal.Root.Array<object> _g2 = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
+								global::Loreline.Internal.Root.Array _g2 = ( t as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
 								return true;
 							}
 							else {
@@ -969,7 +969,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> _g3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+						global::Loreline.Internal.Root.Array _g3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
 						return true;
 					}
 					
@@ -1032,7 +1032,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 14:
 					{
-						global::Loreline.Internal.Root.Array<object> _g11 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
+						global::Loreline.Internal.Root.Array _g11 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).args;
 						string _g12 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).name;
 						global::Loreline.Internal.Hscript.CType _g13 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).ret;
 						object e6 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EFunction ).e;
@@ -1065,7 +1065,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 21:
 					{
-						global::Loreline.Internal.Root.Array<object> _g17 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
+						global::Loreline.Internal.Root.Array _g17 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EObject ).fl;
 						return true;
 					}
 					
@@ -1073,7 +1073,7 @@ namespace Loreline.Internal.Hscript {
 					case 23:
 					{
 						object _g18 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).e;
-						global::Loreline.Internal.Root.Array<object> _g19 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
+						global::Loreline.Internal.Root.Array _g19 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).cases;
 						object _g20 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ESwitch ).defaultExpr;
 						return true;
 					}
@@ -1090,7 +1090,7 @@ namespace Loreline.Internal.Hscript {
 					case 25:
 					{
 						string _g22 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).name;
-						global::Loreline.Internal.Root.Array<object> _g23 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
+						global::Loreline.Internal.Root.Array _g23 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).args;
 						object e10 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EMeta ).e;
 						return this.isBlock(e10);
 					}
@@ -1107,7 +1107,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual void parseFullExpr(global::Loreline.Internal.Root.Array<object> exprs) {
+		public virtual void parseFullExpr(global::Loreline.Internal.Root.Array exprs) {
 			unchecked {
 				object e = this.parseExpr();
 				exprs.push(e);
@@ -1156,9 +1156,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual object parseObject(global::Loreline.Internal.Lang.Null<int> p1) {
+		public virtual object parseObject(object p1) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> fl = new global::Loreline.Internal.Root.Array<object>();
+				global::Loreline.Internal.Root.Array fl = new global::Loreline.Internal.Root.Array();
 				while (true) {
 					global::Loreline.Internal.Hscript.Token tk = this.token();
 					string id = null;
@@ -1247,22 +1247,22 @@ namespace Loreline.Internal.Hscript {
 				}
 				label1: {};
 				global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EObject(fl);
-				global::Loreline.Internal.Lang.Null<int> pmin = p1;
-				global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+				object pmin = p1;
+				object pmax = null;
 				object tmp = null;
 				if (( e == null )) {
 					tmp = null;
 				}
 				else {
-					if ( ! (pmin.hasValue) ) {
-						pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+					if (( pmin == default(object) )) {
+						pmin = this.tokenMin;
 					}
 					
-					if ( ! (pmax.hasValue) ) {
-						pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+					if (( pmax == default(object) )) {
+						pmax = this.tokenMax;
 					}
 					
-					tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+					tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 				}
 				
 				return this.parseExprNext(tmp);
@@ -1279,22 +1279,22 @@ namespace Loreline.Internal.Hscript {
 					{
 						global::Loreline.Internal.Hscript.Const c = ( tk as global::Loreline.Internal.Hscript.Token_TConst ).c;
 						global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EConst(c);
-						global::Loreline.Internal.Lang.Null<int> pmin = default(global::Loreline.Internal.Lang.Null<int>);
-						global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin = null;
+						object pmax = null;
 						object tmp = null;
 						if (( e == null )) {
 							tmp = null;
 						}
 						else {
-							if ( ! (pmin.hasValue) ) {
-								pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin == default(object) )) {
+								pmin = this.tokenMin;
 							}
 							
-							if ( ! (pmax.hasValue) ) {
-								pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax == default(object) )) {
+								pmax = this.tokenMax;
 							}
 							
-							tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(tmp);
@@ -1307,21 +1307,21 @@ namespace Loreline.Internal.Hscript {
 						object e1 = this.parseStructure(id);
 						if (( e1 == null )) {
 							global::Loreline.Internal.Hscript.ExprDef e2 = global::Loreline.Internal.Hscript.ExprDef.EIdent(id);
-							global::Loreline.Internal.Lang.Null<int> pmin1 = default(global::Loreline.Internal.Lang.Null<int>);
-							global::Loreline.Internal.Lang.Null<int> pmax1 = default(global::Loreline.Internal.Lang.Null<int>);
+							object pmin1 = null;
+							object pmax1 = null;
 							if (( e2 == null )) {
 								e1 = null;
 							}
 							else {
-								if ( ! (pmin1.hasValue) ) {
-									pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin1 == default(object) )) {
+									pmin1 = this.tokenMin;
 								}
 								
-								if ( ! (pmax1.hasValue) ) {
-									pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax1 == default(object) )) {
+									pmax1 = this.tokenMax;
 								}
 								
-								e1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								e1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -1348,21 +1348,21 @@ namespace Loreline.Internal.Hscript {
 									{
 										int i = ( _g1 as global::Loreline.Internal.Hscript.Const_CInt ).v;
 										global::Loreline.Internal.Hscript.ExprDef e4 = global::Loreline.Internal.Hscript.ExprDef.EConst(global::Loreline.Internal.Hscript.Const.CInt( - (i) ));
-										global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(start, true);
-										global::Loreline.Internal.Lang.Null<int> pmax2 = new global::Loreline.Internal.Lang.Null<int>(( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) ), true);
+										object pmin2 = start;
+										object pmax2 = ( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) );
 										if (( e4 == null )) {
 											return null;
 										}
 										else {
-											if ( ! (pmin2.hasValue) ) {
-												pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+											if (( pmin2 == default(object) )) {
+												pmin2 = this.tokenMin;
 											}
 											
-											if ( ! (pmax2.hasValue) ) {
-												pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+											if (( pmax2 == default(object) )) {
+												pmax2 = this.tokenMax;
 											}
 											
-											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 										}
 										
 									}
@@ -1372,21 +1372,21 @@ namespace Loreline.Internal.Hscript {
 									{
 										double f = ( _g1 as global::Loreline.Internal.Hscript.Const_CFloat ).f;
 										global::Loreline.Internal.Hscript.ExprDef e5 = global::Loreline.Internal.Hscript.ExprDef.EConst(global::Loreline.Internal.Hscript.Const.CFloat( - (f) ));
-										global::Loreline.Internal.Lang.Null<int> pmin3 = new global::Loreline.Internal.Lang.Null<int>(start, true);
-										global::Loreline.Internal.Lang.Null<int> pmax3 = new global::Loreline.Internal.Lang.Null<int>(( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) ), true);
+										object pmin3 = start;
+										object pmax3 = ( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) );
 										if (( e5 == null )) {
 											return null;
 										}
 										else {
-											if ( ! (pmin3.hasValue) ) {
-												pmin3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+											if (( pmin3 == default(object) )) {
+												pmin3 = this.tokenMin;
 											}
 											
-											if ( ! (pmax3.hasValue) ) {
-												pmax3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+											if (( pmax3 == default(object) )) {
+												pmax3 = this.tokenMax;
 											}
 											
-											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, (pmax3).toDynamic(), (pmin3).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, pmax3, pmin3, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 										}
 										
 									}
@@ -1406,7 +1406,7 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						
-						if (( (((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).@get(op)).@value < 0 )) {
+						if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).@get(((string) (op) )))) ) < 0 )) {
 							return this.makeUnop(op, this.parseExpr());
 						}
 						
@@ -1420,7 +1420,7 @@ namespace Loreline.Internal.Hscript {
 						if (( tk == global::Loreline.Internal.Hscript.Token.TPClose )) {
 							{
 								global::Loreline.Internal.Hscript.Token t = this.token();
-								if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("->")) ))) ) {
+								if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("->")) ))) ) {
 									this.unexpected(t);
 								}
 								
@@ -1428,40 +1428,40 @@ namespace Loreline.Internal.Hscript {
 							
 							object eret = this.parseExpr();
 							global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EReturn(eret);
-							global::Loreline.Internal.Lang.Null<int> pmin4 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-							global::Loreline.Internal.Lang.Null<int> pmax4 = default(global::Loreline.Internal.Lang.Null<int>);
+							object pmin4 = p1;
+							object pmax4 = null;
 							object e7 = null;
 							if (( e6 == null )) {
 								e7 = null;
 							}
 							else {
-								if ( ! (pmin4.hasValue) ) {
-									pmin4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin4 == default(object) )) {
+									pmin4 = this.tokenMin;
 								}
 								
-								if ( ! (pmax4.hasValue) ) {
-									pmax4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax4 == default(object) )) {
+									pmax4 = this.tokenMax;
 								}
 								
-								e7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, (pmax4).toDynamic(), (pmin4).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								e7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, pmax4, pmin4, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
-							global::Loreline.Internal.Hscript.ExprDef e8 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array<object>(new object[]{}), e7, null, null);
-							global::Loreline.Internal.Lang.Null<int> pmin5 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-							global::Loreline.Internal.Lang.Null<int> pmax5 = default(global::Loreline.Internal.Lang.Null<int>);
+							global::Loreline.Internal.Hscript.ExprDef e8 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array(new object[]{}), e7, null, null);
+							object pmin5 = p1;
+							object pmax5 = null;
 							if (( e8 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin5.hasValue) ) {
-									pmin5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin5 == default(object) )) {
+									pmin5 = this.tokenMin;
 								}
 								
-								if ( ! (pmax5.hasValue) ) {
-									pmax5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax5 == default(object) )) {
+									pmax5 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, (pmax5).toDynamic(), (pmin5).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, pmax5, pmin5, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -1478,22 +1478,22 @@ namespace Loreline.Internal.Hscript {
 							case 5:
 							{
 								global::Loreline.Internal.Hscript.ExprDef e10 = global::Loreline.Internal.Hscript.ExprDef.EParent(e9);
-								global::Loreline.Internal.Lang.Null<int> pmin6 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-								global::Loreline.Internal.Lang.Null<int> pmax6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								object pmin6 = p1;
+								object pmax6 = this.tokenMax;
 								object tmp1 = null;
 								if (( e10 == null )) {
 									tmp1 = null;
 								}
 								else {
-									if ( ! (pmin6.hasValue) ) {
-										pmin6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+									if (( pmin6 == default(object) )) {
+										pmin6 = this.tokenMin;
 									}
 									
-									if ( ! (pmax6.hasValue) ) {
-										pmax6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+									if (( pmax6 == default(object) )) {
+										pmax6 = this.tokenMax;
 									}
 									
-									tmp1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e10, (pmax6).toDynamic(), (pmin6).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+									tmp1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e10, pmax6, pmin6, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 								}
 								
 								return this.parseExprNext(tmp1);
@@ -1505,7 +1505,7 @@ namespace Loreline.Internal.Hscript {
 								global::Loreline.Internal.Hscript.ExprDef _g2 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e9, "e", 101, true)) );
 								if (( _g2._hx_index == 1 )) {
 									string v = ( _g2 as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
-									return this.parseLambda(new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{v}, new int[]{}, new double[]{})}), new global::Loreline.Internal.Lang.Null<int>(( (( e9 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e9, "pmin", 1247475490, true)) )) ), true));
+									return this.parseLambda(new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{v}, new int[]{}, new double[]{})}), ( (( e9 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e9, "pmin", 1247475490, true)) )) ));
 								}
 								
 								break;
@@ -1520,22 +1520,22 @@ namespace Loreline.Internal.Hscript {
 									case 5:
 									{
 										global::Loreline.Internal.Hscript.ExprDef e11 = global::Loreline.Internal.Hscript.ExprDef.ECheckType(e9, t1);
-										global::Loreline.Internal.Lang.Null<int> pmin7 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-										global::Loreline.Internal.Lang.Null<int> pmax7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										object pmin7 = p1;
+										object pmax7 = this.tokenMax;
 										object tmp2 = null;
 										if (( e11 == null )) {
 											tmp2 = null;
 										}
 										else {
-											if ( ! (pmin7.hasValue) ) {
-												pmin7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+											if (( pmin7 == default(object) )) {
+												pmin7 = this.tokenMin;
 											}
 											
-											if ( ! (pmax7.hasValue) ) {
-												pmax7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+											if (( pmax7 == default(object) )) {
+												pmax7 = this.tokenMax;
 											}
 											
-											tmp2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e11, (pmax7).toDynamic(), (pmin7).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+											tmp2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e11, pmax7, pmin7, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 										}
 										
 										return this.parseExprNext(tmp2);
@@ -1547,7 +1547,7 @@ namespace Loreline.Internal.Hscript {
 										global::Loreline.Internal.Hscript.ExprDef _g3 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e9, "e", 101, true)) );
 										if (( _g3._hx_index == 1 )) {
 											string v1 = ( _g3 as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
-											return this.parseLambda(new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491}, new object[]{t1, v1}, new int[]{}, new double[]{})}), new global::Loreline.Internal.Lang.Null<int>(( (( e9 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e9, "pmin", 1247475490, true)) )) ), true));
+											return this.parseLambda(new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491}, new object[]{t1, v1}, new int[]{}, new double[]{})}), ( (( e9 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e9, "pmin", 1247475490, true)) )) ));
 										}
 										
 										break;
@@ -1601,7 +1601,7 @@ namespace Loreline.Internal.Hscript {
 											}
 											
 											if (( tk2._hx_index == 15 )) {
-												return this.parseExprNext(this.parseObject(new global::Loreline.Internal.Lang.Null<int>(p1, true)));
+												return this.parseExprNext(this.parseObject(p1));
 											}
 											
 										}
@@ -1642,7 +1642,7 @@ namespace Loreline.Internal.Hscript {
 									}
 									
 									if (( tk21._hx_index == 15 )) {
-										return this.parseExprNext(this.parseObject(new global::Loreline.Internal.Lang.Null<int>(p1, true)));
+										return this.parseExprNext(this.parseObject(p1));
 									}
 									
 								}
@@ -1653,23 +1653,23 @@ namespace Loreline.Internal.Hscript {
 							
 							case 7:
 							{
-								global::Loreline.Internal.Hscript.ExprDef e12 = global::Loreline.Internal.Hscript.ExprDef.EObject(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-								global::Loreline.Internal.Lang.Null<int> pmin8 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-								global::Loreline.Internal.Lang.Null<int> pmax8 = default(global::Loreline.Internal.Lang.Null<int>);
+								global::Loreline.Internal.Hscript.ExprDef e12 = global::Loreline.Internal.Hscript.ExprDef.EObject(new global::Loreline.Internal.Root.Array(new object[]{}));
+								object pmin8 = p1;
+								object pmax8 = null;
 								object tmp3 = null;
 								if (( e12 == null )) {
 									tmp3 = null;
 								}
 								else {
-									if ( ! (pmin8.hasValue) ) {
-										pmin8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+									if (( pmin8 == default(object) )) {
+										pmin8 = this.tokenMin;
 									}
 									
-									if ( ! (pmax8.hasValue) ) {
-										pmax8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+									if (( pmax8 == default(object) )) {
+										pmax8 = this.tokenMax;
 									}
 									
-									tmp3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, (pmax8).toDynamic(), (pmin8).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+									tmp3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, pmax8, pmin8, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 								}
 								
 								return this.parseExprNext(tmp3);
@@ -1686,7 +1686,7 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						
-						global::Loreline.Internal.Root.Array<object> a = new global::Loreline.Internal.Root.Array<object>();
+						global::Loreline.Internal.Root.Array a = new global::Loreline.Internal.Root.Array();
 						while (true) {
 							this.parseFullExpr(a);
 							tk = this.token();
@@ -1703,21 +1703,21 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e13 = global::Loreline.Internal.Hscript.ExprDef.EBlock(a);
-						global::Loreline.Internal.Lang.Null<int> pmin9 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax9 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin9 = p1;
+						object pmax9 = null;
 						if (( e13 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin9.hasValue) ) {
-								pmin9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin9 == default(object) )) {
+								pmin9 = this.tokenMin;
 							}
 							
-							if ( ! (pmax9.hasValue) ) {
-								pmax9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax9 == default(object) )) {
+								pmax9 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e13, (pmax9).toDynamic(), (pmin9).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e13, pmax9, pmin9, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -1725,7 +1725,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 12:
 					{
-						global::Loreline.Internal.Root.Array<object> a1 = new global::Loreline.Internal.Root.Array<object>();
+						global::Loreline.Internal.Root.Array a1 = new global::Loreline.Internal.Root.Array();
 						tk = this.token();
 						bool first = true;
 						while (( ( tk != global::Loreline.Internal.Hscript.Token.TBkClose ) && ((  ! (this.resumeErrors)  || ( tk != global::Loreline.Internal.Hscript.Token.TEof ) )) )) {
@@ -1750,89 +1750,89 @@ namespace Loreline.Internal.Hscript {
 							tk = this.token();
 						}
 						
-						if (( ( a1.length == 1 ) && ( a1[0] != null ) )) {
-							global::Loreline.Internal.Hscript.ExprDef _g6 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(a1[0], "e", 101, true)) );
+						if (( ( a1.length == 1 ) && ( a1.__get(0) != null ) )) {
+							global::Loreline.Internal.Hscript.ExprDef _g6 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(a1.__get(0), "e", 101, true)) );
 							switch (_g6._hx_index) {
 								case 10:
 								{
 									object _g7 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EWhile ).cond;
 									object _g8 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EWhile ).e;
 									string tmp4 = global::Loreline.Internal.Lang.Runtime.concat("__a_", global::Loreline.Internal.Lang.Runtime.toString(this.uid++));
-									global::Loreline.Internal.Hscript.ExprDef e14 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-									global::Loreline.Internal.Lang.Null<int> pmin10 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax10 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e14 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array(new object[]{}));
+									object pmin10 = p1;
+									object pmax10 = null;
 									object e15 = null;
 									if (( e14 == null )) {
 										e15 = null;
 									}
 									else {
-										if ( ! (pmin10.hasValue) ) {
-											pmin10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin10 == default(object) )) {
+											pmin10 = this.tokenMin;
 										}
 										
-										if ( ! (pmax10.hasValue) ) {
-											pmax10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax10 == default(object) )) {
+											pmax10 = this.tokenMax;
 										}
 										
-										e15 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e14, (pmax10).toDynamic(), (pmin10).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e15 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e14, pmax10, pmin10, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									global::Loreline.Internal.Hscript.ExprDef e16 = global::Loreline.Internal.Hscript.ExprDef.EVar(tmp4, null, e15);
-									global::Loreline.Internal.Lang.Null<int> pmin11 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax11 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin11 = p1;
+									object pmax11 = null;
 									object e17 = null;
 									if (( e16 == null )) {
 										e17 = null;
 									}
 									else {
-										if ( ! (pmin11.hasValue) ) {
-											pmin11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin11 == default(object) )) {
+											pmin11 = this.tokenMin;
 										}
 										
-										if ( ! (pmax11.hasValue) ) {
-											pmax11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax11 == default(object) )) {
+											pmax11 = this.tokenMax;
 										}
 										
-										e17 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e16, (pmax11).toDynamic(), (pmin11).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e17 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e16, pmax11, pmin11, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									object e18 = this.mapCompr(tmp4, a1[0]);
+									object e18 = this.mapCompr(tmp4, a1.__get(0));
 									global::Loreline.Internal.Hscript.ExprDef e19 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp4);
-									global::Loreline.Internal.Lang.Null<int> pmin12 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax12 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin12 = p1;
+									object pmax12 = null;
 									object e20 = null;
 									if (( e19 == null )) {
 										e20 = null;
 									}
 									else {
-										if ( ! (pmin12.hasValue) ) {
-											pmin12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin12 == default(object) )) {
+											pmin12 = this.tokenMin;
 										}
 										
-										if ( ! (pmax12.hasValue) ) {
-											pmax12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax12 == default(object) )) {
+											pmax12 = this.tokenMax;
 										}
 										
-										e20 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, (pmax12).toDynamic(), (pmin12).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e20 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, pmax12, pmin12, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									global::Loreline.Internal.Hscript.ExprDef e21 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{e17, e18, e20}));
-									global::Loreline.Internal.Lang.Null<int> pmin13 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax13 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e21 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{e17, e18, e20}));
+									object pmin13 = p1;
+									object pmax13 = null;
 									object e22 = null;
 									if (( e21 == null )) {
 										e22 = null;
 									}
 									else {
-										if ( ! (pmin13.hasValue) ) {
-											pmin13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin13 == default(object) )) {
+											pmin13 = this.tokenMin;
 										}
 										
-										if ( ! (pmax13.hasValue) ) {
-											pmax13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax13 == default(object) )) {
+											pmax13 = this.tokenMax;
 										}
 										
-										e22 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e21, (pmax13).toDynamic(), (pmin13).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e22 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e21, pmax13, pmin13, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									return this.parseExprNext(e22);
@@ -1845,81 +1845,81 @@ namespace Loreline.Internal.Hscript {
 									object _g10 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EFor ).it;
 									object _g11 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EFor ).e;
 									string tmp5 = global::Loreline.Internal.Lang.Runtime.concat("__a_", global::Loreline.Internal.Lang.Runtime.toString(this.uid++));
-									global::Loreline.Internal.Hscript.ExprDef e23 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-									global::Loreline.Internal.Lang.Null<int> pmin14 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax14 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e23 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array(new object[]{}));
+									object pmin14 = p1;
+									object pmax14 = null;
 									object e24 = null;
 									if (( e23 == null )) {
 										e24 = null;
 									}
 									else {
-										if ( ! (pmin14.hasValue) ) {
-											pmin14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin14 == default(object) )) {
+											pmin14 = this.tokenMin;
 										}
 										
-										if ( ! (pmax14.hasValue) ) {
-											pmax14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax14 == default(object) )) {
+											pmax14 = this.tokenMax;
 										}
 										
-										e24 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e23, (pmax14).toDynamic(), (pmin14).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e24 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e23, pmax14, pmin14, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									global::Loreline.Internal.Hscript.ExprDef e25 = global::Loreline.Internal.Hscript.ExprDef.EVar(tmp5, null, e24);
-									global::Loreline.Internal.Lang.Null<int> pmin15 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax15 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin15 = p1;
+									object pmax15 = null;
 									object e26 = null;
 									if (( e25 == null )) {
 										e26 = null;
 									}
 									else {
-										if ( ! (pmin15.hasValue) ) {
-											pmin15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin15 == default(object) )) {
+											pmin15 = this.tokenMin;
 										}
 										
-										if ( ! (pmax15.hasValue) ) {
-											pmax15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax15 == default(object) )) {
+											pmax15 = this.tokenMax;
 										}
 										
-										e26 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e25, (pmax15).toDynamic(), (pmin15).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e26 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e25, pmax15, pmin15, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									object e27 = this.mapCompr(tmp5, a1[0]);
+									object e27 = this.mapCompr(tmp5, a1.__get(0));
 									global::Loreline.Internal.Hscript.ExprDef e28 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp5);
-									global::Loreline.Internal.Lang.Null<int> pmin16 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax16 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin16 = p1;
+									object pmax16 = null;
 									object e29 = null;
 									if (( e28 == null )) {
 										e29 = null;
 									}
 									else {
-										if ( ! (pmin16.hasValue) ) {
-											pmin16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin16 == default(object) )) {
+											pmin16 = this.tokenMin;
 										}
 										
-										if ( ! (pmax16.hasValue) ) {
-											pmax16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax16 == default(object) )) {
+											pmax16 = this.tokenMax;
 										}
 										
-										e29 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e28, (pmax16).toDynamic(), (pmin16).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e29 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e28, pmax16, pmin16, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									global::Loreline.Internal.Hscript.ExprDef e30 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{e26, e27, e29}));
-									global::Loreline.Internal.Lang.Null<int> pmin17 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax17 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e30 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{e26, e27, e29}));
+									object pmin17 = p1;
+									object pmax17 = null;
 									object e31 = null;
 									if (( e30 == null )) {
 										e31 = null;
 									}
 									else {
-										if ( ! (pmin17.hasValue) ) {
-											pmin17 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin17 == default(object) )) {
+											pmin17 = this.tokenMin;
 										}
 										
-										if ( ! (pmax17.hasValue) ) {
-											pmax17 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax17 == default(object) )) {
+											pmax17 = this.tokenMax;
 										}
 										
-										e31 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e30, (pmax17).toDynamic(), (pmin17).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e31 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e30, pmax17, pmin17, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									return this.parseExprNext(e31);
@@ -1931,81 +1931,81 @@ namespace Loreline.Internal.Hscript {
 									object _g12 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EDoWhile ).cond;
 									object _g13 = ( _g6 as global::Loreline.Internal.Hscript.ExprDef_EDoWhile ).e;
 									string tmp6 = global::Loreline.Internal.Lang.Runtime.concat("__a_", global::Loreline.Internal.Lang.Runtime.toString(this.uid++));
-									global::Loreline.Internal.Hscript.ExprDef e32 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-									global::Loreline.Internal.Lang.Null<int> pmin18 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax18 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e32 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(new global::Loreline.Internal.Root.Array(new object[]{}));
+									object pmin18 = p1;
+									object pmax18 = null;
 									object e33 = null;
 									if (( e32 == null )) {
 										e33 = null;
 									}
 									else {
-										if ( ! (pmin18.hasValue) ) {
-											pmin18 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin18 == default(object) )) {
+											pmin18 = this.tokenMin;
 										}
 										
-										if ( ! (pmax18.hasValue) ) {
-											pmax18 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax18 == default(object) )) {
+											pmax18 = this.tokenMax;
 										}
 										
-										e33 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e32, (pmax18).toDynamic(), (pmin18).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e33 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e32, pmax18, pmin18, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									global::Loreline.Internal.Hscript.ExprDef e34 = global::Loreline.Internal.Hscript.ExprDef.EVar(tmp6, null, e33);
-									global::Loreline.Internal.Lang.Null<int> pmin19 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax19 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin19 = p1;
+									object pmax19 = null;
 									object e35 = null;
 									if (( e34 == null )) {
 										e35 = null;
 									}
 									else {
-										if ( ! (pmin19.hasValue) ) {
-											pmin19 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin19 == default(object) )) {
+											pmin19 = this.tokenMin;
 										}
 										
-										if ( ! (pmax19.hasValue) ) {
-											pmax19 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax19 == default(object) )) {
+											pmax19 = this.tokenMax;
 										}
 										
-										e35 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e34, (pmax19).toDynamic(), (pmin19).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e35 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e34, pmax19, pmin19, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									object e36 = this.mapCompr(tmp6, a1[0]);
+									object e36 = this.mapCompr(tmp6, a1.__get(0));
 									global::Loreline.Internal.Hscript.ExprDef e37 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp6);
-									global::Loreline.Internal.Lang.Null<int> pmin20 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax20 = default(global::Loreline.Internal.Lang.Null<int>);
+									object pmin20 = p1;
+									object pmax20 = null;
 									object e38 = null;
 									if (( e37 == null )) {
 										e38 = null;
 									}
 									else {
-										if ( ! (pmin20.hasValue) ) {
-											pmin20 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin20 == default(object) )) {
+											pmin20 = this.tokenMin;
 										}
 										
-										if ( ! (pmax20.hasValue) ) {
-											pmax20 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax20 == default(object) )) {
+											pmax20 = this.tokenMax;
 										}
 										
-										e38 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e37, (pmax20).toDynamic(), (pmin20).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e38 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e37, pmax20, pmin20, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
-									global::Loreline.Internal.Hscript.ExprDef e39 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{e35, e36, e38}));
-									global::Loreline.Internal.Lang.Null<int> pmin21 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-									global::Loreline.Internal.Lang.Null<int> pmax21 = default(global::Loreline.Internal.Lang.Null<int>);
+									global::Loreline.Internal.Hscript.ExprDef e39 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{e35, e36, e38}));
+									object pmin21 = p1;
+									object pmax21 = null;
 									object e40 = null;
 									if (( e39 == null )) {
 										e40 = null;
 									}
 									else {
-										if ( ! (pmin21.hasValue) ) {
-											pmin21 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+										if (( pmin21 == default(object) )) {
+											pmin21 = this.tokenMin;
 										}
 										
-										if ( ! (pmax21.hasValue) ) {
-											pmax21 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+										if (( pmax21 == default(object) )) {
+											pmax21 = this.tokenMax;
 										}
 										
-										e40 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e39, (pmax21).toDynamic(), (pmin21).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+										e40 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e39, pmax21, pmin21, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 									}
 									
 									return this.parseExprNext(e40);
@@ -2022,22 +2022,22 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e41 = global::Loreline.Internal.Hscript.ExprDef.EArrayDecl(a1);
-						global::Loreline.Internal.Lang.Null<int> pmin22 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax22 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin22 = p1;
+						object pmax22 = null;
 						object tmp7 = null;
 						if (( e41 == null )) {
 							tmp7 = null;
 						}
 						else {
-							if ( ! (pmin22.hasValue) ) {
-								pmin22 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin22 == default(object) )) {
+								pmin22 = this.tokenMin;
 							}
 							
-							if ( ! (pmax22.hasValue) ) {
-								pmax22 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax22 == default(object) )) {
+								pmax22 = this.tokenMax;
 							}
 							
-							tmp7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e41, (pmax22).toDynamic(), (pmin22).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							tmp7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e41, pmax22, pmin22, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(tmp7);
@@ -2048,23 +2048,23 @@ namespace Loreline.Internal.Hscript {
 					{
 						string id1 = ( tk as global::Loreline.Internal.Hscript.Token_TMeta ).s;
 						if (this.allowMetadata) {
-							global::Loreline.Internal.Root.Array<object> args = this.parseMetaArgs();
+							global::Loreline.Internal.Root.Array args = this.parseMetaArgs();
 							global::Loreline.Internal.Hscript.ExprDef e42 = global::Loreline.Internal.Hscript.ExprDef.EMeta(id1, args, this.parseExpr());
-							global::Loreline.Internal.Lang.Null<int> pmin23 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-							global::Loreline.Internal.Lang.Null<int> pmax23 = default(global::Loreline.Internal.Lang.Null<int>);
+							object pmin23 = p1;
+							object pmax23 = null;
 							if (( e42 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin23.hasValue) ) {
-									pmin23 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin23 == default(object) )) {
+									pmin23 = this.tokenMin;
 								}
 								
-								if ( ! (pmax23.hasValue) ) {
-									pmax23 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax23 == default(object) )) {
+									pmax23 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e42, (pmax23).toDynamic(), (pmin23).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e42, pmax23, pmin23, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -2086,7 +2086,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual object parseLambda(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Lang.Null<int> pmin) {
+		public virtual object parseLambda(global::Loreline.Internal.Root.Array args, object pmin) {
 			unchecked {
 				while (true) {
 					string id = this.getIdent();
@@ -2118,7 +2118,7 @@ namespace Loreline.Internal.Hscript {
 				label1: {};
 				{
 					global::Loreline.Internal.Hscript.Token t1 = this.token();
-					if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t1) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("->")) ))) ) {
+					if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t1) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("->")) ))) ) {
 						this.unexpected(t1);
 					}
 					
@@ -2126,47 +2126,47 @@ namespace Loreline.Internal.Hscript {
 				
 				object eret = this.parseExpr();
 				global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EReturn(eret);
-				global::Loreline.Internal.Lang.Null<int> pmin1 = pmin;
-				global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+				object pmin1 = pmin;
+				object pmax = null;
 				object e1 = null;
 				if (( e == null )) {
 					e1 = null;
 				}
 				else {
-					if ( ! (pmin1.hasValue) ) {
-						pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+					if (( pmin1 == default(object) )) {
+						pmin1 = this.tokenMin;
 					}
 					
-					if ( ! (pmax.hasValue) ) {
-						pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+					if (( pmax == default(object) )) {
+						pmax = this.tokenMax;
 					}
 					
-					e1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+					e1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 				}
 				
 				global::Loreline.Internal.Hscript.ExprDef e2 = global::Loreline.Internal.Hscript.ExprDef.EFunction(args, e1, null, null);
-				global::Loreline.Internal.Lang.Null<int> pmin2 = pmin;
-				global::Loreline.Internal.Lang.Null<int> pmax1 = default(global::Loreline.Internal.Lang.Null<int>);
+				object pmin2 = pmin;
+				object pmax1 = null;
 				if (( e2 == null )) {
 					return null;
 				}
 				else {
-					if ( ! (pmin2.hasValue) ) {
-						pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+					if (( pmin2 == default(object) )) {
+						pmin2 = this.tokenMin;
 					}
 					
-					if ( ! (pmax1.hasValue) ) {
-						pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+					if (( pmax1 == default(object) )) {
+						pmax1 = this.tokenMax;
 					}
 					
-					return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, (pmax1).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+					return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, pmax1, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 				}
 				
 			}
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseMetaArgs() {
+		public virtual global::Loreline.Internal.Root.Array parseMetaArgs() {
 			unchecked {
 				global::Loreline.Internal.Hscript.Token tk = this.token();
 				if (( tk != global::Loreline.Internal.Hscript.Token.TPOpen )) {
@@ -2179,7 +2179,7 @@ namespace Loreline.Internal.Hscript {
 					return null;
 				}
 				
-				global::Loreline.Internal.Root.Array<object> args = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array args = new global::Loreline.Internal.Root.Array(new object[]{});
 				tk = this.token();
 				if (( tk != global::Loreline.Internal.Hscript.Token.TPClose )) {
 					{
@@ -2244,51 +2244,51 @@ namespace Loreline.Internal.Hscript {
 					
 					case 4:
 					{
-						global::Loreline.Internal.Root.Array<object> _g1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
+						global::Loreline.Internal.Root.Array _g1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBlock ).e;
 						if (( _g1.length == 1 )) {
-							object e1 = _g1[0];
-							edef = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{this.mapCompr(tmp, e1)}));
+							object e1 = _g1.__get(0);
+							edef = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{this.mapCompr(tmp, e1)}));
 						}
 						else {
 							global::Loreline.Internal.Hscript.ExprDef e3 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp);
-							global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+							object pmax = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							object e4 = null;
 							if (( e3 == null )) {
 								e4 = null;
 							}
 							else {
-								if ( ! (pmin.hasValue) ) {
-									pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin == default(object) )) {
+									pmin = this.tokenMin;
 								}
 								
-								if ( ! (pmax.hasValue) ) {
-									pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax == default(object) )) {
+									pmax = this.tokenMax;
 								}
 								
-								e4 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								e4 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 							global::Loreline.Internal.Hscript.ExprDef e5 = global::Loreline.Internal.Hscript.ExprDef.EField(e4, "push");
-							global::Loreline.Internal.Lang.Null<int> pmin1 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax1 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin1 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+							object pmax1 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							object edef1 = null;
 							if (( e5 == null )) {
 								edef1 = null;
 							}
 							else {
-								if ( ! (pmin1.hasValue) ) {
-									pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin1 == default(object) )) {
+									pmin1 = this.tokenMin;
 								}
 								
-								if ( ! (pmax1.hasValue) ) {
-									pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax1 == default(object) )) {
+									pmax1 = this.tokenMax;
 								}
 								
-								edef1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								edef1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
-							edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef1, new global::Loreline.Internal.Root.Array<object>(new object[]{e}));
+							edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef1, new global::Loreline.Internal.Root.Array(new object[]{e}));
 						}
 						
 						break;
@@ -2305,44 +2305,44 @@ namespace Loreline.Internal.Hscript {
 						}
 						else {
 							global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp);
-							global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax2 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin2 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+							object pmax2 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							object e7 = null;
 							if (( e6 == null )) {
 								e7 = null;
 							}
 							else {
-								if ( ! (pmin2.hasValue) ) {
-									pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin2 == default(object) )) {
+									pmin2 = this.tokenMin;
 								}
 								
-								if ( ! (pmax2.hasValue) ) {
-									pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax2 == default(object) )) {
+									pmax2 = this.tokenMax;
 								}
 								
-								e7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								e7 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 							global::Loreline.Internal.Hscript.ExprDef e8 = global::Loreline.Internal.Hscript.ExprDef.EField(e7, "push");
-							global::Loreline.Internal.Lang.Null<int> pmin3 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax3 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin3 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+							object pmax3 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							object edef2 = null;
 							if (( e8 == null )) {
 								edef2 = null;
 							}
 							else {
-								if ( ! (pmin3.hasValue) ) {
-									pmin3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin3 == default(object) )) {
+									pmin3 = this.tokenMin;
 								}
 								
-								if ( ! (pmax3.hasValue) ) {
-									pmax3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax3 == default(object) )) {
+									pmax3 = this.tokenMax;
 								}
 								
-								edef2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, (pmax3).toDynamic(), (pmin3).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								edef2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, pmax3, pmin3, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
-							edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef2, new global::Loreline.Internal.Root.Array<object>(new object[]{e}));
+							edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef2, new global::Loreline.Internal.Root.Array(new object[]{e}));
 						}
 						
 						break;
@@ -2380,64 +2380,64 @@ namespace Loreline.Internal.Hscript {
 					default:
 					{
 						global::Loreline.Internal.Hscript.ExprDef e9 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp);
-						global::Loreline.Internal.Lang.Null<int> pmin4 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax4 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+						object pmin4 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+						object pmax4 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 						object e10 = null;
 						if (( e9 == null )) {
 							e10 = null;
 						}
 						else {
-							if ( ! (pmin4.hasValue) ) {
-								pmin4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin4 == default(object) )) {
+								pmin4 = this.tokenMin;
 							}
 							
-							if ( ! (pmax4.hasValue) ) {
-								pmax4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax4 == default(object) )) {
+								pmax4 = this.tokenMax;
 							}
 							
-							e10 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, (pmax4).toDynamic(), (pmin4).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e10 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, pmax4, pmin4, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e12 = global::Loreline.Internal.Hscript.ExprDef.EField(e10, "push");
-						global::Loreline.Internal.Lang.Null<int> pmin5 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax5 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+						object pmin5 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+						object pmax5 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 						object edef3 = null;
 						if (( e12 == null )) {
 							edef3 = null;
 						}
 						else {
-							if ( ! (pmin5.hasValue) ) {
-								pmin5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin5 == default(object) )) {
+								pmin5 = this.tokenMin;
 							}
 							
-							if ( ! (pmax5.hasValue) ) {
-								pmax5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax5 == default(object) )) {
+								pmax5 = this.tokenMax;
 							}
 							
-							edef3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, (pmax5).toDynamic(), (pmin5).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							edef3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, pmax5, pmin5, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
-						edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef3, new global::Loreline.Internal.Root.Array<object>(new object[]{e}));
+						edef = global::Loreline.Internal.Hscript.ExprDef.ECall(edef3, new global::Loreline.Internal.Root.Array(new object[]{e}));
 						break;
 					}
 					
 				}
 				
-				global::Loreline.Internal.Lang.Null<int> pmin6 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-				global::Loreline.Internal.Lang.Null<int> pmax6 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+				object pmin6 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+				object pmax6 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 				if (( edef == null )) {
 					return null;
 				}
 				else {
-					if ( ! (pmin6.hasValue) ) {
-						pmin6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+					if (( pmin6 == default(object) )) {
+						pmin6 = this.tokenMin;
 					}
 					
-					if ( ! (pmax6.hasValue) ) {
-						pmax6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+					if (( pmax6 == default(object) )) {
+						pmax6 = this.tokenMax;
 					}
 					
-					return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{edef, (pmax6).toDynamic(), (pmin6).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+					return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{edef, pmax6, pmin6, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 				}
 				
 			}
@@ -2458,21 +2458,21 @@ namespace Loreline.Internal.Hscript {
 						object e1 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).e1;
 						object e2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).e2;
 						global::Loreline.Internal.Hscript.ExprDef e3 = global::Loreline.Internal.Hscript.ExprDef.EBinop(bop, this.makeUnop(op, e1), e2);
-						global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax = new global::Loreline.Internal.Lang.Null<int>(( (( e2 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e2, "pmax", 1247473716, true)) )) ), true);
+						object pmin = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax = ( (( e2 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e2, "pmax", 1247473716, true)) )) );
 						if (( e3 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin.hasValue) ) {
-								pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin == default(object) )) {
+								pmin = this.tokenMin;
 							}
 							
-							if ( ! (pmax.hasValue) ) {
-								pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax == default(object) )) {
+								pmax = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2484,21 +2484,21 @@ namespace Loreline.Internal.Hscript {
 						object e21 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETernary ).e1;
 						object e31 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETernary ).e2;
 						global::Loreline.Internal.Hscript.ExprDef e4 = global::Loreline.Internal.Hscript.ExprDef.ETernary(this.makeUnop(op, e11), e21, e31);
-						global::Loreline.Internal.Lang.Null<int> pmin1 = new global::Loreline.Internal.Lang.Null<int>(( (( e11 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e11, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax1 = new global::Loreline.Internal.Lang.Null<int>(( (( e31 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e31, "pmax", 1247473716, true)) )) ), true);
+						object pmin1 = ( (( e11 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e11, "pmin", 1247475490, true)) )) );
+						object pmax1 = ( (( e31 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e31, "pmax", 1247473716, true)) )) );
 						if (( e4 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin1.hasValue) ) {
-								pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin1 == default(object) )) {
+								pmin1 = this.tokenMin;
 							}
 							
-							if ( ! (pmax1.hasValue) ) {
-								pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax1 == default(object) )) {
+								pmax1 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2507,21 +2507,21 @@ namespace Loreline.Internal.Hscript {
 					default:
 					{
 						global::Loreline.Internal.Hscript.ExprDef e5 = global::Loreline.Internal.Hscript.ExprDef.EUnop(op, true, e);
-						global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax2 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+						object pmin2 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmin", 1247475490, true)) )) );
+						object pmax2 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 						if (( e5 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin2.hasValue) ) {
-								pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin2 == default(object) )) {
+								pmin2 = this.tokenMin;
 							}
 							
-							if ( ! (pmax2.hasValue) ) {
-								pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax2 == default(object) )) {
+								pmax2 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2536,21 +2536,21 @@ namespace Loreline.Internal.Hscript {
 			unchecked {
 				if (( ( e == null ) && this.resumeErrors )) {
 					global::Loreline.Internal.Hscript.ExprDef e2 = global::Loreline.Internal.Hscript.ExprDef.EBinop(op, e1, e);
-					global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-					global::Loreline.Internal.Lang.Null<int> pmax = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+					object pmin = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+					object pmax = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 					if (( e2 == null )) {
 						return null;
 					}
 					else {
-						if ( ! (pmin.hasValue) ) {
-							pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+						if (( pmin == default(object) )) {
+							pmin = this.tokenMin;
 						}
 						
-						if ( ! (pmax.hasValue) ) {
-							pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+						if (( pmax == default(object) )) {
+							pmax = this.tokenMax;
 						}
 						
-						return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+						return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e2, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 					}
 					
 				}
@@ -2562,43 +2562,43 @@ namespace Loreline.Internal.Hscript {
 						string op2 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).op;
 						object e21 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).e1;
 						object e3 = ( _g as global::Loreline.Internal.Hscript.ExprDef_EBinop ).e2;
-						if (( ( (((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).@get(op)).@value <= (((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).@get(op2)).@value ) &&  ! (((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, bool>) (this.opRightAssoc) )) ))) ).exists(op))  )) {
+						if (( ( global::Loreline.Internal.Lang.Runtime.compare(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).@get(((string) (op) )), ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).@get(((string) (op2) ))) <= 0 ) &&  ! (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opRightAssoc) )) ).exists(op))  )) {
 							global::Loreline.Internal.Hscript.ExprDef e4 = global::Loreline.Internal.Hscript.ExprDef.EBinop(op2, this.makeBinop(op, e1, e21), e3);
-							global::Loreline.Internal.Lang.Null<int> pmin1 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax1 = new global::Loreline.Internal.Lang.Null<int>(( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) ), true);
+							object pmin1 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+							object pmax1 = ( (( e3 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e3, "pmax", 1247473716, true)) )) );
 							if (( e4 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin1.hasValue) ) {
-									pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin1 == default(object) )) {
+									pmin1 = this.tokenMin;
 								}
 								
-								if ( ! (pmax1.hasValue) ) {
-									pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax1 == default(object) )) {
+									pmax1 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
 						else {
 							global::Loreline.Internal.Hscript.ExprDef e5 = global::Loreline.Internal.Hscript.ExprDef.EBinop(op, e1, e);
-							global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax2 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin2 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+							object pmax2 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							if (( e5 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin2.hasValue) ) {
-									pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin2 == default(object) )) {
+									pmin2 = this.tokenMin;
 								}
 								
-								if ( ! (pmax2.hasValue) ) {
-									pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax2 == default(object) )) {
+									pmax2 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -2611,43 +2611,43 @@ namespace Loreline.Internal.Hscript {
 						object e22 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETernary ).cond;
 						object e31 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETernary ).e1;
 						object e41 = ( _g as global::Loreline.Internal.Hscript.ExprDef_ETernary ).e2;
-						if (((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, bool>) (this.opRightAssoc) )) ))) ).exists(op)) {
+						if (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opRightAssoc) )) ).exists(op)) {
 							global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EBinop(op, e1, e);
-							global::Loreline.Internal.Lang.Null<int> pmin3 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax3 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin3 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+							object pmax3 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							if (( e6 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin3.hasValue) ) {
-									pmin3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin3 == default(object) )) {
+									pmin3 = this.tokenMin;
 								}
 								
-								if ( ! (pmax3.hasValue) ) {
-									pmax3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax3 == default(object) )) {
+									pmax3 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, (pmax3).toDynamic(), (pmin3).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, pmax3, pmin3, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
 						else {
 							global::Loreline.Internal.Hscript.ExprDef e7 = global::Loreline.Internal.Hscript.ExprDef.ETernary(this.makeBinop(op, e1, e22), e31, e41);
-							global::Loreline.Internal.Lang.Null<int> pmin4 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax4 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+							object pmin4 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+							object pmax4 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 							if (( e7 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin4.hasValue) ) {
-									pmin4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin4 == default(object) )) {
+									pmin4 = this.tokenMin;
 								}
 								
-								if ( ! (pmax4.hasValue) ) {
-									pmax4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax4 == default(object) )) {
+									pmax4 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e7, (pmax4).toDynamic(), (pmin4).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e7, pmax4, pmin4, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -2658,21 +2658,21 @@ namespace Loreline.Internal.Hscript {
 					default:
 					{
 						global::Loreline.Internal.Hscript.ExprDef e8 = global::Loreline.Internal.Hscript.ExprDef.EBinop(op, e1, e);
-						global::Loreline.Internal.Lang.Null<int> pmin5 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax5 = new global::Loreline.Internal.Lang.Null<int>(( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) ), true);
+						object pmin5 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax5 = ( (( e == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e, "pmax", 1247473716, true)) )) );
 						if (( e8 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin5.hasValue) ) {
-								pmin5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin5 == default(object) )) {
+								pmin5 = this.tokenMin;
 							}
 							
-							if ( ! (pmax5.hasValue) ) {
-								pmax5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax5 == default(object) )) {
+								pmax5 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, (pmax5).toDynamic(), (pmin5).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, pmax5, pmin5, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2690,21 +2690,21 @@ namespace Loreline.Internal.Hscript {
 					case "break":
 					{
 						global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EBreak;
-						global::Loreline.Internal.Lang.Null<int> pmin = default(global::Loreline.Internal.Lang.Null<int>);
-						global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin = null;
+						object pmax = null;
 						if (( e == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin.hasValue) ) {
-								pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin == default(object) )) {
+								pmin = this.tokenMin;
 							}
 							
-							if ( ! (pmax.hasValue) ) {
-								pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax == default(object) )) {
+								pmax = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2713,21 +2713,21 @@ namespace Loreline.Internal.Hscript {
 					case "continue":
 					{
 						global::Loreline.Internal.Hscript.ExprDef e1 = global::Loreline.Internal.Hscript.ExprDef.EContinue;
-						global::Loreline.Internal.Lang.Null<int> pmin1 = default(global::Loreline.Internal.Lang.Null<int>);
-						global::Loreline.Internal.Lang.Null<int> pmax1 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin1 = null;
+						object pmax1 = null;
 						if (( e1 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin1.hasValue) ) {
-								pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin1 == default(object) )) {
+								pmin1 = this.tokenMin;
 							}
 							
-							if ( ! (pmax1.hasValue) ) {
-								pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax1 == default(object) )) {
+								pmax1 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e1, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e1, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2751,21 +2751,21 @@ namespace Loreline.Internal.Hscript {
 						
 						object econd = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e3 = global::Loreline.Internal.Hscript.ExprDef.EDoWhile(econd, e2);
-						global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax2 = new global::Loreline.Internal.Lang.Null<int>(( (( econd == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(econd, "pmax", 1247473716, true)) )) ), true);
+						object pmin2 = p1;
+						object pmax2 = ( (( econd == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(econd, "pmax", 1247473716, true)) )) );
 						if (( e3 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin2.hasValue) ) {
-								pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin2 == default(object) )) {
+								pmin2 = this.tokenMin;
 							}
 							
-							if ( ! (pmax2.hasValue) ) {
-								pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax2 == default(object) )) {
+								pmax2 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2790,7 +2790,7 @@ namespace Loreline.Internal.Hscript {
 						string vname = this.getIdent();
 						{
 							global::Loreline.Internal.Hscript.Token t1 = this.token();
-							if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t1) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("in")) ))) ) {
+							if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t1) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("in")) ))) ) {
 								this.unexpected(t1);
 							}
 							
@@ -2807,21 +2807,21 @@ namespace Loreline.Internal.Hscript {
 						
 						object e4 = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e5 = global::Loreline.Internal.Hscript.ExprDef.EFor(vname, eiter, e4);
-						global::Loreline.Internal.Lang.Null<int> pmin3 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax3 = new global::Loreline.Internal.Lang.Null<int>(( (( e4 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e4, "pmax", 1247473716, true)) )) ), true);
+						object pmin3 = p1;
+						object pmax3 = ( (( e4 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e4, "pmax", 1247473716, true)) )) );
 						if (( e5 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin3.hasValue) ) {
-								pmin3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin3 == default(object) )) {
+								pmin3 = this.tokenMin;
 							}
 							
-							if ( ! (pmax3.hasValue) ) {
-								pmax3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax3 == default(object) )) {
+								pmax3 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, (pmax3).toDynamic(), (pmin3).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e5, pmax3, pmin3, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2842,23 +2842,23 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						object inf = this.parseFunctionDecl();
-						global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EFunction(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(inf, "args", 1081380189, true)) ))) ), global::Loreline.Internal.Lang.Runtime.getField(inf, "body", 1092319906, true), name, ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(inf, "ret", 5691745, true)) ));
-						global::Loreline.Internal.Lang.Null<int> pmin4 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
+						global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EFunction(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(inf, "args", 1081380189, true)) ), global::Loreline.Internal.Lang.Runtime.getField(inf, "body", 1092319906, true), name, ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(inf, "ret", 5691745, true)) ));
+						object pmin4 = p1;
 						object e7 = global::Loreline.Internal.Lang.Runtime.getField(inf, "body", 1092319906, true);
-						global::Loreline.Internal.Lang.Null<int> pmax4 = new global::Loreline.Internal.Lang.Null<int>(( (( e7 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e7, "pmax", 1247473716, true)) )) ), true);
+						object pmax4 = ( (( e7 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e7, "pmax", 1247473716, true)) )) );
 						if (( e6 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin4.hasValue) ) {
-								pmin4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin4 == default(object) )) {
+								pmin4 = this.tokenMin;
 							}
 							
-							if ( ! (pmax4.hasValue) ) {
-								pmax4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax4 == default(object) )) {
+								pmax4 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, (pmax4).toDynamic(), (pmin4).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, pmax4, pmin4, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2892,7 +2892,7 @@ namespace Loreline.Internal.Hscript {
 							tk2 = this.token();
 						}
 						
-						if (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (tk2) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("else")) ))) {
+						if (global::Loreline.Internal.Root.Type.enumEq(((object) (tk2) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("else")) ))) {
 							e21 = this.parseExpr();
 						}
 						else {
@@ -2911,21 +2911,21 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e8 = global::Loreline.Internal.Hscript.ExprDef.EIf(cond, e11, e21);
-						global::Loreline.Internal.Lang.Null<int> pmin5 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax5 = ( (( e21 == null )) ? (new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true)) : (new global::Loreline.Internal.Lang.Null<int>(( (( e21 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e21, "pmax", 1247473716, true)) )) ), true)) );
+						object pmin5 = p1;
+						object pmax5 = ( (( e21 == null )) ? ((object) (this.tokenMax) ) : ((object) (( (( e21 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e21, "pmax", 1247473716, true)) )) )) ) );
 						if (( e8 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin5.hasValue) ) {
-								pmin5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin5 == default(object) )) {
+								pmin5 = this.tokenMin;
 							}
 							
-							if ( ! (pmax5.hasValue) ) {
-								pmax5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax5 == default(object) )) {
+								pmax5 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, (pmax5).toDynamic(), (pmin5).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e8, pmax5, pmin5, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -2943,7 +2943,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case "new":
 					{
-						global::Loreline.Internal.Root.Array<string> a = new global::Loreline.Internal.Root.Array<string>();
+						global::Loreline.Internal.Root.Array a = new global::Loreline.Internal.Root.Array();
 						a.push(this.getIdent());
 						while (true) {
 							global::Loreline.Internal.Hscript.Token tk3 = this.token();
@@ -2971,23 +2971,23 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						label1: {};
-						global::Loreline.Internal.Root.Array<object> args = this.parseExprList(global::Loreline.Internal.Hscript.Token.TPClose);
+						global::Loreline.Internal.Root.Array args = this.parseExprList(global::Loreline.Internal.Hscript.Token.TPClose);
 						global::Loreline.Internal.Hscript.ExprDef e9 = global::Loreline.Internal.Hscript.ExprDef.ENew(a.@join("."), args);
-						global::Loreline.Internal.Lang.Null<int> pmin6 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax6 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin6 = p1;
+						object pmax6 = null;
 						if (( e9 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin6.hasValue) ) {
-								pmin6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin6 == default(object) )) {
+								pmin6 = this.tokenMin;
 							}
 							
-							if ( ! (pmax6.hasValue) ) {
-								pmax6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax6 == default(object) )) {
+								pmax6 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, (pmax6).toDynamic(), (pmin6).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, pmax6, pmin6, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3004,21 +3004,21 @@ namespace Loreline.Internal.Hscript {
 						
 						object e10 = ( (( tk4 == global::Loreline.Internal.Hscript.Token.TSemicolon )) ? (null) : (this.parseExpr()) );
 						global::Loreline.Internal.Hscript.ExprDef e12 = global::Loreline.Internal.Hscript.ExprDef.EReturn(e10);
-						global::Loreline.Internal.Lang.Null<int> pmin7 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax7 = ( (( e10 == null )) ? (new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true)) : (new global::Loreline.Internal.Lang.Null<int>(( (( e10 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e10, "pmax", 1247473716, true)) )) ), true)) );
+						object pmin7 = p1;
+						object pmax7 = ( (( e10 == null )) ? ((object) (this.tokenMax) ) : ((object) (( (( e10 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e10, "pmax", 1247473716, true)) )) )) ) );
 						if (( e12 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin7.hasValue) ) {
-								pmin7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin7 == default(object) )) {
+								pmin7 = this.tokenMin;
 							}
 							
-							if ( ! (pmax7.hasValue) ) {
-								pmax7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax7 == default(object) )) {
+								pmax7 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, (pmax7).toDynamic(), (pmin7).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, pmax7, pmin7, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3028,7 +3028,7 @@ namespace Loreline.Internal.Hscript {
 					{
 						object e13 = this.parseExpr();
 						object def = null;
-						global::Loreline.Internal.Root.Array<object> cases = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array cases = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							global::Loreline.Internal.Hscript.Token t5 = this.token();
 							if (( t5 != global::Loreline.Internal.Hscript.Token.TBrOpen )) {
@@ -3045,11 +3045,11 @@ namespace Loreline.Internal.Hscript {
 									switch (( tk5 as global::Loreline.Internal.Hscript.Token_TId ).s) {
 										case "case":
 										{
-											object c = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1126038837, 1337394146}, new object[]{null, new global::Loreline.Internal.Root.Array<object>(new object[]{})}, new int[]{}, new double[]{});
+											object c = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1126038837, 1337394146}, new object[]{null, new global::Loreline.Internal.Root.Array(new object[]{})}, new int[]{}, new double[]{});
 											cases.push(c);
 											while (true) {
 												object e14 = this.parseExpr();
-												((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "values", 1337394146, true)) ))) ).push(e14);
+												((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(c, "values", 1337394146, true)) ).push(e14);
 												tk5 = this.token();
 												switch (tk5._hx_index) {
 													case 10:
@@ -3074,7 +3074,7 @@ namespace Loreline.Internal.Hscript {
 												
 											}
 											label3: {};
-											global::Loreline.Internal.Root.Array<object> exprs = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+											global::Loreline.Internal.Root.Array exprs = new global::Loreline.Internal.Root.Array(new object[]{});
 											while (true) {
 												tk5 = this.token();
 												{
@@ -3137,47 +3137,47 @@ namespace Loreline.Internal.Hscript {
 											label4: {};
 											object tmp = null;
 											if (( exprs.length == 1 )) {
-												tmp = exprs[0];
+												tmp = exprs.__get(0);
 											}
 											else if (( exprs.length == 0 )) {
-												global::Loreline.Internal.Hscript.ExprDef e15 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-												global::Loreline.Internal.Lang.Null<int> pmin8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
-												global::Loreline.Internal.Lang.Null<int> pmax8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												global::Loreline.Internal.Hscript.ExprDef e15 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{}));
+												object pmin8 = this.tokenMin;
+												object pmax8 = this.tokenMin;
 												if (( e15 == null )) {
 													tmp = null;
 												}
 												else {
-													if ( ! (pmin8.hasValue) ) {
-														pmin8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+													if (( pmin8 == default(object) )) {
+														pmin8 = this.tokenMin;
 													}
 													
-													if ( ! (pmax8.hasValue) ) {
-														pmax8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+													if (( pmax8 == default(object) )) {
+														pmax8 = this.tokenMax;
 													}
 													
-													tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e15, (pmax8).toDynamic(), (pmin8).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+													tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e15, pmax8, pmin8, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 												}
 												
 											}
 											else {
 												global::Loreline.Internal.Hscript.ExprDef e16 = global::Loreline.Internal.Hscript.ExprDef.EBlock(exprs);
-												object e17 = exprs[0];
-												global::Loreline.Internal.Lang.Null<int> pmin9 = new global::Loreline.Internal.Lang.Null<int>(( (( e17 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e17, "pmin", 1247475490, true)) )) ), true);
-												object e18 = exprs[( exprs.length - 1 )];
-												global::Loreline.Internal.Lang.Null<int> pmax9 = new global::Loreline.Internal.Lang.Null<int>(( (( e18 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e18, "pmax", 1247473716, true)) )) ), true);
+												object e17 = exprs.__get(0);
+												object pmin9 = ( (( e17 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e17, "pmin", 1247475490, true)) )) );
+												object e18 = exprs.__get(( exprs.length - 1 ));
+												object pmax9 = ( (( e18 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e18, "pmax", 1247473716, true)) )) );
 												if (( e16 == null )) {
 													tmp = null;
 												}
 												else {
-													if ( ! (pmin9.hasValue) ) {
-														pmin9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+													if (( pmin9 == default(object) )) {
+														pmin9 = this.tokenMin;
 													}
 													
-													if ( ! (pmax9.hasValue) ) {
-														pmax9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+													if (( pmax9 == default(object) )) {
+														pmax9 = this.tokenMax;
 													}
 													
-													tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e16, (pmax9).toDynamic(), (pmin9).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+													tmp = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e16, pmax9, pmin9, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 												}
 												
 											}
@@ -3201,7 +3201,7 @@ namespace Loreline.Internal.Hscript {
 												
 											}
 											
-											global::Loreline.Internal.Root.Array<object> exprs1 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+											global::Loreline.Internal.Root.Array exprs1 = new global::Loreline.Internal.Root.Array(new object[]{});
 											while (true) {
 												tk5 = this.token();
 												{
@@ -3263,47 +3263,47 @@ namespace Loreline.Internal.Hscript {
 											}
 											label5: {};
 											if (( exprs1.length == 1 )) {
-												def = exprs1[0];
+												def = exprs1.__get(0);
 											}
 											else if (( exprs1.length == 0 )) {
-												global::Loreline.Internal.Hscript.ExprDef e19 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{}));
-												global::Loreline.Internal.Lang.Null<int> pmin10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
-												global::Loreline.Internal.Lang.Null<int> pmax10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												global::Loreline.Internal.Hscript.ExprDef e19 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{}));
+												object pmin10 = this.tokenMin;
+												object pmax10 = this.tokenMin;
 												if (( e19 == null )) {
 													def = null;
 												}
 												else {
-													if ( ! (pmin10.hasValue) ) {
-														pmin10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+													if (( pmin10 == default(object) )) {
+														pmin10 = this.tokenMin;
 													}
 													
-													if ( ! (pmax10.hasValue) ) {
-														pmax10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+													if (( pmax10 == default(object) )) {
+														pmax10 = this.tokenMax;
 													}
 													
-													def = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, (pmax10).toDynamic(), (pmin10).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+													def = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, pmax10, pmin10, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 												}
 												
 											}
 											else {
 												global::Loreline.Internal.Hscript.ExprDef e20 = global::Loreline.Internal.Hscript.ExprDef.EBlock(exprs1);
-												object e22 = exprs1[0];
-												global::Loreline.Internal.Lang.Null<int> pmin11 = new global::Loreline.Internal.Lang.Null<int>(( (( e22 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e22, "pmin", 1247475490, true)) )) ), true);
-												object e23 = exprs1[( exprs1.length - 1 )];
-												global::Loreline.Internal.Lang.Null<int> pmax11 = new global::Loreline.Internal.Lang.Null<int>(( (( e23 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e23, "pmax", 1247473716, true)) )) ), true);
+												object e22 = exprs1.__get(0);
+												object pmin11 = ( (( e22 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e22, "pmin", 1247475490, true)) )) );
+												object e23 = exprs1.__get(( exprs1.length - 1 ));
+												object pmax11 = ( (( e23 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e23, "pmax", 1247473716, true)) )) );
 												if (( e20 == null )) {
 													def = null;
 												}
 												else {
-													if ( ! (pmin11.hasValue) ) {
-														pmin11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+													if (( pmin11 == default(object) )) {
+														pmin11 = this.tokenMin;
 													}
 													
-													if ( ! (pmax11.hasValue) ) {
-														pmax11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+													if (( pmax11 == default(object) )) {
+														pmax11 = this.tokenMax;
 													}
 													
-													def = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e20, (pmax11).toDynamic(), (pmin11).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+													def = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e20, pmax11, pmin11, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 												}
 												
 											}
@@ -3341,21 +3341,21 @@ namespace Loreline.Internal.Hscript {
 						}
 						label2: {};
 						global::Loreline.Internal.Hscript.ExprDef e24 = global::Loreline.Internal.Hscript.ExprDef.ESwitch(e13, cases, def);
-						global::Loreline.Internal.Lang.Null<int> pmin12 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+						object pmin12 = p1;
+						object pmax12 = this.tokenMax;
 						if (( e24 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin12.hasValue) ) {
-								pmin12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin12 == default(object) )) {
+								pmin12 = this.tokenMin;
 							}
 							
-							if ( ! (pmax12.hasValue) ) {
-								pmax12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax12 == default(object) )) {
+								pmax12 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e24, (pmax12).toDynamic(), (pmin12).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e24, pmax12, pmin12, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3365,21 +3365,21 @@ namespace Loreline.Internal.Hscript {
 					{
 						object e25 = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e26 = global::Loreline.Internal.Hscript.ExprDef.EThrow(e25);
-						global::Loreline.Internal.Lang.Null<int> pmin13 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax13 = new global::Loreline.Internal.Lang.Null<int>(( (( e25 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e25, "pmax", 1247473716, true)) )) ), true);
+						object pmin13 = p1;
+						object pmax13 = ( (( e25 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e25, "pmax", 1247473716, true)) )) );
 						if (( e26 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin13.hasValue) ) {
-								pmin13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin13 == default(object) )) {
+								pmin13 = this.tokenMin;
 							}
 							
-							if ( ! (pmax13.hasValue) ) {
-								pmax13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax13 == default(object) )) {
+								pmax13 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e26, (pmax13).toDynamic(), (pmin13).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e26, pmax13, pmin13, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3390,7 +3390,7 @@ namespace Loreline.Internal.Hscript {
 						object e27 = this.parseExpr();
 						{
 							global::Loreline.Internal.Hscript.Token t7 = this.token();
-							if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t7) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("catch")) ))) ) {
+							if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t7) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("catch")) ))) ) {
 								this.unexpected(t7);
 							}
 							
@@ -3419,7 +3419,7 @@ namespace Loreline.Internal.Hscript {
 						}
 						else {
 							global::Loreline.Internal.Hscript.Token t11 = this.token();
-							if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t11) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("Dynamic")) ))) ) {
+							if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t11) ), ((object) (global::Loreline.Internal.Hscript.Token.TId("Dynamic")) ))) ) {
 								this.unexpected(t11);
 							}
 							
@@ -3435,21 +3435,21 @@ namespace Loreline.Internal.Hscript {
 						
 						object ec = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e28 = global::Loreline.Internal.Hscript.ExprDef.ETry(e27, vname1, t10, ec);
-						global::Loreline.Internal.Lang.Null<int> pmin14 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax14 = new global::Loreline.Internal.Lang.Null<int>(( (( ec == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(ec, "pmax", 1247473716, true)) )) ), true);
+						object pmin14 = p1;
+						object pmax14 = ( (( ec == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(ec, "pmax", 1247473716, true)) )) );
 						if (( e28 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin14.hasValue) ) {
-								pmin14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin14 == default(object) )) {
+								pmin14 = this.tokenMin;
 							}
 							
-							if ( ! (pmax14.hasValue) ) {
-								pmax14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax14 == default(object) )) {
+								pmax14 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e28, (pmax14).toDynamic(), (pmin14).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e28, pmax14, pmin14, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3507,21 +3507,21 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e30 = global::Loreline.Internal.Hscript.ExprDef.EVar(ident, t13, e29);
-						global::Loreline.Internal.Lang.Null<int> pmin15 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax15 = ( (( e29 == null )) ? (new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true)) : (new global::Loreline.Internal.Lang.Null<int>(( (( e29 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e29, "pmax", 1247473716, true)) )) ), true)) );
+						object pmin15 = p1;
+						object pmax15 = ( (( e29 == null )) ? ((object) (this.tokenMax) ) : ((object) (( (( e29 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e29, "pmax", 1247473716, true)) )) )) ) );
 						if (( e30 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin15.hasValue) ) {
-								pmin15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin15 == default(object) )) {
+								pmin15 = this.tokenMin;
 							}
 							
-							if ( ! (pmax15.hasValue) ) {
-								pmax15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax15 == default(object) )) {
+								pmax15 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e30, (pmax15).toDynamic(), (pmin15).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e30, pmax15, pmin15, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3532,21 +3532,21 @@ namespace Loreline.Internal.Hscript {
 						object econd1 = this.parseExpr();
 						object e31 = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e32 = global::Loreline.Internal.Hscript.ExprDef.EWhile(econd1, e31);
-						global::Loreline.Internal.Lang.Null<int> pmin16 = new global::Loreline.Internal.Lang.Null<int>(p1, true);
-						global::Loreline.Internal.Lang.Null<int> pmax16 = new global::Loreline.Internal.Lang.Null<int>(( (( e31 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e31, "pmax", 1247473716, true)) )) ), true);
+						object pmin16 = p1;
+						object pmax16 = ( (( e31 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e31, "pmax", 1247473716, true)) )) );
 						if (( e32 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin16.hasValue) ) {
-								pmin16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin16 == default(object) )) {
+								pmin16 = this.tokenMin;
 							}
 							
-							if ( ! (pmax16.hasValue) ) {
-								pmax16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax16 == default(object) )) {
+								pmax16 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e32, (pmax16).toDynamic(), (pmin16).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e32, pmax16, pmin16, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -3598,40 +3598,40 @@ namespace Loreline.Internal.Hscript {
 										string i = ( _g as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
 										object eret = this.parseExpr();
 										global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EReturn(eret);
-										global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(( (( eret == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret, "pmin", 1247475490, true)) )) ), true);
-										global::Loreline.Internal.Lang.Null<int> pmax = default(global::Loreline.Internal.Lang.Null<int>);
+										object pmin = ( (( eret == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret, "pmin", 1247475490, true)) )) );
+										object pmax = null;
 										object e2 = null;
 										if (( e == null )) {
 											e2 = null;
 										}
 										else {
-											if ( ! (pmin.hasValue) ) {
-												pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+											if (( pmin == default(object) )) {
+												pmin = this.tokenMin;
 											}
 											
-											if ( ! (pmax.hasValue) ) {
-												pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+											if (( pmax == default(object) )) {
+												pmax = this.tokenMax;
 											}
 											
-											e2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+											e2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 										}
 										
-										global::Loreline.Internal.Hscript.ExprDef e3 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{i}, new int[]{}, new double[]{})}), e2, null, null);
-										global::Loreline.Internal.Lang.Null<int> pmin1 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-										global::Loreline.Internal.Lang.Null<int> pmax1 = default(global::Loreline.Internal.Lang.Null<int>);
+										global::Loreline.Internal.Hscript.ExprDef e3 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{i}, new int[]{}, new double[]{})}), e2, null, null);
+										object pmin1 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+										object pmax1 = null;
 										if (( e3 == null )) {
 											return null;
 										}
 										else {
-											if ( ! (pmin1.hasValue) ) {
-												pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+											if (( pmin1 == default(object) )) {
+												pmin1 = this.tokenMin;
 											}
 											
-											if ( ! (pmax1.hasValue) ) {
-												pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+											if (( pmax1 == default(object) )) {
+												pmax1 = this.tokenMax;
 											}
 											
-											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+											return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e3, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 										}
 										
 									}
@@ -3644,40 +3644,40 @@ namespace Loreline.Internal.Hscript {
 											string i1 = ( _hx_tmp as global::Loreline.Internal.Hscript.ExprDef_EIdent ).v;
 											object eret1 = this.parseExpr();
 											global::Loreline.Internal.Hscript.ExprDef e4 = global::Loreline.Internal.Hscript.ExprDef.EReturn(eret1);
-											global::Loreline.Internal.Lang.Null<int> pmin2 = new global::Loreline.Internal.Lang.Null<int>(( (( eret1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret1, "pmin", 1247475490, true)) )) ), true);
-											global::Loreline.Internal.Lang.Null<int> pmax2 = default(global::Loreline.Internal.Lang.Null<int>);
+											object pmin2 = ( (( eret1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret1, "pmin", 1247475490, true)) )) );
+											object pmax2 = null;
 											object e5 = null;
 											if (( e4 == null )) {
 												e5 = null;
 											}
 											else {
-												if ( ! (pmin2.hasValue) ) {
-													pmin2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												if (( pmin2 == default(object) )) {
+													pmin2 = this.tokenMin;
 												}
 												
-												if ( ! (pmax2.hasValue) ) {
-													pmax2 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+												if (( pmax2 == default(object) )) {
+													pmax2 = this.tokenMax;
 												}
 												
-												e5 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, (pmax2).toDynamic(), (pmin2).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+												e5 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e4, pmax2, pmin2, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 											}
 											
-											global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{i1}, new int[]{}, new double[]{})}), e5, null, null);
-											global::Loreline.Internal.Lang.Null<int> pmin3 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-											global::Loreline.Internal.Lang.Null<int> pmax3 = default(global::Loreline.Internal.Lang.Null<int>);
+											global::Loreline.Internal.Hscript.ExprDef e6 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{i1}, new int[]{}, new double[]{})}), e5, null, null);
+											object pmin3 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+											object pmax3 = null;
 											if (( e6 == null )) {
 												return null;
 											}
 											else {
-												if ( ! (pmin3.hasValue) ) {
-													pmin3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												if (( pmin3 == default(object) )) {
+													pmin3 = this.tokenMin;
 												}
 												
-												if ( ! (pmax3.hasValue) ) {
-													pmax3 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+												if (( pmax3 == default(object) )) {
+													pmax3 = this.tokenMax;
 												}
 												
-												return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, (pmax3).toDynamic(), (pmin3).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+												return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e6, pmax3, pmin3, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 											}
 											
 										}
@@ -3694,40 +3694,40 @@ namespace Loreline.Internal.Hscript {
 											global::Loreline.Internal.Hscript.CType t = ( _g as global::Loreline.Internal.Hscript.ExprDef_ECheckType ).t;
 											object eret2 = this.parseExpr();
 											global::Loreline.Internal.Hscript.ExprDef e7 = global::Loreline.Internal.Hscript.ExprDef.EReturn(eret2);
-											global::Loreline.Internal.Lang.Null<int> pmin4 = new global::Loreline.Internal.Lang.Null<int>(( (( eret2 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret2, "pmin", 1247475490, true)) )) ), true);
-											global::Loreline.Internal.Lang.Null<int> pmax4 = default(global::Loreline.Internal.Lang.Null<int>);
+											object pmin4 = ( (( eret2 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(eret2, "pmin", 1247475490, true)) )) );
+											object pmax4 = null;
 											object e8 = null;
 											if (( e7 == null )) {
 												e8 = null;
 											}
 											else {
-												if ( ! (pmin4.hasValue) ) {
-													pmin4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												if (( pmin4 == default(object) )) {
+													pmin4 = this.tokenMin;
 												}
 												
-												if ( ! (pmax4.hasValue) ) {
-													pmax4 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+												if (( pmax4 == default(object) )) {
+													pmax4 = this.tokenMax;
 												}
 												
-												e8 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e7, (pmax4).toDynamic(), (pmin4).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+												e8 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e7, pmax4, pmin4, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 											}
 											
-											global::Loreline.Internal.Hscript.ExprDef e9 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array<object>(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491}, new object[]{t, i2}, new int[]{}, new double[]{})}), e8, null, null);
-											global::Loreline.Internal.Lang.Null<int> pmin5 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-											global::Loreline.Internal.Lang.Null<int> pmax5 = default(global::Loreline.Internal.Lang.Null<int>);
+											global::Loreline.Internal.Hscript.ExprDef e9 = global::Loreline.Internal.Hscript.ExprDef.EFunction(new global::Loreline.Internal.Root.Array(new object[]{new global::Loreline.Internal.Lang.DynamicObject(new int[]{116, 1224700491}, new object[]{t, i2}, new int[]{}, new double[]{})}), e8, null, null);
+											object pmin5 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+											object pmax5 = null;
 											if (( e9 == null )) {
 												return null;
 											}
 											else {
-												if ( ! (pmin5.hasValue) ) {
-													pmin5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+												if (( pmin5 == default(object) )) {
+													pmin5 = this.tokenMin;
 												}
 												
-												if ( ! (pmax5.hasValue) ) {
-													pmax5 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+												if (( pmax5 == default(object) )) {
+													pmax5 = this.tokenMax;
 												}
 												
-												return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, (pmax5).toDynamic(), (pmin5).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+												return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e9, pmax5, pmin5, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 											}
 											
 										}
@@ -3748,7 +3748,7 @@ namespace Loreline.Internal.Hscript {
 							this.unexpected(tk);
 						}
 						
-						if (global::Loreline.Internal.Lang.Runtime.eq((((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).@get(op1)).toDynamic(), -1)) {
+						if (global::Loreline.Internal.Lang.Runtime.eq(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).@get(((string) (op1) )), -1)) {
 							bool tmp = default(bool);
 							if ( ! (this.isBlock(e1)) ) {
 								global::Loreline.Internal.Hscript.ExprDef _g1 = ((global::Loreline.Internal.Hscript.ExprDef) (global::Loreline.Internal.Lang.Runtime.getField(e1, "e", 101, true)) );
@@ -3776,22 +3776,22 @@ namespace Loreline.Internal.Hscript {
 							}
 							
 							global::Loreline.Internal.Hscript.ExprDef e10 = global::Loreline.Internal.Hscript.ExprDef.EUnop(op1, false, e1);
-							global::Loreline.Internal.Lang.Null<int> pmin6 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-							global::Loreline.Internal.Lang.Null<int> pmax6 = default(global::Loreline.Internal.Lang.Null<int>);
+							object pmin6 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+							object pmax6 = null;
 							object tmp1 = null;
 							if (( e10 == null )) {
 								tmp1 = null;
 							}
 							else {
-								if ( ! (pmin6.hasValue) ) {
-									pmin6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin6 == default(object) )) {
+									pmin6 = this.tokenMin;
 								}
 								
-								if ( ! (pmax6.hasValue) ) {
-									pmax6 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax6 == default(object) )) {
+									pmax6 = this.tokenMax;
 								}
 								
-								tmp1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e10, (pmax6).toDynamic(), (pmin6).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								tmp1 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e10, pmax6, pmin6, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 							return this.parseExprNext(tmp1);
@@ -3804,22 +3804,22 @@ namespace Loreline.Internal.Hscript {
 					case 4:
 					{
 						global::Loreline.Internal.Hscript.ExprDef e11 = global::Loreline.Internal.Hscript.ExprDef.ECall(e1, this.parseExprList(global::Loreline.Internal.Hscript.Token.TPClose));
-						global::Loreline.Internal.Lang.Null<int> pmin7 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax7 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin7 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax7 = null;
 						object tmp2 = null;
 						if (( e11 == null )) {
 							tmp2 = null;
 						}
 						else {
-							if ( ! (pmin7.hasValue) ) {
-								pmin7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin7 == default(object) )) {
+								pmin7 = this.tokenMin;
 							}
 							
-							if ( ! (pmax7.hasValue) ) {
-								pmax7 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax7 == default(object) )) {
+								pmax7 = this.tokenMax;
 							}
 							
-							tmp2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e11, (pmax7).toDynamic(), (pmin7).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							tmp2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e11, pmax7, pmin7, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(tmp2);
@@ -3830,22 +3830,22 @@ namespace Loreline.Internal.Hscript {
 					{
 						string field = this.getIdent();
 						global::Loreline.Internal.Hscript.ExprDef e12 = global::Loreline.Internal.Hscript.ExprDef.EField(e1, field);
-						global::Loreline.Internal.Lang.Null<int> pmin8 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax8 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin8 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax8 = null;
 						object tmp3 = null;
 						if (( e12 == null )) {
 							tmp3 = null;
 						}
 						else {
-							if ( ! (pmin8.hasValue) ) {
-								pmin8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin8 == default(object) )) {
+								pmin8 = this.tokenMin;
 							}
 							
-							if ( ! (pmax8.hasValue) ) {
-								pmax8 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax8 == default(object) )) {
+								pmax8 = this.tokenMax;
 							}
 							
-							tmp3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, (pmax8).toDynamic(), (pmin8).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							tmp3 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e12, pmax8, pmin8, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(tmp3);
@@ -3857,174 +3857,174 @@ namespace Loreline.Internal.Hscript {
 						string field1 = this.getIdent();
 						string tmp4 = global::Loreline.Internal.Lang.Runtime.concat("__a_", global::Loreline.Internal.Lang.Runtime.toString(this.uid++));
 						global::Loreline.Internal.Hscript.ExprDef e13 = global::Loreline.Internal.Hscript.ExprDef.EVar(tmp4, null, e1);
-						global::Loreline.Internal.Lang.Null<int> pmin9 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax9 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+						object pmin9 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax9 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 						object e14 = null;
 						if (( e13 == null )) {
 							e14 = null;
 						}
 						else {
-							if ( ! (pmin9.hasValue) ) {
-								pmin9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin9 == default(object) )) {
+								pmin9 = this.tokenMin;
 							}
 							
-							if ( ! (pmax9.hasValue) ) {
-								pmax9 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax9 == default(object) )) {
+								pmax9 = this.tokenMax;
 							}
 							
-							e14 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e13, (pmax9).toDynamic(), (pmin9).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e14 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e13, pmax9, pmin9, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e15 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp4);
-						global::Loreline.Internal.Lang.Null<int> pmin10 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax10 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+						object pmin10 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax10 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 						object e16 = null;
 						if (( e15 == null )) {
 							e16 = null;
 						}
 						else {
-							if ( ! (pmin10.hasValue) ) {
-								pmin10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin10 == default(object) )) {
+								pmin10 = this.tokenMin;
 							}
 							
-							if ( ! (pmax10.hasValue) ) {
-								pmax10 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax10 == default(object) )) {
+								pmax10 = this.tokenMax;
 							}
 							
-							e16 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e15, (pmax10).toDynamic(), (pmin10).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e16 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e15, pmax10, pmin10, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e17 = global::Loreline.Internal.Hscript.ExprDef.EIdent("null");
-						global::Loreline.Internal.Lang.Null<int> pmin11 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax11 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+						object pmin11 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax11 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 						object e18 = null;
 						if (( e17 == null )) {
 							e18 = null;
 						}
 						else {
-							if ( ! (pmin11.hasValue) ) {
-								pmin11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin11 == default(object) )) {
+								pmin11 = this.tokenMin;
 							}
 							
-							if ( ! (pmax11.hasValue) ) {
-								pmax11 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax11 == default(object) )) {
+								pmax11 = this.tokenMax;
 							}
 							
-							e18 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e17, (pmax11).toDynamic(), (pmin11).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e18 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e17, pmax11, pmin11, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e19 = global::Loreline.Internal.Hscript.ExprDef.EBinop("==", e16, e18);
-						global::Loreline.Internal.Lang.Null<int> pmin12 = default(global::Loreline.Internal.Lang.Null<int>);
-						global::Loreline.Internal.Lang.Null<int> pmax12 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin12 = null;
+						object pmax12 = null;
 						object e20 = null;
 						if (( e19 == null )) {
 							e20 = null;
 						}
 						else {
-							if ( ! (pmin12.hasValue) ) {
-								pmin12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin12 == default(object) )) {
+								pmin12 = this.tokenMin;
 							}
 							
-							if ( ! (pmax12.hasValue) ) {
-								pmax12 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax12 == default(object) )) {
+								pmax12 = this.tokenMax;
 							}
 							
-							e20 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, (pmax12).toDynamic(), (pmin12).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e20 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e19, pmax12, pmin12, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e21 = global::Loreline.Internal.Hscript.ExprDef.EIdent("null");
-						global::Loreline.Internal.Lang.Null<int> pmin13 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax13 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+						object pmin13 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax13 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 						object e22 = null;
 						if (( e21 == null )) {
 							e22 = null;
 						}
 						else {
-							if ( ! (pmin13.hasValue) ) {
-								pmin13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin13 == default(object) )) {
+								pmin13 = this.tokenMin;
 							}
 							
-							if ( ! (pmax13.hasValue) ) {
-								pmax13 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax13 == default(object) )) {
+								pmax13 = this.tokenMax;
 							}
 							
-							e22 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e21, (pmax13).toDynamic(), (pmin13).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e22 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e21, pmax13, pmin13, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e23 = global::Loreline.Internal.Hscript.ExprDef.EIdent(tmp4);
-						global::Loreline.Internal.Lang.Null<int> pmin14 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax14 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) ), true);
+						object pmin14 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax14 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmax", 1247473716, true)) )) );
 						object e24 = null;
 						if (( e23 == null )) {
 							e24 = null;
 						}
 						else {
-							if ( ! (pmin14.hasValue) ) {
-								pmin14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin14 == default(object) )) {
+								pmin14 = this.tokenMin;
 							}
 							
-							if ( ! (pmax14.hasValue) ) {
-								pmax14 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax14 == default(object) )) {
+								pmax14 = this.tokenMax;
 							}
 							
-							e24 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e23, (pmax14).toDynamic(), (pmin14).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e24 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e23, pmax14, pmin14, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e25 = global::Loreline.Internal.Hscript.ExprDef.EField(e24, field1);
-						global::Loreline.Internal.Lang.Null<int> pmin15 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax15 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin15 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax15 = null;
 						object e26 = null;
 						if (( e25 == null )) {
 							e26 = null;
 						}
 						else {
-							if ( ! (pmin15.hasValue) ) {
-								pmin15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin15 == default(object) )) {
+								pmin15 = this.tokenMin;
 							}
 							
-							if ( ! (pmax15.hasValue) ) {
-								pmax15 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax15 == default(object) )) {
+								pmax15 = this.tokenMax;
 							}
 							
-							e26 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e25, (pmax15).toDynamic(), (pmin15).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e26 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e25, pmax15, pmin15, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e27 = global::Loreline.Internal.Hscript.ExprDef.ETernary(e20, e22, e26);
-						global::Loreline.Internal.Lang.Null<int> pmin16 = default(global::Loreline.Internal.Lang.Null<int>);
-						global::Loreline.Internal.Lang.Null<int> pmax16 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin16 = null;
+						object pmax16 = null;
 						object e28 = null;
 						if (( e27 == null )) {
 							e28 = null;
 						}
 						else {
-							if ( ! (pmin16.hasValue) ) {
-								pmin16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin16 == default(object) )) {
+								pmin16 = this.tokenMin;
 							}
 							
-							if ( ! (pmax16.hasValue) ) {
-								pmax16 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax16 == default(object) )) {
+								pmax16 = this.tokenMax;
 							}
 							
-							e28 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e27, (pmax16).toDynamic(), (pmin16).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e28 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e27, pmax16, pmin16, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
-						global::Loreline.Internal.Hscript.ExprDef e29 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array<object>(new object[]{e14, e28}));
-						global::Loreline.Internal.Lang.Null<int> pmin17 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax17 = default(global::Loreline.Internal.Lang.Null<int>);
+						global::Loreline.Internal.Hscript.ExprDef e29 = global::Loreline.Internal.Hscript.ExprDef.EBlock(new global::Loreline.Internal.Root.Array(new object[]{e14, e28}));
+						object pmin17 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax17 = null;
 						object e30 = null;
 						if (( e29 == null )) {
 							e30 = null;
 						}
 						else {
-							if ( ! (pmin17.hasValue) ) {
-								pmin17 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin17 == default(object) )) {
+								pmin17 = this.tokenMin;
 							}
 							
-							if ( ! (pmax17.hasValue) ) {
-								pmax17 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax17 == default(object) )) {
+								pmax17 = this.tokenMax;
 							}
 							
-							e30 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e29, (pmax17).toDynamic(), (pmin17).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							e30 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e29, pmax17, pmin17, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(e30);
@@ -4043,22 +4043,22 @@ namespace Loreline.Internal.Hscript {
 						}
 						
 						global::Loreline.Internal.Hscript.ExprDef e31 = global::Loreline.Internal.Hscript.ExprDef.EArray(e1, e210);
-						global::Loreline.Internal.Lang.Null<int> pmin18 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax18 = default(global::Loreline.Internal.Lang.Null<int>);
+						object pmin18 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax18 = null;
 						object tmp5 = null;
 						if (( e31 == null )) {
 							tmp5 = null;
 						}
 						else {
-							if ( ! (pmin18.hasValue) ) {
-								pmin18 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin18 == default(object) )) {
+								pmin18 = this.tokenMin;
 							}
 							
-							if ( ! (pmax18.hasValue) ) {
-								pmax18 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax18 == default(object) )) {
+								pmax18 = this.tokenMax;
 							}
 							
-							tmp5 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e31, (pmax18).toDynamic(), (pmin18).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							tmp5 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e31, pmax18, pmin18, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 						return this.parseExprNext(tmp5);
@@ -4078,21 +4078,21 @@ namespace Loreline.Internal.Hscript {
 						
 						object e32 = this.parseExpr();
 						global::Loreline.Internal.Hscript.ExprDef e33 = global::Loreline.Internal.Hscript.ExprDef.ETernary(e1, e211, e32);
-						global::Loreline.Internal.Lang.Null<int> pmin19 = new global::Loreline.Internal.Lang.Null<int>(( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) ), true);
-						global::Loreline.Internal.Lang.Null<int> pmax19 = new global::Loreline.Internal.Lang.Null<int>(( (( e32 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e32, "pmax", 1247473716, true)) )) ), true);
+						object pmin19 = ( (( e1 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e1, "pmin", 1247475490, true)) )) );
+						object pmax19 = ( (( e32 == null )) ? (0) : (((int) (global::Loreline.Internal.Lang.Runtime.getField_f(e32, "pmax", 1247473716, true)) )) );
 						if (( e33 == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin19.hasValue) ) {
-								pmin19 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin19 == default(object) )) {
+								pmin19 = this.tokenMin;
 							}
 							
-							if ( ! (pmax19.hasValue) ) {
-								pmax19 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax19 == default(object) )) {
+								pmax19 = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e33, (pmax19).toDynamic(), (pmin19).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e33, pmax19, pmin19, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -4115,9 +4115,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseFunctionArgs() {
+		public virtual global::Loreline.Internal.Root.Array parseFunctionArgs() {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> args = new global::Loreline.Internal.Root.Array<object>();
+				global::Loreline.Internal.Root.Array args = new global::Loreline.Internal.Root.Array();
 				global::Loreline.Internal.Hscript.Token tk = this.token();
 				if (( tk != global::Loreline.Internal.Hscript.Token.TPClose )) {
 					bool done = false;
@@ -4141,12 +4141,12 @@ namespace Loreline.Internal.Hscript {
 						object arg = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491}, new object[]{name}, new int[]{}, new double[]{});
 						args.push(arg);
 						if (opt) {
-							global::Loreline.Internal.Lang.Null<bool> __temp_expr1 = global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.setField(arg, "opt", 5545011, true));
+							global::Loreline.Internal.Lang.Runtime.setField(arg, "opt", 5545011, true);
 						}
 						
 						if (this.allowTypes) {
 							if (this.maybe(global::Loreline.Internal.Hscript.Token.TDoubleDot)) {
-								global::Loreline.Internal.Hscript.CType __temp_expr2 = ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.setField(arg, "t", 116, this.parseType())) );
+								global::Loreline.Internal.Hscript.CType __temp_expr1 = ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.setField(arg, "t", 116, this.parseType())) );
 							}
 							
 							if (this.maybe(global::Loreline.Internal.Hscript.Token.TOp("="))) {
@@ -4197,7 +4197,7 @@ namespace Loreline.Internal.Hscript {
 				
 			}
 			
-			global::Loreline.Internal.Root.Array<object> args = this.parseFunctionArgs();
+			global::Loreline.Internal.Root.Array args = this.parseFunctionArgs();
 			global::Loreline.Internal.Hscript.CType ret = null;
 			if (this.allowTypes) {
 				global::Loreline.Internal.Hscript.Token tk = this.token();
@@ -4220,8 +4220,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<string> parsePath() {
-			global::Loreline.Internal.Root.Array<string> path = new global::Loreline.Internal.Root.Array<string>(new string[]{this.getIdent()});
+		public virtual global::Loreline.Internal.Root.Array parsePath() {
+			global::Loreline.Internal.Root.Array path = new global::Loreline.Internal.Root.Array(new object[]{this.getIdent()});
 			while (true) {
 				global::Loreline.Internal.Hscript.Token t = this.token();
 				if (( t != global::Loreline.Internal.Hscript.Token.TDot )) {
@@ -4255,13 +4255,13 @@ namespace Loreline.Internal.Hscript {
 							this.tokenMax = this.oldTokenMax;
 						}
 						
-						global::Loreline.Internal.Root.Array<string> path = this.parsePath();
-						global::Loreline.Internal.Root.Array<object> @params = null;
+						global::Loreline.Internal.Root.Array path = this.parsePath();
+						global::Loreline.Internal.Root.Array @params = null;
 						t = this.token();
 						if (( t._hx_index == 3 )) {
 							string op = ( t as global::Loreline.Internal.Hscript.Token_TOp ).s;
 							if (( op == "<" )) {
-								@params = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+								@params = new global::Loreline.Internal.Root.Array(new object[]{});
 								while (true) {
 									@params.push(this.parseType());
 									t = this.token();
@@ -4274,9 +4274,9 @@ namespace Loreline.Internal.Hscript {
 													goto label1;
 												}
 												
-												if (global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(op1, 0)).toDynamic(), 62)) {
-													global::Loreline.Internal.Ds.List<object> tmp = this.tokens;
-													global::Loreline.Internal.Hscript.Token tmp1 = global::Loreline.Internal.Hscript.Token.TOp(global::Loreline.Internal.Lang.StringExt.substr(op1, 1, default(global::Loreline.Internal.Lang.Null<int>)));
+												if (global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(op1, 0), 62)) {
+													global::Loreline.Internal.Ds.List tmp = this.tokens;
+													global::Loreline.Internal.Hscript.Token tmp1 = global::Loreline.Internal.Hscript.Token.TOp(global::Loreline.Internal.Lang.StringExt.substr(op1, 1, null));
 													tmp.@add(new global::Loreline.Internal.Lang.DynamicObject(new int[]{116}, new object[]{tmp1}, new int[]{5442212, 5443986}, new double[]{((double) (this.tokenMax) ), ((double) (( ( this.tokenMax - op1.Length ) - 1 )) )}));
 													goto label1;
 												}
@@ -4344,12 +4344,12 @@ namespace Loreline.Internal.Hscript {
 							{
 								string _g = ( a as global::Loreline.Internal.Hscript.Token_TId ).s;
 								if (( b._hx_index == 15 )) {
-									global::Loreline.Internal.Root.Array<object> _g1 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+									global::Loreline.Internal.Root.Array _g1 = new global::Loreline.Internal.Root.Array(new object[]{});
 									{
 										int _g2 = 0;
-										global::Loreline.Internal.Root.Array<object> _g3 = this.parseFunctionArgs();
+										global::Loreline.Internal.Root.Array _g3 = this.parseFunctionArgs();
 										while (( _g2 < _g3.length )) {
-											object arg = _g3[_g2];
+											object arg = _g3.__get(_g2);
 											 ++ _g2;
 											{
 												object _g4 = global::Loreline.Internal.Lang.Runtime.getField(arg, "value", 834174833, true);
@@ -4365,12 +4365,12 @@ namespace Loreline.Internal.Hscript {
 												
 											}
 											
-											_g1.push(global::Loreline.Internal.Hscript.CType.CTNamed(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(arg, "name", 1224700491, true)), ( (((global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(arg, "opt", 5545011, true)))).@value) ? (global::Loreline.Internal.Hscript.CType.CTOpt(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg, "t", 116, true)) ))) : (((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg, "t", 116, true)) )) )));
+											_g1.push(global::Loreline.Internal.Hscript.CType.CTNamed(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(arg, "name", 1224700491, true)), ( (global::Loreline.Internal.Lang.Runtime.toBool((global::Loreline.Internal.Lang.Runtime.getField(arg, "opt", 5545011, true)))) ? (global::Loreline.Internal.Hscript.CType.CTOpt(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg, "t", 116, true)) ))) : (((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg, "t", 116, true)) )) )));
 										}
 										
 									}
 									
-									global::Loreline.Internal.Root.Array<object> args = _g1;
+									global::Loreline.Internal.Root.Array args = _g1;
 									return ((global::Loreline.Internal.Hscript.CType) (withReturn.__hx_invoke1_o(default(double), args)) );
 								}
 								else {
@@ -4385,7 +4385,7 @@ namespace Loreline.Internal.Hscript {
 										
 										case 10:
 										{
-											global::Loreline.Internal.Root.Array<object> args1 = new global::Loreline.Internal.Root.Array<object>(new object[]{t1});
+											global::Loreline.Internal.Root.Array args1 = new global::Loreline.Internal.Root.Array(new object[]{t1});
 											do {
 												args1.push(this.parseType());
 											}
@@ -4417,12 +4417,12 @@ namespace Loreline.Internal.Hscript {
 							
 							case 5:
 							{
-								global::Loreline.Internal.Root.Array<object> _g6 = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+								global::Loreline.Internal.Root.Array _g6 = new global::Loreline.Internal.Root.Array(new object[]{});
 								{
 									int _g7 = 0;
-									global::Loreline.Internal.Root.Array<object> _g8 = this.parseFunctionArgs();
+									global::Loreline.Internal.Root.Array _g8 = this.parseFunctionArgs();
 									while (( _g7 < _g8.length )) {
-										object arg1 = _g8[_g7];
+										object arg1 = _g8.__get(_g7);
 										 ++ _g7;
 										{
 											object _g9 = global::Loreline.Internal.Lang.Runtime.getField(arg1, "value", 834174833, true);
@@ -4438,12 +4438,12 @@ namespace Loreline.Internal.Hscript {
 											
 										}
 										
-										_g6.push(global::Loreline.Internal.Hscript.CType.CTNamed(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(arg1, "name", 1224700491, true)), ( (((global::Loreline.Internal.Lang.Null<object>.ofDynamic<bool>(global::Loreline.Internal.Lang.Runtime.getField(arg1, "opt", 5545011, true)))).@value) ? (global::Loreline.Internal.Hscript.CType.CTOpt(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg1, "t", 116, true)) ))) : (((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg1, "t", 116, true)) )) )));
+										_g6.push(global::Loreline.Internal.Hscript.CType.CTNamed(global::Loreline.Internal.Lang.Runtime.toString(global::Loreline.Internal.Lang.Runtime.getField(arg1, "name", 1224700491, true)), ( (global::Loreline.Internal.Lang.Runtime.toBool((global::Loreline.Internal.Lang.Runtime.getField(arg1, "opt", 5545011, true)))) ? (global::Loreline.Internal.Hscript.CType.CTOpt(((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg1, "t", 116, true)) ))) : (((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(arg1, "t", 116, true)) )) )));
 									}
 									
 								}
 								
-								global::Loreline.Internal.Root.Array<object> args2 = _g6;
+								global::Loreline.Internal.Root.Array args2 = _g6;
 								return ((global::Loreline.Internal.Hscript.CType) (withReturn.__hx_invoke1_o(default(double), args2)) );
 							}
 							
@@ -4461,7 +4461,7 @@ namespace Loreline.Internal.Hscript {
 									
 									case 10:
 									{
-										global::Loreline.Internal.Root.Array<object> args3 = new global::Loreline.Internal.Root.Array<object>(new object[]{t4});
+										global::Loreline.Internal.Root.Array args3 = new global::Loreline.Internal.Root.Array(new object[]{t4});
 										do {
 											args3.push(this.parseType());
 										}
@@ -4495,8 +4495,8 @@ namespace Loreline.Internal.Hscript {
 					
 					case 6:
 					{
-						global::Loreline.Internal.Root.Array<object> fields = new global::Loreline.Internal.Root.Array<object>(new object[]{});
-						global::Loreline.Internal.Root.Array<object> meta = null;
+						global::Loreline.Internal.Root.Array fields = new global::Loreline.Internal.Root.Array(new object[]{});
+						global::Loreline.Internal.Root.Array meta = null;
 						while (true) {
 							t = this.token();
 							switch (t._hx_index) {
@@ -4589,12 +4589,12 @@ namespace Loreline.Internal.Hscript {
 									string name2 = ( t as global::Loreline.Internal.Hscript.Token_TMeta ).s;
 									{
 										if (( meta == null )) {
-											meta = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+											meta = new global::Loreline.Internal.Root.Array(new object[]{});
 										}
 										
 										object __temp_stmt6 = null;
 										{
-											global::Loreline.Internal.Root.Array<object> __temp_odecl3 = this.parseMetaArgs();
+											global::Loreline.Internal.Root.Array __temp_odecl3 = this.parseMetaArgs();
 											__temp_stmt6 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491, 1836776262}, new object[]{name2, __temp_odecl3}, new int[]{}, new double[]{});
 										}
 										
@@ -4659,21 +4659,21 @@ namespace Loreline.Internal.Hscript {
 				global::Loreline.Internal.Hscript.CType t2 = this.parseType();
 				if (( t2._hx_index == 1 )) {
 					global::Loreline.Internal.Hscript.CType _g = ( t2 as global::Loreline.Internal.Hscript.CType_CTFun ).ret;
-					global::Loreline.Internal.Root.Array<object> args = ( t2 as global::Loreline.Internal.Hscript.CType_CTFun ).args;
+					global::Loreline.Internal.Root.Array args = ( t2 as global::Loreline.Internal.Hscript.CType_CTFun ).args;
 					args.unshift(t);
 					return t2;
 				}
 				else {
-					return global::Loreline.Internal.Hscript.CType.CTFun(new global::Loreline.Internal.Root.Array<object>(new object[]{t}), t2);
+					return global::Loreline.Internal.Hscript.CType.CTFun(new global::Loreline.Internal.Root.Array(new object[]{t}), t2);
 				}
 				
 			}
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseExprList(global::Loreline.Internal.Hscript.Token etk) {
+		public virtual global::Loreline.Internal.Root.Array parseExprList(global::Loreline.Internal.Hscript.Token etk) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> args = new global::Loreline.Internal.Root.Array<object>();
+				global::Loreline.Internal.Root.Array args = new global::Loreline.Internal.Root.Array();
 				global::Loreline.Internal.Hscript.Token tk = this.token();
 				if (( tk == etk )) {
 					return args;
@@ -4706,18 +4706,18 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseModule(string content, string origin, global::Loreline.Internal.Lang.Null<int> position) {
-			global::Loreline.Internal.Lang.Null<int> position1 = ( ( ! (position.hasValue) ) ? (new global::Loreline.Internal.Lang.Null<int>(0, true)) : (position) );
+		public virtual global::Loreline.Internal.Root.Array parseModule(string content, string origin, object position) {
+			object position1 = ( (( position == default(object) )) ? (((object) (0) )) : (position) );
 			if (( origin == null )) {
 				origin = "global::Loreline.Internal.Hscript";
 			}
 			
-			this.initParser(origin, (position1).@value);
+			this.initParser(origin, ((int) (global::Loreline.Internal.Lang.Runtime.toInt(position1)) ));
 			this.input = content;
 			this.readPos = 0;
 			this.allowTypes = true;
 			this.allowMetadata = true;
-			global::Loreline.Internal.Root.Array<object> decls = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+			global::Loreline.Internal.Root.Array decls = new global::Loreline.Internal.Root.Array(new object[]{});
 			while (true) {
 				global::Loreline.Internal.Hscript.Token tk = this.token();
 				if (( tk == global::Loreline.Internal.Hscript.Token.TEof )) {
@@ -4737,16 +4737,16 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Root.Array<object> parseMetadata() {
+		public virtual global::Loreline.Internal.Root.Array parseMetadata() {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> meta = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array meta = new global::Loreline.Internal.Root.Array(new object[]{});
 				while (true) {
 					global::Loreline.Internal.Hscript.Token tk = this.token();
 					if (( tk._hx_index == 16 )) {
 						string name = ( tk as global::Loreline.Internal.Hscript.Token_TMeta ).s;
 						object __temp_stmt2 = null;
 						{
-							global::Loreline.Internal.Root.Array<object> __temp_odecl1 = this.parseMetaArgs();
+							global::Loreline.Internal.Root.Array __temp_odecl1 = this.parseMetaArgs();
 							__temp_stmt2 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{1224700491, 1836776262}, new object[]{name, __temp_odecl1}, new int[]{}, new double[]{});
 						}
 						
@@ -4783,7 +4783,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual global::Loreline.Internal.Hscript.ModuleDecl parseModuleDecl() {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> meta = this.parseMetadata();
+				global::Loreline.Internal.Root.Array meta = this.parseMetadata();
 				string ident = this.getIdent();
 				bool isPrivate = false;
 				bool isExtern = false;
@@ -4819,7 +4819,7 @@ namespace Loreline.Internal.Hscript {
 						string name = this.getIdent();
 						object @params = this.parseParams();
 						global::Loreline.Internal.Hscript.CType extend = null;
-						global::Loreline.Internal.Root.Array<object> implement = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array implement = new global::Loreline.Internal.Root.Array(new object[]{});
 						while (true) {
 							global::Loreline.Internal.Hscript.Token t = this.token();
 							if (( t._hx_index == 2 )) {
@@ -4864,7 +4864,7 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						label2: {};
-						global::Loreline.Internal.Root.Array<object> fields = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+						global::Loreline.Internal.Root.Array fields = new global::Loreline.Internal.Root.Array(new object[]{});
 						{
 							global::Loreline.Internal.Hscript.Token t1 = this.token();
 							if (( t1 != global::Loreline.Internal.Hscript.Token.TBrOpen )) {
@@ -4883,7 +4883,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case "import":
 					{
-						global::Loreline.Internal.Root.Array<string> path = new global::Loreline.Internal.Root.Array<string>(new string[]{this.getIdent()});
+						global::Loreline.Internal.Root.Array path = new global::Loreline.Internal.Root.Array(new object[]{this.getIdent()});
 						bool star = false;
 						while (true) {
 							global::Loreline.Internal.Hscript.Token t2 = this.token();
@@ -4938,13 +4938,13 @@ namespace Loreline.Internal.Hscript {
 							
 						}
 						
-						return global::Loreline.Internal.Hscript.ModuleDecl.DImport(path, new global::Loreline.Internal.Lang.Null<bool>(star, true));
+						return global::Loreline.Internal.Hscript.ModuleDecl.DImport(path, star);
 					}
 					
 					
 					case "package":
 					{
-						global::Loreline.Internal.Root.Array<string> path1 = this.parsePath();
+						global::Loreline.Internal.Root.Array path1 = this.parsePath();
 						{
 							global::Loreline.Internal.Hscript.Token t4 = this.token();
 							if (( t4 != global::Loreline.Internal.Hscript.Token.TSemicolon )) {
@@ -4963,7 +4963,7 @@ namespace Loreline.Internal.Hscript {
 						object params1 = this.parseParams();
 						{
 							global::Loreline.Internal.Hscript.Token t5 = this.token();
-							if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (t5) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("=")) ))) ) {
+							if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (t5) ), ((object) (global::Loreline.Internal.Hscript.Token.TOp("=")) ))) ) {
 								this.unexpected(t5);
 							}
 							
@@ -4989,8 +4989,8 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual object parseField() {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> meta = this.parseMetadata();
-				global::Loreline.Internal.Root.Array<object> access = new global::Loreline.Internal.Root.Array<object>(new object[]{});
+				global::Loreline.Internal.Root.Array meta = this.parseMetadata();
+				global::Loreline.Internal.Root.Array access = new global::Loreline.Internal.Root.Array(new object[]{});
 				while (true) {
 					string id = this.getIdent();
 					switch (id) {
@@ -5001,7 +5001,7 @@ namespace Loreline.Internal.Hscript {
 							{
 								object __temp_stmt6 = null;
 								{
-									global::Loreline.Internal.Root.Array<object> __temp_odecl1 = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(inf, "args", 1081380189, true)) ))) );
+									global::Loreline.Internal.Root.Array __temp_odecl1 = ((global::Loreline.Internal.Root.Array) (global::Loreline.Internal.Lang.Runtime.getField(inf, "args", 1081380189, true)) );
 									object __temp_odecl2 = global::Loreline.Internal.Lang.Runtime.getField(inf, "body", 1092319906, true);
 									global::Loreline.Internal.Hscript.CType __temp_odecl3 = ((global::Loreline.Internal.Hscript.CType) (global::Loreline.Internal.Lang.Runtime.getField(inf, "ret", 5691745, true)) );
 									__temp_stmt6 = new global::Loreline.Internal.Lang.DynamicObject(new int[]{5691745, 1081380189, 1126038837}, new object[]{__temp_odecl3, __temp_odecl1, __temp_odecl2}, new int[]{}, new double[]{});
@@ -5104,7 +5104,7 @@ namespace Loreline.Internal.Hscript {
 										tmp = false;
 									}
 									else if (( type._hx_index == 2 )) {
-										global::Loreline.Internal.Root.Array<object> _g = ( type as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
+										global::Loreline.Internal.Root.Array _g = ( type as global::Loreline.Internal.Hscript.CType_CTAnon ).fields;
 										tmp = true;
 									}
 									else {
@@ -5347,7 +5347,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual global::Loreline.Internal.Hscript.Token token() {
 			unchecked {
-				object t = (this.tokens.pop()).@value;
+				object t = this.tokens.pop();
 				if (( t != null )) {
 					this.tokenMin = ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(t, "min", 5443986, true)) );
 					this.tokenMax = ((int) (global::Loreline.Internal.Lang.Runtime.getField_f(t, "max", 5442212, true)) );
@@ -5419,13 +5419,13 @@ namespace Loreline.Internal.Hscript {
 							string s1 = this.input;
 							int index1 = this.readPos++;
 							@char = ( (( ((uint) (index1) ) < s1.Length )) ? (((int) (s1[index1]) )) : (-1) );
-							if (this.idents[@char]) {
+							if (global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char))) {
 								string id = global::Loreline.Internal.Lang.StringExt.fromCharCode(@char);
 								while (true) {
 									string s2 = this.input;
 									int index2 = this.readPos++;
 									@char = ( (( ((uint) (index2) ) < s2.Length )) ? (((int) (s2[index2]) )) : (-1) );
-									if ( ! (this.idents[@char]) ) {
+									if ( ! (global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char))) ) {
 										this.@char = @char;
 										return this.preprocess(id);
 									}
@@ -5615,14 +5615,14 @@ namespace Loreline.Internal.Hscript {
 									case 101:
 									{
 										global::Loreline.Internal.Hscript.Token tk = this.token();
-										global::Loreline.Internal.Lang.Null<int> pow = default(global::Loreline.Internal.Lang.Null<int>);
+										object pow = null;
 										switch (tk._hx_index) {
 											case 1:
 											{
 												global::Loreline.Internal.Hscript.Const _g = ( tk as global::Loreline.Internal.Hscript.Token_TConst ).c;
 												if (( _g._hx_index == 0 )) {
 													int e = ( _g as global::Loreline.Internal.Hscript.Const_CInt ).v;
-													pow = new global::Loreline.Internal.Lang.Null<int>(e, true);
+													pow = e;
 												}
 												else {
 													this.tokens.push(new global::Loreline.Internal.Lang.DynamicObject(new int[]{116}, new object[]{tk}, new int[]{5442212, 5443986}, new double[]{((double) (this.tokenMax) ), ((double) (this.tokenMin) )}));
@@ -5642,7 +5642,7 @@ namespace Loreline.Internal.Hscript {
 														global::Loreline.Internal.Hscript.Const _g1 = ( tk as global::Loreline.Internal.Hscript.Token_TConst ).c;
 														if (( _g1._hx_index == 0 )) {
 															int e1 = ( _g1 as global::Loreline.Internal.Hscript.Const_CInt ).v;
-															pow = new global::Loreline.Internal.Lang.Null<int>( - (e1) , true);
+															pow =  - (e1) ;
 														}
 														else {
 															this.tokens.push(new global::Loreline.Internal.Lang.DynamicObject(new int[]{116}, new object[]{tk}, new int[]{5442212, 5443986}, new double[]{((double) (this.tokenMax) ), ((double) (this.tokenMin) )}));
@@ -5678,7 +5678,7 @@ namespace Loreline.Internal.Hscript {
 											
 										}
 										
-										if ( ! (pow.hasValue) ) {
+										if (( pow == default(object) )) {
 											this.invalidChar(@char);
 										}
 										
@@ -5686,7 +5686,7 @@ namespace Loreline.Internal.Hscript {
 											exp1 = ((double) (10) );
 										}
 										
-										return global::Loreline.Internal.Hscript.Token.TConst(global::Loreline.Internal.Hscript.Const.CFloat(( ( ( global::System.Math.Pow(((double) (10) ), ((double) ((pow).@value) )) / exp1 ) * n1 ) * 10 )));
+										return global::Loreline.Internal.Hscript.Token.TConst(global::Loreline.Internal.Hscript.Const.CFloat(( ( ( global::System.Math.Pow(((double) (10) ), ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(pow)) )) / exp1 ) * n1 ) * 10 )));
 									}
 									
 									
@@ -5819,13 +5819,13 @@ namespace Loreline.Internal.Hscript {
 							string s11 = this.input;
 							int index11 = this.readPos++;
 							@char = ( (( ((uint) (index11) ) < s11.Length )) ? (((int) (s11[index11]) )) : (-1) );
-							if (( this.idents[@char] || ( @char == 58 ) )) {
+							if (( global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char)) || ( @char == 58 ) )) {
 								string id1 = global::Loreline.Internal.Lang.StringExt.fromCharCode(@char);
 								while (true) {
 									string s12 = this.input;
 									int index12 = this.readPos++;
 									@char = ( (( ((uint) (index12) ) < s12.Length )) ? (((int) (s12[index12]) )) : (-1) );
-									if ( ! (this.idents[@char]) ) {
+									if ( ! (global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char))) ) {
 										this.@char = @char;
 										return global::Loreline.Internal.Hscript.Token.TMeta(id1);
 									}
@@ -5866,7 +5866,7 @@ namespace Loreline.Internal.Hscript {
 						
 						default:
 						{
-							if (this.ops[@char]) {
+							if (global::Loreline.Internal.Lang.Runtime.toBool(this.ops.__get(@char))) {
 								string op = global::Loreline.Internal.Lang.StringExt.fromCharCode(@char);
 								while (true) {
 									string s13 = this.input;
@@ -5876,14 +5876,14 @@ namespace Loreline.Internal.Hscript {
 										@char = 0;
 									}
 									
-									if ( ! (this.ops[@char]) ) {
+									if ( ! (global::Loreline.Internal.Lang.Runtime.toBool(this.ops.__get(@char))) ) {
 										this.@char = @char;
 										return global::Loreline.Internal.Hscript.Token.TOp(op);
 									}
 									
 									string pop = op;
 									op = global::Loreline.Internal.Lang.Runtime.concat(op, global::Loreline.Internal.Lang.StringExt.fromCharCode(@char));
-									if ((  ! (((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).exists(op))  && ((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap<string, int>) (this.opPriority) )) ))) ).exists(pop) )) {
+									if ((  ! (((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).exists(op))  && ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.opPriority) )) ).exists(pop) )) {
 										if (( ( op == "//" ) || ( op == "/*" ) )) {
 											return this.tokenComment(op, @char);
 										}
@@ -5896,7 +5896,7 @@ namespace Loreline.Internal.Hscript {
 								
 							}
 							
-							if (this.idents[@char]) {
+							if (global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char))) {
 								string id2 = global::Loreline.Internal.Lang.StringExt.fromCharCode(@char);
 								while (true) {
 									string s14 = this.input;
@@ -5906,7 +5906,7 @@ namespace Loreline.Internal.Hscript {
 										@char = 0;
 									}
 									
-									if ( ! (this.idents[@char]) ) {
+									if ( ! (global::Loreline.Internal.Lang.Runtime.toBool(this.idents.__get(@char))) ) {
 										this.@char = @char;
 										return global::Loreline.Internal.Hscript.Token.TId(id2);
 									}
@@ -5933,11 +5933,11 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public virtual object preprocValue(string id) {
-			return ((object) (global::Loreline.Internal.Lang.Runtime.callField(((global::Loreline.Internal.Ds.StringMap) (((object) (((global::Loreline.Internal.IMap) (((object) (this.preprocesorValues) )) )) )) ), "get", 5144726, new object[]{id})) );
+			return ((global::Loreline.Internal.Ds.StringMap) (((global::Loreline.Internal.IMap) (this.preprocesorValues) )) ).@get(((string) (id) ));
 		}
 		
 		
-		public global::Loreline.Internal.Root.Array<object> preprocStack;
+		public global::Loreline.Internal.Root.Array preprocStack;
 		
 		public virtual object parsePreproCond() {
 			unchecked {
@@ -5947,21 +5947,21 @@ namespace Loreline.Internal.Hscript {
 					{
 						string id = ( tk as global::Loreline.Internal.Hscript.Token_TId ).s;
 						global::Loreline.Internal.Hscript.ExprDef e = global::Loreline.Internal.Hscript.ExprDef.EIdent(id);
-						global::Loreline.Internal.Lang.Null<int> pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
-						global::Loreline.Internal.Lang.Null<int> pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+						object pmin = this.tokenMin;
+						object pmax = this.tokenMax;
 						if (( e == null )) {
 							return null;
 						}
 						else {
-							if ( ! (pmin.hasValue) ) {
-								pmin = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+							if (( pmin == default(object) )) {
+								pmin = this.tokenMin;
 							}
 							
-							if ( ! (pmax.hasValue) ) {
-								pmax = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							if (( pmax == default(object) )) {
+								pmax = this.tokenMax;
 							}
 							
-							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, (pmax).toDynamic(), (pmin).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+							return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e, pmax, pmin, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 						}
 						
 					}
@@ -5971,21 +5971,21 @@ namespace Loreline.Internal.Hscript {
 					{
 						if (( ( tk as global::Loreline.Internal.Hscript.Token_TOp ).s == "!" )) {
 							global::Loreline.Internal.Hscript.ExprDef e1 = global::Loreline.Internal.Hscript.ExprDef.EUnop("!", true, this.parsePreproCond());
-							global::Loreline.Internal.Lang.Null<int> pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
-							global::Loreline.Internal.Lang.Null<int> pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+							object pmin1 = this.tokenMin;
+							object pmax1 = this.tokenMax;
 							if (( e1 == null )) {
 								return null;
 							}
 							else {
-								if ( ! (pmin1.hasValue) ) {
-									pmin1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMin, true);
+								if (( pmin1 == default(object) )) {
+									pmin1 = this.tokenMin;
 								}
 								
-								if ( ! (pmax1.hasValue) ) {
-									pmax1 = new global::Loreline.Internal.Lang.Null<int>(this.tokenMax, true);
+								if (( pmax1 == default(object) )) {
+									pmax1 = this.tokenMax;
 								}
 								
-								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e1, (pmax1).toDynamic(), (pmin1).toDynamic(), this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
+								return new global::Loreline.Internal.Lang.DynamicObject(new int[]{101, 1247473716, 1247475490, 1258363366}, new object[]{e1, pmax1, pmin1, this.origin}, new int[]{1202919412}, new double[]{((double) (this.line) )});
 							}
 							
 						}
@@ -6136,18 +6136,18 @@ namespace Loreline.Internal.Hscript {
 					case "elseif":
 					{
 						if (( this.preprocStack.length > 0 )) {
-							if (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(this.preprocStack[( this.preprocStack.length - 1 )], "r", 114, true))) {
-								bool __temp_expr3 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.setField(this.preprocStack[( this.preprocStack.length - 1 )], "r", 114, false));
+							if (global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.getField(this.preprocStack.__get(( this.preprocStack.length - 1 )), "r", 114, true))) {
+								bool __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toBool(global::Loreline.Internal.Lang.Runtime.setField(this.preprocStack.__get(( this.preprocStack.length - 1 )), "r", 114, false));
 								this.skipTokens();
 								return this.token();
 							}
 							else if (( id == "else" )) {
-								object __temp_expr2 = (this.preprocStack.pop()).@value;
+								this.preprocStack.pop();
 								this.preprocStack.push(new global::Loreline.Internal.Lang.DynamicObject(new int[]{114}, new object[]{true}, new int[]{}, new double[]{}));
 								return this.token();
 							}
 							else {
-								object __temp_expr1 = (this.preprocStack.pop()).@value;
+								this.preprocStack.pop();
 								return this.preprocess("if");
 							}
 							
@@ -6162,7 +6162,7 @@ namespace Loreline.Internal.Hscript {
 					case "end":
 					{
 						if (( this.preprocStack.length > 0 )) {
-							object __temp_expr4 = (this.preprocStack.pop()).@value;
+							this.preprocStack.pop();
 							return this.token();
 						}
 						else {
@@ -6200,7 +6200,7 @@ namespace Loreline.Internal.Hscript {
 		public virtual void skipTokens() {
 			unchecked {
 				int spos = ( this.preprocStack.length - 1 );
-				object obj = this.preprocStack[spos];
+				object obj = this.preprocStack.__get(spos);
 				int pos = ( this.readPos + this.offset );
 				while (true) {
 					global::Loreline.Internal.Hscript.Token tk = this.token();
@@ -6211,7 +6211,7 @@ namespace Loreline.Internal.Hscript {
 						
 					}
 					
-					if (( ! (global::Loreline.Internal.Lang.Runtime.refEq(this.preprocStack[spos], obj)) )) {
+					if (( ! (global::Loreline.Internal.Lang.Runtime.refEq(this.preprocStack.__get(spos), obj)) )) {
 						{
 							this.tokens.push(new global::Loreline.Internal.Lang.DynamicObject(new int[]{116}, new object[]{tk}, new int[]{5442212, 5443986}, new double[]{((double) (this.tokenMax) ), ((double) (this.tokenMin) )}));
 							this.tokenMin = this.oldTokenMin;
@@ -6229,9 +6229,9 @@ namespace Loreline.Internal.Hscript {
 		
 		public virtual global::Loreline.Internal.Hscript.Token tokenComment(string op, int @char) {
 			unchecked {
-				global::Loreline.Internal.Lang.Null<int> c = global::Loreline.Internal.Lang.StringExt.charCodeAt(op, 1);
+				object c = global::Loreline.Internal.Lang.StringExt.charCodeAt(op, 1);
 				string s = this.input;
-				if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 47)) {
+				if (global::Loreline.Internal.Lang.Runtime.eq(c, 47)) {
 					while (( ( @char != 13 ) && ( @char != 10 ) )) {
 						string s1 = this.input;
 						int index = this.readPos++;
@@ -6246,7 +6246,7 @@ namespace Loreline.Internal.Hscript {
 					return this.token();
 				}
 				
-				if (global::Loreline.Internal.Lang.Runtime.eq((c).toDynamic(), 42)) {
+				if (global::Loreline.Internal.Lang.Runtime.eq(c, 42)) {
 					int old = this.line;
 					if (( op == "/**/" )) {
 						this.@char = @char;
@@ -6532,14 +6532,14 @@ namespace Loreline.Internal.Hscript {
 				switch (hash) {
 					case 2057163599:
 					{
-						this.preprocStack = ((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.preprocStack = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
 					
 					case 300357466:
 					{
-						this.tokens = ((global::Loreline.Internal.Ds.List<object>) (global::Loreline.Internal.Ds.List<object>.__hx_cast<object>(((global::Loreline.Internal.Ds.List) (@value) ))) );
+						this.tokens = ((global::Loreline.Internal.Ds.List) (@value) );
 						return @value;
 					}
 					
@@ -6588,14 +6588,14 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1386303363:
 					{
-						this.idents = ((global::Loreline.Internal.Root.Array<bool>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<bool>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.idents = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
 					
 					case 5545010:
 					{
-						this.ops = ((global::Loreline.Internal.Root.Array<bool>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<bool>(((global::Loreline.Internal.Root.Array) (@value) ))) );
+						this.ops = ((global::Loreline.Internal.Root.Array) (@value) );
 						return @value;
 					}
 					
@@ -6665,14 +6665,14 @@ namespace Loreline.Internal.Hscript {
 					
 					case 50254234:
 					{
-						this.opRightAssoc = ((global::Loreline.Internal.Ds.StringMap<bool>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<bool>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.opRightAssoc = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
 					
 					case 1054351781:
 					{
-						this.opPriority = ((global::Loreline.Internal.Ds.StringMap<int>) (global::Loreline.Internal.Ds.StringMap<object>.__hx_cast<int>(((global::Loreline.Internal.Ds.StringMap) (@value) ))) );
+						this.opPriority = ((global::Loreline.Internal.Ds.StringMap) (@value) );
 						return @value;
 					}
 					
@@ -7246,19 +7246,19 @@ namespace Loreline.Internal.Hscript {
 				switch (hash) {
 					case 618537130:
 					{
-						return this.tokenString(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						return this.tokenString(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 691028628:
 					{
-						return this.constString(((global::Loreline.Internal.Hscript.Const) (dynargs[0]) ));
+						return this.constString(((global::Loreline.Internal.Hscript.Const) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 637231206:
 					{
-						return this.tokenComment(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						return this.tokenComment(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 					}
 					
 					
@@ -7271,13 +7271,13 @@ namespace Loreline.Internal.Hscript {
 					
 					case 306633900:
 					{
-						return this.preprocess(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.preprocess(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 810689960:
 					{
-						return this.evalPreproCond(dynargs[0]);
+						return this.evalPreproCond(((object) (dynargs[0]) ));
 					}
 					
 					
@@ -7289,7 +7289,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 675998584:
 					{
-						return this.preprocValue(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.preprocValue(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
@@ -7307,7 +7307,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 179047623:
 					{
-						return this.readString(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						return this.readString(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 					}
 					
 					
@@ -7343,19 +7343,19 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1007673663:
 					{
-						return this.parseModule(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )));
+						return this.parseModule(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )), ( (( dynargs.Length > 2 )) ? (((object) (dynargs[2]) )) : (null) ));
 					}
 					
 					
 					case 1918417798:
 					{
-						return this.parseExprList(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						return this.parseExprList(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 2063384608:
 					{
-						return this.parseTypeNext(((global::Loreline.Internal.Hscript.CType) (dynargs[0]) ));
+						return this.parseTypeNext(((global::Loreline.Internal.Hscript.CType) (((object) (dynargs[0]) )) ));
 					}
 					
 					
@@ -7385,31 +7385,31 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1940399131:
 					{
-						return this.parseExprNext(dynargs[0]);
+						return this.parseExprNext(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 191923584:
 					{
-						return this.parseStructure(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]));
+						return this.parseStructure(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
 					case 110661850:
 					{
-						return this.makeBinop(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), dynargs[1], dynargs[2]);
+						return this.makeBinop(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((object) (dynargs[1]) ), ((object) (dynargs[2]) ));
 					}
 					
 					
 					case 1145554120:
 					{
-						return this.makeUnop(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), dynargs[1]);
+						return this.makeUnop(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 1100981319:
 					{
-						return this.mapCompr(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), dynargs[1]);
+						return this.mapCompr(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((object) (dynargs[1]) ));
 					}
 					
 					
@@ -7421,7 +7421,7 @@ namespace Loreline.Internal.Hscript {
 					
 					case 1274863514:
 					{
-						return this.parseLambda(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(dynargs[1]));
+						return this.parseLambda(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ));
 					}
 					
 					
@@ -7433,44 +7433,44 @@ namespace Loreline.Internal.Hscript {
 					
 					case 276573010:
 					{
-						return this.parseObject(global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(dynargs[0]));
+						return this.parseObject(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 476102071:
 					{
-						this.parseFullExpr(((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (dynargs[0]) ))) ));
+						this.parseFullExpr(((global::Loreline.Internal.Root.Array) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1367480579:
 					{
-						return this.isBlock(dynargs[0]);
+						return this.isBlock(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 24414:
 					{
-						return this.mk(((global::Loreline.Internal.Hscript.ExprDef) (dynargs[0]) ), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )));
+						return this.mk(((global::Loreline.Internal.Hscript.ExprDef) (((object) (dynargs[0]) )) ), ( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) ), ( (( dynargs.Length > 2 )) ? (((object) (dynargs[2]) )) : (null) ));
 					}
 					
 					
 					case 1247473716:
 					{
-						return this.pmax(dynargs[0]);
+						return this.pmax(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 1247475490:
 					{
-						return this.pmin(dynargs[0]);
+						return this.pmin(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 1126038837:
 					{
-						return this.expr(dynargs[0]);
+						return this.expr(((object) (dynargs[0]) ));
 					}
 					
 					
@@ -7482,60 +7482,60 @@ namespace Loreline.Internal.Hscript {
 					
 					case 52892584:
 					{
-						return this.maybe(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						return this.maybe(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 1815309403:
 					{
-						this.ensureToken(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						this.ensureToken(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 75232702:
 					{
-						this.ensure(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						this.ensure(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1247875546:
 					{
-						this.push(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						this.push(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 						break;
 					}
 					
 					
 					case 1173624273:
 					{
-						return this.unexpected(((global::Loreline.Internal.Hscript.Token) (dynargs[0]) ));
+						return this.unexpected(((global::Loreline.Internal.Hscript.Token) (((object) (dynargs[0]) )) ));
 					}
 					
 					
 					case 208459108:
 					{
-						return this.parseString(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 1 )) ? (dynargs[1]) : (null) )), global::Loreline.Internal.Lang.Null<object>.ofDynamic<int>(( (( dynargs.Length > 2 )) ? (dynargs[2]) : (null) )));
+						return this.parseString(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), global::Loreline.Internal.Lang.Runtime.toString(( (( dynargs.Length > 1 )) ? (((object) (dynargs[1]) )) : (null) )), ( (( dynargs.Length > 2 )) ? (((object) (dynargs[2]) )) : (null) ));
 					}
 					
 					
 					case 1909323791:
 					{
-						this.initParser(global::Loreline.Internal.Lang.Runtime.toString(dynargs[0]), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ));
+						this.initParser(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ));
 						break;
 					}
 					
 					
 					case 701410669:
 					{
-						this.invalidChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[0])) ));
+						this.invalidChar(((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[0]) ))) ));
 						break;
 					}
 					
 					
 					case 1932118984:
 					{
-						this.error(((global::Loreline.Internal.Hscript.ErrorDef) (dynargs[0]) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[1])) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(dynargs[2])) ));
+						this.error(((global::Loreline.Internal.Hscript.ErrorDef) (((object) (dynargs[0]) )) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[1]) ))) ), ((int) (global::Loreline.Internal.Lang.Runtime.toInt(((object) (dynargs[2]) ))) ));
 						break;
 					}
 					
@@ -7558,7 +7558,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("preprocStack");
 			baseArr.push("tokens");
 			baseArr.push("oldTokenMax");
@@ -7604,7 +7604,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<object> args = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (((object) (__fn_float1) )) ))) )) : (((global::Loreline.Internal.Root.Array<object>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<object>(((global::Loreline.Internal.Root.Array) (__fn_dyn1) ))) )) );
+				global::Loreline.Internal.Root.Array args = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Internal.Root.Array) (((object) (__fn_float1) )) )) : (((global::Loreline.Internal.Root.Array) (__fn_dyn1) )) );
 				{
 					global::Loreline.Internal.Hscript.Token _g = this._gthis.token();
 					if (( _g._hx_index == 3 )) {

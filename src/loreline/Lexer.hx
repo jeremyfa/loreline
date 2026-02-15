@@ -2619,7 +2619,7 @@ class Token {
                     }
                 }
 
-                attachments.sort(compareAttachments);
+                attachments.sort((a, b) -> compareAttachments(a, b));
 
                 final token = makeToken(LString(
                     Unquoted, content,
@@ -2676,7 +2676,7 @@ class Token {
             }
             else if (c == '"'.code && tagStart == -1) {
                 advance();
-                attachments.sort(compareAttachments);
+                attachments.sort((a, b) -> compareAttachments(a, b));
 
                 return makeToken(LString(
                     DoubleQuotes, buf.toString(),

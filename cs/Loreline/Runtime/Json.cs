@@ -18,8 +18,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public static string stringify(object @value, global::Loreline.Internal.Lang.Null<bool> pretty) {
-			bool pretty1 = ( ( ! (pretty.hasValue) ) ? (false) : ((pretty).@value) );
+		public static string stringify(object @value, object pretty) {
+			bool pretty1 = ( (( pretty == default(object) )) ? (false) : (global::Loreline.Internal.Lang.Runtime.toBool(pretty)) );
 			global::Loreline.Internal.Lang.Function replacer = null;
 			return global::Loreline.Internal.Format.JsonPrinter.print(((object) (@value) ), replacer, ( (pretty1) ? ("  ") : (null) ));
 		}

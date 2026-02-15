@@ -344,7 +344,28 @@ namespace Loreline.Internal.Lang {
 		public global::Loreline.Internal.Lang.Function fun;
 		
 		public override object __hx_invokeDynamic(object[] dynArgs) {
-			return ((object) (this.fun.__hx_invoke1_o(default(double), ( (( dynArgs == null )) ? (new global::Loreline.Internal.Root.Array<object>(new object[]{})) : (new global::Loreline.Internal.Root.Array<object>(((object[]) (dynArgs) ))) ))) );
+			global::Loreline.Internal.Lang.Function tmp = this.fun;
+			global::Loreline.Internal.Root.Array tmp1 = null;
+			if (( dynArgs == null )) {
+				tmp1 = new global::Loreline.Internal.Root.Array(new object[]{});
+			}
+			else {
+				object[] ret = new object[( dynArgs as global::System.Array ).Length];
+				{
+					int _g = 0;
+					int _g1 = ( dynArgs as global::System.Array ).Length;
+					while (( _g < _g1 )) {
+						int i = _g++;
+						ret[i] = ((object) (dynArgs[i]) );
+					}
+					
+				}
+				
+				object[] dyn = ret;
+				tmp1 = new global::Loreline.Internal.Root.Array(((object[]) (dyn) ));
+			}
+			
+			return ((object) (tmp.__hx_invoke1_o(default(double), tmp1)) );
 		}
 		
 		
@@ -376,7 +397,7 @@ namespace Loreline.Internal.Lang {
 		
 		
 		public override bool Equals(object obj) {
-			global::Loreline.Internal.Lang.Closure c = ( obj as global::Loreline.Internal.Lang.Closure );
+			global::Loreline.Internal.Lang.Closure c = ((global::Loreline.Internal.Lang.Closure) (( obj as global::Loreline.Internal.Lang.Closure )) );
 			if (( c == null )) {
 				return false;
 			}

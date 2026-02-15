@@ -241,7 +241,9 @@ async function main() {
             '-D', 'no-root',
             '-D', 'real-position',
             '-D', 'loreline_use_cs_types',
+            '-D', 'loreline_cs_api',
             '-D', 'hscriptPos',
+            '-D', 'erase-generics',
             '--main', 'loreline.lib.Library'
         ];
 
@@ -341,11 +343,13 @@ async function main() {
         let haxeBuildJsArgs = [
             '--class-path', 'src',
             '--js', 'js/loreline.js',
+            '--library', 'hscript',
             '-D', 'js-es=6',
             '-D', 'loreline_use_js_types',
             '-D', 'loreline_typedef_options',
             '-D', 'loreline_functions_map_dynamic_access',
             '-D', 'loreline_node_id_class',
+            '-D', 'hscriptPos',
             '--main', 'loreline.lib.Library'
         ];
 

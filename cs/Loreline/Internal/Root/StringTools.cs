@@ -18,7 +18,7 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static string htmlEscape(string s, global::Loreline.Internal.Lang.Null<bool> quotes) {
+		public static string htmlEscape(string s, object quotes) {
 			unchecked {
 				global::Loreline.Internal.Root.StringBuf buf = new global::Loreline.Internal.Root.StringBuf();
 				{
@@ -42,7 +42,7 @@ namespace Loreline.Internal.Root {
 						switch (code) {
 							case 34:
 							{
-								if (((quotes)).@value) {
+								if (global::Loreline.Internal.Lang.Runtime.toBool((quotes))) {
 									buf.b.Append(((string) ("&quot;") ));
 								}
 								else {
@@ -62,7 +62,7 @@ namespace Loreline.Internal.Root {
 							
 							case 39:
 							{
-								if (((quotes)).@value) {
+								if (global::Loreline.Internal.Lang.Runtime.toBool((quotes))) {
 									buf.b.Append(((string) ("&#039;") ));
 								}
 								else {
@@ -112,10 +112,10 @@ namespace Loreline.Internal.Root {
 			global::System.Text.StringBuilder buf_b = new global::System.Text.StringBuilder();
 			l -= s.Length;
 			while (( buf_b.Length < l )) {
-				buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(c)) ));
+				buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (c) ))) ));
 			}
 			
-			buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(s)) ));
+			buf_b.Append(((string) (global::Loreline.Internal.Root.Std.@string(((string) (s) ))) ));
 			return buf_b.ToString();
 		}
 		

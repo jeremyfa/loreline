@@ -10,69 +10,52 @@ namespace Loreline.Internal.Root {
 		
 		
 		public static bool isOfType(object v, object t) {
-			unchecked {
-				if (( v == null )) {
-					return false;
+			if (( v == null )) {
+				return false;
+			}
+			
+			if (( t == null )) {
+				return false;
+			}
+			
+			global::System.Type clt = ((global::System.Type) (( t as global::System.Type )) );
+			if (global::Loreline.Internal.Lang.Runtime.typeEq(clt, null)) {
+				return false;
+			}
+			
+			switch (clt.ToString()) {
+				case "System.Boolean":
+				{
+					return v is bool;
 				}
 				
-				if (( t == null )) {
-					return false;
+				
+				case "System.Double":
+				{
+					return v is double || v is int;
 				}
 				
-				global::System.Type clt = ( t as global::System.Type );
-				if (global::Loreline.Internal.Lang.Runtime.typeEq(clt, null)) {
-					return false;
+				
+				case "System.Int32":
+				{
+					return global::Loreline.Internal.Lang.Runtime.isInt(v);
 				}
 				
-				switch (clt.ToString()) {
-					case "System.Boolean":
-					{
-						return v is bool;
-					}
-					
-					
-					case "System.Double":
-					{
-						return v is double || v is int;
-					}
-					
-					
-					case "System.Int32":
-					{
-						return global::Loreline.Internal.Lang.Runtime.isInt(v);
-					}
-					
-					
-					case "System.Object":
-					{
-						return true;
-					}
-					
-					
-				}
 				
-				global::System.Type vt = v.GetType();
-				if (clt.IsAssignableFrom(((global::System.Type) (vt) ))) {
+				case "System.Object":
+				{
 					return true;
 				}
 				
-				{
-					global::System.Type[] _g_arr = clt.GetInterfaces();
-					uint _g_idx = ((uint) (0) );
-					while (( _g_idx < ( _g_arr as global::System.Array ).Length )) {
-						_g_idx += ((uint) (1) );
-						global::System.Type iface = ((global::System.Type) (_g_arr[((int) (((uint) (( _g_idx - 1 )) )) )]) );
-						global::Loreline.Internal.Lang.GenericInterface g = global::Loreline.Internal.Lang.Runtime.getGenericAttr(iface);
-						if (( ( g != null ) && global::Loreline.Internal.Lang.Runtime.typeEq(g.generic, clt) )) {
-							return iface.IsAssignableFrom(((global::System.Type) (vt) ));
-						}
-						
-					}
-					
-				}
 				
-				return false;
 			}
+			
+			global::System.Type vt = v.GetType();
+			if (clt.IsAssignableFrom(((global::System.Type) (vt) ))) {
+				return true;
+			}
+			
+			return false;
 		}
 		
 		
@@ -100,10 +83,10 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
-		public static global::Loreline.Internal.Lang.Null<int> parseInt(string x) {
+		public static object parseInt(string x) {
 			unchecked {
 				if (( x == null )) {
-					return default(global::Loreline.Internal.Lang.Null<int>);
+					return null;
 				}
 				
 				int len = x.Length;
@@ -169,15 +152,15 @@ namespace Loreline.Internal.Root {
 				
 				int firstInvalidIndex = cur;
 				if (( index == firstInvalidIndex )) {
-					return default(global::Loreline.Internal.Lang.Null<int>);
+					return null;
 				}
 				
-				int result = global::System.Convert.ToInt32(((string) (global::Loreline.Internal.Lang.StringExt.substring(x, index, new global::Loreline.Internal.Lang.Null<int>(firstInvalidIndex, true))) ), ((int) (( (isHexadecimal) ? (16) : (10) )) ));
+				int result = global::System.Convert.ToInt32(((string) (global::Loreline.Internal.Lang.StringExt.substring(x, index, firstInvalidIndex)) ), ((int) (( (isHexadecimal) ? (16) : (10) )) ));
 				if (isNegative) {
-					return new global::Loreline.Internal.Lang.Null<int>( - (result) , true);
+					return  - (result) ;
 				}
 				else {
-					return new global::Loreline.Internal.Lang.Null<int>(result, true);
+					return result;
 				}
 				
 			}
@@ -199,7 +182,7 @@ namespace Loreline.Internal.Root {
 				bool hasEData = false;
 				int i = -1;
 				while ((  ++ i < x.Length )) {
-					int chr = ((int) (x[i]) );
+					int chr = ((int) (((global::System.String) (x) )[i]) );
 					if (( ( chr >= 48 ) && ( chr <= 57 ) )) {
 						if (hasE) {
 							hasEData = true;
@@ -273,7 +256,7 @@ namespace Loreline.Internal.Root {
 				}
 				
 				if (( i != x.Length )) {
-					x = global::Loreline.Internal.Lang.StringExt.substr(x, 0, new global::Loreline.Internal.Lang.Null<int>(i, true));
+					x = global::Loreline.Internal.Lang.StringExt.substr(x, 0, i);
 				}
 				
 				try {

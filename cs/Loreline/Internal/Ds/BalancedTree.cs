@@ -3,61 +3,34 @@ using global::Loreline.Internal.Root;
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds {
-	public class BalancedTree<K, V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds.BalancedTree, global::Loreline.Internal.IMap<K, V> {
+	public class BalancedTree : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.IMap {
 		
 		public BalancedTree(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
 		public BalancedTree() {
-			global::Loreline.Internal.Ds.BalancedTree<object, object>.__hx_ctor_haxe_ds_BalancedTree<K, V>(((global::Loreline.Internal.Ds.BalancedTree<K, V>) (this) ));
+			global::Loreline.Internal.Ds.BalancedTree.__hx_ctor_haxe_ds_BalancedTree(((global::Loreline.Internal.Ds.BalancedTree) (this) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds_BalancedTree<K_c, V_c>(global::Loreline.Internal.Ds.BalancedTree<K_c, V_c> __hx_this) {
+		protected static void __hx_ctor_haxe_ds_BalancedTree(global::Loreline.Internal.Ds.BalancedTree __hx_this) {
 		}
 		
 		
-		public static object __hx_cast<K_c_c, V_c_c>(global::Loreline.Internal.Ds.BalancedTree me) {
-			return ( (( me != null )) ? (me.haxe_ds_BalancedTree_cast<K_c_c, V_c_c>()) : default(object) );
-		}
+		public global::Loreline.Internal.Ds.TreeNode root;
 		
-		
-		public virtual object haxe_ds_BalancedTree_cast<K_c, V_c>() {
-			if (( global::Loreline.Internal.Lang.Runtime.eq(typeof(K), typeof(K_c)) && global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c)) )) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds.BalancedTree<K_c, V_c> new_me = new global::Loreline.Internal.Ds.BalancedTree<K_c, V_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
-		
-		
-		public virtual object haxe_IMap_cast<K_c, V_c>() {
-			return this.haxe_ds_BalancedTree_cast<K, V>();
-		}
-		
-		
-		public global::Loreline.Internal.Ds.TreeNode<K, V> root;
-		
-		public virtual void @set(K key, V @value) {
+		public virtual void @set(object key, object @value) {
 			this.root = this.setLoop(key, @value, this.root);
 		}
 		
 		
-		public virtual global::Loreline.Internal.Lang.Null<V> @get(K key) {
-			global::Loreline.Internal.Ds.TreeNode<K, V> node = this.root;
+		public virtual object @get(object key) {
+			global::Loreline.Internal.Ds.TreeNode node = this.root;
 			while (( node != null )) {
 				int c = this.compare(key, node.key);
 				if (( c == 0 )) {
-					return new global::Loreline.Internal.Lang.Null<V>(node.@value, true);
+					return node.@value;
 				}
 				
 				if (( c < 0 )) {
@@ -69,39 +42,39 @@ namespace Loreline.Internal.Ds {
 				
 			}
 			
-			return default(global::Loreline.Internal.Lang.Null<V>);
+			return null;
 		}
 		
 		
 		public virtual object keys() {
-			global::Loreline.Internal.Root.Array<K> ret = new global::Loreline.Internal.Root.Array<K>(new K[]{});
+			global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
 			this.keysLoop(this.root, ret);
-			return new global::Loreline.Internal.Iterators.ArrayIterator<K>(((global::Loreline.Internal.Root.Array<K>) (ret) ));
+			return new global::Loreline.Internal.Iterators.ArrayIterator(((global::Loreline.Internal.Root.Array) (ret) ));
 		}
 		
 		
-		public virtual global::Loreline.Internal.Ds.TreeNode<K, V> setLoop(K k, V v, global::Loreline.Internal.Ds.TreeNode<K, V> node) {
+		public virtual global::Loreline.Internal.Ds.TreeNode setLoop(object k, object v, global::Loreline.Internal.Ds.TreeNode node) {
 			if (( node == null )) {
-				return new global::Loreline.Internal.Ds.TreeNode<K, V>(default(global::Loreline.Internal.Ds.TreeNode<K, V>), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), default(global::Loreline.Internal.Ds.TreeNode<K, V>), default(global::Loreline.Internal.Lang.Null<int>));
+				return new global::Loreline.Internal.Ds.TreeNode(default(global::Loreline.Internal.Ds.TreeNode), ((object) (k) ), ((object) (v) ), default(global::Loreline.Internal.Ds.TreeNode), default(object));
 			}
 			
 			int c = this.compare(k, node.key);
 			if (( c == 0 )) {
-				return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (node.left) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (node.right) ), new global::Loreline.Internal.Lang.Null<int>(( (( node == null )) ? (0) : (node._height) ), true));
+				return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (node.left) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (node.right) ), ((object) (( (( node == null )) ? (0) : (node._height) )) ));
 			}
 			else if (( c < 0 )) {
-				global::Loreline.Internal.Ds.TreeNode<K, V> nl = this.setLoop(k, v, node.left);
+				global::Loreline.Internal.Ds.TreeNode nl = this.setLoop(k, v, node.left);
 				return this.balance(nl, node.key, node.@value, node.right);
 			}
 			else {
-				global::Loreline.Internal.Ds.TreeNode<K, V> nr = this.setLoop(k, v, node.right);
+				global::Loreline.Internal.Ds.TreeNode nr = this.setLoop(k, v, node.right);
 				return this.balance(node.left, node.key, node.@value, nr);
 			}
 			
 		}
 		
 		
-		public virtual void keysLoop(global::Loreline.Internal.Ds.TreeNode<K, V> node, global::Loreline.Internal.Root.Array<K> acc) {
+		public virtual void keysLoop(global::Loreline.Internal.Ds.TreeNode node, global::Loreline.Internal.Root.Array acc) {
 			if (( node != null )) {
 				this.keysLoop(node.left, acc);
 				acc.push(node.key);
@@ -111,42 +84,42 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public virtual global::Loreline.Internal.Ds.TreeNode<K, V> balance(global::Loreline.Internal.Ds.TreeNode<K, V> l, K k, V v, global::Loreline.Internal.Ds.TreeNode<K, V> r) {
+		public virtual global::Loreline.Internal.Ds.TreeNode balance(global::Loreline.Internal.Ds.TreeNode l, object k, object v, global::Loreline.Internal.Ds.TreeNode r) {
 			unchecked {
 				int hl = ( (( l == null )) ? (0) : (l._height) );
 				int hr = ( (( r == null )) ? (0) : (r._height) );
 				if (( hl > ( hr + 2 ) )) {
-					global::Loreline.Internal.Ds.TreeNode<K, V> _this = l.left;
-					global::Loreline.Internal.Ds.TreeNode<K, V> _this1 = l.right;
+					global::Loreline.Internal.Ds.TreeNode _this = l.left;
+					global::Loreline.Internal.Ds.TreeNode _this1 = l.right;
 					if (( (( (( _this == null )) ? (0) : (_this._height) )) >= (( (( _this1 == null )) ? (0) : (_this1._height) )) )) {
-						return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l.left) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(l.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(l.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l.right) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r) ), default(global::Loreline.Internal.Lang.Null<int>))) ), default(global::Loreline.Internal.Lang.Null<int>));
+						return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l.left) ), ((object) (l.key) ), ((object) (l.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l.right) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r) ), default(object))) ), default(object));
 					}
 					else {
-						return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l.left) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(l.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(l.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (l.right.left) ), default(global::Loreline.Internal.Lang.Null<int>))) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(l.right.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(l.right.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l.right.right) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r) ), default(global::Loreline.Internal.Lang.Null<int>))) ), default(global::Loreline.Internal.Lang.Null<int>));
+						return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l.left) ), ((object) (l.key) ), ((object) (l.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (l.right.left) ), default(object))) ), ((object) (l.right.key) ), ((object) (l.right.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l.right.right) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r) ), default(object))) ), default(object));
 					}
 					
 				}
 				else if (( hr > ( hl + 2 ) )) {
-					global::Loreline.Internal.Ds.TreeNode<K, V> _this2 = r.right;
-					global::Loreline.Internal.Ds.TreeNode<K, V> _this3 = r.left;
+					global::Loreline.Internal.Ds.TreeNode _this2 = r.right;
+					global::Loreline.Internal.Ds.TreeNode _this3 = r.left;
 					if (( (( (( _this2 == null )) ? (0) : (_this2._height) )) > (( (( _this3 == null )) ? (0) : (_this3._height) )) )) {
-						return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r.left) ), default(global::Loreline.Internal.Lang.Null<int>))) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(r.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(r.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r.right) ), default(global::Loreline.Internal.Lang.Null<int>));
+						return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r.left) ), default(object))) ), ((object) (r.key) ), ((object) (r.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (r.right) ), default(object));
 					}
 					else {
-						return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r.left.left) ), default(global::Loreline.Internal.Lang.Null<int>))) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(r.left.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(r.left.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (r.left.right) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(r.key), global::Loreline.Internal.Lang.Runtime.genericCast<V>(r.@value), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r.right) ), default(global::Loreline.Internal.Lang.Null<int>))) ), default(global::Loreline.Internal.Lang.Null<int>));
+						return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r.left.left) ), default(object))) ), ((object) (r.left.key) ), ((object) (r.left.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (r.left.right) ), ((object) (r.key) ), ((object) (r.@value) ), ((global::Loreline.Internal.Ds.TreeNode) (r.right) ), default(object))) ), default(object));
 					}
 					
 				}
 				else {
-					return new global::Loreline.Internal.Ds.TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (l) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r) ), new global::Loreline.Internal.Lang.Null<int>(( (( (( hl > hr )) ? (hl) : (hr) )) + 1 ), true));
+					return new global::Loreline.Internal.Ds.TreeNode(((global::Loreline.Internal.Ds.TreeNode) (l) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r) ), ((object) (( (( (( hl > hr )) ? (hl) : (hr) )) + 1 )) ));
 				}
 				
 			}
 		}
 		
 		
-		public virtual int compare(K k1, K k2) {
-			return global::Loreline.Internal.Root.Reflect.compare<K>(global::Loreline.Internal.Lang.Runtime.genericCast<K>(k1), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k2));
+		public virtual int compare(object k1, object k2) {
+			return global::Loreline.Internal.Root.Reflect.compare(((object) (k1) ), ((object) (k2) ));
 		}
 		
 		
@@ -155,7 +128,7 @@ namespace Loreline.Internal.Ds {
 				switch (hash) {
 					case 1269755426:
 					{
-						this.root = ((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (@value) ))) );
+						this.root = ((global::Loreline.Internal.Ds.TreeNode) (@value) );
 						return @value;
 					}
 					
@@ -238,26 +211,26 @@ namespace Loreline.Internal.Ds {
 				switch (hash) {
 					case 57219237:
 					{
-						return this.compare(global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[0]), global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[1]));
+						return this.compare(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 					}
 					
 					
 					case 596483356:
 					{
-						return this.balance(((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (dynargs[0]) ))) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[1]), global::Loreline.Internal.Lang.Runtime.genericCast<V>(dynargs[2]), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (dynargs[3]) ))) ));
+						return this.balance(((global::Loreline.Internal.Ds.TreeNode) (((object) (dynargs[0]) )) ), ((object) (dynargs[1]) ), ((object) (dynargs[2]) ), ((global::Loreline.Internal.Ds.TreeNode) (((object) (dynargs[3]) )) ));
 					}
 					
 					
 					case 451001976:
 					{
-						this.keysLoop(((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (dynargs[0]) ))) ), ((global::Loreline.Internal.Root.Array<K>) (global::Loreline.Internal.Root.Array<object>.__hx_cast<K>(((global::Loreline.Internal.Root.Array) (dynargs[1]) ))) ));
+						this.keysLoop(((global::Loreline.Internal.Ds.TreeNode) (((object) (dynargs[0]) )) ), ((global::Loreline.Internal.Root.Array) (((object) (dynargs[1]) )) ));
 						break;
 					}
 					
 					
 					case 222029606:
 					{
-						return this.setLoop(global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[0]), global::Loreline.Internal.Lang.Runtime.genericCast<V>(dynargs[1]), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (dynargs[2]) ))) ));
+						return this.setLoop(((object) (dynargs[0]) ), ((object) (dynargs[1]) ), ((global::Loreline.Internal.Ds.TreeNode) (((object) (dynargs[2]) )) ));
 					}
 					
 					
@@ -269,13 +242,13 @@ namespace Loreline.Internal.Ds {
 					
 					case 5144726:
 					{
-						return (this.@get(global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[0]))).toDynamic();
+						return this.@get(((object) (dynargs[0]) ));
 					}
 					
 					
 					case 5741474:
 					{
-						this.@set(global::Loreline.Internal.Lang.Runtime.genericCast<K>(dynargs[0]), global::Loreline.Internal.Lang.Runtime.genericCast<V>(dynargs[1]));
+						this.@set(((object) (dynargs[0]) ), ((object) (dynargs[1]) ));
 						break;
 					}
 					
@@ -292,7 +265,7 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("root");
 			base.__hx_getFields(baseArr);
 		}
@@ -305,50 +278,34 @@ namespace Loreline.Internal.Ds {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Internal.Ds {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds.BalancedTree<object, object>))]
-	public interface BalancedTree : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds_BalancedTree_cast<K_c, V_c>();
-		
-		object haxe_IMap_cast<K_c, V_c>();
-		
-		object keys();
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds {
-	public class TreeNode<K, V> : global::Loreline.Internal.Lang.HxObject, global::Loreline.Internal.Ds.TreeNode {
+	public class TreeNode : global::Loreline.Internal.Lang.HxObject {
 		
 		public TreeNode(global::Loreline.Internal.Lang.EmptyObject empty) {
 		}
 		
 		
-		public TreeNode(global::Loreline.Internal.Ds.TreeNode<K, V> l, K k, V v, global::Loreline.Internal.Ds.TreeNode<K, V> r, global::Loreline.Internal.Lang.Null<int> h) {
-			global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_ctor_haxe_ds_TreeNode<K, V>(((global::Loreline.Internal.Ds.TreeNode<K, V>) (this) ), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (l) ), global::Loreline.Internal.Lang.Runtime.genericCast<K>(k), global::Loreline.Internal.Lang.Runtime.genericCast<V>(v), ((global::Loreline.Internal.Ds.TreeNode<K, V>) (r) ), ((global::Loreline.Internal.Lang.Null<int>) (h) ));
+		public TreeNode(global::Loreline.Internal.Ds.TreeNode l, object k, object v, global::Loreline.Internal.Ds.TreeNode r, object h) {
+			global::Loreline.Internal.Ds.TreeNode.__hx_ctor_haxe_ds_TreeNode(((global::Loreline.Internal.Ds.TreeNode) (this) ), ((global::Loreline.Internal.Ds.TreeNode) (l) ), ((object) (k) ), ((object) (v) ), ((global::Loreline.Internal.Ds.TreeNode) (r) ), ((object) (h) ));
 		}
 		
 		
-		protected static void __hx_ctor_haxe_ds_TreeNode<K_c, V_c>(global::Loreline.Internal.Ds.TreeNode<K_c, V_c> __hx_this, global::Loreline.Internal.Ds.TreeNode<K_c, V_c> l, K_c k, V_c v, global::Loreline.Internal.Ds.TreeNode<K_c, V_c> r, global::Loreline.Internal.Lang.Null<int> h) {
+		protected static void __hx_ctor_haxe_ds_TreeNode(global::Loreline.Internal.Ds.TreeNode __hx_this, global::Loreline.Internal.Ds.TreeNode l, object k, object v, global::Loreline.Internal.Ds.TreeNode r, object h) {
 			unchecked {
-				int h1 = ( ( ! (h.hasValue) ) ? (-1) : ((h).@value) );
+				int h1 = ( (( h == default(object) )) ? (-1) : (((int) (global::Loreline.Internal.Lang.Runtime.toInt(h)) )) );
 				__hx_this.left = l;
 				__hx_this.key = k;
 				__hx_this.@value = v;
 				__hx_this.right = r;
 				if (( h1 == -1 )) {
 					int tmp = default(int);
-					global::Loreline.Internal.Ds.TreeNode<K_c, V_c> _this = __hx_this.left;
-					global::Loreline.Internal.Ds.TreeNode<K_c, V_c> _this1 = __hx_this.right;
+					global::Loreline.Internal.Ds.TreeNode _this = __hx_this.left;
+					global::Loreline.Internal.Ds.TreeNode _this1 = __hx_this.right;
 					if (( (( (( _this == null )) ? (0) : (_this._height) )) > (( (( _this1 == null )) ? (0) : (_this1._height) )) )) {
-						global::Loreline.Internal.Ds.TreeNode<K_c, V_c> _this2 = __hx_this.left;
+						global::Loreline.Internal.Ds.TreeNode _this2 = __hx_this.left;
 						tmp = ( (( _this2 == null )) ? (0) : (_this2._height) );
 					}
 					else {
-						global::Loreline.Internal.Ds.TreeNode<K_c, V_c> _this3 = __hx_this.right;
+						global::Loreline.Internal.Ds.TreeNode _this3 = __hx_this.right;
 						tmp = ( (( _this3 == null )) ? (0) : (_this3._height) );
 					}
 					
@@ -362,35 +319,13 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public static object __hx_cast<K_c_c, V_c_c>(global::Loreline.Internal.Ds.TreeNode me) {
-			return ( (( me != null )) ? (me.haxe_ds_TreeNode_cast<K_c_c, V_c_c>()) : default(object) );
-		}
+		public global::Loreline.Internal.Ds.TreeNode left;
 		
+		public global::Loreline.Internal.Ds.TreeNode right;
 		
-		public virtual object haxe_ds_TreeNode_cast<K_c, V_c>() {
-			if (( global::Loreline.Internal.Lang.Runtime.eq(typeof(K), typeof(K_c)) && global::Loreline.Internal.Lang.Runtime.eq(typeof(V), typeof(V_c)) )) {
-				return this;
-			}
-			
-			global::Loreline.Internal.Ds.TreeNode<K_c, V_c> new_me = new global::Loreline.Internal.Ds.TreeNode<K_c, V_c>(global::Loreline.Internal.Lang.EmptyObject.EMPTY);
-			global::Loreline.Internal.Root.Array<string> fields = global::Loreline.Internal.Root.Reflect.fields(this);
-			int i = 0;
-			while (( i < fields.length )) {
-				string field = fields[i++];
-				global::Loreline.Internal.Root.Reflect.setField(new_me, field, global::Loreline.Internal.Root.Reflect.field(this, field));
-			}
-			
-			return new_me;
-		}
+		public object key;
 		
-		
-		public global::Loreline.Internal.Ds.TreeNode<K, V> left;
-		
-		public global::Loreline.Internal.Ds.TreeNode<K, V> right;
-		
-		public K key;
-		
-		public V @value;
+		public object @value;
 		
 		public int _height;
 		
@@ -406,14 +341,14 @@ namespace Loreline.Internal.Ds {
 					
 					case 834174833:
 					{
-						this.@value = global::Loreline.Internal.Lang.Runtime.genericCast<V>(((object) (@value) ));
+						this.@value = ((object) (@value) );
 						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (@value) ))) );
 					}
 					
 					
 					case 5343647:
 					{
-						this.key = global::Loreline.Internal.Lang.Runtime.genericCast<K>(((object) (@value) ));
+						this.key = ((object) (@value) );
 						return ((double) (global::Loreline.Internal.Lang.Runtime.toDouble(((object) (@value) ))) );
 					}
 					
@@ -441,28 +376,28 @@ namespace Loreline.Internal.Ds {
 					
 					case 834174833:
 					{
-						this.@value = global::Loreline.Internal.Lang.Runtime.genericCast<V>(@value);
+						this.@value = ((object) (@value) );
 						return @value;
 					}
 					
 					
 					case 5343647:
 					{
-						this.key = global::Loreline.Internal.Lang.Runtime.genericCast<K>(@value);
+						this.key = ((object) (@value) );
 						return @value;
 					}
 					
 					
 					case 1768164316:
 					{
-						this.right = ((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (@value) ))) );
+						this.right = ((global::Loreline.Internal.Ds.TreeNode) (@value) );
 						return @value;
 					}
 					
 					
 					case 1202718727:
 					{
-						this.left = ((global::Loreline.Internal.Ds.TreeNode<K, V>) (global::Loreline.Internal.Ds.TreeNode<object, object>.__hx_cast<K, V>(((global::Loreline.Internal.Ds.TreeNode) (@value) ))) );
+						this.left = ((global::Loreline.Internal.Ds.TreeNode) (@value) );
 						return @value;
 					}
 					
@@ -554,7 +489,7 @@ namespace Loreline.Internal.Ds {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("_height");
 			baseArr.push("value");
 			baseArr.push("key");
@@ -563,18 +498,6 @@ namespace Loreline.Internal.Ds {
 			base.__hx_getFields(baseArr);
 		}
 		
-		
-	}
-}
-
-
-
-#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
-namespace Loreline.Internal.Ds {
-	[global::Loreline.Internal.Lang.GenericInterface(typeof(global::Loreline.Internal.Ds.TreeNode<object, object>))]
-	public interface TreeNode : global::Loreline.Internal.Lang.IHxObject, global::Loreline.Internal.Lang.IGenericObject {
-		
-		object haxe_ds_TreeNode_cast<K_c, V_c>();
 		
 	}
 }

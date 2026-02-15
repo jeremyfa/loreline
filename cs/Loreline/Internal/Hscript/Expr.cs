@@ -37,8 +37,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -62,7 +62,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
@@ -91,8 +91,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.f});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.f});
 		}
 		
 		
@@ -118,7 +118,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.f) ), ((object) (en.f) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.f) ), ((object) (en.f) ))) ) {
 				return false;
 			}
 			
@@ -147,8 +147,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -174,7 +174,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -222,7 +222,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef EBlock(global::Loreline.Internal.Root.Array<object> e) {
+		public static global::Loreline.Internal.Hscript.ExprDef EBlock(global::Loreline.Internal.Root.Array e) {
 			return new global::Loreline.Internal.Hscript.ExprDef_EBlock(e);
 		}
 		
@@ -242,7 +242,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef ECall(object e, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Hscript.ExprDef ECall(object e, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Hscript.ExprDef_ECall(e, @params);
 		}
 		
@@ -266,7 +266,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public static readonly global::Loreline.Internal.Hscript.ExprDef EContinue = new global::Loreline.Internal.Hscript.ExprDef_EContinue();
 		
-		public static global::Loreline.Internal.Hscript.ExprDef EFunction(global::Loreline.Internal.Root.Array<object> args, object e, string name, global::Loreline.Internal.Hscript.CType ret) {
+		public static global::Loreline.Internal.Hscript.ExprDef EFunction(global::Loreline.Internal.Root.Array args, object e, string name, global::Loreline.Internal.Hscript.CType ret) {
 			return new global::Loreline.Internal.Hscript.ExprDef_EFunction(args, e, name, ret);
 		}
 		
@@ -281,12 +281,12 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef EArrayDecl(global::Loreline.Internal.Root.Array<object> e) {
+		public static global::Loreline.Internal.Hscript.ExprDef EArrayDecl(global::Loreline.Internal.Root.Array e) {
 			return new global::Loreline.Internal.Hscript.ExprDef_EArrayDecl(e);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Hscript.ExprDef ENew(string cl, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Hscript.ExprDef_ENew(cl, @params);
 		}
 		
@@ -301,7 +301,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef EObject(global::Loreline.Internal.Root.Array<object> fl) {
+		public static global::Loreline.Internal.Hscript.ExprDef EObject(global::Loreline.Internal.Root.Array fl) {
 			return new global::Loreline.Internal.Hscript.ExprDef_EObject(fl);
 		}
 		
@@ -311,7 +311,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef ESwitch(object e, global::Loreline.Internal.Root.Array<object> cases, object defaultExpr) {
+		public static global::Loreline.Internal.Hscript.ExprDef ESwitch(object e, global::Loreline.Internal.Root.Array cases, object defaultExpr) {
 			return new global::Loreline.Internal.Hscript.ExprDef_ESwitch(e, cases, defaultExpr);
 		}
 		
@@ -321,7 +321,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ExprDef EMeta(string name, global::Loreline.Internal.Root.Array<object> args, object e) {
+		public static global::Loreline.Internal.Hscript.ExprDef EMeta(string name, global::Loreline.Internal.Root.Array args, object e) {
 			return new global::Loreline.Internal.Hscript.ExprDef_EMeta(name, args, e);
 		}
 		
@@ -345,8 +345,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -370,7 +370,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -399,8 +399,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -426,7 +426,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
@@ -457,8 +457,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.n, this.t, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.n, this.t, this.e});
 		}
 		
 		
@@ -484,15 +484,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.n) ), ((object) (en.n) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.n) ), ((object) (en.n) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -525,8 +525,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -552,7 +552,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -576,13 +576,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_EBlock : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_EBlock(global::Loreline.Internal.Root.Array<object> e) : base(4) {
+		public ExprDef_EBlock(global::Loreline.Internal.Root.Array e) : base(4) {
 			this.e = e;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -608,7 +608,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -621,7 +621,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> e;
+		public readonly global::Loreline.Internal.Root.Array e;
 		
 	}
 }
@@ -638,8 +638,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.f});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.f});
 		}
 		
 		
@@ -665,11 +665,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.f) ), ((object) (en.f) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.f) ), ((object) (en.f) ))) ) {
 				return false;
 			}
 			
@@ -702,8 +702,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.op, this.e1, this.e2});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.op, this.e1, this.e2});
 		}
 		
 		
@@ -729,15 +729,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.op) ), ((object) (en.op) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.op) ), ((object) (en.op) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e1) ), ((object) (en.e1) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e1) ), ((object) (en.e1) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e2) ), ((object) (en.e2) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e2) ), ((object) (en.e2) ))) ) {
 				return false;
 			}
 			
@@ -772,8 +772,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.op, this.prefix, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.op, this.prefix, this.e});
 		}
 		
 		
@@ -799,15 +799,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.op) ), ((object) (en.op) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.op) ), ((object) (en.op) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.prefix) ), ((object) (en.prefix) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.prefix) ), ((object) (en.prefix) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -835,14 +835,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_ECall : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_ECall(object e, global::Loreline.Internal.Root.Array<object> @params) : base(8) {
+		public ExprDef_ECall(object e, global::Loreline.Internal.Root.Array @params) : base(8) {
 			this.e = e;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.@params});
 		}
 		
 		
@@ -868,11 +868,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -887,7 +887,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object e;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -905,8 +905,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.cond, this.e1, this.e2});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.cond, this.e1, this.e2});
 		}
 		
 		
@@ -932,15 +932,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cond) ), ((object) (en.cond) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cond) ), ((object) (en.cond) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e1) ), ((object) (en.e1) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e1) ), ((object) (en.e1) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e2) ), ((object) (en.e2) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e2) ), ((object) (en.e2) ))) ) {
 				return false;
 			}
 			
@@ -974,8 +974,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.cond, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.cond, this.e});
 		}
 		
 		
@@ -1001,11 +1001,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cond) ), ((object) (en.cond) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cond) ), ((object) (en.cond) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1038,8 +1038,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v, this.it, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v, this.it, this.e});
 		}
 		
 		
@@ -1065,15 +1065,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.it) ), ((object) (en.it) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.it) ), ((object) (en.it) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1137,7 +1137,7 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_EFunction : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_EFunction(global::Loreline.Internal.Root.Array<object> args, object e, string name, global::Loreline.Internal.Hscript.CType ret) : base(14) {
+		public ExprDef_EFunction(global::Loreline.Internal.Root.Array args, object e, string name, global::Loreline.Internal.Hscript.CType ret) : base(14) {
 			this.args = args;
 			this.e = e;
 			this.name = name;
@@ -1145,8 +1145,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.args, this.e, this.name, this.ret});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.args, this.e, this.name, this.ret});
 		}
 		
 		
@@ -1172,19 +1172,19 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.ret) ), ((object) (en.ret) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.ret) ), ((object) (en.ret) ))) ) {
 				return false;
 			}
 			
@@ -1197,7 +1197,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 		public readonly object e;
 		
@@ -1219,8 +1219,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -1246,7 +1246,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1276,8 +1276,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.index});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.index});
 		}
 		
 		
@@ -1303,11 +1303,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.index) ), ((object) (en.index) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.index) ), ((object) (en.index) ))) ) {
 				return false;
 			}
 			
@@ -1333,13 +1333,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_EArrayDecl : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_EArrayDecl(global::Loreline.Internal.Root.Array<object> e) : base(17) {
+		public ExprDef_EArrayDecl(global::Loreline.Internal.Root.Array e) : base(17) {
 			this.e = e;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -1365,7 +1365,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1378,7 +1378,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> e;
+		public readonly global::Loreline.Internal.Root.Array e;
 		
 	}
 }
@@ -1389,14 +1389,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_ENew : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_ENew(string cl, global::Loreline.Internal.Root.Array<object> @params) : base(18) {
+		public ExprDef_ENew(string cl, global::Loreline.Internal.Root.Array @params) : base(18) {
 			this.cl = cl;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.cl, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.cl, this.@params});
 		}
 		
 		
@@ -1422,11 +1422,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cl) ), ((object) (en.cl) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cl) ), ((object) (en.cl) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -1441,7 +1441,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly string cl;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -1457,8 +1457,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e});
 		}
 		
 		
@@ -1484,7 +1484,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1516,8 +1516,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.v, this.t, this.ecatch});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.v, this.t, this.ecatch});
 		}
 		
 		
@@ -1543,19 +1543,19 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.ecatch) ), ((object) (en.ecatch) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.ecatch) ), ((object) (en.ecatch) ))) ) {
 				return false;
 			}
 			
@@ -1585,13 +1585,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_EObject : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_EObject(global::Loreline.Internal.Root.Array<object> fl) : base(21) {
+		public ExprDef_EObject(global::Loreline.Internal.Root.Array fl) : base(21) {
 			this.fl = fl;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.fl});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.fl});
 		}
 		
 		
@@ -1617,7 +1617,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.fl) ), ((object) (en.fl) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.fl) ), ((object) (en.fl) ))) ) {
 				return false;
 			}
 			
@@ -1630,7 +1630,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> fl;
+		public readonly global::Loreline.Internal.Root.Array fl;
 		
 	}
 }
@@ -1648,8 +1648,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.cond, this.e1, this.e2});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.cond, this.e1, this.e2});
 		}
 		
 		
@@ -1675,15 +1675,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cond) ), ((object) (en.cond) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cond) ), ((object) (en.cond) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e1) ), ((object) (en.e1) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e1) ), ((object) (en.e1) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e2) ), ((object) (en.e2) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e2) ), ((object) (en.e2) ))) ) {
 				return false;
 			}
 			
@@ -1711,15 +1711,15 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_ESwitch : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_ESwitch(object e, global::Loreline.Internal.Root.Array<object> cases, object defaultExpr) : base(23) {
+		public ExprDef_ESwitch(object e, global::Loreline.Internal.Root.Array cases, object defaultExpr) : base(23) {
 			this.e = e;
 			this.cases = cases;
 			this.defaultExpr = defaultExpr;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.cases, this.defaultExpr});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.cases, this.defaultExpr});
 		}
 		
 		
@@ -1745,15 +1745,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cases) ), ((object) (en.cases) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cases) ), ((object) (en.cases) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.defaultExpr) ), ((object) (en.defaultExpr) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.defaultExpr) ), ((object) (en.defaultExpr) ))) ) {
 				return false;
 			}
 			
@@ -1768,7 +1768,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly object e;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> cases;
+		public readonly global::Loreline.Internal.Root.Array cases;
 		
 		public readonly object defaultExpr;
 		
@@ -1787,8 +1787,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.cond, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.cond, this.e});
 		}
 		
 		
@@ -1814,11 +1814,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.cond) ), ((object) (en.cond) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.cond) ), ((object) (en.cond) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1844,15 +1844,15 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ExprDef_EMeta : global::Loreline.Internal.Hscript.ExprDef {
 		
-		public ExprDef_EMeta(string name, global::Loreline.Internal.Root.Array<object> args, object e) : base(25) {
+		public ExprDef_EMeta(string name, global::Loreline.Internal.Root.Array args, object e) : base(25) {
 			this.name = name;
 			this.args = args;
 			this.e = e;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.name, this.args, this.e});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.name, this.args, this.e});
 		}
 		
 		
@@ -1878,15 +1878,15 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.name) ), ((object) (en.name) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.name) ), ((object) (en.name) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
@@ -1901,7 +1901,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public readonly string name;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 		public readonly object e;
 		
@@ -1920,8 +1920,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.e, this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.e, this.t});
 		}
 		
 		
@@ -1947,11 +1947,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.e) ), ((object) (en.e) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.e) ), ((object) (en.e) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -1981,17 +1981,17 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.CType CTPath(global::Loreline.Internal.Root.Array<string> path, global::Loreline.Internal.Root.Array<object> @params) {
+		public static global::Loreline.Internal.Hscript.CType CTPath(global::Loreline.Internal.Root.Array path, global::Loreline.Internal.Root.Array @params) {
 			return new global::Loreline.Internal.Hscript.CType_CTPath(path, @params);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.CType CTFun(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.CType ret) {
+		public static global::Loreline.Internal.Hscript.CType CTFun(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Hscript.CType ret) {
 			return new global::Loreline.Internal.Hscript.CType_CTFun(args, ret);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.CType CTAnon(global::Loreline.Internal.Root.Array<object> fields) {
+		public static global::Loreline.Internal.Hscript.CType CTAnon(global::Loreline.Internal.Root.Array fields) {
 			return new global::Loreline.Internal.Hscript.CType_CTAnon(fields);
 		}
 		
@@ -2020,14 +2020,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class CType_CTPath : global::Loreline.Internal.Hscript.CType {
 		
-		public CType_CTPath(global::Loreline.Internal.Root.Array<string> path, global::Loreline.Internal.Root.Array<object> @params) : base(0) {
+		public CType_CTPath(global::Loreline.Internal.Root.Array path, global::Loreline.Internal.Root.Array @params) : base(0) {
 			this.path = path;
 			this.@params = @params;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.path, this.@params});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.path, this.@params});
 		}
 		
 		
@@ -2051,11 +2051,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.path) ), ((object) (en.path) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.path) ), ((object) (en.path) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.@params) ), ((object) (en.@params) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.@params) ), ((object) (en.@params) ))) ) {
 				return false;
 			}
 			
@@ -2068,9 +2068,9 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<string> path;
+		public readonly global::Loreline.Internal.Root.Array path;
 		
-		public readonly global::Loreline.Internal.Root.Array<object> @params;
+		public readonly global::Loreline.Internal.Root.Array @params;
 		
 	}
 }
@@ -2081,14 +2081,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class CType_CTFun : global::Loreline.Internal.Hscript.CType {
 		
-		public CType_CTFun(global::Loreline.Internal.Root.Array<object> args, global::Loreline.Internal.Hscript.CType ret) : base(1) {
+		public CType_CTFun(global::Loreline.Internal.Root.Array args, global::Loreline.Internal.Hscript.CType ret) : base(1) {
 			this.args = args;
 			this.ret = ret;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.args, this.ret});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.args, this.ret});
 		}
 		
 		
@@ -2114,11 +2114,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.args) ), ((object) (en.args) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.args) ), ((object) (en.args) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.ret) ), ((object) (en.ret) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.ret) ), ((object) (en.ret) ))) ) {
 				return false;
 			}
 			
@@ -2131,7 +2131,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> args;
+		public readonly global::Loreline.Internal.Root.Array args;
 		
 		public readonly global::Loreline.Internal.Hscript.CType ret;
 		
@@ -2144,13 +2144,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class CType_CTAnon : global::Loreline.Internal.Hscript.CType {
 		
-		public CType_CTAnon(global::Loreline.Internal.Root.Array<object> fields) : base(2) {
+		public CType_CTAnon(global::Loreline.Internal.Root.Array fields) : base(2) {
 			this.fields = fields;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.fields});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.fields});
 		}
 		
 		
@@ -2176,7 +2176,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.fields) ), ((object) (en.fields) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.fields) ), ((object) (en.fields) ))) ) {
 				return false;
 			}
 			
@@ -2189,7 +2189,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<object> fields;
+		public readonly global::Loreline.Internal.Root.Array fields;
 		
 	}
 }
@@ -2205,8 +2205,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -2232,7 +2232,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -2261,8 +2261,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.t});
 		}
 		
 		
@@ -2288,7 +2288,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -2318,8 +2318,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.n, this.t});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.n, this.t});
 		}
 		
 		
@@ -2345,11 +2345,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.n) ), ((object) (en.n) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.n) ), ((object) (en.n) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.t) ), ((object) (en.t) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.t) ), ((object) (en.t) ))) ) {
 				return false;
 			}
 			
@@ -2594,7 +2594,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("line");
 			baseArr.push("origin");
 			baseArr.push("pmax");
@@ -2680,8 +2680,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -2705,7 +2705,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -2734,8 +2734,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.s});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.s});
 		}
 		
 		
@@ -2761,7 +2761,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.s) ), ((object) (en.s) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.s) ), ((object) (en.s) ))) ) {
 				return false;
 			}
 			
@@ -2826,8 +2826,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.msg});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.msg});
 		}
 		
 		
@@ -2853,7 +2853,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.msg) ), ((object) (en.msg) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.msg) ), ((object) (en.msg) ))) ) {
 				return false;
 			}
 			
@@ -2882,8 +2882,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -2909,7 +2909,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
@@ -2938,8 +2938,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -2965,7 +2965,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			
@@ -2994,8 +2994,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.op});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.op});
 		}
 		
 		
@@ -3021,7 +3021,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.op) ), ((object) (en.op) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.op) ), ((object) (en.op) ))) ) {
 				return false;
 			}
 			
@@ -3050,8 +3050,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.f});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.f});
 		}
 		
 		
@@ -3077,7 +3077,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.f) ), ((object) (en.f) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.f) ), ((object) (en.f) ))) ) {
 				return false;
 			}
 			
@@ -3106,8 +3106,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.msg});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.msg});
 		}
 		
 		
@@ -3133,7 +3133,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.msg) ), ((object) (en.msg) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.msg) ), ((object) (en.msg) ))) ) {
 				return false;
 			}
 			
@@ -3161,12 +3161,12 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ModuleDecl DPackage(global::Loreline.Internal.Root.Array<string> path) {
+		public static global::Loreline.Internal.Hscript.ModuleDecl DPackage(global::Loreline.Internal.Root.Array path) {
 			return new global::Loreline.Internal.Hscript.ModuleDecl_DPackage(path);
 		}
 		
 		
-		public static global::Loreline.Internal.Hscript.ModuleDecl DImport(global::Loreline.Internal.Root.Array<string> path, global::Loreline.Internal.Lang.Null<bool> everything) {
+		public static global::Loreline.Internal.Hscript.ModuleDecl DImport(global::Loreline.Internal.Root.Array path, object everything) {
 			return new global::Loreline.Internal.Hscript.ModuleDecl_DImport(path, everything);
 		}
 		
@@ -3190,13 +3190,13 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ModuleDecl_DPackage : global::Loreline.Internal.Hscript.ModuleDecl {
 		
-		public ModuleDecl_DPackage(global::Loreline.Internal.Root.Array<string> path) : base(0) {
+		public ModuleDecl_DPackage(global::Loreline.Internal.Root.Array path) : base(0) {
 			this.path = path;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.path});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.path});
 		}
 		
 		
@@ -3220,7 +3220,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.path) ), ((object) (en.path) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.path) ), ((object) (en.path) ))) ) {
 				return false;
 			}
 			
@@ -3233,7 +3233,7 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<string> path;
+		public readonly global::Loreline.Internal.Root.Array path;
 		
 	}
 }
@@ -3244,14 +3244,14 @@ namespace Loreline.Internal.Hscript {
 namespace Loreline.Internal.Hscript {
 	public sealed class ModuleDecl_DImport : global::Loreline.Internal.Hscript.ModuleDecl {
 		
-		public ModuleDecl_DImport(global::Loreline.Internal.Root.Array<string> path, global::Loreline.Internal.Lang.Null<bool> everything) : base(1) {
+		public ModuleDecl_DImport(global::Loreline.Internal.Root.Array path, object everything) : base(1) {
 			this.path = path;
 			this.everything = everything;
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.path, (this.everything).toDynamic()});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.path, this.everything});
 		}
 		
 		
@@ -3262,7 +3262,7 @@ namespace Loreline.Internal.Hscript {
 		
 		public override int GetHashCode() {
 			unchecked {
-				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(1, new object[]{this.path, (this.everything).toDynamic()});
+				return global::Loreline.Internal.Lang.Enum.paramsGetHashCode(1, new object[]{this.path, this.everything});
 			}
 		}
 		
@@ -3277,11 +3277,11 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.path) ), ((object) (en.path) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.path) ), ((object) (en.path) ))) ) {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>((this.everything).toDynamic(), (en.everything).toDynamic())) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.everything) ), ((object) (en.everything) ))) ) {
 				return false;
 			}
 			
@@ -3290,13 +3290,13 @@ namespace Loreline.Internal.Hscript {
 		
 		
 		public override string toString() {
-			return global::Loreline.Internal.Lang.Enum.paramsToString("DImport", new object[]{this.path, (this.everything).toDynamic()});
+			return global::Loreline.Internal.Lang.Enum.paramsToString("DImport", new object[]{this.path, this.everything});
 		}
 		
 		
-		public readonly global::Loreline.Internal.Root.Array<string> path;
+		public readonly global::Loreline.Internal.Root.Array path;
 		
-		public readonly global::Loreline.Internal.Lang.Null<bool> everything;
+		public readonly object everything;
 		
 	}
 }
@@ -3312,8 +3312,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -3339,7 +3339,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -3368,8 +3368,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.c});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.c});
 		}
 		
 		
@@ -3395,7 +3395,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.c) ), ((object) (en.c) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.c) ), ((object) (en.c) ))) ) {
 				return false;
 			}
 			
@@ -3580,8 +3580,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.f});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.f});
 		}
 		
 		
@@ -3605,7 +3605,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.f) ), ((object) (en.f) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.f) ), ((object) (en.f) ))) ) {
 				return false;
 			}
 			
@@ -3634,8 +3634,8 @@ namespace Loreline.Internal.Hscript {
 		}
 		
 		
-		public override global::Loreline.Internal.Root.Array<object> getParams() {
-			return new global::Loreline.Internal.Root.Array<object>(new object[]{this.v});
+		public override global::Loreline.Internal.Root.Array getParams() {
+			return new global::Loreline.Internal.Root.Array(new object[]{this.v});
 		}
 		
 		
@@ -3661,7 +3661,7 @@ namespace Loreline.Internal.Hscript {
 				return false;
 			}
 			
-			if ( ! (global::Loreline.Internal.Root.Type.enumEq<object>(((object) (this.v) ), ((object) (en.v) ))) ) {
+			if ( ! (global::Loreline.Internal.Root.Type.enumEq(((object) (this.v) ), ((object) (en.v) ))) ) {
 				return false;
 			}
 			

@@ -28,25 +28,25 @@ namespace Loreline.Internal.Io {
 					
 				}
 				
-				int c1 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "/", default(global::Loreline.Internal.Lang.Null<int>));
-				int c2 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "\\", default(global::Loreline.Internal.Lang.Null<int>));
+				int c1 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "/", null);
+				int c2 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "\\", null);
 				if (( c1 < c2 )) {
-					__hx_this.dir = global::Loreline.Internal.Lang.StringExt.substr(path, 0, new global::Loreline.Internal.Lang.Null<int>(c2, true));
-					path = global::Loreline.Internal.Lang.StringExt.substr(path, ( c2 + 1 ), default(global::Loreline.Internal.Lang.Null<int>));
+					__hx_this.dir = global::Loreline.Internal.Lang.StringExt.substr(path, 0, c2);
+					path = global::Loreline.Internal.Lang.StringExt.substr(path, ( c2 + 1 ), null);
 					__hx_this.backslash = true;
 				}
 				else if (( c2 < c1 )) {
-					__hx_this.dir = global::Loreline.Internal.Lang.StringExt.substr(path, 0, new global::Loreline.Internal.Lang.Null<int>(c1, true));
-					path = global::Loreline.Internal.Lang.StringExt.substr(path, ( c1 + 1 ), default(global::Loreline.Internal.Lang.Null<int>));
+					__hx_this.dir = global::Loreline.Internal.Lang.StringExt.substr(path, 0, c1);
+					path = global::Loreline.Internal.Lang.StringExt.substr(path, ( c1 + 1 ), null);
 				}
 				else {
 					__hx_this.dir = null;
 				}
 				
-				int cp = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, ".", default(global::Loreline.Internal.Lang.Null<int>));
+				int cp = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, ".", null);
 				if (( cp != -1 )) {
-					__hx_this.ext = global::Loreline.Internal.Lang.StringExt.substr(path, ( cp + 1 ), default(global::Loreline.Internal.Lang.Null<int>));
-					__hx_this.file = global::Loreline.Internal.Lang.StringExt.substr(path, 0, new global::Loreline.Internal.Lang.Null<int>(cp, true));
+					__hx_this.ext = global::Loreline.Internal.Lang.StringExt.substr(path, ( cp + 1 ), null);
+					__hx_this.file = global::Loreline.Internal.Lang.StringExt.substr(path, 0, cp);
 				}
 				else {
 					__hx_this.ext = null;
@@ -67,9 +67,9 @@ namespace Loreline.Internal.Io {
 		}
 		
 		
-		public static string @join(global::Loreline.Internal.Root.Array<string> paths) {
+		public static string @join(global::Loreline.Internal.Root.Array paths) {
 			unchecked {
-				global::Loreline.Internal.Root.Array<string> ret = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+				global::Loreline.Internal.Root.Array ret = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g = 0;
 					int _g1 = paths.length;
@@ -84,19 +84,19 @@ namespace Loreline.Internal.Io {
 					
 				}
 				
-				global::Loreline.Internal.Root.Array<string> paths1 = ret;
+				global::Loreline.Internal.Root.Array paths1 = ret;
 				if (( paths1.length == 0 )) {
 					return "";
 				}
 				
-				string path = paths1[0];
+				string path = global::Loreline.Internal.Lang.Runtime.toString(paths1.__get(0));
 				{
 					int _g2 = 1;
 					int _g3 = paths1.length;
 					while (( _g2 < _g3 )) {
 						int i1 = _g2++;
 						path = global::Loreline.Internal.Io.Path.addTrailingSlash(path);
-						path = global::Loreline.Internal.Lang.Runtime.concat(path, paths1[i1]);
+						path = global::Loreline.Internal.Lang.Runtime.concat(path, global::Loreline.Internal.Lang.Runtime.toString(paths1.__get(i1)));
 					}
 					
 				}
@@ -114,18 +114,18 @@ namespace Loreline.Internal.Io {
 					return slash;
 				}
 				
-				global::Loreline.Internal.Root.Array<string> target = new global::Loreline.Internal.Root.Array<string>(new string[]{});
+				global::Loreline.Internal.Root.Array target = new global::Loreline.Internal.Root.Array(new object[]{});
 				{
 					int _g = 0;
-					global::Loreline.Internal.Root.Array<string> _g1 = global::Loreline.Internal.Lang.StringExt.split(path, slash);
+					global::Loreline.Internal.Root.Array _g1 = global::Loreline.Internal.Lang.StringExt.split(path, slash);
 					while (( _g < _g1.length )) {
-						string token = _g1[_g];
+						string token = global::Loreline.Internal.Lang.Runtime.toString(_g1.__get(_g));
 						 ++ _g;
-						if (( ( ( token == ".." ) && ( target.length > 0 ) ) && ( target[( target.length - 1 )] != ".." ) )) {
-							string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString((target.pop()).toDynamic());
+						if (( ( ( token == ".." ) && ( target.length > 0 ) ) && ( global::Loreline.Internal.Lang.Runtime.toString(target.__get(( target.length - 1 ))) != ".." ) )) {
+							string __temp_expr1 = global::Loreline.Internal.Lang.Runtime.toString(target.pop());
 						}
 						else if (( token == "" )) {
-							if (( ( target.length > 0 ) || global::Loreline.Internal.Lang.Runtime.eq((global::Loreline.Internal.Lang.StringExt.charCodeAt(path, 0)).toDynamic(), 47) )) {
+							if (( ( target.length > 0 ) || global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(path, 0), 47) )) {
 								target.push(token);
 							}
 							
@@ -225,8 +225,8 @@ namespace Loreline.Internal.Io {
 					return "/";
 				}
 				
-				int c1 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "/", default(global::Loreline.Internal.Lang.Null<int>));
-				int c2 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "\\", default(global::Loreline.Internal.Lang.Null<int>));
+				int c1 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "/", null);
+				int c2 = global::Loreline.Internal.Lang.StringExt.lastIndexOf(path, "\\", null);
 				if (( c1 < c2 )) {
 					if (( c2 != ( path.Length - 1 ) )) {
 						return global::Loreline.Internal.Lang.Runtime.concat(path, "\\");
@@ -354,7 +354,7 @@ namespace Loreline.Internal.Io {
 		}
 		
 		
-		public override void __hx_getFields(global::Loreline.Internal.Root.Array<string> baseArr) {
+		public override void __hx_getFields(global::Loreline.Internal.Root.Array baseArr) {
 			baseArr.push("backslash");
 			baseArr.push("ext");
 			baseArr.push("file");
