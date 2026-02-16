@@ -1980,27 +1980,35 @@ typedef InterpreterOptions = {
         if (flushing) return;
         flushing = true;
 
-        if (syncCallbacks != null) {
-            while (syncCallbacks.length > 0) {
+        try {
+            if (syncCallbacks != null) {
+                while (syncCallbacks.length > 0) {
 
-                // Flush next synchronous callback to execute,
-                // and allow to stack new callbacks that may
-                // be triggered from that parent callback
-                var cb = syncCallbacks.shift();
-                var prevSyncCallbacks = syncCallbacks;
-                syncCallbacks = null;
+                    // Flush next synchronous callback to execute,
+                    // and allow to stack new callbacks that may
+                    // be triggered from that parent callback
+                    var cb = syncCallbacks.shift();
+                    var prevSyncCallbacks = syncCallbacks;
+                    syncCallbacks = null;
 
-                cb();
+                    cb();
 
-                // If new callbacks were added during execution,
-                // they get prepended to the existing queue
-                if (syncCallbacks != null) {
-                    for (i in 0...syncCallbacks.length) {
-                        prevSyncCallbacks.unshift(syncCallbacks[i]);
+                    // If new callbacks were added during execution,
+                    // they get prepended to the existing queue
+                    if (syncCallbacks != null) {
+                        var i = syncCallbacks.length - 1;
+                        while (i >= 0) {
+                            prevSyncCallbacks.unshift(syncCallbacks[i]);
+                            i--;
+                        }
                     }
+                    syncCallbacks = prevSyncCallbacks;
                 }
-                syncCallbacks = prevSyncCallbacks;
             }
+        }
+        catch (e:Any) {
+            flushing = false;
+            throw e;
         }
 
         flushing = false;
