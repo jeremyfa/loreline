@@ -1229,6 +1229,15 @@ class Token {
                 return true;
             }
 
+            // If we're at whitespace before a // comment, treat as end of line
+            if (isWhitespace(c)) {
+                var p = pos;
+                while (p < this.length && isWhitespace(input.uCharCodeAt(p))) p++;
+                if (p + 1 < this.length && input.uCharCodeAt(p) == "/".code && input.uCharCodeAt(p + 1) == "/".code) {
+                    return true;
+                }
+            }
+
             // Any other character invalidates it
             return false;
         }

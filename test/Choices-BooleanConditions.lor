@@ -1,0 +1,56 @@
+
+state
+  canRun: true
+  tired: false
+
+character barista
+  name: Alex
+
+beat Start
+  barista: What do you want to do?
+  choice
+    Go outside if canRun
+      barista: You went outside!
+    Rest if tired
+      barista: You rested.
+    Stay awake if !tired
+      barista: You stayed awake!
+    Sleep
+      barista: Goodnight!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: What do you want to do?
+
+    + Go outside
+    - Rest
+    + Stay awake
+    + Sleep
+
+    Alex: You went outside!
+
+- choices: [2]
+  expected: |
+    Alex: What do you want to do?
+
+    + Go outside
+    - Rest
+    + Stay awake
+    + Sleep
+
+    Alex: You stayed awake!
+
+- choices: [3]
+  expected: |
+    Alex: What do you want to do?
+
+    + Go outside
+    - Rest
+    + Stay awake
+    + Sleep
+
+    Alex: Goodnight!
+</test>
+*/

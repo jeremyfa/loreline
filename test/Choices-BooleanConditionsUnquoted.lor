@@ -1,0 +1,16 @@
+
+state
+  tired: false
+
+choice
+  Go outside if tired           // choice shown only when tired is true
+  "Go outside if tired"         // choice text is literally "Go outside if tired"
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    - Go outside
+    + Go outside if tired
+</test>
+*/
