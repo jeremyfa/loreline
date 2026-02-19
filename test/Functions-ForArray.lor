@@ -1,0 +1,22 @@
+
+function findItem(inventory, target)
+  for item in inventory
+    if item == target
+      return true
+  return false
+
+state
+  items: ["sword", "shield", "potion"]
+
+Has sword is $findItem(items, "sword")
+
+Has bow is $findItem(items, "bow")
+
+/*
+<test>
+- expected: |
+    ~ Has sword is true
+
+    ~ Has bow is false
+</test>
+*/

@@ -1,0 +1,26 @@
+
+function testStringDotNotation()
+  var greeting = "hello world"
+  var results = []
+  results.add(greeting.upper())
+  results.add(greeting.contains("world"))
+  results.add(greeting.replace("world", "there"))
+  results.add(greeting.split(" ").join("-"))
+  results.add(greeting.trim())
+  results.add(greeting.index("world"))
+  results.add(greeting.sub(0, 5))
+  results.add(greeting.starts("hello"))
+  results.add(greeting.ends("world"))
+  results.add("abc".repeat(3))
+  results.add("LOUD".lower())
+  results.add(greeting.length())
+  return results.join(", ")
+
+$testStringDotNotation()
+
+/*
+<test>
+- expected: |
+    ~ HELLO WORLD, true, hello there, hello-world, hello world, 6, hello, true, true, abcabcabc, loud, 11
+</test>
+*/

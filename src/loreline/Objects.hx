@@ -105,6 +105,28 @@ class Objects {
 
     }
 
+    public static function removeField(interpreter:Interpreter, fields:Any, name:String):Bool {
+
+        if (fields is Fields) {
+            return (cast fields:Fields).lorelineRemove(interpreter, name);
+        }
+        else if (fields is StringMap) {
+            return (cast fields:StringMap<Any>).remove(name);
+        }
+        #if (loreline_cs_api && !macro)
+        else if (isCsDict(fields)) {
+            return removeCsDictField(fields, name);
+        }
+        else if (isCsFields(fields)) {
+            return removeCsFieldsValue(interpreter, fields, name);
+        }
+        #end
+        else {
+            return Reflect.deleteField(fields, name);
+        }
+
+    }
+
     public static function fieldExists(interpreter:Interpreter, fields:Any, name:String):Bool {
 
         return if (fields is Fields) {
@@ -181,6 +203,15 @@ class Objects {
         cs.Syntax.code('dict[{0}] = {1}', name, value);
     }
 
+    public static function removeCsDictField(fields:Any, name:String):Bool {
+        cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
+        if (cs.Syntax.code('dict.Contains({0})', name)) {
+            cs.Syntax.code('dict.Remove({0})', name);
+            return true;
+        }
+        return false;
+    }
+
     public static function csDictFieldExists(fields:Any, name:String):Bool {
         cs.Syntax.code('global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary){0}', fields);
         return cs.Syntax.code('dict.Contains({0})', name);
@@ -211,6 +242,11 @@ class Objects {
     public static function setCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String, value:Any):Void {
         cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
         cs.Syntax.code('f.LorelineSet((global::Loreline.Interpreter)({0}), {1}, {2})', @:privateAccess interpreter?.wrapper, name, value);
+    }
+
+    public static function removeCsFieldsValue(?interpreter:Interpreter, fields:Any, name:String):Bool {
+        cs.Syntax.code('global::Loreline.IFields f = (global::Loreline.IFields){0}', fields);
+        return cs.Syntax.code('f.LorelineRemove((global::Loreline.Interpreter)({0}), {1})', @:privateAccess interpreter?.wrapper, name);
     }
 
     public static function csFieldsKeyExists(?interpreter:Interpreter, fields:Any, name:String):Bool {

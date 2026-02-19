@@ -236,6 +236,52 @@ jobs:
           compression-level: 0
 
 
+  test-loreline-neko:
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Run Neko tests
+        run: node run test ./test
+
+
   build-loreline-js:
     runs-on: "ubuntu-22.04"
     steps:
@@ -381,9 +427,48 @@ jobs:
           path: loreline-csharp.zip
           compression-level: 0
 
+  package-unity-sample:
+    needs: [build-loreline-csharp]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Download C# library
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-csharp.zip
+          path: .
+
+      - name: Assemble Unity sample
+        run: |
+          unzip loreline-csharp.zip -d cs-temp
+          mkdir -p sample/LorelineUnity/Assets/Plugins/Loreline
+          cp -r cs-temp/Loreline/* sample/LorelineUnity/Assets/Plugins/Loreline/
+          mkdir -p sample/LorelineUnity/Assets/Resources
+          cp sample/CoffeeShop.lor sample/LorelineUnity/Assets/Resources/CoffeeShop.lor.txt
+          cp sample/characters.lor sample/LorelineUnity/Assets/Resources/characters.lor.txt
+
+      - name: Create zip archive
+        run: |
+          cd sample
+          zip -r ../loreline-unity-sample.zip LorelineUnity/ \
+            -x 'LorelineUnity/Library/*' 'LorelineUnity/Temp/*' \
+               'LorelineUnity/Logs/*' 'LorelineUnity/UserSettings/*' \
+               'LorelineUnity/obj/*'
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-unity-sample.zip
+          path: loreline-unity-sample.zip
+          compression-level: 0
+
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-loreline-windows, build-loreline-mac, build-loreline-linux, build-loreline-js, build-loreline-csharp]
+    needs: [build-loreline-windows, build-loreline-mac, build-loreline-linux, build-loreline-js, build-loreline-csharp, package-unity-sample]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -424,6 +509,12 @@ jobs:
           name: loreline-csharp.zip
           path: .
 
+      - name: Download loreline-unity-sample.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-unity-sample.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -445,3 +536,4 @@ jobs:
             loreline-linux-arm64.zip
             loreline-js.zip
             loreline-csharp.zip
+            loreline-unity-sample.zip

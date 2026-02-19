@@ -1,0 +1,32 @@
+
+function firstNegative(numbers)
+  for n in numbers
+    if n >= 0
+      continue
+    return n
+  return null
+
+function sumUntilLimit(values, limit)
+  var total = 0
+  for v in values
+    if total + v > limit
+      break
+    total += v
+  return total
+
+state
+  nums: [5, 3, -2, 7, -1]
+  vals: [10, 20, 30, 40, 50]
+
+First negative is $firstNegative(nums)
+
+Sum until 55 is $sumUntilLimit(vals, 55)
+
+/*
+<test>
+- expected: |
+    ~ First negative is -2
+
+    ~ Sum until 55 is 30
+</test>
+*/

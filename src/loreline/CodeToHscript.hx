@@ -13,6 +13,8 @@ enum abstract CodeToHscriptStackType(Int) {
 
     var Indent;
 
+    var CaseIndent;
+
     var Bracket;
 
     var Paren;
@@ -24,6 +26,7 @@ enum abstract CodeToHscriptStackType(Int) {
             case ArrayBracket: 'ArrayBracket';
             case Brace: 'Brace';
             case Indent: 'Indent';
+            case CaseIndent: 'CaseIndent';
             case Bracket: 'Bracket';
             case Paren: 'Paren';
         }
@@ -304,15 +307,17 @@ class CodeToHscript {
         // This handles cases where the function body contains only comments
         // (which are replaced with spaces and don't trigger dedent).
         if (until == -1) {
-            while (stack.length > 0 && stack[stack.length - 1] == Indent) {
-                stackPop();
+            while (stack.length > 0 && (stack[stack.length - 1] == Indent || stack[stack.length - 1] == CaseIndent)) {
+                var popped = stackPop();
                 indentStack.pop();
-                currentPosOffset++;
-                output.addChar(" ".code);
-                posOffsets.push(currentPosOffset);
-                currentPosOffset++;
-                output.addChar("}".code);
-                posOffsets.push(currentPosOffset);
+                if (popped == Indent) {
+                    currentPosOffset++;
+                    output.addChar(" ".code);
+                    posOffsets.push(currentPosOffset);
+                    currentPosOffset++;
+                    output.addChar("}".code);
+                    posOffsets.push(currentPosOffset);
+                }
             }
         }
 
@@ -375,6 +380,10 @@ class CodeToHscript {
                     addExtra('+'.code);
                     addExtra('"'.code);
                     currentPosOffset++;
+                }
+                else if (c == "$".code) {
+                    // $$ → literal dollar sign
+                    add("$".code);
                 }
                 else {
                     error("Expected identifier or { after $");
@@ -871,7 +880,7 @@ class CodeToHscript {
 
         var i = stack.length - 1;
         if (i >= 0) {
-            return (stack[i] == Brace || stack[i] == Indent);
+            return (stack[i] == Brace || stack[i] == Indent || stack[i] == CaseIndent);
         }
 
         return true;
@@ -882,7 +891,7 @@ class CodeToHscript {
 
         var i = stack.length - 1;
         while (i >= 0) {
-            if (stack[i] != Indent) {
+            if (stack[i] != Indent && stack[i] != CaseIndent) {
                 var res = (stack[i] == ObjectBrace);
                 return res;
             }
@@ -897,7 +906,7 @@ class CodeToHscript {
 
         var i = stack.length - 1;
         while (i >= 0) {
-            if (stack[i] != Indent) {
+            if (stack[i] != Indent && stack[i] != CaseIndent) {
                 var res = (stack[i] == ArrayBracket);
                 return res;
             }
@@ -1050,18 +1059,33 @@ class CodeToHscript {
                     // Nothing special to do
                 }
                 else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index) && !endsOrFollowsWithChar(line, "[".code, index)) {
-                    stackPush(Indent);
+                    final trimmedLine = line.ltrim();
+                    final isCaseLabel = (trimmedLine.startsWith("case ") || trimmedLine.startsWith("case\t"))
+                        || (trimmedLine == "default" || trimmedLine.startsWith("default ") || trimmedLine.startsWith("default\t"));
 
-                    indentLevel += indent;
-                    indentStack.push(indentLevel);
-                    currentPosOffset++;
-                    output.addChar(" ".code);
-                    posOffsets.push(currentPosOffset);
-                    currentPosOffset++;
-                    output.addChar("{".code);
-                    posOffsets.push(currentPosOffset);
+                    if (isCaseLabel) {
+                        stackPush(CaseIndent);
+
+                        indentLevel += indent;
+                        indentStack.push(indentLevel);
+                        currentPosOffset++;
+                        output.addChar(":".code);
+                        posOffsets.push(currentPosOffset);
+                    }
+                    else {
+                        stackPush(Indent);
+
+                        indentLevel += indent;
+                        indentStack.push(indentLevel);
+                        currentPosOffset++;
+                        output.addChar(" ".code);
+                        posOffsets.push(currentPosOffset);
+                        currentPosOffset++;
+                        output.addChar("{".code);
+                        posOffsets.push(currentPosOffset);
+                    }
                 }
-                else if (indent < 0 && /*!endsOrFollowsWithChar(line, "}".code, index)*/ stack.length > 0 && stack[stack.length-1] == Indent /*&& !endsOrFollowsWithChar(line, "]".code, index)*/) {
+                else if (indent < 0 && /*!endsOrFollowsWithChar(line, "}".code, index)*/ stack.length > 0 && (stack[stack.length-1] == Indent || stack[stack.length-1] == CaseIndent) /*&& !endsOrFollowsWithChar(line, "]".code, index)*/) {
 
                     if (!inObjectBlock() && !endsOrFollowsWithChar(line, ";".code, index)) {
                         currentPosOffset++;
@@ -1071,19 +1095,21 @@ class CodeToHscript {
 
                     indentLevel += indent;
                     var first = true;
-                    while (indentStack[indentStack.length - 1] > indentLevel && stack.length > 0 && stack[stack.length-1] == Indent) {
-                        stackPop();
+                    while (indentStack[indentStack.length - 1] > indentLevel && stack.length > 0 && (stack[stack.length-1] == Indent || stack[stack.length-1] == CaseIndent)) {
+                        var popped = stackPop();
                         indentStack.pop();
-                        if (first) {
-                            first = false;
+                        if (popped == Indent) {
+                            if (first) {
+                                first = false;
+                                currentPosOffset++;
+                                output.addChar(" ".code);
+                                posOffsets.push(currentPosOffset);
+                            }
+
                             currentPosOffset++;
-                            output.addChar(" ".code);
+                            output.addChar("}".code);
                             posOffsets.push(currentPosOffset);
                         }
-
-                        currentPosOffset++;
-                        output.addChar("}".code);
-                        posOffsets.push(currentPosOffset);
                     }
                 }
                 else if (indent == 0 && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {

@@ -29,6 +29,14 @@ namespace Loreline
         void LorelineSet(Interpreter interpreter, string key, object value);
 
         /// <summary>
+        /// Remove the field associated to the given key
+        /// </summary>
+        /// <param name="interpreter">The interpreter instance</param>
+        /// <param name="key">The field key to remove</param>
+        /// <returns>True if the key was found and removed, false otherwise</returns>
+        bool LorelineRemove(Interpreter interpreter, string key);
+
+        /// <summary>
         /// Check if a value exists for the given key
         /// </summary>
         /// <param name="interpreter">The interpreter instance</param>

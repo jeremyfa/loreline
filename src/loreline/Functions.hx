@@ -48,9 +48,8 @@ class Functions {
         target.set("float", this.float_);
         target.set("string", this.string_);
         target.set("bool", this.bool);
-        // Generic
-        target.set("length", this.length);
         // String
+        target.set("string_length", this.string_length);
         target.set("string_upper", this.string_upper);
         target.set("string_lower", this.string_lower);
         target.set("string_contains", this.string_contains);
@@ -65,6 +64,7 @@ class Functions {
         // Text
         target.set("plural", this.plural);
         // Array
+        target.set("array_length", this.array_length);
         target.set("array_add", this.array_add);
         target.set("array_pop", this.array_pop);
         target.set("array_prepend", this.array_prepend);
@@ -79,6 +79,7 @@ class Functions {
         target.set("array_shuffle", this.array_shuffle);
         target.set("array_copy", this.array_copy);
         // Map
+        target.set("map_length", this.map_length);
         target.set("map_keys", this.map_keys);
         target.set("map_has", this.map_has);
         target.set("map_get", this.map_get);
@@ -342,25 +343,19 @@ class Functions {
         return value != null;
     }
 
-    // ── Generic ───────────────────────────────────────────────────────
+    // ── String ────────────────────────────────────────────────────────
 
     /**
-     * Returns the number of characters in a string, or the number of elements
-     * in an array.
+     * Returns the number of characters in a string.
      *
      * ```lor
      * name = "Alice"
-     * items = [1, 2, 3]
-     * Your name has $length(name) letters and you carry $length(items) items.
+     * Your name has $string_length(name) letters.
      * ```
      */
-    public function length(value:Any):Int {
-        if (value is String) return (value : String).length;
-        if (Arrays.isArray(value)) return Arrays.arrayLength(value);
-        return 0;
+    public function string_length(text:String):Int {
+        return text.length;
     }
-
-    // ── String ────────────────────────────────────────────────────────
 
     /**
      * Converts all letters to uppercase.
@@ -541,6 +536,19 @@ class Functions {
     }
 
     // ── Array ─────────────────────────────────────────────────────────
+
+    /**
+     * Returns the number of elements in an array.
+     *
+     * ```lor
+     * items = [1, 2, 3]
+     * You carry $array_length(items) items.
+     * ```
+     */
+    public function array_length(array:Any):Int {
+        if (Arrays.isArray(array)) return Arrays.arrayLength(array);
+        return 0;
+    }
 
     /**
      * Adds an element to the end of an array.
@@ -788,6 +796,19 @@ class Functions {
     // ── Map ───────────────────────────────────────────────────────────
 
     /**
+     * Returns the number of keys in a map.
+     *
+     * ```lor
+     * state
+     *   stats: { strength: 10, agility: 8 }
+     * The map has $map_length(stats) entries.
+     * ```
+     */
+    public function map_length(map:Any):Int {
+        return Objects.getFields(interpreter, map).length;
+    }
+
+    /**
      * Returns an array containing all the keys of a map.
      *
      * ```lor
@@ -798,7 +819,9 @@ class Functions {
      * ```
      */
     public function map_keys(map:Any):Array<String> {
-        return Objects.getFields(interpreter, map);
+        final fields = Objects.getFields(interpreter, map);
+        fields.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
+        return fields;
     }
 
     /**
@@ -849,8 +872,7 @@ class Functions {
      */
     public function map_remove(map:Any, key:String):Bool {
         if (Objects.fieldExists(interpreter, map, key)) {
-            Objects.setField(interpreter, map, key, null);
-            return true;
+            return Objects.removeField(interpreter, map, key);
         }
         return false;
     }

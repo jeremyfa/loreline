@@ -1,0 +1,50 @@
+
+state
+  counter: 0
+
+function testPostfixInc(n)
+  var before = n++
+  return "$before then $n"
+
+function testPostfixDec(n)
+  var before = n--
+  return "$before then $n"
+
+function testPrefixInc(n)
+  var result = ++n
+  return "$result and $n"
+
+function testPrefixDec(n)
+  var result = --n
+  return "$result and $n"
+
+function stateIncrement()
+  counter++
+  counter++
+  counter++
+  return counter
+
+Postfix increment is $testPostfixInc(10)
+
+Postfix decrement is $testPostfixDec(10)
+
+Prefix increment is $testPrefixInc(10)
+
+Prefix decrement is $testPrefixDec(10)
+
+Counter after 3 increments is $stateIncrement()
+
+/*
+<test>
+- expected: |
+    ~ Postfix increment is 10 then 11
+
+    ~ Postfix decrement is 10 then 9
+
+    ~ Prefix increment is 11 and 11
+
+    ~ Prefix decrement is 9 and 9
+
+    ~ Counter after 3 increments is 3
+</test>
+*/

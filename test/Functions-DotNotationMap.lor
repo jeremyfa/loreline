@@ -1,0 +1,27 @@
+
+function testMapDotNotation()
+  var m = {}
+  m.set("b", 2)
+  m.set("a", 1)
+  m.set("c", 3)
+  var keys = m.keys().join(", ")
+  var hasA = m.has("a")
+  var hasZ = m.has("z")
+  var valB = m.get("b")
+  m.remove("c")
+  var afterRemove = m.keys().join(", ")
+  var cp = m.copy()
+  cp.set("d", 4)
+  var cpKeys = cp.keys().join(", ")
+  var origKeys = m.keys().join(", ")
+  var len = m.length()
+  return "keys: $keys | has a: $hasA | has z: $hasZ | b: $valB | after remove: $afterRemove | copy keys: $cpKeys | orig keys: $origKeys | length: $len"
+
+$testMapDotNotation()
+
+/*
+<test>
+- expected: |
+    ~ keys: a, b, c | has a: true | has z: false | b: 2 | after remove: a, b | copy keys: a, b, d | orig keys: a, b | length: 2
+</test>
+*/

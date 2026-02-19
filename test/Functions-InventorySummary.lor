@@ -1,0 +1,33 @@
+
+state
+  inventory: ["sword", "shield", "potion", "potion", "arrow", "arrow", "arrow"]
+  prices: { sword: 50, shield: 35, potion: 10, arrow: 2 }
+
+function inventorySummary()
+  var counts = {}
+  for item in inventory
+    if counts.has(item)
+      counts.set(item, counts.get(item) + 1)
+    else
+      counts.set(item, 1)
+  var lines = []
+  var total = 0
+  for name in counts.keys()
+    var qty = counts.get(name)
+    var value = prices.get(name) * qty
+    total += value
+    lines.add("$qty x $name ($$${value})")
+  return lines.join("\n") + "\nTotal: $$$total"
+
+$inventorySummary()
+
+/*
+<test>
+- expected: |
+    ~ 3 x arrow ($6)
+      2 x potion ($20)
+      1 x shield ($35)
+      1 x sword ($50)
+      Total: $111
+</test>
+*/

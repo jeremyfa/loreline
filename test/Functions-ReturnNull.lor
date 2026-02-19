@@ -1,0 +1,25 @@
+
+function earlyReturn(ready)
+  if !ready
+    return
+  return "done"
+
+function noReturn()
+  var x = 1
+
+Early true is $earlyReturn(true)
+
+Early false is $earlyReturn(false)
+
+No return is $noReturn()
+
+/*
+<test>
+- expected: |
+    ~ Early true is done
+
+    ~ Early false is null
+
+    ~ No return is null
+</test>
+*/

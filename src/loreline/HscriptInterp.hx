@@ -758,6 +758,20 @@ class HscriptInterp {
     }
 
     function fcall( o : Dynamic, f : String, args : Array<Dynamic> ) : Dynamic {
+        // Try helper functions for built-in types first (string, array, map),
+        // before calling get(o, f) which may fail on some targets for these types.
+        var helper:Dynamic = null;
+        if (o is String) {
+            helper = Objects.getStringHelper(interpreter, f);
+        } else if (Arrays.isArray(o)) {
+            helper = Objects.getArrayHelper(interpreter, f);
+        } else if (Objects.isFields(o)) {
+            helper = Objects.getMapHelper(interpreter, f);
+        }
+        if (helper != null && Reflect.isFunction(helper)) {
+            args.insert(0, o);
+            return call(null, helper, args);
+        }
         return call(o, get(o, f), args);
     }
 

@@ -1,0 +1,19 @@
+
+function testLiterals()
+  var r = []
+  r.add("hello".upper())
+  r.add([3, 1, 2].join("-"))
+  r.add({x: 10, y: 20}.get("x"))
+  r.add("  spaces  ".trim())
+  r.add([5, 4, 3].has(4))
+  r.add({name: "test"}.has("name"))
+  return r.join(" | ")
+
+$testLiterals()
+
+/*
+<test>
+- expected: |
+    ~ HELLO | 3-1-2 | 10 | spaces | true | true
+</test>
+*/

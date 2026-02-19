@@ -1,0 +1,21 @@
+
+function sumAtLeastOnce(n)
+  var total = 0
+  do
+    total += n
+    n -= 1
+  while n > 0
+  return total
+
+Sum of 5 is $sumAtLeastOnce(5)
+
+Sum of 0 is $sumAtLeastOnce(0)
+
+/*
+<test>
+- expected: |
+    ~ Sum of 5 is 15
+
+    ~ Sum of 0 is 0
+</test>
+*/

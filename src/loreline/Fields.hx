@@ -25,6 +25,11 @@ interface Fields {
     function lorelineSet(interpreter:Interpreter, key:String, value:Any):Void;
 
     /**
+     * Remove the field associated to the given key
+     */
+    function lorelineRemove(interpreter:Interpreter, key:String):Bool;
+
+    /**
      * Check if a value exists for the given key
      */
     function lorelineExists(interpreter:Interpreter, key:String):Bool;

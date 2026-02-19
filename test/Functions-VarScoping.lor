@@ -1,0 +1,43 @@
+
+state
+  x: 10
+
+function testNullVar()
+  var result
+  return result
+
+function testShadow()
+  var x = 99
+  return x
+
+function testStateAccess()
+  return x
+
+function testStateModify()
+  x = 42
+  return x
+
+Null var result is $testNullVar()
+
+Shadow var result is $testShadow()
+
+State access result is $testStateAccess()
+
+Modify result is $testStateModify()
+
+After modify, x is $testStateAccess()
+
+/*
+<test>
+- expected: |
+    ~ Null var result is null
+
+    ~ Shadow var result is 99
+
+    ~ State access result is 10
+
+    ~ Modify result is 42
+
+    ~ After modify, x is 42
+</test>
+*/

@@ -1,0 +1,28 @@
+
+function testArrayDotNotation()
+  var items = [3, 1, 2]
+  items.sort()
+  var sorted = items.join(", ")
+  items.add(4)
+  var added = items.join(", ")
+  var hasTwo = items.has(2)
+  var idx = items.index(3)
+  var popped = items.pop()
+  var afterPop = items.join(", ")
+  items.prepend(0)
+  var afterPrepend = items.join(", ")
+  var shifted = items.shift()
+  var afterShift = items.join(", ")
+  var copied = items.copy()
+  copied.reverse()
+  var len = items.length()
+  return "sorted: $sorted | added: $added | has 2: $hasTwo | index of 3: $idx | popped: $popped | after pop: $afterPop | prepend 0: $afterPrepend | shifted: $shifted | after shift: $afterShift | reversed copy: " + copied.join(", ") + " | length: $len"
+
+$testArrayDotNotation()
+
+/*
+<test>
+- expected: |
+    ~ sorted: 1, 2, 3 | added: 1, 2, 3, 4 | has 2: true | index of 3: 2 | popped: 4 | after pop: 1, 2, 3 | prepend 0: 0, 1, 2, 3 | shifted: 0 | after shift: 1, 2, 3 | reversed copy: 3, 2, 1 | length: 3
+</test>
+*/

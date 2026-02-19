@@ -1,0 +1,16 @@
+
+function countdown(n)
+  var result = ""
+  while n > 0
+    result += "$n... "
+    n -= 1
+  return result + "Go!"
+
+$countdown(5)
+
+/*
+<test>
+- expected: |
+    ~ 5... 4... 3... 2... 1... Go!
+</test>
+*/

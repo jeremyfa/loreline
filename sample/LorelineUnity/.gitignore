@@ -1,0 +1,14 @@
+# Unity generated
+/Library/
+/Temp/
+/Logs/
+/UserSettings/
+/obj/
+/Builds/
+
+# Generated files — copied by CI from cs/Loreline/ and sample/
+/Assets/Plugins/Loreline/
+/Assets/Resources/CoffeeShop.lor.txt
+/Assets/Resources/CoffeeShop.lor.txt.meta
+/Assets/Resources/characters.lor.txt
+/Assets/Resources/characters.lor.txt.meta

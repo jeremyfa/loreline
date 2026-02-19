@@ -61,7 +61,7 @@ beat SplitTest
 beat ArrayTests
   items = [10, 20, 30]
   items.add(40)
-  val = length(items)
+  val = items.length()
   after_add $val
 
   val = items.pop()

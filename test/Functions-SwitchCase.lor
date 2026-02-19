@@ -1,0 +1,28 @@
+
+function drinkPrice(drink)
+  switch drink
+    case "espresso"
+      return 3
+    case "latte"
+      return 5
+    case "cappuccino"
+      return 4
+    default
+      return 0
+
+Espresso costs $$$drinkPrice("espresso")
+
+Latte costs $$$drinkPrice("latte")
+
+Water costs $$$drinkPrice("water")
+
+/*
+<test>
+- expected: |
+    ~ Espresso costs $3
+
+    ~ Latte costs $5
+
+    ~ Water costs $0
+</test>
+*/

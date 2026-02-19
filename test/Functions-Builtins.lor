@@ -43,11 +43,11 @@ beat Start
   result = bool("")
   bool_empty $result
 
-  // Generic function
-  val = length("hello")
+  // Length functions
+  val = string_length("hello")
   string_length $val
   items = [1, 2, 3]
-  val = length(items)
+  val = array_length(items)
   array_length $val
 
   // String functions
@@ -73,7 +73,7 @@ beat Start
 beat ArrayTests
   items = [10, 20, 30]
   array_add(items, 40)
-  val = length(items)
+  val = array_length(items)
   after_add $val
 
   val = array_pop(items)
