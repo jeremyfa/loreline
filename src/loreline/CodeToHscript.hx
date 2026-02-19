@@ -5,19 +5,19 @@ using loreline.Utf8;
 
 enum abstract CodeToHscriptStackType(Int) {
 
-    var ObjectBrace;
+    var ObjectBrace = 0;
 
-    var ArrayBracket;
+    var ArrayBracket = 1;
 
-    var Brace;
+    var Brace = 2;
 
-    var Indent;
+    var Indent = 3;
 
-    var CaseIndent;
+    var CaseIndent = 4;
 
-    var Bracket;
+    var Bracket = 5;
 
-    var Paren;
+    var Paren = 6;
 
     public function toString() {
 

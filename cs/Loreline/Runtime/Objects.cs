@@ -124,6 +124,26 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static bool removeField(global::Loreline.Runtime.Interpreter interpreter, object fields, string name) {
+			if (( fields is global::Loreline.Runtime.Fields )) {
+				return ((global::Loreline.Runtime.Fields) (fields) ).lorelineRemove(interpreter, name);
+			}
+			else if (( fields is global::Loreline.Internal.Ds.StringMap )) {
+				return ((global::Loreline.Internal.Ds.StringMap) (fields) ).@remove(name);
+			}
+			else if (global::Loreline.Runtime.Objects.isCsDict(fields)) {
+				return global::Loreline.Runtime.Objects.removeCsDictField(fields, name);
+			}
+			else if (global::Loreline.Runtime.Objects.isCsFields(fields)) {
+				return global::Loreline.Runtime.Objects.removeCsFieldsValue(interpreter, fields, name);
+			}
+			else {
+				return global::Loreline.Internal.Root.Reflect.deleteField(fields, name);
+			}
+			
+		}
+		
+		
 		public static bool fieldExists(global::Loreline.Runtime.Interpreter interpreter, object fields, string name) {
 			if (( fields is global::Loreline.Runtime.Fields )) {
 				return ((global::Loreline.Runtime.Fields) (fields) ).lorelineExists(interpreter, name);
@@ -199,6 +219,17 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public static bool removeCsDictField(object fields, string name) {
+			global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary)fields;
+			if (global::Loreline.Internal.Lang.Runtime.toBool((dict.Contains(name)))) {
+				dict.Remove(name);
+				return true;
+			}
+			
+			return false;
+		}
+		
+		
 		public static bool csDictFieldExists(object fields, string name) {
 			global::System.Collections.IDictionary dict = (global::System.Collections.IDictionary)fields;
 			return global::Loreline.Internal.Lang.Runtime.toBool(dict.Contains(name));
@@ -233,6 +264,12 @@ namespace Loreline.Runtime {
 		public static void setCsFieldsValue(global::Loreline.Runtime.Interpreter interpreter, object fields, string name, object @value) {
 			global::Loreline.IFields f = (global::Loreline.IFields)fields;
 			f.LorelineSet((global::Loreline.Interpreter)((( (( interpreter != null )) ? (interpreter.wrapper) : (null) ))), name, @value);
+		}
+		
+		
+		public static bool removeCsFieldsValue(global::Loreline.Runtime.Interpreter interpreter, object fields, string name) {
+			global::Loreline.IFields f = (global::Loreline.IFields)fields;
+			return global::Loreline.Internal.Lang.Runtime.toBool(f.LorelineRemove((global::Loreline.Interpreter)((( (( interpreter != null )) ? (interpreter.wrapper) : (null) ))), name));
 		}
 		
 		

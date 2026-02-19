@@ -6402,6 +6402,32 @@ namespace Loreline.Runtime {
 						return true;
 					}
 					
+					int c15 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(c7)) );
+					if (( ( c15 == 32 ) || ( c15 == 9 ) )) {
+						int p = pos;
+						while (true) {
+							bool tmp8 = default(bool);
+							if (( p < this.length )) {
+								int c16 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, p))) );
+								tmp8 = ( ( c16 == 32 ) || ( c16 == 9 ) );
+							}
+							else {
+								tmp8 = false;
+							}
+							
+							if ( ! (tmp8) ) {
+								break;
+							}
+							
+							 ++ p;
+						}
+						
+						if (( ( ( ( p + 1 ) < this.length ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, p), 47) ) && global::Loreline.Internal.Lang.Runtime.eq(global::Loreline.Internal.Lang.StringExt.charCodeAt(this.input, ( p + 1 )), 47) )) {
+							return true;
+						}
+						
+					}
+					
 					return false;
 				}
 				
@@ -8397,7 +8423,7 @@ namespace Loreline.Runtime {
 							
 						}
 						
-						attachments.sort(( (( global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun.__hx_current) : (global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun.__hx_current = ((global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun) (new global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun()) )) ));
+						attachments.sort(( (( global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun.__hx_current) : (global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun.__hx_current = ((global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun) (new global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun()) )) ));
 						global::Loreline.Internal.Root.Array type = ( (( attachments.length > 0 )) ? (attachments) : (null) );
 						global::Loreline.Runtime.Position position = start;
 						if (( position == null )) {
@@ -8508,7 +8534,7 @@ namespace Loreline.Runtime {
 							
 						}
 						
-						attachments.sort(( (( global::Loreline.Runtime.Lexer_readString_2679__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Lexer_readString_2679__Fun.__hx_current) : (global::Loreline.Runtime.Lexer_readString_2679__Fun.__hx_current = ((global::Loreline.Runtime.Lexer_readString_2679__Fun) (new global::Loreline.Runtime.Lexer_readString_2679__Fun()) )) ));
+						attachments.sort(( (( global::Loreline.Runtime.Lexer_readString_2688__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Lexer_readString_2688__Fun.__hx_current) : (global::Loreline.Runtime.Lexer_readString_2688__Fun.__hx_current = ((global::Loreline.Runtime.Lexer_readString_2688__Fun) (new global::Loreline.Runtime.Lexer_readString_2688__Fun()) )) ));
 						string type = buf.b.ToString();
 						global::Loreline.Internal.Root.Array type1 = ( (( attachments.length > 0 )) ? (attachments) : (null) );
 						global::Loreline.Runtime.Position position = stringStart;
@@ -11776,13 +11802,13 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Lexer_tryReadUnquotedString_2622__Fun : global::Loreline.Internal.Lang.Function {
+	public class Lexer_tryReadUnquotedString_2631__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Lexer_tryReadUnquotedString_2622__Fun() : base(2, 1) {
+		public Lexer_tryReadUnquotedString_2631__Fun() : base(2, 1) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Lexer_tryReadUnquotedString_2622__Fun __hx_current;
+		public static global::Loreline.Runtime.Lexer_tryReadUnquotedString_2631__Fun __hx_current;
 		
 		public override double __hx_invoke2_f(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			global::Loreline.Runtime.LStringAttachment b = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Runtime.LStringAttachment) (((object) (__fn_float2) )) )) : (((global::Loreline.Runtime.LStringAttachment) (__fn_dyn2) )) );
@@ -11798,13 +11824,13 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Lexer_readString_2679__Fun : global::Loreline.Internal.Lang.Function {
+	public class Lexer_readString_2688__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Lexer_readString_2679__Fun() : base(2, 1) {
+		public Lexer_readString_2688__Fun() : base(2, 1) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Lexer_readString_2679__Fun __hx_current;
+		public static global::Loreline.Runtime.Lexer_readString_2688__Fun __hx_current;
 		
 		public override double __hx_invoke2_f(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			global::Loreline.Runtime.LStringAttachment b = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((global::Loreline.Runtime.LStringAttachment) (((object) (__fn_float2) )) )) : (((global::Loreline.Runtime.LStringAttachment) (__fn_dyn2) )) );

@@ -1297,6 +1297,10 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual object makeIterator(object v) {
+			if (global::Loreline.Runtime.Arrays.isArray(v)) {
+				return global::Loreline.Runtime.Arrays.getIterator(v);
+			}
+			
 			try {
 				v = ((object) (global::Loreline.Internal.Lang.Runtime.callField(v, "iterator", 328878574, null)) );
 			}
@@ -1569,6 +1573,22 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual object fcall(object o, string f, global::Loreline.Internal.Root.Array args) {
+			object helper = null;
+			if (( o is string )) {
+				helper = global::Loreline.Runtime.Objects.getStringHelper(this.interpreter, f);
+			}
+			else if (global::Loreline.Runtime.Arrays.isArray(o)) {
+				helper = global::Loreline.Runtime.Objects.getArrayHelper(this.interpreter, f);
+			}
+			else if (global::Loreline.Runtime.Objects.isFields(o)) {
+				helper = global::Loreline.Runtime.Objects.getMapHelper(this.interpreter, f);
+			}
+			
+			if (( ( helper != null ) && ( helper is global::Loreline.Internal.Lang.Function ) )) {
+				args.insert(0, o);
+				return this.call(null, helper, args);
+			}
+			
 			return this.call(o, this.@get(o, f), args);
 		}
 		
@@ -2543,7 +2563,9 @@ namespace Loreline.Runtime {
 		public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			object e2 = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float2) )) : (((object) (__fn_dyn2) )) );
 			object e1 = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float1) )) : (((object) (__fn_dyn1) )) );
-			return ( global::Loreline.Internal.Lang.Runtime.compare(this.me.expr(e1), this.me.expr(e2)) >= 0 );
+			int v1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e1))) );
+			int v2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e2))) );
+			return ( v1 >= v2 );
 		}
 		
 		
@@ -2566,7 +2588,9 @@ namespace Loreline.Runtime {
 		public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			object e2 = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float2) )) : (((object) (__fn_dyn2) )) );
 			object e1 = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float1) )) : (((object) (__fn_dyn1) )) );
-			return ( global::Loreline.Internal.Lang.Runtime.compare(this.me.expr(e1), this.me.expr(e2)) <= 0 );
+			int v1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e1))) );
+			int v2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e2))) );
+			return ( v1 <= v2 );
 		}
 		
 		
@@ -2589,7 +2613,9 @@ namespace Loreline.Runtime {
 		public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			object e2 = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float2) )) : (((object) (__fn_dyn2) )) );
 			object e1 = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float1) )) : (((object) (__fn_dyn1) )) );
-			return ( global::Loreline.Internal.Lang.Runtime.compare(this.me.expr(e1), this.me.expr(e2)) > 0 );
+			int v1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e1))) );
+			int v2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e2))) );
+			return ( v1 > v2 );
 		}
 		
 		
@@ -2612,7 +2638,9 @@ namespace Loreline.Runtime {
 		public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			object e2 = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float2) )) : (((object) (__fn_dyn2) )) );
 			object e1 = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (((object) (__fn_float1) )) : (((object) (__fn_dyn1) )) );
-			return ( global::Loreline.Internal.Lang.Runtime.compare(this.me.expr(e1), this.me.expr(e2)) < 0 );
+			int v1 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e1))) );
+			int v2 = ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.me.expr(e2))) );
+			return ( v1 < v2 );
 		}
 		
 		

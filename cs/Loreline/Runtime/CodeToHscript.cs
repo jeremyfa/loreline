@@ -10,8 +10,9 @@ namespace Loreline.Runtime._CodeToHscript {
 				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.ArrayBracket = ((int) (1) );
 				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Brace = ((int) (2) );
 				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Indent = ((int) (3) );
-				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Bracket = ((int) (4) );
-				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Paren = ((int) (5) );
+				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.CaseIndent = ((int) (4) );
+				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Bracket = ((int) (5) );
+				global::Loreline.Runtime._CodeToHscript.CodeToHscriptStackType_Impl_.Paren = ((int) (6) );
 			}
 		}
 		
@@ -23,6 +24,8 @@ namespace Loreline.Runtime._CodeToHscript {
 		public static int Brace;
 		
 		public static int Indent;
+		
+		public static int CaseIndent;
 		
 		public static int Bracket;
 		
@@ -57,11 +60,17 @@ namespace Loreline.Runtime._CodeToHscript {
 					
 					case 4:
 					{
-						return "Bracket";
+						return "CaseIndent";
 					}
 					
 					
 					case 5:
+					{
+						return "Bracket";
+					}
+					
+					
+					case 6:
 					{
 						return "Paren";
 					}
@@ -337,15 +346,18 @@ namespace Loreline.Runtime {
 				}
 				
 				if (( until1 == -1 )) {
-					while (( ( this.stack.length > 0 ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) )) {
-						this.stack.pop();
+					while (( ( this.stack.length > 0 ) && (( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) || ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (4) ) ) )) )) {
+						object popped = this.stack.pop();
 						this.indentStack.pop();
-						this.currentPosOffset++;
-						this.output.addChar(32);
-						this.posOffsets.push(this.currentPosOffset);
-						this.currentPosOffset++;
-						this.output.addChar(125);
-						this.posOffsets.push(this.currentPosOffset);
+						if (global::Loreline.Internal.Lang.Runtime.eq(popped, ((int) (3) ))) {
+							this.currentPosOffset++;
+							this.output.addChar(32);
+							this.posOffsets.push(this.currentPosOffset);
+							this.currentPosOffset++;
+							this.output.addChar(125);
+							this.posOffsets.push(this.currentPosOffset);
+						}
+						
 					}
 					
 				}
@@ -402,6 +414,9 @@ namespace Loreline.Runtime {
 								this._add(43, false);
 								this._add(34, false);
 								this.currentPosOffset++;
+							}
+							else if (global::Loreline.Internal.Lang.Runtime.eq(c, 36)) {
+								this._add(36, true);
 							}
 							else {
 								this.error("Expected identifier or { after $");
@@ -872,8 +887,8 @@ namespace Loreline.Runtime {
 			unchecked {
 				int i = ( this.stack.length - 1 );
 				if (( i >= 0 )) {
-					if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (2) ) )) {
-						return ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (3) ) );
+					if ( ! ((( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (2) ) ) || ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (3) ) ) ))) ) {
+						return ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (4) ) );
 					}
 					else {
 						return true;
@@ -890,7 +905,7 @@ namespace Loreline.Runtime {
 			unchecked {
 				int i = ( this.stack.length - 1 );
 				while (( i >= 0 )) {
-					if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (3) ) )) {
+					if (( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (3) ) ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (4) ) ) )) {
 						bool res = ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (0) ) );
 						return res;
 					}
@@ -907,7 +922,7 @@ namespace Loreline.Runtime {
 			unchecked {
 				int i = ( this.stack.length - 1 );
 				while (( i >= 0 )) {
-					if (( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (3) ) )) {
+					if (( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (3) ) ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) != ((int) (4) ) ) )) {
 						bool res = ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(i))) ) == ((int) (1) ) );
 						return res;
 					}
@@ -1048,7 +1063,7 @@ namespace Loreline.Runtime {
 				else if (( ( c == 13 ) || ( c == 10 ) )) {
 					if (this.inControlWithoutParens) {
 						this.inControlWithoutParens = false;
-						if (( ! (global::Loreline.Internal.Lang.Runtime.eq(this.stack.pop(), ((int) (5) ))) )) {
+						if (( ! (global::Loreline.Internal.Lang.Runtime.eq(this.stack.pop(), ((int) (6) ))) )) {
 							this.error("Unexpected end of line");
 						}
 						
@@ -1065,19 +1080,32 @@ namespace Loreline.Runtime {
 						int indent = this.nextLineIndentOffset(line, this.index);
 						if (( line.Trim().Length == 0 )) {
 						}
-						else if (( ( ( indent > 0 ) &&  ! (this.endsOrFollowsWithChar(line, 123, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1052) )})))  ) &&  ! (this.endsOrFollowsWithChar(line, 91, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1052) )})))  )) {
-							this.stack.push(((int) (3) ));
-							this.indentLevel += indent;
-							this.indentStack.push(this.indentLevel);
-							this.currentPosOffset++;
-							this.output.addChar(32);
-							this.posOffsets.push(this.currentPosOffset);
-							this.currentPosOffset++;
-							this.output.addChar(123);
-							this.posOffsets.push(this.currentPosOffset);
+						else if (( ( ( indent > 0 ) &&  ! (this.endsOrFollowsWithChar(line, 123, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1061) )})))  ) &&  ! (this.endsOrFollowsWithChar(line, 91, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1061) )})))  )) {
+							string trimmedLine = line.TrimStart();
+							bool isCaseLabel = ( ( trimmedLine.StartsWith("case ") || trimmedLine.StartsWith("case\t") ) || (( ( ( trimmedLine == "default" ) || trimmedLine.StartsWith("default ") ) || trimmedLine.StartsWith("default\t") )) );
+							if (isCaseLabel) {
+								this.stack.push(((int) (4) ));
+								this.indentLevel += indent;
+								this.indentStack.push(this.indentLevel);
+								this.currentPosOffset++;
+								this.output.addChar(58);
+								this.posOffsets.push(this.currentPosOffset);
+							}
+							else {
+								this.stack.push(((int) (3) ));
+								this.indentLevel += indent;
+								this.indentStack.push(this.indentLevel);
+								this.currentPosOffset++;
+								this.output.addChar(32);
+								this.posOffsets.push(this.currentPosOffset);
+								this.currentPosOffset++;
+								this.output.addChar(123);
+								this.posOffsets.push(this.currentPosOffset);
+							}
+							
 						}
-						else if (( ( ( indent < 0 ) && ( this.stack.length > 0 ) ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) )) {
-							if ((  ! (this.inObjectBlock())  &&  ! (this.endsOrFollowsWithChar(line, 59, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1066) )})))  )) {
+						else if (( ( ( indent < 0 ) && ( this.stack.length > 0 ) ) && (( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) || ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (4) ) ) )) )) {
+							if ((  ! (this.inObjectBlock())  &&  ! (this.endsOrFollowsWithChar(line, 59, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1090) )})))  )) {
 								this.currentPosOffset++;
 								this.output.addChar(59);
 								this.posOffsets.push(this.currentPosOffset);
@@ -1085,23 +1113,26 @@ namespace Loreline.Runtime {
 							
 							this.indentLevel += indent;
 							bool first = true;
-							while (( ( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.indentStack.__get(( this.indentStack.length - 1 )))) ) > this.indentLevel ) && ( this.stack.length > 0 ) ) && ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) )) {
-								this.stack.pop();
+							while (( ( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.indentStack.__get(( this.indentStack.length - 1 )))) ) > this.indentLevel ) && ( this.stack.length > 0 ) ) && (( ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (3) ) ) || ( ((int) (global::Loreline.Internal.Lang.Runtime.toInt(this.stack.__get(( this.stack.length - 1 )))) ) == ((int) (4) ) ) )) )) {
+								object popped = this.stack.pop();
 								this.indentStack.pop();
-								if (first) {
-									first = false;
+								if (global::Loreline.Internal.Lang.Runtime.eq(popped, ((int) (3) ))) {
+									if (first) {
+										first = false;
+										this.currentPosOffset++;
+										this.output.addChar(32);
+										this.posOffsets.push(this.currentPosOffset);
+									}
+									
 									this.currentPosOffset++;
-									this.output.addChar(32);
+									this.output.addChar(125);
 									this.posOffsets.push(this.currentPosOffset);
 								}
 								
-								this.currentPosOffset++;
-								this.output.addChar(125);
-								this.posOffsets.push(this.currentPosOffset);
 							}
 							
 						}
-						else if (( ( ( indent == 0 ) &&  ! (this.endsOrFollowsWithChar(line, 59, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1089) )})))  ) &&  ! (this.endsOrFollowsWithChar(line, 44, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1089) )})))  )) {
+						else if (( ( ( indent == 0 ) &&  ! (this.endsOrFollowsWithChar(line, 59, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1115) )})))  ) &&  ! (this.endsOrFollowsWithChar(line, 44, this.index, new global::Loreline.Internal.Lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"_add", "Loreline.Runtime.CodeToHscript", "src/Loreline.Runtime/CodeToHscript.hx"}, new int[]{1981972957}, new double[]{((double) (1115) )})))  )) {
 							if (this.inObjectBlock()) {
 								this.currentPosOffset++;
 								this.output.addChar(44);
@@ -1129,14 +1160,14 @@ namespace Loreline.Runtime {
 					this.inControl = true;
 					if ( ! (this.followsWithChar(40, ( this.index - 1 ))) ) {
 						this.inControlWithoutParens = true;
-						this.stack.push(((int) (5) ));
+						this.stack.push(((int) (6) ));
 						this.currentPosOffset++;
 						this.lineOutput.addChar(c);
 						this.output.addChar(40);
 						this.posOffsets.push(this.currentPosOffset);
 					}
 					else if (( c == 40 )) {
-						this.stack.push(((int) (5) ));
+						this.stack.push(((int) (6) ));
 					}
 					
 					this.lineOutput.addChar(c);
@@ -1145,10 +1176,10 @@ namespace Loreline.Runtime {
 				}
 				else {
 					if (( c == 40 )) {
-						this.stack.push(((int) (5) ));
+						this.stack.push(((int) (6) ));
 					}
 					else if (( c == 41 )) {
-						if (( ! (global::Loreline.Internal.Lang.Runtime.eq(this.stack.pop(), ((int) (5) ))) )) {
+						if (( ! (global::Loreline.Internal.Lang.Runtime.eq(this.stack.pop(), ((int) (6) ))) )) {
 							this.error("Unexpected: )");
 						}
 						
@@ -1158,13 +1189,13 @@ namespace Loreline.Runtime {
 							this.stack.push(((int) (1) ));
 						}
 						else {
-							this.stack.push(((int) (4) ));
+							this.stack.push(((int) (5) ));
 						}
 						
 					}
 					else if (( c == 93 )) {
-						object popped = this.stack.pop();
-						if (( ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped, ((int) (4) ))) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped, ((int) (1) ))) ) )) {
+						object popped1 = this.stack.pop();
+						if (( ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped1, ((int) (5) ))) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped1, ((int) (1) ))) ) )) {
 							this.error("Unexpected: ]");
 						}
 						
@@ -1179,8 +1210,8 @@ namespace Loreline.Runtime {
 						
 					}
 					else if (( c == 125 )) {
-						object popped1 = this.stack.pop();
-						if (( ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped1, ((int) (2) ))) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped1, ((int) (0) ))) ) )) {
+						object popped2 = this.stack.pop();
+						if (( ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped2, ((int) (2) ))) ) && ( ! (global::Loreline.Internal.Lang.Runtime.eq(popped2, ((int) (0) ))) ) )) {
 							this.error("Unexpected: }");
 						}
 						

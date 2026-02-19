@@ -97,10 +97,13 @@ class HscriptInterp {
         binops.set(">>>",function(e1,e2) return me.expr(e1) >>> me.expr(e2));
         binops.set("==",function(e1,e2) return me.expr(e1) == me.expr(e2));
         binops.set("!=",function(e1,e2) return me.expr(e1) != me.expr(e2));
-        binops.set(">=",function(e1,e2) return me.expr(e1) >= me.expr(e2));
-        binops.set("<=",function(e1,e2) return me.expr(e1) <= me.expr(e2));
-        binops.set(">",function(e1,e2) return me.expr(e1) > me.expr(e2));
-        binops.set("<",function(e1,e2) return me.expr(e1) < me.expr(e2));
+        // Temporary variables are needed here to work around a Haxe C# target quirk:
+        // inline Dynamic comparisons generate Runtime.compare() calls with incorrect boxing,
+        // causing "Cannot compare System.String and System.Int32" errors.
+        binops.set(">=",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 >= v2; });
+        binops.set("<=",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 <= v2; });
+        binops.set(">",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 > v2; });
+        binops.set("<",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 < v2; });
         binops.set("||",function(e1,e2) return me.expr(e1) == true || me.expr(e2) == true);
         binops.set("&&",function(e1,e2) return me.expr(e1) == true && me.expr(e2) == true);
         binops.set("=",assign);
@@ -639,6 +642,9 @@ class HscriptInterp {
         }
         if( v.iterator != null ) v = v.iterator();
         #else
+        if (Arrays.isArray(v)) {
+            return Arrays.getIterator(v);
+        }
         try v = v.iterator() catch( e : Dynamic ) {};
         #end
         if( v.hasNext == null || v.next == null ) error(EInvalidIterator(v));

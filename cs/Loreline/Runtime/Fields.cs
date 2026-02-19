@@ -11,6 +11,8 @@ namespace Loreline.Runtime {
 		
 		void lorelineSet(global::Loreline.Runtime.Interpreter interpreter, string key, object @value);
 		
+		bool lorelineRemove(global::Loreline.Runtime.Interpreter interpreter, string key);
+		
 		bool lorelineExists(global::Loreline.Runtime.Interpreter interpreter, string key);
 		
 		global::Loreline.Internal.Root.Array lorelineFields(global::Loreline.Runtime.Interpreter interpreter);

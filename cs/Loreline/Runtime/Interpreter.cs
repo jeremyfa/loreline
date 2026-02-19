@@ -2748,33 +2748,43 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual void flush() {
-			if (this.flushing) {
-				return;
-			}
-			
-			this.flushing = true;
-			if (( this.syncCallbacks != null )) {
-				while (( this.syncCallbacks.length > 0 )) {
-					global::Loreline.Internal.Lang.Function cb = ((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.shift()) );
-					global::Loreline.Internal.Root.Array prevSyncCallbacks = this.syncCallbacks;
-					this.syncCallbacks = null;
-					((global::Loreline.Internal.Lang.Function) (cb) ).__hx_invoke0_o();
+			unchecked {
+				if (this.flushing) {
+					return;
+				}
+				
+				this.flushing = true;
+				try {
 					if (( this.syncCallbacks != null )) {
-						int _g = 0;
-						int _g1 = this.syncCallbacks.length;
-						while (( _g < _g1 )) {
-							int i = _g++;
-							prevSyncCallbacks.unshift(((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.__get(i)) ));
+						while (( this.syncCallbacks.length > 0 )) {
+							global::Loreline.Internal.Lang.Function cb = ((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.shift()) );
+							global::Loreline.Internal.Root.Array prevSyncCallbacks = this.syncCallbacks;
+							this.syncCallbacks = null;
+							((global::Loreline.Internal.Lang.Function) (cb) ).__hx_invoke0_o();
+							if (( this.syncCallbacks != null )) {
+								int i = ( this.syncCallbacks.length - 1 );
+								while (( i >= 0 )) {
+									prevSyncCallbacks.unshift(((global::Loreline.Internal.Lang.Function) (this.syncCallbacks.__get(i)) ));
+									 -- i;
+								}
+								
+							}
+							
+							this.syncCallbacks = prevSyncCallbacks;
 						}
 						
 					}
 					
-					this.syncCallbacks = prevSyncCallbacks;
+				}
+				catch (global::System.Exception _g){
+					object e = ((object) (global::Loreline.Internal.Exception.caught(_g).unwrap()) );
+					this.flushing = false;
+					throw ((global::System.Exception) (global::Loreline.Internal.Exception.thrown(e)) );
 				}
 				
+				
+				this.flushing = false;
 			}
-			
-			this.flushing = false;
 		}
 		
 		
@@ -2985,7 +2995,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
 			global::Loreline.Runtime.RuntimeInsertion currentInsertion = this.get_currentInsertion();
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_2280__Fun(next, moveNext, index, currentInsertion, body, _gthis);
+			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalNodeBody_2288__Fun(next, moveNext, index, currentInsertion, body, _gthis);
 			((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 		}
 		
@@ -3018,7 +3028,7 @@ namespace Loreline.Runtime {
 		public virtual void evalChoice(global::Loreline.Runtime.NChoiceStatement choice, global::Loreline.Internal.Lang.Function next) {
 			global::Loreline.Internal.Root.Array options = new global::Loreline.Internal.Root.Array(new object[]{});
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			global::Loreline.Runtime.EvalNext optionsDone = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2402__Fun(options, next, _gthis));
+			global::Loreline.Runtime.EvalNext optionsDone = this.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2410__Fun(options, next, _gthis));
 			this.evalChoiceOptionsAndInsertions(this.get_currentScope().beat, choice, options, optionsDone.cb);
 			optionsDone.sync = false;
 		}
@@ -3030,7 +3040,7 @@ namespace Loreline.Runtime {
 			global::Loreline.Internal.Lang.Function[] moveNext = new global::Loreline.Internal.Lang.Function[]{null};
 			global::Loreline.Runtime.RuntimeInsertion[] insertion = new global::Loreline.Runtime.RuntimeInsertion[]{null};
 			global::Loreline.Runtime.Interpreter _gthis = this;
-			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalChoiceOptionsAndInsertions_2483__Fun(result, options, next, moveNext, insertion, index, _gthis);
+			moveNext[0] = new global::Loreline.Runtime.Interpreter_evalChoiceOptionsAndInsertions_2491__Fun(result, options, next, moveNext, insertion, index, _gthis);
 			((global::Loreline.Internal.Lang.Function) (moveNext[0]) ).__hx_invoke0_o();
 		}
 		
@@ -7191,9 +7201,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalNodeBody_2280__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalNodeBody_2288__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalNodeBody_2280__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeInsertion currentInsertion, global::Loreline.Internal.Root.Array body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalNodeBody_2288__Fun(global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, int[] index, global::Loreline.Runtime.RuntimeInsertion currentInsertion, global::Loreline.Internal.Root.Array body, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.next = next;
 			this.moveNext = moveNext;
 			this.index = index;
@@ -7244,9 +7254,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_2425__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2433__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_2425__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalChoice_2433__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.options = options;
 			this.next = next;
 			this.index = index;
@@ -7312,9 +7322,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_2460__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2468__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_2460__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
+		public Interpreter_evalChoice_2468__Fun(int[] index, global::Loreline.Runtime.EvalNext choiceCallback) : base(1, 0) {
 			this.index = index;
 			this.choiceCallback = choiceCallback;
 		}
@@ -7339,9 +7349,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoice_2402__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoice_2410__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoice_2402__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalChoice_2410__Fun(global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.options = options;
 			this.next = next;
 			this._gthis = _gthis;
@@ -7359,8 +7369,8 @@ namespace Loreline.Runtime {
 				}
 				
 				int[] index = new int[]{-1};
-				global::Loreline.Runtime.EvalNext choiceCallback = this._gthis.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2425__Fun(this.options, this.next, index, this._gthis));
-				this._gthis.handleChoice.__hx_invoke3_o(default(double), this._gthis, default(double), this.options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_2460__Fun(index, choiceCallback));
+				global::Loreline.Runtime.EvalNext choiceCallback = this._gthis.wrapNext(new global::Loreline.Runtime.Interpreter_evalChoice_2433__Fun(this.options, this.next, index, this._gthis));
+				this._gthis.handleChoice.__hx_invoke3_o(default(double), this._gthis, default(double), this.options, default(double), new global::Loreline.Runtime.Interpreter_evalChoice_2468__Fun(index, choiceCallback));
 				choiceCallback.sync = false;
 				return null;
 			}
@@ -7380,9 +7390,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Interpreter_evalChoiceOptionsAndInsertions_2483__Fun : global::Loreline.Internal.Lang.Function {
+	public class Interpreter_evalChoiceOptionsAndInsertions_2491__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Interpreter_evalChoiceOptionsAndInsertions_2483__Fun(global::Loreline.Internal.Root.Array result, global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, global::Loreline.Runtime.RuntimeInsertion[] insertion, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
+		public Interpreter_evalChoiceOptionsAndInsertions_2491__Fun(global::Loreline.Internal.Root.Array result, global::Loreline.Internal.Root.Array options, global::Loreline.Internal.Lang.Function next, global::Loreline.Internal.Lang.Function[] moveNext, global::Loreline.Runtime.RuntimeInsertion[] insertion, int[] index, global::Loreline.Runtime.Interpreter _gthis) : base(0, 0) {
 			this.result = result;
 			this.options = options;
 			this.next = next;

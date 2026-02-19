@@ -168,6 +168,16 @@ namespace Loreline.Internal.Root {
 		}
 		
 		
+		public static bool deleteField(object o, string field) {
+			global::Loreline.Internal.Lang.DynamicObject ihx = ((global::Loreline.Internal.Lang.DynamicObject) (( o as global::Loreline.Internal.Lang.DynamicObject )) );
+			if (( ihx != null )) {
+				return ihx.__hx_deleteField(field, global::Loreline.Internal.Lang.FieldLookup.hash(field));
+			}
+			
+			return false;
+		}
+		
+		
 		public static object makeVarArgs(global::Loreline.Internal.Lang.Function f) {
 			return new global::Loreline.Internal.Lang.VarArgsFunction(f);
 		}

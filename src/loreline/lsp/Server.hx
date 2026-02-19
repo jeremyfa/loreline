@@ -413,6 +413,7 @@ class Server {
                         }
                     }
 
+                    #if hscript
                     // Check for errors in functions
                     for (func in lens.getNodesOfType(NFunctionDecl, false)) {
                         if (!func.external) {
@@ -422,6 +423,7 @@ class Server {
                             }
                         }
                     }
+                    #end
 
                     // Look for transitions to unknown beats
                     for (transition in lens.getNodesOfType(NTransition, false)) {

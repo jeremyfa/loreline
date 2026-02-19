@@ -44,7 +44,7 @@ namespace Loreline.Runtime {
 			target.@set(((string) ("float") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "float_", 1096164163)) ));
 			target.@set(((string) ("string") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_", 2029227630)) ));
 			target.@set(((string) ("bool") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "bool", 1092322346)) ));
-			target.@set(((string) ("length") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "length", 520590566)) ));
+			target.@set(((string) ("string_length") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_length", 374516180)) ));
 			target.@set(((string) ("string_upper") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_upper", 116030516)) ));
 			target.@set(((string) ("string_lower") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_lower", 1470848211)) ));
 			target.@set(((string) ("string_contains") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_contains", 1550321293)) ));
@@ -57,6 +57,7 @@ namespace Loreline.Runtime {
 			target.@set(((string) ("string_ends") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_ends", 1845279142)) ));
 			target.@set(((string) ("string_repeat") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "string_repeat", 2110237769)) ));
 			target.@set(((string) ("plural") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "plural", 1156308100)) ));
+			target.@set(((string) ("array_length") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_length", 1905069580)) ));
 			target.@set(((string) ("array_add") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_add", 497935675)) ));
 			target.@set(((string) ("array_pop") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_pop", 498684075)) ));
 			target.@set(((string) ("array_prepend") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_prepend", 438640424)) ));
@@ -70,6 +71,7 @@ namespace Loreline.Runtime {
 			target.@set(((string) ("array_pick") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_pick", 1684581511)) ));
 			target.@set(((string) ("array_shuffle") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_shuffle", 1193397779)) ));
 			target.@set(((string) ("array_copy") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "array_copy", 1540718427)) ));
+			target.@set(((string) ("map_length") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "map_length", 1623091049)) ));
 			target.@set(((string) ("map_keys") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "map_keys", 1580006839)) ));
 			target.@set(((string) ("map_has") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "map_has", 960302327)) ));
 			target.@set(((string) ("map_get") ), ((object) (new global::Loreline.Internal.Lang.Closure(this, "map_get", 960253491)) ));
@@ -157,7 +159,7 @@ namespace Loreline.Runtime {
 		
 		
 		public virtual global::Loreline.Runtime.Async wait(double seconds) {
-			return new global::Loreline.Runtime.Async(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Runtime.Functions_wait_283__Fun(seconds)) ));
+			return new global::Loreline.Runtime.Async(((global::Loreline.Internal.Lang.Function) (new global::Loreline.Runtime.Functions_wait_284__Fun(seconds)) ));
 		}
 		
 		
@@ -232,16 +234,8 @@ namespace Loreline.Runtime {
 		}
 		
 		
-		public virtual int length(object @value) {
-			if (( @value is string )) {
-				return global::Loreline.Internal.Lang.Runtime.toString(((object) (@value) )).Length;
-			}
-			
-			if (global::Loreline.Runtime.Arrays.isArray(@value)) {
-				return global::Loreline.Runtime.Arrays.arrayLength(@value);
-			}
-			
-			return 0;
+		public virtual int string_length(string text) {
+			return text.Length;
 		}
 		
 		
@@ -327,6 +321,15 @@ namespace Loreline.Runtime {
 				}
 				
 			}
+		}
+		
+		
+		public virtual int array_length(object array) {
+			if (global::Loreline.Runtime.Arrays.isArray(array)) {
+				return global::Loreline.Runtime.Arrays.arrayLength(array);
+			}
+			
+			return 0;
 		}
 		
 		
@@ -434,7 +437,7 @@ namespace Loreline.Runtime {
 		
 		public virtual object array_sort(object array) {
 			if (global::Loreline.Runtime.Arrays.isArray(array)) {
-				global::Loreline.Runtime.Arrays.arraySort(array, ( (( global::Loreline.Runtime.Functions_array_sort_684__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Functions_array_sort_684__Fun.__hx_current) : (global::Loreline.Runtime.Functions_array_sort_684__Fun.__hx_current = ((global::Loreline.Runtime.Functions_array_sort_684__Fun) (new global::Loreline.Runtime.Functions_array_sort_684__Fun()) )) ));
+				global::Loreline.Runtime.Arrays.arraySort(array, ( (( global::Loreline.Runtime.Functions_array_sort_692__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Functions_array_sort_692__Fun.__hx_current) : (global::Loreline.Runtime.Functions_array_sort_692__Fun.__hx_current = ((global::Loreline.Runtime.Functions_array_sort_692__Fun) (new global::Loreline.Runtime.Functions_array_sort_692__Fun()) )) ));
 			}
 			
 			return array;
@@ -502,8 +505,15 @@ namespace Loreline.Runtime {
 		}
 		
 		
+		public virtual int map_length(object map) {
+			return global::Loreline.Runtime.Objects.getFields(this.interpreter, map).length;
+		}
+		
+		
 		public virtual global::Loreline.Internal.Root.Array map_keys(object map) {
-			return global::Loreline.Runtime.Objects.getFields(this.interpreter, map);
+			global::Loreline.Internal.Root.Array fields = global::Loreline.Runtime.Objects.getFields(this.interpreter, map);
+			fields.sort(( (( global::Loreline.Runtime.Functions_map_keys_823__Fun.__hx_current != null )) ? (global::Loreline.Runtime.Functions_map_keys_823__Fun.__hx_current) : (global::Loreline.Runtime.Functions_map_keys_823__Fun.__hx_current = ((global::Loreline.Runtime.Functions_map_keys_823__Fun) (new global::Loreline.Runtime.Functions_map_keys_823__Fun()) )) ));
+			return fields;
 		}
 		
 		
@@ -525,8 +535,7 @@ namespace Loreline.Runtime {
 		
 		public virtual bool map_remove(object map, string key) {
 			if (global::Loreline.Runtime.Objects.fieldExists(this.interpreter, map, key)) {
-				global::Loreline.Runtime.Objects.setField(this.interpreter, map, key, null);
-				return true;
+				return global::Loreline.Runtime.Objects.removeField(this.interpreter, map, key);
 			}
 			
 			return false;
@@ -677,6 +686,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1623091049:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "map_length", 1623091049)) );
+					}
+					
+					
 					case 1540718427:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "array_copy", 1540718427)) );
@@ -755,6 +770,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1905069580:
+					{
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "array_length", 1905069580)) );
+					}
+					
+					
 					case 1156308100:
 					{
 						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "plural", 1156308100)) );
@@ -827,9 +848,9 @@ namespace Loreline.Runtime {
 					}
 					
 					
-					case 520590566:
+					case 374516180:
 					{
-						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "length", 520590566)) );
+						return ((global::Loreline.Internal.Lang.Function) (new global::Loreline.Internal.Lang.Closure(this, "string_length", 374516180)) );
 					}
 					
 					
@@ -1015,6 +1036,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1623091049:
+					{
+						return this.map_length(((object) (dynargs[0]) ));
+					}
+					
+					
 					case 1540718427:
 					{
 						return this.array_copy(((object) (dynargs[0]) ));
@@ -1093,6 +1120,12 @@ namespace Loreline.Runtime {
 					}
 					
 					
+					case 1905069580:
+					{
+						return this.array_length(((object) (dynargs[0]) ));
+					}
+					
+					
 					case 1156308100:
 					{
 						return this.plural(((object) (dynargs[0]) ), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[1]) )), global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[2]) )));
@@ -1165,9 +1198,9 @@ namespace Loreline.Runtime {
 					}
 					
 					
-					case 520590566:
+					case 374516180:
 					{
-						return this.length(((object) (dynargs[0]) ));
+						return this.string_length(global::Loreline.Internal.Lang.Runtime.toString(((object) (dynargs[0]) )));
 					}
 					
 					
@@ -1306,9 +1339,9 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Functions_wait_283__Fun : global::Loreline.Internal.Lang.Function {
+	public class Functions_wait_284__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Functions_wait_283__Fun(double seconds) : base(1, 0) {
+		public Functions_wait_284__Fun(double seconds) : base(1, 0) {
 			this.seconds = seconds;
 		}
 		
@@ -1332,13 +1365,13 @@ namespace Loreline.Runtime {
 
 #pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
 namespace Loreline.Runtime {
-	public class Functions_array_sort_684__Fun : global::Loreline.Internal.Lang.Function {
+	public class Functions_array_sort_692__Fun : global::Loreline.Internal.Lang.Function {
 		
-		public Functions_array_sort_684__Fun() : base(2, 1) {
+		public Functions_array_sort_692__Fun() : base(2, 1) {
 		}
 		
 		
-		public static global::Loreline.Runtime.Functions_array_sort_684__Fun __hx_current;
+		public static global::Loreline.Runtime.Functions_array_sort_692__Fun __hx_current;
 		
 		public override double __hx_invoke2_f(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
 			unchecked {
@@ -1374,6 +1407,39 @@ namespace Loreline.Runtime {
 					return ((double) (-1) );
 				}
 				else if (( string.CompareOrdinal((( (( a == null )) ? ("null") : (global::Loreline.Internal.Root.Std.@string(((object) (a) ))) )), (( (( b == null )) ? ("null") : (global::Loreline.Internal.Root.Std.@string(((object) (b) ))) ))) > 0 )) {
+					return ((double) (1) );
+				}
+				else {
+					return ((double) (0) );
+				}
+				
+			}
+		}
+		
+		
+	}
+}
+
+
+
+#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108
+namespace Loreline.Runtime {
+	public class Functions_map_keys_823__Fun : global::Loreline.Internal.Lang.Function {
+		
+		public Functions_map_keys_823__Fun() : base(2, 1) {
+		}
+		
+		
+		public static global::Loreline.Runtime.Functions_map_keys_823__Fun __hx_current;
+		
+		public override double __hx_invoke2_f(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2) {
+			unchecked {
+				string b = ( (( __fn_dyn2 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (global::Loreline.Internal.Lang.Runtime.toString(__fn_float2)) : (global::Loreline.Internal.Lang.Runtime.toString(__fn_dyn2)) );
+				string a = ( (( __fn_dyn1 == global::Loreline.Internal.Lang.Runtime.undefined )) ? (global::Loreline.Internal.Lang.Runtime.toString(__fn_float1)) : (global::Loreline.Internal.Lang.Runtime.toString(__fn_dyn1)) );
+				if (( string.CompareOrdinal(a, b) < 0 )) {
+					return ((double) (-1) );
+				}
+				else if (( string.CompareOrdinal(a, b) > 0 )) {
 					return ((double) (1) );
 				}
 				else {
