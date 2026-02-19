@@ -452,7 +452,7 @@ jobs:
       - name: Create zip archive
         run: |
           cd sample
-          zip -r ../loreline-unity-sample.zip LorelineUnity/ \
+          zip -r ../loreline-unity.zip LorelineUnity/ \
             -x 'LorelineUnity/Library/*' 'LorelineUnity/Temp/*' \
                'LorelineUnity/Logs/*' 'LorelineUnity/UserSettings/*' \
                'LorelineUnity/obj/*'
@@ -461,8 +461,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: loreline-unity-sample.zip
-          path: loreline-unity-sample.zip
+          name: loreline-unity.zip
+          path: loreline-unity.zip
           compression-level: 0
 
 
@@ -509,10 +509,10 @@ jobs:
           name: loreline-csharp.zip
           path: .
 
-      - name: Download loreline-unity-sample.zip
+      - name: Download loreline-unity.zip
         uses: actions/download-artifact@v4
         with:
-          name: loreline-unity-sample.zip
+          name: loreline-unity.zip
           path: .
 
       - name: Extract tag name
@@ -536,4 +536,4 @@ jobs:
             loreline-linux-arm64.zip
             loreline-js.zip
             loreline-csharp.zip
-            loreline-unity-sample.zip
+            loreline-unity.zip

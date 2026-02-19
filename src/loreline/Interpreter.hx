@@ -3591,6 +3591,9 @@ typedef InterpreterOptions = {
                     }
                 }
                 else if (index is String) {
+                    if (target == null) {
+                        throw new RuntimeError('Cannot access field \'$index\' of null', arrAccess.pos);
+                    }
                     Objects.getField(this, target, index);
                 }
                 else {
@@ -3669,6 +3672,9 @@ typedef InterpreterOptions = {
         return switch access {
 
             case FieldAccess(pos, obj, name):
+                if (obj == null) {
+                    throw new RuntimeError('Cannot read field \'$name\' of null', pos);
+                }
                 Objects.getField(this, obj, name);
 
             case ArrayAccess(pos, array, index):
@@ -3707,6 +3713,9 @@ typedef InterpreterOptions = {
 
         switch access {
             case FieldAccess(pos, obj, name):
+                if (obj == null) {
+                    throw new RuntimeError('Cannot set field \'$name\' of null', pos);
+                }
                 Objects.setField(this, obj, name, value);
 
             case ArrayAccess(pos, array, index):
@@ -3771,6 +3780,15 @@ typedef InterpreterOptions = {
 
         if (target != null) {
             final evaluated = evaluateExpression(target);
+            if (evaluated == null) {
+                final targetName = if (Type.getClass(target) == NAccess) (cast target : NAccess).name else null;
+                throw new RuntimeError(
+                    targetName != null
+                        ? 'Cannot access field \'$name\' of undefined variable \'$targetName\''
+                        : 'Cannot access field \'$name\' of null value',
+                    target.pos
+                );
+            }
             return FieldAccess(target.pos, evaluated, name);
         }
 

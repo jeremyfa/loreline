@@ -366,6 +366,15 @@ async function main() {
         js += ln + 'export const Script = runtime.loreline.Script;';
         fs.writeFileSync('js/loreline.js', js);
 
+        // Minify
+        const esbuild = await import('esbuild');
+        await esbuild.build({
+            entryPoints: ['js/loreline.js'],
+            outfile: 'js/loreline.min.js',
+            minify: true,
+            bundle: false,
+        });
+
     }
 
 }

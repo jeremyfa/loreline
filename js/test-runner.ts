@@ -1,12 +1,20 @@
-import { Loreline, Interpreter, Script, TextTag, ChoiceOption, InterpreterOptions, DialogueHandler, ChoiceHandler, FinishHandler, ImportsFileHandler, Translations } from './loreline.js';
+import type { Interpreter, Script, TextTag, ChoiceOption, InterpreterOptions, DialogueHandler, ChoiceHandler, FinishHandler, ImportsFileHandler, Translations } from './loreline.js';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { parse as parseYaml } from 'yaml';
 
+const useMin = process.argv.includes('--min');
+const lorelinePath = useMin ? './loreline.min.js' : './loreline.js';
+const { Loreline } = await import(lorelinePath);
+
+if (useMin) {
+    console.log(`Using minified build: ${lorelinePath}\n`);
+}
+
 // Get test directory from command line args
-const testDir: string = process.argv[2];
+const testDir: string = process.argv.filter(a => a !== '--min')[2];
 if (!testDir) {
-    console.error('Usage: npx tsx js/test-runner.ts <test-directory>');
+    console.error('Usage: npx tsx js/test-runner.ts <test-directory> [--min]');
     process.exit(1);
 }
 
