@@ -7,7 +7,7 @@ on:
       - v**
 jobs:
 
-  build-loreline-windows:
+  loreline-windows:
     runs-on: windows-2022
     steps:
 
@@ -73,7 +73,7 @@ jobs:
           compression-level: 0
 
 
-  build-loreline-mac:
+  loreline-mac:
     runs-on: macos-14
     steps:
 
@@ -151,7 +151,7 @@ jobs:
           compression-level: 0
 
 
-  build-loreline-linux:
+  loreline-linux:
     strategy:
       matrix:
         include:
@@ -236,7 +236,7 @@ jobs:
           compression-level: 0
 
 
-  test-loreline-neko:
+  loreline-neko:
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -282,7 +282,7 @@ jobs:
         run: node run test ./test
 
 
-  build-loreline-js:
+  loreline-js:
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -349,7 +349,7 @@ jobs:
           compression-level: 0
 
 
-  build-loreline-csharp:
+  loreline-csharp:
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -427,8 +427,8 @@ jobs:
           path: loreline-csharp.zip
           compression-level: 0
 
-  package-unity-sample:
-    needs: [build-loreline-csharp]
+  loreline-unity:
+    needs: [loreline-csharp]
     runs-on: ubuntu-22.04
     steps:
 
@@ -468,7 +468,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-loreline-windows, build-loreline-mac, build-loreline-linux, build-loreline-js, build-loreline-csharp, package-unity-sample]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-unity]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
