@@ -1,0 +1,37 @@
+
+state
+  visited: false
+  rushHour: false
+
+beat Start
+  Visit()
+  Visit()
+  Visit()
+  Done.
+
+beat Visit
+  if rushHour
+    Busy!
+  else if visited
+    sequence
+      Back A.
+    --
+      Back B.
+    --
+      Back C.
+  else
+    visited = true
+    Welcome!
+
+/*
+<test>
+- expected: |
+    ~ Welcome!
+
+    ~ Back A.
+
+    ~ Back B.
+
+    ~ Done.
+</test>
+*/

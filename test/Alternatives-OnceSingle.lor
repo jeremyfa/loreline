@@ -1,0 +1,26 @@
+
+beat Start
+  Visit()
+  Visit()
+  Visit()
+  Done.
+
+beat Visit
+  once
+    First time here!
+  Always here.
+
+/*
+<test>
+- expected: |
+    ~ First time here!
+
+    ~ Always here.
+
+    ~ Always here.
+
+    ~ Always here.
+
+    ~ Done.
+</test>
+*/

@@ -1,0 +1,20 @@
+
+seed_random(42)
+
+shuffle
+  First.
+--
+  Second.
+--
+  Third.
+
+/*
+<test>
+- expected: |
+    ~ Third.
+
+    ~ Second.
+
+    ~ First.
+</test>
+*/

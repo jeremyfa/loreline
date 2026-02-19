@@ -1478,6 +1478,9 @@ class Server {
                 return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
             case NIfStatement:
                 return makeHover("**Condition**", null, content, node);
+            case NAlternative:
+                final alt:NAlternative = cast node;
+                return makeHover('**Alternative** (${alt.mode.toString()})', null, content, node);
             case NDialogueStatement:
                 return makeDialogueStatementHover(cast node, content, lens);
             case NStringLiteral | NTextStatement:

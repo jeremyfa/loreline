@@ -63,6 +63,10 @@ enum abstract TokenStackType(Int) {
 
     var BeatIndent;
 
+    var AlternativeBrace;
+
+    var AlternativeIndent;
+
     var Brace;
 
     var Indent;
@@ -80,6 +84,8 @@ enum abstract TokenStackType(Int) {
             case CharacterIndent: 'CharacterIndent';
             case BeatBrace: 'BeatBrace';
             case BeatIndent: 'BeatIndent';
+            case AlternativeBrace: 'AlternativeBrace';
+            case AlternativeIndent: 'AlternativeIndent';
             case Brace: 'Brace';
             case Indent: 'Indent';
             case Bracket: 'Bracket';
@@ -111,6 +117,18 @@ enum TokenType {
     KwElse;
     /** New state keyword */
     KwNew;
+    /** Sequence alternative keyword */
+    KwSequence;
+    /** Cycle alternative keyword */
+    KwCycle;
+    /** Once alternative keyword */
+    KwOnce;
+    /** Pick alternative keyword */
+    KwPick;
+    /** Shuffle alternative keyword */
+    KwShuffle;
+    /** Item separator (--) */
+    Separator;
 
     /** Function code */
     Function(name:Null<String>, args:Array<String>, code:String, external:Bool);
@@ -239,6 +257,12 @@ class TokenTypeHelpers {
             case [KwIf, KwIf]: true;
             case [KwElse, KwElse]: true;
             case [KwNew, KwNew]: true;
+            case [KwSequence, KwSequence]: true;
+            case [KwCycle, KwCycle]: true;
+            case [KwOnce, KwOnce]: true;
+            case [KwPick, KwPick]: true;
+            case [KwShuffle, KwShuffle]: true;
+            case [Separator, Separator]: true;
             case [OpAssign, OpAssign]: true;
             case [OpPlusAssign, OpPlusAssign]: true;
             case [OpMinusAssign, OpMinusAssign]: true;
@@ -310,6 +334,7 @@ class TokenTypeHelpers {
     public static function isBlockStart(a:TokenType):Bool {
         return switch a {
             case KwState | KwBeat | KwCharacter | KwChoice | KwIf: true;
+            case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator: true;
             case _: false;
         }
     }
@@ -324,6 +349,12 @@ class TokenTypeHelpers {
             case KwIf: 'if';
             case KwElse: 'else';
             case KwNew: 'new';
+            case KwSequence: 'sequence';
+            case KwCycle: 'cycle';
+            case KwOnce: 'once';
+            case KwPick: 'pick';
+            case KwShuffle: 'shuffle';
+            case Separator: '--';
             case Function(_, _, _): 'function';
             case LString(_, _, _): 'string';
             case LNumber(_): 'number';
@@ -428,6 +459,11 @@ class Token {
         "if" => TokenType.KwIf,
         "else" => TokenType.KwElse,
         "new" => TokenType.KwNew,
+        "sequence" => TokenType.KwSequence,
+        "cycle" => TokenType.KwCycle,
+        "once" => TokenType.KwOnce,
+        "pick" => TokenType.KwPick,
+        "shuffle" => TokenType.KwShuffle,
         "true" => TokenType.LBoolean(true),
         "false" => TokenType.LBoolean(false),
         "null" => TokenType.LNull,
@@ -584,12 +620,15 @@ class Token {
                     nextBlock = BeatIndent;
                 case KwChoice:
                     nextBlock = ChoiceIndent;
+                case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator:
+                    nextBlock = AlternativeIndent;
                 case LBrace:
                     stack.push(switch nextBlock {
                         case ChoiceBrace | ChoiceIndent: ChoiceBrace;
                         case StateBrace | StateIndent: StateBrace;
                         case CharacterBrace | CharacterIndent: CharacterBrace;
                         case BeatBrace | BeatIndent: BeatIndent;
+                        case AlternativeBrace | AlternativeIndent: AlternativeBrace;
                         case Brace | Indent | Bracket: Brace;
                     });
                     nextBlock = Brace;
@@ -599,6 +638,7 @@ class Token {
                         case StateBrace | StateIndent: StateIndent;
                         case CharacterBrace | CharacterIndent: CharacterIndent;
                         case BeatBrace | BeatIndent: BeatIndent;
+                        case AlternativeBrace | AlternativeIndent: AlternativeIndent;
                         case Brace | Indent | Bracket: Indent;
                     });
                     nextBlock = Brace;
@@ -697,6 +737,10 @@ class Token {
                         if (peek() == ">".code) {
                             advance(2);
                             makeToken(Arrow, startPos);
+                        }
+                        else if (peek() == "-".code && strictExprs.length == 0) {
+                            advance(2);
+                            makeToken(Separator, startPos);
                         }
                         else if (peek() == "=".code) {
                             advance(2);
@@ -857,6 +901,7 @@ class Token {
                     case StateBrace | StateIndent: KwState;
                     case CharacterBrace | CharacterIndent: KwCharacter;
                     case BeatBrace | BeatIndent: KwBeat;
+                    case AlternativeBrace | AlternativeIndent: KwBeat;
                     case Brace: LBrace;
                     case Indent: Indent;
                     case Bracket: LBracket;
@@ -3181,7 +3226,18 @@ class Token {
             return readFunction(start);
         }
 
-        final tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
+        var tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
+
+        // Alternative keywords (sequence, cycle, once, pick, shuffle) are context-sensitive:
+        // after a dot they become identifiers (e.g. items.pick(), items.shuffle())
+        if (previous != null && previous.type == Dot) {
+            switch tokenType {
+                case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle:
+                    tokenType = Identifier(word);
+                case _:
+            }
+        }
+
         return makeToken(
             tokenType,
             start

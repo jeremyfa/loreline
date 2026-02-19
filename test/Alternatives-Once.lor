@@ -1,0 +1,28 @@
+
+beat Start
+  Visit()
+  Visit()
+  Visit()
+  Visit()
+  Done.
+
+beat Visit
+  once
+    First.
+  --
+    Second.
+  --
+    Third.
+
+/*
+<test>
+- expected: |
+    ~ First.
+
+    ~ Second.
+
+    ~ Third.
+
+    ~ Done.
+</test>
+*/

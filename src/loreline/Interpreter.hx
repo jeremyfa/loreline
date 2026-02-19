@@ -484,6 +484,11 @@ typedef InterpreterOptions = {
     final mapHelpers:Map<String, Any> = new Map();
 
     /**
+     * Built-in functions instance, giving access to RNG for alternative blocks.
+     */
+    var builtins:Functions;
+
+    /**
      * Pluggable processors that transform string literals before evaluation.
      * Each processor receives an NStringLiteral and returns a (possibly transformed) NStringLiteral.
      */
@@ -1190,6 +1195,8 @@ typedef InterpreterOptions = {
                     resumeChoice(cast node, scopeLevel, next);
                 case NIfStatement:
                     resumeIf(cast node, scopeLevel, next);
+                case NAlternative:
+                    resumeAlternative(cast node, scopeLevel, next);
                 case NCall if (isBeatCall(node, scopeLevel)):
                     resumeCall(cast node, scopeLevel, next);
 
@@ -1208,6 +1215,8 @@ typedef InterpreterOptions = {
                     evalText(cast node, next);
                 case NDialogueStatement:
                     evalDialogue(cast node, next);
+                case NAlternative:
+                    evalAlternative(cast node, next);
 
                 case _:
                     throw new RuntimeError('Resume execution not supported from last node: ${Type.getClassName(Type.getClass(node))}', node.pos);
@@ -1371,6 +1380,33 @@ typedef InterpreterOptions = {
         else {
             throw new RuntimeError('Failed to resume condition: invalid scope', ifStmt.pos);
         }
+
+    }
+
+    /**
+     * Resumes execution of an alternative block.
+     *
+     * @param alt The alternative node to resume
+     * @param scopeLevel The scope level to resume at
+     * @param next Callback to call when execution completes
+     */
+    function resumeAlternative(alt:NAlternative, scopeLevel:Int, next:()->Void) {
+
+        final currentScope = stack[scopeLevel];
+
+        if (currentScope.head == null) {
+            throw new RuntimeError('Failed to resolve head when resuming alternative', alt.pos);
+        }
+
+        // Find which item block contains the head
+        for (item in alt.items) {
+            if (item.body.indexOf(currentScope.head) != -1) {
+                resumeNodeBody(item, scopeLevel, item.body, next);
+                return;
+            }
+        }
+
+        throw new RuntimeError('Failed to resume alternative: head not found in any item', alt.pos);
 
     }
 
@@ -1858,7 +1894,7 @@ typedef InterpreterOptions = {
      */
     function initializeTopLevelFunctions(functions:FunctionsMap) {
 
-        final builtins = new Functions(this);
+        this.builtins = new Functions(this);
         builtins.bindAll(topLevelFunctions);
 
         if (functions != null) {
@@ -2219,6 +2255,8 @@ typedef InterpreterOptions = {
                 evalChoiceOption(cast node, next);
             case NIfStatement:
                 evalIf(cast node, next);
+            case NAlternative:
+                evalAlternative(cast node, next);
             case NAssign:
                 evalAssignment(cast node, next);
             case NCall:
@@ -2611,6 +2649,104 @@ typedef InterpreterOptions = {
             next();
         }
 
+    }
+
+    /**
+     * Evaluates an alternative block (sequence, cycle, once, pick, shuffle).
+     *
+     * @param alt The alternative node to evaluate
+     * @param next Callback to call when evaluation completes
+     */
+    function evalAlternative(alt:NAlternative, next:()->Void) {
+
+        if (alt.items.length == 0) {
+            next();
+            return;
+        }
+
+        switch (alt.mode) {
+            case Sequence:
+                final visitCount = getAlternativeVisitCount(alt);
+                final idx = visitCount < alt.items.length ? visitCount : alt.items.length - 1;
+                setAlternativeVisitCount(alt, visitCount + 1);
+                final item = alt.items[idx];
+                evalNodeBody(currentScope.beat, item, item.body, next);
+
+            case Cycle:
+                final visitCount = getAlternativeVisitCount(alt);
+                final idx = visitCount % alt.items.length;
+                setAlternativeVisitCount(alt, visitCount + 1);
+                final item = alt.items[idx];
+                evalNodeBody(currentScope.beat, item, item.body, next);
+
+            case Once:
+                final visitCount = getAlternativeVisitCount(alt);
+                if (visitCount >= alt.items.length) {
+                    next();
+                    return;
+                }
+                setAlternativeVisitCount(alt, visitCount + 1);
+                final item = alt.items[visitCount];
+                evalNodeBody(currentScope.beat, item, item.body, next);
+
+            case Pick:
+                final idx = builtins.random(0, alt.items.length - 1);
+                final item = alt.items[idx];
+                evalNodeBody(currentScope.beat, item, item.body, next);
+
+            case Shuffle:
+                // Build shuffled index array
+                final indices:Array<Int> = [for (i in 0...alt.items.length) i];
+                // Fisher-Yates shuffle
+                var i = indices.length - 1;
+                while (i > 0) {
+                    final j = builtins.random(0, i);
+                    final tmp = indices[i];
+                    indices[i] = indices[j];
+                    indices[j] = tmp;
+                    i--;
+                }
+                // Execute items in shuffled order sequentially
+                evalShuffledItems(alt, indices, 0, next);
+        }
+
+    }
+
+    /**
+     * Executes alternative items in shuffled order, one at a time.
+     */
+    function evalShuffledItems(alt:NAlternative, indices:Array<Int>, idx:Int, next:()->Void) {
+        if (idx >= indices.length) {
+            next();
+            return;
+        }
+        final item = alt.items[indices[idx]];
+        evalNodeBody(currentScope.beat, item, item.body, () -> {
+            evalShuffledItems(alt, indices, idx + 1, next);
+        });
+    }
+
+    /**
+     * Gets the visit count for an alternative block from nodeStates.
+     */
+    function getAlternativeVisitCount(alt:NAlternative):Int {
+        final state = nodeStates.get(alt.id);
+        if (state == null) return 0;
+        final count:Any = Objects.getField(this, state.fields, "_visitCount");
+        if (count == null) return 0;
+        return count;
+    }
+
+    /**
+     * Sets the visit count for an alternative block in nodeStates.
+     */
+    function setAlternativeVisitCount(alt:NAlternative, count:Int) {
+        var state = nodeStates.get(alt.id);
+        if (state == null) {
+            state = new RuntimeState(this, alt, null, null);
+            nodeStates.set(alt.id, state);
+        }
+        Objects.setField(this, state.fields, "_visitCount", count);
     }
 
     /**

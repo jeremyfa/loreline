@@ -56,6 +56,8 @@ class SymbolPrinter {
                     for (symbol in printIf(cast decl)) {
                         symbols.push(symbol);
                     }
+                case NAlternative:
+                    symbols.push(printAlternative(cast decl));
                 case NStateDecl:
                     symbols.push(printStateDecl(cast decl));
                 case NBeatDecl:
@@ -86,6 +88,8 @@ class SymbolPrinter {
                     for (symbol in printIf(cast node)) {
                         children.push(symbol);
                     }
+                case NAlternative:
+                    children.push(printAlternative(cast node));
                 case NStateDecl:
                     children.push(printStateDecl(cast node));
                 case NBeatDecl:
@@ -199,6 +203,8 @@ class SymbolPrinter {
                         for (symbol in printIf(cast node)) {
                             optionSymbol.children.push(symbol);
                         }
+                    case NAlternative:
+                        optionSymbol.children.push(printAlternative(cast node));
                     case NStateDecl:
                         optionSymbol.children.push(printStateDecl(cast node));
                     case _:
@@ -253,6 +259,31 @@ class SymbolPrinter {
     }
 
     /**
+     * Process an alternative block.
+     * @param alt Alternative node to process
+     * @return Document symbol for the alternative
+     */
+    function printAlternative(alt:NAlternative):DocumentSymbol {
+        final children:Array<DocumentSymbol> = [];
+
+        for (i in 0...alt.items.length) {
+            final item = alt.items[i];
+            final blockSymbol = printBlock('item ${i + 1}', null, item);
+            children.push(blockSymbol);
+        }
+
+        return {
+            name: alt.mode.toString(),
+            detail: alt.items.length + " items",
+            kind: SymbolKind.Enum,
+            deprecated: false,
+            range: rangeFromPosition(alt.pos),
+            selectionRange: rangeFromPosition(alt.pos),
+            children: children
+        };
+    }
+
+    /**
      * Process a block of nodes.
      * @param name Block name
      * @param detail Block detail text
@@ -270,6 +301,8 @@ class SymbolPrinter {
                     for (symbol in printIf(cast node)) {
                         children.push(symbol);
                     }
+                case NAlternative:
+                    children.push(printAlternative(cast node));
                 case NStateDecl:
                     children.push(printStateDecl(cast node));
                 case _:

@@ -310,6 +310,8 @@ class Printer {
                 printChoiceOption(cast node);
             case NIfStatement:
                 printIfStatement(cast node);
+            case NAlternative:
+                printAlternative(cast node);
             case NTransition:
                 printTransition(cast node, sameLine);
             case NInsertion:
@@ -681,6 +683,43 @@ class Printer {
                 }
                 unindent();
                 if (ifStmt.elseBranch.style == Braces) writeln('}');
+            }
+        }
+    }
+
+    function printAlternative(alt:NAlternative) {
+        if (_level == _prevLevel) {
+            writeln();
+        }
+        printLeadingComments(alt);
+        final keyword = switch (alt.mode) {
+            case Sequence: 'sequence';
+            case Cycle: 'cycle';
+            case Once: 'once';
+            case Pick: 'pick';
+            case Shuffle: 'shuffle';
+        };
+        write(keyword);
+        printTrailingComments(alt);
+        if (alt.style == Braces) write(' {');
+        writeln();
+        _prevLevel = _level;
+
+        for (i in 0...alt.items.length) {
+            final item = alt.items[i];
+            indent();
+            for (node in item.body) {
+                printNode(node);
+                writeln();
+                _prevLevel = _level;
+            }
+            unindent();
+            if (alt.style == Braces) write('}');
+            if (i < alt.items.length - 1) {
+                writeln('--');
+                if (alt.style == Braces) write(' {');
+                writeln();
+                _prevLevel = _level;
             }
         }
     }

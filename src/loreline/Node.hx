@@ -888,6 +888,33 @@ enum abstract ConditionStyle(Int) {
 }
 
 /**
+ * Represents the mode of an alternative block.
+ */
+enum abstract AlternativeMode(Int) {
+
+    var Sequence = 0;
+
+    var Cycle = 1;
+
+    var Once = 2;
+
+    var Pick = 3;
+
+    var Shuffle = 4;
+
+    public function toString() {
+        return switch abstract {
+            case Sequence: "Sequence";
+            case Cycle: "Cycle";
+            case Once: "Once";
+            case Pick: "Pick";
+            case Shuffle: "Shuffle";
+        }
+    }
+
+}
+
+/**
  * Represents a string part that can appear in string literals.
  */
 class NStringPart extends NExpr {
@@ -1444,6 +1471,87 @@ class NIfStatement extends AstNode {
         }
         return json;
     }
+}
+
+/**
+ * Represents an alternative block (sequence, cycle, once, pick, shuffle).
+ */
+class NAlternative extends AstNode {
+
+    /**
+     * The alternative mode (sequence, cycle, once, pick, shuffle).
+     */
+    public var mode:AlternativeMode;
+
+    /**
+     * Array of item blocks — each item is a block of statements.
+     */
+    public var items:Array<NBlock>;
+
+    /**
+     * The block style (indented or braces).
+     */
+    public var style:BlockStyle;
+
+    /**
+     * Comments that appear before separator tokens.
+     */
+    public var separatorComments:Null<Array<Array<Comment>>>;
+
+    /**
+     * Creates a new alternative block node.
+     * @param id The node ID
+     * @param pos Position in source where this alternative appears
+     * @param mode The alternative mode
+     * @param items Array of item blocks
+     * @param leadingComments Optional comments before the alternative
+     * @param trailingComments Optional comments after the alternative
+     */
+    public function new(id:NodeId, pos:Position, mode:AlternativeMode, items:Array<NBlock>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.mode = mode;
+        this.items = items;
+        this.style = Plain;
+    }
+
+    override function type():String {
+        return "Alternative";
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (items != null) {
+            for (i in 0...items.length) {
+                final child = items[i];
+                handleNode(child, this);
+                child.each(handleNode);
+            }
+        }
+        if (separatorComments != null) {
+            for (comments in separatorComments) {
+                if (comments != null) {
+                    for (comment in comments) {
+                        handleNode(comment, this);
+                        comment.each(handleNode);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Converts the alternative block to a JSON representation.
+     * @return Dynamic object containing alternative data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        json.mode = mode.toString();
+        json.items = [for (item in items) item.toJson()];
+        json.style = style.toString();
+        return json;
+    }
+
 }
 
 /**

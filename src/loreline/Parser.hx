@@ -399,6 +399,7 @@ class ParserContext {
                  LNull | LParen | LBracket | LBrace | OpMinus | OpNot: ensureInBeat(parseExpressionStatement());
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
+            case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle: ensureInBeat(parseAlternative());
             case Arrow: ensureInBeat(parseTransition());
             case OpPlus: ensureInBeat(parseInsertion());
             case Function(_, _, _) if (topLevel): parseFunction();
@@ -1000,6 +1001,71 @@ class ParserContext {
         ifNode.pos = ifNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return ifNode;
+    }
+
+    /**
+     * Parses an alternative block (sequence, cycle, once, pick, shuffle).
+     * @return Alternative node
+     */
+    function parseAlternative():NAlternative {
+        final startPos = currentPos();
+
+        final mode:AlternativeMode = switch (tokens[current].type) {
+            case KwSequence: Sequence;
+            case KwCycle: Cycle;
+            case KwOnce: Once;
+            case KwPick: Pick;
+            case KwShuffle: Shuffle;
+            case _: throw new ParseError("Expected alternative keyword", currentPos());
+        };
+
+        final altNode = new NAlternative(nextNodeId(BRANCH), startPos, mode, []);
+        advance();
+
+        while (match(LineBreak)) {}
+        attachComments(altNode);
+
+        // Parse first item block
+        final firstBlock = new NBlock(nextNodeId(BLOCK), currentPos(), null);
+        firstBlock.body = [];
+        firstBlock.style = parseStatementBlock(firstBlock.body);
+        altNode.items.push(firstBlock);
+        altNode.style = firstBlock.style;
+
+        // Parse remaining items separated by --
+        while (check(Separator)) {
+            final separatorToken = tokens[current];
+            advance();
+            while (match(LineBreak)) {}
+
+            // Collect separator comments
+            if (pendingComments != null && pendingComments.length > 0) {
+                if (altNode.separatorComments == null) {
+                    altNode.separatorComments = [];
+                }
+                final sepComments:Array<Comment> = [];
+                final remainingComments:Array<Comment> = [];
+                for (comment in pendingComments) {
+                    if (comment.pos.line <= separatorToken.pos.line) {
+                        sepComments.push(comment);
+                    } else {
+                        remainingComments.push(comment);
+                    }
+                }
+                altNode.separatorComments.push(sepComments);
+                pendingComments = remainingComments;
+            }
+
+            final itemBlock = new NBlock(nextNodeId(BLOCK), currentPos(), null);
+            itemBlock.body = [];
+            itemBlock.style = parseStatementBlock(itemBlock.body);
+            altNode.items.push(itemBlock);
+        }
+
+        // Update statement position to wrap all its sub expressions
+        altNode.pos = altNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
+        return altNode;
     }
 
     /**

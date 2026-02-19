@@ -1,0 +1,16 @@
+
+seed_random(42)
+
+pick
+  First option.
+--
+  Second option.
+--
+  Third option.
+
+/*
+<test>
+- expected: |
+    ~ First option.
+</test>
+*/

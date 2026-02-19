@@ -1,0 +1,38 @@
+
+beat Start
+  Visit()
+  Visit()
+  Visit()
+  Visit()
+  Visit()
+  Visit()
+
+beat Visit
+  cycle
+    sequence
+      First-A
+    --
+      First-B
+    --
+      First-C
+  --
+    Second
+  --
+    Third
+
+/*
+<test>
+- expected: |
+    ~ First-A
+
+    ~ Second
+
+    ~ Third
+
+    ~ First-B
+
+    ~ Second
+
+    ~ Third
+</test>
+*/

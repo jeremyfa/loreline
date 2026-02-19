@@ -571,6 +571,25 @@ class AstPrinter {
 
                 indentLevel--;
 
+            case NAlternative:
+                final alt:NAlternative = cast node;
+                add(' mode=');
+                add(alt.mode.toString());
+                add(' style=');
+                add(alt.style.toString());
+                addLineBreak();
+                indentLevel++;
+                for (i in 0...alt.items.length) {
+                    indent();
+                    add('item[${i}]:');
+                    addLineBreak();
+                    indentLevel++;
+                    printNode(alt.items[i]);
+                    indentLevel--;
+                    addLineBreak();
+                }
+                indentLevel--;
+
             case NBlock:
                 final block:NBlock = cast node;
                 printBlockStyle(block.style);

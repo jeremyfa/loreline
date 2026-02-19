@@ -144,6 +144,57 @@
                 }
             ]
         },
+        "indent-alternative-block": {
+            "patterns": [
+                {
+                    "begin": "^(\\s*)(sequence|cycle|once|pick|shuffle)\\s*$",
+                    "beginCaptures": {
+                        "2": {
+                            "name": "keyword.control.alternative.loreline"
+                        }
+                    },
+                    "end": "^(?!\\1[ \\t]|\\1$|\\1--)",
+                    "patterns": [
+                        {
+                            "match": "^(\\s*)(--)(\\s*)$",
+                            "captures": {
+                                "2": {
+                                    "name": "keyword.control.alternative.loreline"
+                                }
+                            }
+                        },
+                        {
+                            "include": "#beat-patterns"
+                        }
+                    ]
+                }
+            ]
+        },
+        "alternative-block": {
+            "patterns": [
+                {
+                    "begin": "\\b(sequence|cycle|once|pick|shuffle)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.alternative.loreline"
+                        }
+                    },
+                    "end": "(?<=\\})",
+                    "patterns": [
+                        {
+                            "match": "--",
+                            "name": "keyword.control.alternative.loreline"
+                        },
+                        {
+                            "include": "#braces-in-beat"
+                        },
+                        {
+                            "include": "#beat-patterns"
+                        }
+                    ]
+                }
+            ]
+        },
         "translation-line": {
             "patterns": [
                 {
@@ -560,6 +611,9 @@
                     "include": "#choice-block"
                 },
                 {
+                    "include": "#alternative-block"
+                },
+                {
                     "include": "#braces-in-beat"
                 },
                 {
@@ -582,6 +636,9 @@
                     "include": "#indent-choice-block"
                 },
                 {
+                    "include": "#indent-alternative-block"
+                },
+                {
                     "include": "#beat-block"
                 },
                 {
@@ -589,6 +646,9 @@
                 },
                 {
                     "include": "#choice-block"
+                },
+                {
+                    "include": "#alternative-block"
                 }
             ]
         },
@@ -613,6 +673,9 @@
                     "include": "#indent-choice-block"
                 },
                 {
+                    "include": "#indent-alternative-block"
+                },
+                {
                     "include": "#translation-line"
                 },
                 {
@@ -632,6 +695,9 @@
                 },
                 {
                     "include": "#choice-block"
+                },
+                {
+                    "include": "#alternative-block"
                 },
                 {
                     "include": "#keywords"
@@ -725,7 +791,7 @@
             "patterns": [
                 {
                     "name": "keyword.control.loreline",
-                    "match": "\\b(if|else|new|and|or)\\b"
+                    "match": "\\b(if|else|new|and|or|sequence|cycle|once|pick|shuffle)\\b|--"
                 }
             ]
         },
@@ -821,7 +887,7 @@
         "unquoted-strings": {
             "patterns": [
                 {
-                    "begin": "^(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*\")(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:(?:\\s*else\\s+)?(?:/\\*[^*]*\\*\\/\\s*)*if\\b\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:(?:!)?[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*(?:\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*|\\[.*?\\]|\\.))*\\s*(?:(?:\\band\\b|\\bor\\b|&&|\\|\\||==|>=|<=|>|<|\\+(?!=)|-(?!=)|\\*(?!=)|/(?!=))|\\(|{|->|$)|\\()|else\\b(?:\\s*(?:/\\*[^*]*\\*\\/\\s*))*(?:\\s*$|\\s*(?://|/\\*))))(?!\\s*->)(?!\\s*\\+\\s*(?:\\/\\*[^*]*\\*\\/\\s*)*?(?:[a-zA-Z_][a-zA-Z0-9_]*|\\.)\\s*(?:(?:\\/\\*[^*]*\\*\\/\\s*)*?)(?://.*)?$)(?!\\s*(?:state|beat|character|choice|else|new|function|import)\\b)(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*\\s*:\\s*)(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)(?!\\s*(?:\\/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*\\])*\\s*(?:\\(|(?<!\\\\)=(?!=)|\\+=|-=|\\*=|/=))(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*$)(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*\\s*\\.\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*(?:$|//|/\\*))(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)+\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*(?:$|//|/\\*))((?:\\/\\*[^*]*\\*\\/\\s*)*)(?=.*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r])(\\s*)",
+                    "begin": "^(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*\")(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:(?:\\s*else\\s+)?(?:/\\*[^*]*\\*\\/\\s*)*if\\b\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:(?:!)?[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*(?:\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*|\\[.*?\\]|\\.))*\\s*(?:(?:\\band\\b|\\bor\\b|&&|\\|\\||==|>=|<=|>|<|\\+(?!=)|-(?!=)|\\*(?!=)|/(?!=))|\\(|{|->|$)|\\()|else\\b(?:\\s*(?:/\\*[^*]*\\*\\/\\s*))*(?:\\s*$|\\s*(?://|/\\*))))(?!\\s*->)(?!\\s*\\+\\s*(?:\\/\\*[^*]*\\*\\/\\s*)*?(?:[a-zA-Z_][a-zA-Z0-9_]*|\\.)\\s*(?:(?:\\/\\*[^*]*\\*\\/\\s*)*?)(?://.*)?$)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*\\s*:\\s*)(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)(?!\\s*(?:\\/\\*[^*]*\\*\\/\\s*)*[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*\\])*\\s*(?:\\(|(?<!\\\\)=(?!=)|\\+=|-=|\\*=|/=))(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*$)(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*\\s*\\.\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*(?:$|//|/\\*))(?!\\s*(?:/\\*[^*]*\\*\\/\\s*)*(?:_+|(?:_+[a-z0-9]|[a-z])[a-zA-Z0-9_]*)(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*(?:\\s*\\[.*?\\])*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)+\\s*(?:/\\*[^*]*\\*\\/\\s*|\\s)*(?:$|//|/\\*))((?:\\/\\*[^*]*\\*\\/\\s*)*)(?=.*[^\\s\"+=\\-*/(){}\\[\\]:\\n\\r])(\\s*)",
                     "beginCaptures": {
                         "2": {}
                     },
@@ -855,7 +921,7 @@
         "unquoted-multiline-dialogues": {
             "patterns": [
                 {
-                    "begin": "(^[ \\t]*)(?!\\s*(?:state|beat|character|choice|else|new|function|import)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+                    "begin": "(^[ \\t]*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
                     "beginCaptures": {
                         "2": {
                             "name": "entity.name.class.loreline"
@@ -921,7 +987,7 @@
         "unquoted-dialogues": {
             "patterns": [
                 {
-                    "begin": "(?<=^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*)*\\s*)(?!\\s*(?:state|beat|character|choice|else|new|function|import)\\b)(\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*)(?!\\s*if\\s*(?:/\\*[^*]*\\*/\\s*)*\\()(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*\")",
+                    "begin": "(?<=^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*)*\\s*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)(\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*)(?!\\s*if\\s*(?:/\\*[^*]*\\*/\\s*)*\\()(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*\")",
                     "beginCaptures": {
                         "2": {
                             "name": "entity.name.class.loreline"
