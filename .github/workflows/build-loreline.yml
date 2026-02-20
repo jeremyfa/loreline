@@ -481,7 +481,7 @@ jobs:
         run: |
           unzip loreline-js.zip -d js-temp
           mkdir -p js
-          cp js-temp/loreline.js js/loreline.js
+          cp js-temp/js/loreline.js js/loreline.js
           node ./setup --sample web
 
       - name: Create zip archive
