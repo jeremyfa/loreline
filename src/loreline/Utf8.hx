@@ -28,7 +28,7 @@ class Utf8 {
         #if neko
         return neko.Utf8.sub(str, pos, len != null ? len : (neko.Utf8.length(str) - pos));
         #else
-        return str.substr(pos, len);
+        return len != null ? str.substr(pos, len) : str.substr(pos);
         #end
     }
 
@@ -41,7 +41,7 @@ class Utf8 {
         final end = (endIndex != null) ? endIndex : len;
         return neko.Utf8.sub(str, startIndex, end - startIndex);
         #else
-        return str.substring(startIndex, endIndex);
+        return endIndex != null ? str.substring(startIndex, endIndex) : str.substring(startIndex);
         #end
     }
 

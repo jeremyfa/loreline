@@ -977,6 +977,24 @@
                             "include": "#string-interpolation"
                         },
                         {
+                            "match": "(?<=\\S)\\s+\\b(if)\\b\\s*((?:!\\s*)?(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*)(?:\\s+(?:and|or)\\s+(?:!\\s*)?(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*))*)\\s*$",
+                            "captures": {
+                                "1": {
+                                    "name": "keyword.control.loreline"
+                                },
+                                "2": {
+                                    "patterns": [
+                                        {
+                                            "include": "#variables"
+                                        },
+                                        {
+                                            "include": "#operators"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             "match": ".",
                             "name": "string.unquoted.dialogue.loreline"
                         }

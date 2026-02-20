@@ -61,6 +61,116 @@ class Program
                     }
                 }
             }
+
+            // Roundtrip tests for each mode (LF, CRLF)
+            foreach (bool crlf in new[] { false, true })
+            {
+                string modeLabel = crlf ? "CRLF" : "LF";
+                string label = $"{filePath} ~ {modeLabel} ~ roundtrip";
+                string newline = crlf ? "\r\n" : "\n";
+
+                try
+                {
+                    // Normalize content for this mode
+                    string content = rawContent.Replace("\r\n", "\n");
+                    if (crlf)
+                    {
+                        content = content.Replace("\n", "\r\n");
+                    }
+
+                    // Parse original
+                    Script script1 = Engine.Parse(content, filePath, HandleFile);
+                    if (script1 == null)
+                    {
+                        failCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        Console.WriteLine("  Error: Failed to parse original script");
+                        continue;
+                    }
+
+                    // Structural check: print → parse → print must be stable
+                    string print1 = Engine.Print(script1, "  ", newline);
+                    Script script2 = Engine.Parse(print1, filePath, HandleFile);
+                    if (script2 == null)
+                    {
+                        failCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        Console.WriteLine("  Error: Failed to parse printed script");
+                        continue;
+                    }
+                    string print2 = Engine.Print(script2, "  ", newline);
+
+                    if (print1 != print2)
+                    {
+                        failCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        var lines1 = print1.Replace("\r\n", "\n").Split('\n');
+                        var lines2 = print2.Replace("\r\n", "\n").Split('\n');
+                        int ml = Math.Min(lines1.Length, lines2.Length);
+                        for (int i = 0; i < ml; i++)
+                        {
+                            if (lines1[i] != lines2[i])
+                            {
+                                Console.WriteLine($"  > Printer output not idempotent at line {i + 1}");
+                                Console.WriteLine($"  >  print1: {lines1[i]}");
+                                Console.WriteLine($"  >  print2: {lines2[i]}");
+                                break;
+                            }
+                        }
+                        if (lines1.Length != lines2.Length)
+                        {
+                            Console.WriteLine($"  > Line count differs: print1={lines1.Length}, print2={lines2.Length}");
+                        }
+                        continue;
+                    }
+
+                    // Behavioral check: run each test item on the printed content
+                    bool allPassed = true;
+                    string firstError = null;
+                    string firstExpected = null;
+                    string firstActual = null;
+
+                    foreach (var item in testItems)
+                    {
+                        var rtResult = RunTest(filePath, print1, item, crlf);
+                        if (!rtResult.Passed)
+                        {
+                            allPassed = false;
+                            if (firstError == null)
+                            {
+                                firstError = rtResult.Error;
+                                firstExpected = rtResult.Expected;
+                                firstActual = rtResult.Actual;
+                            }
+                        }
+                    }
+
+                    if (allPassed)
+                    {
+                        passCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+                    }
+                    else
+                    {
+                        failCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        if (firstError != null)
+                        {
+                            Console.WriteLine($"  Error: {firstError}");
+                        }
+                        if (firstExpected != null && firstActual != null)
+                        {
+                            ShowDiff(firstExpected, firstActual);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    failCount++;
+                    Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                    Console.WriteLine($"  Error: {e}");
+                }
+            }
         }
 
         int total = passCount + failCount;

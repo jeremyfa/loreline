@@ -259,6 +259,18 @@ namespace Loreline
             return Runtime.Loreline.extractTranslations(script.RuntimeScript);
         }
 
+        /// <summary>
+        /// Prints a parsed script back into Loreline source code.
+        /// </summary>
+        /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
+        /// <param name="indent">The indentation string to use (defaults to two spaces)</param>
+        /// <param name="newline">The newline string to use (defaults to "\n")</param>
+        /// <returns>The printed source code as a string</returns>
+        public static string Print(Script script, string indent = "  ", string newline = "\n")
+        {
+            return (string)Runtime.Loreline.print(script.RuntimeScript, indent, newline);
+        }
+
         private class ImportsFileHandlerWrap : Internal.Lang.Function
         {
             private ImportsFileHandler handler;

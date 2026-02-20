@@ -194,4 +194,17 @@ class Loreline {
         return AstUtils.extractTranslations(script);
     }
 
+    /**
+     * Prints a parsed script back into Loreline source code.
+     *
+     * @param script The parsed script (result from `parse()`)
+     * @param indent The indentation string to use (defaults to two spaces)
+     * @param newline The newline string to use (defaults to "\n")
+     * @return The printed source code as a string
+     */
+    public static function print(script:Script, ?indent:String, ?newline:String):String {
+        final printer = new Printer(indent ?? "  ", newline ?? "\n");
+        return printer.print(script);
+    }
+
 }

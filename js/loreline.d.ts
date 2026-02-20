@@ -269,6 +269,16 @@ export class Loreline {
      * @returns A translations map to pass as `InterpreterOptions.translations`
      */
     static extractTranslations(script: Script): Translations;
+
+    /**
+     * Prints a parsed script back into Loreline source code.
+     *
+     * @param script The parsed script (result from `parse()`)
+     * @param indent The indentation string to use (defaults to two spaces)
+     * @param newline The newline string to use (defaults to "\n")
+     * @returns The printed source code as a string
+     */
+    static print(script: Script, indent?: string, newline?: string): string;
 }
 
 export class Interpreter {

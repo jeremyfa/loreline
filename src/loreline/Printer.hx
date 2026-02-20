@@ -888,7 +888,15 @@ class Printer {
         printLeadingComments(lit);
         switch (lit.literalType) {
             case Number:
+                #if (cs && !macro)
+                if (lit.value is Float && !(lit.value is Int)) {
+                    write(cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', lit.value));
+                } else {
+                    write(Std.string(lit.value));
+                }
+                #else
                 write(Std.string(lit.value));
+                #end
             case Boolean:
                 write(lit.value ? 'true' : 'false');
             case Null:

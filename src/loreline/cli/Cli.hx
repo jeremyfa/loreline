@@ -389,7 +389,9 @@ class Cli {
             }
 
             // Combined round-trip test: structural idempotency + behavioral equivalence
-            testRoundTrip(script, file, crlf, testItems, restoreInputs);
+            if (testItems.length > 0) {
+                testRoundTrip(script, file, crlf, testItems, restoreInputs);
+            }
         }
         catch (e:Any) {
             hasFailedTest = true;
@@ -399,11 +401,6 @@ class Cli {
     }
 
     function testRoundTrip(script:Script, file:String, crlf:Bool, testItems:Array<Dynamic>, restoreInputs:Array<String>) {
-        // Skip round-trip test for files with imports (import resolution requires file context)
-        for (node in script.body) {
-            if (node is loreline.Node.NImportStatement) return;
-        }
-
         final modeLabel = crlf ? 'CRLF' : 'LF';
         try {
             final newline = crlf ? "\r\n" : "\n";
@@ -411,7 +408,7 @@ class Cli {
 
             // Structural check: print → parse → print must be stable
             final print1 = printer.print(script);
-            final script2 = Loreline.parse(print1);
+            final script2 = Loreline.parse(print1, file, handleFile);
             final print2 = printer.print(script2);
             if (print1 != print2) {
                 failCount++;
@@ -463,7 +460,7 @@ class Cli {
                     }
                 }
                 final rtTestCase = new InterpreterTestCase(
-                    file, print1, null,
+                    file, print1, file,
                     item.beat, item.choices, rtOptions,
                     saveAtChoice, restoreInput, item.expected
                 );

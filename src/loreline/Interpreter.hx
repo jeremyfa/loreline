@@ -4138,7 +4138,7 @@ typedef InterpreterOptions = {
      */
     function valueToString(value:Any):String {
 
-        #if (loreline_cs_api && !macro)
+        #if (cs && !macro)
         if (value is Float && !(value is Int)) {
             return cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', value);
         }

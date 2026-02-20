@@ -317,6 +317,107 @@ async function main(): Promise<void> {
                 }
             }
         }
+
+        // Roundtrip tests for each mode (LF, CRLF)
+        for (const crlf of [false, true]) {
+            const modeLabel: string = crlf ? 'CRLF' : 'LF';
+            const label: string = `${filePath} ~ ${modeLabel} ~ roundtrip`;
+            const newline: string = crlf ? '\r\n' : '\n';
+
+            try {
+                // Normalize content for this mode
+                let content: string = rawContent.replace(/\r\n/g, '\n');
+                if (crlf) {
+                    content = content.replace(/\n/g, '\r\n');
+                }
+
+                // Parse original
+                const script1: Script | null = Loreline.parse(content, filePath, handleFile);
+                if (!script1) {
+                    failCount++;
+                    console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    console.log(`  Error: Failed to parse original script`);
+                    continue;
+                }
+
+                // Structural check: print → parse → print must be stable
+                const print1: string = Loreline.print(script1, '  ', newline);
+                const script2: Script | null = Loreline.parse(print1, filePath, handleFile);
+                if (!script2) {
+                    failCount++;
+                    console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    console.log(`  Error: Failed to parse printed script`);
+                    continue;
+                }
+                const print2: string = Loreline.print(script2, '  ', newline);
+
+                if (print1 !== print2) {
+                    failCount++;
+                    console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    const lines1: string[] = print1.replace(/\r\n/g, '\n').split('\n');
+                    const lines2: string[] = print2.replace(/\r\n/g, '\n').split('\n');
+                    const ml: number = Math.min(lines1.length, lines2.length);
+                    for (let i = 0; i < ml; i++) {
+                        if (lines1[i] !== lines2[i]) {
+                            console.log(`  > Printer output not idempotent at line ${i + 1}`);
+                            console.log(`  >  print1: ${lines1[i]}`);
+                            console.log(`  >  print2: ${lines2[i]}`);
+                            break;
+                        }
+                    }
+                    if (lines1.length !== lines2.length) {
+                        console.log(`  > Line count differs: print1=${lines1.length}, print2=${lines2.length}`);
+                    }
+                    continue;
+                }
+
+                // Behavioral check: run each test item on the printed content
+                let allPassed: boolean = true;
+                let firstError: string | undefined;
+                let firstExpected: string | undefined;
+                let firstActual: string | undefined;
+
+                for (const item of testItems) {
+                    const result: TestResult = await runTest(filePath, print1, item, crlf);
+                    if (!result.passed) {
+                        allPassed = false;
+                        if (!firstError) {
+                            firstError = result.error;
+                            firstExpected = result.expected;
+                            firstActual = result.actual;
+                        }
+                    }
+                }
+
+                if (allPassed) {
+                    passCount++;
+                    console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                } else {
+                    failCount++;
+                    console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    if (firstError) {
+                        console.log(`  Error: ${firstError}`);
+                    }
+                    if (firstExpected && firstActual) {
+                        const el: string[] = firstExpected.replace(/\r\n/g, '\n').trim().split('\n');
+                        const al: string[] = firstActual.replace(/\r\n/g, '\n').trim().split('\n');
+                        const ml: number = Math.min(el.length, al.length);
+                        for (let i = 0; i < ml; i++) {
+                            if (el[i] !== al[i]) {
+                                console.log(`  > Unexpected output at line ${i + 1}`);
+                                console.log(`  >  got: ${al[i]}`);
+                                console.log(`  > need: ${el[i]}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                failCount++;
+                console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                console.log(`  Error: ${(e as Error).toString()}`);
+            }
+        }
     }
 
     const total: number = passCount + failCount;
