@@ -521,6 +521,10 @@ class Printer {
         }
         printLeadingComments(text);
         printNode(text.content);
+        if (text.condition != null) {
+            write(' if ');
+            printInLineExpression(text.condition, text.conditionStyle == Parens);
+        }
         printTrailingComments(text);
     }
 
@@ -545,6 +549,10 @@ class Printer {
             write('${dialogue.character}: ');
             printTrailingComments(dialogue);
             printNode(dialogue.content);
+        }
+        if (dialogue.condition != null) {
+            write(' if ');
+            printInLineExpression(dialogue.condition, dialogue.conditionStyle == Parens);
         }
     }
 

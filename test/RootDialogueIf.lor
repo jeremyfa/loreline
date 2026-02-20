@@ -1,0 +1,15 @@
+
+state
+  tired: true
+
+character david
+  name: David
+
+david: It's Friday once again if tired
+
+/*
+<test>
+- expected: |
+    David: It's Friday once again
+</test>
+*/

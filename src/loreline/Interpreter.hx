@@ -2402,6 +2402,12 @@ typedef InterpreterOptions = {
      */
     function evalText(text:NTextStatement, next:()->Void) {
 
+        // Check trailing condition
+        if (text.condition != null && !evaluateCondition(text.condition)) {
+            next();
+            return;
+        }
+
         // Check for translation via hash comment
         final str = getTranslatedString(text, text.content);
 
@@ -2422,6 +2428,12 @@ typedef InterpreterOptions = {
      * @param next Callback to call when evaluation completes
      */
     function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
+
+        // Check trailing condition
+        if (dialogue.condition != null && !evaluateCondition(dialogue.condition)) {
+            next();
+            return;
+        }
 
         // Check for translation via hash comment
         final str = getTranslatedString(dialogue, dialogue.content);

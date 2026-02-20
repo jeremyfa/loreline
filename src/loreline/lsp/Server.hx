@@ -1482,8 +1482,30 @@ class Server {
                 final alt:NAlternative = cast node;
                 return makeHover('**Alternative** (${alt.mode.toString()})', null, content, node);
             case NDialogueStatement:
-                return makeDialogueStatementHover(cast node, content, lens);
-            case NStringLiteral | NTextStatement:
+                final dialogue:NDialogueStatement = cast node;
+                if (dialogue.conditionPos != null &&
+                    lorelinePos.offset >= dialogue.conditionPos.offset &&
+                    lorelinePos.offset <= dialogue.conditionPos.offset + dialogue.conditionPos.length) {
+                    return makeHover("**Condition**", null, content, node, dialogue.conditionPos);
+                }
+                return makeDialogueStatementHover(dialogue, content, lens);
+            case NTextStatement:
+                final text:NTextStatement = cast node;
+                if (text.conditionPos != null &&
+                    lorelinePos.offset >= text.conditionPos.offset &&
+                    lorelinePos.offset <= text.conditionPos.offset + text.conditionPos.length) {
+                    return makeHover("**Condition**", null, content, node, text.conditionPos);
+                }
+                return makeHover(hoverTitle('Text'), hoverDescriptionForNode(text), content, node);
+            case NChoiceOption:
+                final option:NChoiceOption = cast node;
+                if (option.conditionPos != null &&
+                    lorelinePos.offset >= option.conditionPos.offset &&
+                    lorelinePos.offset <= option.conditionPos.offset + option.conditionPos.length) {
+                    return makeHover("**Condition**", null, content, node, option.conditionPos);
+                }
+                return makeHover(hoverTitle('Choice option'), hoverDescriptionForNode(option), content, node);
+            case NStringLiteral:
                 return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
                 var parent = node;

@@ -1,0 +1,12 @@
+
+state
+  tired: true
+
+It's Friday once again if tired
+
+/*
+<test>
+- expected: |
+    ~ It's Friday once again
+</test>
+*/

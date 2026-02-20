@@ -1,0 +1,18 @@
+
+state
+  tired: false
+
+character david
+  name: David
+
+beat Start
+  david: It's Friday once again if tired
+  tired = true
+  david: It's Friday once again if tired
+
+/*
+<test>
+- expected: |
+    David: It's Friday once again
+</test>
+*/

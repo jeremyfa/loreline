@@ -1,0 +1,15 @@
+
+state
+  tired: false
+
+beat Start
+  It's Friday once again if tired
+  tired = true
+  It's Friday once again if tired
+
+/*
+<test>
+- expected: |
+    ~ It's Friday once again
+</test>
+*/

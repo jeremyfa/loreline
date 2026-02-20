@@ -1044,6 +1044,21 @@ class NTextStatement extends AstNode {
     public var content:NStringLiteral;
 
     /**
+     * Optional condition that must be true for this text to be displayed.
+     */
+    public var condition:Null<NExpr>;
+
+    /**
+     * The style of the condition (plain or parentheses).
+     */
+    public var conditionStyle:ConditionStyle;
+
+    /**
+     * Position of the trailing "if condition" clause (from 'if' keyword through condition end).
+     */
+    public var conditionPos:Null<Position>;
+
+    /**
      * Creates a new text statement node.
      * @param pos Position in source where this text appears
      * @param content String literal containing the text content
@@ -1053,6 +1068,7 @@ class NTextStatement extends AstNode {
     public function new(id:NodeId, pos:Position, content:NStringLiteral, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);
         this.content = content;
+        this.conditionStyle = Plain;
     }
 
     override function type():String {
@@ -1066,6 +1082,11 @@ class NTextStatement extends AstNode {
             handleNode(content, this);
             content.each(handleNode);
         }
+
+        if (condition != null) {
+            handleNode(condition, this);
+            condition.each(handleNode);
+        }
     }
 
     /**
@@ -1075,6 +1096,11 @@ class NTextStatement extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.content = content.toJson();
+        if (condition != null) {
+            json.condition = condition.toJson();
+            json.conditionStyle = conditionStyle.toString();
+            json.conditionPos = conditionPos.toJson();
+        }
         return json;
     }
 }
@@ -1099,6 +1125,21 @@ class NDialogueStatement extends AstNode {
     public var content:NStringLiteral;
 
     /**
+     * Optional condition that must be true for this dialogue to be displayed.
+     */
+    public var condition:Null<NExpr>;
+
+    /**
+     * The style of the condition (plain or parentheses).
+     */
+    public var conditionStyle:ConditionStyle;
+
+    /**
+     * Position of the trailing "if condition" clause (from 'if' keyword through condition end).
+     */
+    public var conditionPos:Null<Position>;
+
+    /**
      * Creates a new dialogue statement node.
      * @param pos Position in source where this dialogue appears
      * @param character Name of the speaking character
@@ -1112,6 +1153,7 @@ class NDialogueStatement extends AstNode {
         this.character = character;
         this.characterPos = characterPos;
         this.content = content;
+        this.conditionStyle = Plain;
     }
 
     override function type():String {
@@ -1125,6 +1167,11 @@ class NDialogueStatement extends AstNode {
             handleNode(content, this);
             content.each(handleNode);
         }
+
+        if (condition != null) {
+            handleNode(condition, this);
+            condition.each(handleNode);
+        }
     }
 
     /**
@@ -1136,6 +1183,11 @@ class NDialogueStatement extends AstNode {
         json.character = character;
         json.characterPos = characterPos.toJson();
         json.content = content.toJson();
+        if (condition != null) {
+            json.condition = condition.toJson();
+            json.conditionStyle = conditionStyle.toString();
+            json.conditionPos = conditionPos.toJson();
+        }
         return json;
     }
 }
@@ -1220,6 +1272,11 @@ class NChoiceOption extends AstNode {
     public var conditionStyle:ConditionStyle;
 
     /**
+     * Position of the trailing "if condition" clause (from 'if' keyword through condition end).
+     */
+    public var conditionPos:Null<Position>;
+
+    /**
      * Array of nodes to execute when this option is chosen.
      */
     public var body:Array<AstNode>;
@@ -1292,6 +1349,7 @@ class NChoiceOption extends AstNode {
         if (condition != null) {
             json.condition = condition.toJson();
             json.conditionStyle = conditionStyle.toString();
+            json.conditionPos = conditionPos.toJson();
         }
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();

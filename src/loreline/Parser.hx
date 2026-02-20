@@ -539,6 +539,16 @@ class ParserContext {
             dialogue.content = new NStringLiteral(nextNodeId(NODE), currentPos(), Unquoted, [new NStringPart(nextNodeId(NODE), currentPos(), Raw("?"))]);
         }
 
+        // Parse optional trailing condition (must be on the same line)
+        if (!lineBreakAfterToken && match(KwIf)) {
+            final ifPos = previous().pos;
+            if (check(LParen)) {
+                dialogue.conditionStyle = Parens;
+            }
+            dialogue.condition = parseConditionExpression();
+            dialogue.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
+        }
+
         // Handle unindent
         if (indented) {
             while (match(LineBreak)) {}
@@ -546,7 +556,7 @@ class ParserContext {
         }
 
         // Update position
-        dialogue.pos = dialogue.pos.extendedTo(dialogue.content.pos);
+        dialogue.pos = dialogue.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return dialogue;
     }
@@ -791,6 +801,16 @@ class ParserContext {
         final startPos = currentPos();
         final statement = attachComments(new NTextStatement(nextNodeId(NODE), startPos, null));
         statement.content = parseStringLiteral();
+        // Parse optional trailing condition (must be on the same line)
+        if (!lineBreakAfterToken && match(KwIf)) {
+            final ifPos = previous().pos;
+            if (check(LParen)) {
+                statement.conditionStyle = Parens;
+            }
+            statement.condition = parseConditionExpression();
+            statement.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
+        }
+        statement.pos = statement.pos.extendedTo(prevNonWhitespaceOrComment().pos);
         return statement;
     }
 
@@ -855,12 +875,14 @@ class ParserContext {
         if (!isInsertion) {
             // Parse optional condition
             if (match(KwIf)) {
+                final ifPos = previous().pos;
                 final offset = currentPos().offset;
                 try {
                     if (check(LParen)) {
                         choiceOption.conditionStyle = Parens;
                     }
                     choiceOption.condition = parseConditionExpression();
+                    choiceOption.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
                 }
                 catch (e:ParseError) {
                     addError(e);
