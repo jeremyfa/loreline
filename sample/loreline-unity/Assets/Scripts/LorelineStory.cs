@@ -1,72 +1,120 @@
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
+using UnityEngine.UIElements;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Loreline;
 
 /// <summary>
-/// Self-contained Loreline story player for Unity.
+/// Self-contained Loreline story player for Unity using UI Toolkit.
 /// Creates all UI programmatically — just add this to an empty GameObject and press Play.
 /// Runs the CoffeeShop.lor sample story.
 /// </summary>
 public class LorelineStory : MonoBehaviour
 {
-    // UI references (created in Awake)
-    private ScrollRect scrollRect;
-    private RectTransform content;
-    private GameObject bottomPanel;
-    private Button restartButton;
-    private List<GameObject> choiceButtons = new List<GameObject>();
+    // UI Toolkit references
+    private UIDocument uiDocument;
+    private StyleSheet stylesheet;
+    private ScrollView scrollView;
+    private VisualElement contentColumn;
+    private VisualElement heightKeeper;
 
-    // Dark theme colors
-    private static readonly Color ContentBg = HexColor("16162a");
-    private static readonly Color TextColor = HexColor("e0e0e0");
-    private static readonly Color NarratorColor = HexColor("9a9ab0");
-    private static readonly Color ChoiceBg = HexColor("252540");
-    private static readonly Color ChoiceText = HexColor("d0d0e0");
-    private static readonly Color ChoiceTextDimmed = HexColor("808098");
-    private static readonly Color BottomBarBg = new Color(0.08f, 0.08f, 0.15f, 0.9f);
-    private static readonly Color AccentColor = HexColor("8080a0");
+    // Timer management — tracked for cancellation on restart
+    private List<IVisualElementScheduledItem> pendingTimers = new List<IVisualElementScheduledItem>();
 
-    private static readonly Dictionary<string, string> CharacterColors = new Dictionary<string, string>
-    {
-        { "Barista", "#c9956a" },
-        { "Dr. Bean", "#ff6b6b" },
-        { "Sarah", "#6bc5cd" },
-        { "James", "#6bcd7b" },
-        { "Player", "#b07de8" }
-    };
-
-    static Color HexColor(string hex)
-    {
-        Color c;
-        ColorUtility.TryParseHtmlString("#" + hex, out c);
-        return c;
-    }
+    // Scroll animation state
+    private Coroutine scrollCoroutine;
 
     void Awake()
     {
-        CreateUI();
+        SetupUIDocument();
     }
 
     void Start()
     {
+        BuildUI();
         StartStory();
     }
 
+    // ── UI Setup ──────────────────────────────────────────────────────────────
+
+    void SetupUIDocument()
+    {
+        // Create PanelSettings programmatically
+        var panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+        panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+        panelSettings.referenceResolution = new Vector2Int(1920, 1080);
+        panelSettings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
+        panelSettings.match = 0.5f;
+
+        // Assign a ThemeStyleSheet to suppress "No Theme Style Sheet" warning
+        // (our USS provides all styling, so an empty theme is fine)
+        panelSettings.themeStyleSheet = ScriptableObject.CreateInstance<ThemeStyleSheet>();
+
+        // Add UIDocument component
+        uiDocument = gameObject.AddComponent<UIDocument>();
+        uiDocument.panelSettings = panelSettings;
+
+        // Load stylesheet once (applied in BuildUI)
+        stylesheet = Resources.Load<StyleSheet>("LorelineStory");
+        if (stylesheet == null)
+        {
+            Debug.LogWarning("Could not load LorelineStory.uss from Resources.");
+        }
+    }
+
+    void BuildUI()
+    {
+        var root = uiDocument.rootVisualElement;
+        root.Clear();
+
+        // Apply stylesheet (only once — Clear() doesn't remove stylesheets)
+        if (stylesheet != null && !root.styleSheets.Contains(stylesheet))
+        {
+            root.styleSheets.Add(stylesheet);
+        }
+
+        root.AddToClassList("root");
+
+        // ScrollView — vertical, full screen
+        scrollView = new ScrollView(ScrollViewMode.Vertical);
+        scrollView.AddToClassList("scroll-view");
+        scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+        root.Add(scrollView);
+
+        // Two-column wrapper (scroll-stable layout)
+        var contentWrapper = new VisualElement();
+        contentWrapper.AddToClassList("content-wrapper");
+        scrollView.Add(contentWrapper);
+
+        // Content column — story elements go here
+        contentColumn = new VisualElement();
+        contentColumn.AddToClassList("content-column");
+        contentWrapper.Add(contentColumn);
+
+        // Keeper column — zero width, height only grows (prevents scroll jumps)
+        var keeperColumn = new VisualElement();
+        keeperColumn.AddToClassList("keeper-column");
+        contentWrapper.Add(keeperColumn);
+
+        heightKeeper = new VisualElement();
+        keeperColumn.Add(heightKeeper);
+    }
+
+    // ── Story Loading ─────────────────────────────────────────────────────────
+
     void StartStory()
     {
+        // Cancel all pending timers and coroutines
+        ClearTimers();
         StopAllCoroutines();
+        scrollCoroutine = null;
 
-        for (int i = content.childCount - 1; i >= 0; i--)
-            Destroy(content.GetChild(i).gameObject);
-        choiceButtons.Clear();
+        // Clear content
+        contentColumn.Clear();
+        heightKeeper.style.height = 0;
 
-        bottomPanel.SetActive(false);
-
+        // Load and play story
         TextAsset mainAsset = Resources.Load<TextAsset>("CoffeeShop.lor");
         if (mainAsset == null)
         {
@@ -88,14 +136,9 @@ public class LorelineStory : MonoBehaviour
         callback(asset != null ? asset.text : null);
     }
 
-    // --- Story Handlers ---
+    // ── Story Handlers ────────────────────────────────────────────────────────
 
     void OnDialogue(Interpreter.Dialogue dialogue)
-    {
-        StartCoroutine(ShowDialogue(dialogue));
-    }
-
-    IEnumerator ShowDialogue(Interpreter.Dialogue dialogue)
     {
         string character = dialogue.Character;
         if (character != null)
@@ -103,370 +146,344 @@ public class LorelineStory : MonoBehaviour
             string displayName = (string)dialogue.Interpreter.GetCharacterField(character, "name");
             if (displayName != null) character = displayName;
         }
-        var obj = AddTextBlock(character, dialogue.Text);
-        StartCoroutine(FadeIn(obj));
-        yield return StartCoroutine(SmoothScrollToBottom());
-        yield return new WaitForSeconds(1.5f);
-        dialogue.Callback();
+
+        AppendDialogue(character, dialogue.Text);
+
+        // Auto-advance after 600ms (matching web sample)
+        ScheduleDelayed(600, () => dialogue.Callback());
     }
 
     void OnChoice(Interpreter.Choice choice)
     {
-        StartCoroutine(ShowChoices(choice));
-    }
-
-    IEnumerator ShowChoices(Interpreter.Choice choice)
-    {
-        yield return new WaitForSeconds(0.15f);
-
-        // Extra spacing before choice block
-        var spacer = CreateUIObject("Spacer", content);
-        var sle = spacer.AddComponent<LayoutElement>();
-        sle.minHeight = 6;
-
-        for (int i = 0; i < choice.Options.Length; i++)
+        // Show choices after 500ms delay (matching web sample)
+        ScheduleDelayed(500, () =>
         {
-            var opt = choice.Options[i];
-            if (!opt.Enabled) continue;
-            int index = i;
-            GameObject btnObj = null;
-            btnObj = AddChoiceButton(opt.Text, () =>
-            {
-                MarkChoiceSelected(btnObj);
-                StartCoroutine(AfterChoiceSelected(() => choice.Callback(index)));
-            });
-            StartCoroutine(FadeIn(btnObj));
-        }
-        yield return StartCoroutine(SmoothScrollToBottom());
-    }
-
-    IEnumerator AfterChoiceSelected(System.Action callback)
-    {
-        yield return StartCoroutine(SmoothScrollToBottom());
-        yield return new WaitForSeconds(0.3f);
-
-        // Extra spacing after choice block
-        var spacer = CreateUIObject("Spacer", content);
-        var le = spacer.AddComponent<LayoutElement>();
-        le.minHeight = 6;
-
-        callback();
+            ShowChoices(choice.Options, idx => choice.Callback(idx));
+        });
     }
 
     void OnFinish(Interpreter.Finish finish)
     {
-        StartCoroutine(ShowFinish());
+        ShowFinished();
     }
 
-    IEnumerator ShowFinish()
+    // ── Rendering: Dialogue & Narrative ───────────────────────────────────────
+
+    void AppendDialogue(string character, string text)
     {
-        var obj = AddEndBlock();
-        StartCoroutine(FadeIn(obj));
-        yield return StartCoroutine(SmoothScrollToBottom());
-        ShowRestartButton();
-    }
-
-    // --- UI Creation ---
-
-    void CreateUI()
-    {
-        if (FindAnyObjectByType<EventSystem>() == null)
-        {
-            var esObj = new GameObject("EventSystem");
-            esObj.AddComponent<EventSystem>();
-            esObj.AddComponent<InputSystemUIInputModule>();
-        }
-
-        // Canvas
-        var canvasObj = new GameObject("LorelineCanvas");
-        canvasObj.transform.SetParent(transform);
-        var canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-
-        var scaler = canvasObj.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(800, 600);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        canvasObj.AddComponent<GraphicRaycaster>();
-
-        // Scroll View — fills entire screen
-        var scrollObj = CreateUIObject("ScrollView", canvasObj.transform);
-        var scrollRectTransform = scrollObj.GetComponent<RectTransform>();
-        StretchFill(scrollRectTransform);
-        scrollObj.AddComponent<Image>().color = ContentBg;
-
-        scrollRect = scrollObj.AddComponent<ScrollRect>();
-        scrollRect.horizontal = false;
-        scrollRect.movementType = ScrollRect.MovementType.Elastic;
-        scrollRect.elasticity = 0.1f;
-        scrollRect.scrollSensitivity = 30f;
-
-        // Viewport
-        var viewportObj = CreateUIObject("Viewport", scrollObj.transform);
-        var viewportRect = viewportObj.GetComponent<RectTransform>();
-        StretchFill(viewportRect);
-        viewportObj.AddComponent<Image>().color = ContentBg;
-        viewportObj.AddComponent<Mask>().showMaskGraphic = true;
-        scrollRect.viewport = viewportRect;
-
-        // Content container
-        var contentObj = CreateUIObject("Content", viewportObj.transform);
-        content = contentObj.GetComponent<RectTransform>();
-        content.anchorMin = new Vector2(0, 1);
-        content.anchorMax = new Vector2(1, 1);
-        content.pivot = new Vector2(0.5f, 1);
-        content.sizeDelta = new Vector2(0, 0);
-
-        var vlg = contentObj.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset(32, 32, 32, 80);
-        vlg.spacing = 16;
-        vlg.childForceExpandWidth = true;
-        vlg.childForceExpandHeight = false;
-        vlg.childControlWidth = true;
-        vlg.childControlHeight = true;
-
-        var csf = contentObj.AddComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        scrollRect.content = content;
-
-        // Scrollbar — subtle, matching theme
-        var scrollbarObj = CreateUIObject("Scrollbar", scrollObj.transform);
-        var scrollbarRect = scrollbarObj.GetComponent<RectTransform>();
-        scrollbarRect.anchorMin = new Vector2(1, 0);
-        scrollbarRect.anchorMax = new Vector2(1, 1);
-        scrollbarRect.pivot = new Vector2(1, 0.5f);
-        scrollbarRect.sizeDelta = new Vector2(8, -8);
-        scrollbarRect.anchoredPosition = new Vector2(-4, 0);
-        scrollbarObj.AddComponent<Image>().color = new Color(0, 0, 0, 0);
-        var scrollbar = scrollbarObj.AddComponent<Scrollbar>();
-        scrollbar.direction = Scrollbar.Direction.BottomToTop;
-
-        var handleObj = CreateUIObject("Handle", scrollbarObj.transform);
-        StretchFill(handleObj.GetComponent<RectTransform>());
-        var handleImg = handleObj.AddComponent<Image>();
-        handleImg.color = HexColor("2a2a48");
-        scrollbar.handleRect = handleObj.GetComponent<RectTransform>();
-        scrollbar.targetGraphic = handleImg;
-        scrollRect.verticalScrollbar = scrollbar;
-        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-
-        // Bottom bar — only used for restart
-        bottomPanel = CreateUIObject("BottomBar", canvasObj.transform);
-        var bottomRect = bottomPanel.GetComponent<RectTransform>();
-        bottomRect.anchorMin = new Vector2(0, 0);
-        bottomRect.anchorMax = new Vector2(1, 0);
-        bottomRect.pivot = new Vector2(0.5f, 0);
-        bottomRect.sizeDelta = new Vector2(0, 56);
-        bottomRect.anchoredPosition = Vector2.zero;
-        bottomPanel.AddComponent<Image>().color = BottomBarBg;
-
-        var restartBtnObj = CreateTextButton("RestartBtn", bottomPanel.transform, "Play Again", AccentColor);
-        var restartBtnRect = restartBtnObj.GetComponent<RectTransform>();
-        restartBtnRect.anchorMin = new Vector2(0.5f, 0.5f);
-        restartBtnRect.anchorMax = new Vector2(0.5f, 0.5f);
-        restartBtnRect.sizeDelta = new Vector2(200, 40);
-        restartBtnRect.anchoredPosition = Vector2.zero;
-        restartButton = restartBtnObj.GetComponent<Button>();
-        restartButton.onClick.AddListener(() => StartStory());
-
-        bottomPanel.SetActive(false);
-    }
-
-    // --- Text & Choice Methods ---
-
-    GameObject AddTextBlock(string character, string text)
-    {
-        var obj = CreateUIObject("TextBlock", content);
-        var textComp = obj.AddComponent<Text>();
-        textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        textComp.fontSize = 18;
-        textComp.supportRichText = true;
-        textComp.lineSpacing = 1.3f;
+        Label line;
 
         if (character != null)
         {
-            string colorHex;
-            if (!CharacterColors.TryGetValue(character, out colorHex))
-                colorHex = "#b0b0c0";
-
-            textComp.text = "<color=" + colorHex + "><b>" + character + ":</b></color>  " + text;
-            textComp.color = TextColor;
+            // Dialogue line: char name (bold purple) + text, using rich text
+            // Unicode separators match the web sample: thin space + colon + three-per-em space + hair space
+            line = new Label();
+            line.enableRichText = true;
+            line.text = "<b>" + GradientRichText(character + "\u2009:\u2004\u200a") + "</b>" + EscapeRichText(text);
+            line.AddToClassList("dialogue");
         }
         else
         {
-            textComp.text = text;
-            textComp.color = NarratorColor;
-            textComp.fontStyle = FontStyle.Italic;
+            // Narrative line: italic serif, muted color
+            line = new Label(text);
+            line.AddToClassList("narrative");
         }
 
-        var layout = obj.AddComponent<LayoutElement>();
-        layout.minHeight = 28;
-
-        return obj;
+        contentColumn.Add(line);
+        FadeIn(line);
+        UpdateHeightKeeper();
+        ScrollToBottom();
     }
 
-    GameObject AddEndBlock()
+    // ── Rendering: Choices ────────────────────────────────────────────────────
+
+    void ShowChoices(Interpreter.ChoiceOption[] options, System.Action<int> choiceCallback)
     {
-        var obj = CreateUIObject("EndBlock", content);
-        var textComp = obj.AddComponent<Text>();
-        textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        textComp.fontSize = 20;
-        textComp.text = "\u2014 The End \u2014";
-        textComp.color = AccentColor;
-        textComp.fontStyle = FontStyle.Italic;
-        textComp.alignment = TextAnchor.MiddleCenter;
+        var choiceContainer = new VisualElement();
+        choiceContainer.AddToClassList("choices-container");
 
-        var layout = obj.AddComponent<LayoutElement>();
-        layout.minHeight = 48;
+        var buttons = new List<Button>();
+        bool isFirst = true;
+        bool selected = false;
 
-        return obj;
-    }
-
-    GameObject AddChoiceButton(string text, System.Action onClick)
-    {
-        var btnObj = CreateUIObject("Choice", content);
-
-        var btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = ChoiceBg;
-
-        var btn = btnObj.AddComponent<Button>();
-        btn.transition = Selectable.Transition.None;
-        btn.targetGraphic = btnImg;
-        btn.onClick.AddListener(() => onClick());
-
-        // Text child
-        var textObj = CreateUIObject("Text", btnObj.transform);
-        var textRect = textObj.GetComponent<RectTransform>();
-        StretchFill(textRect);
-        textRect.offsetMin = new Vector2(20, 8);
-        textRect.offsetMax = new Vector2(-20, -8);
-
-        var textComp = textObj.AddComponent<Text>();
-        textComp.text = text;
-        textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        textComp.fontSize = 17;
-        textComp.color = ChoiceText;
-        textComp.alignment = TextAnchor.MiddleLeft;
-
-        var layoutEl = btnObj.AddComponent<LayoutElement>();
-        layoutEl.minHeight = 50;
-
-        choiceButtons.Add(btnObj);
-
-        return btnObj;
-    }
-
-    void MarkChoiceSelected(GameObject selectedBtn)
-    {
-        foreach (var btn in choiceButtons)
+        for (int i = 0; i < options.Length; i++)
         {
-            if (btn == selectedBtn)
+            var opt = options[i];
+            if (!opt.Enabled) continue;
+
+            int idx = i;
+            var btn = new Button();
+            btn.text = opt.Text;
+            btn.AddToClassList("choice-button");
+
+            // First enabled button: no top margin (USS doesn't support :first-child)
+            if (isFirst)
             {
-                btn.GetComponent<Button>().interactable = false;
+                btn.style.marginTop = 0;
+                isFirst = false;
             }
-            else
+
+            btn.clicked += () =>
             {
-                // Dim non-selected choices
-                btn.GetComponent<Button>().interactable = false;
-                btn.GetComponent<Image>().color = HexColor("1a1a30");
-                var text = btn.GetComponentInChildren<Text>();
-                if (text != null) text.color = HexColor("505068");
-            }
+                // Prevent double-clicks during animation
+                if (selected) return;
+                selected = true;
+
+                // Phase 1: highlight selected, fade others
+                foreach (var b in buttons)
+                {
+                    if (b == btn)
+                        b.AddToClassList("selected");
+                    else
+                        b.AddToClassList("fading");
+                }
+
+                // Phase 2 (300ms): slide selected button to top of container
+                ScheduleDelayed(300, () =>
+                {
+                    float btnTop = btn.worldBound.y;
+                    float containerTop = choiceContainer.worldBound.y;
+                    float offset = btnTop - containerTop;
+                    if (offset > 0)
+                    {
+                        btn.style.translate = new Translate(0, -offset);
+                    }
+                });
+
+                // Phase 3 (700ms): finalize layout and continue story
+                ScheduleDelayed(700, () =>
+                {
+                    // Hide faded buttons
+                    foreach (var b in buttons)
+                    {
+                        if (b != btn)
+                            b.style.display = DisplayStyle.None;
+                    }
+
+                    // Disable transitions before resetting position
+                    btn.style.transitionDuration = new List<TimeValue> { new TimeValue(0) };
+                    btn.style.translate = new Translate(0, 0);
+                    btn.style.marginTop = 0;
+
+                    // Re-enable transitions on the next frame
+                    btn.schedule.Execute(() =>
+                    {
+                        btn.style.transitionDuration = StyleKeyword.Null;
+                        btn.style.transitionProperty = StyleKeyword.Null;
+                    });
+
+                    UpdateHeightKeeper();
+                    choiceCallback(idx);
+                });
+            };
+
+            buttons.Add(btn);
+            choiceContainer.Add(btn);
         }
-        choiceButtons.Clear();
+
+        contentColumn.Add(choiceContainer);
+        FadeIn(choiceContainer);
+        UpdateHeightKeeper();
+        ScrollToBottom();
     }
 
-    void ShowRestartButton()
-    {
-        bottomPanel.SetActive(true);
-        restartButton.gameObject.SetActive(true);
-    }
+    // ── Rendering: Story Finished ─────────────────────────────────────────────
 
-    // --- Animation Helpers ---
-
-    IEnumerator FadeIn(GameObject obj, float duration = 0.3f)
+    void ShowFinished()
     {
-        var cg = obj.AddComponent<CanvasGroup>();
-        cg.alpha = 0f;
-        float elapsed = 0f;
-        while (elapsed < duration)
+        var resetBtn = new Button();
+        resetBtn.text = "Play again";
+        resetBtn.AddToClassList("reset-button");
+        contentColumn.Add(resetBtn);
+
+        // Initially hidden, then fade in after 500ms
+        resetBtn.style.display = DisplayStyle.None;
+
+        ScheduleDelayed(500, () =>
         {
-            elapsed += Time.deltaTime;
-            cg.alpha = Mathf.Clamp01(elapsed / duration);
-            yield return null;
-        }
-        cg.alpha = 1f;
+            resetBtn.style.display = DisplayStyle.Flex;
+            FadeIn(resetBtn);
+            ScrollToBottom();
+        });
+
+        resetBtn.clicked += () =>
+        {
+            BuildUI();
+            StartStory();
+        };
+    }
+
+    // ── Animation Helpers ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Fades in an element with a subtle upward slide, using USS transition classes.
+    /// </summary>
+    void FadeIn(VisualElement el)
+    {
+        el.AddToClassList("fade-in-ready");
+
+        // Next frame: trigger transition by swapping to active class
+        el.schedule.Execute(() =>
+        {
+            el.AddToClassList("fade-in-active");
+            el.RemoveFromClassList("fade-in-ready");
+        });
+    }
+
+    /// <summary>
+    /// Updates the height keeper to the current content height.
+    /// The keeper's height only ever increases — this prevents scroll jumps
+    /// when choice buttons are hidden after selection.
+    /// </summary>
+    void UpdateHeightKeeper()
+    {
+        contentColumn.schedule.Execute(() =>
+        {
+            float h = contentColumn.resolvedStyle.height;
+            float currentHeight = heightKeeper.resolvedStyle.height;
+            if (float.IsNaN(currentHeight)) currentHeight = 0;
+            if (h > currentHeight)
+            {
+                heightKeeper.style.height = h;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Smoothly scrolls the output to the bottom using a coroutine
+    /// with quadratic ease-in-out (matching the web sample).
+    /// </summary>
+    void ScrollToBottom()
+    {
+        if (scrollCoroutine != null)
+            StopCoroutine(scrollCoroutine);
+        scrollCoroutine = StartCoroutine(SmoothScrollToBottom());
     }
 
     IEnumerator SmoothScrollToBottom()
     {
-        yield return new WaitForEndOfFrame();
-        Canvas.ForceUpdateCanvases();
+        // Wait for layout to resolve after content changes
+        yield return null;
+        yield return null;
+        yield return null;
 
-        float start = scrollRect.verticalNormalizedPosition;
-        if (start <= 0.01f) yield break;
+        float start = scrollView.verticalScroller.value;
+        float target = scrollView.verticalScroller.highValue;
 
-        float duration = 0.25f;
+        if (target <= start + 1f)
+        {
+            scrollCoroutine = null;
+            yield break;
+        }
+
+        float dist = target - start;
+        float duration = Mathf.Min(0.6f, Mathf.Max(0.25f, dist * 0.0012f));
         float elapsed = 0f;
+
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-            scrollRect.verticalNormalizedPosition = Mathf.Lerp(start, 0f, t);
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Quadratic ease-in-out (matching web sample)
+            float ease = t < 0.5f ? 2f * t * t : -1f + (4f - 2f * t) * t;
+
+            scrollView.verticalScroller.value = start + dist * ease;
             yield return null;
         }
-        scrollRect.verticalNormalizedPosition = 0f;
+
+        scrollView.verticalScroller.value = target;
+        scrollCoroutine = null;
     }
 
-    // --- UI Helpers ---
+    // ── Timer Management ──────────────────────────────────────────────────────
 
-    GameObject CreateUIObject(string name, Transform parent)
+    /// <summary>
+    /// Schedules an action after a delay (in milliseconds).
+    /// All scheduled items are tracked for cancellation on restart.
+    /// </summary>
+    void ScheduleDelayed(long delayMs, System.Action action)
     {
-        var obj = new GameObject(name, typeof(RectTransform));
-        obj.transform.SetParent(parent, false);
-        return obj;
+        var item = uiDocument.rootVisualElement.schedule.Execute(() => action());
+        item.ExecuteLater(delayMs);
+        pendingTimers.Add(item);
     }
 
-    void StretchFill(RectTransform rect)
+    /// <summary>
+    /// Cancels all pending scheduled actions.
+    /// Called when restarting the story to prevent orphaned callbacks.
+    /// </summary>
+    void ClearTimers()
     {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
+        foreach (var timer in pendingTimers)
+        {
+            if (timer != null) timer.Pause();
+        }
+        pendingTimers.Clear();
     }
 
-    GameObject CreateTextButton(string name, Transform parent, string label, Color textColor)
+    // ── Utility ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Wraps each visible character in a color tag that interpolates along a gradient,
+    /// approximating the web sample's linear-gradient(135deg, #ff5eab 0%, #8b5cf6 40%, #56a0f6 100%).
+    /// The 135° diagonal angle means the visible horizontal range is narrower than 0–100%,
+    /// so we map characters to the 0.15–0.85 range of the original gradient for a softer look.
+    /// </summary>
+    static string GradientRichText(string text)
     {
-        var btnObj = CreateUIObject(name, parent);
+        if (string.IsNullOrEmpty(text)) return "";
 
-        var btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = new Color(0, 0, 0, 0);
+        // Gradient stops: #ff5eab at 0%, #8b5cf6 at 40%, #56a0f6 at 100%
+        // R, G, B for each stop
+        float r0 = 255, g0 = 94,  b0 = 171;  // #ff5eab
+        float r1 = 139, g1 = 92,  b1 = 246;  // #8b5cf6
+        float r2 = 86,  g2 = 160, b2 = 246;  // #56a0f6
 
-        var btn = btnObj.AddComponent<Button>();
-        btn.targetGraphic = btnImg;
+        // Narrower range to approximate the 135° diagonal effect
+        const float tMin = 0.30f;
+        const float tMax = 0.70f;
 
-        var colors = btn.colors;
-        colors.normalColor = new Color(1, 1, 1, 0);
-        colors.highlightedColor = new Color(1, 1, 1, 0.05f);
-        colors.pressedColor = new Color(1, 1, 1, 0.1f);
-        colors.selectedColor = new Color(1, 1, 1, 0);
-        colors.fadeDuration = 0.1f;
-        btn.colors = colors;
+        var sb = new System.Text.StringBuilder();
+        int len = text.Length;
 
-        var textObj = CreateUIObject("Text", btnObj.transform);
-        var textRect = textObj.GetComponent<RectTransform>();
-        StretchFill(textRect);
+        for (int i = 0; i < len; i++)
+        {
+            // Map character position to the narrower gradient range
+            float t = len > 1 ? tMin + (tMax - tMin) * i / (len - 1) : 0.4f;
 
-        var textComp = textObj.AddComponent<Text>();
-        textComp.text = label;
-        textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        textComp.fontSize = 16;
-        textComp.color = textColor;
-        textComp.alignment = TextAnchor.MiddleCenter;
+            // Interpolate between stops: 0→0.4 is stop0→stop1, 0.4→1.0 is stop1→stop2
+            float r, g, b;
+            if (t <= 0.4f)
+            {
+                float s = t / 0.4f;
+                r = r0 + (r1 - r0) * s;
+                g = g0 + (g1 - g0) * s;
+                b = b0 + (b1 - b0) * s;
+            }
+            else
+            {
+                float s = (t - 0.4f) / 0.6f;
+                r = r1 + (r2 - r1) * s;
+                g = g1 + (g2 - g1) * s;
+                b = b1 + (b2 - b1) * s;
+            }
 
-        return btnObj;
+            string hex = string.Format("#{0:X2}{1:X2}{2:X2}",
+                Mathf.RoundToInt(r), Mathf.RoundToInt(g), Mathf.RoundToInt(b));
+
+            sb.Append("<color=").Append(hex).Append('>').Append(text[i]).Append("</color>");
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Wraps text in noparse tags to prevent rich text injection.
+    /// </summary>
+    static string EscapeRichText(string text)
+    {
+        if (text == null) return "";
+        return "<noparse>" + text + "</noparse>";
     }
 }

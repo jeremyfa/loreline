@@ -36,7 +36,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install --cpp
+          node ./setup --cpp
 
       - name: Run loreline
         working-directory: .
@@ -120,7 +120,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install --cpp
+          node ./setup --cpp
 
       - name: Run loreline
         working-directory: .
@@ -205,7 +205,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install --cpp
+          node ./setup --cpp
 
       - name: Run loreline
         working-directory: .
@@ -329,7 +329,7 @@ jobs:
       - name: Build JS
         working-directory: .
         run: |
-          node ./install --js
+          node ./setup --js
 
       - name: Install test dependencies
         run: npm install
@@ -404,7 +404,7 @@ jobs:
       - name: Build loreline
         working-directory: .
         run: |
-          node ./install --cs --cs-dll
+          node ./setup --cs --cs-dll
 
       - name: Run C# tests
         run: dotnet run --project cs/TestRunner -- ./test
@@ -443,19 +443,17 @@ jobs:
       - name: Assemble Unity sample
         run: |
           unzip loreline-csharp.zip -d cs-temp
-          mkdir -p sample/LorelineUnity/Assets/Plugins/Loreline
-          cp -r cs-temp/Loreline/* sample/LorelineUnity/Assets/Plugins/Loreline/
-          mkdir -p sample/LorelineUnity/Assets/Resources
-          cp sample/CoffeeShop.lor sample/LorelineUnity/Assets/Resources/CoffeeShop.lor.txt
-          cp sample/characters.lor sample/LorelineUnity/Assets/Resources/characters.lor.txt
+          mkdir -p cs/Loreline
+          cp -r cs-temp/Loreline/* cs/Loreline/
+          node ./setup --sample unity
 
       - name: Create zip archive
         run: |
-          cd sample
-          zip -r ../loreline-unity.zip LorelineUnity/ \
-            -x 'LorelineUnity/Library/*' 'LorelineUnity/Temp/*' \
-               'LorelineUnity/Logs/*' 'LorelineUnity/UserSettings/*' \
-               'LorelineUnity/obj/*'
+          cd sample/loreline-unity
+          zip -r ../../loreline-unity.zip . \
+            -x 'Library/*' 'Temp/*' \
+               'Logs/*' 'UserSettings/*' \
+               'obj/*'
 
       - name: Upload Files
         uses: actions/upload-artifact@v4
@@ -466,9 +464,43 @@ jobs:
           compression-level: 0
 
 
+  loreline-web:
+    needs: [loreline-js]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Download JS library
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-js.zip
+          path: .
+
+      - name: Assemble web sample
+        run: |
+          unzip loreline-js.zip -d js-temp
+          mkdir -p js
+          cp js-temp/loreline.js js/loreline.js
+          node ./setup --sample web
+
+      - name: Create zip archive
+        run: |
+          cd sample/loreline-web
+          zip -r ../../loreline-web.zip .
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-web.zip
+          path: loreline-web.zip
+          compression-level: 0
+
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-unity]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-unity, loreline-web]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -515,6 +547,12 @@ jobs:
           name: loreline-unity.zip
           path: .
 
+      - name: Download loreline-web.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-web.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -537,3 +575,4 @@ jobs:
             loreline-js.zip
             loreline-csharp.zip
             loreline-unity.zip
+            loreline-web.zip

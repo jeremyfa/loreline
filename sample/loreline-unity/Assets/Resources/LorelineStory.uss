@@ -1,0 +1,220 @@
+/* ============================================================================
+ *  LORELINE STORY — Unity UI Toolkit Stylesheet
+ *
+ *  Dark theme matching the Loreline web sample (sample/loreline-web).
+ *  Colors, spacing, and animations are ported from the web CSS.
+ *
+ *  Theme palette:
+ *    Background:    #15131b
+ *    Primary text:  #f0eef5
+ *    Muted text:    #a09cb0
+ *    Dim text:      #6b6580
+ *    Border:        #2e2a3a
+ *    Accent purple: #8b5cf6
+ *    Glow:          rgba(139, 92, 246, 0.1)
+ * ============================================================================ */
+
+
+/* ============================================================================
+ *  ROOT — Full-screen dark background
+ * ============================================================================ */
+
+.root {
+    flex-grow: 1;
+    background-color: rgb(21, 19, 27);
+    -unity-font: resource("Fonts/Outfit-Regular");
+    color: rgb(240, 238, 245);
+}
+
+
+/* ============================================================================
+ *  SCROLL VIEW — Full-screen, thin scrollbar
+ * ============================================================================ */
+
+.scroll-view {
+    flex-grow: 1;
+}
+
+/* Thin scrollbar track — transparent */
+.scroll-view .unity-scroller--vertical {
+    width: 7px;
+}
+
+.scroll-view .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+/* Scrollbar thumb — subtle dark border color */
+.scroll-view .unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: rgb(46, 42, 58);
+    border-radius: 4px;
+    border-width: 0;
+    min-height: 30px;
+}
+
+/* Hide scroll arrow buttons */
+.scroll-view .unity-scroller--vertical .unity-scroller__low-button,
+.scroll-view .unity-scroller--vertical .unity-scroller__high-button {
+    display: none;
+}
+
+
+/* ============================================================================
+ *  TWO-COLUMN LAYOUT — Scroll-stable (matching web "table" trick)
+ *
+ *  The content-wrapper is a horizontal flex row with two children:
+ *    - content-column: holds all story elements (flex-grow: 1)
+ *    - keeper-column: zero-width, height only grows (prevents scroll jumps)
+ * ============================================================================ */
+
+.content-wrapper {
+    flex-direction: row;
+    flex-shrink: 0;
+    max-width: 740px;
+    width: 100%;
+    align-self: center;
+    padding: 32px 24px 200px 24px;
+}
+
+.content-column {
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.keeper-column {
+    width: 0;
+    overflow: hidden;
+}
+
+
+/* ============================================================================
+ *  NARRATIVE TEXT — Serif, muted color
+ * ============================================================================ */
+
+.narrative {
+    -unity-font: resource("Fonts/Literata-Italic");
+    color: rgb(160, 156, 176);
+    font-size: 17px;
+    margin-bottom: 12px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    white-space: normal;
+}
+
+
+/* ============================================================================
+ *  DIALOGUE TEXT — Sans-serif, primary color
+ * ============================================================================ */
+
+.dialogue {
+    -unity-font: resource("Fonts/Outfit-Regular");
+    color: rgb(240, 238, 245);
+    font-size: 17px;
+    margin-bottom: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    white-space: normal;
+}
+
+
+/* ============================================================================
+ *  CHOICES
+ * ============================================================================ */
+
+.choices-container {
+    margin-top: 18px;
+}
+
+.choice-button {
+    -unity-font: resource("Fonts/Outfit-Regular");
+    -unity-text-align: middle-left;
+    font-size: 15px;
+    color: rgb(160, 156, 176);
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgb(46, 42, 58);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin-top: 6px;
+
+    transition-property: border-color, color, background-color;
+    transition-duration: 0.2s, 0.2s, 0.2s;
+    transition-timing-function: ease, ease, ease;
+}
+
+.choice-button:hover {
+    border-color: rgb(139, 92, 246);
+    color: rgb(240, 238, 245);
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+/* Selected state — purple highlight, transition for slide animation */
+.choice-button.selected {
+    border-color: rgb(139, 92, 246);
+    color: rgb(240, 238, 245);
+    background-color: rgba(139, 92, 246, 0.1);
+    margin-bottom: 19px;
+    transition-property: translate, margin-bottom;
+    transition-duration: 0.35s, 0.35s;
+    transition-timing-function: ease-in-out, ease;
+}
+
+/* Fading state — other choices disappear */
+.choice-button.fading {
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.25s;
+    transition-timing-function: ease;
+}
+
+
+/* ============================================================================
+ *  PLAY AGAIN BUTTON
+ * ============================================================================ */
+
+.reset-button {
+    -unity-font: resource("Fonts/Outfit-Regular");
+    -unity-text-align: middle-left;
+    font-size: 14px;
+    color: rgb(107, 101, 128);
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgb(46, 42, 58);
+    border-width: 1px;
+    border-radius: 6px;
+    padding: 6px 11px;
+    margin-top: 18px;
+    align-self: flex-start;
+
+    transition-property: color, border-color, background-color;
+    transition-duration: 0.2s, 0.2s, 0.2s;
+    transition-timing-function: ease, ease, ease;
+}
+
+.reset-button:hover {
+    color: rgb(160, 156, 176);
+    border-color: rgb(139, 92, 246);
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+
+/* ============================================================================
+ *  FADE-IN ANIMATION
+ *
+ *  Two-class approach:
+ *    1. Element starts with .fade-in-ready (invisible, shifted down)
+ *    2. Next frame: add .fade-in-active (triggers USS transition to visible)
+ * ============================================================================ */
+
+.fade-in-ready {
+    opacity: 0;
+    translate: 0 4px;
+}
+
+.fade-in-active {
+    opacity: 1;
+    translate: 0 0;
+    transition-property: opacity, translate;
+    transition-duration: 0.45s, 0.45s;
+    transition-timing-function: ease, ease;
+}
