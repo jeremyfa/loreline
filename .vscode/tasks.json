@@ -5,18 +5,18 @@
             "type": "shell",
             "command": "node",
             "args": [
-                "run",
-                "play",
-                "test/CoffeeShop.lor"
+                "setup",
+                "--cs",
+                "--cs-dll"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "label": "▶︎ CoffeeShop.lor"
+            "label": "⚙ Build C# + DLL"
         }
     ],
-    "displayName": "▶︎ CoffeeShop.lor",
-    "description": "loreline play test/CoffeeShop.lor",
-    "chooserIndex": 0
+    "displayName": "⚙ Build C# + DLL",
+    "description": "node ./setup --cs --cs-dll",
+    "chooserIndex": 7
 }

@@ -4,6 +4,44 @@ Loreline is a modern and open-source scripting language for writing interactive 
 
 https://loreline.app
 
+## Development
+
+### Prerequisites
+
+Building Loreline from source requires [Node.js](https://nodejs.org/) (v18+).
+The resulting outputs (JS library, C# library, native CLI) have no Node.js dependency.
+
+```sh
+npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
+```
+
+### Building
+
+```sh
+node ./setup --js          # Build JavaScript library (js/loreline.js)
+node ./setup --cs          # Export C# source files (cs/Loreline/)
+node ./setup --cs --cs-dll # Export C# + build Loreline.dll
+node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
+```
+
+### Setting up samples
+
+```sh
+node ./setup --sample          # Set up all sample projects
+node ./setup --sample web      # Set up loreline-web only
+node ./setup --sample unity    # Set up loreline-unity only
+```
+
+This copies the built runtime and story files into the sample directories.
+For loreline-web, run `--js` first. For loreline-unity, run `--cs` first.
+
+### Testing
+
+```sh
+node run test ./test         # Run Neko tests only
+node ./setup --test        # Run all test suites (Neko + C# + C# AOT + JS)
+```
+
 ## License
 
 MIT License

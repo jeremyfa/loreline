@@ -77,6 +77,14 @@ function extractCsNamespace(content) {
     return null; // Return null if no namespace found
 }
 
+function getDotnetRid() {
+    const os = process.platform == 'darwin' ? 'osx'
+             : process.platform == 'win32' ? 'win'
+             : 'linux';
+    const arch = process.arch == 'arm64' ? 'arm64' : 'x64';
+    return os + '-' + arch;
+}
+
 function isLinuxArm64() {
     try {
         const arch = execSync('uname -m').toString().trim();
@@ -101,7 +109,18 @@ async function main() {
     let buildCs = rawArgs.indexOf('--cs') != -1;
     let buildCsDll = rawArgs.indexOf('--cs-dll') != -1;
     let buildJs = rawArgs.indexOf('--js') != -1;
+    let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
+
+    // --sample [web|unity] — copy built files into sample projects
+    let setupSample = rawArgs.indexOf('--sample') != -1;
+    let sampleTarget = null; // null = all, 'web', or 'unity'
+    if (setupSample) {
+        const idx = rawArgs.indexOf('--sample');
+        if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
+            sampleTarget = rawArgs[idx + 1];
+        }
+    }
 
     let i = 0;
     while (i < rawArgs.length) {
@@ -116,15 +135,17 @@ async function main() {
         i++;
     }
 
-    // Install dependencies
-    var haxelibRepoPath = path.join(__dirname, '.haxelib');
-    if (!fs.existsSync(haxelibRepoPath)) {
-        fs.mkdirSync(haxelibRepoPath);
+    // Install dependencies (only needed for build targets, not --sample or --test)
+    if (buildCpp || buildCs || buildJs) {
+        var haxelibRepoPath = path.join(__dirname, '.haxelib');
+        if (!fs.existsSync(haxelibRepoPath)) {
+            fs.mkdirSync(haxelibRepoPath);
+        }
+        await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
+        await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
+        await command(haxelib, ['dev', 'hscript', 'git/hscript', '--quiet'], { cwd: __dirname });
+        await command(haxelib, ['dev', 'yaml', 'git/yaml', '--quiet'], { cwd: __dirname });
     }
-    await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
-    await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
-    await command(haxelib, ['dev', 'hscript', 'git/hscript', '--quiet'], { cwd: __dirname });
-    await command(haxelib, ['dev', 'yaml', 'git/yaml', '--quiet'], { cwd: __dirname });
 
     if (buildCpp) {
 
@@ -374,6 +395,113 @@ async function main() {
             minify: true,
             bundle: false,
         });
+
+    }
+
+    // ── Set up sample projects ──────────────────────────────────────────────
+    //
+    // Copies built runtime files and story scripts into the sample directories.
+    // Usage:
+    //   node ./setup --sample          (all samples)
+    //   node ./setup --sample web      (loreline-web only)
+    //   node ./setup --sample unity    (loreline-unity only)
+
+    if (setupSample) {
+
+        // loreline-web: needs js/loreline.js (from --js) + story files
+        if (sampleTarget == null || sampleTarget == 'web') {
+            console.log('Set up sample: loreline-web');
+
+            const webDir = path.join(__dirname, 'sample', 'loreline-web');
+            const storyDir = path.join(webDir, 'story');
+
+            // Copy loreline.js runtime
+            const jsSrc = path.join(__dirname, 'js', 'loreline.js');
+            if (!fs.existsSync(jsSrc)) {
+                console.warn('  Warning: js/loreline.js not found — run --js first');
+            } else {
+                fs.copyFileSync(jsSrc, path.join(webDir, 'loreline.js'));
+                console.log('  js/loreline.js → sample/loreline-web/loreline.js');
+            }
+
+            // Copy story files into story/ subfolder
+            fs.mkdirSync(storyDir, { recursive: true });
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(storyDir, name)
+                );
+                console.log('  sample/' + name + ' → sample/loreline-web/story/' + name);
+            }
+        }
+
+        // loreline-unity: needs cs/Loreline/ (from --cs) + story files as .lor.txt
+        if (sampleTarget == null || sampleTarget == 'unity') {
+            console.log('Set up sample: loreline-unity');
+
+            const unityPluginDir = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Plugins', 'Loreline');
+            const unityResourceDir = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Resources');
+            const csSrcDir = path.join(__dirname, 'cs', 'Loreline');
+
+            // Copy C# plugin files
+            if (!fs.existsSync(path.join(csSrcDir, 'Internal'))) {
+                console.warn('  Warning: cs/Loreline/Internal/ not found — run --cs first');
+            } else {
+                // Clear stale plugin files, then copy fresh
+                if (fs.existsSync(unityPluginDir)) {
+                    fs.rmSync(unityPluginDir, { recursive: true, force: true });
+                }
+                fs.cpSync(csSrcDir, unityPluginDir, { recursive: true });
+                console.log('  cs/Loreline/ → sample/loreline-unity/Assets/Plugins/Loreline/');
+            }
+
+            // Copy story files as .lor.txt (Unity convention)
+            fs.mkdirSync(unityResourceDir, { recursive: true });
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(unityResourceDir, name + '.txt')
+                );
+                console.log('  sample/' + name + ' → sample/loreline-unity/Assets/Resources/' + name + '.txt');
+            }
+        }
+
+    }
+
+    // ── Run all test suites ─────────────────────────────────────────────────
+    //
+    // Replicates test-all.sh in cross-platform Node.js:
+    //   1. Neko tests (via node run)
+    //   2. C# build + dotnet tests
+    //   3. C# AOT publish + tests (auto-detects platform RID)
+    //   4. JS build + tests
+
+    if (runTest) {
+
+        // 1. Neko tests
+        console.log('\n=== Neko tests ===');
+        await command('node', ['run', 'test', './test']);
+
+        // 2. C# build + tests
+        console.log('\n=== C# build + tests ===');
+        await command('node', ['./setup', '--cs', '--cs-dll']);
+        await command('dotnet', ['run', '--project', 'cs/TestRunner', '--', './test']);
+
+        // 3. C# AOT build + tests
+        console.log('\n=== C# AOT build + tests ===');
+        const rid = getDotnetRid();
+        const aotPublishDir = path.join('build', 'cs', 'bin', 'TestRunner', 'Release', 'net8.0', rid, 'publish');
+        await command('dotnet', [
+            'publish', 'cs/TestRunner', '-c', 'Release',
+            '-r', rid, '-p:AotBuild=true'
+        ]);
+        const aotBin = path.join(aotPublishDir, process.platform == 'win32' ? 'TestRunner.exe' : 'TestRunner');
+        await command(aotBin, ['./test']);
+
+        // 4. JS build + tests
+        console.log('\n=== JS build + tests ===');
+        await command('node', ['./setup', '--js']);
+        await command('npx', ['tsx', 'js/test-runner.ts', './test']);
 
     }
 

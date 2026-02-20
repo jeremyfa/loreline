@@ -4,56 +4,72 @@
         {
             "displayName": "▶︎ CoffeeShop.lor",
             "type": "shell",
-            "description": "loreline play test/CoffeeShop.lor",
+            "description": "node run play sample/CoffeeShop.lor",
             "command": "node",
-            "args": [
-                "run", "play", "test/CoffeeShop.lor"
-            ]
+            "args": ["run", "play", "sample/CoffeeShop.lor"]
         },
         {
-            "displayName": "▶︎ CoffeeShop.lor (Debug)",
+            "displayName": "✓ Neko tests",
             "type": "shell",
-            "description": "loreline play test/CoffeeShop.lor --debug -Dloreline_debug_interpreter",
+            "description": "node run test ./test",
             "command": "node",
-            "args": [
-                "--enable-source-maps", "run", "play", "test/CoffeeShop.lor", "--debug", "-Dloreline_debug_interpreter"
-            ]
+            "args": ["run", "test", "./test"]
         },
         {
-            "displayName": "▶︎ CoffeeShop.fr.lor",
+            "displayName": "✓ C# tests",
             "type": "shell",
-            "description": "loreline play test/CoffeeShop.fr.lor",
-            "command": "node",
-            "args": [
-                "run", "play", "test/CoffeeShop.fr.lor"
-            ]
+            "description": "dotnet run --project cs/TestRunner -- ./test",
+            "command": "dotnet",
+            "args": ["run", "--project", "cs/TestRunner", "--", "./test"]
         },
         {
-            "displayName": "▶︎ CoffeeShop.fr.lor (Debug)",
+            "displayName": "✓ JS tests",
             "type": "shell",
-            "description": "loreline play test/CoffeeShop.fr.lor --debug -Dloreline_debug_interpreter",
-            "command": "node",
-            "args": [
-                "--enable-source-maps", "run", "play", "test/CoffeeShop.fr.lor", "--debug", "-Dloreline_debug_interpreter"
-            ]
+            "description": "npx tsx js/test-runner.ts ./test",
+            "command": "npx",
+            "args": ["tsx", "js/test-runner.ts", "./test"]
         },
         {
-            "displayName": "▶︎ Minimal.lor",
+            "displayName": "✓ All tests",
             "type": "shell",
-            "description": "loreline play test/Minimal.lor",
+            "description": "node ./setup --test",
             "command": "node",
-            "args": [
-                "run", "play", "test/Minimal.lor"
-            ]
+            "args": ["setup", "--test"]
         },
         {
-            "displayName": "▶︎ Minimal.lor (Debug)",
+            "displayName": "⚙ Build JS",
             "type": "shell",
-            "description": "loreline play test/Minimal.lor --debug -Dloreline_debug_interpreter",
+            "description": "node ./setup --js",
             "command": "node",
-            "args": [
-                "--enable-source-maps", "run", "play", "test/Minimal.lor", "--debug", "-Dloreline_debug_interpreter"
-            ]
+            "args": ["setup", "--js"]
+        },
+        {
+            "displayName": "⚙ Build C#",
+            "type": "shell",
+            "description": "node ./setup --cs",
+            "command": "node",
+            "args": ["setup", "--cs"]
+        },
+        {
+            "displayName": "⚙ Build C# + DLL",
+            "type": "shell",
+            "description": "node ./setup --cs --cs-dll",
+            "command": "node",
+            "args": ["setup", "--cs", "--cs-dll"]
+        },
+        {
+            "displayName": "⚙ Build C++",
+            "type": "shell",
+            "description": "node ./setup --cpp",
+            "command": "node",
+            "args": ["setup", "--cpp"]
+        },
+        {
+            "displayName": "⚙ Set up samples",
+            "type": "shell",
+            "description": "node ./setup --sample",
+            "command": "node",
+            "args": ["setup", "--sample"]
         }
     ],
     "baseItem": {
