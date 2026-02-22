@@ -332,10 +332,16 @@ async function main() {
 
             await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
 
-            // On Windows, hxcpp with static_link produces a .lib; link into DLL
+            // On Windows, hxcpp with static_link produces a .lib; link into DLL via cl /LD
+            // Using cl instead of link directly ensures proper CRT DLL initialization
             const staticLib = debug ? 'libLibrary-debug.lib' : 'libLibrary.lib';
-            await command('link', [
-                '/DLL', '/OUT:' + path.join(buildDir, 'Loreline.dll'),
+            const stubFile = path.join(buildDir, '_dll_stub.c');
+            fs.writeFileSync(stubFile, '/* stub for DLL creation */\n');
+            await command('cl', [
+                '/LD', '/MT',
+                stubFile,
+                '/Fe:' + path.join(buildDir, 'Loreline.dll'),
+                '/link',
                 '/WHOLEARCHIVE:' + path.join(buildDir, staticLib),
                 'ws2_32.lib', 'Crypt32.lib', 'user32.lib'
             ]);
