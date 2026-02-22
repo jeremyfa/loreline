@@ -310,6 +310,12 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      - name: Setup haxelib
+        run: |
+          mkdir -p .haxelib
+          haxelib dev hscript git/hscript --quiet
+          haxelib dev yaml git/yaml --quiet
+
       - name: Run Neko tests
         run: node run test ./test
 
