@@ -1,6 +1,6 @@
 {
   "name": "loreline",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Loreline is an open-source scripting language for writing interactive fictions.",
   "homepage": "https://github.com/jeremyfa/loreline#readme",
   "bugs": {
