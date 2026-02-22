@@ -1,0 +1,5 @@
+build-cpp-lib.hxml
+--cpp build/cpp-lib/mac
+-D mac
+-D HXCPP_STACK_LINE
+-D HXCPP_STACK_TRACE

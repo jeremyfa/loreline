@@ -30,10 +30,12 @@ node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
 node ./setup --sample          # Set up all sample projects
 node ./setup --sample web      # Set up loreline-web only
 node ./setup --sample unity    # Set up loreline-unity only
+node ./setup --sample cpp      # Set up loreline-cpp only
 ```
 
 This copies the built runtime and story files into the sample directories.
 For loreline-web, run `--js` first. For loreline-unity, run `--cs` first.
+For loreline-cpp, run `--cpp` first.
 
 ### Testing
 

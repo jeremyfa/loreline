@@ -1,0 +1,5 @@
+build-cpp-lib.hxml
+--cpp build/cpp-lib/linux
+-D linux
+-D HXCPP_STACK_LINE
+-D HXCPP_STACK_TRACE

@@ -7,4 +7,10 @@ import loreline.Lexer;
 import loreline.Loreline;
 import loreline.Parser;
 
-function main() {}
+#if loreline_cpp_lib
+@:build(loreline.Linc.touch())
+@:build(loreline.Linc.xml('Loreline', './'))
+#end
+class Library {
+	static function main() {}
+}

@@ -1,0 +1,8 @@
+<xml>
+  <files id="haxe">
+    <compilerflag value="-I${LINC_LORELINE_PATH}../../../cpp/include" />
+    <compilerflag value="-fvisibility=hidden" unless="windows" />
+    <compilerflag value="-DBUILDING_LORELINE=1" if="windows" />
+    <file name="${LINC_LORELINE_PATH}linc/linc_Loreline.cpp" />
+  </files>
+</xml>

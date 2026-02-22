@@ -105,16 +105,18 @@ async function main() {
     var haxe = process.platform == 'win32' ? 'haxe.cmd' : './haxe';
 
     let haxeBuildArgs = [];
-    let buildCpp = rawArgs.indexOf('--cpp') != -1;
+    let buildCpp = rawArgs.indexOf('--cpp-cli') != -1 || rawArgs.indexOf('--cpp') != -1;
+    let buildCppLib = rawArgs.indexOf('--cpp-lib') != -1;
+    let buildCppLibTest = rawArgs.indexOf('--cpp-lib-test') != -1;
     let buildCs = rawArgs.indexOf('--cs') != -1;
     let buildCsDll = rawArgs.indexOf('--cs-dll') != -1;
     let buildJs = rawArgs.indexOf('--js') != -1;
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
-    // --sample [web|unity] — copy built files into sample projects
+    // --sample [web|unity|cpp] — copy built files into sample projects
     let setupSample = rawArgs.indexOf('--sample') != -1;
-    let sampleTarget = null; // null = all, 'web', or 'unity'
+    let sampleTarget = null; // null = all, 'web', 'unity', or 'cpp'
     if (setupSample) {
         const idx = rawArgs.indexOf('--sample');
         if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
@@ -136,7 +138,7 @@ async function main() {
     }
 
     // Install dependencies (only needed for build targets, not --sample or --test)
-    if (buildCpp || buildCs || buildJs) {
+    if (buildCpp || buildCppLib || buildCs || buildJs) {
         var haxelibRepoPath = path.join(__dirname, '.haxelib');
         if (!fs.existsSync(haxelibRepoPath)) {
             fs.mkdirSync(haxelibRepoPath);
@@ -247,6 +249,175 @@ async function main() {
         }
     }
 
+    if (buildCppLib) {
+
+        let haxeBuildCppLibArgs = [
+            'build-cpp-lib.hxml',
+            '-D', 'HXCPP_STACK_LINE',
+            '-D', 'HXCPP_STACK_TRACE'
+        ];
+
+        if (process.platform == 'darwin') {
+            console.log('Build loreline C++ library for mac');
+
+            const buildDir = path.join(__dirname, 'build', 'cpp-lib', 'mac');
+
+            // Build arm64
+            await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+                '--cpp', 'build/cpp-lib/mac',
+                '-D', 'mac', '-D', 'mac_arm64'
+            ]));
+            await command('../../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
+
+            // Rename intermediate static lib (hxcpp produces libLibrary.a on macOS)
+            const staticLib = debug ? 'libLibrary-debug.a' : 'libLibrary.a';
+            const armLib = path.join(buildDir, 'libLoreline-arm64.a');
+            fs.renameSync(path.join(buildDir, staticLib), armLib);
+
+            // Build x86_64
+            await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+                '--cpp', 'build/cpp-lib/mac',
+                '-D', 'mac', '-D', 'mac_x86_64'
+            ]));
+            await command('../../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
+
+            const x64Lib = path.join(buildDir, 'libLoreline-x86_64.a');
+            fs.renameSync(path.join(buildDir, staticLib), x64Lib);
+
+            // Link arm64 dylib
+            const armDylib = path.join(buildDir, 'libLoreline-arm64.dylib');
+            await command('clang++', [
+                '-arch', 'arm64',
+                '-shared', '-fvisibility=hidden',
+                '-o', armDylib,
+                '-Wl,-force_load,' + armLib,
+                '-framework', 'Foundation', '-lpthread'
+            ]);
+            await command('install_name_tool', ['-id', '@rpath/libLoreline.dylib', armDylib]);
+
+            // Link x86_64 dylib
+            const x64Dylib = path.join(buildDir, 'libLoreline-x86_64.dylib');
+            await command('clang++', [
+                '-arch', 'x86_64',
+                '-shared', '-fvisibility=hidden',
+                '-o', x64Dylib,
+                '-Wl,-force_load,' + x64Lib,
+                '-framework', 'Foundation', '-lpthread'
+            ]);
+            await command('install_name_tool', ['-id', '@rpath/libLoreline.dylib', x64Dylib]);
+
+            // Create universal dylib
+            const outputDylib = path.join(buildDir, 'libLoreline.dylib');
+            if (fs.existsSync(outputDylib)) fs.unlinkSync(outputDylib);
+            await command('lipo', [
+                '-create', armDylib, x64Dylib,
+                '-output', outputDylib
+            ]);
+
+            console.log('Built: ' + outputDylib);
+        }
+        else if (process.platform == 'win32') {
+            console.log('Build loreline C++ library for windows');
+
+            const buildDir = path.join(__dirname, 'build', 'cpp-lib', 'windows');
+
+            await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+                '--cpp', 'build/cpp-lib/windows',
+                '-D', 'windows'
+            ]));
+
+            let haxelibCmd = fs.readFileSync(path.join(__dirname, 'haxelib.cmd'), 'utf8');
+            haxelibCmd = haxelibCmd.split('/git/').join('/../../../git/');
+            fs.writeFileSync(path.join(buildDir, 'haxelib.cmd'), haxelibCmd);
+
+            await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
+
+            // On Windows, hxcpp with static_link produces a .lib; link into DLL
+            const staticLib = debug ? 'Library-debug.lib' : 'Library.lib';
+            await command('link', [
+                '/DLL', '/OUT:' + path.join(buildDir, 'Loreline.dll'),
+                path.join(buildDir, staticLib),
+                'ws2_32.lib', 'Crypt32.lib'
+            ]);
+
+            console.log('Built: ' + path.join(buildDir, 'Loreline.dll'));
+        }
+        else {
+            console.log('Build loreline C++ library for linux');
+
+            const buildDir = path.join(__dirname, 'build', 'cpp-lib', 'linux');
+
+            if (isLinuxArm64()) {
+                await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+                    '--cpp', 'build/cpp-lib/linux',
+                    '-D', 'linux', '-D', 'linux_arm64'
+                ]));
+                await command('../../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_ARM64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
+            }
+            else {
+                await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+                    '--cpp', 'build/cpp-lib/linux',
+                    '-D', 'linux', '-D', 'linux_x86_64'
+                ]));
+                await command('../../../haxelib', ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
+            }
+
+            // On Linux, hxcpp also produces libLibrary.a
+            const staticLib = debug ? 'libLibrary-debug.a' : 'libLibrary.a';
+            await command('g++', [
+                '-shared', '-fvisibility=hidden',
+                '-o', path.join(buildDir, 'libLoreline.so'),
+                '-Wl,--whole-archive', path.join(buildDir, staticLib), '-Wl,--no-whole-archive',
+                '-lpthread', '-ldl'
+            ]);
+
+            console.log('Built: ' + path.join(buildDir, 'libLoreline.so'));
+        }
+    }
+
+    if (buildCppLibTest) {
+        console.log('Test loreline C++ library');
+
+        let buildDir;
+        if (process.platform == 'darwin') {
+            buildDir = path.join(__dirname, 'build', 'cpp-lib', 'mac');
+            await command('clang++', [
+                '-std=c++17',
+                '-o', path.join(buildDir, 'test_runner'),
+                'cpp/test/test_runner.cpp',
+                '-Icpp/include',
+                '-L' + buildDir,
+                '-lLoreline',
+                '-Wl,-rpath,@executable_path'
+            ]);
+        }
+        else if (process.platform == 'win32') {
+            buildDir = path.join(__dirname, 'build', 'cpp-lib', 'windows');
+            await command('cl', [
+                '/std:c++17', '/EHsc',
+                '/I', 'cpp\\include',
+                'cpp\\test\\test_runner.cpp',
+                '/Fe:' + path.join(buildDir, 'test_runner.exe'),
+                '/link', '/LIBPATH:' + buildDir, 'Loreline.lib'
+            ]);
+        }
+        else {
+            buildDir = path.join(__dirname, 'build', 'cpp-lib', 'linux');
+            await command('g++', [
+                '-std=c++17',
+                '-o', path.join(buildDir, 'test_runner'),
+                'cpp/test/test_runner.cpp',
+                '-Icpp/include',
+                '-L' + buildDir,
+                '-lLoreline',
+                "-Wl,-rpath,'$ORIGIN'"
+            ]);
+        }
+
+        const testBin = path.join(buildDir, process.platform == 'win32' ? 'test_runner.exe' : 'test_runner');
+        await command(testBin, ['./test']);
+    }
+
     if (buildCs) {
         console.log('Export loreline for C#');
 
@@ -270,9 +441,15 @@ async function main() {
 
         await command(haxe, haxeBuildCsArgs.concat(haxeBuildArgs).concat([]));
 
-        fs.unlinkSync('build/cs/src/loreline/lib/_Library/Library_Fields_.cs');
+        // Remove the generated Library entry point (not part of the public API)
+        for (const f of [
+            'build/cs/src/loreline/lib/_Library/Library_Fields_.cs',
+            'build/cs/src/loreline/lib/Library.cs'
+        ]) {
+            if (fs.existsSync(f)) fs.unlinkSync(f);
+        }
         //fs.unlinkSync('build/cs/src/loreline/Loreline.cs');
-        fs.unlinkSync('build/cs/hxcs_build.txt');
+        if (fs.existsSync('build/cs/hxcs_build.txt')) fs.unlinkSync('build/cs/hxcs_build.txt');
 
         if (fs.existsSync('cs/Loreline/Internal'))
             fs.rmSync('cs/Loreline/Internal', { recursive: true, force: true });
@@ -405,6 +582,7 @@ async function main() {
     //   node ./setup --sample          (all samples)
     //   node ./setup --sample web      (loreline-web only)
     //   node ./setup --sample unity    (loreline-unity only)
+    //   node ./setup --sample cpp      (loreline-cpp only)
 
     if (setupSample) {
 
@@ -466,6 +644,67 @@ async function main() {
             }
         }
 
+        // loreline-cpp: needs cpp/include/Loreline.h + libLoreline + story files
+        if (sampleTarget == null || sampleTarget == 'cpp') {
+            console.log('Set up sample: loreline-cpp');
+
+            const cppDir = path.join(__dirname, 'sample', 'loreline-cpp');
+            const storyDir = path.join(cppDir, 'story');
+            const lorelineDir = path.join(cppDir, 'loreline');
+
+            // Determine platform-specific library paths
+            let buildLibDir, libFiles, platformSubdir;
+            if (process.platform == 'darwin') {
+                buildLibDir = path.join(__dirname, 'build', 'cpp-lib', 'mac');
+                libFiles = ['libLoreline.dylib'];
+                platformSubdir = 'mac';
+            } else if (process.platform == 'win32') {
+                buildLibDir = path.join(__dirname, 'build', 'cpp-lib', 'windows');
+                libFiles = ['Loreline.dll', 'Loreline.lib'];
+                platformSubdir = 'windows';
+            } else {
+                buildLibDir = path.join(__dirname, 'build', 'cpp-lib', 'linux');
+                libFiles = ['libLoreline.so'];
+                platformSubdir = isLinuxArm64() ? 'linux-aarch64' : 'linux-x86_64';
+            }
+
+            // Build the C++ library if it doesn't exist yet
+            if (!fs.existsSync(path.join(buildLibDir, libFiles[0]))) {
+                console.log('  C++ library not found, building with --cpp-lib...');
+                await command('node', ['./setup', '--cpp-lib']);
+            }
+
+            // Copy header
+            const includeDir = path.join(lorelineDir, 'include');
+            fs.mkdirSync(includeDir, { recursive: true });
+            fs.copyFileSync(
+                path.join(__dirname, 'cpp', 'include', 'Loreline.h'),
+                path.join(includeDir, 'Loreline.h')
+            );
+            console.log('  cpp/include/Loreline.h → sample/loreline-cpp/loreline/include/Loreline.h');
+
+            // Copy platform library
+            const platformDir = path.join(lorelineDir, platformSubdir);
+            fs.mkdirSync(platformDir, { recursive: true });
+            for (const libFile of libFiles) {
+                fs.copyFileSync(
+                    path.join(buildLibDir, libFile),
+                    path.join(platformDir, libFile)
+                );
+                console.log('  ' + libFile + ' → sample/loreline-cpp/loreline/' + platformSubdir + '/' + libFile);
+            }
+
+            // Copy story files
+            fs.mkdirSync(storyDir, { recursive: true });
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(storyDir, name)
+                );
+                console.log('  sample/' + name + ' → sample/loreline-cpp/story/' + name);
+            }
+        }
+
     }
 
     // ── Run all test suites ─────────────────────────────────────────────────
@@ -475,6 +714,7 @@ async function main() {
     //   2. C# build + dotnet tests
     //   3. C# AOT publish + tests (auto-detects platform RID)
     //   4. JS build + tests
+    //   5. C++ lib build + tests
 
     if (runTest) {
 
@@ -502,6 +742,11 @@ async function main() {
         console.log('\n=== JS build + tests ===');
         await command('node', ['./setup', '--js']);
         await command('npx', ['tsx', 'js/test-runner.ts', './test']);
+
+        // 5. C++ lib build + tests
+        console.log('\n=== C++ lib build + test ===');
+        await command('node', ['./setup', '--cpp-lib']);
+        await command('node', ['./setup', '--cpp-lib-test']);
 
     }
 

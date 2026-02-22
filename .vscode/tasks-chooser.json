@@ -30,6 +30,13 @@
             "args": ["tsx", "js/test-runner.ts", "./test"]
         },
         {
+            "displayName": "✓ C++ lib tests",
+            "type": "shell",
+            "description": "node ./setup --cpp-lib-test",
+            "command": "node",
+            "args": ["setup", "--cpp-lib-test"]
+        },
+        {
             "displayName": "✓ All tests",
             "type": "shell",
             "description": "node ./setup --test",
@@ -63,6 +70,13 @@
             "description": "node ./setup --cpp",
             "command": "node",
             "args": ["setup", "--cpp"]
+        },
+        {
+            "displayName": "⚙ Build C++ lib",
+            "type": "shell",
+            "description": "node ./setup --cpp-lib",
+            "command": "node",
+            "args": ["setup", "--cpp-lib"]
         },
         {
             "displayName": "⚙ Set up samples",

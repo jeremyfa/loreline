@@ -1,0 +1,14 @@
+--class-path src
+--main loreline.lib.Library
+--library hxcpp
+--library yaml
+--library hscript
+-D static_link
+-D no-compilation
+-D loreline_cpp_lib
+-D HXCPP_CHECK_POINTER
+-D HXCPP_CPP11
+-D safeMode
+-D hscriptPos
+--macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
+--macro addGlobalMetadata('hscript', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
