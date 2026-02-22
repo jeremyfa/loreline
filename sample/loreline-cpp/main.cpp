@@ -30,17 +30,17 @@ static std::string readFile(const std::string& path) {
 /* ── File handler (for imports like "characters.lor") ──────────────────── */
 
 static void onFileRequest(
-    const char* path,
-    void (*provide)(const char* content),
+    Loreline_String path,
+    void (*provide)(Loreline_String content),
     void* /* userData */
 ) {
     // Loreline resolves import paths relative to the source file's filePath,
     // so the path is already correct (e.g., "story/characters.lor").
-    std::string content = readFile(path);
+    std::string content = readFile(path.c_str());
     if (content.empty()) {
-        provide(NULL);
+        provide(Loreline_String());
     } else {
-        provide(content.c_str());
+        provide(Loreline_String(content.c_str()));
     }
 }
 
@@ -59,7 +59,7 @@ static void onDialogue(
 
     if (!character.isNull()) {
         // Dialogue — resolve display name
-        Loreline_Value nameVal = Loreline_getCharacterField(interp, character.c_str(), "name");
+        Loreline_Value nameVal = Loreline_getCharacterField(interp, character, "name");
         const char* displayName = (nameVal.type == Loreline_StringValue && nameVal.stringValue)
             ? nameVal.stringValue.c_str()
             : character.c_str();
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
 
     // Play — callbacks fire synchronously, no update loop needed
     Loreline_Interpreter* interp = Loreline_play(
-        script, onDialogue, onChoice, onFinish, NULL, NULL, NULL
+        script, onDialogue, onChoice, onFinish, Loreline_String(), NULL, NULL
     );
 
     // Cleanup

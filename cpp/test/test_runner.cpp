@@ -107,12 +107,12 @@ struct TestItem {
 
 /* ── File handler for Loreline_parse ────────────────────────────────────── */
 
-static void fileHandler(const char* path, void (*provide)(const char* content), void* userData) {
-    std::string content = readFile(path);
+static void fileHandler(Loreline_String path, void (*provide)(Loreline_String content), void* userData) {
+    std::string content = readFile(path.c_str());
     if (content.empty()) {
-        provide(nullptr);
+        provide(Loreline_String());
     } else {
-        provide(content.c_str());
+        provide(Loreline_String(content.c_str()));
     }
 }
 
@@ -424,7 +424,7 @@ static void testDialogue(
     bool multiline = text.c_str() && strchr(text.c_str(), '\n') != nullptr;
 
     if (!character.isNull()) {
-        Loreline_Value nameVal = Loreline_getCharacterField(interp, character.c_str(), "name");
+        Loreline_Value nameVal = Loreline_getCharacterField(interp, character, "name");
         const char* charName = (nameVal.type == Loreline_StringValue && !nameVal.stringValue.isNull())
             ? nameVal.stringValue.c_str()
             : character.c_str();
@@ -489,7 +489,7 @@ static void testChoice(
             if (restoreScript) {
                 Loreline_Interpreter* resumed = Loreline_resume(
                     restoreScript, testDialogue, testChoice, testFinish,
-                    saveData.c_str(), nullptr, ctx->translations, ctx);
+                    saveData, Loreline_String(), ctx->translations, ctx);
                 Loreline_releaseInterpreter(resumed);
                 Loreline_releaseScript(restoreScript);
             } else {
@@ -500,7 +500,7 @@ static void testChoice(
         } else {
             Loreline_Interpreter* resumed = Loreline_resume(
                 ctx->parsedScript, testDialogue, testChoice, testFinish,
-                saveData.c_str(), nullptr, ctx->translations, ctx);
+                saveData, Loreline_String(), ctx->translations, ctx);
             Loreline_releaseInterpreter(resumed);
         }
         return;
@@ -582,7 +582,7 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
         ctx.parsedScript = script;
         Loreline_Interpreter* interp = Loreline_play(
             script, testDialogue, testChoice, testFinish,
-            item.beat.empty() ? nullptr : item.beat.c_str(),
+            item.beat.empty() ? Loreline_String() : Loreline_String(item.beat.c_str()),
             translations, &ctx);
         if (interp) {
             Loreline_releaseInterpreter(interp);

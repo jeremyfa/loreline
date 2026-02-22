@@ -91,7 +91,7 @@ struct LORELINE_PUBLIC Loreline_Value {
     static Loreline_Value from_int(int v);
     static Loreline_Value from_float(double v);
     static Loreline_Value from_bool(bool v);
-    static Loreline_Value from_string(const char* v);
+    static Loreline_Value from_string(Loreline_String v);
 };
 
 /* ── Data structs ───────────────────────────────────────────────────────── */
@@ -135,8 +135,8 @@ typedef void (*Loreline_FinishHandler)(
 );
 
 typedef void (*Loreline_FileHandler)(
-    const char* path,
-    void (*provide)(const char* content),
+    Loreline_String path,
+    void (*provide)(Loreline_String content),
     void* userData
 );
 
@@ -158,8 +158,8 @@ LORELINE_PUBLIC void Loreline_createThread(void);
 
 /* Parsing */
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
-    const char* input,
-    const char* filePath,
+    Loreline_String input,
+    Loreline_String filePath,
     Loreline_FileHandler fileHandler,
     void* fileHandlerData
 );
@@ -174,7 +174,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_DialogueHandler onDialogue,
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
-    const char* beatName,
+    Loreline_String beatName,
     Loreline_Translations* translations,
     void* userData
 );
@@ -184,22 +184,22 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_DialogueHandler onDialogue,
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
-    const char* saveData,
-    const char* beatName,
+    Loreline_String saveData,
+    Loreline_String beatName,
     Loreline_Translations* translations,
     void* userData
 );
 
 /* Interpreter methods */
-LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, const char* beatName);
+LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, Loreline_String beatName);
 LORELINE_PUBLIC Loreline_String Loreline_save(Loreline_Interpreter* interp);
-LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, const char* saveData);
+LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, Loreline_String saveData);
 
 /* Character access */
 LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(
-    Loreline_Interpreter* interp, const char* character, const char* field);
+    Loreline_Interpreter* interp, Loreline_String character, Loreline_String field);
 LORELINE_PUBLIC void Loreline_setCharacterField(
-    Loreline_Interpreter* interp, const char* character, const char* field, Loreline_Value value);
+    Loreline_Interpreter* interp, Loreline_String character, Loreline_String field, Loreline_Value value);
 
 /* Utility */
 LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script);

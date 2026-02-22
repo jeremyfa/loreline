@@ -148,11 +148,11 @@ LORELINE_PUBLIC Loreline_Value Loreline_Value::from_bool(bool b) {
     return v;
 }
 
-LORELINE_PUBLIC Loreline_Value Loreline_Value::from_string(const char* s) {
+LORELINE_PUBLIC Loreline_Value Loreline_Value::from_string(Loreline_String s) {
     Loreline_Value v;
     v.type = Loreline_StringValue;
     v.intValue = 0;
-    v.stringValue = Loreline_String(s);
+    v.stringValue = s;
     return v;
 }
 
@@ -624,7 +624,7 @@ static void linc_select(int index) {
 
 static ::Dynamic s_pendingFileProvide;
 
-static void linc_fileProvide(const char* content) {
+static void linc_fileProvide(Loreline_String content) {
     if (!hx::IsNull(s_pendingFileProvide)) {
         ::Dynamic cb = s_pendingFileProvide;
         s_pendingFileProvide = null();
@@ -702,7 +702,7 @@ HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_fileHandler,
     Loreline_FileHandler, fh, void*, fhData) HXARGC(2)
 void _hx_run(::Dynamic hxPath, ::Dynamic hxCallback) {
     s_pendingFileProvide = hxCallback;
-    fh(((::String)hxPath).c_str(), linc_fileProvide, fhData);
+    fh(linc_hxToString((::String)hxPath), linc_fileProvide, fhData);
     s_pendingFileProvide = null();
 }
 HX_END_LOCAL_FUNC2((void))
@@ -710,8 +710,8 @@ HX_END_LOCAL_FUNC2((void))
 /* ── Parse ──────────────────────────────────────────────────────────────── */
 
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
-    const char* input,
-    const char* filePath,
+    Loreline_String input,
+    Loreline_String filePath,
     Loreline_FileHandler fileHandler,
     void* fileHandlerData
 ) {
@@ -723,7 +723,7 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     ::String hxFilePath = linc_toHxString(filePath);
 
     ::Dynamic hxFileHandler = null();
-    if (fileHandler && filePath) {
+    if (fileHandler && !filePath.isNull()) {
         hxFileHandler = ::Dynamic(new _hx_Closure_fileHandler(fileHandler, fileHandlerData));
     }
 
@@ -779,7 +779,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_DialogueHandler onDialogue,
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
-    const char* beatName,
+    Loreline_String beatName,
     Loreline_Translations* translations,
     void* userData
 ) {
@@ -792,12 +792,12 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     handle->userData = userData;
 
     Loreline_Interpreter* h = handle;
-    ::String hxBeatName = linc_toHxString(beatName);
     ::Dynamic hxScript = ::Dynamic(script->obj);
     hx::Object* translationsObj = translations ? translations->obj : nullptr;
 
     LORELINE_BEGIN_CALL
 
+    ::String hxBeatName = linc_toHxString(beatName);
     ::Dynamic hxDialogueHandler = ::Dynamic(new _hx_Closure_dialogue(h));
     ::Dynamic hxChoiceHandler = ::Dynamic(new _hx_Closure_choice(h));
     ::Dynamic hxFinishHandler = ::Dynamic(new _hx_Closure_finish(h));
@@ -829,12 +829,12 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_DialogueHandler onDialogue,
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
-    const char* saveData,
-    const char* beatName,
+    Loreline_String saveData,
+    Loreline_String beatName,
     Loreline_Translations* translations,
     void* userData
 ) {
-    if (!script || !saveData) return nullptr;
+    if (!script || saveData.isNull()) return nullptr;
 
     Loreline_Interpreter* handle = new Loreline_Interpreter();
     handle->dialogueHandler = onDialogue;
@@ -843,13 +843,13 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     handle->userData = userData;
 
     Loreline_Interpreter* h = handle;
-    ::String hxBeatName = linc_toHxString(beatName);
-    ::String hxSaveStr = linc_toHxString(saveData);
     ::Dynamic hxScript = ::Dynamic(script->obj);
     hx::Object* translationsObj = translations ? translations->obj : nullptr;
 
     LORELINE_BEGIN_CALL
 
+    ::String hxBeatName = linc_toHxString(beatName);
+    ::String hxSaveStr = linc_toHxString(saveData);
     ::Dynamic hxSaveData = ::loreline::Json_obj::parse(hxSaveStr);
 
     ::Dynamic hxDialogueHandler = ::Dynamic(new _hx_Closure_dialogue(h));
@@ -879,11 +879,11 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
 
 /* ── Interpreter methods ────────────────────────────────────────────────── */
 
-LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, const char* beatName) {
+LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, Loreline_String beatName) {
     if (!interp) return;
-    ::String hxBeatName = linc_toHxString(beatName);
 
     LORELINE_BEGIN_CALL
+    ::String hxBeatName = linc_toHxString(beatName);
     ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
     hxInterp->start(hxBeatName);
     LORELINE_END_CALL
@@ -903,11 +903,11 @@ LORELINE_PUBLIC Loreline_String Loreline_save(Loreline_Interpreter* interp) {
     return result;
 }
 
-LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, const char* saveData) {
-    if (!interp || !saveData) return;
-    ::String hxSaveStr = linc_toHxString(saveData);
+LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, Loreline_String saveData) {
+    if (!interp || saveData.isNull()) return;
 
     LORELINE_BEGIN_CALL
+    ::String hxSaveStr = linc_toHxString(saveData);
     ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
     ::Dynamic hxSaveData = ::loreline::Json_obj::parse(hxSaveStr);
     hxInterp->restore(hxSaveData);
@@ -918,14 +918,14 @@ LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, const char* 
 /* ── Character access ───────────────────────────────────────────────────── */
 
 LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(
-    Loreline_Interpreter* interp, const char* character, const char* field
+    Loreline_Interpreter* interp, Loreline_String character, Loreline_String field
 ) {
-    if (!interp || !character || !field) return Loreline_Value::null_val();
+    if (!interp || character.isNull() || field.isNull()) return Loreline_Value::null_val();
     Loreline_Value result;
 
     LORELINE_BEGIN_CALL_SYNC
     ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
-    ::Dynamic val = hxInterp->getCharacterField(::String(character), ::String(field));
+    ::Dynamic val = hxInterp->getCharacterField(linc_toHxString(character), linc_toHxString(field));
     result = linc_hxToValue(val);
     LORELINE_END_CALL
 
@@ -933,14 +933,14 @@ LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(
 }
 
 LORELINE_PUBLIC void Loreline_setCharacterField(
-    Loreline_Interpreter* interp, const char* character, const char* field, Loreline_Value value
+    Loreline_Interpreter* interp, Loreline_String character, Loreline_String field, Loreline_Value value
 ) {
-    if (!interp || !character || !field) return;
+    if (!interp || character.isNull() || field.isNull()) return;
 
     LORELINE_BEGIN_CALL
     ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
     ::Dynamic hxVal = linc_valueToHx(value);
-    hxInterp->setCharacterField(::String(character), ::String(field), hxVal);
+    hxInterp->setCharacterField(linc_toHxString(character), linc_toHxString(field), hxVal);
     LORELINE_END_CALL
 }
 
