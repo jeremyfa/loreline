@@ -30,6 +30,13 @@
             "args": ["tsx", "js/test-runner.ts", "./test"]
         },
         {
+            "displayName": "✓ Python tests",
+            "type": "shell",
+            "description": "python3 py/test-runner.py ./test",
+            "command": "python3",
+            "args": ["py/test-runner.py", "./test"]
+        },
+        {
             "displayName": "✓ C++ lib tests",
             "type": "shell",
             "description": "node ./setup --cpp-lib-test",
@@ -63,6 +70,13 @@
             "description": "node ./setup --cs --cs-dll",
             "command": "node",
             "args": ["setup", "--cs", "--cs-dll"]
+        },
+        {
+            "displayName": "⚙ Build Python",
+            "type": "shell",
+            "description": "node ./setup --py",
+            "command": "node",
+            "args": ["setup", "--py"]
         },
         {
             "displayName": "⚙ Build C++",

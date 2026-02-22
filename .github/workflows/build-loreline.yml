@@ -470,6 +470,86 @@ jobs:
           path: loreline-csharp.zip
           compression-level: 0
 
+  loreline-python:
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Build Python
+        run: node ./setup --py
+
+      - name: Run Python tests
+        run: python3 py/test-runner.py ./test
+
+      - name: Assemble Python sample
+        run: node ./setup --sample python
+
+      - name: Create zip archives
+        run: |
+          cd py
+          zip -r ../loreline-python.zip loreline/ pyproject.toml
+          cd ../sample/loreline-python
+          zip -r ../../loreline-python-sample.zip .
+
+      - name: Upload loreline-python.zip
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-python.zip
+          path: loreline-python.zip
+          compression-level: 0
+
+      - name: Upload loreline-python-sample.zip
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-python-sample.zip
+          path: loreline-python-sample.zip
+          compression-level: 0
+
+
   loreline-unity:
     needs: [loreline-csharp]
     runs-on: ubuntu-22.04
@@ -606,7 +686,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-unity, loreline-web, loreline-cpp]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-python, loreline-unity, loreline-web, loreline-cpp]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -659,6 +739,18 @@ jobs:
           name: loreline-web.zip
           path: .
 
+      - name: Download loreline-python.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-python.zip
+          path: .
+
+      - name: Download loreline-python-sample.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-python-sample.zip
+          path: .
+
       - name: Download loreline-cpp.zip
         uses: actions/download-artifact@v4
         with:
@@ -688,4 +780,6 @@ jobs:
             loreline-csharp.zip
             loreline-unity.zip
             loreline-web.zip
+            loreline-python.zip
+            loreline-python-sample.zip
             loreline-cpp.zip
