@@ -358,13 +358,13 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Build JS
         working-directory: .
         run: |
           node ./setup --js
-
-      - name: Install test dependencies
-        run: npm install
 
       - name: Run JS tests
         run: npx tsx js/test-runner.ts ./test
