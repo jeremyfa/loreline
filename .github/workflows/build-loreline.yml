@@ -458,7 +458,9 @@ jobs:
 
       - name: Create zip archive
         working-directory: cs
-        run: zip -r '../loreline-csharp.zip' ./* -x './TestRunner/*'
+        run: |
+          sed -i '/<Compile Remove="TestRunner/d' Loreline.csproj
+          zip -r '../loreline-csharp.zip' ./* -x './TestRunner/*'
 
       - name: Upload Files
         uses: actions/upload-artifact@v4
