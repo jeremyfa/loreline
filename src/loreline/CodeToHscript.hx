@@ -1095,7 +1095,7 @@ class CodeToHscript {
 
                     indentLevel += indent;
                     var first = true;
-                    while (indentStack[indentStack.length - 1] > indentLevel && stack.length > 0 && (stack[stack.length-1] == Indent || stack[stack.length-1] == CaseIndent)) {
+                    while (indentStack.length > 0 && indentStack[indentStack.length - 1] > indentLevel && stack.length > 0 && (stack[stack.length-1] == Indent || stack[stack.length-1] == CaseIndent)) {
                         var popped = stackPop();
                         indentStack.pop();
                         if (popped == Indent) {

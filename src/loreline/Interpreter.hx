@@ -3364,7 +3364,7 @@ typedef InterpreterOptions = {
         final len:Int = content.uLength();
         var i:Int = 0;
 
-        while (content.uCharCodeAt(i) == " ".code && i < len) {
+        while (i < len && content.uCharCodeAt(i) == " ".code) {
             i++;
         }
         if (i > 0) {

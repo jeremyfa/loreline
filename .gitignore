@@ -21,3 +21,5 @@ merged-context.txt
 /js/loreline.js
 /js/loreline.min.js
 /cpp/test/test_loreline
+/py/loreline/_core.py
+/py/loreline/__pycache__

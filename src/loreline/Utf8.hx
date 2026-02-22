@@ -48,12 +48,13 @@ class Utf8 {
     /**
      * UTF-8 aware character code at position
      */
-    public static #if !neko inline #end function uCharCodeAt(str:String, pos:Int):Null<Int> {
+    public static #if (!neko && !python) inline #end function uCharCodeAt(str:String, pos:Int):Int {
         #if neko
-        if (pos < 0 || pos >= neko.Utf8.length(str)) return null;
+        if (pos < 0 || pos >= neko.Utf8.length(str)) return -1;
         return neko.Utf8.charCodeAt(str, pos);
         #else
-        return str.charCodeAt(pos);
+        final c = str.charCodeAt(pos);
+        return c == null ? -1 : c;
         #end
     }
 

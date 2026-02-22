@@ -980,8 +980,7 @@ class Token {
         }
 
         // Check if the first character is a valid identifier start
-        var firstChar = input.uCharCodeAt(pos + 0);
-        if (!isIdentifierStart(firstChar)) {
+        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
             return null;
         }
 
@@ -1154,10 +1153,10 @@ class Token {
             if (pos >= len) {
                 result = false;
             }
-            else if (pos + 1 < len && input.uCharCodeAt(pos) == "o".code && input.uCharCodeAt(pos + 1) == "r".code && !isIdentifierStart(input.uCharCodeAt(pos + 2))) {
+            else if (pos + 1 < len && input.uCharCodeAt(pos) == "o".code && input.uCharCodeAt(pos + 1) == "r".code && (pos + 2 >= len || !isIdentifierStart(input.uCharCodeAt(pos + 2)))) {
                 result = false;
             }
-            else if (pos + 2 < len && input.uCharCodeAt(pos) == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && !isIdentifierStart(input.uCharCodeAt(pos + 3))) {
+            else if (pos + 2 < len && input.uCharCodeAt(pos) == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && (pos + 3 >= len || !isIdentifierStart(input.uCharCodeAt(pos + 3)))) {
                 result = false;
             }
             else {
@@ -1196,7 +1195,7 @@ class Token {
         }
 
         // If "if" is directly followed by an identifier start (without space), that's not a if
-        if (pos == startPos && isIdentifierStart(input.uCharCodeAt(startPos))) {
+        if (pos == startPos && startPos < this.length && isIdentifierStart(input.uCharCodeAt(startPos))) {
             return false;
         }
 
@@ -1254,12 +1253,12 @@ class Token {
             }
 
             // Check for and delimiter
-            if (c == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && !isIdentifierStart(input.uCharCodeAt(pos + 3))) {
+            if (c == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && (pos + 3 >= this.length || !isIdentifierStart(input.uCharCodeAt(pos + 3)))) {
                 return true;
             }
 
             // Check for or delimiter
-            if (c == "o".code && input.uCharCodeAt(pos + 1) == "r".code && !isIdentifierStart(input.uCharCodeAt(pos + 2))) {
+            if (c == "o".code && input.uCharCodeAt(pos + 1) == "r".code && (pos + 2 >= this.length || !isIdentifierStart(input.uCharCodeAt(pos + 2)))) {
                 return true;
             }
 
@@ -2134,9 +2133,16 @@ class Token {
         var pos:Int = 0;
         var length = value.uLength();
 
+        if (pos < length && value.uCharCodeAt(pos) == "-".code) {
+            pos++;
+        }
+
+        final digitStart = pos;
         while (pos < length && isDigit(value.uCharCodeAt(pos))) {
             pos++;
         }
+
+        if (pos == digitStart) return false; // No digits found
 
         if (pos < length && value.uCharCodeAt(pos) == ".".code && pos + 1 < length && isDigit(value.uCharCodeAt(pos + 1))) {
             pos++;
@@ -2655,7 +2661,7 @@ class Token {
                             }
                             rtrimmedOffset = 0;
                             var n = pos - 1;
-                            while (n >= 0 && input.uCharCodeAt(n) == " ".code || input.uCharCodeAt(n) == "\t".code) {
+                            while (n >= 0 && (input.uCharCodeAt(n) == " ".code || input.uCharCodeAt(n) == "\t".code)) {
                                 rtrimmedOffset++;
                                 n--;
                             }

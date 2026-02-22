@@ -1,0 +1,8 @@
+--class-path src
+--main loreline.lib.Library
+--python py/loreline/_core.py
+--library hscript
+-D hscriptPos
+-D loreline_typedef_options
+-D loreline_functions_map_dynamic_access
+-D loreline_node_id_class
