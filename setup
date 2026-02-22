@@ -334,7 +334,7 @@ async function main() {
 
             // On Windows, hxcpp with static_link produces a .lib; link into DLL
             const staticLib = debug ? 'Library-debug.lib' : 'Library.lib';
-            await command('link', [
+            await command('link.exe', [
                 '/DLL', '/OUT:' + path.join(buildDir, 'Loreline.dll'),
                 path.join(buildDir, staticLib),
                 'ws2_32.lib', 'Crypt32.lib'
@@ -410,7 +410,7 @@ async function main() {
                 '-Icpp/include',
                 '-L' + buildDir,
                 '-lLoreline',
-                "-Wl,-rpath,'$ORIGIN'"
+                "-Wl,-rpath,$ORIGIN"
             ]);
         }
 
@@ -757,5 +757,6 @@ async function main() {
         await main();
     } catch (error) {
         console.error(error);
+        process.exit(1);
     }
 })();

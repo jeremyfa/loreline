@@ -55,6 +55,9 @@ jobs:
         run: |
           ./loreline test ./test
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Build C++ library
         run: node ./setup --cpp-lib
 
