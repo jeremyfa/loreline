@@ -13,9 +13,11 @@ async function command(cmd, args, options) {
 
     if (process.platform == 'win32') {
         options.shell = cmd.endsWith('.exe') ? false : true;
-        args = [].concat(args);
-        for (let i = 0; i < args.length; i++) {
-            args[i] = '"' + args[i].replace(/"/g, '""') + '"';
+        if (options.shell) {
+            args = [].concat(args);
+            for (let i = 0; i < args.length; i++) {
+                args[i] = '"' + args[i].replace(/"/g, '""') + '"';
+            }
         }
     }
 
