@@ -333,7 +333,7 @@ async function main() {
             await command(haxelib, ['run', 'hxcpp', 'Build.xml', '-DHXCPP_M64', '-DHXCPP_X86_64'].concat(debug ? ['-Ddebug'] : []), { cwd: buildDir });
 
             // On Windows, hxcpp with static_link produces a .lib; link into DLL
-            const staticLib = debug ? 'Library-debug.lib' : 'Library.lib';
+            const staticLib = debug ? 'libLibrary-debug.lib' : 'libLibrary.lib';
             await command('link', [
                 '/DLL', '/OUT:' + path.join(buildDir, 'Loreline.dll'),
                 path.join(buildDir, staticLib),
