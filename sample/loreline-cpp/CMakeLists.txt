@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Expected layout:
 #   LORELINE_DIR/
 #     include/Loreline.h
-#     libLoreline.dylib (macOS) / libLoreline.so (Linux) / Loreline.dll (Windows)
+#     lib/libLoreline.dylib (macOS) / lib/libLoreline.so (Linux) / lib/Loreline.dll (Windows)
 #
 # Or override individually with LORELINE_INCLUDE_DIR and LORELINE_LIB_DIR.
 if(NOT DEFINED LORELINE_DIR AND (NOT DEFINED LORELINE_INCLUDE_DIR OR NOT DEFINED LORELINE_LIB_DIR))
@@ -20,7 +20,7 @@ if(NOT DEFINED LORELINE_INCLUDE_DIR)
     set(LORELINE_INCLUDE_DIR ${LORELINE_DIR}/include)
 endif()
 if(NOT DEFINED LORELINE_LIB_DIR)
-    set(LORELINE_LIB_DIR ${LORELINE_DIR})
+    set(LORELINE_LIB_DIR ${LORELINE_DIR}/lib)
 endif()
 
 add_executable(loreline-sample main.cpp)

@@ -68,9 +68,10 @@ jobs:
         working-directory: .
         run: |
           New-Item -ItemType Directory -Force -Path loreline-windows-pkg/cpp/include
+          New-Item -ItemType Directory -Force -Path loreline-windows-pkg/cpp/lib
           Copy-Item loreline.exe loreline-windows-pkg/
-          Copy-Item build/cpp-lib/windows/Loreline.dll loreline-windows-pkg/cpp/
-          Copy-Item build/cpp-lib/windows/Loreline.lib loreline-windows-pkg/cpp/
+          Copy-Item build/cpp-lib/windows/Loreline.dll loreline-windows-pkg/cpp/lib/
+          Copy-Item build/cpp-lib/windows/Loreline.lib loreline-windows-pkg/cpp/lib/
           Copy-Item cpp/include/Loreline.h loreline-windows-pkg/cpp/include/
           Compress-Archive -Path loreline-windows-pkg/* -DestinationPath loreline-windows.zip -CompressionLevel Optimal
 
@@ -158,8 +159,9 @@ jobs:
       - name: Create zip archive
         run: |
           mkdir -p loreline-mac-pkg/cpp/include
+          mkdir -p loreline-mac-pkg/cpp/lib
           cp loreline loreline-mac-pkg/
-          cp build/cpp-lib/mac/libLoreline.dylib loreline-mac-pkg/cpp/
+          cp build/cpp-lib/mac/libLoreline.dylib loreline-mac-pkg/cpp/lib/
           cp cpp/include/Loreline.h loreline-mac-pkg/cpp/include/
           cd loreline-mac-pkg && zip --symlinks -9 ../loreline-mac.zip -r .
 
@@ -254,8 +256,9 @@ jobs:
       - name: Create zip archive
         run: |
           mkdir -p loreline-linux-pkg/cpp/include
+          mkdir -p loreline-linux-pkg/cpp/lib
           cp loreline loreline-linux-pkg/
-          cp build/cpp-lib/linux/libLoreline.so loreline-linux-pkg/cpp/
+          cp build/cpp-lib/linux/libLoreline.so loreline-linux-pkg/cpp/lib/
           cp cpp/include/Loreline.h loreline-linux-pkg/cpp/include/
           cd loreline-linux-pkg && zip --symlinks -9 ../loreline-linux-${{ matrix.arch }}.zip -r .
 
@@ -581,11 +584,11 @@ jobs:
           unzip -o loreline-linux-arm64.zip/loreline-linux-arm64.zip -d linux-arm64-tmp
           cd ..
 
-          cp artifacts/mac-tmp/cpp/libLoreline.dylib $PKG/loreline/mac/
-          cp artifacts/win-tmp/cpp/Loreline.dll $PKG/loreline/windows/
-          cp artifacts/win-tmp/cpp/Loreline.lib $PKG/loreline/windows/
-          cp artifacts/linux-x86_64-tmp/cpp/libLoreline.so $PKG/loreline/linux-x86_64/
-          cp artifacts/linux-arm64-tmp/cpp/libLoreline.so $PKG/loreline/linux-arm64/
+          cp artifacts/mac-tmp/cpp/lib/libLoreline.dylib $PKG/loreline/mac/
+          cp artifacts/win-tmp/cpp/lib/Loreline.dll $PKG/loreline/windows/
+          cp artifacts/win-tmp/cpp/lib/Loreline.lib $PKG/loreline/windows/
+          cp artifacts/linux-x86_64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-x86_64/
+          cp artifacts/linux-arm64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-arm64/
 
       - name: Create zip archive
         run: cd loreline-cpp-pkg && zip -9 ../loreline-cpp.zip -r .
