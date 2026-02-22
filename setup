@@ -337,7 +337,7 @@ async function main() {
             await command('link', [
                 '/DLL', '/OUT:' + path.join(buildDir, 'Loreline.dll'),
                 '/WHOLEARCHIVE:' + path.join(buildDir, staticLib),
-                'ws2_32.lib', 'Crypt32.lib'
+                'ws2_32.lib', 'Crypt32.lib', 'user32.lib'
             ]);
 
             console.log('Built: ' + path.join(buildDir, 'Loreline.dll'));
