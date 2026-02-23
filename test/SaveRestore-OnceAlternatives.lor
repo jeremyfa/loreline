@@ -1,0 +1,50 @@
+
+state
+  count: 0
+
+beat Loop
+  count += 1
+  once
+    Welcome, first timer!
+
+  Visit $count.
+  if count < 3
+    -> Loop
+
+  choice
+    Leave
+      Goodbye after $count visits.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Welcome, first timer!
+
+    ~ Visit 1.
+
+    ~ Visit 2.
+
+    ~ Visit 3.
+
+    + Leave
+
+    ~ Goodbye after 3 visits.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Welcome, first timer!
+
+    ~ Visit 1.
+
+    ~ Visit 2.
+
+    ~ Visit 3.
+
+    + Leave
+
+    + Leave
+
+    ~ Goodbye after 3 visits.
+</test>
+*/

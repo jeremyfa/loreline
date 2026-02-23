@@ -1,0 +1,89 @@
+
+beat Start
+  choice
+    Alpha
+      Picked alpha.
+    + FirstGroup
+    Beta
+      Picked beta.
+    + SecondGroup
+
+beat FirstGroup
+  choice
+    First A
+      Picked first A.
+    First B
+      Picked first B.
+
+beat SecondGroup
+  choice
+    Second A
+      Picked second A.
+    + ThirdGroup
+    Second B
+      Picked second B.
+
+beat ThirdGroup
+  choice
+    Third A
+      Picked third A.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Alpha
+    + First A
+    + First B
+    + Beta
+    + Second A
+    + Third A
+    + Second B
+
+    ~ Picked alpha.
+- choices: [1]
+  expected: |
+    + Alpha
+    + First A
+    + First B
+    + Beta
+    + Second A
+    + Third A
+    + Second B
+
+    ~ Picked first A.
+- choices: [3]
+  expected: |
+    + Alpha
+    + First A
+    + First B
+    + Beta
+    + Second A
+    + Third A
+    + Second B
+
+    ~ Picked beta.
+- choices: [5]
+  expected: |
+    + Alpha
+    + First A
+    + First B
+    + Beta
+    + Second A
+    + Third A
+    + Second B
+
+    ~ Picked third A.
+- choices: [6]
+  expected: |
+    + Alpha
+    + First A
+    + First B
+    + Beta
+    + Second A
+    + Third A
+    + Second B
+
+    ~ Picked second B.
+</test>
+*/

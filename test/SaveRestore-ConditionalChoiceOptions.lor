@@ -1,0 +1,56 @@
+
+state
+  hasKey: true
+  hasMap: false
+
+beat Start
+  choice
+    Open door if hasKey
+      Opened the door.
+    Read map if hasMap
+      Read the map.
+    Look around
+      Looked around.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Open door
+    - Read map
+    + Look around
+
+    ~ Opened the door.
+- choices: [2]
+  expected: |
+    + Open door
+    - Read map
+    + Look around
+
+    ~ Looked around.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Open door
+    - Read map
+    + Look around
+
+    + Open door
+    - Read map
+    + Look around
+
+    ~ Opened the door.
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    + Open door
+    - Read map
+    + Look around
+
+    + Open door
+    - Read map
+    + Look around
+
+    ~ Looked around.
+</test>
+*/

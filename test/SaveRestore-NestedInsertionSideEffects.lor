@@ -1,0 +1,76 @@
+
+state
+  level1Runs: 0
+  level2Runs: 0
+  total: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. l1=$level1Runs, l2=$level2Runs, total=$total"
+    + Level1
+
+beat Level1
+  level1Runs += 1
+  total += 10
+  choice
+    FromLevel1
+      "Level1. l1=$level1Runs, l2=$level2Runs, total=$total"
+    + Level2
+
+beat Level2
+  level2Runs += 1
+  total += 5
+  choice
+    FromLevel2
+      "Level2. l1=$level1Runs, l2=$level2Runs, total=$total"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    ~ Direct. l1=1, l2=1, total=15
+- choices: [1]
+  expected: |
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    ~ Level1. l1=1, l2=1, total=15
+- choices: [2]
+  expected: |
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    ~ Level2. l1=1, l2=1, total=15
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    ~ Direct. l1=1, l2=1, total=15
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    + Direct
+    + FromLevel1
+    + FromLevel2
+
+    ~ Level2. l1=1, l2=1, total=15
+</test>
+*/

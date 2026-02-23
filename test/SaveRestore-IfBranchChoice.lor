@@ -1,0 +1,51 @@
+
+state
+  path: "start"
+
+beat Start
+  path = "entered"
+  if true
+    path = "if-branch"
+    choice
+      Option A
+        path = "chose-a"
+      Option B
+        path = "chose-b"
+  Path is $path
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Option A
+    + Option B
+
+    ~ Path is chose-a
+- choices: [1]
+  expected: |
+    + Option A
+    + Option B
+
+    ~ Path is chose-b
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ Path is chose-a
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ Path is chose-b
+</test>
+*/

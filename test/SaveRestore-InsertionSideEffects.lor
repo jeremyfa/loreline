@@ -1,0 +1,63 @@
+
+state
+  runs: 0
+  value: 0
+
+beat Main
+  "Before choice, runs = $runs"
+  choice
+    Direct
+      "Direct picked. runs = $runs, value = $value"
+    + SideEffectBeat
+
+beat SideEffectBeat
+  runs += 1
+  value += 10
+  choice
+    Inserted
+      "Inserted picked. runs = $runs, value = $value"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Before choice, runs = 0
+
+    + Direct
+    + Inserted
+
+    ~ Direct picked. runs = 1, value = 10
+- choices: [1]
+  expected: |
+    ~ Before choice, runs = 0
+
+    + Direct
+    + Inserted
+
+    ~ Inserted picked. runs = 1, value = 10
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Before choice, runs = 0
+
+    + Direct
+    + Inserted
+
+    + Direct
+    + Inserted
+
+    ~ Direct picked. runs = 1, value = 10
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Before choice, runs = 0
+
+    + Direct
+    + Inserted
+
+    + Direct
+    + Inserted
+
+    ~ Inserted picked. runs = 1, value = 10
+</test>
+*/

@@ -1,0 +1,57 @@
+
+state
+  callCount: 0
+  bonus: 0
+
+function addBonus()
+  callCount = callCount + 1
+  bonus = bonus + 7
+
+beat Main
+  choice
+    Skip
+      "Skipped. calls=$callCount, bonus=$bonus"
+    + BonusBeat
+
+beat BonusBeat
+  addBonus()
+  choice
+    Claim
+      "Claimed. calls=$callCount, bonus=$bonus"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Skip
+    + Claim
+
+    ~ Skipped. calls=1, bonus=7
+- choices: [1]
+  expected: |
+    + Skip
+    + Claim
+
+    ~ Claimed. calls=1, bonus=7
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Skip
+    + Claim
+
+    + Skip
+    + Claim
+
+    ~ Skipped. calls=1, bonus=7
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    + Skip
+    + Claim
+
+    + Skip
+    + Claim
+
+    ~ Claimed. calls=1, bonus=7
+</test>
+*/

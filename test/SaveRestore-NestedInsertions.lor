@@ -1,0 +1,113 @@
+
+beat Start
+  Begin.
+  choice
+    Direct
+      Picked direct.
+    + Level1
+
+beat Level1
+  choice
+    Level1 pick
+      Picked level1.
+    + Level2
+
+beat Level2
+  choice
+    Level2 pick A
+      Picked level2 A.
+    Level2 pick B
+      Picked level2 B.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked direct.
+- choices: [1]
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked level1.
+- choices: [2]
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked level2 A.
+- choices: [3]
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked level2 B.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked direct.
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked level2 A.
+- choices: [3]
+  saveAtChoice: 0
+  expected: |
+    ~ Begin.
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    + Direct
+    + Level1 pick
+    + Level2 pick A
+    + Level2 pick B
+
+    ~ Picked level2 B.
+</test>
+*/

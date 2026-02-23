@@ -1,0 +1,71 @@
+
+beat Main
+  new state
+    points: 0
+
+  points += 10
+  "Points = $points"
+  choice
+    Spend
+      points -= 3
+      "Spent. Points = $points"
+    + Bonus
+
+// Insertion body runs during collection:
+// bonus=5, points += 5 → 15 before any choice is made.
+// After save/restore, the insertion should NOT re-run
+// because the state already reflects its side effects.
+beat Bonus
+  new state
+    bonus: 0
+
+  bonus += 5
+  points += bonus
+  choice
+    Claim
+      "Claimed. Points = $points, bonus = $bonus"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Points = 10
+
+    + Spend
+    + Claim
+
+    ~ Spent. Points = 12
+- choices: [1]
+  expected: |
+    ~ Points = 10
+
+    + Spend
+    + Claim
+
+    ~ Claimed. Points = 15, bonus = 5
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Points = 10
+
+    + Spend
+    + Claim
+
+    + Spend
+    + Claim
+
+    ~ Spent. Points = 12
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Points = 10
+
+    + Spend
+    + Claim
+
+    + Spend
+    + Claim
+
+    ~ Claimed. Points = 15, bonus = 5
+</test>
+*/

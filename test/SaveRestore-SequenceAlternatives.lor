@@ -1,0 +1,62 @@
+
+state
+  round: 0
+
+beat Start
+  round += 1
+  sequence
+    First visit.
+  --
+    Second visit.
+  --
+    Third or later.
+
+  Round $round.
+  if round < 3
+    -> Start
+
+  choice
+    Finish
+      Done after $round rounds.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ First visit.
+
+    ~ Round 1.
+
+    ~ Second visit.
+
+    ~ Round 2.
+
+    ~ Third or later.
+
+    ~ Round 3.
+
+    + Finish
+
+    ~ Done after 3 rounds.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ First visit.
+
+    ~ Round 1.
+
+    ~ Second visit.
+
+    ~ Round 2.
+
+    ~ Third or later.
+
+    ~ Round 3.
+
+    + Finish
+
+    + Finish
+
+    ~ Done after 3 rounds.
+</test>
+*/

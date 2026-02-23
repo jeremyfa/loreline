@@ -1,0 +1,103 @@
+
+state
+  step: 0
+
+beat Start
+  step += 1
+  Step $step.
+  choice
+    Go on -> Middle
+
+beat Middle
+  step += 1
+  Step $step.
+  choice
+    Continue -> Final
+
+beat Final
+  step += 1
+  Step $step.
+  choice
+    Finish A
+      Done A at step $step.
+    Finish B
+      Done B at step $step.
+
+/*
+<test>
+- choices: [0, 0, 0]
+  expected: |
+    ~ Step 1.
+
+    + Go on
+
+    ~ Step 2.
+
+    + Continue
+
+    ~ Step 3.
+
+    + Finish A
+    + Finish B
+
+    ~ Done A at step 3.
+- choices: [0, 0, 0]
+  saveAtChoice: 0
+  expected: |
+    ~ Step 1.
+
+    + Go on
+
+    + Go on
+
+    ~ Step 2.
+
+    + Continue
+
+    ~ Step 3.
+
+    + Finish A
+    + Finish B
+
+    ~ Done A at step 3.
+- choices: [0, 0, 0]
+  saveAtChoice: 1
+  expected: |
+    ~ Step 1.
+
+    + Go on
+
+    ~ Step 2.
+
+    + Continue
+
+    + Continue
+
+    ~ Step 3.
+
+    + Finish A
+    + Finish B
+
+    ~ Done A at step 3.
+- choices: [0, 0, 1]
+  saveAtChoice: 2
+  expected: |
+    ~ Step 1.
+
+    + Go on
+
+    ~ Step 2.
+
+    + Continue
+
+    ~ Step 3.
+
+    + Finish A
+    + Finish B
+
+    + Finish A
+    + Finish B
+
+    ~ Done B at step 3.
+</test>
+*/

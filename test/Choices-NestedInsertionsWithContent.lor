@@ -1,0 +1,58 @@
+
+beat Start
+  choice
+    Direct
+      Direct done.
+    + Level1
+  Back at start.
+
+beat Level1
+  choice
+    Level1 option
+      Level1 done.
+    + Level2
+  Back at level1.
+
+beat Level2
+  choice
+    Level2 option
+      Level2 done.
+  Back at level2.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct
+    + Level1 option
+    + Level2 option
+
+    ~ Direct done.
+
+    ~ Back at start.
+- choices: [1]
+  expected: |
+    + Direct
+    + Level1 option
+    + Level2 option
+
+    ~ Level1 done.
+
+    ~ Back at level1.
+
+    ~ Back at start.
+- choices: [2]
+  expected: |
+    + Direct
+    + Level1 option
+    + Level2 option
+
+    ~ Level2 done.
+
+    ~ Back at level2.
+
+    ~ Back at level1.
+
+    ~ Back at start.
+</test>
+*/

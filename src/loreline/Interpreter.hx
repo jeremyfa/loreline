@@ -583,6 +583,14 @@ typedef InterpreterOptions = {
     var beatToResume:NBeatDecl = null;
 
     /**
+     * When a choice with insertions is waiting for user input, this holds
+     * the collected options. Persisted in save data so that on restore,
+     * insertion bodies are not re-evaluated (which would cause side effects
+     * to run twice).
+     */
+    var pendingChoiceOptions:Array<ChoiceOption> = null;
+
+    /**
      * A custom instanciator to create fields objects.
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
@@ -721,6 +729,15 @@ typedef InterpreterOptions = {
             nodeStates: serializeNodeStates()
         };
 
+        // Save pending choice options (from choices with insertions awaiting user input).
+        // Must be serialized before the insertions length check, since serializing
+        // options may populate the insertions map.
+        if (pendingChoiceOptions != null) {
+            result.pendingChoiceOptions = [
+                for (opt in pendingChoiceOptions) serializeChoiceOption(opt, insertions)
+            ];
+        }
+
         if (Reflect.fields(insertions).length > 0) {
             result.insertions = insertions;
         }
@@ -748,6 +765,7 @@ typedef InterpreterOptions = {
         nodeStates.clear();
         nextScopeId = 1;
         nextInsertionId = 1;
+        pendingChoiceOptions = null;
 
         // Restore top level state
         restoreState(topLevelState, saveData.state);
@@ -758,10 +776,20 @@ typedef InterpreterOptions = {
         // Restore node states
         restoreNodeStates(saveData.nodeStates);
 
-        // Restore scope stack
-        if (!restoreStack(saveData.stack, saveData.insertions)) {
+        // Restore scope stack (share restoredInsertions map for pending options)
+        final restoredInsertions = new Map<Int, RuntimeInsertion>();
+        if (!restoreStack(saveData.stack, saveData.insertions, restoredInsertions)) {
             // If failed to restore stack, simply resolve last known top level beat as fallback
             beatToResume = restoreBeatToResume(saveData.stack);
+        }
+
+        // Restore pending choice options (from choices with insertions awaiting user input)
+        if (saveData.pendingChoiceOptions != null) {
+            pendingChoiceOptions = [];
+            for (savedOpt in saveData.pendingChoiceOptions) {
+                final opt = restoreChoiceOption(savedOpt, saveData.insertions, restoredInsertions);
+                if (opt != null) pendingChoiceOptions.push(opt);
+            }
         }
 
     }
@@ -901,6 +929,10 @@ typedef InterpreterOptions = {
         if (serialized == null) {
             serialized = {};
 
+            // Cache BEFORE recursing to break circular references
+            // (options may reference this same insertion)
+            Reflect.setField(insertions, key, serialized);
+
             if (insertion.options != null) {
                 serialized.options = [for (opt in insertion.options) serializeChoiceOption(opt, insertions)];
             }
@@ -912,8 +944,6 @@ typedef InterpreterOptions = {
             if (insertion.stack != null) {
                 serialized.stack = [for (scope in insertion.stack) serializeScope(scope, insertions)];
             }
-
-            Reflect.setField(insertions, key, serialized);
         }
 
         return insertion.id;
@@ -1474,10 +1504,10 @@ typedef InterpreterOptions = {
      * @param savedInsertions The saved insertions map (keyed by insertion ID)
      * @return True if the stack was restored successfully, false otherwise
      */
-    function restoreStack(savedStack:Array<SaveDataScope>, ?savedInsertions:Dynamic<SaveDataInsertion>):Bool {
+    function restoreStack(savedStack:Array<SaveDataScope>, ?savedInsertions:Dynamic<SaveDataInsertion>, ?restoredInsertions:Map<Int, RuntimeInsertion>):Bool {
 
         final result:Array<RuntimeScope> = [];
-        final restoredInsertions = new Map<Int, RuntimeInsertion>();
+        if (restoredInsertions == null) restoredInsertions = new Map<Int, RuntimeInsertion>();
 
         var i = savedStack.length - 1;
         while (i >= 0) {
@@ -2228,6 +2258,9 @@ typedef InterpreterOptions = {
         // Reset insertion id
         nextInsertionId = 1;
 
+        // Clear pending choice options
+        pendingChoiceOptions = null;
+
         // Run beat
         final done = wrapNext(finish);
 
@@ -2466,76 +2499,110 @@ typedef InterpreterOptions = {
      */
     function evalChoice(choice:NChoiceStatement, next:()->Void) {
 
+        // If we have restored pending choice options (from a save at a choice
+        // with insertions), skip Phase 1 and go directly to Phase 2.
+        // This avoids re-executing insertion bodies whose side effects are
+        // already reflected in the restored state.
+        final restoredOptions = this.pendingChoiceOptions;
+        if (restoredOptions != null) {
+            this.pendingChoiceOptions = null;
+            presentChoice(restoredOptions, next);
+            return;
+        }
+
+        // Phase 1: collect options from direct text and insertions
         final options:Array<ChoiceOption> = [];
         final optionsDone = wrapNext(() -> {
-            // Step 2
-
-            // If we are within an insertion waiting for a choice block,
-            // then we reached that choice block and should collect options
-            final currentInsertion = this.currentInsertion;
-            if (currentInsertion != null && currentInsertion.options == null) {
-                // Copy the current stack so that we can restore it later
-                currentInsertion.stack = [].concat(stack);
-
-                // Fill in options
-                currentInsertion.options = options;
-
-                // No need to continue here, we won't display that choice
-                // because instead we are collection the options for a parent one.
-                next();
-                return;
-            }
-
-            // Then call the user-defined choice handler.
-            // The execution will be "paused" until the callback
-            // is called, either synchronously or asynchronously
-            var index:Int = -1;
-            var choiceCallback = wrapNext(() -> {
-                if (index >= 0 && index < options.length) {
-                    // Evaluate the chosen option
-                    final option = options[index];
-                    if (option.insertion != null) {
-                        final scopeLevel = stack.length;
-                        while (stack.length > 0) stack.pop();
-                        for (scope in option.insertion.stack) {
-
-                            // Need to remove the insertion data now, as we are just back
-                            // to normal execution flow now!
-                            if (scope.insertion != null) {
-                                scope.insertion = null;
-                            }
-
-                            stack.push(scope);
-                        }
-                        final lastScope = stack[stack.length-1];
-                        push({
-                            beat: lastScope.beat,
-                            node: cast lens.getParentNode(option.node),
-                            head: option.node
-                        });
-                        resumeFromLevel(scopeLevel, next);
-                    }
-                    else {
-                        evalChoiceOption(option.node, next);
-                    }
-                }
-                else {
-                    // Choice is invalid. In that situation, we suppose
-                    // the choice was cancelable and just continue evaluation
-                    next();
-                }
-            });
-            handleChoice(this, options, function(index_:Int) {
-                index = index_;
-                choiceCallback.cb();
-            });
-            choiceCallback.sync = false;
-
+            // Phase 2: present options
+            presentChoice(options, next);
         });
 
-        // Step 1
         evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb);
         optionsDone.sync = false;
+
+    }
+
+    /**
+     * Phase 2 of choice evaluation: present collected options to the user
+     * and handle their selection.
+     *
+     * @param options The collected choice options
+     * @param next Callback to call when evaluation completes
+     */
+    function presentChoice(options:Array<ChoiceOption>, next:()->Void) {
+
+        // If we are within an insertion waiting for a choice block,
+        // then we reached that choice block and should collect options
+        final currentInsertion = this.currentInsertion;
+        if (currentInsertion != null && currentInsertion.options == null) {
+            // Copy the current stack so that we can restore it later
+            currentInsertion.stack = [].concat(stack);
+
+            // Fill in options
+            currentInsertion.options = options;
+
+            // No need to continue here, we won't display that choice
+            // because instead we are collection the options for a parent one.
+            next();
+            return;
+        }
+
+        // Store pending options for save/restore if any option has an insertion.
+        // This allows restoring without re-evaluating insertion bodies.
+        for (opt in options) {
+            if (opt.insertion != null) {
+                this.pendingChoiceOptions = options;
+                break;
+            }
+        }
+
+        // Then call the user-defined choice handler.
+        // The execution will be "paused" until the callback
+        // is called, either synchronously or asynchronously
+        var index:Int = -1;
+        var choiceCallback = wrapNext(() -> {
+            // Clear pending options now that a choice has been made
+            this.pendingChoiceOptions = null;
+
+            if (index >= 0 && index < options.length) {
+                // Evaluate the chosen option
+                final option = options[index];
+                if (option.insertion != null) {
+                    final scopeLevel = stack.length;
+                    while (stack.length > 0) stack.pop();
+                    for (scope in option.insertion.stack) {
+
+                        // Need to remove the insertion data now, as we are just back
+                        // to normal execution flow now!
+                        if (scope.insertion != null) {
+                            scope.insertion = null;
+                        }
+
+                        stack.push(scope);
+                    }
+                    final lastScope = stack[stack.length-1];
+                    push({
+                        beat: lastScope.beat,
+                        node: cast lens.getParentNode(option.node),
+                        head: option.node
+                    });
+                    resumeFromLevel(scopeLevel, next);
+                }
+                else {
+                    evalChoiceOption(option.node, next);
+                }
+            }
+            else {
+                // Choice is invalid. In that situation, we suppose
+                // the choice was cancelable and just continue evaluation
+                next();
+            }
+        });
+        handleChoice(this, options, function(index_:Int) {
+            index = index_;
+            choiceCallback.cb();
+        });
+        choiceCallback.sync = false;
 
     }
 

@@ -1,0 +1,71 @@
+
+beat Main
+  new state
+    localVal: 0
+
+  localVal += 5
+  Local is $localVal.
+  Increment()
+  Now local is $localVal.
+  choice
+    Show
+      "Final: $localVal"
+    Double
+      localVal *= 2
+      "Final: $localVal"
+
+beat Increment
+  localVal += 3
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Local is 5.
+
+    ~ Now local is 8.
+
+    + Show
+    + Double
+
+    ~ Final: 8
+- choices: [1]
+  expected: |
+    ~ Local is 5.
+
+    ~ Now local is 8.
+
+    + Show
+    + Double
+
+    ~ Final: 16
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Local is 5.
+
+    ~ Now local is 8.
+
+    + Show
+    + Double
+
+    + Show
+    + Double
+
+    ~ Final: 8
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Local is 5.
+
+    ~ Now local is 8.
+
+    + Show
+    + Double
+
+    + Show
+    + Double
+
+    ~ Final: 16
+</test>
+*/

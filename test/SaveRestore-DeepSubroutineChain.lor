@@ -1,0 +1,98 @@
+
+character guide
+  name: Guide
+
+beat Main
+  guide: Starting quest.
+  LevelOne()
+  guide: Quest complete.
+
+beat LevelOne
+  guide: Entering level one.
+  LevelTwo()
+  guide: Level one done.
+
+beat LevelTwo
+  guide: Entering level two.
+  choice
+    Fight
+      guide: You fought!
+    Flee
+      guide: You fled!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Guide: Starting quest.
+
+    Guide: Entering level one.
+
+    Guide: Entering level two.
+
+    + Fight
+    + Flee
+
+    Guide: You fought!
+
+    Guide: Level one done.
+
+    Guide: Quest complete.
+- choices: [1]
+  expected: |
+    Guide: Starting quest.
+
+    Guide: Entering level one.
+
+    Guide: Entering level two.
+
+    + Fight
+    + Flee
+
+    Guide: You fled!
+
+    Guide: Level one done.
+
+    Guide: Quest complete.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    Guide: Starting quest.
+
+    Guide: Entering level one.
+
+    Guide: Entering level two.
+
+    + Fight
+    + Flee
+
+    + Fight
+    + Flee
+
+    Guide: You fought!
+
+    Guide: Level one done.
+
+    Guide: Quest complete.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    Guide: Starting quest.
+
+    Guide: Entering level one.
+
+    Guide: Entering level two.
+
+    + Fight
+    + Flee
+
+    + Fight
+    + Flee
+
+    Guide: You fled!
+
+    Guide: Level one done.
+
+    Guide: Quest complete.
+</test>
+*/

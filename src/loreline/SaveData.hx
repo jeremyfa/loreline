@@ -116,4 +116,6 @@ typedef SaveData = {
     var nodeStates:Dynamic<SaveDataFields>;
     /** Insertions keyed by ID */
     var ?insertions:Dynamic<SaveDataInsertion>;
+    /** Pending choice options when save happened at a choice with insertions */
+    var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
 }

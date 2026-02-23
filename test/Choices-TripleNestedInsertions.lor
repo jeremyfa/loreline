@@ -1,0 +1,75 @@
+
+beat Start
+  choice
+    Stay home
+      Stayed home.
+    + Activities
+
+beat Activities
+  choice
+    Read a book
+      Read a book.
+    + Sports
+
+beat Sports
+  choice
+    Play tennis
+      Played tennis.
+    + WaterSports
+
+beat WaterSports
+  choice
+    Swim
+      Went swimming.
+    Surf
+      Went surfing.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Stay home
+    + Read a book
+    + Play tennis
+    + Swim
+    + Surf
+
+    ~ Stayed home.
+- choices: [1]
+  expected: |
+    + Stay home
+    + Read a book
+    + Play tennis
+    + Swim
+    + Surf
+
+    ~ Read a book.
+- choices: [2]
+  expected: |
+    + Stay home
+    + Read a book
+    + Play tennis
+    + Swim
+    + Surf
+
+    ~ Played tennis.
+- choices: [3]
+  expected: |
+    + Stay home
+    + Read a book
+    + Play tennis
+    + Swim
+    + Surf
+
+    ~ Went swimming.
+- choices: [4]
+  expected: |
+    + Stay home
+    + Read a book
+    + Play tennis
+    + Swim
+    + Surf
+
+    ~ Went surfing.
+</test>
+*/

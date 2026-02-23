@@ -1,0 +1,111 @@
+
+state
+  score: 0
+
+character npc
+  name: Sage
+
+beat Main
+  npc: Welcome, traveler.
+  score += 10
+  cycle
+    npc: I see you are new.
+  --
+    npc: Welcome back.
+  Examine()
+  choice
+    + Actions
+    Leave
+      npc: Farewell. Score: $score
+
+beat Examine
+  if score > 5
+    npc: You have a good score.
+
+beat Actions
+  choice
+    Train
+      score += 5
+      npc: You trained. Score: $score
+    Rest
+      npc: You rested. Score: $score
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Sage: Welcome, traveler.
+
+    Sage: I see you are new.
+
+    Sage: You have a good score.
+
+    + Train
+    + Rest
+    + Leave
+
+    Sage: You trained. Score: 15
+- choices: [1]
+  expected: |
+    Sage: Welcome, traveler.
+
+    Sage: I see you are new.
+
+    Sage: You have a good score.
+
+    + Train
+    + Rest
+    + Leave
+
+    Sage: You rested. Score: 10
+- choices: [2]
+  expected: |
+    Sage: Welcome, traveler.
+
+    Sage: I see you are new.
+
+    Sage: You have a good score.
+
+    + Train
+    + Rest
+    + Leave
+
+    Sage: Farewell. Score: 10
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    Sage: Welcome, traveler.
+
+    Sage: I see you are new.
+
+    Sage: You have a good score.
+
+    + Train
+    + Rest
+    + Leave
+
+    + Train
+    + Rest
+    + Leave
+
+    Sage: You trained. Score: 15
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    Sage: Welcome, traveler.
+
+    Sage: I see you are new.
+
+    Sage: You have a good score.
+
+    + Train
+    + Rest
+    + Leave
+
+    + Train
+    + Rest
+    + Leave
+
+    Sage: Farewell. Score: 10
+</test>
+*/

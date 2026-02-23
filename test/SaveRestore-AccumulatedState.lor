@@ -1,0 +1,88 @@
+
+state
+  total: 0
+  round: 0
+
+beat Accumulate
+  round += 1
+  total += round
+  Total is $total after round $round.
+
+  if round < 4
+    -> Accumulate
+
+  choice
+    Double
+      total *= 2
+      Final total: $total
+    Keep
+      Final total: $total
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Total is 1 after round 1.
+
+    ~ Total is 3 after round 2.
+
+    ~ Total is 6 after round 3.
+
+    ~ Total is 10 after round 4.
+
+    + Double
+    + Keep
+
+    ~ Final total: 20
+- choices: [1]
+  expected: |
+    ~ Total is 1 after round 1.
+
+    ~ Total is 3 after round 2.
+
+    ~ Total is 6 after round 3.
+
+    ~ Total is 10 after round 4.
+
+    + Double
+    + Keep
+
+    ~ Final total: 10
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Total is 1 after round 1.
+
+    ~ Total is 3 after round 2.
+
+    ~ Total is 6 after round 3.
+
+    ~ Total is 10 after round 4.
+
+    + Double
+    + Keep
+
+    + Double
+    + Keep
+
+    ~ Final total: 20
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Total is 1 after round 1.
+
+    ~ Total is 3 after round 2.
+
+    ~ Total is 6 after round 3.
+
+    ~ Total is 10 after round 4.
+
+    + Double
+    + Keep
+
+    + Double
+    + Keep
+
+    ~ Final total: 10
+</test>
+*/
