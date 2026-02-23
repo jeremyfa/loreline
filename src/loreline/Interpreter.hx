@@ -3357,47 +3357,53 @@ typedef InterpreterOptions = {
     }
 
     function stripStringIndent(content:String):String {
+        if (content.indexOf("\n") == -1) return content;
 
+        final lines = content.split("\n");
         var minIndent:Int = -1;
-        var currentIndent:Int = -1;
 
-        final len:Int = content.uLength();
-        var i:Int = 0;
-
-        while (i < len && content.uCharCodeAt(i) == " ".code) {
-            i++;
-        }
-        if (i > 0) {
-            minIndent = i;
-        }
-
-        while (i < len) {
-            final c = content.uCharCodeAt(i);
-            if (c == "\n".code) {
-                currentIndent = 0;
+        // Compute the first line's indent (only counts if > 0, matching old behavior
+        // where ltrim() already stripped the first line's leading whitespace)
+        if (lines[0].uLength() > 0) {
+            var firstIndent = 0;
+            while (firstIndent < lines[0].uLength()) {
+                final c = lines[0].uCharCodeAt(firstIndent);
+                if (c != " ".code && c != "\t".code) break;
+                firstIndent++;
             }
-            else if (currentIndent >= 0 && c == " ".code) {
-                currentIndent++;
+            if (firstIndent > 0 && firstIndent < lines[0].uLength()) {
+                minIndent = firstIndent;
             }
-            else if (currentIndent >= 0) {
-                if (minIndent == -1 || minIndent > currentIndent) {
-                    minIndent = currentIndent;
+        }
+
+        // Compute minimum indent across continuation lines
+        for (i in 1...lines.length) {
+            final line = lines[i];
+            if (line.uLength() == 0) continue;
+            var indent = 0;
+            while (indent < line.uLength()) {
+                final c = line.uCharCodeAt(indent);
+                if (c != " ".code && c != "\t".code) break;
+                indent++;
+            }
+            if (indent < line.uLength()) {
+                if (minIndent == -1 || indent < minIndent) {
+                    minIndent = indent;
                 }
-                currentIndent = -1;
             }
-            i++;
         }
 
+        // Strip minIndent from continuation lines only (not the first line)
         if (minIndent > 0) {
-            final indentBuf = new Utf8Buf();
-            for (_ in 0...minIndent) {
-                indentBuf.addChar(" ".code);
+            for (i in 1...lines.length) {
+                if (lines[i].uLength() > 0) {
+                    lines[i] = lines[i].uSubstring(minIndent);
+                }
             }
-            content = content.replace("\n" + indentBuf.toString(), "\n");
+            content = lines.join("\n");
         }
 
         return content;
-
     }
 
     function stripStringComments(content:String):String {
