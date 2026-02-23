@@ -18,6 +18,8 @@ dofile(script_dir .. "loreline/core.lua")
 
 local pass_count = 0
 local fail_count = 0
+local file_count = 0
+local file_fail_count = 0
 
 -- ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -307,9 +309,11 @@ local function run_test(file_path, content, test_item, crlf)
     end
     local beat_name = test_item.beat or nil
     local save_at_choice = test_item.saveAtChoice or -1
+    local save_at_dialogue = test_item.saveAtDialogue or -1
     local expected = test_item.expected
     local output = {""}
     local choice_count = {0}
+    local dialogue_count = {0}
     local parsed_script = {nil}
     local result = {nil}
 
@@ -422,6 +426,33 @@ local function run_test(file_path, content, test_item, crlf)
             local tagged_text = insert_tags_in_text(text, lua_tags, multiline)
             output[1] = output[1] .. "~ " .. tagged_text .. "\n\n"
         end
+        -- Save/restore test at dialogue
+        if save_at_dialogue >= 0 and dialogue_count[1] == save_at_dialogue then
+            dialogue_count[1] = dialogue_count[1] + 1
+            local save_data = interp:save()
+
+            if restore_input then
+                local restore_script = __loreline_Loreline.parse(
+                    restore_input, file_path, handle_file
+                )
+                if restore_script then
+                    __loreline_Loreline.resume(
+                        restore_script, on_dialogue, on_choice, on_finish,
+                        save_data, nil, options
+                    )
+                else
+                    result[1] = {false, output[1], expected, "Error parsing restoreInput script"}
+                end
+            else
+                __loreline_Loreline.resume(
+                    parsed_script[1], on_dialogue, on_choice, on_finish,
+                    save_data, nil, options
+                )
+            end
+            return
+        end
+
+        dialogue_count[1] = dialogue_count[1] + 1
         advance()
     end
 
@@ -470,6 +501,9 @@ local function main()
 
         local test_items = extract_tests(raw_content)
         if #test_items == 0 then goto next_file end
+
+        file_count = file_count + 1
+        local file_fail_before = fail_count
 
         for _, item in ipairs(test_items) do
             for _, crlf in ipairs({false, true}) do
@@ -627,15 +661,19 @@ local function main()
             end
         end
 
+        if fail_count > file_fail_before then
+            file_fail_count = file_fail_count + 1
+        end
+
         ::next_file::
     end
 
     local total = pass_count + fail_count
     io.write("\n")
     if fail_count == 0 then
-        io.write("\027[1m\027[32m  All " .. total .. " tests passed\027[0m\n")
+        io.write("\027[1m\027[32m  All " .. total .. " tests passed (" .. file_count .. " files)\027[0m\n")
     else
-        io.write("\027[1m\027[31m  " .. fail_count .. " of " .. total .. " tests failed\027[0m\n")
+        io.write("\027[1m\027[31m  " .. fail_count .. " of " .. total .. " tests failed (" .. file_fail_count .. " of " .. file_count .. " files)\027[0m\n")
         os.exit(1)
     end
 end

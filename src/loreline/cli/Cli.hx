@@ -217,28 +217,37 @@ class Cli {
 
         passCount = 0;
         failCount = 0;
+        var fileCount = 0;
+        var fileFailCount = 0;
 
         if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
             var dir = path;
             for (file in FileSystem.readDirectory(dir)) {
                 if (file.endsWith('.lor')) {
                     final filePath = Path.join([dir, file]);
+                    fileCount++;
+                    final failBefore = failCount;
                     testFile(filePath, false);
                     testFile(filePath, true);
+                    if (failCount > failBefore) fileFailCount++;
                 }
             }
         }
         else {
+            fileCount++;
+            final failBefore = failCount;
             testFile(path, false);
             testFile(path, true);
+            if (failCount > failBefore) fileFailCount++;
         }
 
         print('');
         if (failCount > 0) {
-            print('  $passCount passed, $failCount failed'.red().bold());
+            final total = passCount + failCount;
+            print('  $failCount of $total tests failed ($fileFailCount of $fileCount files)'.red().bold());
         }
         else {
-            print('  All $passCount tests passed'.green().bold());
+            print('  All $passCount tests passed ($fileCount files)'.green().bold());
         }
         print('');
 

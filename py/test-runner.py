@@ -20,6 +20,8 @@ from loreline._core import loreline_Loreline, loreline_Interpreter, _hx_AnonObje
 
 pass_count = 0
 fail_count = 0
+file_count = 0
+file_fail_count = 0
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -385,7 +387,7 @@ def run_test(file_path, content, test_item, crlf):
 # ── Main ─────────────────────────────────────────────────────────────────
 
 def main():
-    global pass_count, fail_count
+    global pass_count, fail_count, file_count, file_fail_count
 
     if len(sys.argv) < 2:
         print("Usage: python3 py/test-runner.py <test-directory>", file=sys.stderr)
@@ -405,6 +407,9 @@ def main():
         test_items = extract_tests(raw_content)
         if not test_items:
             continue
+
+        file_count += 1
+        fail_before = fail_count
 
         for item in test_items:
             for crlf in (False, True):
@@ -535,12 +540,15 @@ def main():
                 print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
                 print(f"  Error: {e}")
 
+        if fail_count > fail_before:
+            file_fail_count += 1
+
     total = pass_count + fail_count
     print()
     if fail_count == 0:
-        print(f"\033[1m\033[32m  All {total} tests passed\033[0m")
+        print(f"\033[1m\033[32m  All {total} tests passed ({file_count} files)\033[0m")
     else:
-        print(f"\033[1m\033[31m  {fail_count} of {total} tests failed\033[0m")
+        print(f"\033[1m\033[31m  {fail_count} of {total} tests failed ({file_fail_count} of {file_count} files)\033[0m")
         sys.exit(1)
 
 

@@ -20,6 +20,8 @@ if (!testDir) {
 
 let passCount: number = 0;
 let failCount: number = 0;
+let fileCount: number = 0;
+let fileFailCount: number = 0;
 
 interface TestItem {
     choices?: number[];
@@ -295,6 +297,9 @@ async function main(): Promise<void> {
 
         if (testItems.length === 0) continue;
 
+        fileCount++;
+        const failBefore: number = failCount;
+
         for (const item of testItems) {
             for (const crlf of [false, true]) {
                 const modeLabel: string = crlf ? 'CRLF' : 'LF';
@@ -441,14 +446,16 @@ async function main(): Promise<void> {
                 console.log(`  Error: ${(e as Error).toString()}`);
             }
         }
+
+        if (failCount > failBefore) fileFailCount++;
     }
 
     const total: number = passCount + failCount;
     console.log('');
     if (failCount === 0) {
-        console.log(`\x1b[1m\x1b[32m  All ${total} tests passed\x1b[0m`);
+        console.log(`\x1b[1m\x1b[32m  All ${total} tests passed (${fileCount} files)\x1b[0m`);
     } else {
-        console.log(`\x1b[1m\x1b[31m  ${failCount} of ${total} tests failed\x1b[0m`);
+        console.log(`\x1b[1m\x1b[31m  ${failCount} of ${total} tests failed (${fileFailCount} of ${fileCount} files)\x1b[0m`);
         process.exit(1);
     }
 }

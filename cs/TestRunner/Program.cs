@@ -10,6 +10,8 @@ class Program
 {
     static int passCount = 0;
     static int failCount = 0;
+    static int fileCount = 0;
+    static int fileFailCount = 0;
 
     static void Main(string[] args)
     {
@@ -33,6 +35,9 @@ class Program
             string rawContent = File.ReadAllText(filePath, Encoding.UTF8);
             var testItems = ExtractTests(rawContent);
             if (testItems.Count == 0) continue;
+
+            fileCount++;
+            int failBefore = failCount;
 
             foreach (var item in testItems)
             {
@@ -171,17 +176,19 @@ class Program
                     Console.WriteLine($"  Error: {e}");
                 }
             }
+
+            if (failCount > failBefore) fileFailCount++;
         }
 
         int total = passCount + failCount;
         Console.WriteLine();
         if (failCount == 0)
         {
-            Console.WriteLine($"\x1b[1m\x1b[32m  All {total} tests passed\x1b[0m");
+            Console.WriteLine($"\x1b[1m\x1b[32m  All {total} tests passed ({fileCount} files)\x1b[0m");
         }
         else
         {
-            Console.WriteLine($"\x1b[1m\x1b[31m  {failCount} of {total} tests failed\x1b[0m");
+            Console.WriteLine($"\x1b[1m\x1b[31m  {failCount} of {total} tests failed ({fileFailCount} of {fileCount} files)\x1b[0m");
             Environment.Exit(1);
         }
     }

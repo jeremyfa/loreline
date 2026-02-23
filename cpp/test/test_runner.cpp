@@ -28,6 +28,8 @@ namespace fs = std::filesystem;
 
 static int passCount = 0;
 static int failCount = 0;
+static int fileCount = 0;
+static int fileFailCount = 0;
 
 /* ── ANSI color helpers ─────────────────────────────────────────────────── */
 
@@ -662,6 +664,9 @@ int main(int argc, char* argv[]) {
         auto testItems = extractTests(rawContent);
         if (testItems.empty()) continue;
 
+        fileCount++;
+        int failBefore = failCount;
+
         /* Run each test item × {LF, CRLF} */
         for (const auto& item : testItems) {
             for (int mode = 0; mode < 2; mode++) {
@@ -795,14 +800,16 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+
+        if (failCount > failBefore) fileFailCount++;
     }
 
     int total = passCount + failCount;
     printf("\n");
     if (failCount == 0) {
-        printf(CLR_BOLD_GREEN "  All %d tests passed" CLR_RESET "\n", total);
+        printf(CLR_BOLD_GREEN "  All %d tests passed (%d files)" CLR_RESET "\n", total, fileCount);
     } else {
-        printf(CLR_BOLD_RED "  %d of %d tests failed" CLR_RESET "\n", failCount, total);
+        printf(CLR_BOLD_RED "  %d of %d tests failed (%d of %d files)" CLR_RESET "\n", failCount, total, fileFailCount, fileCount);
     }
 
     Loreline_dispose();
