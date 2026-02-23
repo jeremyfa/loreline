@@ -51,7 +51,13 @@ abstract NodeId(Int64) {
     }
 
     public static function fromInt64(value:Int64):NodeId {
+        #if loreline_node_id_class
+        var n = new NodeId(OFFSET, OFFSET, OFFSET, OFFSET);
+        n.thisVal = value;
+        return n;
+        #else
         return cast value;
+        #end
     }
 
     public static function fromString(str:String):NodeId {
