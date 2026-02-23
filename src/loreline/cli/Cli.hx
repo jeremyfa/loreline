@@ -223,7 +223,7 @@ class Cli {
         if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
             var dir = path;
             for (file in FileSystem.readDirectory(dir)) {
-                if (file.endsWith('.lor')) {
+                if (file.endsWith('.lor') && !~/\.\w{2}\.lor$/.match(file)) {
                     final filePath = Path.join([dir, file]);
                     fileCount++;
                     final failBefore = failCount;
