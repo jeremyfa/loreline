@@ -1,0 +1,89 @@
+
+state
+  outerRuns: 0
+  optionBodyRuns: 0
+  innerRuns: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. outer=$outerRuns, opt=$optionBodyRuns, inner=$innerRuns"
+    + OuterBeat
+
+beat OuterBeat
+  outerRuns += 1
+  choice
+    GoInner
+      optionBodyRuns += 1
+      choice
+        InnerDirect
+          "InnerDirect. outer=$outerRuns, opt=$optionBodyRuns, inner=$innerRuns"
+        + InnerBeat
+
+beat InnerBeat
+  innerRuns += 1
+  choice
+    InnerInserted
+      "InnerInserted. outer=$outerRuns, opt=$optionBodyRuns, inner=$innerRuns"
+
+/*
+<test>
+- choices: [1, 0]
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerDirect. outer=1, opt=1, inner=1
+- choices: [1, 1]
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerInserted. outer=1, opt=1, inner=1
+- choices: [1, 0]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + GoInner
+
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerDirect. outer=1, opt=1, inner=1
+- choices: [1, 0]
+  saveAtChoice: 1
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerDirect. outer=1, opt=1, inner=1
+- choices: [1, 1]
+  saveAtChoice: 1
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerInserted. outer=1, opt=1, inner=1
+</test>
+*/

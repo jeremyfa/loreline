@@ -1,0 +1,109 @@
+
+state
+  l1: 0
+  l2: 0
+  l3: 0
+
+function track1()
+  l1 = l1 + 1
+
+function track2()
+  l2 = l2 + 1
+
+function track3()
+  l3 = l3 + 1
+
+beat Main
+  choice
+    Direct
+      "Direct. l1=$l1, l2=$l2, l3=$l3"
+    + Beat1
+
+beat Beat1
+  track1()
+  choice
+    Pick1
+      choice
+        Direct2
+          "Direct2. l1=$l1, l2=$l2, l3=$l3"
+        + Beat2
+
+beat Beat2
+  track2()
+  choice
+    Pick2
+      choice
+        Direct3
+          "Direct3. l1=$l1, l2=$l2, l3=$l3"
+        + Beat3
+
+beat Beat3
+  track3()
+  choice
+    Pick3
+      "Pick3. l1=$l1, l2=$l2, l3=$l3"
+
+/*
+<test>
+- choices: [1, 1, 1]
+  expected: |
+    + Direct
+    + Pick1
+
+    + Direct2
+    + Pick2
+
+    + Direct3
+    + Pick3
+
+    ~ Pick3. l1=1, l2=1, l3=1
+- choices: [1, 1, 1]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + Pick1
+
+    + Direct
+    + Pick1
+
+    + Direct2
+    + Pick2
+
+    + Direct3
+    + Pick3
+
+    ~ Pick3. l1=1, l2=1, l3=1
+- choices: [1, 1, 1]
+  saveAtChoice: 1
+  expected: |
+    + Direct
+    + Pick1
+
+    + Direct2
+    + Pick2
+
+    + Direct2
+    + Pick2
+
+    + Direct3
+    + Pick3
+
+    ~ Pick3. l1=1, l2=1, l3=1
+- choices: [1, 1, 1]
+  saveAtChoice: 2
+  expected: |
+    + Direct
+    + Pick1
+
+    + Direct2
+    + Pick2
+
+    + Direct3
+    + Pick3
+
+    + Direct3
+    + Pick3
+
+    ~ Pick3. l1=1, l2=1, l3=1
+</test>
+*/

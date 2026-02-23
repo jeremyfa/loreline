@@ -1,0 +1,103 @@
+
+state
+  outerRuns: 0
+  innerRuns: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. outer=$outerRuns, inner=$innerRuns"
+    + OuterBeat
+
+beat OuterBeat
+  outerRuns += 1
+  choice
+    GoInner
+      choice
+        InnerDirect
+          "InnerDirect. outer=$outerRuns, inner=$innerRuns"
+        + InnerBeat
+
+beat InnerBeat
+  innerRuns += 1
+  choice
+    InnerInserted
+      "InnerInserted. outer=$outerRuns, inner=$innerRuns"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct
+    + GoInner
+
+    ~ Direct. outer=1, inner=0
+- choices: [1, 0]
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerDirect. outer=1, inner=1
+- choices: [1, 1]
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerInserted. outer=1, inner=1
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + GoInner
+
+    + Direct
+    + GoInner
+
+    ~ Direct. outer=1, inner=0
+- choices: [1, 1]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + GoInner
+
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerInserted. outer=1, inner=1
+- choices: [1, 0]
+  saveAtChoice: 1
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerDirect. outer=1, inner=1
+- choices: [1, 1]
+  saveAtChoice: 1
+  expected: |
+    + Direct
+    + GoInner
+
+    + InnerDirect
+    + InnerInserted
+
+    + InnerDirect
+    + InnerInserted
+
+    ~ InnerInserted. outer=1, inner=1
+</test>
+*/

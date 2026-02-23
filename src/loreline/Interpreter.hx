@@ -1366,7 +1366,15 @@ typedef InterpreterOptions = {
         }
         else if (currentScope.head is NChoiceOption) {
             final option:NChoiceOption = cast currentScope.head;
-            evalNodeBody(currentScope.beat, option, option.body, next);
+            if (scopeLevel + 1 < stack.length) {
+                // Deeper scopes exist from restore — resume into them.
+                // This skips already-executed nodes in the option body.
+                resumeNodeBody(option, scopeLevel + 1, option.body, next);
+            } else {
+                // No deeper scopes — fresh entry into option body
+                // (normal insertion pick, not a save/restore scenario)
+                evalNodeBody(currentScope.beat, option, option.body, next);
+            }
         }
         else if (currentScope.insertion != null) {
             // Save happened during insertion evaluation (Phase 1 of choice).
