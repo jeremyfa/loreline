@@ -1,0 +1,59 @@
+
+// Test function default argument values
+
+function greet(name = "World")
+  return "Hello, " + name + "!"
+
+function sum(a, b = 20)
+  return a + b
+
+function describe(item = "apple", count = 3)
+  return count + " " + item + "s"
+
+function tag(prefix = "open", suffix = "close")
+  return "<" + prefix + "|" + suffix + ">"
+
+// Call with no args - should use default
+$greet()
+
+// Call with explicit arg - should override default
+$greet("Alice")
+
+// Mandatory + default: call with just mandatory
+One arg sum: $sum(5)
+
+// Mandatory + default: call with both
+Both args sum: $sum(3, 7)
+
+// All defaults: call with none
+$describe()
+
+// All defaults: call with both
+$describe("banana", 5)
+
+// Multiple defaults: none provided
+$tag()
+
+// Multiple defaults: all provided
+$tag("start", "end")
+
+/*
+<test>
+- expected: |
+    ~ Hello, World!
+
+    ~ Hello, Alice!
+
+    ~ One arg sum: 25
+
+    ~ Both args sum: 10
+
+    ~ 3 apples
+
+    ~ 5 bananas
+
+    ~ <open|close>
+
+    ~ <start|end>
+</test>
+*/

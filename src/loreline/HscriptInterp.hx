@@ -447,7 +447,7 @@ class HscriptInterp {
             var me = this;
             var hasOpt = false, minParams = 0;
             for( p in params )
-                if( p.opt )
+                if( p.opt || p.value != null )
                     hasOpt = true;
                 else
                     minParams++;
@@ -463,12 +463,12 @@ class HscriptInterp {
                     var extraParams = args.length - minParams;
                     var pos = 0;
                     for( p in params )
-                        if( p.opt ) {
+                        if( p.opt || p.value != null ) {
                             if( extraParams > 0 ) {
                                 args2.push(args[pos++]);
                                 extraParams--;
                             } else
-                                args2.push(null);
+                                args2.push(p.value != null ? me.expr(p.value) : null);
                         } else
                             args2.push(args[pos++]);
                     args = args2;
