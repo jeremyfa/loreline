@@ -1,0 +1,43 @@
+
+beat Main
+  "First"
+  "Second"
+  "Third"
+
+/*
+<test>
+- expected: |
+    ~ First
+
+    ~ Second
+
+    ~ Third
+- saveAtDialogue: 0
+  expected: |
+    ~ First
+
+    ~ First
+
+    ~ Second
+
+    ~ Third
+- saveAtDialogue: 1
+  expected: |
+    ~ First
+
+    ~ Second
+
+    ~ Second
+
+    ~ Third
+- saveAtDialogue: 2
+  expected: |
+    ~ First
+
+    ~ Second
+
+    ~ Third
+
+    ~ Third
+</test>
+*/

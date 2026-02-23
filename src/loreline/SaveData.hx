@@ -40,6 +40,10 @@ typedef SaveDataInsertion = {
     var ?options:Array<SaveDataChoiceOption>;
     /** The call stack of this insertion, if it has collected choices and is waiting resume */
     var ?stack:Array<SaveDataScope>;
+    /** Partial options collected for the parent choice before this insertion started (for Phase 1 save/restore) */
+    var ?parentPartialOptions:Array<SaveDataChoiceOption>;
+    /** Next option index in the parent choice after this insertion (for Phase 1 save/restore) */
+    var ?parentNextOptionIndex:Int;
 }
 
 /**

@@ -1,0 +1,112 @@
+
+state
+  l1: 0
+  l2: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. l1=$l1, l2=$l2"
+    + Level1
+
+beat Level1
+  l1 += 1
+  "L1 dialogue. l1=$l1, l2=$l2"
+  choice
+    L1Pick
+      choice
+        InnerDirect
+          "InnerDirect. l1=$l1, l2=$l2"
+        + Level2
+
+beat Level2
+  l2 += 1
+  "L2 dialogue. l1=$l1, l2=$l2"
+  choice
+    L2Pick
+      "L2Pick. l1=$l1, l2=$l2"
+
+/*
+<test>
+- choices: [1, 1]
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    + InnerDirect
+    + L2Pick
+
+    ~ L2Pick. l1=1, l2=1
+- choices: [0]
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ Direct. l1=1, l2=0
+- choices: [1, 1]
+  saveAtDialogue: 0
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    + InnerDirect
+    + L2Pick
+
+    ~ L2Pick. l1=1, l2=1
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ Direct. l1=1, l2=0
+- choices: [1, 1]
+  saveAtDialogue: 1
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    + InnerDirect
+    + L2Pick
+
+    ~ L2Pick. l1=1, l2=1
+- choices: [1, 0]
+  saveAtDialogue: 1
+  expected: |
+    ~ L1 dialogue. l1=1, l2=0
+
+    + Direct
+    + L1Pick
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    ~ L2 dialogue. l1=1, l2=1
+
+    + InnerDirect
+    + L2Pick
+
+    ~ InnerDirect. l1=1, l2=1
+</test>
+*/

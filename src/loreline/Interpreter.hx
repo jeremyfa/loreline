@@ -226,6 +226,20 @@ class RuntimeInsertion {
      */
     public var stack:Array<RuntimeScope> = [];
 
+    /**
+     * Snapshot of choice options collected for the parent choice BEFORE
+     * this insertion started evaluation. Used for save/restore during Phase 1
+     * so that Phase 1 can continue without re-running earlier insertions.
+     */
+    public var parentPartialOptions:Array<ChoiceOption> = null;
+
+    /**
+     * The next option index in the parent choice after this insertion.
+     * Used together with parentPartialOptions to continue Phase 1 from
+     * the correct position after restoring.
+     */
+    public var parentNextOptionIndex:Int = 0;
+
     public function new(id:Int, origin:NInsertion) {
         this.id = id;
         this.origin = origin;
@@ -944,6 +958,11 @@ typedef InterpreterOptions = {
             if (insertion.stack != null) {
                 serialized.stack = [for (scope in insertion.stack) serializeScope(scope, insertions)];
             }
+
+            if (insertion.parentPartialOptions != null) {
+                serialized.parentPartialOptions = [for (opt in insertion.parentPartialOptions) serializeChoiceOption(opt, insertions)];
+                serialized.parentNextOptionIndex = insertion.parentNextOptionIndex;
+            }
         }
 
         return insertion.id;
@@ -1285,12 +1304,24 @@ typedef InterpreterOptions = {
             }
         }
 
+        // Capture the current insertion context for the early-exit check below.
+        // This mirrors the same check in evalNodeBody: if we are inside an
+        // insertion body and its choice has already collected options, stop
+        // evaluating further body nodes.
+        final currentInsertion = this.currentInsertion;
+
         // Then iterate through each child node in the body
         var moveNext:()->Void = null;
         moveNext = () -> {
 
+            if (currentInsertion?.options != null) {
+                // Insertion's choice has collected options — stop body evaluation.
+                // Same early-exit as evalNodeBody uses.
+                pop();
+                next();
+            }
             // Check if we are in the resuming index
-            if (index != -1 && index == resumeIndex) {
+            else if (index != -1 && index == resumeIndex) {
 
                 // That's the one
                 final childNode = body[index];
@@ -1378,9 +1409,37 @@ typedef InterpreterOptions = {
         }
         else if (currentScope.insertion != null) {
             // Save happened during insertion evaluation (Phase 1 of choice).
-            // Pop insertion scope(s) and re-evaluate the entire choice.
-            while (stack.length > scopeLevel) pop();
-            evalChoice(choice, next);
+            // Resume into the insertion body instead of re-evaluating the
+            // entire choice, to avoid re-running side effects.
+            final insertionNode = currentScope.node;
+            final insertion = currentScope.insertion;
+
+            if (insertionNode is NBeatDecl) {
+                final beat:NBeatDecl = cast insertionNode;
+                resumeNodeBody(beat, scopeLevel, beat.body, () -> {
+                    // After insertion body completes:
+                    // 1. Start with partial options from before this insertion
+                    final options:Array<ChoiceOption> = insertion.parentPartialOptions != null
+                        ? insertion.parentPartialOptions : [];
+
+                    // 2. Add this insertion's collected options
+                    if (insertion.options != null) {
+                        for (opt in insertion.options) options.push(opt);
+                    }
+
+                    // 3. Continue Phase 1 from the next option index, then Phase 2
+                    final nextIndex = insertion.parentNextOptionIndex;
+                    final parentBeat = currentScope.beat;
+
+                    final optionsDone = wrapNext(() -> presentChoice(options, next));
+                    evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex);
+                    optionsDone.sync = false;
+                });
+            } else {
+                // Fallback for unexpected node types
+                while (stack.length > scopeLevel) pop();
+                evalChoice(choice, next);
+            }
         }
         else if (currentScope.node is NChoiceOption) {
             // Inside a choice option body that contains a nested choice
@@ -1660,6 +1719,16 @@ typedef InterpreterOptions = {
                 final scope = restoreScopeItem(savedScope, savedInsertions, restoredInsertions);
                 if (scope != null) insertion.stack.push(scope);
             }
+        }
+
+        // Restore partial Phase 1 state (for save/restore during insertion evaluation)
+        if (saved.parentPartialOptions != null) {
+            insertion.parentPartialOptions = [];
+            for (savedOpt in saved.parentPartialOptions) {
+                final opt = restoreChoiceOption(savedOpt, savedInsertions, restoredInsertions);
+                if (opt != null) insertion.parentPartialOptions.push(opt);
+            }
+            insertion.parentNextOptionIndex = saved.parentNextOptionIndex != null ? saved.parentNextOptionIndex : 0;
         }
 
         return insertion;
@@ -2614,13 +2683,13 @@ typedef InterpreterOptions = {
 
     }
 
-    function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void) {
+    function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void, ?startIndex:Int) {
 
         // Get options
         final options = choice.options;
 
         // Then iterate through each child node in the body
-        var index = 0;
+        var index = startIndex != null ? startIndex : 0;
         var moveNext:()->Void = null;
         var insertion:RuntimeInsertion = null;
         moveNext = () -> {
@@ -2658,6 +2727,11 @@ typedef InterpreterOptions = {
                 else if (option.insertion != null) {
                     final done = wrapNext(moveNext);
                     insertion = new RuntimeInsertion(nextInsertionId++, option.insertion);
+                    // Save partial Phase 1 state on the insertion for save/restore.
+                    // If save happens during this insertion's body evaluation,
+                    // these allow Phase 1 to continue from the right point on restore.
+                    insertion.parentPartialOptions = [].concat(result);
+                    insertion.parentNextOptionIndex = index;
                     evalInsertion(insertion, done.cb);
                     done.sync = false;
                 }

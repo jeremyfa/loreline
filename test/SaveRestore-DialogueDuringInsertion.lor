@@ -1,0 +1,59 @@
+
+state
+  runs: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. runs=$runs"
+    + InsertedBeat
+
+beat InsertedBeat
+  runs += 1
+  "Hello from insertion. runs=$runs"
+  choice
+    InnerOption
+      "InnerOption. runs=$runs"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Hello from insertion. runs=1
+
+    + Direct
+    + InnerOption
+
+    ~ Direct. runs=1
+- choices: [1]
+  expected: |
+    ~ Hello from insertion. runs=1
+
+    + Direct
+    + InnerOption
+
+    ~ InnerOption. runs=1
+- choices: [1]
+  saveAtDialogue: 0
+  expected: |
+    ~ Hello from insertion. runs=1
+
+    ~ Hello from insertion. runs=1
+
+    + Direct
+    + InnerOption
+
+    ~ InnerOption. runs=1
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ Hello from insertion. runs=1
+
+    ~ Hello from insertion. runs=1
+
+    + Direct
+    + InnerOption
+
+    ~ Direct. runs=1
+</test>
+*/

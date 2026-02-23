@@ -129,7 +129,12 @@ class TestRunner {
         final output = new Utf8Buf();
         final choices = testCase.choices != null ? [].concat(testCase.choices) : null;
         var choiceCount:Int = 0;
+        var dialogueCount:Int = 0;
         var parsedScript:Script = null;
+
+        // Pre-declare handleChoice so handleDialogue can reference it
+        // (mutual reference: both save paths use Loreline.resume with both handlers)
+        var handleChoice:(Interpreter, Array<ChoiceOption>, (Int)->Void)->Void = null;
 
         function handleFinish(interpreter:Interpreter) {
 
@@ -172,10 +177,40 @@ class TestRunner {
             }
             output.addChar("\n".code);
             output.addChar("\n".code);
+
+            // Save/restore test: save at the specified dialogue event,
+            // then resume on a new interpreter
+            if (testCase.saveAtDialogue >= 0 && dialogueCount == testCase.saveAtDialogue) {
+                dialogueCount++;
+                final saveData:SaveData = interpreter.save();
+
+                if (testCase.restoreInput != null) {
+                    // Parse the modified script and resume with it
+                    Loreline.parse(testCase.restoreInput, testCase.filePath, handleFile, restoreScript -> {
+                        if (restoreScript != null) {
+                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData);
+                        } else {
+                            done(new TestResult(testCase, false, output.toString(), new Error('Error parsing restoreInput script')));
+                        }
+                    });
+                } else {
+                    // Resume on a new interpreter (handlers are closures sharing the same state)
+                    Loreline.resume(
+                        parsedScript,
+                        handleDialogue,
+                        handleChoice,
+                        handleFinish,
+                        saveData
+                    );
+                }
+                return;
+            }
+
+            dialogueCount++;
             callback();
         }
 
-        function handleChoice(interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void) {
+        handleChoice = function(interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void) {
 
             for (opt in options) {
                 if (opt.enabled) {
@@ -237,7 +272,7 @@ class TestRunner {
                 callback(index);
             }
 
-        }
+        };
 
         try {
             // Parse the script

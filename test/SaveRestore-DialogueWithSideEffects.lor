@@ -1,0 +1,33 @@
+
+state
+  before: 0
+  after: 0
+
+beat Main
+  before += 1
+  "Middle. before=$before, after=$after"
+  after += 1
+  "End. before=$before, after=$after"
+
+/*
+<test>
+- expected: |
+    ~ Middle. before=1, after=0
+
+    ~ End. before=1, after=1
+- saveAtDialogue: 0
+  expected: |
+    ~ Middle. before=1, after=0
+
+    ~ Middle. before=1, after=0
+
+    ~ End. before=1, after=1
+- saveAtDialogue: 1
+  expected: |
+    ~ Middle. before=1, after=0
+
+    ~ End. before=1, after=1
+
+    ~ End. before=1, after=1
+</test>
+*/

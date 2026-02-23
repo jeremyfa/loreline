@@ -1,0 +1,66 @@
+
+state
+  runs: 0
+
+beat Main
+  runs += 1
+  "Intro. runs=$runs"
+  choice
+    Option A
+      "Picked A. runs=$runs"
+    Option B
+      "Picked B. runs=$runs"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Intro. runs=1
+
+    + Option A
+    + Option B
+
+    ~ Picked A. runs=1
+- choices: [1]
+  expected: |
+    ~ Intro. runs=1
+
+    + Option A
+    + Option B
+
+    ~ Picked B. runs=1
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ Intro. runs=1
+
+    ~ Intro. runs=1
+
+    + Option A
+    + Option B
+
+    ~ Picked A. runs=1
+- choices: [1]
+  saveAtDialogue: 0
+  expected: |
+    ~ Intro. runs=1
+
+    ~ Intro. runs=1
+
+    + Option A
+    + Option B
+
+    ~ Picked B. runs=1
+- choices: [0]
+  saveAtDialogue: 1
+  expected: |
+    ~ Intro. runs=1
+
+    + Option A
+    + Option B
+
+    ~ Picked A. runs=1
+
+    ~ Picked A. runs=1
+</test>
+*/

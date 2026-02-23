@@ -300,6 +300,7 @@ class Cli {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
                 final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                final saveAtDialogue:Int = item.saveAtDialogue != null ? item.saveAtDialogue : -1;
                 var options:InterpreterOptions = null;
                 if (item.translation != null) {
                     final lang:String = item.translation;
@@ -319,7 +320,7 @@ class Cli {
                 final testCase = new InterpreterTestCase(
                     file, content, file,
                     item.beat, item.choices, options,
-                    saveAtChoice, restoreInput, item.expected
+                    saveAtChoice, saveAtDialogue, restoreInput, item.expected
                 );
                 final testRunner = new TestRunner(handleFile);
                 testRunner.runTestCase(testCase, result -> {
@@ -443,6 +444,7 @@ class Cli {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
                 final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
+                final saveAtDialogue:Int = item.saveAtDialogue != null ? item.saveAtDialogue : -1;
                 var rtOptions:InterpreterOptions = null;
                 if (item.translation != null) {
                     final lang:String = item.translation;
@@ -462,7 +464,7 @@ class Cli {
                 final rtTestCase = new InterpreterTestCase(
                     file, print1, file,
                     item.beat, item.choices, rtOptions,
-                    saveAtChoice, restoreInput, item.expected
+                    saveAtChoice, saveAtDialogue, restoreInput, item.expected
                 );
                 final rtTestRunner = new TestRunner(handleFile);
                 rtTestRunner.runTestCase(rtTestCase, rtResult -> {

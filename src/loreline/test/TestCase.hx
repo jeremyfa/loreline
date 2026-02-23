@@ -57,19 +57,27 @@ class InterpreterTestCase extends TestCase {
     public final saveAtChoice:Int;
 
     /**
+     * If set (>= 0), save and restore at the Nth dialogue event (0-indexed).
+     * The test will save the interpreter state at that dialogue, create a new interpreter,
+     * restore the state, and resume execution. The dialogue is re-presented on restore.
+     */
+    public final saveAtDialogue:Int;
+
+    /**
      * If set, contains the content of a modified script to use when restoring
      * (instead of the original parsed script). Used for testing node ID stability
      * when a script is modified between save and restore.
      */
     public final restoreInput:String;
 
-    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Int, restoreInput:String, expectedOutput:String) {
+    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Int, saveAtDialogue:Int, restoreInput:String, expectedOutput:String) {
         super(name, input, expectedOutput);
         this.filePath = filePath;
         this.beatName = beatName;
         this.choices = choices != null ? [].concat(choices) : null;
         this.options = options;
         this.saveAtChoice = saveAtChoice;
+        this.saveAtDialogue = saveAtDialogue;
         this.restoreInput = restoreInput;
     }
 

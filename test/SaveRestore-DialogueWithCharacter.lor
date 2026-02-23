@@ -1,0 +1,46 @@
+
+character Alice
+  name: "Alice"
+
+beat Main
+  Alice: "Hello there"
+  "Narration text"
+  Alice: "Goodbye"
+
+/*
+<test>
+- expected: |
+    Alice: Hello there
+
+    ~ Narration text
+
+    Alice: Goodbye
+- saveAtDialogue: 0
+  expected: |
+    Alice: Hello there
+
+    Alice: Hello there
+
+    ~ Narration text
+
+    Alice: Goodbye
+- saveAtDialogue: 1
+  expected: |
+    Alice: Hello there
+
+    ~ Narration text
+
+    ~ Narration text
+
+    Alice: Goodbye
+- saveAtDialogue: 2
+  expected: |
+    Alice: Hello there
+
+    ~ Narration text
+
+    Alice: Goodbye
+
+    Alice: Goodbye
+</test>
+*/

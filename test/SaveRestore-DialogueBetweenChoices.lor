@@ -1,0 +1,68 @@
+
+beat Main
+  choice
+    First A -> AfterFirst
+    First B -> AfterFirst
+
+beat AfterFirst
+  "Between choices"
+  choice
+    Second A
+      "Picked second A"
+    Second B
+      "Picked second B"
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    + First A
+    + First B
+
+    ~ Between choices
+
+    + Second A
+    + Second B
+
+    ~ Picked second A
+- choices: [0, 1]
+  expected: |
+    + First A
+    + First B
+
+    ~ Between choices
+
+    + Second A
+    + Second B
+
+    ~ Picked second B
+- choices: [0, 1]
+  saveAtDialogue: 0
+  expected: |
+    + First A
+    + First B
+
+    ~ Between choices
+
+    ~ Between choices
+
+    + Second A
+    + Second B
+
+    ~ Picked second B
+- choices: [1, 0]
+  saveAtDialogue: 0
+  expected: |
+    + First A
+    + First B
+
+    ~ Between choices
+
+    ~ Between choices
+
+    + Second A
+    + Second B
+
+    ~ Picked second A
+</test>
+*/
