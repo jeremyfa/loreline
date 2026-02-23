@@ -1,0 +1,88 @@
+
+state
+  round: 0
+
+beat Start
+  round += 1
+  Round $round
+
+  choice
+    Direct option
+      Picked direct.
+    + Reactions
+
+  if round < 4
+    -> Start
+
+beat Reactions
+  choice
+    React
+      sequence
+        First time reacting!
+      --
+        Reacting again...
+      --
+        Reacted many times now.
+
+/*
+<test>
+- choices: [1, 1, 1, 1]
+  expected: |
+    ~ Round 1
+
+    + Direct option
+    + React
+
+    ~ First time reacting!
+
+    ~ Round 2
+
+    + Direct option
+    + React
+
+    ~ Reacting again...
+
+    ~ Round 3
+
+    + Direct option
+    + React
+
+    ~ Reacted many times now.
+
+    ~ Round 4
+
+    + Direct option
+    + React
+
+    ~ Reacted many times now.
+- choices: [0, 1, 0, 1]
+  expected: |
+    ~ Round 1
+
+    + Direct option
+    + React
+
+    ~ Picked direct.
+
+    ~ Round 2
+
+    + Direct option
+    + React
+
+    ~ First time reacting!
+
+    ~ Round 3
+
+    + Direct option
+    + React
+
+    ~ Picked direct.
+
+    ~ Round 4
+
+    + Direct option
+    + React
+
+    ~ Reacting again...
+</test>
+*/

@@ -1,0 +1,97 @@
+
+character guide
+  name: Guide
+
+guide: Welcome to the adventure.
+
+choice
+  Explore the forest
+    guide: The forest is dense.
+    choice
+      Follow the river
+        guide: You find a cave.
+        choice
+          Enter the cave
+            guide: You found treasure!
+          Walk away
+            guide: You return safely.
+      Climb a tree
+        guide: You see the horizon.
+
+  Visit the village
+    guide: The village is peaceful.
+
+guide: Your journey continues.
+
+/*
+<test>
+- choices: [0, 0, 0]
+  expected: |
+    Guide: Welcome to the adventure.
+
+    + Explore the forest
+    + Visit the village
+
+    Guide: The forest is dense.
+
+    + Follow the river
+    + Climb a tree
+
+    Guide: You find a cave.
+
+    + Enter the cave
+    + Walk away
+
+    Guide: You found treasure!
+
+    Guide: Your journey continues.
+
+- choices: [0, 0, 1]
+  expected: |
+    Guide: Welcome to the adventure.
+
+    + Explore the forest
+    + Visit the village
+
+    Guide: The forest is dense.
+
+    + Follow the river
+    + Climb a tree
+
+    Guide: You find a cave.
+
+    + Enter the cave
+    + Walk away
+
+    Guide: You return safely.
+
+    Guide: Your journey continues.
+
+- choices: [0, 1]
+  expected: |
+    Guide: Welcome to the adventure.
+
+    + Explore the forest
+    + Visit the village
+
+    Guide: The forest is dense.
+
+    + Follow the river
+    + Climb a tree
+
+    Guide: You see the horizon.
+
+    Guide: Your journey continues.
+
+- choices: [1]
+  expected: |
+    Guide: Welcome to the adventure.
+
+    + Explore the forest
+    + Visit the village
+
+    Guide: The village is peaceful.
+
+    Guide: Your journey continues.
+</test>
+*/

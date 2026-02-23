@@ -1,0 +1,36 @@
+
+state
+  total: 0
+
+beat Start
+  Visit()
+  Visit()
+  Visit()
+  Visit()
+  Grand total: $total
+
+beat Visit
+  cycle
+    total += 10
+    Added 10, total is $total
+  --
+    total += 20
+    Added 20, total is $total
+  --
+    total += 5
+    Added 5, total is $total
+
+/*
+<test>
+- expected: |
+    ~ Added 10, total is 10
+
+    ~ Added 20, total is 30
+
+    ~ Added 5, total is 35
+
+    ~ Added 10, total is 45
+
+    ~ Grand total: 45
+</test>
+*/

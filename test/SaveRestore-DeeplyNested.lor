@@ -1,0 +1,101 @@
+
+character guide
+  name: Guide
+
+beat Main
+  guide: Starting the quest.
+  Dungeon()
+  guide: Quest complete.
+
+beat Dungeon
+  guide: You enter the dungeon.
+  choice
+    Go left
+      guide: A treasure chest!
+      choice
+        Open it
+          guide: Gold coins!
+        Leave it
+          guide: You walk past it.
+    Go right
+      guide: A monster appears!
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    Guide: Starting the quest.
+
+    Guide: You enter the dungeon.
+
+    + Go left
+    + Go right
+
+    Guide: A treasure chest!
+
+    + Open it
+    + Leave it
+
+    Guide: Gold coins!
+
+    Guide: Quest complete.
+- choices: [0, 0]
+  saveAtChoice: 0
+  expected: |
+    Guide: Starting the quest.
+
+    Guide: You enter the dungeon.
+
+    + Go left
+    + Go right
+
+    + Go left
+    + Go right
+
+    Guide: A treasure chest!
+
+    + Open it
+    + Leave it
+
+    Guide: Gold coins!
+
+    Guide: Quest complete.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    Guide: Starting the quest.
+
+    Guide: You enter the dungeon.
+
+    + Go left
+    + Go right
+
+    + Go left
+    + Go right
+
+    Guide: A monster appears!
+
+    Guide: Quest complete.
+- choices: [0, 1]
+  saveAtChoice: 1
+  expected: |
+    Guide: Starting the quest.
+
+    Guide: You enter the dungeon.
+
+    + Go left
+    + Go right
+
+    Guide: A treasure chest!
+
+    + Open it
+    + Leave it
+
+    + Open it
+    + Leave it
+
+    Guide: You walk past it.
+
+    Guide: Quest complete.
+</test>
+*/

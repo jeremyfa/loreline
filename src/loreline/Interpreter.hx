@@ -1344,6 +1344,16 @@ typedef InterpreterOptions = {
             while (stack.length > scopeLevel) pop();
             evalChoice(choice, next);
         }
+        else if (currentScope.node is NChoiceOption) {
+            // Inside a choice option body that contains a nested choice
+            final option:NChoiceOption = cast currentScope.node;
+            resumeNodeBody(option, scopeLevel, option.body, next);
+        }
+        else if (currentScope.node is NBeatDecl) {
+            // Inside a beat body (e.g., from a nested insertion context)
+            final beat:NBeatDecl = cast currentScope.node;
+            resumeNodeBody(beat, scopeLevel, beat.body, next);
+        }
         else {
             throw new RuntimeError('Choice head is not a choice option', currentScope.head.pos);
         }
@@ -2491,7 +2501,7 @@ typedef InterpreterOptions = {
 
                             // Need to remove the insertion data now, as we are just back
                             // to normal execution flow now!
-                            if (scope.insertion == option.insertion) {
+                            if (scope.insertion != null) {
                                 scope.insertion = null;
                             }
 

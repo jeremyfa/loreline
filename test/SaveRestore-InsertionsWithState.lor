@@ -1,0 +1,80 @@
+
+state
+  mood: "neutral"
+
+beat Start
+  Your mood is $mood
+
+  choice
+    Direct option
+      mood = "direct"
+    + MoodOptions
+
+  Your mood is now $mood
+
+beat MoodOptions
+  choice
+    Feel happy
+      mood = "happy"
+    Feel sad
+      mood = "sad"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Your mood is neutral
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    ~ Your mood is now direct
+- choices: [1]
+  expected: |
+    ~ Your mood is neutral
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    ~ Your mood is now happy
+- choices: [2]
+  expected: |
+    ~ Your mood is neutral
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    ~ Your mood is now sad
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Your mood is neutral
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    ~ Your mood is now happy
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    ~ Your mood is neutral
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    + Direct option
+    + Feel happy
+    + Feel sad
+
+    ~ Your mood is now sad
+</test>
+*/

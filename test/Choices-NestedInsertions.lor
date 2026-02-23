@@ -1,0 +1,65 @@
+
+beat Start
+  Pick an activity:
+  choice
+    Stay home
+      You stayed home.
+    + Outdoor
+
+beat Outdoor
+  choice
+    Go hiking
+      You went hiking.
+    + Water
+
+beat Water
+  choice
+    Go swimming
+      You went swimming.
+    Go fishing
+      You went fishing.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Pick an activity:
+
+    + Stay home
+    + Go hiking
+    + Go swimming
+    + Go fishing
+
+    ~ You stayed home.
+- choices: [1]
+  expected: |
+    ~ Pick an activity:
+
+    + Stay home
+    + Go hiking
+    + Go swimming
+    + Go fishing
+
+    ~ You went hiking.
+- choices: [2]
+  expected: |
+    ~ Pick an activity:
+
+    + Stay home
+    + Go hiking
+    + Go swimming
+    + Go fishing
+
+    ~ You went swimming.
+- choices: [3]
+  expected: |
+    ~ Pick an activity:
+
+    + Stay home
+    + Go hiking
+    + Go swimming
+    + Go fishing
+
+    ~ You went fishing.
+</test>
+*/

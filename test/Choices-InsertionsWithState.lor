@@ -1,0 +1,56 @@
+
+state
+  item: "nothing"
+  cost: 0
+
+beat Shop
+  Welcome to the shop!
+
+  choice
+    Buy bread
+      item = "bread"
+      cost = 3
+    + ImportedGoods
+
+  You bought $item for $$$cost.
+
+beat ImportedGoods
+  choice
+    Buy silk
+      item = "silk"
+      cost = 15
+    Buy spice
+      item = "spice"
+      cost = 10
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Welcome to the shop!
+
+    + Buy bread
+    + Buy silk
+    + Buy spice
+
+    ~ You bought bread for $3.
+- choices: [1]
+  expected: |
+    ~ Welcome to the shop!
+
+    + Buy bread
+    + Buy silk
+    + Buy spice
+
+    ~ You bought silk for $15.
+- choices: [2]
+  expected: |
+    ~ Welcome to the shop!
+
+    + Buy bread
+    + Buy silk
+    + Buy spice
+
+    ~ You bought spice for $10.
+</test>
+*/

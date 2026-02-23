@@ -1,0 +1,55 @@
+
+state
+  visits: 0
+
+beat Start
+  Greeting()
+  visits += 1
+
+  Greeting()
+  visits += 1
+
+  choice
+    Continue -> Ending
+
+beat Greeting
+  cycle
+    First greeting.
+  --
+    Second greeting.
+  --
+    Third greeting.
+
+beat Ending
+  Greeting()
+  Visited $visits times before choice.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    + Continue
+
+    ~ Third greeting.
+
+    ~ Visited 2 times before choice.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    + Continue
+
+    + Continue
+
+    ~ Third greeting.
+
+    ~ Visited 2 times before choice.
+</test>
+*/

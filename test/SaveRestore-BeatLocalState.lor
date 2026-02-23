@@ -1,0 +1,46 @@
+
+beat Counter
+  state
+    count: 0
+
+  count += 1
+  Count is $count
+
+  if count < 3
+    -> Counter
+
+  choice
+    Finish -> Done
+
+beat Done
+  All done.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Count is 1
+
+    ~ Count is 2
+
+    ~ Count is 3
+
+    + Finish
+
+    ~ All done.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Count is 1
+
+    ~ Count is 2
+
+    ~ Count is 3
+
+    + Finish
+
+    + Finish
+
+    ~ All done.
+</test>
+*/
