@@ -418,6 +418,20 @@ struct TestContext {
     Loreline_Translations* translations;
 };
 
+/* Forward declarations */
+static void testChoice(
+    Loreline_Interpreter* interp,
+    const Loreline_ChoiceOption* options,
+    int optionCount,
+    void (*select)(int index),
+    void* userData
+);
+
+static void testFinish(
+    Loreline_Interpreter* interp,
+    void* userData
+);
+
 static void testDialogue(
     Loreline_Interpreter* interp,
     Loreline_String character,
@@ -487,15 +501,6 @@ static void testFinish(
     ctx->result->passed = (cmp == -1);
     ctx->result->actual = *ctx->output;
 }
-
-/* Forward declaration */
-static void testChoice(
-    Loreline_Interpreter* interp,
-    const Loreline_ChoiceOption* options,
-    int optionCount,
-    void (*select)(int index),
-    void* userData
-);
 
 static void testChoice(
     Loreline_Interpreter* interp,
