@@ -101,6 +101,7 @@ struct TestItem {
     bool hasChoices = false;
     std::string expected;
     int saveAtChoice = -1;
+    int saveAtDialogue = -1;
     std::string restoreFile;
     std::string translation;
 };
@@ -264,6 +265,8 @@ static std::vector<TestItem> parseTestItems(const std::string& yaml) {
             }
         } else if (key == "saveAtChoice") {
             current->saveAtChoice = std::stoi(value);
+        } else if (key == "saveAtDialogue") {
+            current->saveAtDialogue = std::stoi(value);
         } else if (key == "restoreFile") {
             current->restoreFile = value;
         } else if (key == "translation") {
@@ -401,7 +404,9 @@ struct TestContext {
     std::vector<int> choices;
     std::string expected;
     int saveAtChoice;
+    int saveAtDialogue;
     int choiceCount;
+    int dialogueCount;
     TestResult* result;
     Loreline_Script* parsedScript;
 
@@ -438,6 +443,36 @@ static void testDialogue(
         std::string taggedText = insertTagsInText(text.c_str(), tags, tagCount, multiline);
         *ctx->output += "~ " + taggedText + "\n\n";
     }
+
+    /* Save/restore test at dialogue */
+    if (ctx->saveAtDialogue >= 0 && ctx->dialogueCount == ctx->saveAtDialogue) {
+        ctx->dialogueCount++;
+        Loreline_String saveData = Loreline_save(interp);
+
+        if (!ctx->restoreInput.empty()) {
+            Loreline_Script* restoreScript = Loreline_parse(
+                ctx->restoreInput.c_str(), ctx->filePath.c_str(), fileHandler, nullptr);
+            if (restoreScript) {
+                Loreline_Interpreter* resumed = Loreline_resume(
+                    restoreScript, testDialogue, testChoice, testFinish,
+                    saveData, Loreline_String(), ctx->translations, ctx);
+                Loreline_releaseInterpreter(resumed);
+                Loreline_releaseScript(restoreScript);
+            } else {
+                ctx->result->passed = false;
+                ctx->result->actual = *ctx->output;
+                ctx->result->error = "Error parsing restoreInput script";
+            }
+        } else {
+            Loreline_Interpreter* resumed = Loreline_resume(
+                ctx->parsedScript, testDialogue, testChoice, testFinish,
+                saveData, Loreline_String(), ctx->translations, ctx);
+            Loreline_releaseInterpreter(resumed);
+        }
+        return;
+    }
+
+    ctx->dialogueCount++;
     advance();
 }
 
@@ -569,7 +604,9 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     ctx.choices = item.hasChoices ? item.choices : std::vector<int>();
     ctx.expected = item.expected;
     ctx.saveAtChoice = item.saveAtChoice;
+    ctx.saveAtDialogue = item.saveAtDialogue;
     ctx.choiceCount = 0;
+    ctx.dialogueCount = 0;
     ctx.result = &result;
     ctx.parsedScript = nullptr;
     ctx.restoreInput = restoreInput;

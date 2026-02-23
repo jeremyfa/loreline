@@ -1,0 +1,53 @@
+
+character Alice
+  name: "Alice"
+  mood: "neutral"
+
+beat Main
+  choice
+    Direct
+      Alice: "I'm $Alice.mood"
+    + MoodChange
+
+beat MoodChange
+  Alice.mood = "happy"
+  choice
+    Greet
+      Alice: "I'm $Alice.mood!"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct
+    + Greet
+
+    Alice: I'm happy
+- choices: [1]
+  expected: |
+    + Direct
+    + Greet
+
+    Alice: I'm happy!
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + Greet
+
+    + Direct
+    + Greet
+
+    Alice: I'm happy!
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + Greet
+
+    + Direct
+    + Greet
+
+    Alice: I'm happy
+</test>
+*/

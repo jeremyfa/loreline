@@ -236,9 +236,13 @@ def run_test(file_path, content, test_item, crlf):
     save_at_choice = test_item.get("saveAtChoice", -1)
     if save_at_choice is None:
         save_at_choice = -1
+    save_at_dialogue = test_item.get("saveAtDialogue", -1)
+    if save_at_dialogue is None:
+        save_at_dialogue = -1
     expected = test_item["expected"]
     output = [""]  # Use list for mutability in closures
     choice_count = [0]
+    dialogue_count = [0]
     parsed_script = [None]
     result = [None]  # (passed, actual, expected, error)
 
@@ -293,6 +297,31 @@ def run_test(file_path, content, test_item, crlf):
         else:
             tagged_text = insert_tags_in_text(text, tags, multiline)
             output[0] += "~ " + tagged_text + "\n\n"
+
+        # Save/restore test at dialogue
+        if save_at_dialogue >= 0 and dialogue_count[0] == save_at_dialogue:
+            dialogue_count[0] += 1
+            save_data = interp.save()
+
+            if restore_input is not None:
+                restore_script = loreline_Loreline.parse(
+                    restore_input, file_path, handle_file
+                )
+                if restore_script:
+                    loreline_Loreline.resume(
+                        restore_script, on_dialogue, on_choice, on_finish,
+                        save_data, None, options
+                    )
+                else:
+                    result[0] = (False, output[0], expected, "Error parsing restoreInput script")
+            else:
+                loreline_Loreline.resume(
+                    parsed_script[0], on_dialogue, on_choice, on_finish,
+                    save_data, None, options
+                )
+            return
+
+        dialogue_count[0] += 1
         advance()
 
     def on_choice(interp, choice_options, select):

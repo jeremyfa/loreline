@@ -1431,7 +1431,7 @@ typedef InterpreterOptions = {
                     final nextIndex = insertion.parentNextOptionIndex;
                     final parentBeat = currentScope.beat;
 
-                    final optionsDone = wrapNext(() -> presentChoice(options, next));
+                    final optionsDone = wrapNext(() -> presentChoice(choice, options, next));
                     evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex);
                     optionsDone.sync = false;
                 });
@@ -2583,7 +2583,7 @@ typedef InterpreterOptions = {
         final restoredOptions = this.pendingChoiceOptions;
         if (restoredOptions != null) {
             this.pendingChoiceOptions = null;
-            presentChoice(restoredOptions, next);
+            presentChoice(choice, restoredOptions, next);
             return;
         }
 
@@ -2591,7 +2591,7 @@ typedef InterpreterOptions = {
         final options:Array<ChoiceOption> = [];
         final optionsDone = wrapNext(() -> {
             // Phase 2: present options
-            presentChoice(options, next);
+            presentChoice(choice, options, next);
         });
 
         evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb);
@@ -2603,10 +2603,11 @@ typedef InterpreterOptions = {
      * Phase 2 of choice evaluation: present collected options to the user
      * and handle their selection.
      *
+     * @param choice The AST choice statement node
      * @param options The collected choice options
      * @param next Callback to call when evaluation completes
      */
-    function presentChoice(options:Array<ChoiceOption>, next:()->Void) {
+    function presentChoice(choice:NChoiceStatement, options:Array<ChoiceOption>, next:()->Void) {
 
         // If we are within an insertion waiting for a choice block,
         // then we reached that choice block and should collect options
@@ -2624,10 +2625,10 @@ typedef InterpreterOptions = {
             return;
         }
 
-        // Store pending options for save/restore if any option has an insertion.
+        // Store pending options for save/restore if the choice has any insertion entries.
         // This allows restoring without re-evaluating insertion bodies.
-        for (opt in options) {
-            if (opt.insertion != null) {
+        for (astOption in choice.options) {
+            if (astOption.insertion != null) {
                 this.pendingChoiceOptions = options;
                 break;
             }

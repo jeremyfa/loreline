@@ -1,0 +1,59 @@
+
+state
+  seen: 0
+
+beat Main
+  choice
+    Option A
+      "Picked A. seen=$seen"
+    + NoChoiceBeat
+    Option B
+      "Picked B. seen=$seen"
+
+beat NoChoiceBeat
+  seen += 1
+  "Side effect dialogue. seen=$seen"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Side effect dialogue. seen=1
+
+    + Option A
+    + Option B
+
+    ~ Picked A. seen=1
+- choices: [1]
+  expected: |
+    ~ Side effect dialogue. seen=1
+
+    + Option A
+    + Option B
+
+    ~ Picked B. seen=1
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ Side effect dialogue. seen=1
+
+    ~ Side effect dialogue. seen=1
+
+    + Option A
+    + Option B
+
+    ~ Picked A. seen=1
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Side effect dialogue. seen=1
+
+    + Option A
+    + Option B
+
+    + Option A
+    + Option B
+
+    ~ Picked A. seen=1
+</test>
+*/

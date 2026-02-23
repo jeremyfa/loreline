@@ -1,0 +1,61 @@
+
+state
+  before: 0
+  after: 0
+
+beat Main
+  choice
+    Direct
+      "Direct. before=$before, after=$after"
+    + Inserted
+
+beat Inserted
+  before += 1
+  "Inserted dialogue. before=$before, after=$after"
+  after += 1
+  choice
+    Pick
+      "Pick. before=$before, after=$after"
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    ~ Inserted dialogue. before=1, after=0
+
+    + Direct
+    + Pick
+
+    ~ Pick. before=1, after=1
+- choices: [0]
+  expected: |
+    ~ Inserted dialogue. before=1, after=0
+
+    + Direct
+    + Pick
+
+    ~ Direct. before=1, after=1
+- choices: [1]
+  saveAtDialogue: 0
+  expected: |
+    ~ Inserted dialogue. before=1, after=0
+
+    ~ Inserted dialogue. before=1, after=0
+
+    + Direct
+    + Pick
+
+    ~ Pick. before=1, after=1
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ Inserted dialogue. before=1, after=0
+
+    ~ Inserted dialogue. before=1, after=0
+
+    + Direct
+    + Pick
+
+    ~ Direct. before=1, after=1
+</test>
+*/

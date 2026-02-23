@@ -1,0 +1,103 @@
+
+state
+  step: 0
+
+beat Main
+  step += 1
+  choice
+    DirectA
+      "DirectA. step=$step"
+      -> Second
+    + InsertedA
+
+beat InsertedA
+  step += 1
+  choice
+    PickA
+      "PickA. step=$step"
+      -> Second
+
+beat Second
+  step += 1
+  choice
+    DirectB
+      "DirectB. step=$step"
+    + InsertedB
+
+beat InsertedB
+  step += 1
+  choice
+    PickB
+      "PickB. step=$step"
+
+/*
+<test>
+- choices: [1, 1]
+  expected: |
+    + DirectA
+    + PickA
+
+    ~ PickA. step=2
+
+    + DirectB
+    + PickB
+
+    ~ PickB. step=4
+- choices: [0, 0]
+  expected: |
+    + DirectA
+    + PickA
+
+    ~ DirectA. step=2
+
+    + DirectB
+    + PickB
+
+    ~ DirectB. step=4
+- choices: [1, 1]
+  saveAtChoice: 0
+  expected: |
+    + DirectA
+    + PickA
+
+    + DirectA
+    + PickA
+
+    ~ PickA. step=2
+
+    + DirectB
+    + PickB
+
+    ~ PickB. step=4
+- choices: [0, 1]
+  saveAtChoice: 0
+  expected: |
+    + DirectA
+    + PickA
+
+    + DirectA
+    + PickA
+
+    ~ DirectA. step=2
+
+    + DirectB
+    + PickB
+
+    ~ PickB. step=4
+- choices: [1, 1]
+  saveAtChoice: 1
+  expected: |
+    + DirectA
+    + PickA
+
+    ~ PickA. step=2
+
+    + DirectB
+    + PickB
+
+    + DirectB
+    + PickB
+
+    ~ PickB. step=4
+</test>
+*/

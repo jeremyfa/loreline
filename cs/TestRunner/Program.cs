@@ -343,9 +343,11 @@ class Program
         var choices = item.Choices != null ? new List<int>(item.Choices) : null;
         string beatName = item.Beat;
         int saveAtChoice = item.SaveAtChoice ?? -1;
+        int saveAtDialogue = item.SaveAtDialogue ?? -1;
         string expected = item.Expected;
         var output = new StringBuilder();
         int choiceCount = 0;
+        int dialogueCount = 0;
         Script parsedScript = null;
         TestResult testResult = new TestResult { Expected = expected };
 
@@ -416,6 +418,35 @@ class Program
                 string taggedText = InsertTagsInText(dialogue.Text, dialogue.Tags, multiline);
                 output.Append("~ " + taggedText + "\n\n");
             }
+
+            // Save/restore test at dialogue
+            if (saveAtDialogue >= 0 && dialogueCount == saveAtDialogue)
+            {
+                dialogueCount++;
+                string saveData = dialogue.Interpreter.Save();
+
+                if (restoreInput != null)
+                {
+                    Script restoreScript = Engine.Parse(restoreInput, filePath, HandleFile);
+                    if (restoreScript != null)
+                    {
+                        Engine.Resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData, null, options);
+                    }
+                    else
+                    {
+                        testResult.Passed = false;
+                        testResult.Actual = output.ToString();
+                        testResult.Error = "Error parsing restoreInput script";
+                    }
+                }
+                else
+                {
+                    Engine.Resume(parsedScript, handleDialogue, handleChoice, handleFinish, saveData, null, options);
+                }
+                return;
+            }
+
+            dialogueCount++;
             dialogue.Callback();
         }
 
@@ -502,6 +533,7 @@ class Program
         public List<int> Choices { get; set; }
         public string Expected { get; set; }
         public int? SaveAtChoice { get; set; }
+        public int? SaveAtDialogue { get; set; }
         public string RestoreFile { get; set; }
         public string Translation { get; set; }
     }
@@ -614,6 +646,10 @@ class Program
                 case "saveAtChoice":
                     if (int.TryParse(value, out int sac))
                         current.SaveAtChoice = sac;
+                    break;
+                case "saveAtDialogue":
+                    if (int.TryParse(value, out int sad))
+                        current.SaveAtDialogue = sad;
                     break;
                 case "restoreFile":
                     current.RestoreFile = value;

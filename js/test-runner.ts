@@ -25,6 +25,7 @@ interface TestItem {
     choices?: number[];
     beat?: string;
     saveAtChoice?: number;
+    saveAtDialogue?: number;
     expected: string;
     translation?: string;
     restoreFile?: string;
@@ -133,9 +134,11 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
         const choices: number[] | null = testItem.choices ? [...testItem.choices] : null;
         const beatName: string | undefined = testItem.beat || undefined;
         const saveAtChoice: number = testItem.saveAtChoice != null ? testItem.saveAtChoice : -1;
+        const saveAtDialogue: number = testItem.saveAtDialogue != null ? testItem.saveAtDialogue : -1;
         const expected: string = testItem.expected;
         let output: string = '';
         let choiceCount: number = 0;
+        let dialogueCount: number = 0;
         let parsedScript: Script | null = null;
 
         // Build options
@@ -188,6 +191,26 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
                 const taggedText: string = insertTagsInText(text, tags, multiline);
                 output += '~ ' + taggedText + '\n\n';
             }
+
+            // Save/restore test at dialogue
+            if (saveAtDialogue >= 0 && dialogueCount === saveAtDialogue) {
+                dialogueCount++;
+                const saveData = _interpreter.save();
+
+                if (restoreInput != null) {
+                    const restoreScript: Script | null = Loreline.parse(restoreInput, filePath, handleFile);
+                    if (restoreScript) {
+                        Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData, undefined, options);
+                    } else {
+                        resolve({ passed: false, actual: output, expected, error: 'Error parsing restoreInput script' });
+                    }
+                } else {
+                    Loreline.resume(parsedScript!, handleDialogue, handleChoice, handleFinish, saveData, undefined, options);
+                }
+                return;
+            }
+
+            dialogueCount++;
             callback();
         };
 

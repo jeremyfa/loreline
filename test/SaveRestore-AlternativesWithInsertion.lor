@@ -1,0 +1,58 @@
+
+state
+  visits: 0
+
+beat Main
+  visits += 1
+  choice
+    Direct
+      cycle
+        "First visit direct"
+      --
+        "Return visit direct"
+    + Inserted
+
+beat Inserted
+  choice
+    Pick
+      cycle
+        "First visit pick"
+      --
+        "Return visit pick"
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Direct
+    + Pick
+
+    ~ First visit direct
+- choices: [1]
+  expected: |
+    + Direct
+    + Pick
+
+    ~ First visit pick
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + Pick
+
+    + Direct
+    + Pick
+
+    ~ First visit direct
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    + Direct
+    + Pick
+
+    + Direct
+    + Pick
+
+    ~ First visit pick
+</test>
+*/
