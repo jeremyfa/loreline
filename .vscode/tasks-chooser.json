@@ -37,6 +37,13 @@
             "args": ["py/test-runner.py", "./test"]
         },
         {
+            "displayName": "✓ Lua tests",
+            "type": "shell",
+            "description": "lua5.4 lua/test-runner.lua ./test",
+            "command": "lua5.4",
+            "args": ["lua/test-runner.lua", "./test"]
+        },
+        {
             "displayName": "✓ C++ lib tests",
             "type": "shell",
             "description": "node ./setup --cpp-lib-test",
@@ -77,6 +84,13 @@
             "description": "node ./setup --py",
             "command": "node",
             "args": ["setup", "--py"]
+        },
+        {
+            "displayName": "⚙ Build Lua",
+            "type": "shell",
+            "description": "node ./setup --lua",
+            "command": "node",
+            "args": ["setup", "--lua"]
         },
         {
             "displayName": "⚙ Build C++",

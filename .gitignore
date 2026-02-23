@@ -23,3 +23,5 @@ merged-context.txt
 /cpp/test/test_loreline
 /py/loreline/_core.py
 /py/loreline/__pycache__
+/lua/loreline/core.lua
+/.tmp

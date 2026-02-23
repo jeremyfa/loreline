@@ -3566,7 +3566,8 @@ class Token {
      * @param count Number of characters to advance (default 1)
      */
     inline function advance(count:Int = 1) {
-        while (count-- > 0 && pos < length) {
+        for (_ in 0...count) {
+            if (pos >= length) break;
             if (input.uCharCodeAt(pos) == "\n".code) {
                 line++;
                 column = 1;

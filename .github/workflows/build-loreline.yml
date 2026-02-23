@@ -517,6 +517,11 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      - name: Setup haxelib
+        run: |
+          mkdir -p .haxelib
+          haxelib dev hscript git/hscript --quiet
+
       - name: Build Python
         run: node ./setup --py
 
@@ -547,6 +552,89 @@ jobs:
           retention-days: 1
           name: loreline-python-sample.zip
           path: loreline-python-sample.zip
+          compression-level: 0
+
+
+  loreline-lua:
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Lua
+        run: sudo apt-get install -y lua5.4
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Setup haxelib
+        run: |
+          mkdir -p .haxelib
+          haxelib dev hscript git/hscript --quiet
+
+      - name: Build Lua
+        run: node ./setup --lua
+
+      - name: Run Lua tests
+        run: lua5.4 lua/test-runner.lua ./test
+
+      - name: Assemble Lua sample
+        run: node ./setup --sample lua
+
+      - name: Create zip archives
+        run: |
+          cd lua
+          zip -r ../loreline-lua.zip loreline/
+          cd ../sample/loreline-lua
+          zip -r ../../loreline-lua-sample.zip .
+
+      - name: Upload loreline-lua.zip
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-lua.zip
+          path: loreline-lua.zip
+          compression-level: 0
+
+      - name: Upload loreline-lua-sample.zip
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-lua-sample.zip
+          path: loreline-lua-sample.zip
           compression-level: 0
 
 
@@ -686,7 +774,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-python, loreline-unity, loreline-web, loreline-cpp]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-cpp]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -751,6 +839,18 @@ jobs:
           name: loreline-python-sample.zip
           path: .
 
+      - name: Download loreline-lua.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-lua.zip
+          path: .
+
+      - name: Download loreline-lua-sample.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-lua-sample.zip
+          path: .
+
       - name: Download loreline-cpp.zip
         uses: actions/download-artifact@v4
         with:
@@ -782,4 +882,6 @@ jobs:
             loreline-web.zip
             loreline-python.zip
             loreline-python-sample.zip
+            loreline-lua.zip
+            loreline-lua-sample.zip
             loreline-cpp.zip
