@@ -841,11 +841,7 @@ typedef InterpreterOptions = {
         // Prepare to continue execution
         final done = wrapNext(next);
 
-        // We now consider that finishing this
-        // execution chain is the finish trigger
-        finishTrigger = done;
-
-        // Resume from the top scope
+        // Resume from the specified scope level
         resumeNode(stack[scopeLevel].node, scopeLevel, done.cb);
         done.sync = false;
 
