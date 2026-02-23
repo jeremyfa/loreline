@@ -1144,7 +1144,7 @@ typedef InterpreterOptions = {
         }
         #if (loreline_cs_api && !macro)
         else if (Objects.isCsDict(fields)) {
-            type = 'System.Collections.IDictionary';
+            type = null;
             final keys = Objects.getCsDictKeys(fields);
             for (key in keys) {
                 Reflect.setField(result, key, serializeValue(Objects.getCsDictField(fields, key)));
