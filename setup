@@ -616,15 +616,7 @@ async function main() {
         fs.mkdirSync('lua/loreline', { recursive: true });
 
         let haxeBuildLuaArgs = [
-            '--class-path', 'src',
-            '--lua', 'lua/loreline/core.lua',
-            '--library', 'hscript',
-            '-D', 'hscriptPos',
-            '-D', 'loreline_typedef_options',
-            '-D', 'loreline_functions_map_dynamic_access',
-            '-D', 'loreline_node_id_class',
-            '-D', 'lua-vanilla',
-            '--main', 'loreline.lib.Library'
+            'build-lua.hxml',
         ];
 
         await command(haxe, haxeBuildLuaArgs.concat(haxeBuildArgs));

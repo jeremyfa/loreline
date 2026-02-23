@@ -32,7 +32,7 @@ def handle_file(path: str, provide):
 def handle_dialogue(interp: Interpreter, character, text: str, tags, advance):
     """Display dialogue or narrative text."""
     # Indent continuation lines for multiline text
-    formatted = text.replace("\n", "\n   ")
+    formatted = text.replace("\n", "\n ")
 
     if character is not None:
         # Dialogue — resolve display name
@@ -53,9 +53,7 @@ def handle_choice(interp: Interpreter, options: list, select):
     for i, opt in enumerate(options):
         if opt.enabled:
             enabled_indices.append(i)
-            print(f"  [{len(enabled_indices)}] {opt.text}")
-        else:
-            print(f"  [-] {opt.text} (unavailable)")
+            print(f" {len(enabled_indices)}. {opt.text}")
 
     while True:
         try:

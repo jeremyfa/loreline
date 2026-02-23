@@ -1,0 +1,5 @@
+/loreline/__init__.py
+/loreline/_core.py
+/loreline/py.typed
+__pycache__/
+/story/

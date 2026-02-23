@@ -33,7 +33,7 @@ end
 --- Display dialogue or narrative text.
 local function handle_dialogue(interp, character, text, tags, advance)
     -- Indent continuation lines for multiline text
-    local formatted = text:gsub("\n", "\n   ")
+    local formatted = text:gsub("\n", "\n ")
 
     if character ~= nil then
         -- Dialogue — resolve display name
@@ -55,9 +55,7 @@ local function handle_choice(interp, options, select)
     for i, opt in ipairs(options) do
         if opt.enabled then
             enabled_indices[#enabled_indices + 1] = i - 1  -- 0-based index for select()
-            io.write("  [" .. #enabled_indices .. "] " .. opt.text .. "\n")
-        else
-            io.write("  [-] " .. opt.text .. " (unavailable)\n")
+            io.write(" " .. #enabled_indices .. ". " .. opt.text .. "\n")
         end
     end
 

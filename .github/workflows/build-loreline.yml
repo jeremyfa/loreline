@@ -531,12 +531,14 @@ jobs:
       - name: Assemble Python sample
         run: node ./setup --sample python
 
-      - name: Create zip archives
+      - name: Create zip archive
         run: |
-          cd py
-          zip -r ../loreline-python.zip loreline/ pyproject.toml
-          cd ../sample/loreline-python
-          zip -r ../../loreline-python-sample.zip .
+          mkdir loreline-python-pkg
+          cp -r py/loreline loreline-python-pkg/loreline
+          cp py/pyproject.toml loreline-python-pkg/
+          cp -r sample/loreline-python loreline-python-pkg/sample
+          cd loreline-python-pkg
+          zip -r ../loreline-python.zip .
 
       - name: Upload loreline-python.zip
         uses: actions/upload-artifact@v4
@@ -544,14 +546,6 @@ jobs:
           retention-days: 1
           name: loreline-python.zip
           path: loreline-python.zip
-          compression-level: 0
-
-      - name: Upload loreline-python-sample.zip
-        uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: loreline-python-sample.zip
-          path: loreline-python-sample.zip
           compression-level: 0
 
 
@@ -614,12 +608,13 @@ jobs:
       - name: Assemble Lua sample
         run: node ./setup --sample lua
 
-      - name: Create zip archives
+      - name: Create zip archive
         run: |
-          cd lua
-          zip -r ../loreline-lua.zip loreline/
-          cd ../sample/loreline-lua
-          zip -r ../../loreline-lua-sample.zip .
+          mkdir loreline-lua-pkg
+          cp -r lua/loreline loreline-lua-pkg/loreline
+          cp -r sample/loreline-lua loreline-lua-pkg/sample
+          cd loreline-lua-pkg
+          zip -r ../loreline-lua.zip .
 
       - name: Upload loreline-lua.zip
         uses: actions/upload-artifact@v4
@@ -627,14 +622,6 @@ jobs:
           retention-days: 1
           name: loreline-lua.zip
           path: loreline-lua.zip
-          compression-level: 0
-
-      - name: Upload loreline-lua-sample.zip
-        uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: loreline-lua-sample.zip
-          path: loreline-lua-sample.zip
           compression-level: 0
 
 
@@ -833,22 +820,10 @@ jobs:
           name: loreline-python.zip
           path: .
 
-      - name: Download loreline-python-sample.zip
-        uses: actions/download-artifact@v4
-        with:
-          name: loreline-python-sample.zip
-          path: .
-
       - name: Download loreline-lua.zip
         uses: actions/download-artifact@v4
         with:
           name: loreline-lua.zip
-          path: .
-
-      - name: Download loreline-lua-sample.zip
-        uses: actions/download-artifact@v4
-        with:
-          name: loreline-lua-sample.zip
           path: .
 
       - name: Download loreline-cpp.zip
@@ -881,7 +856,5 @@ jobs:
             loreline-unity.zip
             loreline-web.zip
             loreline-python.zip
-            loreline-python-sample.zip
             loreline-lua.zip
-            loreline-lua-sample.zip
             loreline-cpp.zip
