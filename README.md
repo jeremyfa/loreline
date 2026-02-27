@@ -1,8 +1,14 @@
-# Loreline
+![Loreline](og-banner.png)
 
-Loreline is a modern and open-source scripting language for writing interactive fictions.
+A modern and open-source scripting language for writing **interactive fiction**.
 
-https://loreline.app
+Designed so writers can focus on story and dialogue while still having real programming tools — branching, state, functions — when they need them. If you write for games, visual novels, or any kind of branching narrative, this is for you.
+
+Loreline works everywhere: game engines, web apps, or standalone projects. It adapts to your tools, the stories you write stay portable.
+
+### Get started
+
+The documentation and an interactive playground are available on **[loreline.app](https://loreline.app)**.
 
 ## Development
 
@@ -21,7 +27,10 @@ npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
 node ./setup --js          # Build JavaScript library (js/loreline.js)
 node ./setup --cs          # Export C# source files (cs/Loreline/)
 node ./setup --cs --cs-dll # Export C# + build Loreline.dll
+node ./setup --py          # Build Python package (py/loreline/)
+node ./setup --lua         # Build Lua module (lua/loreline/)
 node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
+node ./setup --cpp-lib     # Build C++ shared library
 ```
 
 ### Setting up samples
@@ -31,17 +40,25 @@ node ./setup --sample          # Set up all sample projects
 node ./setup --sample web      # Set up loreline-web only
 node ./setup --sample unity    # Set up loreline-unity only
 node ./setup --sample cpp      # Set up loreline-cpp only
+node ./setup --sample python   # Set up loreline-python only
+node ./setup --sample lua      # Set up loreline-lua only
 ```
 
 This copies the built runtime and story files into the sample directories.
 For loreline-web, run `--js` first. For loreline-unity, run `--cs` first.
-For loreline-cpp, run `--cpp` first.
+For loreline-cpp, run `--cpp` first. For loreline-python, run `--py` first.
+For loreline-lua, run `--lua` first.
 
 ### Testing
 
+Python, Lua, and JS tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests).
+
 ```sh
-node run test ./test         # Run Neko tests only
-node ./setup --test        # Run all test suites (Neko + C# + C# AOT + JS)
+node run test ./test                    # Run Neko tests only
+python3 py/test-runner.py ./test        # Run Python tests only
+lua5.4 lua/test-runner.lua ./test       # Run Lua tests only
+npx tsx js/test-runner.ts ./test        # Run JS tests only
+node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + JS + C++ lib + Python + Lua)
 ```
 
 ## License
