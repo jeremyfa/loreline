@@ -791,7 +791,7 @@
             "patterns": [
                 {
                     "name": "keyword.control.loreline",
-                    "match": "\\b(if|else|new|and|or|sequence|cycle|once|pick|shuffle)\\b|--"
+                    "match": "\\b(if|else|new|sequence|cycle|once|pick|shuffle)\\b|--"
                 }
             ]
         },
