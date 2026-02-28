@@ -4,7 +4,7 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing"],
     "description": "Open-source scripting language for writing interactive fiction",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "classPath": "src/",
     "releasenote": "First public release",
     "contributors": ["jeremyfa"],
