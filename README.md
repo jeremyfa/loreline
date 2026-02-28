@@ -2,7 +2,7 @@
 
 A modern and open-source scripting language for writing **interactive fiction**.
 
-Designed so writers can focus on story and dialogue while still having real programming tools — branching, state, functions — when they need them. If you write for games, visual novels, or any kind of branching narrative, this is for you.
+Designed so writers can focus on story and dialogue while still having real programming tools (branching, state, functions) when they need them. If you write for games, visual novels, or any kind of branching narrative, this is for you.
 
 Loreline works everywhere: game engines, web apps, or standalone projects. It adapts to your tools, the stories you write stay portable.
 
@@ -10,7 +10,9 @@ Loreline works everywhere: game engines, web apps, or standalone projects. It ad
 
 The documentation and an interactive playground are available on **[loreline.app](https://loreline.app)**.
 
-## Development
+## Building Loreline
+
+What follows is only needed if you want to modify Loreline from source. If you just want to use Loreline with your favourite engine, check out [the integrations guides](https://loreline.app/en/docs/).
 
 ### Prerequisites
 
