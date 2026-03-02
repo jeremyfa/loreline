@@ -1,0 +1,4 @@
+framework module Loreline {
+  header "Loreline.h"
+  export *
+}

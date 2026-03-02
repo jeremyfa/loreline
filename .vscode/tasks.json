@@ -6,17 +6,16 @@
             "command": "node",
             "args": [
                 "setup",
-                "--cs",
-                "--cs-dll"
+                "--cpp-lib-test"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "label": "⚙ Build C# + DLL"
+            "label": "✓ C++ lib tests"
         }
     ],
-    "displayName": "⚙ Build C# + DLL",
-    "description": "node ./setup --cs --cs-dll",
+    "displayName": "✓ C++ lib tests",
+    "description": "node ./setup --cpp-lib-test",
     "chooserIndex": 7
 }

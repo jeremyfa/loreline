@@ -840,9 +840,143 @@ jobs:
           compression-level: 0
 
 
+  loreline-ios:
+    runs-on: macos-14
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          set -ex
+          export NEKOPATH=$PWD'/git/haxe-binary/mac/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/mac/haxe'
+          echo 'neko path: '$NEKOPATH
+          echo 'haxe path: '$HAXEPATH
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.dylib        /usr/local/lib/libneko.dylib
+          sudo ln -s $NEKOPATH/libneko.2.4.0.dylib  /usr/local/lib/libneko.2.4.0.dylib
+          sudo ln -s $NEKOPATH/libneko.2.dylib      /usr/local/lib/libneko.2.dylib
+          set +x
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Build iOS xcframework
+        run: node ./setup --ios
+
+      - name: Create zip archive
+        run: |
+          mkdir -p loreline-ios-pkg/include
+          cp -r build/cpp-lib/ios/Loreline.xcframework loreline-ios-pkg/
+          cp cpp/include/Loreline.h loreline-ios-pkg/include/
+          cd loreline-ios-pkg && zip --symlinks -9 ../loreline-ios.zip -r .
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-ios.zip
+          path: loreline-ios.zip
+          compression-level: 0
+
+
+  loreline-android:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          echo 'neko path: '$NEKOPATH
+          echo 'haxe path: '$HAXEPATH
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | sdkmanager "ndk;27.3.13750724"
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> $GITHUB_ENV
+
+      - name: Build Android AAR
+        run: node ./setup --android
+
+      - name: Create zip archive
+        run: |
+          mkdir -p loreline-android-pkg/include
+          cp build/cpp-lib/android/loreline.aar loreline-android-pkg/
+          cp cpp/include/Loreline.h loreline-android-pkg/include/
+          cd loreline-android-pkg && zip -9 ../loreline-android.zip -r .
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-android.zip
+          path: loreline-android.zip
+          compression-level: 0
+
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-jvm, loreline-unity, loreline-web, loreline-cpp]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -919,6 +1053,18 @@ jobs:
           name: loreline-jvm.zip
           path: .
 
+      - name: Download loreline-ios.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-ios.zip
+          path: .
+
+      - name: Download loreline-android.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-android.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -938,6 +1084,8 @@ jobs:
             loreline-mac.zip
             loreline-linux-x86_64.zip
             loreline-linux-arm64.zip
+            loreline-ios.zip
+            loreline-android.zip
             loreline-js.zip
             loreline-csharp.zip
             loreline-unity.zip

@@ -121,6 +121,20 @@
             "args": ["setup", "--jvm"]
         },
         {
+            "displayName": "⚙ Build iOS",
+            "type": "shell",
+            "description": "node ./setup --ios",
+            "command": "node",
+            "args": ["setup", "--ios"]
+        },
+        {
+            "displayName": "⚙ Build Android",
+            "type": "shell",
+            "description": "node ./setup --android",
+            "command": "node",
+            "args": ["setup", "--android"]
+        },
+        {
             "displayName": "⚙ Set up samples",
             "type": "shell",
             "description": "node ./setup --sample",
