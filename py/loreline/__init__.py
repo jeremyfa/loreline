@@ -124,9 +124,41 @@ def _make_finish_bridge(handle_finish: FinishHandler) -> Callable:
     return bridge
 
 
+# ── Node ─────────────────────────────────────────────────────────────────
+
+class Node:
+    """Base class for Loreline AST nodes.
+
+    Provides access to the node type, unique ID, and JSON export.
+    """
+
+    def __init__(self, _internal: Any) -> None:
+        self._internal = _internal
+
+    @property
+    def type(self) -> str:
+        """The type of this node (e.g. ``"Script"``, ``"Beat"``, ``"Text"``)."""
+        return self._internal.type()
+
+    def node_id_to_string(self) -> str:
+        """Return the human-readable node ID string (e.g. ``'1.0.0.0'``)."""
+        return self._internal.id.toString()
+
+    def to_json(self, pretty: bool = False) -> str:
+        """Export this node as a JSON string.
+
+        Args:
+            pretty: Whether to format with indentation and line breaks.
+
+        Returns:
+            A JSON string representation of the node tree.
+        """
+        return _core.loreline_Json.stringify(self._internal.toJson(), pretty)
+
+
 # ── Script ───────────────────────────────────────────────────────────────
 
-class Script:
+class Script(Node):
     """A parsed Loreline script AST.
 
     Obtain via ``Loreline.parse()``. Pass to ``Loreline.play()`` or
@@ -134,7 +166,7 @@ class Script:
     """
 
     def __init__(self, _internal: Any) -> None:
-        self._internal = _internal
+        super().__init__(_internal)
 
 
 # ── Interpreter ──────────────────────────────────────────────────────────

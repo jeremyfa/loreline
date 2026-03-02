@@ -44,6 +44,13 @@
             "args": ["lua/test-runner.lua", "./test"]
         },
         {
+            "displayName": "✓ JVM tests",
+            "type": "shell",
+            "description": "javac + java TestRunner ./test",
+            "command": "bash",
+            "args": ["-c", "mkdir -p build/jvm/test && javac -cp jvm/loreline.jar -d build/jvm/test jvm/test/TestRunner.java && java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test"]
+        },
+        {
             "displayName": "✓ C++ lib tests",
             "type": "shell",
             "description": "node ./setup --cpp-lib-test",
@@ -105,6 +112,13 @@
             "description": "node ./setup --cpp-lib",
             "command": "node",
             "args": ["setup", "--cpp-lib"]
+        },
+        {
+            "displayName": "⚙ Build JVM",
+            "type": "shell",
+            "description": "node ./setup --jvm",
+            "command": "node",
+            "args": ["setup", "--jvm"]
         },
         {
             "displayName": "⚙ Set up samples",

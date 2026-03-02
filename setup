@@ -115,6 +115,7 @@ async function main() {
     let buildJs = rawArgs.indexOf('--js') != -1;
     let buildPython = rawArgs.indexOf('--python') != -1 || rawArgs.indexOf('--py') != -1;
     let buildLua = rawArgs.indexOf('--lua') != -1;
+    let buildJvm = rawArgs.indexOf('--jvm') != -1;
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
@@ -142,7 +143,7 @@ async function main() {
     }
 
     // Install dependencies (only needed for build targets, not --sample or --test)
-    if (buildCpp || buildCppLib || buildCs || buildJs || buildPython || buildLua) {
+    if (buildCpp || buildCppLib || buildCs || buildJs || buildPython || buildLua || buildJvm) {
         var haxelibRepoPath = path.join(__dirname, '.haxelib');
         if (!fs.existsSync(haxelibRepoPath)) {
             fs.mkdirSync(haxelibRepoPath);
@@ -151,6 +152,9 @@ async function main() {
         await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
         await command(haxelib, ['dev', 'hscript', 'git/hscript', '--quiet'], { cwd: __dirname });
         await command(haxelib, ['dev', 'yaml', 'git/yaml', '--quiet'], { cwd: __dirname });
+        if (buildJvm) {
+            await command(haxelib, ['dev', 'hxjava', 'git/hxjava', '--quiet'], { cwd: __dirname });
+        }
     }
 
     if (buildCpp) {
@@ -689,6 +693,76 @@ async function main() {
         fs.writeFileSync('lua/loreline/core.lua', lua);
     }
 
+    if (buildJvm) {
+        console.log('Export loreline for JVM');
+
+        const asmVersion = '9.7.1';
+        const asmJar = path.join(__dirname, 'jvm', 'lib', `asm-${asmVersion}.jar`);
+        const asmCommonsJar = path.join(__dirname, 'jvm', 'lib', `asm-commons-${asmVersion}.jar`);
+
+        // Download ASM jars from Maven Central if not cached
+        if (!fs.existsSync(asmJar) || !fs.existsSync(asmCommonsJar)) {
+            fs.mkdirSync(path.join(__dirname, 'jvm', 'lib'), { recursive: true });
+            const mavenBase = `https://repo1.maven.org/maven2/org/ow2/asm`;
+            for (const [artifact, dest] of [
+                [`asm/${asmVersion}/asm-${asmVersion}.jar`, asmJar],
+                [`asm-commons/${asmVersion}/asm-commons-${asmVersion}.jar`, asmCommonsJar]
+            ]) {
+                if (!fs.existsSync(dest)) {
+                    console.log(`  Downloading ${path.basename(dest)}...`);
+                    await command('curl', ['-sL', '-o', dest, `${mavenBase}/${artifact}`]);
+                }
+            }
+        }
+
+        // Step 1: Haxe build → core jar
+        fs.mkdirSync(path.join(__dirname, 'build', 'jvm'), { recursive: true });
+        await command(haxe, ['build-jvm.hxml'].concat(haxeBuildArgs));
+
+        // Step 2: Relocate packages + fix Haxe JVM generic checkcast issues
+        const cpSep = process.platform == 'win32' ? ';' : ':';
+        const asmCp = [asmJar, asmCommonsJar].join(cpSep);
+        const relocatorToolsDir = path.join(__dirname, 'build', 'jvm', 'tools');
+        fs.mkdirSync(relocatorToolsDir, { recursive: true });
+        await command('javac', ['-cp', asmCp, '-d', relocatorToolsDir,
+            path.join(__dirname, 'jvm', 'tools', 'Relocator.java')]);
+        await command('java', ['-cp', [relocatorToolsDir, asmCp].join(cpSep), 'Relocator',
+            path.join(__dirname, 'build', 'jvm', 'loreline-core.jar'),
+            path.join(__dirname, 'build', 'jvm', 'loreline-relocated.jar')]);
+
+        // Step 3: Compile Java wrapper classes
+        const wrapperClassesDir = path.join(__dirname, 'build', 'jvm', 'classes');
+        fs.mkdirSync(wrapperClassesDir, { recursive: true });
+        await command('javac', [
+            '-cp', path.join(__dirname, 'build', 'jvm', 'loreline-relocated.jar'),
+            '-d', wrapperClassesDir,
+            ...fs.readdirSync(path.join(__dirname, 'jvm', 'src', 'loreline'))
+                .filter(f => f.endsWith('.java'))
+                .map(f => path.join(__dirname, 'jvm', 'src', 'loreline', f))
+        ]);
+
+        // Step 4: Merge relocated jar + wrapper classes → final loreline.jar
+        const mergeDir = path.join(__dirname, 'build', 'jvm', 'jar-merge');
+        if (fs.existsSync(mergeDir)) fs.rmSync(mergeDir, { recursive: true, force: true });
+        fs.mkdirSync(mergeDir, { recursive: true });
+        // Extract relocated jar
+        await command('jar', ['xf', path.join(__dirname, 'build', 'jvm', 'loreline-relocated.jar')],
+            { cwd: mergeDir });
+        // Copy wrapper classes
+        for (const f of fs.readdirSync(path.join(wrapperClassesDir, 'loreline'))) {
+            if (f.endsWith('.class')) {
+                fs.copyFileSync(
+                    path.join(wrapperClassesDir, 'loreline', f),
+                    path.join(mergeDir, 'loreline', f)
+                );
+            }
+        }
+        // Create final jar
+        await command('jar', ['cf', path.join(__dirname, 'jvm', 'loreline.jar'), '-C', mergeDir, '.']);
+
+        console.log('Built: jvm/loreline.jar');
+    }
+
     // ── Set up sample projects ──────────────────────────────────────────────
     //
     // Copies built runtime files and story scripts into the sample directories.
@@ -936,6 +1010,22 @@ async function main() {
         console.log('\n=== Lua build + tests ===');
         await command('node', ['./setup', '--lua']);
         await command('lua', ['lua/test-runner.lua', './test']);
+
+        // 8. JVM build + tests
+        console.log('\n=== JVM build + tests ===');
+        await command('node', ['./setup', '--jvm']);
+        const jvmCpSep = process.platform == 'win32' ? ';' : ':';
+        const jvmTestClassesDir = path.join(__dirname, 'build', 'jvm', 'test');
+        fs.mkdirSync(jvmTestClassesDir, { recursive: true });
+        await command('javac', [
+            '-cp', path.join(__dirname, 'jvm', 'loreline.jar'),
+            '-d', jvmTestClassesDir,
+            path.join(__dirname, 'jvm', 'test', 'TestRunner.java')
+        ]);
+        await command('java', [
+            '-cp', [path.join(__dirname, 'jvm', 'loreline.jar'), jvmTestClassesDir].join(jvmCpSep),
+            'TestRunner', './test'
+        ]);
 
     }
 

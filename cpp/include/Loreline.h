@@ -203,6 +203,7 @@ LORELINE_PUBLIC void Loreline_setCharacterField(
 
 /* Utility */
 LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script);
+LORELINE_PUBLIC Loreline_String Loreline_scriptToJson(Loreline_Script* script, bool pretty);
 
 /* Resource release — only needed for Script and Interpreter handles.
  * Strings and Values are auto-managed via ref counting. */

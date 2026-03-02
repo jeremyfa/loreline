@@ -1,4 +1,5 @@
 .DS_Store
+/.tmp
 /loreline.js
 /loreline.js.map
 /build
@@ -24,4 +25,4 @@ merged-context.txt
 /py/loreline/_core.py
 /py/loreline/__pycache__
 /lua/loreline/core.lua
-/.tmp
+/jvm/loreline.jar

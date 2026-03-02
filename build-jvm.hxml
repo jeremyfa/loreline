@@ -1,0 +1,10 @@
+--class-path src
+--main loreline.lib.Library
+--jvm build/jvm/loreline-core.jar
+--library hscript
+-D hscriptPos
+-D loreline_jvm_api
+-D loreline_use_jvm_types
+-D loreline_typedef_options
+-D loreline_functions_map_dynamic_access
+-D loreline_node_id_class

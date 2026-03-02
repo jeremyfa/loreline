@@ -378,12 +378,13 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if (loreline_cs_api && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
      */
-    public var wrapper:Any = null;
+    #if loreline_typedef_options @:optional #end
+    public var wrapper:Any #if !loreline_typedef_options = null #end;
     #end
 
     /**
@@ -609,7 +610,7 @@ typedef InterpreterOptions = {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if (loreline_cs_api && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -638,7 +639,7 @@ typedef InterpreterOptions = {
         this.strictAccess = options?.strictAccess ?? false;
         this.translations = options?.translations;
 
-        #if (loreline_cs_api && !macro)
+        #if ((loreline_cs_api || loreline_jvm_api) && !macro)
         this.wrapper = options?.wrapper;
         #end
 
@@ -1144,6 +1145,14 @@ typedef InterpreterOptions = {
             final keys = Objects.getCsDictKeys(fields);
             for (key in keys) {
                 Reflect.setField(result, key, serializeValue(Objects.getCsDictField(fields, key)));
+            }
+        }
+        #elseif (loreline_jvm_api && !macro)
+        else if (Objects.isJavaMap(fields)) {
+            type = null;
+            final keys = Objects.getJavaMapKeys(fields);
+            for (key in keys) {
+                Reflect.setField(result, key, serializeValue(Objects.getJavaMapField(fields, key)));
             }
         }
         #end
@@ -3640,7 +3649,7 @@ typedef InterpreterOptions = {
         else if (value is String) {
             (value:String).length > 0;
         }
-        #if (loreline_cs_api && !macro)
+        #if ((loreline_cs_api || loreline_jvm_api) && !macro)
         else if (Arrays.isArray(value)) {
             Arrays.arrayLength(value) > 0;
         }
@@ -3804,7 +3813,13 @@ typedef InterpreterOptions = {
      */
     function evaluateArrayLiteral(expr:Array<Dynamic>):Any {
 
-        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
+        final result = new java.util.ArrayList(expr.length);
+        for (elem in expr) {
+            result.add(evaluateExpression(elem));
+        }
+        return result;
+        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         cs.Syntax.code('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', expr.length);
         for (elem in expr) {
             final val = evaluateExpression(elem);
@@ -3826,7 +3841,13 @@ typedef InterpreterOptions = {
      */
     function evaluateObjectLiteral(expr:Array<NObjectField>):Any {
 
-        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
+        final result = new java.util.LinkedHashMap();
+        for (field in expr) {
+            result.put(field.name, evaluateExpression(field.value));
+        }
+        return result;
+        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         cs.Syntax.code('System.Collections.Generic.Dictionary<string,object> result = new System.Collections.Generic.Dictionary<string,object>()');
         for (field in expr) {
             final val = evaluateExpression(field.value);
@@ -3936,7 +3957,7 @@ typedef InterpreterOptions = {
                         final v:String = operand;
                         (v == null || v.length == 0);
                     }
-                    #if (loreline_cs_api && !macro)
+                    #if ((loreline_cs_api || loreline_jvm_api) && !macro)
                     case OpNot if (Arrays.isArray(operand)): {
                         Arrays.arrayLength(operand) == 0;
                     }

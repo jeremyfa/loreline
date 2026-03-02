@@ -24,6 +24,10 @@ class Objects {
         else if (isCsFields(value)) {
             return true;
         }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(value)) {
+            return true;
+        }
         #end
         else if (value is Int || value is Float || value is Bool || value is String) {
             return false;
@@ -54,6 +58,13 @@ class Objects {
         else if (Arrays.isArray(fields)) {
             if (name == "length") Arrays.arrayLength(fields) else null;
         }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(fields)) {
+            getJavaMapField(fields, name);
+        }
+        else if (Arrays.isArray(fields)) {
+            if (name == "length") Arrays.arrayLength(fields) else null;
+        }
         #end
         else {
             Reflect.getProperty(fields, name);
@@ -75,6 +86,10 @@ class Objects {
         }
         else if (isCsFields(fields)) {
             getCsFieldsKeys(interpreter, fields);
+        }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(fields)) {
+            getJavaMapKeys(fields);
         }
         #end
         else {
@@ -98,6 +113,10 @@ class Objects {
         else if (isCsFields(fields)) {
             setCsFieldsValue(interpreter, fields, name, value);
         }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(fields)) {
+            setJavaMapField(fields, name, value);
+        }
         #end
         else {
             Reflect.setProperty(fields, name, value);
@@ -120,6 +139,10 @@ class Objects {
         else if (isCsFields(fields)) {
             return removeCsFieldsValue(interpreter, fields, name);
         }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(fields)) {
+            return removeJavaMapField(fields, name);
+        }
         #end
         else {
             return Reflect.deleteField(fields, name);
@@ -141,6 +164,10 @@ class Objects {
         }
         else if (isCsFields(fields)) {
             csFieldsKeyExists(interpreter, fields, name);
+        }
+        #elseif (loreline_jvm_api && !macro)
+        else if (isJavaMap(fields)) {
+            javaMapFieldExists(fields, name);
         }
         #end
         else {
@@ -180,7 +207,9 @@ class Objects {
             return instance;
         }
 
-        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
+        return new java.util.LinkedHashMap();
+        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         return cs.Syntax.code('new System.Collections.Generic.Dictionary<string,object>()');
         #else
         return new Map<String,Any>();
@@ -262,6 +291,49 @@ class Objects {
         cs.Syntax.code('{0} = fieldsKey', key);
         keys.push(key);
         cs.Syntax.code('}');
+        return keys;
+    }
+
+    #elseif (loreline_jvm_api && !macro)
+
+    public static function isJavaMap(fields:Any):Bool {
+        return Std.isOfType(fields, java.util.Map);
+    }
+
+    public static function getJavaMapField(fields:Any, name:String):Any {
+        final map:java.util.Map<Dynamic, Dynamic> = cast fields;
+        return map.get(name);
+    }
+
+    public static function setJavaMapField(fields:Any, name:String, value:Any):Void {
+        final map:java.util.Map<Dynamic, Dynamic> = cast fields;
+        map.put(name, value);
+    }
+
+    public static function removeJavaMapField(fields:Any, name:String):Bool {
+        final map:java.util.Map<Dynamic, Dynamic> = cast fields;
+        if (map.containsKey(name)) {
+            map.remove(name);
+            return true;
+        }
+        return false;
+    }
+
+    public static function javaMapFieldExists(fields:Any, name:String):Bool {
+        final map:java.util.Map<Dynamic, Dynamic> = cast fields;
+        return map.containsKey(name);
+    }
+
+    public static function getJavaMapKeys(fields:Any):Array<String> {
+        final map:java.util.Map<Dynamic, Dynamic> = cast fields;
+        final keys:Array<String> = [];
+        final it = map.keySet().iterator();
+        while (it.hasNext()) {
+            final key:Any = it.next();
+            if (key is String) {
+                keys.push((key : String));
+            }
+        }
         return keys;
     }
 

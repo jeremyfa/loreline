@@ -13,3 +13,6 @@
 [submodule "git/yaml"]
 	path = git/yaml
 	url = https://github.com/jeremyfa/yaml.git
+[submodule "git/hxjava"]
+	path = git/hxjava
+	url = https://github.com/HaxeFoundation/hxjava.git

@@ -54,13 +54,41 @@ local function wrap_options(options)
     return result
 end
 
+-- ── Node ────────────────────────────────────────────────────────────────
+
+--- Base class for Loreline AST nodes.
+-- Provides access to the node type, unique ID, and JSON export.
+-- @type Node
+local Node = {}
+Node.__index = Node
+
+--- Get the type of this node (e.g. "Script", "Beat", "Text", "Dialogue").
+-- @return string The node type.
+function Node:node_type()
+    return self._internal:type()
+end
+
+--- Return the human-readable node ID string (e.g. '1.0.0.0').
+-- @return string The dotted node ID.
+function Node:node_id_to_string()
+    return self._internal.id:toString()
+end
+
+--- Export this node as a JSON string.
+-- @param pretty boolean|nil Whether to format with indentation (default: false).
+-- @return string A JSON string representation of the node tree.
+function Node:to_json(pretty)
+    return __loreline_Json.stringify(self._internal:toJson(), pretty or false)
+end
+
 -- ── Script ──────────────────────────────────────────────────────────────
 
 --- A parsed Loreline script AST.
 -- Obtain via `loreline.parse()`. Pass to `loreline.play()` or
 -- `loreline.resume()` to execute.
+-- Inherits from Node: `node_type()`, `node_id_to_string()`, `to_json()`.
 -- @type Script
-local Script = {}
+local Script = setmetatable({}, { __index = Node })
 Script.__index = Script
 
 --- @param internal table The internal Haxe script object.
@@ -268,6 +296,7 @@ function M.print(script, indent, newline)
 end
 
 -- Export types for introspection
+M.Node = Node
 M.Script = Script
 M.Interpreter = Interpreter
 

@@ -959,6 +959,20 @@ LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script) {
     return result;
 }
 
+LORELINE_PUBLIC Loreline_String Loreline_scriptToJson(Loreline_Script* script, bool pretty) {
+    if (!script) return Loreline_String();
+    Loreline_String result;
+
+    LORELINE_BEGIN_CALL_SYNC
+    ::loreline::Script hxScript = (::loreline::Script)::Dynamic(script->obj);
+    ::Dynamic jsonObj = hxScript->toJson();
+    ::String jsonStr = ::loreline::Json_obj::stringify(jsonObj, pretty);
+    result = linc_hxToString(jsonStr);
+    LORELINE_END_CALL
+
+    return result;
+}
+
 /* ── Resource release ───────────────────────────────────────────────────── */
 
 LORELINE_PUBLIC void Loreline_releaseScript(Loreline_Script* script) {

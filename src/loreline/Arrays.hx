@@ -8,6 +8,10 @@ class Arrays {
         if (isCsList(array)) {
             return true;
         }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return true;
+        }
         #end
 
         if (array is Array) {
@@ -24,6 +28,10 @@ class Arrays {
         if (isCsList(array)) {
             return csListLength(array);
         }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return javaListLength(array);
+        }
         #end
 
         final arr:Array<Any> = array;
@@ -38,6 +46,10 @@ class Arrays {
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListGet(array, index);
+        }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return javaListGet(array, index);
         }
         #end
 
@@ -59,6 +71,10 @@ class Arrays {
         if (isCsList(array)) {
             return csListSet(array, index, value);
         }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return javaListSet(array, index, value);
+        }
         #end
 
         final arr:Array<Any> = array;
@@ -67,7 +83,9 @@ class Arrays {
     }
 
     public static function createArray():Any {
-        #if (loreline_cs_api && loreline_use_cs_types && !macro)
+        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
+        return new java.util.ArrayList();
+        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         return cs.Syntax.code('new System.Collections.Generic.List<object>()');
         #else
         final arr:Array<Dynamic> = [];
@@ -81,6 +99,10 @@ class Arrays {
         if (isCsList(array)) {
             return csListPush(array, value);
         }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return javaListPush(array, value);
+        }
         #end
 
         final arr:Array<Any> = array;
@@ -91,6 +113,8 @@ class Arrays {
 
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) return csListPop(array);
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) return javaListPop(array);
         #end
 
         final arr:Array<Any> = array;
@@ -102,6 +126,8 @@ class Arrays {
 
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) return csListShift(array);
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) return javaListShift(array);
         #end
 
         final arr:Array<Any> = array;
@@ -113,6 +139,8 @@ class Arrays {
 
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) { csListInsert(array, index, value); return; }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) { javaListInsert(array, index, value); return; }
         #end
 
         final arr:Array<Any> = array;
@@ -124,6 +152,8 @@ class Arrays {
 
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) { csListRemoveAt(array, index); return; }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) { javaListRemoveAt(array, index); return; }
         #end
 
         final arr:Array<Any> = array;
@@ -136,6 +166,10 @@ class Arrays {
         #if (loreline_cs_api && !macro)
         if (isCsList(array)) {
             return csListIterator(array);
+        }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            return javaListIterator(array);
         }
         #end
 
@@ -167,6 +201,22 @@ class Arrays {
             }
             return;
         }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            final len = javaListLength(array);
+            for (i in 1...len) {
+                final key = javaListGet(array, i);
+                var j = i - 1;
+                while (j >= 0) {
+                    final jVal = javaListGet(array, j);
+                    if (cmp(jVal, key) <= 0) break;
+                    javaListSet(array, j + 1, jVal);
+                    j--;
+                }
+                javaListSet(array, j + 1, key);
+            }
+            return;
+        }
         #end
         final len = arrayLength(array);
         for (i in 1...len) {
@@ -189,6 +239,19 @@ class Arrays {
                 final tmp = csListGet(array, i);
                 csListSet(array, i, csListGet(array, j));
                 csListSet(array, j, tmp);
+                i++;
+                j--;
+            }
+            return;
+        }
+        #elseif (loreline_jvm_api && !macro)
+        if (isJavaList(array)) {
+            var i = 0;
+            var j = javaListLength(array) - 1;
+            while (i < j) {
+                final tmp = javaListGet(array, i);
+                javaListSet(array, i, javaListGet(array, j));
+                javaListSet(array, j, tmp);
                 i++;
                 j--;
             }
@@ -277,6 +340,74 @@ class Arrays {
         return new CSListIterator(array);
     }
 
+    #elseif (loreline_jvm_api && !macro)
+
+    static function isJavaList(array:Any):Bool {
+        return Std.isOfType(array, java.util.List);
+    }
+
+    static function javaListLength(array:Any):Int {
+        final list:java.util.List<Dynamic> = cast array;
+        return list.size();
+    }
+
+    static function javaListGet(array:Any, index:Int):Any {
+        final list:java.util.List<Dynamic> = cast array;
+        final size = list.size();
+        return if (index >= 0 && index < size) {
+            list.get(index);
+        }
+        else {
+            null;
+        }
+    }
+
+    static function javaListSet(array:Any, index:Int, value:Any):Void {
+        final list:java.util.List<Dynamic> = cast array;
+        var size = list.size();
+        while (size < index) {
+            list.add(null);
+            size++;
+        }
+        if (index < list.size()) {
+            list.set(index, value);
+        } else {
+            list.add(value);
+        }
+    }
+
+    static function javaListPush(array:Any, value:Any):Void {
+        final list:java.util.List<Dynamic> = cast array;
+        list.add(value);
+    }
+
+    static function javaListPop(array:Any):Any {
+        final list:java.util.List<Dynamic> = cast array;
+        final size = list.size();
+        if (size == 0) return null;
+        return list.remove(size - 1);
+    }
+
+    static function javaListShift(array:Any):Any {
+        final list:java.util.List<Dynamic> = cast array;
+        if (list.size() == 0) return null;
+        return list.remove(0);
+    }
+
+    static function javaListInsert(array:Any, index:Int, value:Any):Void {
+        final list:java.util.List<Dynamic> = cast array;
+        list.add(index, value);
+    }
+
+    static function javaListRemoveAt(array:Any, index:Int):Void {
+        final list:java.util.List<Dynamic> = cast array;
+        list.remove(index);
+    }
+
+    static function javaListIterator(array:Any):Iterator<Dynamic> {
+        return new JavaListIterator(array);
+    }
+
     #end
 
 }
@@ -290,7 +421,6 @@ class CSListIterator {
     public function new(array:Any) {
         this.list = array;
         this.index = 0;
-        // Get the length using the already implemented csListLength method
         this.length = @:privateAccess Arrays.csListLength(array);
     }
 
@@ -299,8 +429,29 @@ class CSListIterator {
     }
 
     public function next():Dynamic {
-        // Use the already implemented csListGet method
         var value = @:privateAccess Arrays.csListGet(list, index);
+        index++;
+        return value;
+    }
+}
+#elseif (loreline_jvm_api && !macro)
+class JavaListIterator {
+    private var list:Any;
+    private var index:Int;
+    private var length:Int;
+
+    public function new(array:Any) {
+        this.list = array;
+        this.index = 0;
+        this.length = @:privateAccess Arrays.javaListLength(array);
+    }
+
+    public function hasNext():Bool {
+        return index < length;
+    }
+
+    public function next():Dynamic {
+        var value = @:privateAccess Arrays.javaListGet(list, index);
         index++;
         return value;
     }

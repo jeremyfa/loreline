@@ -1334,6 +1334,10 @@
                     "match": "=|\\+=|-=|\\*=|/="
                 },
                 {
+                    "name": "keyword.control.loreline",
+                    "match": "\\b(and|or)\\b"
+                },
+                {
                     "name": "keyword.operator.logical.loreline",
                     "match": "&&|\\|\\||!|==|!=|>|<|>=|<="
                 }
