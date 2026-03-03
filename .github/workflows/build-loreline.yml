@@ -1116,6 +1116,13 @@ jobs:
             script: ./build-windows.bat
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Setup Java
+        if: matrix.android
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Setup Android SDK
         if: matrix.android
         uses: android-actions/setup-android@v2
