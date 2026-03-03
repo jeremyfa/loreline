@@ -119,9 +119,9 @@ async function main() {
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
-    // --sample [web|unity|cpp|python|lua] — copy built files into sample projects
+    // --sample [web|unity|cpp|python|lua|java] — copy built files into sample projects
     let setupSample = rawArgs.indexOf('--sample') != -1;
-    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', or 'lua'
+    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', or 'java'
     if (setupSample) {
         const idx = rawArgs.indexOf('--sample');
         if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
@@ -773,6 +773,7 @@ async function main() {
     //   node ./setup --sample cpp      (loreline-cpp only)
     //   node ./setup --sample python   (loreline-python only)
     //   node ./setup --sample lua      (loreline-lua only)
+    //   node ./setup --sample java     (loreline-java only)
 
     if (setupSample) {
 
@@ -955,6 +956,33 @@ async function main() {
                     path.join(luaStoryDir, name)
                 );
                 console.log('  sample/' + name + ' → sample/loreline-lua/story/' + name);
+            }
+        }
+
+        // loreline-java: needs jvm/loreline.jar (from --jvm) + story files
+        if (sampleTarget == null || sampleTarget == 'java') {
+            console.log('Set up sample: loreline-java');
+
+            const javaDir = path.join(__dirname, 'sample', 'loreline-java');
+            const javaStoryDir = path.join(javaDir, 'story');
+
+            // Copy loreline.jar
+            const jarSrc = path.join(__dirname, 'jvm', 'loreline.jar');
+            if (!fs.existsSync(jarSrc)) {
+                console.warn('  Warning: jvm/loreline.jar not found — run --jvm first');
+            } else {
+                fs.copyFileSync(jarSrc, path.join(javaDir, 'loreline.jar'));
+                console.log('  jvm/loreline.jar → sample/loreline-java/loreline.jar');
+            }
+
+            // Copy story files
+            fs.mkdirSync(javaStoryDir, { recursive: true });
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(javaStoryDir, name)
+                );
+                console.log('  sample/' + name + ' → sample/loreline-java/story/' + name);
             }
         }
 
