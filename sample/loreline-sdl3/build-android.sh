@@ -16,6 +16,7 @@ fi
 
 # Copy assets into the Android project (symlinks are not followed by AAPT)
 ASSETS_DIR="android/app/src/main/assets"
+mkdir -p "$ASSETS_DIR"
 rm -rf "$ASSETS_DIR/fonts" "$ASSETS_DIR/story"
 cp -R fonts "$ASSETS_DIR/fonts"
 cp -R story "$ASSETS_DIR/story"
