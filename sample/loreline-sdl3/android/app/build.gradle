@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'app.loreline.sdl3sample'
+    compileSdk 34
+    ndkVersion '27.3.13750724'
+
+    defaultConfig {
+        applicationId 'app.loreline.sdl3sample'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_shared'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            // SDL3 and Loreline shared libraries
+            jniLibs.srcDirs = [
+                '../../sdl3/android/jniLibs',
+                '../../loreline/android/jni'
+            ]
+            // Story and font files — setup script creates symlinks in
+            // src/main/assets/ pointing to the shared story/ and fonts/ dirs
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+}

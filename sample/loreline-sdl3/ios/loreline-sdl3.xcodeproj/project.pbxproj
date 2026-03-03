@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000001 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A20000001 /* main.cpp */; };
+		A10000002 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000002 /* SDL3.xcframework */; };
+		A10000003 /* Loreline.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000003 /* Loreline.xcframework */; };
+		A10000004 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A20000002 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000005 /* Loreline.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A20000003 /* Loreline.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000006 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = A20000006 /* fonts */; };
+		A10000007 /* story in Resources */ = {isa = PBXBuildFile; fileRef = A20000007 /* story */; };
+		A10000008 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A20000008 /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A30000001 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A10000004 /* SDL3.xcframework in Embed Frameworks */,
+				A10000005 /* Loreline.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		A20000001 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		A20000002 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../sdl3/ios/SDL3.xcframework; sourceTree = "<group>"; };
+		A20000003 /* Loreline.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Loreline.xcframework; path = ../loreline/ios/Loreline.xcframework; sourceTree = "<group>"; };
+		A20000004 /* stb_truetype.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stb_truetype.h; path = ../stb_truetype.h; sourceTree = "<group>"; };
+		A20000005 /* Loreline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Loreline.h; path = ../loreline/include/Loreline.h; sourceTree = "<group>"; };
+		A20000006 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../fonts; sourceTree = "<group>"; };
+		A20000007 /* story */ = {isa = PBXFileReference; lastKnownFileType = folder; name = story; path = ../story; sourceTree = "<group>"; };
+		A20000008 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A20000009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000010 /* loreline-sdl3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "loreline-sdl3.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A40000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000002 /* SDL3.xcframework in Frameworks */,
+				A10000003 /* Loreline.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A50000001 = {
+			isa = PBXGroup;
+			children = (
+				A20000001 /* main.cpp */,
+				A20000004 /* stb_truetype.h */,
+				A20000005 /* Loreline.h */,
+				A20000006 /* fonts */,
+				A20000007 /* story */,
+				A50000003 /* Frameworks */,
+				A50000002 /* iOS */,
+				A50000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A50000002 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A20000009 /* Info.plist */,
+				A20000008 /* LaunchScreen.storyboard */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		A50000003 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A20000002 /* SDL3.xcframework */,
+				A20000003 /* Loreline.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A50000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010 /* loreline-sdl3.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A60000001 /* loreline-sdl3 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000003 /* Build configuration list for PBXNativeTarget "loreline-sdl3" */;
+			buildPhases = (
+				A70000001 /* Sources */,
+				A40000001 /* Frameworks */,
+				A70000002 /* Resources */,
+				A30000001 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "loreline-sdl3";
+			productName = "loreline-sdl3";
+			productReference = A20000010 /* loreline-sdl3.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A90000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = A80000001 /* Build configuration list for PBXProject "loreline-sdl3" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A50000001;
+			productRefGroup = A50000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A60000001 /* loreline-sdl3 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A70000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000006 /* fonts in Resources */,
+				A10000007 /* story in Resources */,
+				A10000008 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A70000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000001 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		A80000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A80000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BUK697M6FJ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../sdl3/ios",
+					"$(PROJECT_DIR)/../loreline/ios",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../sdl3/ios/include",
+					"$(PROJECT_DIR)/../loreline/include",
+					"$(PROJECT_DIR)/..",
+				);
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.loreline.sdl3sample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A80000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BUK697M6FJ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../sdl3/ios",
+					"$(PROJECT_DIR)/../loreline/ios",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../sdl3/ios/include",
+					"$(PROJECT_DIR)/../loreline/include",
+					"$(PROJECT_DIR)/..",
+				);
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.loreline.sdl3sample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A80000001 /* Build configuration list for PBXProject "loreline-sdl3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000011 /* Debug */,
+				A80000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000003 /* Build configuration list for PBXNativeTarget "loreline-sdl3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000021 /* Debug */,
+				A80000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A90000001 /* Project object */;
+}

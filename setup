@@ -97,6 +97,48 @@ function isLinuxArm64() {
     }
 }
 
+async function downloadFile(fileUrl, destPath) {
+    const https = await import('node:https');
+    const http = await import('node:http');
+
+    return new Promise((resolve, reject) => {
+        const client = fileUrl.startsWith('https') ? https : http;
+        client.get(fileUrl, (response) => {
+            // Follow redirects (GitHub releases redirect to CDN)
+            if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                downloadFile(response.headers.location, destPath).then(resolve).catch(reject);
+                response.resume();
+                return;
+            }
+            if (response.statusCode !== 200) {
+                response.resume();
+                reject(new Error('HTTP ' + response.statusCode + ' for ' + fileUrl));
+                return;
+            }
+            const file = fs.createWriteStream(destPath);
+            response.pipe(file);
+            file.on('finish', () => { file.close(resolve); });
+            file.on('error', (err) => { fs.unlinkSync(destPath); reject(err); });
+        }).on('error', reject);
+    });
+}
+
+async function extractArchive(archivePath, destDir) {
+    fs.mkdirSync(destDir, { recursive: true });
+    if (archivePath.endsWith('.tar.gz') || archivePath.endsWith('.tgz')) {
+        await command('tar', ['xzf', archivePath, '-C', destDir]);
+    } else if (archivePath.endsWith('.zip')) {
+        if (process.platform === 'win32') {
+            await command('powershell', [
+                '-Command',
+                'Expand-Archive -Path "' + archivePath + '" -DestinationPath "' + destDir + '" -Force'
+            ]);
+        } else {
+            await command('unzip', ['-o', '-q', archivePath, '-d', destDir]);
+        }
+    }
+}
+
 // Example usage with async/await
 async function main() {
 
@@ -121,9 +163,9 @@ async function main() {
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
-    // --sample [web|unity|cpp|python|lua|java] — copy built files into sample projects
+    // --sample [web|unity|cpp|python|lua|sdl3|java] — copy built files into sample projects
     let setupSample = rawArgs.indexOf('--sample') != -1;
-    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', or 'java'
+    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', 'sdl3', or 'java'
     if (setupSample) {
         const idx = rawArgs.indexOf('--sample');
         if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
@@ -1096,6 +1138,7 @@ async function main() {
     //   node ./setup --sample python   (loreline-python only)
     //   node ./setup --sample lua      (loreline-lua only)
     //   node ./setup --sample java     (loreline-java only)
+    //   node ./setup --sample sdl3     (loreline-sdl3 only)
 
     if (setupSample) {
 
@@ -1216,6 +1259,136 @@ async function main() {
                 );
                 console.log('  sample/' + name + ' → sample/loreline-cpp/story/' + name);
             }
+        }
+
+        // loreline-sdl3: needs SDL3 prebuilt binaries + Loreline header + libs + stb_truetype + story files
+        if (sampleTarget == null || sampleTarget == 'sdl3') {
+            console.log('Set up sample: loreline-sdl3');
+
+            const sdl3SampleDir = path.join(__dirname, 'sample', 'loreline-sdl3');
+            const sdl3LibDir = path.join(sdl3SampleDir, 'sdl3');
+            const sdl3LorelineDir = path.join(sdl3SampleDir, 'loreline');
+            const sdl3StoryDir = path.join(sdl3SampleDir, 'story');
+
+            const sdl3ReleaseUrl = 'https://github.com/jeremyfa/build-sdl3/releases/download/sdl3-77f4a8e';
+            const stbUrl = 'https://raw.githubusercontent.com/nothings/stb/master/stb_truetype.h';
+
+            // 1. Download stb_truetype.h if not present
+            const stbPath = path.join(sdl3SampleDir, 'stb_truetype.h');
+            if (!fs.existsSync(stbPath)) {
+                console.log('  Downloading stb_truetype.h...');
+                await downloadFile(stbUrl, stbPath);
+                console.log('  → stb_truetype.h');
+            }
+
+            // 2. Download SDL3 prebuilt binaries for all platforms
+            const sdl3Archives = [
+                { name: 'sdl3-mac-universal.zip',    dir: 'mac' },
+                { name: 'sdl3-linux-x64.tar.gz',     dir: 'linux-x64' },
+                { name: 'sdl3-linux-arm64.tar.gz',    dir: 'linux-arm64' },
+                { name: 'sdl3-windows-x64.zip',       dir: 'windows' },
+                { name: 'sdl3-ios-universal.zip',      dir: 'ios' },
+                { name: 'sdl3-android-r27.zip',        dir: 'android' },
+            ];
+
+            for (const arch of sdl3Archives) {
+                const destDir = path.join(sdl3LibDir, arch.dir);
+                if (fs.existsSync(destDir)) {
+                    console.log('  SDL3 ' + arch.dir + ' already present, skipping');
+                    continue;
+                }
+                console.log('  Downloading ' + arch.name + '...');
+                const tmpPath = path.join(sdl3SampleDir, arch.name);
+                await downloadFile(sdl3ReleaseUrl + '/' + arch.name, tmpPath);
+                await extractArchive(tmpPath, destDir);
+                fs.unlinkSync(tmpPath);
+                console.log('  → sdl3/' + arch.dir + '/');
+            }
+
+            // 3. Download SDL3 Java sources for Android (SDLActivity etc.)
+            const sdl3Commit = '77f4a8e2b8066d3bc376eab1ce443e57bc04d4ee';
+            const sdl3JavaDir = path.join(sdl3SampleDir, 'android', 'app', 'src', 'main',
+                                          'java', 'org', 'libsdl', 'app');
+            const sdl3JavaFiles = [
+                'SDL.java', 'SDLActivity.java', 'SDLAudioManager.java',
+                'SDLControllerManager.java', 'SDLDummyEdit.java',
+                'SDLInputConnection.java', 'SDLSurface.java',
+                'HIDDevice.java', 'HIDDeviceBLESteamController.java',
+                'HIDDeviceManager.java', 'HIDDeviceUSB.java',
+            ];
+            fs.mkdirSync(sdl3JavaDir, { recursive: true });
+            const sdl3JavaBaseUrl = 'https://raw.githubusercontent.com/libsdl-org/SDL/'
+                + sdl3Commit + '/android-project/app/src/main/java/org/libsdl/app/';
+            for (const jf of sdl3JavaFiles) {
+                const dest = path.join(sdl3JavaDir, jf);
+                if (fs.existsSync(dest)) continue;
+                console.log('  Downloading SDL3 ' + jf + '...');
+                await downloadFile(sdl3JavaBaseUrl + jf, dest);
+            }
+            console.log('  → android/.../org/libsdl/app/ (SDL3 Java sources)');
+
+            // 4. Copy Loreline header
+            const sdl3IncludeDir = path.join(sdl3LorelineDir, 'include');
+            fs.mkdirSync(sdl3IncludeDir, { recursive: true });
+            fs.copyFileSync(
+                path.join(__dirname, 'cpp', 'include', 'Loreline.h'),
+                path.join(sdl3IncludeDir, 'Loreline.h')
+            );
+            console.log('  cpp/include/Loreline.h → loreline/include/Loreline.h');
+
+            // 4. Copy Loreline platform libraries (whatever is available)
+            const sdl3PlatformMappings = [
+                { build: 'mac',     dest: 'mac',           files: ['libLoreline.dylib'] },
+                { build: 'windows', dest: 'windows',       files: ['Loreline.dll', 'Loreline.lib'] },
+                { build: 'linux',   dest: isLinuxArm64() ? 'linux-aarch64' : 'linux-x86_64',
+                                                           files: ['libLoreline.so'] },
+            ];
+
+            for (const pm of sdl3PlatformMappings) {
+                const srcDir = path.join(__dirname, 'build', 'cpp-lib', pm.build);
+                if (!fs.existsSync(srcDir)) continue;
+                const destPlatDir = path.join(sdl3LorelineDir, pm.dest);
+                fs.mkdirSync(destPlatDir, { recursive: true });
+                for (const f of pm.files) {
+                    const src = path.join(srcDir, f);
+                    if (fs.existsSync(src)) {
+                        fs.copyFileSync(src, path.join(destPlatDir, f));
+                        console.log('  ' + f + ' → loreline/' + pm.dest + '/' + f);
+                    }
+                }
+            }
+
+            // Copy iOS xcframework if available
+            const sdl3IosXcfw = path.join(__dirname, 'build', 'cpp-lib', 'ios', 'Loreline.xcframework');
+            if (fs.existsSync(sdl3IosXcfw)) {
+                const destIos = path.join(sdl3LorelineDir, 'ios', 'Loreline.xcframework');
+                fs.mkdirSync(path.join(sdl3LorelineDir, 'ios'), { recursive: true });
+                fs.cpSync(sdl3IosXcfw, destIos, { recursive: true });
+                console.log('  Loreline.xcframework → loreline/ios/Loreline.xcframework');
+            }
+
+            // Copy Android JNI .so files if available
+            const sdl3AndroidJni = path.join(__dirname, 'build', 'cpp-lib', 'android', 'jni');
+            if (fs.existsSync(sdl3AndroidJni)) {
+                const destAndroidJni = path.join(sdl3LorelineDir, 'android', 'jni');
+                fs.mkdirSync(path.join(sdl3LorelineDir, 'android'), { recursive: true });
+                fs.cpSync(sdl3AndroidJni, destAndroidJni, { recursive: true });
+                console.log('  android JNI libs → loreline/android/jni/');
+            }
+
+            // 5. Copy story files
+            fs.mkdirSync(sdl3StoryDir, { recursive: true });
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(sdl3StoryDir, name)
+                );
+                console.log('  sample/' + name + ' → story/' + name);
+            }
+
+            // 6. Android assets are copied by build-android.sh before Gradle
+            // runs (symlinks aren't followed by AAPT when packaging the APK).
+            // Nothing to do here — the build script handles it.
         }
 
         // loreline-python: needs py/loreline/ (from --py) + story files

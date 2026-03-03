@@ -1,0 +1,19 @@
+# Generated files — copied/downloaded by setup script
+/sdl3/
+/loreline/
+/story/
+/build/
+/stb_truetype.h
+
+# SDL3 Java sources (downloaded by setup script)
+/android/app/src/main/java/org/libsdl/
+
+# Android assets (symlinks created by setup script)
+/android/app/src/main/assets/
+
+# Android/Gradle build artifacts
+/android/.gradle/
+/android/app/.cxx/
+/android/app/build/
+/android/build/
+/android/local.properties

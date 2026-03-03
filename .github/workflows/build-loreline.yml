@@ -974,9 +974,174 @@ jobs:
           compression-level: 0
 
 
+  loreline-sdl3:
+    needs: [loreline-mac, loreline-windows, loreline-linux, loreline-ios, loreline-android]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble loreline-sdl3 package
+        run: |
+          set -e
+          PKG=loreline-sdl3-pkg
+
+          # --- Copy tracked sample sources ---
+          cp -r sample/loreline-sdl3 $PKG
+          rm -f $PKG/.gitignore
+
+          # Story files (gitignored in sample, source is at sample/*.lor)
+          mkdir -p $PKG/story
+          cp sample/CoffeeShop.lor $PKG/story/
+          cp sample/characters.lor $PKG/story/
+
+          # Fonts (OFL-licensed, tracked in Unity sample)
+          mkdir -p $PKG/fonts
+          cp sample/loreline-unity/Assets/Resources/Fonts/*.ttf $PKG/fonts/
+          cp sample/loreline-unity/Assets/Resources/Fonts/*.txt $PKG/fonts/
+
+          # --- Download stb_truetype.h ---
+          curl -fsSL -o $PKG/stb_truetype.h \
+            https://raw.githubusercontent.com/nothings/stb/master/stb_truetype.h
+
+          # --- Download SDL3 prebuilt binaries ---
+          SDL3_URL="https://github.com/jeremyfa/build-sdl3/releases/download/sdl3-77f4a8e"
+
+          curl -fsSL -o /tmp/sdl3-mac.zip "$SDL3_URL/sdl3-mac-universal.zip"
+          mkdir -p $PKG/sdl3/mac && unzip -qo /tmp/sdl3-mac.zip -d $PKG/sdl3/mac
+
+          curl -fsSL -o /tmp/sdl3-linux-x64.tar.gz "$SDL3_URL/sdl3-linux-x64.tar.gz"
+          mkdir -p $PKG/sdl3/linux-x64 && tar xzf /tmp/sdl3-linux-x64.tar.gz -C $PKG/sdl3/linux-x64
+
+          curl -fsSL -o /tmp/sdl3-linux-arm64.tar.gz "$SDL3_URL/sdl3-linux-arm64.tar.gz"
+          mkdir -p $PKG/sdl3/linux-arm64 && tar xzf /tmp/sdl3-linux-arm64.tar.gz -C $PKG/sdl3/linux-arm64
+
+          curl -fsSL -o /tmp/sdl3-windows.zip "$SDL3_URL/sdl3-windows-x64.zip"
+          mkdir -p $PKG/sdl3/windows && unzip -qo /tmp/sdl3-windows.zip -d $PKG/sdl3/windows
+
+          curl -fsSL -o /tmp/sdl3-ios.zip "$SDL3_URL/sdl3-ios-universal.zip"
+          mkdir -p $PKG/sdl3/ios && unzip -qo /tmp/sdl3-ios.zip -d $PKG/sdl3/ios
+
+          curl -fsSL -o /tmp/sdl3-android.zip "$SDL3_URL/sdl3-android-r27.zip"
+          mkdir -p $PKG/sdl3/android && unzip -qo /tmp/sdl3-android.zip -d $PKG/sdl3/android
+          # Discard Android static libs (~71MB, not used)
+          rm -rf $PKG/sdl3/android/lib
+
+          # --- Download SDL3 Java sources for Android ---
+          SDL3_COMMIT="77f4a8e2b8066d3bc376eab1ce443e57bc04d4ee"
+          SDL3_JAVA_DIR="$PKG/android/app/src/main/java/org/libsdl/app"
+          mkdir -p "$SDL3_JAVA_DIR"
+          SDL3_JAVA_BASE="https://raw.githubusercontent.com/libsdl-org/SDL/$SDL3_COMMIT/android-project/app/src/main/java/org/libsdl/app"
+          for f in SDL.java SDLActivity.java SDLAudioManager.java \
+                   SDLControllerManager.java SDLDummyEdit.java \
+                   SDLInputConnection.java SDLSurface.java \
+                   HIDDevice.java HIDDeviceBLESteamController.java \
+                   HIDDeviceManager.java HIDDeviceUSB.java; do
+            curl -fsSL -o "$SDL3_JAVA_DIR/$f" "$SDL3_JAVA_BASE/$f"
+          done
+
+          # --- Extract Loreline binaries from CI artifacts ---
+          cd artifacts
+          unzip -qo loreline-mac.zip/loreline-mac.zip -d mac-tmp
+          unzip -qo loreline-windows.zip/loreline-windows.zip -d win-tmp
+          unzip -qo loreline-linux-x86_64.zip/loreline-linux-x86_64.zip -d linux-x86_64-tmp
+          unzip -qo loreline-linux-arm64.zip/loreline-linux-arm64.zip -d linux-arm64-tmp
+          unzip -qo loreline-ios.zip/loreline-ios.zip -d ios-tmp
+          unzip -qo loreline-android.zip/loreline-android.zip -d android-tmp
+          cd ..
+
+          # Header
+          mkdir -p $PKG/loreline/include
+          cp artifacts/mac-tmp/cpp/include/Loreline.h $PKG/loreline/include/
+
+          # Mac
+          mkdir -p $PKG/loreline/mac
+          cp artifacts/mac-tmp/cpp/lib/libLoreline.dylib $PKG/loreline/mac/
+
+          # Windows
+          mkdir -p $PKG/loreline/windows
+          cp artifacts/win-tmp/cpp/lib/Loreline.dll $PKG/loreline/windows/
+          cp artifacts/win-tmp/cpp/lib/Loreline.lib $PKG/loreline/windows/
+
+          # Linux x86_64
+          mkdir -p $PKG/loreline/linux-x86_64
+          cp artifacts/linux-x86_64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-x86_64/
+
+          # Linux aarch64
+          mkdir -p $PKG/loreline/linux-aarch64
+          cp artifacts/linux-arm64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-aarch64/
+
+          # iOS xcframework
+          mkdir -p $PKG/loreline/ios
+          cp -r artifacts/ios-tmp/Loreline.xcframework $PKG/loreline/ios/
+
+          # Android: extract jni/{abi}/libloreline.so from .aar
+          mkdir -p $PKG/loreline/android
+          unzip -qo artifacts/android-tmp/loreline.aar "jni/*" -d $PKG/loreline/android/
+
+          # Make build scripts executable
+          chmod +x $PKG/build-*.sh $PKG/run-*.sh 2>/dev/null || true
+
+      - name: Create zip archive
+        run: cd loreline-sdl3-pkg && zip --symlinks -9 ../loreline-sdl3.zip -r .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-sdl3.zip
+          path: loreline-sdl3.zip
+          compression-level: 0
+
+
+  loreline-sdl3-verify:
+    needs: [loreline-sdl3]
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            script: ./build-mac.sh
+          - os: ubuntu-22.04
+            script: ./build-linux.sh
+          - os: ubuntu-22.04-arm
+            script: ./build-linux.sh
+          - os: ubuntu-22.04
+            script: ./build-android.sh
+            android: true
+          - os: windows-2022
+            script: ./build-windows.bat
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup Android SDK
+        if: matrix.android
+        uses: android-actions/setup-android@v2
+
+      - name: Install Android NDK
+        if: matrix.android
+        run: echo "y" | sdkmanager "ndk;27.3.13750724"
+
+      - name: Download loreline-sdl3.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-sdl3.zip
+          path: .
+
+      - name: Unpack and build
+        shell: bash
+        run: |
+          unzip -qo loreline-sdl3.zip -d loreline-sdl3
+          cd loreline-sdl3
+          chmod +x build-*.sh 2>/dev/null || true
+          ${{ matrix.script }}
+
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -1065,6 +1230,12 @@ jobs:
           name: loreline-android.zip
           path: .
 
+      - name: Download loreline-sdl3.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-sdl3.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -1086,6 +1257,7 @@ jobs:
             loreline-linux-arm64.zip
             loreline-ios.zip
             loreline-android.zip
+            loreline-sdl3.zip
             loreline-js.zip
             loreline-csharp.zip
             loreline-unity.zip

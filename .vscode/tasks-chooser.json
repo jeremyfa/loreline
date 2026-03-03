@@ -135,6 +135,13 @@
             "args": ["setup", "--android"]
         },
         {
+            "displayName": "⚙ Set up SDL3 sample",
+            "type": "shell",
+            "description": "node ./setup --sample sdl3",
+            "command": "node",
+            "args": ["setup", "--sample", "sdl3"]
+        },
+        {
             "displayName": "⚙ Set up samples",
             "type": "shell",
             "description": "node ./setup --sample",
