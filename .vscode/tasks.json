@@ -5,17 +5,18 @@
             "type": "shell",
             "command": "node",
             "args": [
-                "setup",
-                "--cpp-lib-test"
+                "run",
+                "play",
+                "sample/CoffeeShop.lor"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "label": "✓ C++ lib tests"
+            "label": "▶︎ CoffeeShop.lor"
         }
     ],
-    "displayName": "✓ C++ lib tests",
-    "description": "node ./setup --cpp-lib-test",
-    "chooserIndex": 7
+    "displayName": "▶︎ CoffeeShop.lor",
+    "description": "node run play sample/CoffeeShop.lor",
+    "chooserIndex": 0
 }
