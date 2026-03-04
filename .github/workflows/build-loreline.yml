@@ -86,6 +86,8 @@ jobs:
 
   loreline-mac:
     runs-on: macos-14
+    env:
+      CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
 
       - uses: actions/checkout@v4
@@ -156,14 +158,68 @@ jobs:
       - name: Run C++ library tests
         run: node ./setup --cpp-lib-test
 
-      - name: Create zip archive
+      - name: Assemble package
         run: |
           mkdir -p loreline-mac-pkg/cpp/include
           mkdir -p loreline-mac-pkg/cpp/lib
           cp loreline loreline-mac-pkg/
           cp build/cpp-lib/mac/libLoreline.dylib loreline-mac-pkg/cpp/lib/
           cp cpp/include/Loreline.h loreline-mac-pkg/cpp/include/
+
+      - name: Install Apple certificate
+        if: env.CODESIGN == 'true'
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 12)
+          echo -n "$APPLE_CERTIFICATE_P12" | base64 --decode -o $CERT_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERT_PATH -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH login.keychain
+
+      - name: Sign macOS binaries
+        if: env.CODESIGN == 'true'
+        run: |
+          IDENTITY="Developer ID Application"
+          codesign --force --options runtime \
+            --entitlements tpl/mac/entitlements.plist \
+            --sign "$IDENTITY" --timestamp \
+            loreline-mac-pkg/cpp/lib/libLoreline.dylib
+          codesign --force --options runtime \
+            --entitlements tpl/mac/entitlements.plist \
+            --sign "$IDENTITY" --timestamp \
+            loreline-mac-pkg/loreline
+          codesign -vvv loreline-mac-pkg/loreline
+          codesign -vvv loreline-mac-pkg/cpp/lib/libLoreline.dylib
+
+      - name: Create zip archive
+        run: |
           cd loreline-mac-pkg && zip --symlinks -9 ../loreline-mac.zip -r .
+
+      - name: Notarize
+        if: env.CODESIGN == 'true'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit loreline-mac.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 10m
+
+      - name: Cleanup keychain
+        if: ${{ always() }}
+        run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
 
       - name: Upload Files
         uses: actions/upload-artifact@v4
@@ -842,6 +898,8 @@ jobs:
 
   loreline-ios:
     runs-on: macos-14
+    env:
+      CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
 
       - uses: actions/checkout@v4
@@ -886,6 +944,40 @@ jobs:
 
       - name: Build iOS xcframework
         run: node ./setup --ios
+
+      - name: Install Apple certificate
+        if: env.CODESIGN == 'true'
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 12)
+          echo -n "$APPLE_CERTIFICATE_P12" | base64 --decode -o $CERT_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERT_PATH -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH login.keychain
+
+      - name: Sign iOS framework slices
+        if: env.CODESIGN == 'true'
+        run: |
+          IDENTITY="Developer ID Application"
+          codesign --force --sign "$IDENTITY" --timestamp \
+            build/cpp-lib/ios/Loreline.xcframework/ios-arm64/Loreline.framework
+          codesign --force --sign "$IDENTITY" --timestamp \
+            build/cpp-lib/ios/Loreline.xcframework/ios-arm64_x86_64-simulator/Loreline.framework
+          codesign -vvv build/cpp-lib/ios/Loreline.xcframework/ios-arm64/Loreline.framework
+          codesign -vvv build/cpp-lib/ios/Loreline.xcframework/ios-arm64_x86_64-simulator/Loreline.framework
+
+      - name: Cleanup keychain
+        if: ${{ always() }}
+        run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
 
       - name: Create zip archive
         run: |
@@ -976,7 +1068,9 @@ jobs:
 
   loreline-sdl3:
     needs: [loreline-mac, loreline-windows, loreline-linux, loreline-ios, loreline-android]
-    runs-on: ubuntu-22.04
+    runs-on: macos-14
+    env:
+      CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -1086,8 +1180,64 @@ jobs:
           # Make build scripts executable
           chmod +x $PKG/build-*.sh $PKG/run-*.sh 2>/dev/null || true
 
+      - name: Install Apple certificate
+        if: env.CODESIGN == 'true'
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 12)
+          echo -n "$APPLE_CERTIFICATE_P12" | base64 --decode -o $CERT_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERT_PATH -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH login.keychain
+
+      - name: Sign macOS and iOS binaries
+        if: env.CODESIGN == 'true'
+        run: |
+          PKG=loreline-sdl3-pkg
+          IDENTITY="Developer ID Application"
+          # Sign all macOS dylibs (SDL3 + Loreline)
+          find $PKG/sdl3/mac -name "*.dylib" -exec \
+            codesign --force --options runtime \
+              --entitlements tpl/mac/entitlements.plist \
+              --sign "$IDENTITY" --timestamp {} \;
+          codesign --force --options runtime \
+            --entitlements tpl/mac/entitlements.plist \
+            --sign "$IDENTITY" --timestamp \
+            $PKG/loreline/mac/libLoreline.dylib
+          # Sign iOS frameworks
+          find $PKG/sdl3/ios -name "*.framework" -exec \
+            codesign --force --sign "$IDENTITY" --timestamp {} \;
+          find $PKG/loreline/ios -name "*.framework" -exec \
+            codesign --force --sign "$IDENTITY" --timestamp {} \;
+
       - name: Create zip archive
         run: cd loreline-sdl3-pkg && zip --symlinks -9 ../loreline-sdl3.zip -r .
+
+      - name: Notarize SDL3 package
+        if: env.CODESIGN == 'true'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit loreline-sdl3.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 15m
+
+      - name: Cleanup keychain
+        if: ${{ always() }}
+        run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
