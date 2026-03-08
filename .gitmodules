@@ -16,3 +16,6 @@
 [submodule "git/hxjava"]
 	path = git/hxjava
 	url = https://github.com/HaxeFoundation/hxjava.git
+[submodule "godot/extern/godot-cpp"]
+	path = godot/extern/godot-cpp
+	url = https://github.com/godotengine/godot-cpp.git

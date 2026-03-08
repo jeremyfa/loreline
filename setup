@@ -160,6 +160,8 @@ async function main() {
     let buildJvm = rawArgs.indexOf('--jvm') != -1;
     let buildIos = rawArgs.indexOf('--ios') != -1;
     let buildAndroid = rawArgs.indexOf('--android') != -1;
+    let buildWasm = rawArgs.indexOf('--wasm') != -1;
+    let buildGodot = rawArgs.indexOf('--godot') != -1;
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
@@ -187,7 +189,7 @@ async function main() {
     }
 
     // Install dependencies (only needed for build targets, not --sample or --test)
-    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildCs || buildJs || buildPython || buildLua || buildJvm) {
+    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildWasm || buildCs || buildJs || buildPython || buildLua || buildJvm) {
         var haxelibRepoPath = path.join(__dirname, '.haxelib');
         if (!fs.existsSync(haxelibRepoPath)) {
             fs.mkdirSync(haxelibRepoPath);
@@ -794,6 +796,187 @@ async function main() {
         }
 
         console.log('Built: ' + aarOutputPath);
+    }
+
+    if (buildWasm) {
+        console.log('Build loreline C++ library for WebAssembly (Emscripten)');
+
+        const emsdkRoot = process.env.EMSDK;
+        if (!emsdkRoot) {
+            throw new Error('EMSDK environment variable is not set. Install Emscripten SDK and set EMSDK.');
+        }
+
+        const wasmBuildDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm');
+
+        let haxeBuildCppLibArgs = [
+            'build-cpp-lib.hxml',
+            '-D', 'HXCPP_STACK_LINE',
+            '-D', 'HXCPP_STACK_TRACE'
+        ];
+
+        // Step 1: Haxe → C++ (once, with emscripten define)
+        await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
+            '--cpp', 'build/cpp-lib/wasm',
+            '-D', 'emscripten'
+        ]));
+
+        // Step 2: Build nothreads variant (single-threaded, default for HXCPP emscripten)
+        console.log('  Building nothreads variant...');
+        await command('../../../haxelib', [
+            'run', 'hxcpp', 'Build.xml',
+            '-Demscripten'
+        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmBuildDir });
+
+        // Rename the static lib
+        const staticLibName = debug ? 'libLibrary-debug.a' : 'libLibrary.a';
+        const nothreadsLib = path.join(wasmBuildDir, 'libLoreline.nothreads.a');
+        if (fs.existsSync(path.join(wasmBuildDir, staticLibName))) {
+            fs.renameSync(path.join(wasmBuildDir, staticLibName), nothreadsLib);
+        }
+        console.log('Built: ' + nothreadsLib);
+
+        // Step 3: Build threads variant (multi-threaded)
+        console.log('  Building threads variant...');
+        await command('../../../haxelib', [
+            'run', 'hxcpp', 'Build.xml',
+            '-Demscripten',
+            '-DHXCPP_MULTI_THREADED_APP'
+        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmBuildDir });
+
+        const threadsLib = path.join(wasmBuildDir, 'libLoreline.threads.a');
+        if (fs.existsSync(path.join(wasmBuildDir, staticLibName))) {
+            fs.renameSync(path.join(wasmBuildDir, staticLibName), threadsLib);
+        }
+        console.log('Built: ' + threadsLib);
+    }
+
+    if (buildGodot) {
+        console.log('Build loreline GDExtension for Godot');
+
+        const godotDir = path.join(__dirname, 'godot');
+
+        // Determine platform and architecture for scons
+        let sconsPlatform;
+        let sconsArchList;
+        if (process.platform == 'darwin') {
+            sconsPlatform = 'macos';
+            sconsArchList = ['arm64', 'x86_64'];
+        } else if (process.platform == 'win32') {
+            sconsPlatform = 'windows';
+            sconsArchList = ['x86_64'];
+        } else {
+            sconsPlatform = 'linux';
+            sconsArchList = [isLinuxArm64() ? 'arm64' : 'x86_64'];
+        }
+
+        const sconsTarget = debug ? 'template_debug' : 'template_release';
+
+        for (const sconsArch of sconsArchList) {
+            let sconsArgs = [
+                'platform=' + sconsPlatform,
+                'arch=' + sconsArch,
+                'target=' + sconsTarget
+            ];
+
+            await command('scons', sconsArgs, { cwd: godotDir });
+            console.log('Built: GDExtension for ' + sconsPlatform + ' (' + sconsArch + ')');
+
+            // On macOS with multiple archs, rename the output so it's not overwritten
+            if (sconsPlatform == 'macos' && sconsArchList.length > 1) {
+                const frameworkName = 'libloreline_godot.macos.' + sconsTarget + '.framework';
+                const libName = 'libloreline_godot.macos.' + sconsTarget;
+                const libPath = path.join(godotDir, 'bin', frameworkName, libName);
+                if (fs.existsSync(libPath)) {
+                    fs.renameSync(libPath, libPath + '.' + sconsArch);
+                }
+            }
+        }
+
+        // On macOS, create universal binary via lipo
+        if (sconsPlatform == 'macos') {
+            const frameworkName = 'libloreline_godot.macos.' + sconsTarget + '.framework';
+            const libName = 'libloreline_godot.macos.' + sconsTarget;
+            const frameworkDir = path.join(godotDir, 'bin', frameworkName);
+            const libPath = path.join(frameworkDir, libName);
+
+            // After building both archs, we have per-arch copies saved; lipo them
+            const arm64Lib = libPath + '.arm64';
+            const x64Lib = libPath + '.x86_64';
+            if (fs.existsSync(arm64Lib) && fs.existsSync(x64Lib)) {
+                if (fs.existsSync(libPath)) fs.unlinkSync(libPath);
+                await command('lipo', ['-create', arm64Lib, x64Lib, '-output', libPath]);
+                fs.unlinkSync(arm64Lib);
+                fs.unlinkSync(x64Lib);
+                console.log('Created universal macOS framework');
+            }
+        }
+
+        // iOS GDExtension (if Loreline.xcframework exists from --ios build)
+        const iosXcfw = path.join(__dirname, 'build', 'cpp-lib', 'ios', 'Loreline.xcframework');
+        if (process.platform == 'darwin' && fs.existsSync(iosXcfw)) {
+            console.log('Building GDExtension for iOS...');
+
+            // Device arm64: link against ios-arm64/Loreline.framework
+            const deviceFwDir = path.join(iosXcfw, 'ios-arm64');
+            await command('scons', [
+                'platform=ios', 'arch=arm64', 'target=' + sconsTarget,
+                'loreline_framework_dir=' + deviceFwDir
+            ], { cwd: godotDir });
+
+            // Simulator arm64
+            const simFwDir = path.join(iosXcfw, 'ios-arm64_x86_64-simulator');
+            await command('scons', [
+                'platform=ios', 'arch=arm64', 'ios_simulator=yes', 'target=' + sconsTarget,
+                'loreline_framework_dir=' + simFwDir
+            ], { cwd: godotDir });
+
+            // Simulator x86_64
+            await command('scons', [
+                'platform=ios', 'arch=x86_64', 'ios_simulator=yes', 'target=' + sconsTarget,
+                'loreline_framework_dir=' + simFwDir
+            ], { cwd: godotDir });
+
+            // Lipo simulator arm64 + x86_64 into universal
+            const simArm64 = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.arm64.simulator.dylib');
+            const simX86 = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.x86_64.simulator.dylib');
+            const simUniversal = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.universal.simulator.dylib');
+            if (fs.existsSync(simUniversal)) fs.unlinkSync(simUniversal);
+            await command('lipo', ['-create', simArm64, simX86, '-output', simUniversal]);
+
+            // Assemble xcframework
+            const deviceDylib = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.arm64.dylib');
+            const xcfwOut = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.xcframework');
+            if (fs.existsSync(xcfwOut)) fs.rmSync(xcfwOut, { recursive: true });
+            await command('xcodebuild', [
+                '-create-xcframework',
+                '-library', deviceDylib,
+                '-library', simUniversal,
+                '-output', xcfwOut
+            ]);
+
+            console.log('Built: GDExtension iOS xcframework');
+        }
+
+        // Android GDExtension (if libloreline.so exists from --android build)
+        const androidJniDir = path.join(__dirname, 'build', 'cpp-lib', 'android', 'jni');
+        const androidArm64So = path.join(androidJniDir, 'arm64-v8a', 'libloreline.so');
+        if (fs.existsSync(androidArm64So) && process.env.ANDROID_NDK_ROOT) {
+            console.log('Building GDExtension for Android...');
+
+            const androidArchs = [
+                { arch: 'arm64', abi: 'arm64-v8a' },
+                { arch: 'x86_64', abi: 'x86_64' }
+            ];
+
+            for (const { arch, abi } of androidArchs) {
+                const libDir = path.join(androidJniDir, abi);
+                await command('scons', [
+                    'platform=android', 'arch=' + arch, 'target=' + sconsTarget,
+                    'loreline_android_lib_dir=' + libDir
+                ], { cwd: godotDir });
+                console.log('Built: GDExtension for Android (' + arch + ')');
+            }
+        }
     }
 
     if (buildCs) {

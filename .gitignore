@@ -26,3 +26,6 @@ merged-context.txt
 /py/loreline/__pycache__
 /lua/loreline/core.lua
 /jvm/loreline.jar
+/godot/bin
+/godot/build
+/godot/.sconsign.dblite

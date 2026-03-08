@@ -64,15 +64,23 @@ jobs:
       - name: Run C++ library tests
         run: node ./setup --cpp-lib-test
 
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension wrapper
+        run: node ./setup --godot
+
       - name: Create zip archive
         working-directory: .
         run: |
           New-Item -ItemType Directory -Force -Path loreline-windows-pkg/cpp/include
           New-Item -ItemType Directory -Force -Path loreline-windows-pkg/cpp/lib
+          New-Item -ItemType Directory -Force -Path loreline-windows-pkg/godot/windows
           Copy-Item loreline.exe loreline-windows-pkg/
           Copy-Item build/cpp-lib/windows/Loreline.dll loreline-windows-pkg/cpp/lib/
           Copy-Item build/cpp-lib/windows/Loreline.lib loreline-windows-pkg/cpp/lib/
           Copy-Item cpp/include/Loreline.h loreline-windows-pkg/cpp/include/
+          Copy-Item godot/bin/libloreline_godot.windows.template_release.x86_64.dll loreline-windows-pkg/godot/windows/
           Compress-Archive -Path loreline-windows-pkg/* -DestinationPath loreline-windows.zip -CompressionLevel Optimal
 
       - name: Upload Files
@@ -158,13 +166,21 @@ jobs:
       - name: Run C++ library tests
         run: node ./setup --cpp-lib-test
 
+      - name: Install scons
+        run: brew install scons
+
+      - name: Build GDExtension wrapper
+        run: node ./setup --godot
+
       - name: Assemble package
         run: |
           mkdir -p loreline-mac-pkg/cpp/include
           mkdir -p loreline-mac-pkg/cpp/lib
+          mkdir -p loreline-mac-pkg/godot/macos
           cp loreline loreline-mac-pkg/
           cp build/cpp-lib/mac/libLoreline.dylib loreline-mac-pkg/cpp/lib/
           cp cpp/include/Loreline.h loreline-mac-pkg/cpp/include/
+          cp -r godot/bin/libloreline_godot.macos.template_release.framework loreline-mac-pkg/godot/macos/
 
       - name: Install Apple certificate
         if: env.CODESIGN == 'true'
@@ -309,13 +325,21 @@ jobs:
       - name: Run C++ library tests
         run: node ./setup --cpp-lib-test
 
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension wrapper
+        run: node ./setup --godot
+
       - name: Create zip archive
         run: |
           mkdir -p loreline-linux-pkg/cpp/include
           mkdir -p loreline-linux-pkg/cpp/lib
+          mkdir -p loreline-linux-pkg/godot/linux
           cp loreline loreline-linux-pkg/
           cp build/cpp-lib/linux/libLoreline.so loreline-linux-pkg/cpp/lib/
           cp cpp/include/Loreline.h loreline-linux-pkg/cpp/include/
+          cp godot/bin/libloreline_godot.linux.template_release.${{ matrix.arch }}.so loreline-linux-pkg/godot/linux/
           cd loreline-linux-pkg && zip --symlinks -9 ../loreline-linux-${{ matrix.arch }}.zip -r .
 
       - name: Upload Files
@@ -945,6 +969,12 @@ jobs:
       - name: Build iOS xcframework
         run: node ./setup --ios
 
+      - name: Install scons
+        run: brew install scons
+
+      - name: Build GDExtension wrapper for iOS
+        run: node ./setup --godot
+
       - name: Install Apple certificate
         if: env.CODESIGN == 'true'
         env:
@@ -975,6 +1005,18 @@ jobs:
           codesign -vvv build/cpp-lib/ios/Loreline.xcframework/ios-arm64/Loreline.framework
           codesign -vvv build/cpp-lib/ios/Loreline.xcframework/ios-arm64_x86_64-simulator/Loreline.framework
 
+      - name: Sign GDExtension iOS xcframework slices
+        if: env.CODESIGN == 'true'
+        run: |
+          IDENTITY="Developer ID Application"
+          XCFW=godot/bin/libloreline_godot.ios.template_release.xcframework
+          if [ -d "$XCFW" ]; then
+            for slice in "$XCFW"/*/; do
+              codesign --force --sign "$IDENTITY" --timestamp "$slice"
+              codesign -vvv "$slice"
+            done
+          fi
+
       - name: Cleanup keychain
         if: ${{ always() }}
         run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
@@ -982,8 +1024,10 @@ jobs:
       - name: Create zip archive
         run: |
           mkdir -p loreline-ios-pkg/include
+          mkdir -p loreline-ios-pkg/godot/ios
           cp -r build/cpp-lib/ios/Loreline.xcframework loreline-ios-pkg/
           cp cpp/include/Loreline.h loreline-ios-pkg/include/
+          cp -r godot/bin/libloreline_godot.ios.template_release.xcframework loreline-ios-pkg/godot/ios/
           cd loreline-ios-pkg && zip --symlinks -9 ../loreline-ios.zip -r .
 
       - name: Upload Files
@@ -1050,11 +1094,20 @@ jobs:
       - name: Build Android AAR
         run: node ./setup --android
 
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension wrapper for Android
+        run: node ./setup --godot
+
       - name: Create zip archive
         run: |
           mkdir -p loreline-android-pkg/include
+          mkdir -p loreline-android-pkg/godot/android
           cp build/cpp-lib/android/loreline.aar loreline-android-pkg/
           cp cpp/include/Loreline.h loreline-android-pkg/include/
+          cp godot/bin/libloreline_godot.android.template_release.arm64.so loreline-android-pkg/godot/android/
+          cp godot/bin/libloreline_godot.android.template_release.x86_64.so loreline-android-pkg/godot/android/
           cd loreline-android-pkg && zip -9 ../loreline-android.zip -r .
 
       - name: Upload Files
@@ -1063,6 +1116,151 @@ jobs:
           retention-days: 1
           name: loreline-android.zip
           path: loreline-android.zip
+          compression-level: 0
+
+
+  loreline-wasm:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          echo 'neko path: '$NEKOPATH
+          echo 'haxe path: '$HAXEPATH
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Build WASM
+        run: node ./setup --wasm
+
+      - name: Create zip archive
+        run: |
+          mkdir -p loreline-wasm-pkg/include
+          mkdir -p loreline-wasm-pkg/lib
+          cp build/cpp-lib/wasm/libLoreline.nothreads.a loreline-wasm-pkg/lib/
+          cp build/cpp-lib/wasm/libLoreline.threads.a loreline-wasm-pkg/lib/
+          cp cpp/include/Loreline.h loreline-wasm-pkg/include/
+          cd loreline-wasm-pkg && zip -9 ../loreline-wasm.zip -r .
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-wasm.zip
+          path: loreline-wasm.zip
+          compression-level: 0
+
+
+  loreline-godot:
+    needs: [loreline-mac, loreline-windows, loreline-linux, loreline-wasm, loreline-ios, loreline-android]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble loreline-godot package
+        run: |
+          PKG=loreline-godot-pkg/addons/loreline
+          mkdir -p $PKG/bin/macos
+          mkdir -p $PKG/bin/windows
+          mkdir -p $PKG/bin/linux
+          mkdir -p $PKG/bin/wasm
+          mkdir -p $PKG/bin/ios
+          mkdir -p $PKG/bin/android/arm64-v8a
+          mkdir -p $PKG/bin/android/x86_64
+
+          # Copy .gdextension manifest
+          cp godot/loreline.gdextension $PKG/
+
+          # Extract platform artifacts
+          unzip -qo artifacts/loreline-mac.zip -d mac-temp
+          unzip -qo artifacts/loreline-windows.zip -d win-temp
+          unzip -qo artifacts/loreline-linux-x86_64.zip -d linux-x86_64-temp
+          unzip -qo artifacts/loreline-linux-arm64.zip -d linux-arm64-temp
+          unzip -qo artifacts/loreline-wasm.zip -d wasm-temp
+          unzip -qo artifacts/loreline-ios.zip -d ios-temp
+          unzip -qo artifacts/loreline-android.zip -d android-temp
+
+          # macOS: GDExtension framework + libLoreline
+          cp -r mac-temp/godot/macos/libloreline_godot.macos.template_release.framework $PKG/bin/macos/
+          cp mac-temp/cpp/lib/libLoreline.dylib $PKG/bin/macos/
+
+          # Windows: GDExtension DLL + Loreline DLL
+          cp win-temp/godot/windows/libloreline_godot.windows.template_release.x86_64.dll $PKG/bin/windows/
+          cp win-temp/cpp/lib/Loreline.dll $PKG/bin/windows/
+
+          # Linux x86_64: GDExtension .so + libLoreline
+          cp linux-x86_64-temp/godot/linux/libloreline_godot.linux.template_release.x86_64.so $PKG/bin/linux/
+          cp linux-x86_64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.x86_64.so
+
+          # Linux arm64: GDExtension .so
+          cp linux-arm64-temp/godot/linux/libloreline_godot.linux.template_release.arm64.so $PKG/bin/linux/
+          cp linux-arm64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.arm64.so
+
+          # WASM: static libs
+          cp wasm-temp/lib/libLoreline.nothreads.a $PKG/bin/wasm/
+          cp wasm-temp/lib/libLoreline.threads.a $PKG/bin/wasm/
+
+          # iOS: GDExtension xcframework + Loreline xcframework
+          cp -r ios-temp/godot/ios/libloreline_godot.ios.template_release.xcframework $PKG/bin/ios/
+          cp -r ios-temp/Loreline.xcframework $PKG/bin/ios/
+
+          # Android: GDExtension .so + libloreline.so per arch
+          unzip -qo android-temp/loreline.aar -d android-aar-temp
+          cp android-temp/godot/android/libloreline_godot.android.template_release.arm64.so $PKG/bin/android/arm64-v8a/
+          cp android-aar-temp/jni/arm64-v8a/libloreline.so $PKG/bin/android/arm64-v8a/
+          cp android-temp/godot/android/libloreline_godot.android.template_release.x86_64.so $PKG/bin/android/x86_64/
+          cp android-aar-temp/jni/x86_64/libloreline.so $PKG/bin/android/x86_64/
+
+          cd loreline-godot-pkg && zip --symlinks -9 ../loreline-godot.zip -r .
+
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: loreline-godot.zip
+          path: loreline-godot.zip
           compression-level: 0
 
 
@@ -1298,7 +1496,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -1393,6 +1591,12 @@ jobs:
           name: loreline-sdl3.zip
           path: .
 
+      - name: Download loreline-godot.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: loreline-godot.zip
+          path: .
+
       - name: Extract tag name
         id: extract_tag
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
@@ -1423,3 +1627,4 @@ jobs:
             loreline-lua.zip
             loreline-jvm.zip
             loreline-cpp.zip
+            loreline-godot.zip

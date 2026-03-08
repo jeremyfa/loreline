@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+import os
+
+env = SConscript("extern/godot-cpp/SConstruct")
+
+# Add Loreline.h include path
+env.Append(CPPPATH=["src/", "../cpp/include/"])
+
+# Determine libLoreline library location based on platform
+# Users can override via LORELINE_LIB_DIR environment variable or SCons argument
+loreline_lib_dir = ARGUMENTS.get("loreline_lib_dir", os.environ.get("LORELINE_LIB_DIR", ""))
+
+if not loreline_lib_dir:
+    # Default: look in the build output directory
+    platform = env["platform"]
+    if platform == "macos":
+        loreline_lib_dir = "../build/cpp-lib/mac"
+    elif platform == "windows":
+        loreline_lib_dir = "../build/cpp-lib/windows"
+    elif platform == "linux":
+        loreline_lib_dir = "../build/cpp-lib/linux"
+    elif platform == "android":
+        loreline_lib_dir = "../build/cpp-lib/android"
+    elif platform == "ios":
+        loreline_lib_dir = "../build/cpp-lib/ios"
+    elif platform == "web":
+        loreline_lib_dir = "../build/cpp-lib/wasm"
+    else:
+        loreline_lib_dir = "../build/cpp-lib"
+
+# Build object files in a separate directory to keep src/ clean
+build_dir = "build/obj{}".format(env["suffix"])
+env.VariantDir(build_dir, "src", duplicate=False)
+sources = Glob(build_dir + "/*.cpp")
+
+# Link against libLoreline
+if env["platform"] == "web":
+    # Web: link against static libLoreline built with Emscripten
+    threads = env.get("threads", False)
+    variant = "threads" if threads else "nothreads"
+    static_lib = os.path.join(loreline_lib_dir, "libLoreline.{}.a".format(variant))
+    if os.path.exists(static_lib):
+        env.Append(LINKFLAGS=[static_lib])
+    else:
+        print("Warning: {} not found. Build with: node ./setup --wasm".format(static_lib))
+elif env["platform"] == "ios":
+    # Dynamic-link against Loreline.framework from xcframework
+    loreline_fw_dir = ARGUMENTS.get("loreline_framework_dir", "")
+    if loreline_fw_dir:
+        env.Append(FRAMEWORKPATH=[loreline_fw_dir])
+        env.Append(FRAMEWORKS=["Loreline"])
+    else:
+        print("Warning: loreline_framework_dir not set for iOS build")
+elif env["platform"] == "android":
+    # Dynamic-link against libloreline.so
+    android_lib_dir = ARGUMENTS.get("loreline_android_lib_dir", "")
+    if android_lib_dir:
+        env.Append(LIBPATH=[android_lib_dir])
+        env.Append(LIBS=["loreline"])
+    else:
+        print("Warning: loreline_android_lib_dir not set for Android build")
+else:
+    # Desktop: dynamic-link libLoreline
+    env.Append(LIBPATH=[loreline_lib_dir])
+    env.Append(LIBS=["Loreline"])
+
+# Build the GDExtension library
+if env["platform"] == "macos":
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.{}.{}.framework/libloreline_godot.{}.{}".format(
+            env["platform"], env["target"], env["platform"], env["target"]
+        ),
+        source=sources,
+    )
+elif env["platform"] == "ios":
+    sim_suffix = ".simulator" if env.get("ios_simulator", False) else ""
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.{}.{}.{}{}".format(
+            env["platform"], env["target"], env["arch"], sim_suffix
+        ),
+        source=sources,
+    )
+elif env["platform"] == "android":
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.{}.{}.{}".format(
+            env["platform"], env["target"], env["arch"]
+        ),
+        source=sources,
+    )
+else:
+    library = env.SharedLibrary(
+        "bin/libloreline_godot{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+
+env.NoCache(library)
+Default(library)

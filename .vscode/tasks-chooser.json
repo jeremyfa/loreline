@@ -135,6 +135,20 @@
             "args": ["setup", "--android"]
         },
         {
+            "displayName": "⚙ Build WASM",
+            "type": "shell",
+            "description": "node ./setup --wasm",
+            "command": "node",
+            "args": ["setup", "--wasm"]
+        },
+        {
+            "displayName": "⚙ Build Godot",
+            "type": "shell",
+            "description": "node ./setup --godot",
+            "command": "node",
+            "args": ["setup", "--godot"]
+        },
+        {
             "displayName": "⚙ Set up SDL3 sample",
             "type": "shell",
             "description": "node ./setup --sample sdl3",
