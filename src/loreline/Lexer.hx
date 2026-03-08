@@ -2153,6 +2153,11 @@ class Token {
     }
 
     function makeLooseOrStrictAfterBracket():Void {
+        if (isStrict()) {
+            strictExprs.push(Strict);
+            return;
+        }
+
         var i = tokenized.length - 1;
 
         while (i >= 0) {

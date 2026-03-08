@@ -1,0 +1,35 @@
+character james
+  name: James
+  currentBooks: ["Dune"]
+
+character barista
+  name: Barista
+  specialDrink: ["Latte"]
+
+state
+  coffeesOrdered: 3
+  orderCount: 5
+
+beat Start
+  james: I need to finish reading ${james.currentBooks[0]}.
+
+  james: I have ordered $coffeesOrdered coffees so far today.
+
+  barista: Today's special is ${barista.specialDrink[0]}.
+
+  barista: You've ordered $orderCount drinks. Let's get you another one!
+
+  -> .
+
+/*
+<test>
+- expected: |
+    James: I need to finish reading Dune.
+
+    James: I have ordered 3 coffees so far today.
+
+    Barista: Today's special is Latte.
+
+    Barista: You've ordered 5 drinks. Let's get you another one!
+</test>
+*/
