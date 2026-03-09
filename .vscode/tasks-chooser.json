@@ -149,6 +149,27 @@
             "args": ["setup", "--godot"]
         },
         {
+            "displayName": "⚙ Build Godot iOS",
+            "type": "shell",
+            "description": "node ./setup --godot-ios",
+            "command": "node",
+            "args": ["setup", "--godot-ios"]
+        },
+        {
+            "displayName": "⚙ Build Godot Android",
+            "type": "shell",
+            "description": "node ./setup --godot-android",
+            "command": "node",
+            "args": ["setup", "--godot-android"]
+        },
+        {
+            "displayName": "⚙ Build Godot WASM",
+            "type": "shell",
+            "description": "node ./setup --godot-wasm",
+            "command": "node",
+            "args": ["setup", "--godot-wasm"]
+        },
+        {
             "displayName": "⚙ Set up SDL3 sample",
             "type": "shell",
             "description": "node ./setup --sample sdl3",

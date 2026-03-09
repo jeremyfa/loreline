@@ -973,7 +973,7 @@ jobs:
         run: brew install scons
 
       - name: Build GDExtension wrapper for iOS
-        run: node ./setup --godot
+        run: node ./setup --godot-ios
 
       - name: Install Apple certificate
         if: env.CODESIGN == 'true'
@@ -1098,7 +1098,7 @@ jobs:
         run: pip install scons
 
       - name: Build GDExtension wrapper for Android
-        run: node ./setup --godot
+        run: node ./setup --godot-android
 
       - name: Create zip archive
         run: |
@@ -1169,13 +1169,22 @@ jobs:
       - name: Build WASM
         run: node ./setup --wasm
 
+      - name: Install scons
+        run: pip install scons
+
+      - name: Build GDExtension wrapper for WASM
+        run: node ./setup --godot-wasm
+
       - name: Create zip archive
         run: |
           mkdir -p loreline-wasm-pkg/include
           mkdir -p loreline-wasm-pkg/lib
+          mkdir -p loreline-wasm-pkg/godot/web
           cp build/cpp-lib/wasm/libLoreline.nothreads.a loreline-wasm-pkg/lib/
           cp build/cpp-lib/wasm/libLoreline.threads.a loreline-wasm-pkg/lib/
           cp cpp/include/Loreline.h loreline-wasm-pkg/include/
+          cp godot/bin/libloreline_godot.web.template_release.wasm32.nothreads.wasm loreline-wasm-pkg/godot/web/ 2>/dev/null || true
+          cp godot/bin/libloreline_godot.web.template_release.wasm32.wasm loreline-wasm-pkg/godot/web/ 2>/dev/null || true
           cd loreline-wasm-pkg && zip -9 ../loreline-wasm.zip -r .
 
       - name: Upload Files
@@ -1238,9 +1247,10 @@ jobs:
           cp linux-arm64-temp/godot/linux/libloreline_godot.linux.template_release.arm64.so $PKG/bin/linux/
           cp linux-arm64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.arm64.so
 
-          # WASM: static libs
+          # WASM: static libs + GDExtension wasm outputs
           cp wasm-temp/lib/libLoreline.nothreads.a $PKG/bin/wasm/
           cp wasm-temp/lib/libLoreline.threads.a $PKG/bin/wasm/
+          cp wasm-temp/godot/web/*.wasm $PKG/bin/wasm/ 2>/dev/null || true
 
           # iOS: GDExtension xcframework + Loreline xcframework
           cp -r ios-temp/godot/ios/libloreline_godot.ios.template_release.xcframework $PKG/bin/ios/

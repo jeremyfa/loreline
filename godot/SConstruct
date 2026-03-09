@@ -48,8 +48,7 @@ elif env["platform"] == "ios":
     # Dynamic-link against Loreline.framework from xcframework
     loreline_fw_dir = ARGUMENTS.get("loreline_framework_dir", "")
     if loreline_fw_dir:
-        env.Append(FRAMEWORKPATH=[loreline_fw_dir])
-        env.Append(FRAMEWORKS=["Loreline"])
+        env.Append(LINKFLAGS=['-F', loreline_fw_dir, '-framework', 'Loreline'])
     else:
         print("Warning: loreline_framework_dir not set for iOS build")
 elif env["platform"] == "android":
@@ -70,21 +69,6 @@ if env["platform"] == "macos":
     library = env.SharedLibrary(
         "bin/libloreline_godot.{}.{}.framework/libloreline_godot.{}.{}".format(
             env["platform"], env["target"], env["platform"], env["target"]
-        ),
-        source=sources,
-    )
-elif env["platform"] == "ios":
-    sim_suffix = ".simulator" if env.get("ios_simulator", False) else ""
-    library = env.SharedLibrary(
-        "bin/libloreline_godot.{}.{}.{}{}".format(
-            env["platform"], env["target"], env["arch"], sim_suffix
-        ),
-        source=sources,
-    )
-elif env["platform"] == "android":
-    library = env.SharedLibrary(
-        "bin/libloreline_godot.{}.{}.{}".format(
-            env["platform"], env["target"], env["arch"]
         ),
         source=sources,
     )
