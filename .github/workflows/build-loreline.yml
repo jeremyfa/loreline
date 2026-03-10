@@ -1223,45 +1223,47 @@ jobs:
           cp godot/loreline.gdextension $PKG/
 
           # Extract platform artifacts
-          unzip -qo artifacts/loreline-mac.zip -d mac-temp
-          unzip -qo artifacts/loreline-windows.zip -d win-temp
-          unzip -qo artifacts/loreline-linux-x86_64.zip -d linux-x86_64-temp
-          unzip -qo artifacts/loreline-linux-arm64.zip -d linux-arm64-temp
-          unzip -qo artifacts/loreline-wasm.zip -d wasm-temp
-          unzip -qo artifacts/loreline-ios.zip -d ios-temp
-          unzip -qo artifacts/loreline-android.zip -d android-temp
+          cd artifacts
+          unzip -qo loreline-mac.zip/loreline-mac.zip -d mac-temp
+          unzip -qo loreline-windows.zip/loreline-windows.zip -d win-temp
+          unzip -qo loreline-linux-x86_64.zip/loreline-linux-x86_64.zip -d linux-x86_64-temp
+          unzip -qo loreline-linux-arm64.zip/loreline-linux-arm64.zip -d linux-arm64-temp
+          unzip -qo loreline-wasm.zip/loreline-wasm.zip -d wasm-temp
+          unzip -qo loreline-ios.zip/loreline-ios.zip -d ios-temp
+          unzip -qo loreline-android.zip/loreline-android.zip -d android-temp
+          cd ..
 
           # macOS: GDExtension framework + libLoreline
-          cp -r mac-temp/godot/macos/libloreline_godot.macos.template_release.framework $PKG/bin/macos/
-          cp mac-temp/cpp/lib/libLoreline.dylib $PKG/bin/macos/
+          cp -r artifacts/mac-temp/godot/macos/libloreline_godot.macos.template_release.framework $PKG/bin/macos/
+          cp artifacts/mac-temp/cpp/lib/libLoreline.dylib $PKG/bin/macos/
 
           # Windows: GDExtension DLL + Loreline DLL
-          cp win-temp/godot/windows/libloreline_godot.windows.template_release.x86_64.dll $PKG/bin/windows/
-          cp win-temp/cpp/lib/Loreline.dll $PKG/bin/windows/
+          cp artifacts/win-temp/godot/windows/libloreline_godot.windows.template_release.x86_64.dll $PKG/bin/windows/
+          cp artifacts/win-temp/cpp/lib/Loreline.dll $PKG/bin/windows/
 
           # Linux x86_64: GDExtension .so + libLoreline
-          cp linux-x86_64-temp/godot/linux/libloreline_godot.linux.template_release.x86_64.so $PKG/bin/linux/
-          cp linux-x86_64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.x86_64.so
+          cp artifacts/linux-x86_64-temp/godot/linux/libloreline_godot.linux.template_release.x86_64.so $PKG/bin/linux/
+          cp artifacts/linux-x86_64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.x86_64.so
 
           # Linux arm64: GDExtension .so
-          cp linux-arm64-temp/godot/linux/libloreline_godot.linux.template_release.arm64.so $PKG/bin/linux/
-          cp linux-arm64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.arm64.so
+          cp artifacts/linux-arm64-temp/godot/linux/libloreline_godot.linux.template_release.arm64.so $PKG/bin/linux/
+          cp artifacts/linux-arm64-temp/cpp/lib/libLoreline.so $PKG/bin/linux/libLoreline.arm64.so
 
           # WASM: static libs + GDExtension wasm outputs
-          cp wasm-temp/lib/libLoreline.nothreads.a $PKG/bin/wasm/
-          cp wasm-temp/lib/libLoreline.threads.a $PKG/bin/wasm/
-          cp wasm-temp/godot/web/*.wasm $PKG/bin/wasm/ 2>/dev/null || true
+          cp artifacts/wasm-temp/lib/libLoreline.nothreads.a $PKG/bin/wasm/
+          cp artifacts/wasm-temp/lib/libLoreline.threads.a $PKG/bin/wasm/
+          cp artifacts/wasm-temp/godot/web/*.wasm $PKG/bin/wasm/ 2>/dev/null || true
 
           # iOS: GDExtension xcframework + Loreline xcframework
-          cp -r ios-temp/godot/ios/libloreline_godot.ios.template_release.xcframework $PKG/bin/ios/
-          cp -r ios-temp/Loreline.xcframework $PKG/bin/ios/
+          cp -r artifacts/ios-temp/godot/ios/libloreline_godot.ios.template_release.xcframework $PKG/bin/ios/
+          cp -r artifacts/ios-temp/Loreline.xcframework $PKG/bin/ios/
 
           # Android: GDExtension .so + libloreline.so per arch
-          unzip -qo android-temp/loreline.aar -d android-aar-temp
-          cp android-temp/godot/android/libloreline_godot.android.template_release.arm64.so $PKG/bin/android/arm64-v8a/
-          cp android-aar-temp/jni/arm64-v8a/libloreline.so $PKG/bin/android/arm64-v8a/
-          cp android-temp/godot/android/libloreline_godot.android.template_release.x86_64.so $PKG/bin/android/x86_64/
-          cp android-aar-temp/jni/x86_64/libloreline.so $PKG/bin/android/x86_64/
+          unzip -qo artifacts/android-temp/loreline.aar -d artifacts/android-aar-temp
+          cp artifacts/android-temp/godot/android/libloreline_godot.android.template_release.arm64.so $PKG/bin/android/arm64-v8a/
+          cp artifacts/android-aar-temp/jni/arm64-v8a/libloreline.so $PKG/bin/android/arm64-v8a/
+          cp artifacts/android-temp/godot/android/libloreline_godot.android.template_release.x86_64.so $PKG/bin/android/x86_64/
+          cp artifacts/android-aar-temp/jni/x86_64/libloreline.so $PKG/bin/android/x86_64/
 
           cd loreline-godot-pkg && zip --symlinks -9 ../loreline-godot.zip -r .
 

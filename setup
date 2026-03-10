@@ -809,7 +809,9 @@ async function main() {
             throw new Error('EMSDK environment variable is not set. Install Emscripten SDK and set EMSDK.');
         }
 
-        const wasmBuildDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm');
+        const wasmNothreadsBuildDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm-nothreads');
+        const wasmThreadsBuildDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm-threads');
+        const wasmOutputDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm');
 
         let haxeBuildCppLibArgs = [
             'build-cpp-lib.hxml',
@@ -819,27 +821,23 @@ async function main() {
 
         // Step 1: Haxe → C++ (once, with emscripten define)
         await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
-            '--cpp', 'build/cpp-lib/wasm',
+            '--cpp', 'build/cpp-lib/wasm-nothreads',
             '-D', 'emscripten'
         ]));
 
-        // Step 2: Build nothreads variant (single-threaded, default for HXCPP emscripten)
+        // Copy generated C++ to threads build dir
+        if (fs.existsSync(wasmThreadsBuildDir)) fs.rmSync(wasmThreadsBuildDir, { recursive: true, force: true });
+        fs.cpSync(wasmNothreadsBuildDir, wasmThreadsBuildDir, { recursive: true });
+
+        // Step 2: Build nothreads variant
         console.log('  Building nothreads variant...');
         await command('../../../haxelib', [
             'run', 'hxcpp', 'Build.xml',
             '-Demscripten',
             '-DHXCPP_EMSCRIPTEN_FPIC'
-        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmBuildDir });
+        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmNothreadsBuildDir });
 
-        // Rename the static lib
-        const staticLibName = debug ? 'libLibrary-debug.a' : 'libLibrary.a';
-        const nothreadsLib = path.join(wasmBuildDir, 'libLoreline.nothreads.a');
-        if (fs.existsSync(path.join(wasmBuildDir, staticLibName))) {
-            fs.renameSync(path.join(wasmBuildDir, staticLibName), nothreadsLib);
-        }
-        console.log('Built: ' + nothreadsLib);
-
-        // Step 3: Build threads variant (multi-threaded)
+        // Step 3: Build threads variant
         console.log('  Building threads variant...');
         await command('../../../haxelib', [
             'run', 'hxcpp', 'Build.xml',
@@ -847,13 +845,21 @@ async function main() {
             '-DHXCPP_MULTI_THREADED_APP',
             '-DHXCPP_MULTI_THREADED',
             '-DHXCPP_EMSCRIPTEN_FPIC'
-        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmBuildDir });
+        ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmThreadsBuildDir });
 
-        const threadsLib = path.join(wasmBuildDir, 'libLoreline.threads.a');
-        if (fs.existsSync(path.join(wasmBuildDir, staticLibName))) {
-            fs.renameSync(path.join(wasmBuildDir, staticLibName), threadsLib);
-        }
-        console.log('Built: ' + threadsLib);
+        // Step 4: Copy final .a files to wasm/
+        const staticLibName = debug ? 'libLibrary-debug.a' : 'libLibrary.a';
+        fs.mkdirSync(wasmOutputDir, { recursive: true });
+        fs.copyFileSync(
+            path.join(wasmNothreadsBuildDir, staticLibName),
+            path.join(wasmOutputDir, 'libLoreline.nothreads.a')
+        );
+        fs.copyFileSync(
+            path.join(wasmThreadsBuildDir, staticLibName),
+            path.join(wasmOutputDir, 'libLoreline.threads.a')
+        );
+        console.log('Built: ' + path.join(wasmOutputDir, 'libLoreline.nothreads.a'));
+        console.log('Built: ' + path.join(wasmOutputDir, 'libLoreline.threads.a'));
     }
 
     if (buildGodot || buildGodotIos || buildGodotAndroid || buildGodotWasm) {
