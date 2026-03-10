@@ -1011,7 +1011,7 @@ jobs:
           IDENTITY="Developer ID Application"
           XCFW=godot/bin/libloreline_godot.ios.template_release.xcframework
           if [ -d "$XCFW" ]; then
-            for slice in "$XCFW"/*/; do
+            for slice in "$XCFW"/*/*.framework; do
               codesign --force --sign "$IDENTITY" --timestamp "$slice"
               codesign -vvv "$slice"
             done

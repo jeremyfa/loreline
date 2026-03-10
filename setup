@@ -845,6 +845,7 @@ async function main() {
             'run', 'hxcpp', 'Build.xml',
             '-Demscripten',
             '-DHXCPP_MULTI_THREADED_APP',
+            '-DHXCPP_MULTI_THREADED',
             '-DHXCPP_EMSCRIPTEN_FPIC'
         ].concat(debug ? ['-Ddebug'] : []), { cwd: wasmBuildDir });
 
