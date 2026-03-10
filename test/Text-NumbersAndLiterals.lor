@@ -1,0 +1,70 @@
+
+// Bare number as narrative text
+100
+
+// Dialogue with number as text
+barista: 100
+
+// Bare literals as narrative text
+true
+// false:
+false
+// null:
+null
+
+// Dialogue with literals as text
+barista: true
+
+barista: false
+
+barista: null
+
+// Decimal number as text
+3.14
+
+// Mixed text starting with number
+100 bottles on the wall
+
+// Verify state/character blocks still parse literals correctly
+character hero
+  health: 100
+  alive: true
+  weapon: null
+
+$hero.health is a number: $hero.health
+
+hero.alive is a bool: $hero.alive
+
+hero.weapon is null: $hero.weapon
+
+/*
+<test>
+- expected: |
+    ~ 100
+
+    barista: 100
+
+    ~ true
+
+    ~ false
+
+    ~ null
+
+    barista: true
+
+    barista: false
+
+    barista: null
+
+    ~ 3.14
+
+    ~ 100 bottles on the wall
+
+    ~ 100 is a number: 100
+
+    ~ hero.alive is a bool: true
+
+    ~ hero.weapon is null: null
+
+</test>
+*/

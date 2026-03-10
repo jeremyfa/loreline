@@ -2312,6 +2312,8 @@ class Token {
         final isAfterLabel = (labelIdentifierIndex != -1);
         final isValue = (parent == KwState || parent == KwCharacter || inBrackets || isAssignValue);
 
+        var identifier = matchIdentifier(pos);
+
         // More skip cases
         if (isValue) {
             if (isCallStart(pos) || isLabelStart(pos)) {
@@ -2319,7 +2321,7 @@ class Token {
             }
         }
         else {
-            if (!isAfterLabel && (isIdentifierExpressionStart(pos, true) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
+            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && (isIdentifierExpressionStart(pos, true) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
                 return null;
             }
         }
@@ -2344,7 +2346,6 @@ class Token {
             }
         }
 
-        var identifier = matchIdentifier(pos);
         if (identifier != null) {
             if (identifier == 'function') {
                 // Cannot start with function keyword
@@ -2628,7 +2629,7 @@ class Token {
 
             var contentLength = content.uLength();
             var rtrimmedOffset = (rawContentLength - contentLength);
-            if (contentLength > 0 && hasNonSpecialChar(content) && !isNumber(content) && content != 'null' && content != 'true' && content != 'false') {
+            if (contentLength > 0 && hasNonSpecialChar(content) && (isValue ? (!isNumber(content) && content != 'null' && content != 'true' && content != 'false') : true)) {
 
                 if (multilineIndent == -1 && !isAfterLabel && !inChoiceRoot()) {
                     // Look for more text to compose a paragraph
