@@ -64,12 +64,40 @@ else:
     env.Append(LIBPATH=[loreline_lib_dir])
     env.Append(LIBS=["Loreline"])
 
-# Build the GDExtension library
+# Build the GDExtension library with clean output names per platform
 if env["platform"] == "macos":
+    # Plain dylib (not framework). Lipo combines archs in setup script.
     library = env.SharedLibrary(
-        "bin/libloreline_godot.{}.{}.framework/libloreline_godot.{}.{}".format(
-            env["platform"], env["target"], env["platform"], env["target"]
-        ),
+        "bin/libloreline_godot.{}.dylib".format(env["arch"]),
+        source=sources,
+    )
+elif env["platform"] == "ios":
+    # Temp name with arch+simulator for lipo/xcframework assembly
+    sim_suffix = ".simulator" if env.get("ios_simulator", False) else ""
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.ios.{}{}.dylib".format(env["arch"], sim_suffix),
+        source=sources,
+    )
+elif env["platform"] == "android":
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.so",
+        source=sources,
+    )
+elif env["platform"] == "windows":
+    library = env.SharedLibrary(
+        "bin/loreline_godot.dll",
+        source=sources,
+    )
+elif env["platform"] == "linux":
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.{}.so".format(env["arch"]),
+        source=sources,
+    )
+elif env["platform"] == "web":
+    threads = env.get("threads", False)
+    nothreads_suffix = ".nothreads" if not threads else ""
+    library = env.SharedLibrary(
+        "bin/libloreline_godot{}.wasm".format(nothreads_suffix),
         source=sources,
     )
 else:

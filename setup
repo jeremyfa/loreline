@@ -894,32 +894,19 @@ async function main() {
                 await command('scons', sconsArgs, { cwd: godotDir });
                 console.log('Built: GDExtension for ' + sconsPlatform + ' (' + sconsArch + ')');
 
-                // On macOS with multiple archs, rename the output so it's not overwritten
-                if (sconsPlatform == 'macos' && sconsArchList.length > 1) {
-                    const frameworkName = 'libloreline_godot.macos.' + sconsTarget + '.framework';
-                    const libName = 'libloreline_godot.macos.' + sconsTarget;
-                    const libPath = path.join(godotDir, 'bin', frameworkName, libName);
-                    if (fs.existsSync(libPath)) {
-                        fs.renameSync(libPath, libPath + '.' + sconsArch);
-                    }
-                }
             }
 
             // On macOS, create universal binary via lipo
-            if (sconsPlatform == 'macos') {
-                const frameworkName = 'libloreline_godot.macos.' + sconsTarget + '.framework';
-                const libName = 'libloreline_godot.macos.' + sconsTarget;
-                const frameworkDir = path.join(godotDir, 'bin', frameworkName);
-                const libPath = path.join(frameworkDir, libName);
-
-                const arm64Lib = libPath + '.arm64';
-                const x64Lib = libPath + '.x86_64';
+            if (sconsPlatform == 'macos' && sconsArchList.length > 1) {
+                const arm64Lib = path.join(godotDir, 'bin', 'libloreline_godot.arm64.dylib');
+                const x64Lib = path.join(godotDir, 'bin', 'libloreline_godot.x86_64.dylib');
+                const universalLib = path.join(godotDir, 'bin', 'libloreline_godot.dylib');
                 if (fs.existsSync(arm64Lib) && fs.existsSync(x64Lib)) {
-                    if (fs.existsSync(libPath)) fs.unlinkSync(libPath);
-                    await command('lipo', ['-create', arm64Lib, x64Lib, '-output', libPath]);
+                    if (fs.existsSync(universalLib)) fs.unlinkSync(universalLib);
+                    await command('lipo', ['-create', arm64Lib, x64Lib, '-output', universalLib]);
                     fs.unlinkSync(arm64Lib);
                     fs.unlinkSync(x64Lib);
-                    console.log('Created universal macOS framework');
+                    console.log('Created universal macOS dylib');
                 }
             }
         }
@@ -957,14 +944,14 @@ async function main() {
             ], { cwd: godotDir });
 
             // Lipo simulator arm64 + x86_64 into universal
-            const simArm64 = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.arm64.simulator.dylib');
-            const simX86 = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.x86_64.simulator.dylib');
-            const simUniversal = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.universal.simulator.dylib');
+            const simArm64 = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.simulator.dylib');
+            const simX86 = path.join(godotDir, 'bin', 'libloreline_godot.ios.x86_64.simulator.dylib');
+            const simUniversal = path.join(godotDir, 'bin', 'libloreline_godot.ios.universal.simulator.dylib');
             if (fs.existsSync(simUniversal)) fs.unlinkSync(simUniversal);
             await command('lipo', ['-create', simArm64, simX86, '-output', simUniversal]);
 
             // Wrap dylibs in .framework bundles for proper codesigning
-            const deviceDylib = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.arm64.dylib');
+            const deviceDylib = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.dylib');
             const fwName = 'loreline_godot';
             const fwInfoPlist = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -994,7 +981,7 @@ async function main() {
             // Assemble xcframework from .framework bundles
             const deviceFw = path.join(godotDir, 'bin', 'device', fwName + '.framework');
             const simFw = path.join(godotDir, 'bin', 'simulator', fwName + '.framework');
-            const xcfwOut = path.join(godotDir, 'bin', 'libloreline_godot.ios.' + sconsTarget + '.xcframework');
+            const xcfwOut = path.join(godotDir, 'bin', 'loreline_godot.xcframework');
             if (fs.existsSync(xcfwOut)) fs.rmSync(xcfwOut, { recursive: true });
             await command('xcodebuild', [
                 '-create-xcframework',
@@ -1034,6 +1021,11 @@ async function main() {
                     'loreline_android_lib_dir=' + libDir,
                     'ndk_version=' + ndkVersion
                 ], { cwd: godotDir });
+                // Move to per-abi directory so next arch doesn't overwrite
+                const outputSo = path.join(godotDir, 'bin', 'libloreline_godot.so');
+                const abiDir = path.join(godotDir, 'bin', abi);
+                fs.mkdirSync(abiDir, { recursive: true });
+                fs.renameSync(outputSo, path.join(abiDir, 'libloreline_godot.so'));
                 console.log('Built: GDExtension for Android (' + arch + ')');
             }
         }
