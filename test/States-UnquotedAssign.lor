@@ -19,18 +19,16 @@ hero.title := Grand Wizard
 label := Goodbye World
 "Label: $label"
 
-// Number-like value treated as string
+// Numbers, booleans and null keep their type (not treated as strings)
 label := 42
 "Label 42: $label"
 
-// Boolean-like treated as string
 label := true
 "Label true: $label"
 
 label := false
 "Label false: $label"
 
-// Null-like treated as string
 label := null
 "Label null: $label"
 

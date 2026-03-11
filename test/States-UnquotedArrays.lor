@@ -1,0 +1,41 @@
+
+state
+  inventory: [black sword, shield]
+
+$inventory[0]
+
+$inventory[1]
+
+state
+  gear: [
+    black sword,
+    shield
+  ]
+
+$gear[0]
+
+$gear[1]
+
+state
+  note: [
+    why are
+    you looking at this
+  ]
+
+$note[0]
+
+/*
+<test>
+- expected: |
+    ~ black sword
+
+    ~ shield
+
+    ~ black sword
+
+    ~ shield
+
+    ~ why are
+      you looking at this
+</test>
+*/

@@ -902,14 +902,42 @@ class Printer {
             case Null:
                 write('null');
             case Array:
-                var first = true;
-                write('[');
+                // Check if any element is a multiline unquoted string.
+                // If so, use expanded format so both lines of the element share the same
+                // column (required for the re-lexer's combining logic to work on roundtrip).
+                var hasMultilineUnquoted = false;
                 for (elem in (lit.value:Array<Dynamic>)) {
-                    if (!first) write(', ');
-                    first = false;
-                    printNode(elem);
+                    if (hasRealNewlines(elem)) {
+                        hasMultilineUnquoted = true;
+                        break;
+                    }
                 }
-                write(']');
+                if (hasMultilineUnquoted) {
+                    write('[');
+                    writeln();
+                    indent();
+                    var first = true;
+                    for (elem in (lit.value:Array<Dynamic>)) {
+                        if (!first) {
+                            write(',');
+                            writeln();
+                        }
+                        first = false;
+                        printNode(elem);
+                    }
+                    writeln();
+                    unindent();
+                    write(']');
+                } else {
+                    var first = true;
+                    write('[');
+                    for (elem in (lit.value:Array<Dynamic>)) {
+                        if (!first) write(', ');
+                        first = false;
+                        printNode(elem);
+                    }
+                    write(']');
+                }
             case Object(style):
                 if (style == Braces) writeln('{');
                 else writeln();

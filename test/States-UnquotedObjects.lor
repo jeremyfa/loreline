@@ -1,0 +1,29 @@
+
+state
+  shopList:
+    apples: Buy them organic
+    eggs: Take 6 boxes
+
+$shopList.apples
+
+$shopList.eggs
+
+state
+  menu: { espresso: Dark roast, latte: With oat milk }
+
+$menu.espresso
+
+$menu.latte
+
+/*
+<test>
+- expected: |
+    ~ Buy them organic
+
+    ~ Take 6 boxes
+
+    ~ Dark roast
+
+    ~ With oat milk
+</test>
+*/
