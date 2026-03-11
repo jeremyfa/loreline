@@ -1904,9 +1904,12 @@ class Token {
             pos++;
         }
 
-        // If the first line has text content (not just tags), this isn't a multiline dialogue
+        // If the first line has text content (not just tags),
+        // skip to end of the first line and still check if next line is an indented continuation
         if (!onlyTagsOnFirstLine) {
-            return -1;
+            while (pos < length && input.uCharCodeAt(pos) != "\n".code && input.uCharCodeAt(pos) != "\r".code) {
+                pos++;
+            }
         }
 
         final prevPos = pos;

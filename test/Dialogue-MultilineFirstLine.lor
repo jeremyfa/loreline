@@ -1,0 +1,51 @@
+
+// Text on first line with indented continuation
+barista: Hey, how are you?
+  Anything to drink?
+
+// Multiple continuation lines
+barista: Welcome to the café!
+  We have espresso, latte, and cappuccino.
+  What can I get you?
+
+// Tag + inline text + continuation
+barista: <friendly> Hey there!
+  Good to see you again.
+
+// Interpolation on first line + continuation
+state
+  drink: latte
+
+barista: Today's special: $drink.
+  Highly recommended!
+
+// Non-continuation: next line at same indent stays separate
+barista: Just one line here.
+
+barista: And another single line.
+
+/*
+<test>
+- expected: |
+    barista:
+      Hey, how are you?
+      Anything to drink?
+
+    barista:
+      Welcome to the café!
+      We have espresso, latte, and cappuccino.
+      What can I get you?
+
+    barista:
+      <<friendly>>Hey there!
+      Good to see you again.
+
+    barista:
+      Today's special: latte.
+      Highly recommended!
+
+    barista: Just one line here.
+
+    barista: And another single line.
+</test>
+*/
