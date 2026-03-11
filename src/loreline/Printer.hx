@@ -1089,6 +1089,7 @@ class Printer {
     function getOperator(op:TokenType):String {
         return switch (op) {
             case OpAssign: "=";
+            case OpUnquotedAssign: ":=";
             case OpPlusAssign: "+=";
             case OpMinusAssign: "-=";
             case OpMultiplyAssign: "*=";

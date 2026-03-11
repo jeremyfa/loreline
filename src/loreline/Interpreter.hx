@@ -2939,7 +2939,7 @@ typedef InterpreterOptions = {
         final value = evaluateExpression(assign.value);
 
         final currentValue = switch (assign.op) {
-            case OpAssign: value;
+            case OpAssign | OpUnquotedAssign: value;
             case OpPlusAssign: performOperation(OpPlus, readAccess(target), value, assign.pos);
             case OpMinusAssign: performOperation(OpMinus, readAccess(target), value, assign.pos);
             case OpMultiplyAssign: performOperation(OpMultiply, readAccess(target), value, assign.pos);

@@ -155,6 +155,8 @@ enum TokenType {
     OpMultiplyAssign;
     /** Divide-assignment operator (/=) */
     OpDivideAssign;
+    /** Unquoted-assign operator (:=) */
+    OpUnquotedAssign;
     /** Addition operator (+) */
     OpPlus;
     /** Subtraction operator (-) */
@@ -268,6 +270,7 @@ class TokenTypeHelpers {
             case [OpMinusAssign, OpMinusAssign]: true;
             case [OpMultiplyAssign, OpMultiplyAssign]: true;
             case [OpDivideAssign, OpDivideAssign]: true;
+            case [OpUnquotedAssign, OpUnquotedAssign]: true;
             case [OpPlus, OpPlus]: true;
             case [OpMinus, OpMinus]: true;
             case [OpMultiply, OpMultiply]: true;
@@ -309,7 +312,7 @@ class TokenTypeHelpers {
 
     public static function isAssignOp(a:TokenType):Bool {
         return switch a {
-            case OpAssign | OpPlusAssign | OpMinusAssign | OpMultiplyAssign | OpDivideAssign: true;
+            case OpAssign | OpPlusAssign | OpMinusAssign | OpMultiplyAssign | OpDivideAssign | OpUnquotedAssign: true;
             case _: false;
         }
     }
@@ -366,6 +369,7 @@ class TokenTypeHelpers {
             case OpMinusAssign: '-=';
             case OpMultiplyAssign: '*=';
             case OpDivideAssign: '/=';
+            case OpUnquotedAssign: ':=';
             case OpPlus: '+';
             case OpMinus: '-';
             case OpMultiply: '*';
@@ -717,7 +721,14 @@ class Token {
                     case "]".code: advance(); strictExprs.pop(); makeToken(RBracket, startPos);
                     case "(".code: advance(); makeStrictIfFollowingCallable(); makeToken(LParen, startPos);
                     case ")".code: advance(); strictExprs.pop(); makeToken(RParen, startPos);
-                    case ":".code: advance(); makeToken(Colon, startPos);
+                    case ":".code:
+                        if (peek() == "=".code) {
+                            advance(2);
+                            makeToken(OpUnquotedAssign, startPos);
+                        } else {
+                            advance();
+                            makeToken(Colon, startPos);
+                        }
                     case ",".code: advance(); makeToken(Comma, startPos);
                     case ".".code: advance(); makeToken(Dot, startPos);
                     case c if (isDigit(c)): readNumber();
@@ -1719,7 +1730,7 @@ class Token {
 
             // Found assign operator
             if (!isEscape && (c == "=".code ||
-                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code)))) {
+                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == ":".code)))) {
                 return true;
             }
 
@@ -2035,6 +2046,21 @@ class Token {
 
     }
 
+    function followsUnquotedAssign():Bool {
+        var i = tokenized.length - 1;
+        while (i >= 0) {
+            final token = tokenized[i];
+            if (token.type.isComment() || token.type == Indent || token.type == Unindent) {
+                i--;
+            } else if (token.type == OpUnquotedAssign) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns whether the resolved tokens in the current line are only white spaces,
      * a single label `someLabel:`, or comments.
@@ -2283,11 +2309,9 @@ class Token {
         // Whether this is an unquoted string value or not
         final inBrackets = isInsideBrackets();
 
-        // If loreline_assign_unquoted is defined, unquoted string values will be allowed after
-        // assigns like = += -= /= etc...
-        // The default is not allowed in order to keep some consistency between assign syntax
-        // and condition expressions, which are usually working in pairs
-        final isAssignValue = #if loreline_assign_unquoted followsAssignStart() #else false #end;
+        // Unquoted string values are always allowed after :=
+        // If loreline_assign_unquoted is defined, they are also allowed after = += -= /= etc...
+        final isAssignValue = followsUnquotedAssign() #if loreline_assign_unquoted || followsAssignStart() #end;
 
         final labelIdentifierIndex = afterLabelIdentifierToken(false);
 

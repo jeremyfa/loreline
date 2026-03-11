@@ -709,6 +709,9 @@
                     "include": "#quoted-strings"
                 },
                 {
+                    "include": "#unquoted-assigns"
+                },
+                {
                     "include": "#unquoted-multiline-dialogues"
                 },
                 {
@@ -921,7 +924,7 @@
         "unquoted-multiline-dialogues": {
             "patterns": [
                 {
-                    "begin": "(^[ \\t]*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+                    "begin": "(^[ \\t]*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?!=)\\s*",
                     "beginCaptures": {
                         "2": {
                             "name": "entity.name.class.loreline"
@@ -1005,7 +1008,7 @@
         "unquoted-dialogues": {
             "patterns": [
                 {
-                    "begin": "(?<=^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*)*\\s*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)(\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*)(?!\\s*if\\s*(?:/\\*[^*]*\\*/\\s*)*\\()(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*\")",
+                    "begin": "(?<=^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*)*\\s*)(?!\\s*(?:state|beat|character|choice|else|new|function|import|sequence|cycle|once|pick|shuffle)\\b)(\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?!=)\\s*)(?!\\s*if\\s*(?:/\\*[^*]*\\*/\\s*)*\\()(?!\\s*:)(?!\\s*})(?!\\s*])(?!\\s*\\[)(?!\\s*\\{)((?:\\/\\*[^*]*\\*\\/\\s*)*)(?!\\s*\")",
                     "beginCaptures": {
                         "2": {
                             "name": "entity.name.class.loreline"
@@ -1331,7 +1334,7 @@
                 },
                 {
                     "name": "keyword.operator.assignment.loreline",
-                    "match": "=|\\+=|-=|\\*=|/="
+                    "match": ":=|=|\\+=|-=|\\*=|/="
                 },
                 {
                     "name": "keyword.control.loreline",
@@ -1428,6 +1431,45 @@
                             "name": "entity.name.function.method.loreline"
                         }
                     }
+                }
+            ]
+        },
+        "unquoted-assigns": {
+            "patterns": [
+                {
+                    "begin": "^(?=[^<>\\(\\)]+?\\s*:=\\s*)(.*?)(\\s*:=\\s*)",
+                    "beginCaptures": {
+                        "1": {
+                            "patterns": [
+                                {
+                                    "include": "#expressions"
+                                }
+                            ]
+                        },
+                        "2": {
+                            "name": "keyword.operator.assignment.loreline"
+                        }
+                    },
+                    "end": "$|(?=//|/\\*)",
+                    "patterns": [
+                        {
+                            "include": "#comments"
+                        },
+                        {
+                            "name": "constant.character.escape.loreline",
+                            "match": "\\\\."
+                        },
+                        {
+                            "include": "#string-interpolation"
+                        },
+                        {
+                            "include": "#constants"
+                        },
+                        {
+                            "match": "(?:(?!\\s|\\$|/[/*]).)+",
+                            "name": "string.unquoted.value.loreline"
+                        }
+                    ]
                 }
             ]
         },

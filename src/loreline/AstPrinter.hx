@@ -777,6 +777,7 @@ class AstPrinter {
             case OpMinusAssign: "OpMinusAssign";
             case OpMultiplyAssign: "OpMultiplyAssign";
             case OpDivideAssign: "OpDivideAssign";
+            case OpUnquotedAssign: "OpUnquotedAssign";
             case OpEquals: "OpEquals";
             case OpNotEquals: "OpNotEquals";
             case OpGreater: "OpGreater";

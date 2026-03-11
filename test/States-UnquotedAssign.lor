@@ -1,0 +1,74 @@
+
+character hero
+  name: Robin
+  title: Knight
+
+state
+  label: Hello World
+  count: 0
+
+// Basic unquoted string assign to character property
+hero.name := Alex
+"Name: $hero.name"
+
+// Multi-word unquoted string
+hero.title := Grand Wizard
+"Title: $hero.title"
+
+// Unquoted assign to state field
+label := Goodbye World
+"Label: $label"
+
+// Number-like value treated as string
+label := 42
+"Label 42: $label"
+
+// Boolean-like treated as string
+label := true
+"Label true: $label"
+
+label := false
+"Label false: $label"
+
+// Null-like treated as string
+label := null
+"Label null: $label"
+
+// Interpolation in unquoted value
+hero.name := Sir $hero.title
+"Interpolated: $hero.name"
+
+// Bracket access assign
+state
+  items: ["Sword", "Shield"]
+items[0] := Axe
+"Item 0: ${items[0]}"
+
+// Regular = still works for numeric assignment
+count = 99
+"Count: $count"
+
+/*
+<test>
+- expected: |
+    ~ Name: Alex
+
+    ~ Title: Grand Wizard
+
+    ~ Label: Goodbye World
+
+    ~ Label 42: 42
+
+    ~ Label true: true
+
+    ~ Label false: false
+
+    ~ Label null: null
+
+    ~ Interpolated: Sir Grand Wizard
+
+    ~ Item 0: Axe
+
+    ~ Count: 99
+</test>
+*/

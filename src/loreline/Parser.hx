@@ -956,7 +956,7 @@ class ParserContext {
         final expr = parseExpression();
 
         if (match(OpAssign) || match(OpPlusAssign) || match(OpMinusAssign) ||
-            match(OpMultiplyAssign) || match(OpDivideAssign)) {
+            match(OpMultiplyAssign) || match(OpDivideAssign) || match(OpUnquotedAssign)) {
             final op = previous().type;
             final assignment = attachComments(new NAssign(nextNodeId(NODE), expr.pos, expr, op, null));
             assignment.value = parseExpression();
@@ -1146,7 +1146,7 @@ class ParserContext {
 
             // Handle assignments if present
             if (check(OpAssign) || check(OpPlusAssign) || check(OpMinusAssign) ||
-                check(OpMultiplyAssign) || check(OpDivideAssign)) {
+                check(OpMultiplyAssign) || check(OpDivideAssign) || check(OpUnquotedAssign)) {
                 final op = tokens[current].type;
                 advance();
                 final assignment = attachComments(new NAssign(nextNodeId(NODE), expr.pos, expr, op, null));
