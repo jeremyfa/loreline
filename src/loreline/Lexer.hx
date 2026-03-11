@@ -714,7 +714,7 @@ class Token {
         return switch (c) {
             case "{".code: advance(); makeToken(LBrace, startPos);
             case "}".code: advance(); makeToken(RBrace, startPos);
-            case '"'.code: readString(startPos);
+            case '"'.code: tryReadUnquotedString() ?? readString(startPos);
             case "[".code: advance(); makeLooseOrStrictAfterBracket(); makeToken(LBracket, startPos);
             case _:
                 tryReadUnquotedString() ?? switch (c) {
@@ -2293,10 +2293,9 @@ class Token {
         // }
         // [
         // ]
-        // "
         // :
         if (c == "{".code || c == "}".code || c == "[".code || c == "]".code ||
-            c == "\"".code || c == ":".code || c == "#".code ||
+            c == ":".code || c == "#".code ||
             isWhitespace(c)) {
             return null;
         }
@@ -2429,6 +2428,85 @@ class Token {
                     return null;
                 }
             }
+        }
+
+        // When starting with a double quote, only treat as unquoted if more content follows
+        // (either on the same line, or as a paragraph continuation on the next line).
+        // Pure standalone "..." strings are left for readString() to handle.
+        if (c == '"'.code) {
+            // Use readString() to scan past the quoted portion, reusing all existing
+            // escape/interpolation/tag handling (including ${...} expressions).
+            final savedLine_ = line;
+            final savedColumn_ = column;
+            final savedPos_ = pos;
+            var scanEndPos = pos;
+            try {
+                readString(new Position(line, column, pos));
+                if (line != savedLine_) {
+                    // String spans multiple lines → not our case
+                    line = savedLine_; column = savedColumn_; pos = savedPos_;
+                    return null;
+                }
+                scanEndPos = pos; // pos is right after closing "
+            } catch (e:Dynamic) {
+                line = savedLine_; column = savedColumn_; pos = savedPos_;
+                return null;
+            }
+            line = savedLine_; column = savedColumn_; pos = savedPos_; // restore; fall through reads properly
+
+            // Check for text content after closing quote (same line).
+            // Structural chars (], }, ), ,), hash tags (#), and comments do NOT count.
+            var hasSameLineContent = false;
+            var eolPos = scanEndPos;
+            while (eolPos < length) {
+                final sc = input.uCharCodeAt(eolPos);
+                if (sc == ' '.code || sc == '\t'.code) { eolPos++; continue; }
+                if (sc == '\n'.code || sc == '\r'.code) break;
+                if (sc == '/'.code && eolPos + 1 < length &&
+                    (input.uCharCodeAt(eolPos+1) == '/'.code || input.uCharCodeAt(eolPos+1) == '*'.code)) break;
+                if (sc == ']'.code || sc == '}'.code || sc == ')'.code || sc == ','.code) break;
+                if (sc == '#'.code) break;
+                hasSameLineContent = true;
+                break;
+            }
+            if (!hasSameLineContent && !isValue) {
+                // Check if next line continues at same column with narrative text (not a statement)
+                final nextLinePos = skipWhitespaceAndComments(eolPos, true);
+                if (nextLinePos <= eolPos || nextLinePos >= length) return null;
+                final nextChar = input.uCharCodeAt(nextLinePos);
+                // Blank line, comment, or another quoted string → not a continuation
+                if (nextChar == '\n'.code || nextChar == '\r'.code || nextChar == '"'.code ||
+                    (nextChar == '/'.code && nextLinePos + 1 < length &&
+                        (input.uCharCodeAt(nextLinePos + 1) == '/'.code || input.uCharCodeAt(nextLinePos + 1) == '*'.code))) return null;
+                // Check indent matches current column
+                var nextIndent = 0;
+                var tmpPos = nextLinePos;
+                while (tmpPos > 0 && (input.uCharCodeAt(tmpPos - 1) == ' '.code || input.uCharCodeAt(tmpPos - 1) == '\t'.code)) {
+                    nextIndent++; tmpPos--;
+                }
+                final expectedIndent = multilineIndent != -1 ? multilineIndent : column - 1;
+                if (nextIndent != expectedIndent) return null;
+                // -> transition or + choice insertion
+                if (nextChar == '-'.code && nextLinePos + 1 < length && input.uCharCodeAt(nextLinePos + 1) == '>'.code) return null;
+                if (nextChar == '+'.code) return null;
+                // Reuse existing statement-detection helpers (all take pos:Int, don't modify this.pos)
+                if (isAssignStart(nextLinePos, false)) return null;
+                if (isCallStart(nextLinePos)) return null;
+                if (isLabelStart(nextLinePos)) return null;
+                if (isIfStart(nextLinePos)) return null;
+                if (isIdentifierExpressionStart(nextLinePos, true)) return null;
+                // Check for keywords (beat, state, character, choice, function, etc.)
+                if (isIdentifierStart(nextChar)) {
+                    var wordEnd = nextLinePos;
+                    while (wordEnd < length && isIdentifierPart(input.uCharCodeAt(wordEnd))) wordEnd++;
+                    final kw = input.uSubstr(nextLinePos, wordEnd - nextLinePos);
+                    if (kw != 'null' && kw != 'true' && kw != 'false' && KEYWORDS.exists(kw)) return null;
+                }
+                // Same column, looks like narrative text → paragraph combining will merge → proceed as unquoted
+            } else if (!hasSameLineContent) {
+                return null; // isValue + nothing after closing quote → pure quoted string
+            }
+            // Fall through: treat as unquoted string (quote chars handled by inner loop)
         }
 
         // If we get here, we can start reading the unquoted string

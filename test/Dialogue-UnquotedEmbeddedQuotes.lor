@@ -1,0 +1,67 @@
+
+// Narrative: starts with a quoted portion (same line)
+"Madness!" she cried.
+
+// Narrative: quoted start + continuation on next line (paragraph combining)
+"This is fine."
+she said calmly.
+
+// Narrative: quote in the middle (already worked)
+She asked "why?" and ran.
+
+// Narrative: quote at end (already worked)
+He said "this is madness!"
+
+// Dialogue: quoted portion at start of inline text
+barista: "Try the latte!" she suggested.
+
+// Dialogue: quote at end (already worked)
+barista: She said "try the latte".
+
+// Dialogue: multiline with quoted start + continuation
+barista: "It's the best!" he exclaimed.
+  I totally agree.
+
+// Dialogue: quoted-only first line + continuation
+barista: "It's the best!"
+  I totally agree.
+
+// Unquoted assign with embedded quotes
+state
+  label: nothing
+
+label := "wow" that is neat
+"Label: $label"
+
+// Standalone quoted strings remain unchanged
+"This is still a proper quoted string."
+
+/*
+<test>
+- expected: |
+    ~ "Madness!" she cried.
+
+    ~ "This is fine."
+      she said calmly.
+
+    ~ She asked "why?" and ran.
+
+    ~ He said "this is madness!"
+
+    barista: "Try the latte!" she suggested.
+
+    barista: She said "try the latte".
+
+    barista:
+      "It's the best!" he exclaimed.
+      I totally agree.
+
+    barista:
+      "It's the best!"
+      I totally agree.
+
+    ~ Label: "wow" that is neat
+
+    ~ This is still a proper quoted string.
+</test>
+*/
