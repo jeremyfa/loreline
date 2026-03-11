@@ -2269,6 +2269,146 @@ class Token {
     }
 
     /**
+     * Stateless lookahead: finds the position immediately after the closing `"` of a
+     * double-quoted string starting at `startPos`. Follows identical character-handling
+     * rules to readString() but is pure (no lexer state mutations).
+     * Returns -1 if the string is multiline (\n) or unterminated.
+     * allowTags mirrors readString()'s allowTags = (parentBlockType() == KwBeat).
+     */
+    function scanStringEnd(startPos:Int, allowTags:Bool):Int {
+        var p = startPos + 1; // skip opening "
+        var inTag = false;    // mirrors readString()'s tagStart != -1
+        while (p < length) {
+            final c = input.uCharCodeAt(p);
+            // Escape: \ + any char (even \<newline> is a valid escape, not multiline)
+            // Must be checked before the \n test so \<newline> is consumed, not rejected
+            if (c == '\\'.code) { p += 2; continue; }
+            // Only \n causes line increment in readString(); bare \r is a regular char
+            if (c == '\n'.code) return -1;
+            // Closing quote: only when not inside a tag (mirrors tagStart == -1 check)
+            if (c == '"'.code && !inTag) return p + 1;
+            // Tag open: guarded by allowTags, exactly like readString()
+            if (allowTags && c == '<'.code && !inTag) {
+                final nc = p + 1 < length ? input.uCharCodeAt(p + 1) : 0;
+                final isClosing = nc == '/'.code;
+                final checkPos = p + (isClosing ? 2 : 1);
+                if (checkPos < length) {
+                    final ns = input.uCharCodeAt(checkPos);
+                    if (isIdentifierStart(ns) || ns == '_'.code || ns == '$'.code ||
+                        (isClosing && ns == '>'.code)) inTag = true;
+                }
+            }
+            // Tag close: unconditional (mirrors readString()'s else-if c == '>');
+            // inTag can only be true if allowTags was true when the < was seen
+            if (c == '>'.code && inTag) inTag = false;
+            // Interpolation (no escaped guard needed — \ already consumed by p+=2 above)
+            if (c == '$'.code && p + 1 < length) {
+                final next = input.uCharCodeAt(p + 1);
+                if (next == '{'.code) {
+                    // ${...}: mirrors readComplexInterpolation() which uses nextToken()
+                    // nextToken() skips // and /* */ comments, so we must too
+                    p += 2;
+                    var depth = 1;
+                    while (p < length && depth > 0) {
+                        final ic = input.uCharCodeAt(p);
+                        if (ic == '\\'.code) { p += 2; continue; }
+                        if (ic == '\n'.code) return -1;
+                        // // line comment always leads to \n → multiline → reject immediately
+                        if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '/'.code) return -1;
+                        // /* */ block comment: skip entirely, reject if it spans a line
+                        if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '*'.code) {
+                            p += 2;
+                            while (true) {
+                                if (p >= length) return -1;
+                                if (input.uCharCodeAt(p) == '\n'.code) return -1;
+                                if (p + 1 < length && input.uCharCodeAt(p) == '*'.code && input.uCharCodeAt(p + 1) == '/'.code) {
+                                    p += 2; break;
+                                }
+                                p++;
+                            }
+                            continue;
+                        }
+                        if (ic == '"'.code) {
+                            p = scanStringEnd(p, allowTags);
+                            if (p == -1) return -1;
+                            continue;
+                        }
+                        if (ic == '{'.code) depth++;
+                        else if (ic == '}'.code) depth--;
+                        p++;
+                    }
+                    if (depth != 0) return -1;
+                    continue;
+                }
+                if (next == '$'.code) { p += 2; continue; }  // $$: literal dollar
+                if (isIdentifierStart(next)) {
+                    p++;  // skip $
+                    while (p < length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+                    p = scanAccessorChain(p, allowTags);
+                    if (p == -1) return -1;
+                    continue;
+                }
+                // $<other>: fall through to p++ (skip $, continue scanning)
+            }
+            p++;
+        }
+        return -1; // unterminated
+    }
+
+    /**
+     * Stateless lookahead: scans past optional .field, [expr], (args) accessor chains,
+     * mirroring readFieldAccessInterpolation()'s loop. Line and block comments inside
+     * [ ] and ( ) are handled like nextToken() does (skipped). Nested " strings are
+     * handled via scanStringEnd().
+     * Returns updated position, or -1 on \n / unterminated bracket or comment.
+     */
+    function scanAccessorChain(p:Int, allowTags:Bool):Int {
+        while (p < length) {
+            final c = input.uCharCodeAt(p);
+            // .field
+            if (c == '.'.code && p + 1 < length && isIdentifierStart(input.uCharCodeAt(p + 1))) {
+                p++;
+                while (p < length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+            }
+            // [expr] or (args): mirrors readFieldAccessInterpolation()'s bracket/paren loops
+            else if (c == '['.code || c == '('.code) {
+                final close = c == '['.code ? ']'.code : ')'.code;
+                p++;
+                var depth = 1;
+                while (p < length && depth > 0) {
+                    final ic = input.uCharCodeAt(p);
+                    if (ic == '\\'.code) { p += 2; continue; }
+                    if (ic == '\n'.code) return -1;
+                    if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '/'.code) return -1;
+                    if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '*'.code) {
+                        p += 2;
+                        while (true) {
+                            if (p >= length) return -1;
+                            if (input.uCharCodeAt(p) == '\n'.code) return -1;
+                            if (p + 1 < length && input.uCharCodeAt(p) == '*'.code && input.uCharCodeAt(p + 1) == '/'.code) {
+                                p += 2; break;
+                            }
+                            p++;
+                        }
+                        continue;
+                    }
+                    if (ic == '"'.code) {
+                        p = scanStringEnd(p, allowTags);
+                        if (p == -1) return -1;
+                        continue;
+                    }
+                    if (ic == c) depth++;
+                    else if (ic == close) depth--;
+                    p++;
+                }
+                if (depth != 0) return -1;
+            }
+            else break;
+        }
+        return p;
+    }
+
+    /**
      * Tries to read an unquoted string literal from the current position.
      * Returns null if the current position cannot start an unquoted string.
      * @return Token if an unquoted string was read, null otherwise
@@ -2434,25 +2574,8 @@ class Token {
         // (either on the same line, or as a paragraph continuation on the next line).
         // Pure standalone "..." strings are left for readString() to handle.
         if (c == '"'.code) {
-            // Use readString() to scan past the quoted portion, reusing all existing
-            // escape/interpolation/tag handling (including ${...} expressions).
-            final savedLine_ = line;
-            final savedColumn_ = column;
-            final savedPos_ = pos;
-            var scanEndPos = pos;
-            try {
-                readString(new Position(line, column, pos));
-                if (line != savedLine_) {
-                    // String spans multiple lines → not our case
-                    line = savedLine_; column = savedColumn_; pos = savedPos_;
-                    return null;
-                }
-                scanEndPos = pos; // pos is right after closing "
-            } catch (e:Dynamic) {
-                line = savedLine_; column = savedColumn_; pos = savedPos_;
-                return null;
-            }
-            line = savedLine_; column = savedColumn_; pos = savedPos_; // restore; fall through reads properly
+            final scanEndPos = scanStringEnd(pos, parent == KwBeat);
+            if (scanEndPos == -1) return null;
 
             // Check for text content after closing quote (same line).
             // Structural chars (], }, ), ,), hash tags (#), and comments do NOT count.
