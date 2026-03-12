@@ -2782,13 +2782,11 @@ typedef InterpreterOptions = {
                 final option = options[index];
                 index++;
 
-                // Skip once-only options that have already been chosen
-                if (option.once && isChoiceOptionChosen(option)) {
-                    moveNext();
-                    return;
-                }
-
-                final enabled = option.condition == null || evaluateCondition(option.condition);
+                // Once-only options that have been chosen are kept in the list but disabled,
+                // NOT removed. This preserves stable indices for the host application and
+                // is consistent with how conditional options (e.g. "Option if false") work.
+                final onceDisabled = option.once && isChoiceOptionChosen(option);
+                final enabled = !onceDisabled && (option.condition == null || evaluateCondition(option.condition));
                 if (option.text != null) {
                     final done = wrapNext(moveNext);
                     final str = getTranslatedString(option, option.text);

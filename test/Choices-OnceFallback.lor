@@ -17,7 +17,7 @@ beat Menu
 
 /*
 <test>
-- choices: [0, 0, 0]
+- choices: [0, 1, 2]
   expected: |
     Alex: What'll it be?
 
@@ -29,6 +29,7 @@ beat Menu
 
     Alex: What'll it be?
 
+    - Espresso
     + Latte
     - Nothing, thanks
 
@@ -36,6 +37,8 @@ beat Menu
 
     Alex: What'll it be?
 
+    - Espresso
+    - Latte
     + Nothing, thanks
 
     Alex: Alright then!
