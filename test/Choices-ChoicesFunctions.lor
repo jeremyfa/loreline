@@ -18,6 +18,6 @@ beat Start
     - Option B
     + Option C
 
-    ~ Available when C was chosen: [Option A,Option C]
+    ~ Available when C was chosen: [Option A, Option C]
 </test>
 */

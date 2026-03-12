@@ -4418,14 +4418,59 @@ typedef InterpreterOptions = {
      * @return The string representation of the value
      */
     function valueToString(value:Any):String {
+        return valueToStringImpl(value, null);
+    }
+
+    function valueToStringImpl(value:Any, seen:Array<Any>):String {
+        if (value == null) return "null";
 
         #if (cs && !macro)
         if (value is Float && !(value is Int)) {
             return cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', value);
         }
         #end
-        return Std.string(value);
 
+        if (value is String) return (value : String);
+        if (value is Bool || value is Int || value is Float) return Std.string(value);
+
+        // Cycle detection for reference types (arrays and fields)
+        if (seen == null) seen = [];
+        for (s in seen) {
+            if (s == value) return "...";
+        }
+        seen.push(value);
+
+        if (Arrays.isArray(value)) {
+            final len = Arrays.arrayLength(value);
+            final buf = new StringBuf();
+            buf.add("[");
+            for (i in 0...len) {
+                if (i > 0) buf.add(", ");
+                buf.add(valueToStringImpl(Arrays.arrayGet(value, i), seen));
+            }
+            buf.add("]");
+            seen.pop();
+            return buf.toString();
+        }
+
+        if (Objects.isFields(value)) {
+            final keys = Objects.getFields(this, value);
+            final buf = new StringBuf();
+            buf.add("{");
+            for (i in 0...keys.length) {
+                if (i > 0) buf.add(", ");
+                buf.add(keys[i]);
+                buf.add(": ");
+                buf.add(valueToStringImpl(Objects.getField(this, value, keys[i]), seen));
+            }
+            buf.add("}");
+            seen.pop();
+            return buf.toString();
+        }
+
+        // Fallback for unknown types
+        seen.pop();
+        return Std.string(value);
     }
 
     function printLoreline(node:Node):String {

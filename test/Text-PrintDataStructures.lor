@@ -1,0 +1,34 @@
+
+state
+  fruits: ["apple", "banana", "cherry"]
+  empty: []
+  mixed: ["hello", 42, true, null]
+  menu:
+    espresso: 3
+    latte: 5
+  nested:
+    items: ["a", "b"]
+    meta:
+      count: 2
+
+beat Start
+  "Array: $fruits"
+  "Empty array: $empty"
+  "Mixed array: $mixed"
+  "Object: $menu"
+  "Nested: $nested"
+
+/*
+<test>
+- expected: |
+    ~ Array: [apple, banana, cherry]
+
+    ~ Empty array: []
+
+    ~ Mixed array: [hello, 42, true, null]
+
+    ~ Object: {espresso: 3, latte: 5}
+
+    ~ Nested: {items: [a, b], meta: {count: 2}}
+</test>
+*/

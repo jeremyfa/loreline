@@ -18,7 +18,7 @@ beat Start
     - Option B
     + Option C
 
-    ~ Result: [Option A,Option C]
+    ~ Result: [Option A, Option C]
 - choices: [2]
   saveAtChoice: 0
   expected: |
@@ -30,6 +30,6 @@ beat Start
     - Option B
     + Option C
 
-    ~ Result: [Option A,Option C]
+    ~ Result: [Option A, Option C]
 </test>
 */
