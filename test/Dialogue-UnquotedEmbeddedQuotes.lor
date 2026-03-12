@@ -36,6 +36,9 @@ label := "wow" that is neat
 // Standalone quoted strings remain unchanged
 "This is still a proper quoted string."
 
+// Escaped opening quote makes the whole line unquoted
+\"This will be displayed with the double quotes included."
+
 /*
 <test>
 - expected: |
@@ -63,5 +66,7 @@ label := "wow" that is neat
     ~ Label: "wow" that is neat
 
     ~ This is still a proper quoted string.
+
+    ~ "This will be displayed with the double quotes included."
 </test>
 */
