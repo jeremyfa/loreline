@@ -4453,6 +4453,7 @@ typedef InterpreterOptions = {
 
         if (Objects.isFields(value)) {
             final keys = Objects.getFields(this, value);
+            keys.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
             final buf = new StringBuf();
             buf.add("{");
             for (i in 0...keys.length) {
