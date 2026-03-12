@@ -1,0 +1,65 @@
+
+// --- Tags combined with embedded quotes ---
+
+// Narrative: tag wrapping text with embedded quotes
+<dramatic>"Madness!" she cried.</dramatic>
+
+// Narrative: tag + quote in the middle
+<whispering>She asked "why?" and ran.</whispering>
+
+// Dialogue: tag + quoted portion at start
+barista: <enthusiastic>"Try the latte!" she suggested.</enthusiastic>
+
+// Dialogue: tag + multiline with quoted start
+barista: <enthusiastic>"It's the best!" he exclaimed.
+  I totally agree.</enthusiastic>
+
+// Escaped opening quote with tag
+<bold>\"This will be displayed with the double quotes included."</bold>
+
+// --- Leading tag (space ignored) + embedded quotes ---
+
+// Leading tag + narrative with quoted start
+<dramatic> "Madness!" she cried.
+
+// Leading tag + narrative with quote in the middle
+<whispering> She asked "why?" and ran.
+
+// Leading tag + dialogue with quoted start
+barista: <enthusiastic> "Try the latte!" she suggested.
+
+// Leading tag + dialogue multiline with quoted start
+barista: <enthusiastic> "It's the best!" he exclaimed.
+  I totally agree.
+
+// Leading tag + escaped opening quote
+<bold> \"This will be displayed with the double quotes included."
+
+/*
+<test>
+- expected: |
+    ~ <<dramatic>>"Madness!" she cried.<</dramatic>>
+
+    ~ <<whispering>>She asked "why?" and ran.<</whispering>>
+
+    barista: <<enthusiastic>>"Try the latte!" she suggested.<</enthusiastic>>
+
+    barista:
+      <<enthusiastic>>"It's the best!" he exclaimed.
+      I totally agree.<</enthusiastic>>
+
+    ~ <<bold>>"This will be displayed with the double quotes included."<</bold>>
+
+    ~ <<dramatic>>"Madness!" she cried.
+
+    ~ <<whispering>>She asked "why?" and ran.
+
+    barista: <<enthusiastic>>"Try the latte!" she suggested.
+
+    barista:
+      <<enthusiastic>>"It's the best!" he exclaimed.
+      I totally agree.
+
+    ~ <<bold>>"This will be displayed with the double quotes included."
+</test>
+*/
