@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-2022
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -19,7 +19,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -90,7 +90,7 @@ jobs:
           Compress-Archive -Path loreline-godot-windows-pkg/* -DestinationPath loreline-godot-windows.zip -CompressionLevel Optimal
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-windows.zip
@@ -98,7 +98,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-windows.zip
@@ -112,7 +112,7 @@ jobs:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -120,7 +120,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -270,7 +270,7 @@ jobs:
         run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-mac.zip
@@ -278,7 +278,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-mac.zip
@@ -297,7 +297,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -305,7 +305,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -388,7 +388,7 @@ jobs:
           cd loreline-godot-linux-pkg && zip --symlinks -9 ../loreline-godot-linux-${{ matrix.arch }}.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-linux-${{ matrix.arch }}.zip
@@ -396,7 +396,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-linux-${{ matrix.arch }}.zip
@@ -408,7 +408,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -416,7 +416,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -460,7 +460,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -468,7 +468,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -515,7 +515,7 @@ jobs:
         run: zip -9 'loreline-js.zip' js/loreline.js js/loreline.d.ts
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-js.zip
@@ -527,7 +527,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -535,7 +535,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
 
@@ -543,7 +543,7 @@ jobs:
         run: dotnet --version
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -596,7 +596,7 @@ jobs:
           zip -r '../loreline-csharp.zip' ./* -x './TestRunner/*'
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-csharp.zip
@@ -607,7 +607,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -615,12 +615,12 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -674,7 +674,7 @@ jobs:
           zip -r ../loreline-python.zip .
 
       - name: Upload loreline-python.zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-python.zip
@@ -686,7 +686,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -694,7 +694,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -750,7 +750,7 @@ jobs:
           zip -r ../loreline-lua.zip .
 
       - name: Upload loreline-lua.zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-lua.zip
@@ -762,7 +762,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -770,12 +770,12 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 11
@@ -831,7 +831,7 @@ jobs:
           zip -r ../loreline-jvm.zip .
 
       - name: Upload loreline-jvm.zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-jvm.zip
@@ -844,10 +844,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download C# library
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-csharp.zip
           path: .
@@ -868,7 +868,7 @@ jobs:
                'obj/*'
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-unity.zip
@@ -881,10 +881,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download JS library
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-js.zip
           path: .
@@ -902,7 +902,7 @@ jobs:
           zip -r ../../loreline-web.zip .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-web.zip
@@ -915,10 +915,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 
@@ -965,7 +965,7 @@ jobs:
         run: cd loreline-cpp-pkg && zip -9 ../loreline-cpp.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-cpp.zip
@@ -979,7 +979,7 @@ jobs:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -987,7 +987,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -1089,7 +1089,7 @@ jobs:
           cd loreline-godot-ios-pkg && zip --symlinks -9 ../loreline-godot-ios.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-ios.zip
@@ -1097,7 +1097,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-ios.zip
@@ -1109,7 +1109,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -1117,7 +1117,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -1182,7 +1182,7 @@ jobs:
           cd loreline-godot-android-pkg && zip -9 ../loreline-godot-android.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-android.zip
@@ -1190,7 +1190,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-android.zip
@@ -1202,7 +1202,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -1210,7 +1210,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -1271,7 +1271,7 @@ jobs:
           cd loreline-godot-wasm-pkg && zip -9 ../loreline-godot-wasm.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-wasm.zip
@@ -1279,7 +1279,7 @@ jobs:
           compression-level: 0
 
       - name: Upload GDExtension Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot-wasm.zip
@@ -1292,16 +1292,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download GDExtension artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
           pattern: loreline-godot-*.zip
 
       - name: Download Android AAR artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
           name: loreline-android.zip
@@ -1366,7 +1366,7 @@ jobs:
           cd loreline-godot-pkg && zip --symlinks -9 ../loreline-godot.zip -r .
 
       - name: Upload Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-godot.zip
@@ -1380,10 +1380,10 @@ jobs:
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 
@@ -1548,7 +1548,7 @@ jobs:
         run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: loreline-sdl3.zip
@@ -1576,7 +1576,7 @@ jobs:
     steps:
       - name: Setup Java
         if: matrix.android
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -1590,7 +1590,7 @@ jobs:
         run: echo "y" | sdkmanager "ndk;27.3.13750724"
 
       - name: Download loreline-sdl3.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-sdl3.zip
           path: .
@@ -1609,106 +1609,106 @@ jobs:
     needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download loreline-windows.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-windows.zip
           path: .
 
       - name: Download loreline-mac.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-mac.zip
           path: .
 
       - name: Download loreline-linux-x86_64.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-linux-x86_64.zip
           path: .
 
       - name: Download loreline-linux-arm64.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-linux-arm64.zip
           path: .
 
       - name: Download loreline-js.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-js.zip
           path: .
 
       - name: Download loreline-csharp.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-csharp.zip
           path: .
 
       - name: Download loreline-unity.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-unity.zip
           path: .
 
       - name: Download loreline-web.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-web.zip
           path: .
 
       - name: Download loreline-python.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-python.zip
           path: .
 
       - name: Download loreline-lua.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-lua.zip
           path: .
 
       - name: Download loreline-cpp.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-cpp.zip
           path: .
 
       - name: Download loreline-jvm.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-jvm.zip
           path: .
 
       - name: Download loreline-ios.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-ios.zip
           path: .
 
       - name: Download loreline-android.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-android.zip
           path: .
 
       - name: Download loreline-sdl3.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-sdl3.zip
           path: .
 
       - name: Download loreline-wasm.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-wasm.zip
           path: .
 
       - name: Download loreline-godot.zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: loreline-godot.zip
           path: .
