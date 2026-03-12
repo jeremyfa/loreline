@@ -1,0 +1,68 @@
+
+beat Menu
+  choice
+    - Espresso
+        "You ordered espresso."
+        -> Menu
+    - Latte
+        "You ordered latte."
+        -> Menu
+    Tea
+        "You ordered tea."
+
+/*
+<test>
+- choices: [0, 0, 0]
+  expected: |
+    + Espresso
+    + Latte
+    + Tea
+
+    ~ You ordered espresso.
+
+    + Latte
+    + Tea
+
+    ~ You ordered latte.
+
+    + Tea
+
+    ~ You ordered tea.
+- choices: [0, 0, 0, 0]
+  saveAtChoice: 1
+  expected: |
+    + Espresso
+    + Latte
+    + Tea
+
+    ~ You ordered espresso.
+
+    + Latte
+    + Tea
+
+    + Latte
+    + Tea
+
+    ~ You ordered latte.
+
+    + Tea
+
+    ~ You ordered tea.
+- choices: [0, 1, 0]
+  saveAtChoice: 1
+  expected: |
+    + Espresso
+    + Latte
+    + Tea
+
+    ~ You ordered espresso.
+
+    + Latte
+    + Tea
+
+    + Latte
+    + Tea
+
+    ~ You ordered tea.
+</test>
+*/

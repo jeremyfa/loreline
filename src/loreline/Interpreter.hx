@@ -606,6 +606,18 @@ typedef InterpreterOptions = {
     var pendingChoiceOptions:Array<ChoiceOption> = null;
 
     /**
+     * During choice option evaluation and within the chosen option's body,
+     * tracks the evaluated option texts in original order.
+     */
+    var _choiceEvalTexts:Array<String> = [];
+
+    /**
+     * During choice option evaluation and within the chosen option's body,
+     * tracks whether each evaluated option was enabled (parallel to _choiceEvalTexts).
+     */
+    var _choiceEvalEnabled:Array<Bool> = [];
+
+    /**
      * A custom instanciator to create fields objects.
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
@@ -753,6 +765,17 @@ typedef InterpreterOptions = {
             ];
         }
 
+        // Save choice evaluation context if inside a choice option body
+        if (_choiceEvalTexts.length > 0) {
+            result.choiceEvalContext = [
+                for (i in 0..._choiceEvalTexts.length) {
+                    final entry:SaveDataChoiceOption = { text: _choiceEvalTexts[i] };
+                    if (!_choiceEvalEnabled[i]) entry.disabled = true;
+                    entry;
+                }
+            ];
+        }
+
         if (Reflect.fields(insertions).length > 0) {
             result.insertions = insertions;
         }
@@ -781,6 +804,8 @@ typedef InterpreterOptions = {
         nextScopeId = 1;
         nextInsertionId = 1;
         pendingChoiceOptions = null;
+        _choiceEvalTexts.resize(0);
+        _choiceEvalEnabled.resize(0);
 
         // Restore top level state
         restoreState(topLevelState, saveData.state);
@@ -804,6 +829,16 @@ typedef InterpreterOptions = {
             for (savedOpt in saveData.pendingChoiceOptions) {
                 final opt = restoreChoiceOption(savedOpt, saveData.insertions, restoredInsertions);
                 if (opt != null) pendingChoiceOptions.push(opt);
+            }
+        }
+
+        // Restore choice evaluation context (from save inside a choice option body)
+        if (saveData.choiceEvalContext != null) {
+            _choiceEvalTexts.resize(0);
+            _choiceEvalEnabled.resize(0);
+            for (entry in saveData.choiceEvalContext) {
+                _choiceEvalTexts.push(entry.text);
+                _choiceEvalEnabled.push(entry.disabled != true);
             }
         }
 
@@ -2342,6 +2377,8 @@ typedef InterpreterOptions = {
 
         // Clear pending choice options
         pendingChoiceOptions = null;
+        _choiceEvalTexts.resize(0);
+        _choiceEvalEnabled.resize(0);
 
         // Run beat
         final done = wrapNext(finish);
@@ -2588,6 +2625,13 @@ typedef InterpreterOptions = {
         final restoredOptions = this.pendingChoiceOptions;
         if (restoredOptions != null) {
             this.pendingChoiceOptions = null;
+            // Populate choice eval context from restored options
+            _choiceEvalTexts.resize(0);
+            _choiceEvalEnabled.resize(0);
+            for (opt in restoredOptions) {
+                _choiceEvalTexts.push(opt.text);
+                _choiceEvalEnabled.push(opt.enabled);
+            }
             presentChoice(choice, restoredOptions, next);
             return;
         }
@@ -2643,13 +2687,28 @@ typedef InterpreterOptions = {
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
         var index:Int = -1;
+        final clearChoiceEval = () -> {
+            _choiceEvalTexts.resize(0);
+            _choiceEvalEnabled.resize(0);
+        };
         var choiceCallback = wrapNext(() -> {
             // Clear pending options now that a choice has been made
             this.pendingChoiceOptions = null;
 
             if (index >= 0 && index < options.length) {
-                // Evaluate the chosen option
+                // Mark once-only options as chosen
                 final option = options[index];
+                if (option.node.once) {
+                    setChoiceOptionChosen(option.node);
+                }
+
+                // Wrap next to clear choice eval context after body executes
+                final wrappedNext = () -> {
+                    clearChoiceEval();
+                    next();
+                };
+
+                // Evaluate the chosen option
                 if (option.insertion != null) {
                     final scopeLevel = stack.length;
                     while (stack.length > 0) stack.pop();
@@ -2669,15 +2728,16 @@ typedef InterpreterOptions = {
                         node: cast lens.getParentNode(option.node),
                         head: option.node
                     });
-                    resumeFromLevel(scopeLevel, next);
+                    resumeFromLevel(scopeLevel, wrappedNext);
                 }
                 else {
-                    evalChoiceOption(option.node, next);
+                    evalChoiceOption(option.node, wrappedNext);
                 }
             }
             else {
                 // Choice is invalid. In that situation, we suppose
                 // the choice was cancelable and just continue evaluation
+                clearChoiceEval();
                 next();
             }
         });
@@ -2694,6 +2754,10 @@ typedef InterpreterOptions = {
         // Get options
         final options = choice.options;
 
+        // Clear choice evaluation context for introspection functions
+        _choiceEvalTexts.resize(0);
+        _choiceEvalEnabled.resize(0);
+
         // Then iterate through each child node in the body
         var index = startIndex != null ? startIndex : 0;
         var moveNext:()->Void = null;
@@ -2705,6 +2769,8 @@ typedef InterpreterOptions = {
                 for (i in 0...insertion.options.length) {
                     final opt = insertion.options[i];
                     result.push(opt);
+                    _choiceEvalTexts.push(opt.text);
+                    _choiceEvalEnabled.push(opt.enabled);
                 }
                 insertion = null;
             }
@@ -2715,6 +2781,13 @@ typedef InterpreterOptions = {
                 // Yes, do it
                 final option = options[index];
                 index++;
+
+                // Skip once-only options that have already been chosen
+                if (option.once && isChoiceOptionChosen(option)) {
+                    moveNext();
+                    return;
+                }
+
                 final enabled = option.condition == null || evaluateCondition(option.condition);
                 if (option.text != null) {
                     final done = wrapNext(moveNext);
@@ -2727,6 +2800,8 @@ typedef InterpreterOptions = {
                         node: option,
                         insertion: currentInsertion
                     });
+                    _choiceEvalTexts.push(content.text);
+                    _choiceEvalEnabled.push(enabled);
                     done.cb();
                     done.sync = false;
                 }
@@ -2924,6 +2999,29 @@ typedef InterpreterOptions = {
             nodeStates.set(alt.id, state);
         }
         Objects.setField(this, state.fields, "_visitCount", count);
+    }
+
+    /**
+     * Returns whether a once-only choice option has already been chosen.
+     */
+    function isChoiceOptionChosen(option:NChoiceOption):Bool {
+        final state = nodeStates.get(option.id);
+        if (state == null) return false;
+        final chosen:Any = Objects.getField(this, state.fields, "_chosen");
+        if (chosen == null) return false;
+        return chosen;
+    }
+
+    /**
+     * Marks a once-only choice option as chosen in nodeStates.
+     */
+    function setChoiceOptionChosen(option:NChoiceOption) {
+        var state = nodeStates.get(option.id);
+        if (state == null) {
+            state = new RuntimeState(this, option, null, null);
+            nodeStates.set(option.id, state);
+        }
+        Objects.setField(this, state.fields, "_chosen", true);
     }
 
     /**

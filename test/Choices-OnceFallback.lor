@@ -1,0 +1,43 @@
+
+character barista
+  name: Alex
+
+beat Menu
+  barista: What'll it be?
+
+  choice
+    - Espresso
+        barista: One espresso!
+        -> Menu
+    - Latte
+        barista: One latte!
+        -> Menu
+    Nothing, thanks if !choices()
+        barista: Alright then!
+
+/*
+<test>
+- choices: [0, 0, 0]
+  expected: |
+    Alex: What'll it be?
+
+    + Espresso
+    + Latte
+    - Nothing, thanks
+
+    Alex: One espresso!
+
+    Alex: What'll it be?
+
+    + Latte
+    - Nothing, thanks
+
+    Alex: One latte!
+
+    Alex: What'll it be?
+
+    + Nothing, thanks
+
+    Alex: Alright then!
+</test>
+*/

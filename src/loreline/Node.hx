@@ -1293,6 +1293,11 @@ class NChoiceOption extends AstNode {
     public var style:BlockStyle;
 
     /**
+     * Whether this option can only be chosen once (disappears after being selected).
+     */
+    public var once:Bool;
+
+    /**
      * Creates a new choice option node.
      * @param pos Position in source where this option appears
      * @param text String literal containing the option text
@@ -1310,6 +1315,7 @@ class NChoiceOption extends AstNode {
         this.conditionStyle = conditionStyle;
         this.body = body;
         this.style = Plain;
+        this.once = false;
     }
 
     override function type():String {
@@ -1359,6 +1365,7 @@ class NChoiceOption extends AstNode {
         }
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();
+        if (once) json.once = true;
         return json;
     }
 }

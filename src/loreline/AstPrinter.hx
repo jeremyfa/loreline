@@ -619,6 +619,7 @@ class AstPrinter {
             case NChoiceOption:
                 final option:NChoiceOption = cast node;
                 printBlockStyle(option.style);
+                if (option.once) add(' once');
                 if (option.condition != null) {
                     printConditionStyle(option.conditionStyle, ' conditionStyle=');
                 }

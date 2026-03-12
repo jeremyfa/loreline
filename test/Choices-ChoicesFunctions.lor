@@ -1,0 +1,23 @@
+
+state
+  available: nothing
+
+beat Start
+  choice
+    Option A
+    Option B if false
+    Option C
+      available := choices()
+      "Available when C was chosen: $available"
+
+/*
+<test>
+- choices: [2]
+  expected: |
+    + Option A
+    - Option B
+    + Option C
+
+    ~ Available when C was chosen: [Option A,Option C]
+</test>
+*/

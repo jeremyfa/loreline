@@ -1,0 +1,35 @@
+
+state
+  result: nothing
+
+beat Start
+  choice
+    Option A
+    Option B if false
+    Option C
+      result := choices()
+      "Result: $result"
+
+/*
+<test>
+- choices: [2]
+  expected: |
+    + Option A
+    - Option B
+    + Option C
+
+    ~ Result: [Option A,Option C]
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    + Option A
+    - Option B
+    + Option C
+
+    + Option A
+    - Option B
+    + Option C
+
+    ~ Result: [Option A,Option C]
+</test>
+*/

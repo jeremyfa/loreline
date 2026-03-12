@@ -862,6 +862,10 @@ class ParserContext {
                 choiceOption.insertion = parseInsertion();
             }
             else {
+                // Check for once-only modifier (- prefix)
+                if (match(OpMinus)) {
+                    choiceOption.once = true;
+                }
                 choiceOption.text = parseStringLiteral();
             }
         }

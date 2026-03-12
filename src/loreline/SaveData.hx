@@ -122,4 +122,6 @@ typedef SaveData = {
     var ?insertions:Dynamic<SaveDataInsertion>;
     /** Pending choice options when save happened at a choice with insertions */
     var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
+    /** Choice evaluation context when save happened inside a choice option body */
+    var ?choiceEvalContext:Array<SaveDataChoiceOption>;
 }

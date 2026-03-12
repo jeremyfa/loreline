@@ -1531,6 +1531,21 @@ class Token {
         return true;
     }
 
+    function isChoiceOnceStart(pos:Int):Bool {
+        // Must be in a choice root context
+        if (!inChoiceRoot()) return false;
+
+        // Check for -
+        if (input.uCharCodeAt(pos) != "-".code) return false;
+        pos += 1;
+
+        // Must be followed by a space (to distinguish from -> or -= etc.)
+        if (pos >= this.length) return false;
+        if (input.uCharCodeAt(pos) != " ".code) return false;
+
+        return true;
+    }
+
     /**
      * Returns whether the input at the given position begins with a label pattern (identifier:).
      * @param pos Position to check from
@@ -2127,6 +2142,26 @@ class Token {
 
     }
 
+    function followsChoiceOncePrefix():Bool {
+        if (!inChoiceRoot()) return false;
+
+        var i = tokenized.length - 1;
+        while (i >= 0) {
+            final token = tokenized[i];
+            if (token.type.isComment() || token.type == Indent || token.type == Unindent) {
+                i--;
+            }
+            else if (token.type == OpMinus) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Returns whether the given string has a non special character that could be
      * considered as actual text.
@@ -2510,6 +2545,10 @@ class Token {
             if (isInsertionStart(pos)) {
                 return null;
             }
+            // Skip if this is a once-only choice option prefix
+            if (isChoiceOnceStart(pos)) {
+                return null;
+            }
         }
 
         if (identifier != null) {
@@ -2558,7 +2597,7 @@ class Token {
 
             // Skip if not after a label or starting line
             isDialogue = followsOnlyLabelOrCommentsInLine();
-            if (!isDialogue && !followsOnlyWhitespacesOrCommentsInLine()) {
+            if (!isDialogue && !followsOnlyWhitespacesOrCommentsInLine() && !followsChoiceOncePrefix()) {
                 return null;
             }
 

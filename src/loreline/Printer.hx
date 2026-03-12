@@ -602,6 +602,9 @@ class Printer {
         writeln();
         _noLn = 0;
         printLeadingComments(option);
+        if (option.once) {
+            write('- ');
+        }
         if (option.insertion != null) {
             printNode(option.insertion);
         } else {

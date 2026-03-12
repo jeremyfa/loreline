@@ -89,6 +89,10 @@ class Functions {
         // Game state
         target.set("current_beat", this.current_beat);
         target.set("has_beat", this.has_beat);
+        // Choice introspection
+        target.set("choices", this.choices);
+        target.set("choices_disabled", this.choices_disabled);
+        target.set("choices_all", this.choices_all);
     }
 
     // ── Private helper ────────────────────────────────────────────────
@@ -950,5 +954,78 @@ class Functions {
         }
         // Fall back to top-level beats
         @:privateAccess return interpreter.topLevelBeats.exists(name);
+    }
+
+    // ── Choice introspection ───────────────────────────────────────────
+
+    /**
+     * Returns an array of text strings for all **enabled** choice options
+     * evaluated so far (during option condition evaluation) or all enabled
+     * options (inside the chosen option's body).
+     *
+     * Returns a new array each time (safe to modify in scripts).
+     * Returns an empty array outside of a choice context.
+     *
+     * ```lor
+     * choice
+     *   - Ask about menu
+     *   - Ask about specials
+     *   Say something if !choices()
+     * ```
+     */
+    public function choices():Array<Any> {
+        @:privateAccess final texts = interpreter._choiceEvalTexts;
+        @:privateAccess final enabled = interpreter._choiceEvalEnabled;
+        final result:Array<Any> = [];
+        for (i in 0...texts.length) {
+            if (enabled[i]) result.push(texts[i]);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an array of text strings for all **disabled** choice options
+     * evaluated so far (during option condition evaluation) or all disabled
+     * options (inside the chosen option's body).
+     *
+     * Returns a new array each time (safe to modify in scripts).
+     * Returns an empty array outside of a choice context.
+     *
+     * ```lor
+     * choice
+     *   Option A if someCondition
+     *   Option B if array_length(choices_disabled()) > 0
+     * ```
+     */
+    public function choices_disabled():Array<Any> {
+        @:privateAccess final texts = interpreter._choiceEvalTexts;
+        @:privateAccess final enabled = interpreter._choiceEvalEnabled;
+        final result:Array<Any> = [];
+        for (i in 0...texts.length) {
+            if (!enabled[i]) result.push(texts[i]);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an array of text strings for **all** choice options evaluated
+     * so far, in original order, regardless of enabled/disabled state.
+     *
+     * Returns a new array each time (safe to modify in scripts).
+     * Returns an empty array outside of a choice context.
+     *
+     * ```lor
+     * choice
+     *   Option A
+     *   Option B if array_length(choices_all()) > 0
+     * ```
+     */
+    public function choices_all():Array<Any> {
+        @:privateAccess final texts = interpreter._choiceEvalTexts;
+        final result:Array<Any> = [];
+        for (i in 0...texts.length) {
+            result.push(texts[i]);
+        }
+        return result;
     }
 }
