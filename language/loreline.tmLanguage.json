@@ -914,10 +914,6 @@
                             "include": "#string-interpolation"
                         },
                         {
-                            "match": "\"[^\"\\n]*\"",
-                            "name": "string.quoted.double.loreline"
-                        },
-                        {
                             "match": ".",
                             "name": "string.unquoted.loreline"
                         }
@@ -1046,10 +1042,6 @@
                         },
                         {
                             "include": "#string-interpolation"
-                        },
-                        {
-                            "match": "\"[^\"\\n]*\"",
-                            "name": "string.quoted.double.loreline"
                         },
                         {
                             "match": ".",
