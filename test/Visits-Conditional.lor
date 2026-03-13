@@ -1,0 +1,24 @@
+
+beat Main
+  Scene()
+  Scene()
+  Scene()
+
+beat Scene
+  if visits() == 1
+    First time here
+  else if visits() == 2
+    Back again
+  else
+    Third time
+
+/*
+<test>
+- expected: |
+    ~ First time here
+
+    ~ Back again
+
+    ~ Third time
+</test>
+*/

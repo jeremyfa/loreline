@@ -2532,6 +2532,7 @@ typedef InterpreterOptions = {
      */
     function evalBeatRun(beat:NBeatDecl, next:()->Void) {
 
+        incrementBeatVisitCount(beat);
         evalNodeBody(beat, beat, beat.body, next);
 
     }
@@ -2974,6 +2975,30 @@ typedef InterpreterOptions = {
         evalNodeBody(currentScope.beat, item, item.body, () -> {
             evalShuffledItems(alt, indices, idx + 1, next);
         });
+    }
+
+    /**
+     * Gets the visit count for a beat from nodeStates.
+     */
+    function getBeatVisitCount(beat:NBeatDecl):Int {
+        final state = nodeStates.get(beat.id);
+        if (state == null) return 0;
+        final count:Any = Objects.getField(this, state.fields, "_visitCount");
+        if (count == null) return 0;
+        return count;
+    }
+
+    /**
+     * Increments the visit count for a beat in nodeStates.
+     */
+    function incrementBeatVisitCount(beat:NBeatDecl):Void {
+        var state = nodeStates.get(beat.id);
+        if (state == null) {
+            state = new RuntimeState(this, beat, null, null);
+            nodeStates.set(beat.id, state);
+        }
+        final count:Int = cast(Objects.getField(this, state.fields, "_visitCount") ?? 0);
+        Objects.setField(this, state.fields, "_visitCount", count + 1);
     }
 
     /**

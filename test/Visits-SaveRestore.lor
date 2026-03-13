@@ -1,0 +1,38 @@
+
+beat Main
+  Scene()
+  Scene()
+  choice
+    Continue -> Finale
+
+beat Scene
+  Visit $visits()
+
+beat Finale
+  Scene was visited $visits("Scene") times
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Visit 1
+
+    ~ Visit 2
+
+    + Continue
+
+    ~ Scene was visited 2 times
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Visit 1
+
+    ~ Visit 2
+
+    + Continue
+
+    + Continue
+
+    ~ Scene was visited 2 times
+</test>
+*/

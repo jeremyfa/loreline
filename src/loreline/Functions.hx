@@ -89,6 +89,7 @@ class Functions {
         // Game state
         target.set("current_beat", this.current_beat);
         target.set("has_beat", this.has_beat);
+        target.set("visits", this.visits);
         // Choice introspection
         target.set("choices", this.choices);
         target.set("choices_disabled", this.choices_disabled);
@@ -956,6 +957,57 @@ class Functions {
         }
         // Fall back to top-level beats
         @:privateAccess return interpreter.topLevelBeats.exists(name);
+    }
+
+    /**
+     * Returns how many times a beat has been entered.
+     *
+     * `visits()` returns the visit count of the current beat.
+     * `visits("BeatName")` returns the visit count of the named beat.
+     *
+     * ```lor
+     * if visits() == 1
+     *   First time here
+     * else
+     *   You've been here before
+     *
+     * if visits("Dungeon") >= 3
+     *   You know this place well now
+     * ```
+     */
+    public function visits(?name:String):Int {
+        if (name == null) {
+            // Current beat: find innermost beat scope on the stack
+            @:privateAccess var i = interpreter.stack.length - 1;
+            while (i >= 0) {
+                @:privateAccess final scope = interpreter.stack[i];
+                if (scope.beat != null) {
+                    @:privateAccess return interpreter.getBeatVisitCount(scope.beat);
+                }
+                i--;
+            }
+            return 0;
+        } else {
+            // Named beat: check nested beats in current context first, then top-level
+            @:privateAccess var i = interpreter.stack.length - 1;
+            while (i >= 0) {
+                @:privateAccess final scope = interpreter.stack[i];
+                if (scope.beat != null && scope.beat.body != null) {
+                    for (node in scope.beat.body) {
+                        if (node is NBeatDecl) {
+                            final beatDecl:NBeatDecl = cast node;
+                            if (beatDecl.name == name) {
+                                @:privateAccess return interpreter.getBeatVisitCount(beatDecl);
+                            }
+                        }
+                    }
+                }
+                i--;
+            }
+            @:privateAccess final beat = interpreter.topLevelBeats.get(name);
+            if (beat == null) return 0;
+            @:privateAccess return interpreter.getBeatVisitCount(beat);
+        }
     }
 
     // ── Choice introspection ───────────────────────────────────────────

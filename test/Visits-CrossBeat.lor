@@ -1,0 +1,35 @@
+
+beat Main
+  A()
+  B()
+  A()
+  Summary done
+
+beat A
+  In A (visit $visits())
+
+  Seen B so far: $visits("B")
+
+beat B
+  In B (visit $visits())
+
+  Seen A so far: $visits("A")
+
+/*
+<test>
+- expected: |
+    ~ In A (visit 1)
+
+    ~ Seen B so far: 0
+
+    ~ In B (visit 1)
+
+    ~ Seen A so far: 1
+
+    ~ In A (visit 2)
+
+    ~ Seen B so far: 1
+
+    ~ Summary done
+</test>
+*/
