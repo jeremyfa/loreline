@@ -295,6 +295,14 @@ function M.print(script, indent, newline)
     return __loreline_Loreline.print(script._internal, indent, newline)
 end
 
+--- Ticks pending wait() timers. Call this from your game loop every frame.
+-- The first call enables non-blocking deferred mode for wait();
+-- before this is called, wait() falls back to blocking sleep (correct for CLI tools).
+-- @param delta number Time elapsed since last frame in seconds.
+function M.update(delta)
+    __loreline_Timer.update(delta)
+end
+
 -- Export types for introspection
 M.Node = Node
 M.Script = Script

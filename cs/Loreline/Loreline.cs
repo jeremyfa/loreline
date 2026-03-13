@@ -271,6 +271,17 @@ namespace Loreline
             return (string)Runtime.Loreline.print(script.RuntimeScript, indent, newline);
         }
 
+        /// <summary>
+        /// Ticks pending wait() timers. Call this from your game loop (e.g., Unity's Update).
+        /// The first call switches wait() from blocking Thread.Sleep to non-blocking deferred mode.
+        /// To avoid the first-frame edge case, call Engine.Update(0) once before Engine.Play().
+        /// </summary>
+        /// <param name="delta">Time elapsed since last frame in seconds</param>
+        public static void Update(double delta)
+        {
+            Runtime.Timer.update(delta);
+        }
+
         private class ImportsFileHandlerWrap : Internal.Lang.Function
         {
             private ImportsFileHandler handler;

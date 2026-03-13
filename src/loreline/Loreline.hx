@@ -207,4 +207,14 @@ class Loreline {
         return printer.print(script);
     }
 
+    /**
+     * Ticks pending wait() timers. Call this from your game loop every frame.
+     * The first call enables non-blocking deferred mode for wait() on sys targets;
+     * before this is called, wait() falls back to blocking Sys.sleep() (correct for CLI tools).
+     * @param delta Time elapsed since last frame in seconds
+     */
+    public static function update(delta:Float):Void {
+        Timer.update(delta);
+    }
+
 }

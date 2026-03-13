@@ -508,20 +508,25 @@ LORELINE_PUBLIC void Loreline_update(double delta) {
     /* Flush dispatch-out queue on the caller's thread */
     linc_Loreline_dispatchOutFunctions.flush();
 
-    /* Periodic GC (~every 15 seconds) */
+    /* Everything else on the interpreter's thread: timer ticking + periodic GC */
+    LORELINE_BEGIN_CALL
+    ::loreline::Timer_obj::update(delta);
     linc_Loreline_gcAccum += delta;
     if (linc_Loreline_gcAccum >= 15.0) {
         linc_Loreline_gcAccum = 0.0;
-        LORELINE_BEGIN_CALL
         hx::InternalCollect(false, false);
-        LORELINE_END_CALL
     }
+    LORELINE_END_CALL
 }
 
 LORELINE_PUBLIC void Loreline_createThread(void) {
     if (linc_Loreline_useInternalThread) return;
     linc_Loreline_useInternalThread = true;
     linc_Loreline_thread = new Loreline_Thread();
+    /* Enable deferred timer mode before any interpreter work starts */
+    LORELINE_BEGIN_CALL_SYNC
+    ::loreline::Timer_obj::enableDeferredMode();
+    LORELINE_END_CALL
 }
 
 /* ── Callback wrapper helpers ───────────────────────────────────────────── */

@@ -286,9 +286,11 @@ class Functions {
      */
     public function wait(seconds:Float):Async {
         return new Async(done -> {
-            #if sys
-            Sys.sleep(seconds);
-            done();
+            #if js
+            haxe.Timer.delay(done, Std.int(seconds * 1000));
+            #elseif sys
+            if (Timer.deferredMode) Timer.register(seconds, done);
+            else { Sys.sleep(seconds); done(); }
             #else
             done();
             #end

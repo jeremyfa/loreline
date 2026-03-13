@@ -402,3 +402,15 @@ class Loreline:
             The printed source code.
         """
         return _core.loreline_Loreline.print(script._internal, indent, newline)
+
+    @staticmethod
+    def update(delta: float) -> None:
+        """Tick pending wait() timers. Call from your game loop every frame.
+
+        The first call enables non-blocking deferred mode for wait();
+        before this is called, wait() falls back to blocking sleep (correct for CLI tools).
+
+        Args:
+            delta: Time elapsed since last frame in seconds.
+        """
+        _core.loreline_Timer.update(delta)

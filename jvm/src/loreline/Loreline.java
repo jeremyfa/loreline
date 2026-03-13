@@ -146,6 +146,17 @@ public final class Loreline {
         return loreline.runtime.Loreline.print(script.runtimeScript, indent, newline);
     }
 
+    /**
+     * Ticks pending wait() timers. Call this from your game loop every frame.
+     * The first call enables non-blocking deferred mode for wait();
+     * before this is called, wait() falls back to blocking sleep (correct for CLI tools).
+     *
+     * @param delta time elapsed since last frame in seconds
+     */
+    public static void update(double delta) {
+        loreline.runtime.Timer.update(delta);
+    }
+
     // --- Bridge class for imports file handler ---
 
     private static class ImportsFileHandlerBridge extends loreline.internal.jvm.Function {

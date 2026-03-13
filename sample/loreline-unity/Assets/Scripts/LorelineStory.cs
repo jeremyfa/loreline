@@ -33,7 +33,13 @@ public class LorelineStory : MonoBehaviour
     void Start()
     {
         BuildUI();
+        Engine.Update(0);  // Enable deferred timer mode before starting
         StartStory();
+    }
+
+    void Update()
+    {
+        Engine.Update(Time.deltaTime);
     }
 
     // ── UI Setup ──────────────────────────────────────────────────────────────
