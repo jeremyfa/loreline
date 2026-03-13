@@ -133,6 +133,14 @@ enum RuntimeAccess {
      */
     FunctionAccess(pos:Position, name:String);
 
+    /**
+     * Represents a beat reference resolved by name.
+     *
+     * @param pos Position in the source code where this access occurs
+     * @param beat The beat declaration node
+     */
+    BeatAccess(pos:Position, beat:NBeatDecl);
+
 }
 
 /**
@@ -497,6 +505,7 @@ typedef InterpreterOptions = {
     final stringHelpers:Map<String, Any> = new Map();
     final arrayHelpers:Map<String, Any> = new Map();
     final mapHelpers:Map<String, Any> = new Map();
+    final beatHelpers:Map<String, Any> = new Map();
 
     /**
      * Built-in functions instance, giving access to RNG for alternative blocks.
@@ -2067,6 +2076,8 @@ typedef InterpreterOptions = {
                 arrayHelpers.set(key.substr(6), func);
             else if (StringTools.startsWith(key, "map_"))
                 mapHelpers.set(key.substr(4), func);
+            else if (StringTools.startsWith(key, "beat_"))
+                beatHelpers.set(key.substr(5), func);
         }
 
     }
@@ -3184,34 +3195,27 @@ typedef InterpreterOptions = {
      * @param scopeLevel Optional scope level to search in (defaults to current scope)
      * @return The beat declaration if found, null otherwise
      */
+    /**
+     * Resolves a beat by name, searching nested scopes first then top-level beats.
+     */
+    public function resolveBeatByName(name:String, scopeLevel:Int = -1):Null<NBeatDecl> {
+        var i = scopeLevel == -1 ? stack.length - 1 : scopeLevel;
+        while (i >= 0) {
+            final b = stack[i].beatByName(name);
+            if (b != null) return b;
+            i--;
+        }
+        return topLevelBeats.get(name);
+    }
+
     function resolveBeatFromCall(call:NCall, scopeLevel:Int = -1):NBeatDecl {
 
         // If target is a simple identifier, it might be a nested beat call
         if (call.target is NAccess) {
             final access:NAccess = cast call.target;
             if (access.target == null) {
-                // Look for matching beat in current scope and parent scopes
-                var beatName = access.name;
-                var resolvedBeat:NBeatDecl = null;
-
-                // Search through scopes from innermost to outermost
-                var i = scopeLevel == -1 ? stack.length - 1 : scopeLevel;
-                while (i >= 0) {
-                    final scope = stack[i];
-                    final beatInScope = scope.beatByName(beatName);
-                    if (beatInScope != null) {
-                        resolvedBeat = beatInScope;
-                        break;
-                    }
-                    i--;
-                }
-
-                // If not found in scopes, check top level beats
-                if (resolvedBeat == null && topLevelBeats.exists(beatName)) {
-                    resolvedBeat = topLevelBeats.get(beatName);
-                }
-
                 // If beat found, evaluate it
+                final resolvedBeat = resolveBeatByName(access.name, scopeLevel);
                 if (resolvedBeat != null) {
                     return resolvedBeat;
                 }
@@ -3867,6 +3871,8 @@ typedef InterpreterOptions = {
                     helper = Objects.getStringHelper(this, access.name);
                 } else if (Arrays.isArray(obj)) {
                     helper = Objects.getArrayHelper(this, access.name);
+                } else if (obj is NBeatDecl) {
+                    helper = Objects.getBeatHelper(this, access.name);
                 } else if (Objects.isFields(obj)) {
                     helper = Objects.getMapHelper(this, access.name);
                 }
@@ -4148,6 +4154,9 @@ typedef InterpreterOptions = {
                     throw new RuntimeError('Function not found: $name', pos);
                 }
 
+            case BeatAccess(pos, beat):
+                beat;
+
         }
 
     }
@@ -4178,6 +4187,9 @@ typedef InterpreterOptions = {
 
             case FunctionAccess(pos, name):
                 throw new RuntimeError('Cannot overwrite function: $name', pos);
+
+            case BeatAccess(pos, beat):
+                throw new RuntimeError('Cannot overwrite beat: ${beat.name}', pos);
 
         }
 
@@ -4303,6 +4315,15 @@ typedef InterpreterOptions = {
             );
         }
 
+        // Beat name fallback: identifier resolves to NBeatDecl if it names a reachable beat
+        final beat = resolveBeatByName(name);
+        if (beat != null) {
+            return BeatAccess(
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                beat
+            );
+        }
+
         if (!strictAccess) {
             // When variable is not resolved, write to top level state
             return FieldAccess(
@@ -4394,9 +4415,19 @@ typedef InterpreterOptions = {
 
             case OpEquals | OpNotEquals:
                 // Allow comparison between any types
+                // Special case: NBeatDecl compared with String uses beat name
+                final result = if (left is NBeatDecl && right is String) {
+                    (cast left : NBeatDecl).name == (right : String);
+                } else if (left is String && right is NBeatDecl) {
+                    (left : String) == (cast right : NBeatDecl).name;
+                } else if (left is NBeatDecl && right is NBeatDecl) {
+                    (cast left : NBeatDecl).name == (cast right : NBeatDecl).name;
+                } else {
+                    left == right;
+                };
                 switch op {
-                    case OpEquals: left == right;
-                    case OpNotEquals: left != right;
+                    case OpEquals: result;
+                    case OpNotEquals: !result;
                     case _: throw "Unreachable";
                 }
 
@@ -4474,6 +4505,11 @@ typedef InterpreterOptions = {
             buf.add("]");
             seen.pop();
             return buf.toString();
+        }
+
+        if (value is NBeatDecl) {
+            seen.pop();
+            return (cast value : NBeatDecl).name;
         }
 
         if (Objects.isFields(value)) {

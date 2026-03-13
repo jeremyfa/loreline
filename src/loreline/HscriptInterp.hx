@@ -28,6 +28,7 @@ package loreline;
 import haxe.Constraints.IMap;
 import haxe.PosInfos;
 import hscript.Expr;
+import loreline.Node.NBeatDecl;
 
 private enum Stop {
     SBreak;
@@ -354,6 +355,10 @@ class HscriptInterp {
             if (interpreter.topLevelFunctions.exists(id)) {
                 return interpreter.topLevelFunctions.get(id);
             }
+
+            // Beat name fallback: identifier resolves to NBeatDecl if it names a reachable beat
+            final beat = interpreter.resolveBeatByName(id);
+            if (beat != null) return beat;
 
             error(EUnknownVariable(id));
         }
@@ -771,6 +776,8 @@ class HscriptInterp {
             helper = Objects.getStringHelper(interpreter, f);
         } else if (Arrays.isArray(o)) {
             helper = Objects.getArrayHelper(interpreter, f);
+        } else if (o is NBeatDecl) {
+            helper = Objects.getBeatHelper(interpreter, f);
         } else if (Objects.isFields(o)) {
             helper = Objects.getMapHelper(interpreter, f);
         }

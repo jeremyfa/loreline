@@ -3,10 +3,10 @@ beat Main
   Helper()
   Helper()
   Helper()
-  "Total: $beat_visits("Helper")"
+  "Total: $beat_visits(Helper)"
 
 beat Helper
-  Visit $beat_visits()
+  Visit $Helper.visits()
 
 /*
 <test>

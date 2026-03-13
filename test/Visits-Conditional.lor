@@ -5,9 +5,9 @@ beat Main
   Scene()
 
 beat Scene
-  if visits() == 1
+  if beat_visits() == 1
     First time here
-  else if visits() == 2
+  else if beat_visits() == 2
     Back again
   else
     Third time

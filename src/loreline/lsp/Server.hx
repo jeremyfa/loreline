@@ -1474,7 +1474,7 @@ class Server {
                         return makeBeatDeclHover(cast resolved, uri, content, lens, access);
                     }
                 }
-                return makeAccessHover(access, content, lens);
+                return makeAccessHover(access, uri, content, lens);
             case NArrayAccess:
                 var access:NArrayAccess = cast node;
                 var parent = lens.getParentNode(access);
@@ -2014,7 +2014,7 @@ class Server {
 
     }
 
-    function makeAccessHover(access:NAccess, content:String, lens:Lens):Hover {
+    function makeAccessHover(access:NAccess, uri:DocumentUri, content:String, lens:Lens):Hover {
 
         final resolved = lens.resolveAccess(access);
         if (resolved != null) {
@@ -2024,6 +2024,9 @@ class Server {
             }
             else if (resolved is NFunctionDecl) {
                 return makeFunctionDeclHover(cast resolved, content, access.pos);
+            }
+            else if (resolved is NBeatDecl) {
+                return makeBeatDeclHover(cast resolved, uri, content, lens, access);
             }
 
             final parentCharacter = lens.getFirstParentOfType(resolved, NCharacterDecl);

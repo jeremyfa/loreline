@@ -6,14 +6,14 @@ beat Main
   Summary done
 
 beat A
-  In A (visit $visits())
+  In A (visit $beat_visits())
 
-  Seen B so far: $visits("B")
+  Seen B so far: $beat_visits("B")
 
 beat B
-  In B (visit $visits())
+  In B (visit $beat_visits())
 
-  Seen A so far: $visits("A")
+  Seen A so far: $beat_visits("A")
 
 /*
 <test>

@@ -89,7 +89,7 @@ class Functions {
         // Game state
         target.set("current_beat", this.current_beat);
         target.set("has_beat", this.has_beat);
-        target.set("visits", this.visits);
+        target.set("beat_visits", this.beat_visits);
         // Choice introspection
         target.set("choices", this.choices);
         target.set("choices_disabled", this.choices_disabled);
@@ -920,7 +920,7 @@ class Functions {
         while (i >= 0) {
             @:privateAccess final scope = interpreter.stack[i];
             if (scope.beat != null) {
-                return scope.beat.name;
+                return scope.beat;
             }
             i--;
         }
@@ -938,7 +938,9 @@ class Functions {
      *     Try the secret path -> SecretEnding
      * ```
      */
-    public function has_beat(name:String):Bool {
+    public function has_beat(name:Any):Bool {
+        if (name is NBeatDecl) return true; // reachable — we resolved it
+        final nameStr:String = cast name;
         // Walk the stack bottom-up, scanning each scope's beat body for nested beat declarations
         @:privateAccess var i = interpreter.stack.length - 1;
         while (i >= 0) {
@@ -947,7 +949,7 @@ class Functions {
                 for (node in scope.beat.body) {
                     if (node is NBeatDecl) {
                         final beatDecl:NBeatDecl = cast node;
-                        if (beatDecl.name == name) {
+                        if (beatDecl.name == nameStr) {
                             return true;
                         }
                     }
@@ -956,26 +958,27 @@ class Functions {
             i--;
         }
         // Fall back to top-level beats
-        @:privateAccess return interpreter.topLevelBeats.exists(name);
+        @:privateAccess return interpreter.topLevelBeats.exists(nameStr);
     }
 
     /**
      * Returns how many times a beat has been entered.
      *
-     * `visits()` returns the visit count of the current beat.
-     * `visits("BeatName")` returns the visit count of the named beat.
+     * `beat_visits()` returns the visit count of the current beat.
+     * `beat_visits("BeatName")` or `beat_visits(BeatName)` returns the visit count of the named beat.
+     * `BeatName.visits()` is also supported via dot notation.
      *
      * ```lor
-     * if visits() == 1
+     * if beat_visits() == 1
      *   First time here
      * else
      *   You've been here before
      *
-     * if visits("Dungeon") >= 3
+     * if beat_visits(Dungeon) >= 3
      *   You know this place well now
      * ```
      */
-    public function visits(?name:String):Int {
+    public function beat_visits(?name:Any):Int {
         if (name == null) {
             // Current beat: find innermost beat scope on the stack
             @:privateAccess var i = interpreter.stack.length - 1;
@@ -987,24 +990,12 @@ class Functions {
                 i--;
             }
             return 0;
+        } else if (name is NBeatDecl) {
+            // Beat reference (from bareword or dot notation)
+            @:privateAccess return interpreter.getBeatVisitCount(cast name);
         } else {
-            // Named beat: check nested beats in current context first, then top-level
-            @:privateAccess var i = interpreter.stack.length - 1;
-            while (i >= 0) {
-                @:privateAccess final scope = interpreter.stack[i];
-                if (scope.beat != null && scope.beat.body != null) {
-                    for (node in scope.beat.body) {
-                        if (node is NBeatDecl) {
-                            final beatDecl:NBeatDecl = cast node;
-                            if (beatDecl.name == name) {
-                                @:privateAccess return interpreter.getBeatVisitCount(beatDecl);
-                            }
-                        }
-                    }
-                }
-                i--;
-            }
-            @:privateAccess final beat = interpreter.topLevelBeats.get(name);
+            // Named beat string: use scope-aware lookup
+            @:privateAccess final beat = interpreter.resolveBeatByName(cast name);
             if (beat == null) return 0;
             @:privateAccess return interpreter.getBeatVisitCount(beat);
         }

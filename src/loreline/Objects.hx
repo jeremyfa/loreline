@@ -188,6 +188,10 @@ class Objects {
         return @:privateAccess interpreter.mapHelpers.get(name);
     }
 
+    public static function getBeatHelper(interpreter:Interpreter, name:String):Any {
+        return @:privateAccess interpreter.beatHelpers.get(name);
+    }
+
     public static function createFields(?interpreter:Interpreter, ?type:String, ?node:Node):Any {
 
         @:privateAccess

@@ -6,10 +6,10 @@ beat Main
     Continue -> Finale
 
 beat Scene
-  Visit $visits()
+  Visit $beat_visits()
 
 beat Finale
-  Scene was visited $visits("Scene") times
+  Scene was visited $beat_visits("Scene") times
 
 /*
 <test>

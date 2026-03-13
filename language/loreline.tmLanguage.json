@@ -1207,6 +1207,80 @@
                     ]
                 },
                 {
+                    "begin": "(\\$)([A-Z][a-zA-Z0-9_]*)(?=\\.)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.block.begin.loreline"
+                        },
+                        "2": {
+                            "name": "entity.name.type.beat.loreline"
+                        }
+                    },
+                    "end": "(?=(?![\\[\\]a-zA-Z0-9_\\(\\)]|\\.(?=[a-zA-Z_])))",
+                    "patterns": [
+                        {
+                            "begin": "\\[",
+                            "beginCaptures": {
+                                "0": {
+                                    "name": "punctuation.definition.array.begin.loreline"
+                                }
+                            },
+                            "end": "\\]",
+                            "endCaptures": {
+                                "0": {
+                                    "name": "punctuation.definition.array.end.loreline"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#expressions"
+                                }
+                            ]
+                        },
+                        {
+                            "begin": "\\(",
+                            "beginCaptures": {
+                                "0": {
+                                    "name": "punctuation.section.parens.begin.loreline"
+                                }
+                            },
+                            "end": "\\)",
+                            "endCaptures": {
+                                "0": {
+                                    "name": "punctuation.section.parens.end.loreline"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#expressions"
+                                }
+                            ]
+                        },
+                        {
+                            "match": "\\.([a-zA-Z_][a-zA-Z0-9_]*)(?=\\()",
+                            "captures": {
+                                "0": {
+                                    "name": "punctuation.accessor.loreline"
+                                },
+                                "1": {
+                                    "name": "entity.name.function.loreline"
+                                }
+                            }
+                        },
+                        {
+                            "match": "\\.([a-zA-Z_][a-zA-Z0-9_]*)",
+                            "captures": {
+                                "0": {
+                                    "name": "punctuation.accessor.loreline"
+                                },
+                                "1": {
+                                    "name": "variable.other.loreline"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
                     "begin": "(\\$)([a-zA-Z_][a-zA-Z0-9_]*)",
                     "beginCaptures": {
                         "1": {
@@ -1423,6 +1497,14 @@
                     }
                 },
                 {
+                    "match": "\\b([A-Z][a-zA-Z0-9_]*)(?=\\.)",
+                    "captures": {
+                        "1": {
+                            "name": "entity.name.type.beat.loreline"
+                        }
+                    }
+                },
+                {
                     "match": "\\.\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
                     "captures": {
                         "1": {
@@ -1565,6 +1647,14 @@
                 },
                 {
                     "include": "#constants"
+                },
+                {
+                    "match": "\\b([A-Z][a-zA-Z0-9_]*)\\b(?!\\s*\\()",
+                    "captures": {
+                        "1": {
+                            "name": "entity.name.type.beat.loreline"
+                        }
+                    }
                 },
                 {
                     "include": "#variables"
