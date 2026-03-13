@@ -15,6 +15,7 @@
 #include <loreline/Loreline.h>
 #include <loreline/Json.h>
 #include <loreline/InterpreterOptions.h>
+#include <loreline/Timer.h>
 #include <haxe/ds/StringMap.h>
 #include "Loreline.h"
 

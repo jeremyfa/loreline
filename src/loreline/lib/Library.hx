@@ -6,6 +6,7 @@ import loreline.Json;
 import loreline.Lexer;
 import loreline.Loreline;
 import loreline.Parser;
+import loreline.Timer;
 
 #if loreline_cpp_lib
 @:build(loreline.Linc.touch())
