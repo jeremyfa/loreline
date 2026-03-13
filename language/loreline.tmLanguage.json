@@ -806,6 +806,24 @@
                 }
             ]
         },
+        "expression-string": {
+            "patterns": [
+                {
+                    "begin": "\"",
+                    "end": "\"",
+                    "name": "string.quoted.double.loreline",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.loreline",
+                            "match": "\\\\."
+                        },
+                        {
+                            "include": "#string-interpolation"
+                        }
+                    ]
+                }
+            ]
+        },
         "quoted-strings": {
             "patterns": [
                 {
@@ -1550,6 +1568,9 @@
                 },
                 {
                     "include": "#variables"
+                },
+                {
+                    "include": "#expression-string"
                 },
                 {
                     "include": "#quoted-strings"
