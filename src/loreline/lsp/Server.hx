@@ -1284,10 +1284,13 @@ class Server {
         var origin = null;
 
         final parent = lens.getParentNode(literal);
+        var onceOption:NChoiceOption = null;
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
                     kind = 'Choice option';
+                    final choiceOpt:NChoiceOption = cast parent;
+                    if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
@@ -1298,7 +1301,13 @@ class Server {
             }
         }
 
-        return makeHover(hoverTitle(kind, name, origin), description, content, part, pos);
+        var hoverPos = pos;
+        if (onceOption != null) {
+            final endPos = hoverPos ?? part.pos;
+            hoverPos = new loreline.Position(onceOption.pos.line, onceOption.pos.column, onceOption.pos.offset,
+                endPos.offset - onceOption.pos.offset + endPos.length);
+        }
+        return makeHover(hoverTitle(kind, name, origin), description, content, part, hoverPos);
 
     }
 
@@ -1317,10 +1326,13 @@ class Server {
         var origin = null;
 
         final parent = lens.getParentNode(literal);
+        var onceOption:NChoiceOption = null;
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
                     kind = 'Choice option';
+                    final choiceOpt:NChoiceOption = cast parent;
+                    if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
@@ -1331,19 +1343,27 @@ class Server {
             }
         }
 
+        inline function extendForOnce(hoverPos:loreline.Position):loreline.Position {
+            if (onceOption != null) {
+                return new loreline.Position(onceOption.pos.line, onceOption.pos.column, onceOption.pos.offset,
+                    hoverPos.offset - onceOption.pos.offset + hoverPos.length);
+            }
+            return hoverPos;
+        }
+
         switch part.partType {
             case Raw(text):
                 final offset = cursorLorelinePos.offset - pos.offset;
                 var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
                     if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
-                        return makeHover(hoverTitle(kind, name, origin), description, content, part, pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0)));
+                        return makeHover(hoverTitle(kind, name, origin), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
                     }
                     first = false;
                 }
                 return null;
             case _:
-                return makeHover(hoverTitle(kind, name, origin), description, content, part, pos);
+                return makeHover(hoverTitle(kind, name, origin), description, content, part, extendForOnce(pos));
         }
 
     }
