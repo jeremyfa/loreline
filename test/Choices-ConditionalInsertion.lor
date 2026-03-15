@@ -1,0 +1,44 @@
+
+state
+  weekend: true
+
+character barista
+  name: Alex
+
+beat Order
+  Alex: What would you like?
+  choice
+    + SeasonalDrinks if weekend
+    Espresso
+      Alex: One espresso!
+
+beat SeasonalDrinks
+  choice
+    Pumpkin Spice Latte
+      Alex: One PSL!
+    Peppermint Mocha
+      Alex: One peppermint mocha!
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Alex: What would you like?
+
+    + Pumpkin Spice Latte
+    + Peppermint Mocha
+    + Espresso
+
+    Alex: One PSL!
+
+- choices: [2]
+  expected: |
+    Alex: What would you like?
+
+    + Pumpkin Spice Latte
+    + Peppermint Mocha
+    + Espresso
+
+    Alex: One espresso!
+</test>
+*/

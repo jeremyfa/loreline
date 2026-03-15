@@ -876,25 +876,25 @@ class ParserContext {
             choiceOption.text = new NStringLiteral(nextNodeId(NODE), currentPos(), Unquoted, [new NStringPart(nextNodeId(NODE), currentPos(), Raw("?"))]);
         }
 
-        if (!isInsertion) {
-            // Parse optional condition
-            if (match(KwIf)) {
-                final ifPos = previous().pos;
-                final offset = currentPos().offset;
-                try {
-                    if (check(LParen)) {
-                        choiceOption.conditionStyle = Parens;
-                    }
-                    choiceOption.condition = parseConditionExpression();
-                    choiceOption.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
+        // Parse optional condition (for both regular options and insertions)
+        if (match(KwIf)) {
+            final ifPos = previous().pos;
+            final offset = currentPos().offset;
+            try {
+                if (check(LParen)) {
+                    choiceOption.conditionStyle = Parens;
                 }
-                catch (e:ParseError) {
-                    addError(e);
-                    errorPos = currentPos();
-                    if (currentPos().offset == offset) advance();
-                }
+                choiceOption.condition = parseConditionExpression();
+                choiceOption.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
             }
+            catch (e:ParseError) {
+                addError(e);
+                errorPos = currentPos();
+                if (currentPos().offset == offset) advance();
+            }
+        }
 
+        if (!isInsertion) {
             // Parse option body
             if (checkBlockStart()) {
                 choiceOption.body = [];

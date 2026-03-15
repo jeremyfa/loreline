@@ -1382,7 +1382,7 @@
         "insertions": {
             "patterns": [
                 {
-                    "match": "^\\s*(\\+)\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*?)([a-zA-Z_][a-zA-Z0-9_]*|\\.)\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*?)(//.*)?$",
+                    "match": "^\\s*(\\+)\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*?)([a-zA-Z_][a-zA-Z0-9_]*|\\.)(?:\\s+(if)\\s+((?:!\\s*)?(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*)(?:\\s+(?:and|or)\\s+(?:!\\s*)?(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\s*\\.\\s*[a-zA-Z_][a-zA-Z0-9_]*)*))*))?\\s*((?:\\/\\*[^*]*\\*\\/\\s*)*?)(//.*)?$",
                     "captures": {
                         "1": {
                             "name": "keyword.control.flow.loreline"
@@ -1394,9 +1394,22 @@
                             "name": "entity.name.type.beat.loreline"
                         },
                         "4": {
-                            "name": "punctuation.definition.comment.loreline"
+                            "name": "keyword.control.loreline"
                         },
                         "5": {
+                            "patterns": [
+                                {
+                                    "include": "#variables"
+                                },
+                                {
+                                    "include": "#operators"
+                                }
+                            ]
+                        },
+                        "6": {
+                            "name": "punctuation.definition.comment.loreline"
+                        },
+                        "7": {
                             "name": "punctuation.definition.comment.loreline"
                         }
                     }

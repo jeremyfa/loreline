@@ -2817,13 +2817,18 @@ typedef InterpreterOptions = {
                 }
                 else if (option.insertion != null) {
                     final done = wrapNext(moveNext);
-                    insertion = new RuntimeInsertion(nextInsertionId++, option.insertion);
-                    // Save partial Phase 1 state on the insertion for save/restore.
-                    // If save happens during this insertion's body evaluation,
-                    // these allow Phase 1 to continue from the right point on restore.
-                    insertion.parentPartialOptions = [].concat(result);
-                    insertion.parentNextOptionIndex = index;
-                    evalInsertion(insertion, done.cb);
+                    if (!enabled) {
+                        // Condition is false — skip this insertion entirely
+                        done.cb();
+                    } else {
+                        insertion = new RuntimeInsertion(nextInsertionId++, option.insertion);
+                        // Save partial Phase 1 state on the insertion for save/restore.
+                        // If save happens during this insertion's body evaluation,
+                        // these allow Phase 1 to continue from the right point on restore.
+                        insertion.parentPartialOptions = [].concat(result);
+                        insertion.parentNextOptionIndex = index;
+                        evalInsertion(insertion, done.cb);
+                    }
                     done.sync = false;
                 }
                 else {

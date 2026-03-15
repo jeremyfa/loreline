@@ -1,0 +1,53 @@
+
+state
+  weekend: true
+
+beat Start
+  choice
+    + SeasonalDrinks if weekend
+    Unset weekend
+      weekend = false
+      -> Revisit
+    Leave
+      Goodbye!
+
+beat Revisit
+  choice
+    + SeasonalDrinks if weekend
+    Done
+      All done!
+
+beat SeasonalDrinks
+  choice
+    Pumpkin Spice
+      Picked PSL.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Pumpkin Spice
+    + Unset weekend
+    + Leave
+
+    ~ Picked PSL.
+
+- choices: [1, 0]
+  expected: |
+    + Pumpkin Spice
+    + Unset weekend
+    + Leave
+
+    + Done
+
+    ~ All done!
+
+- choices: [2]
+  expected: |
+    + Pumpkin Spice
+    + Unset weekend
+    + Leave
+
+    ~ Goodbye!
+</test>
+*/

@@ -1,0 +1,37 @@
+
+state
+  weekend: false
+
+beat Order
+  choice
+    + SeasonalDrinks if weekend
+    Espresso -> PickedEspresso
+
+beat SeasonalDrinks
+  choice
+    Pumpkin Spice -> PickedPSL
+
+beat PickedEspresso
+  You picked espresso
+
+beat PickedPSL
+  You picked PSL
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Espresso
+
+    ~ You picked espresso
+
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Espresso
+
+    + Espresso
+
+    ~ You picked espresso
+</test>
+*/

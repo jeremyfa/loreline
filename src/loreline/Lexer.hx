@@ -1520,8 +1520,16 @@ class Token {
         pos = skipWhitespaceAndComments(pos);
 
         // Check that we're at end of line, end of input, or only have whitespace/comments left
+        // Also allow trailing "if" condition (e.g., + BeatName if condition)
         if (pos < this.length) {
             var c = input.uCharCodeAt(pos);
+            // Allow trailing "if" keyword (conditional insertion)
+            if (c == "i".code && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "f".code) {
+                // Make sure "if" is followed by a non-identifier char (word boundary)
+                if (pos + 2 >= this.length || !isIdentifierPart(input.uCharCodeAt(pos + 2))) {
+                    return true;
+                }
+            }
             if (c != "\n".code && c != "\r".code && c != " ".code && c != "\t".code && c != "/".code) {
                 return false;
             }
