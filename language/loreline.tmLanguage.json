@@ -740,6 +740,9 @@
                     "include": "#functions-in-beat"
                 },
                 {
+                    "include": "#expression-string"
+                },
+                {
                     "include": "#operators"
                 },
                 {
