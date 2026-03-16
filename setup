@@ -909,6 +909,21 @@ async function main() {
                     console.log('Created universal macOS dylib');
                 }
             }
+
+            // On macOS, patch GDExtension to find libLoreline via @loader_path (same directory)
+            // instead of @rpath (which Godot doesn't set for addon directories)
+            if (sconsPlatform == 'macos') {
+                const gdextLib = sconsArchList.length > 1
+                    ? path.join(godotDir, 'bin', 'libloreline_godot.dylib')
+                    : path.join(godotDir, 'bin', 'libloreline_godot.' + sconsArchList[0] + '.dylib');
+                if (fs.existsSync(gdextLib)) {
+                    await command('install_name_tool', [
+                        '-change', '@rpath/libLoreline.dylib', '@loader_path/libLoreline.dylib',
+                        gdextLib
+                    ]);
+                    console.log('Patched dylib to use @loader_path for libLoreline');
+                }
+            }
         }
 
         // --godot-ios: build GDExtension for iOS

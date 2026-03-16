@@ -200,6 +200,11 @@ jobs:
           cp godot/bin/libloreline_godot.dylib loreline-godot-mac-pkg/
           cp build/cpp-lib/mac/libLoreline.dylib loreline-godot-mac-pkg/
 
+      - name: Patch GDExtension dylib for Godot
+        run: |
+          install_name_tool -change @rpath/libLoreline.dylib @loader_path/libLoreline.dylib \
+            loreline-godot-mac-pkg/libloreline_godot.dylib
+
       - name: Install Apple certificate
         if: env.CODESIGN == 'true'
         env:
@@ -260,6 +265,11 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           xcrun notarytool submit loreline-mac.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 10m
+          xcrun notarytool submit loreline-godot-mac.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_ID_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \

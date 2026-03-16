@@ -1,0 +1,47 @@
+[configuration]
+entry_symbol = "loreline_library_init"
+compatibility_minimum = "4.2"
+
+[libraries]
+; Desktop
+macos.debug = "res://addons/loreline/bin/macos/libloreline_godot.dylib"
+macos.release = "res://addons/loreline/bin/macos/libloreline_godot.dylib"
+windows.debug.x86_64 = "res://addons/loreline/bin/windows/loreline_godot.dll"
+windows.release.x86_64 = "res://addons/loreline/bin/windows/loreline_godot.dll"
+linux.debug.x86_64 = "res://addons/loreline/bin/linux/libloreline_godot.x86_64.so"
+linux.release.x86_64 = "res://addons/loreline/bin/linux/libloreline_godot.x86_64.so"
+linux.debug.arm64 = "res://addons/loreline/bin/linux/libloreline_godot.arm64.so"
+linux.release.arm64 = "res://addons/loreline/bin/linux/libloreline_godot.arm64.so"
+
+; Mobile
+android.debug.arm64 = "res://addons/loreline/bin/android/arm64-v8a/libloreline_godot.so"
+android.release.arm64 = "res://addons/loreline/bin/android/arm64-v8a/libloreline_godot.so"
+android.debug.x86_64 = "res://addons/loreline/bin/android/x86_64/libloreline_godot.so"
+android.release.x86_64 = "res://addons/loreline/bin/android/x86_64/libloreline_godot.so"
+ios.debug = "res://addons/loreline/bin/ios/loreline_godot.xcframework"
+ios.release = "res://addons/loreline/bin/ios/loreline_godot.xcframework"
+
+; Web (threads variant)
+web.debug.threads.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.wasm"
+web.release.threads.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.wasm"
+; Web (nothreads variant, default)
+web.debug.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.nothreads.wasm"
+web.release.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.nothreads.wasm"
+
+[dependencies]
+; Desktop: libLoreline shared library alongside the GDExtension
+macos.debug = { "res://addons/loreline/bin/macos/libLoreline.dylib": "" }
+macos.release = { "res://addons/loreline/bin/macos/libLoreline.dylib": "" }
+windows.debug.x86_64 = { "res://addons/loreline/bin/windows/Loreline.dll": "" }
+windows.release.x86_64 = { "res://addons/loreline/bin/windows/Loreline.dll": "" }
+linux.debug.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
+linux.release.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
+linux.debug.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
+linux.release.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
+; Mobile: libLoreline alongside the GDExtension
+ios.debug = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
+ios.release = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
+android.debug.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
+android.release.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
+android.debug.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
+android.release.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
