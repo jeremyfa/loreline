@@ -385,6 +385,7 @@ private:
 
 static bool linc_Loreline_didCallHaxeMain = false;
 static bool linc_Loreline_useInternalThread = false;
+static bool linc_Loreline_deferCallbacks = false;
 static std::thread::id linc_Loreline_haxeThreadId;
 static Loreline_Thread* linc_Loreline_thread = nullptr;
 static Loreline_FunctionQueue linc_Loreline_dispatchOutFunctions;
@@ -426,7 +427,7 @@ static void linc_Loreline_scheduleSync(std::function<void()> task) {
 }
 
 static void linc_Loreline_dispatchOut(std::function<void()> task) {
-    if (linc_Loreline_useInternalThread) {
+    if (linc_Loreline_useInternalThread || linc_Loreline_deferCallbacks) {
         linc_Loreline_dispatchOutFunctions.add(std::move(task));
     } else {
         task();
@@ -506,6 +507,11 @@ LORELINE_PUBLIC void Loreline_gc(void) {
 }
 
 LORELINE_PUBLIC void Loreline_update(double delta) {
+    /* After the first update() call, always defer callbacks through the dispatch
+     * queue — even in single-threaded mode. This ensures game engines (Godot, Unity)
+     * can connect signal handlers between play() and the first callback dispatch. */
+    linc_Loreline_deferCallbacks = true;
+
     /* Flush dispatch-out queue on the caller's thread */
     linc_Loreline_dispatchOutFunctions.flush();
 
