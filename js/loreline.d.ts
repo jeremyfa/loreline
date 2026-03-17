@@ -348,6 +348,56 @@ export class Interpreter {
      * @return The field value or null if the character or field doesn't exist
      */
     getCharacterField(character: string, name: string): any;
+
+    /**
+     * Sets a specific field of a character.
+     *
+     * @param character The name of the character
+     * @param name The name of the field to set
+     * @param value The value to set
+     */
+    setCharacterField(character: string, name: string, value: any): void;
+
+    /**
+     * Gets a state field by name, resolving from the current scope outward.
+     *
+     * @param name The name of the field to get
+     * @return The field value or null if not found
+     */
+    getStateField(name: string): any;
+
+    /**
+     * Sets a state field by name, resolving from the current scope outward.
+     *
+     * @param name The name of the field to set
+     * @param value The value to set
+     */
+    setStateField(name: string, value: any): void;
+
+    /**
+     * Gets a field from the top-level state directly.
+     *
+     * @param name The name of the field to get
+     * @return The field value or null if not found
+     */
+    getTopLevelStateField(name: string): any;
+
+    /**
+     * Sets a field on the top-level state directly.
+     *
+     * @param name The name of the field to set
+     * @param value The value to set
+     */
+    setTopLevelStateField(name: string, value: any): void;
+
+    /**
+     * Returns the current node being executed.
+     * During a dialogue callback, this returns the dialogue statement node.
+     * During a choice callback, this returns the choice statement node.
+     *
+     * @return The current node or null if no node is being executed
+     */
+    currentNode(): Node | null;
 }
 
 /**

@@ -94,6 +94,16 @@ struct LORELINE_PUBLIC Loreline_Value {
     static Loreline_Value from_string(Loreline_String v);
 };
 
+/* ── Node info ──────────────────────────────────────────────────────────── */
+
+struct Loreline_Node {
+    Loreline_String type;
+    int line;
+    int column;
+    int offset;
+    int length;
+};
+
 /* ── Data structs ───────────────────────────────────────────────────────── */
 
 struct Loreline_TextTag {
@@ -200,6 +210,22 @@ LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(
     Loreline_Interpreter* interp, Loreline_String character, Loreline_String field);
 LORELINE_PUBLIC void Loreline_setCharacterField(
     Loreline_Interpreter* interp, Loreline_String character, Loreline_String field, Loreline_Value value);
+
+/* State field access (scope-aware) */
+LORELINE_PUBLIC Loreline_Value Loreline_getStateField(
+    Loreline_Interpreter* interp, Loreline_String field);
+LORELINE_PUBLIC void Loreline_setStateField(
+    Loreline_Interpreter* interp, Loreline_String field, Loreline_Value value);
+
+/* Top-level state field access */
+LORELINE_PUBLIC Loreline_Value Loreline_getTopLevelStateField(
+    Loreline_Interpreter* interp, Loreline_String field);
+LORELINE_PUBLIC void Loreline_setTopLevelStateField(
+    Loreline_Interpreter* interp, Loreline_String field, Loreline_Value value);
+
+/* Current node — returns info about the node being executed.
+ * Returns a Loreline_Node with type set to null if no node is current. */
+LORELINE_PUBLIC Loreline_Node Loreline_currentNode(Loreline_Interpreter* interp);
 
 /* Utility */
 LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script);

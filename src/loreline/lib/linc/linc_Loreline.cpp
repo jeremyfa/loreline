@@ -950,6 +950,97 @@ LORELINE_PUBLIC void Loreline_setCharacterField(
     LORELINE_END_CALL
 }
 
+/* ── State field access ─────────────────────────────────────────────────── */
+
+LORELINE_PUBLIC Loreline_Value Loreline_getStateField(
+    Loreline_Interpreter* interp, Loreline_String field
+) {
+    if (!interp || field.isNull()) return Loreline_Value::null_val();
+    Loreline_Value result;
+
+    LORELINE_BEGIN_CALL_SYNC
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Dynamic val = hxInterp->getStateField(linc_toHxString(field));
+    result = linc_hxToValue(val);
+    LORELINE_END_CALL
+
+    return result;
+}
+
+LORELINE_PUBLIC void Loreline_setStateField(
+    Loreline_Interpreter* interp, Loreline_String field, Loreline_Value value
+) {
+    if (!interp || field.isNull()) return;
+
+    LORELINE_BEGIN_CALL
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Dynamic hxVal = linc_valueToHx(value);
+    hxInterp->setStateField(linc_toHxString(field), hxVal);
+    LORELINE_END_CALL
+}
+
+/* ── Top-level state field access ──────────────────────────────────────── */
+
+LORELINE_PUBLIC Loreline_Value Loreline_getTopLevelStateField(
+    Loreline_Interpreter* interp, Loreline_String field
+) {
+    if (!interp || field.isNull()) return Loreline_Value::null_val();
+    Loreline_Value result;
+
+    LORELINE_BEGIN_CALL_SYNC
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Dynamic val = hxInterp->getTopLevelStateField(linc_toHxString(field));
+    result = linc_hxToValue(val);
+    LORELINE_END_CALL
+
+    return result;
+}
+
+LORELINE_PUBLIC void Loreline_setTopLevelStateField(
+    Loreline_Interpreter* interp, Loreline_String field, Loreline_Value value
+) {
+    if (!interp || field.isNull()) return;
+
+    LORELINE_BEGIN_CALL
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Dynamic hxVal = linc_valueToHx(value);
+    hxInterp->setTopLevelStateField(linc_toHxString(field), hxVal);
+    LORELINE_END_CALL
+}
+
+/* ── Current node ──────────────────────────────────────────────────────── */
+
+LORELINE_PUBLIC Loreline_Node Loreline_currentNode(Loreline_Interpreter* interp) {
+    Loreline_Node result;
+    result.type = Loreline_String();
+    result.line = 0;
+    result.column = 0;
+    result.offset = 0;
+    result.length = 0;
+
+    if (!interp) return result;
+
+    LORELINE_BEGIN_CALL_SYNC
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Dynamic node = hxInterp->currentNode();
+    if (!hx::IsNull(node)) {
+        ::Dynamic hxType = node->__Field(HX_CSTRING("type"), hx::paccDynamic);
+        if (!hx::IsNull(hxType)) {
+            result.type = linc_hxToString((::String)hxType->__run());
+        }
+        ::Dynamic pos = node->__Field(HX_CSTRING("pos"), hx::paccDynamic);
+        if (!hx::IsNull(pos)) {
+            result.line = (int)pos->__Field(HX_CSTRING("line"), hx::paccDynamic);
+            result.column = (int)pos->__Field(HX_CSTRING("column"), hx::paccDynamic);
+            result.offset = (int)pos->__Field(HX_CSTRING("offset"), hx::paccDynamic);
+            result.length = (int)pos->__Field(HX_CSTRING("length"), hx::paccDynamic);
+        }
+    }
+    LORELINE_END_CALL
+
+    return result;
+}
+
 /* ── Utility ────────────────────────────────────────────────────────────── */
 
 LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script) {

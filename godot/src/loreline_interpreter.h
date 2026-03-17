@@ -62,4 +62,10 @@ public:
 
 	Variant get_character_field(const String &character, const String &field);
 	void set_character_field(const String &character, const String &field, const Variant &value);
+
+	Variant get_state_field(const String &field);
+	void set_state_field(const String &field, const Variant &value);
+	Variant get_top_level_state_field(const String &field);
+	void set_top_level_state_field(const String &field, const Variant &value);
+	Dictionary current_node();
 };

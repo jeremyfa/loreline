@@ -68,6 +68,30 @@ function Node:node_type()
     return self._internal:type()
 end
 
+--- Get the line number in the source code where this node appears (1-based).
+-- @return number The line number.
+function Node:line()
+    return self._internal.pos.line
+end
+
+--- Get the column number in the source code where this node appears (1-based).
+-- @return number The column number.
+function Node:column()
+    return self._internal.pos.column
+end
+
+--- Get the absolute character offset from the start of the source code.
+-- @return number The offset.
+function Node:offset()
+    return self._internal.pos.offset
+end
+
+--- Get the length of the source text span this node represents.
+-- @return number The length.
+function Node:length()
+    return self._internal.pos.length
+end
+
 --- Return the human-readable node ID string (e.g. '1.0.0.0').
 -- @return string The dotted node ID.
 function Node:node_id_to_string()
@@ -155,6 +179,44 @@ end
 -- @param value any The value to assign.
 function Interpreter:set_character_field(character, field, value)
     self._internal:setCharacterField(character, field, value)
+end
+
+--- Get a state field by name, resolving from the current scope outward.
+-- @param name string The field name to retrieve.
+-- @return any The field value, or nil if not found.
+function Interpreter:get_state_field(name)
+    return self._internal:getStateField(name)
+end
+
+--- Set a state field by name, resolving from the current scope outward.
+-- @param name string The field name to set.
+-- @param value any The value to assign.
+function Interpreter:set_state_field(name, value)
+    self._internal:setStateField(name, value)
+end
+
+--- Get a field from the top-level state directly.
+-- @param name string The field name to retrieve.
+-- @return any The field value, or nil if not found.
+function Interpreter:get_top_level_state_field(name)
+    return self._internal:getTopLevelStateField(name)
+end
+
+--- Set a field on the top-level state directly.
+-- @param name string The field name to set.
+-- @param value any The value to assign.
+function Interpreter:set_top_level_state_field(name, value)
+    self._internal:setTopLevelStateField(name, value)
+end
+
+--- Get the current node being executed.
+-- During a dialogue callback, this returns the dialogue statement node.
+-- During a choice callback, this returns the choice statement node.
+-- @return Node|nil The current node, or nil if no node is being executed.
+function Interpreter:current_node()
+    local node = self._internal:currentNode()
+    if node == nil then return nil end
+    return setmetatable({ _internal = node }, Node)
 end
 
 -- ── Callback bridges ────────────────────────────────────────────────────

@@ -55,11 +55,37 @@ namespace Loreline
         /// </summary>
         public readonly NodeId Id;
 
+        /// <summary>
+        /// The line number in the source code where this node appears (1-based).
+        /// </summary>
+        public readonly int Line;
+
+        /// <summary>
+        /// The column number in the source code where this node appears (1-based).
+        /// </summary>
+        public readonly int Column;
+
+        /// <summary>
+        /// The absolute character offset from the start of the source code.
+        /// </summary>
+        public readonly int Offset;
+
+        /// <summary>
+        /// The length of the source text span this node represents.
+        /// A value of 0 indicates a point position rather than a span.
+        /// </summary>
+        public readonly int Length;
+
         public Node(Runtime.Node runtimeNode)
         {
             this.RuntimeNode = runtimeNode;
             this.Type = runtimeNode.type();
             this.Id = runtimeNode.id;
+            var pos = runtimeNode.pos;
+            this.Line = pos.line;
+            this.Column = pos.column;
+            this.Offset = pos.offset;
+            this.Length = pos.length;
         }
 
         /// <summary>

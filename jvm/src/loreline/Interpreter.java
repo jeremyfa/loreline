@@ -146,6 +146,58 @@ public class Interpreter {
         runtimeInterpreter.setCharacterField(character, field, value);
     }
 
+    /**
+     * Gets a state field by name, resolving from the current scope outward.
+     *
+     * @param name the name of the field
+     * @return the field value or null
+     */
+    public Object getStateField(String name) {
+        return runtimeInterpreter.getStateField(name);
+    }
+
+    /**
+     * Sets a state field by name, resolving from the current scope outward.
+     *
+     * @param name the name of the field
+     * @param value the value to set
+     */
+    public void setStateField(String name, Object value) {
+        runtimeInterpreter.setStateField(name, value);
+    }
+
+    /**
+     * Gets a field from the top-level state directly.
+     *
+     * @param name the name of the field
+     * @return the field value or null
+     */
+    public Object getTopLevelStateField(String name) {
+        return runtimeInterpreter.getTopLevelStateField(name);
+    }
+
+    /**
+     * Sets a field on the top-level state directly.
+     *
+     * @param name the name of the field
+     * @param value the value to set
+     */
+    public void setTopLevelStateField(String name, Object value) {
+        runtimeInterpreter.setTopLevelStateField(name, value);
+    }
+
+    /**
+     * Returns the current node being executed.
+     * During a dialogue callback, this returns the dialogue statement node.
+     * During a choice callback, this returns the choice statement node.
+     *
+     * @return the current node or null if no node is being executed
+     */
+    public Node currentNode() {
+        loreline.runtime.Node node = (loreline.runtime.Node) runtimeInterpreter.currentNode();
+        return node != null ? new Node(node) : null;
+    }
+
     // --- Helper methods ---
 
     @SuppressWarnings("rawtypes")

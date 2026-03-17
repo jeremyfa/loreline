@@ -22,10 +22,36 @@ public class Node {
      */
     public final long id;
 
+    /**
+     * The line number in the source code where this node appears (1-based).
+     */
+    public final int line;
+
+    /**
+     * The column number in the source code where this node appears (1-based).
+     */
+    public final int column;
+
+    /**
+     * The absolute character offset from the start of the source code.
+     */
+    public final int offset;
+
+    /**
+     * The length of the source text span this node represents.
+     * A value of 0 indicates a point position rather than a span.
+     */
+    public final int length;
+
     Node(loreline.runtime.Node runtimeNode) {
         this.runtimeNode = runtimeNode;
         this.type = runtimeNode.type();
         this.id = runtimeNode.id.thisVal;
+        loreline.runtime.Position pos = runtimeNode.pos;
+        this.line = pos.line;
+        this.column = pos.column;
+        this.offset = pos.offset;
+        this.length = pos.length;
     }
 
     /**

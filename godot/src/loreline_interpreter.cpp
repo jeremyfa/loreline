@@ -21,6 +21,11 @@ void LorelineInterpreter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restore_state", "data"), &LorelineInterpreter::restore_state);
 	ClassDB::bind_method(D_METHOD("get_character_field", "character", "field"), &LorelineInterpreter::get_character_field);
 	ClassDB::bind_method(D_METHOD("set_character_field", "character", "field", "value"), &LorelineInterpreter::set_character_field);
+	ClassDB::bind_method(D_METHOD("get_state_field", "field"), &LorelineInterpreter::get_state_field);
+	ClassDB::bind_method(D_METHOD("set_state_field", "field", "value"), &LorelineInterpreter::set_state_field);
+	ClassDB::bind_method(D_METHOD("get_top_level_state_field", "field"), &LorelineInterpreter::get_top_level_state_field);
+	ClassDB::bind_method(D_METHOD("set_top_level_state_field", "field", "value"), &LorelineInterpreter::set_top_level_state_field);
+	ClassDB::bind_method(D_METHOD("current_node"), &LorelineInterpreter::current_node);
 
 	ADD_SIGNAL(MethodInfo("dialogue",
 			PropertyInfo(Variant::STRING, "character"),
@@ -208,4 +213,65 @@ void LorelineInterpreter::set_character_field(const String &character, const Str
 			Loreline_String(char_utf8.get_data()),
 			Loreline_String(field_utf8.get_data()),
 			_variant_to_value(value));
+}
+
+Variant LorelineInterpreter::get_state_field(const String &field) {
+	if (!_interp) {
+		return Variant();
+	}
+	CharString field_utf8 = field.utf8();
+	Loreline_Value value = Loreline_getStateField(
+			_interp,
+			Loreline_String(field_utf8.get_data()));
+	return _value_to_variant(value);
+}
+
+void LorelineInterpreter::set_state_field(const String &field, const Variant &value) {
+	if (!_interp) {
+		return;
+	}
+	CharString field_utf8 = field.utf8();
+	Loreline_setStateField(
+			_interp,
+			Loreline_String(field_utf8.get_data()),
+			_variant_to_value(value));
+}
+
+Variant LorelineInterpreter::get_top_level_state_field(const String &field) {
+	if (!_interp) {
+		return Variant();
+	}
+	CharString field_utf8 = field.utf8();
+	Loreline_Value value = Loreline_getTopLevelStateField(
+			_interp,
+			Loreline_String(field_utf8.get_data()));
+	return _value_to_variant(value);
+}
+
+void LorelineInterpreter::set_top_level_state_field(const String &field, const Variant &value) {
+	if (!_interp) {
+		return;
+	}
+	CharString field_utf8 = field.utf8();
+	Loreline_setTopLevelStateField(
+			_interp,
+			Loreline_String(field_utf8.get_data()),
+			_variant_to_value(value));
+}
+
+Dictionary LorelineInterpreter::current_node() {
+	if (!_interp) {
+		return Dictionary();
+	}
+	Loreline_Node node = Loreline_currentNode(_interp);
+	if (node.type.isNull()) {
+		return Dictionary();
+	}
+	Dictionary result;
+	result["type"] = String::utf8(node.type.c_str());
+	result["line"] = node.line;
+	result["column"] = node.column;
+	result["offset"] = node.offset;
+	result["length"] = node.length;
+	return result;
 }

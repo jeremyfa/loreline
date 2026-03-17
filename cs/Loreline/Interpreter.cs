@@ -341,6 +341,58 @@ namespace Loreline
             return RuntimeInterpreter.getCharacterField(character, name);
         }
 
+        /// <summary>
+        /// Gets a state field by name, resolving from the current scope outward.
+        /// </summary>
+        /// <param name="name">The name of the field to get</param>
+        /// <returns>The field value or null if not found</returns>
+        public object GetStateField(string name)
+        {
+            return RuntimeInterpreter.getStateField(name);
+        }
+
+        /// <summary>
+        /// Sets a state field by name, resolving from the current scope outward.
+        /// </summary>
+        /// <param name="name">The name of the field to set</param>
+        /// <param name="value">The value to set</param>
+        public void SetStateField(string name, object value)
+        {
+            RuntimeInterpreter.setStateField(name, value);
+        }
+
+        /// <summary>
+        /// Gets a field from the top-level state directly.
+        /// </summary>
+        /// <param name="name">The name of the field to get</param>
+        /// <returns>The field value or null if not found</returns>
+        public object GetTopLevelStateField(string name)
+        {
+            return RuntimeInterpreter.getTopLevelStateField(name);
+        }
+
+        /// <summary>
+        /// Sets a field on the top-level state directly.
+        /// </summary>
+        /// <param name="name">The name of the field to set</param>
+        /// <param name="value">The value to set</param>
+        public void SetTopLevelStateField(string name, object value)
+        {
+            RuntimeInterpreter.setTopLevelStateField(name, value);
+        }
+
+        /// <summary>
+        /// Returns the current node being executed.
+        /// During a dialogue callback, this returns the dialogue statement node.
+        /// During a choice callback, this returns the choice statement node.
+        /// </summary>
+        /// <returns>The current node or null if no node is being executed</returns>
+        public Node CurrentNode()
+        {
+            Runtime.Node node = (Runtime.Node)RuntimeInterpreter.currentNode();
+            return node != null ? new Node(node) : null;
+        }
+
         private static TextTag[] WrapTags(Internal.Root.Array rawTags)
         {
             TextTag[] tags = new TextTag[rawTags.length];

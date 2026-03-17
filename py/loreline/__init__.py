@@ -140,6 +140,26 @@ class Node:
         """The type of this node (e.g. ``"Script"``, ``"Beat"``, ``"Text"``)."""
         return self._internal.type()
 
+    @property
+    def line(self) -> int:
+        """The line number in the source code where this node appears (1-based)."""
+        return self._internal.pos.line
+
+    @property
+    def column(self) -> int:
+        """The column number in the source code where this node appears (1-based)."""
+        return self._internal.pos.column
+
+    @property
+    def offset(self) -> int:
+        """The absolute character offset from the start of the source code."""
+        return self._internal.pos.offset
+
+    @property
+    def length(self) -> int:
+        """The length of the source text span this node represents."""
+        return self._internal.pos.length
+
     def node_id_to_string(self) -> str:
         """Return the human-readable node ID string (e.g. ``'1.0.0.0'``)."""
         return self._internal.id.toString()
@@ -241,6 +261,58 @@ class Interpreter:
             value: The value to assign.
         """
         self._internal.setCharacterField(character, field, value)
+
+    def get_state_field(self, name: str) -> Any:
+        """Get a state field by name, resolving from the current scope outward.
+
+        Args:
+            name: The field name to retrieve.
+
+        Returns:
+            The field value, or None if not found.
+        """
+        return self._internal.getStateField(name)
+
+    def set_state_field(self, name: str, value: Any) -> None:
+        """Set a state field by name, resolving from the current scope outward.
+
+        Args:
+            name: The field name to set.
+            value: The value to assign.
+        """
+        self._internal.setStateField(name, value)
+
+    def get_top_level_state_field(self, name: str) -> Any:
+        """Get a field from the top-level state directly.
+
+        Args:
+            name: The field name to retrieve.
+
+        Returns:
+            The field value, or None if not found.
+        """
+        return self._internal.getTopLevelStateField(name)
+
+    def set_top_level_state_field(self, name: str, value: Any) -> None:
+        """Set a field on the top-level state directly.
+
+        Args:
+            name: The field name to set.
+            value: The value to assign.
+        """
+        self._internal.setTopLevelStateField(name, value)
+
+    def current_node(self) -> Optional[Node]:
+        """Return the current node being executed.
+
+        During a dialogue callback, this returns the dialogue statement node.
+        During a choice callback, this returns the choice statement node.
+
+        Returns:
+            The current Node, or None if no node is being executed.
+        """
+        node = self._internal.currentNode()
+        return Node(node) if node is not None else None
 
 
 # ── Loreline (main API) ─────────────────────────────────────────────────
