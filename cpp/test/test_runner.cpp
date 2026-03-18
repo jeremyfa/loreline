@@ -807,7 +807,9 @@ int main(int argc, char* argv[]) {
         }
 
         /* JSON roundtrip test */
-        for (bool crlf : {false, true}) {
+        bool jsonCrlfModes[] = {false, true};
+        for (int jm = 0; jm < 2; jm++) {
+            bool crlf = jsonCrlfModes[jm];
             const char* modeLabel = crlf ? "CRLF" : "LF";
             std::string label = filePath + " ~ " + modeLabel + " ~ json-roundtrip";
 
