@@ -1136,6 +1136,12 @@ async function main() {
                 // situation because it should not rely on actual C# reflection. Uses FieldLookup instead)
                 content = content.split("#pragma warning disable 109, 114, 219, 429, 168, 162").join("#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108");
 
+                // Fix Std.string() to use InvariantCulture for floats (prevents locale-dependent decimal separators)
+                content = content.replace(
+                    /return s\.ToString\(\);(\s*\}[\s\S]*?public static int @int)/,
+                    'if (s is double d) return d.ToString(System.Globalization.CultureInfo.InvariantCulture);\n\t\t\tif (s is float f) return f.ToString(System.Globalization.CultureInfo.InvariantCulture);\n\t\t\treturn s.ToString();$1'
+                );
+
                 const namespace = extractCsNamespace(content);
                 if (namespace == null) {
                     throw 'Failed to extract namespace for file: ' + filePath;

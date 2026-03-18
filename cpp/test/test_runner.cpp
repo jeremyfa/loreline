@@ -806,6 +806,55 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        /* JSON roundtrip test */
+        for (bool crlf : {false, true}) {
+            const char* modeLabel = crlf ? "CRLF" : "LF";
+            std::string label = filePath + " ~ " + modeLabel + " ~ json-roundtrip";
+
+            std::string content = replaceAll(rawContent, "\r\n", "\n");
+            if (crlf) content = replaceAll(content, "\n", "\r\n");
+            Loreline_Script* script = Loreline_parse(
+                content.c_str(), filePath.c_str(), fileHandler, nullptr);
+
+            if (!script) {
+                failCount++;
+                printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label.c_str());
+                printf("  Error: Failed to parse script\n");
+            } else {
+                Loreline_String json1Str = Loreline_scriptToJson(script, false);
+                Loreline_releaseScript(script);
+
+                if (json1Str.isNull()) {
+                    failCount++;
+                    printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label.c_str());
+                    printf("  Error: scriptToJson returned null\n");
+                } else {
+                    std::string json1 = json1Str.c_str();
+                    Loreline_Script* script2 = Loreline_scriptFromJson(json1Str);
+
+                    if (!script2) {
+                        failCount++;
+                        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label.c_str());
+                        printf("  Error: scriptFromJson returned null\n");
+                    } else {
+                        Loreline_String json2Str = Loreline_scriptToJson(script2, false);
+                        Loreline_releaseScript(script2);
+
+                        std::string json2 = json2Str.isNull() ? "" : json2Str.c_str();
+
+                        if (json1 == json2) {
+                            passCount++;
+                            printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label.c_str());
+                        } else {
+                            failCount++;
+                            printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label.c_str());
+                            printf("  > JSON mismatch after roundtrip\n");
+                        }
+                    }
+                }
+            }
+        }
+
         if (failCount > failBefore) fileFailCount++;
     }
 

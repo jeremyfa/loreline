@@ -98,5 +98,17 @@ namespace Loreline
         {
             return Runtime.Json.stringify(RuntimeNode.toJson(), pretty);
         }
+
+        /// <summary>
+        /// Reconstructs a Node from a JSON string.
+        /// </summary>
+        /// <param name="json">A JSON string (as returned by <see cref="ToJson"/>)</param>
+        /// <returns>The reconstructed Node</returns>
+        public static Node FromJson(string json)
+        {
+            object parsed = Runtime.Json.parse(json);
+            Runtime.Node runtimeNode = Runtime.Node.fromJson(parsed);
+            return new Node(runtimeNode);
+        }
     }
 }

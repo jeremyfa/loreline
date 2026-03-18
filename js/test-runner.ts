@@ -1,11 +1,14 @@
-import type { Interpreter, Script, TextTag, ChoiceOption, InterpreterOptions, DialogueHandler, ChoiceHandler, FinishHandler, ImportsFileHandler, Translations } from './loreline.js';
+import type { Interpreter, Script, Node, TextTag, ChoiceOption, InterpreterOptions, DialogueHandler, ChoiceHandler, FinishHandler, ImportsFileHandler, Translations } from './loreline.js';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { parse as parseYaml } from 'yaml';
 
 const useMin = process.argv.includes('--min');
 const lorelinePath = useMin ? './loreline.min.js' : './loreline.js';
-const { Loreline } = await import(lorelinePath);
+const lorelineModule = await import(lorelinePath);
+const { Loreline } = lorelineModule;
+const ScriptClass = lorelineModule.Script as { fromJson(json: any): Script };
+const NodeClass = lorelineModule.Node as { fromJson(json: any): Node };
 
 if (useMin) {
     console.log(`Using minified build: ${lorelinePath}\n`);
@@ -438,6 +441,39 @@ async function main(): Promise<void> {
                                 break;
                             }
                         }
+                    }
+                }
+            } catch (e) {
+                failCount++;
+                console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                console.log(`  Error: ${(e as Error).toString()}`);
+            }
+        }
+
+        // JSON roundtrip test
+        for (const crlf of [false, true]) {
+            const modeLabel: string = crlf ? 'CRLF' : 'LF';
+            const label: string = `${filePath} ~ ${modeLabel} ~ json-roundtrip`;
+            try {
+                let content: string = rawContent.replace(/\r\n/g, '\n');
+                if (crlf) content = content.replace(/\n/g, '\r\n');
+                const script: Script | null = Loreline.parse(content, filePath, handleFile);
+                if (!script) {
+                    failCount++;
+                    console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    console.log(`  Error: Failed to parse script`);
+                } else {
+                    const json1: string = JSON.stringify(script.toJson());
+                    const script2: Script = ScriptClass.fromJson(JSON.parse(json1));
+                    const json2: string = JSON.stringify(script2.toJson());
+
+                    if (json1 === json2) {
+                        passCount++;
+                        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                    } else {
+                        failCount++;
+                        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+                        console.log(`  > JSON mismatch after roundtrip`);
                     }
                 }
             } catch (e) {

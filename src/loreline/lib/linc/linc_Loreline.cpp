@@ -1076,6 +1076,30 @@ LORELINE_PUBLIC Loreline_String Loreline_scriptToJson(Loreline_Script* script, b
     return result;
 }
 
+LORELINE_PUBLIC Loreline_Script* Loreline_scriptFromJson(Loreline_String json) {
+    if (json.isNull()) return nullptr;
+    Loreline_Script* handle = nullptr;
+
+    LORELINE_BEGIN_CALL_SYNC
+
+    try {
+        ::String hxJson = linc_toHxString(json);
+        ::Dynamic parsed = ::loreline::Json_obj::parse(hxJson);
+        ::Dynamic hxScript = ::loreline::Script_obj::fromJson(parsed);
+
+        if (!hx::IsNull(hxScript)) {
+            handle = new Loreline_Script();
+            handle->set(hxScript.GetPtr());
+        }
+    } catch (::Dynamic e) {
+        fprintf(stderr, "Loreline_scriptFromJson error: %s\n", ((::String)e).c_str());
+    }
+
+    LORELINE_END_CALL
+
+    return handle;
+}
+
 /* ── Resource release ───────────────────────────────────────────────────── */
 
 LORELINE_PUBLIC void Loreline_releaseScript(Loreline_Script* script) {

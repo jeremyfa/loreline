@@ -461,6 +461,13 @@ export class Node {
     toJson(): any;
 
     /**
+     * Reconstructs a Node from a JSON representation.
+     * @param json The JSON object (as returned by node.toJson())
+     * @return The reconstructed Node
+     */
+    static fromJson(json: any): Node;
+
+    /**
      * Traverses all child nodes of this node.
      * @param handleNode Function to call for each child node
      */
@@ -475,6 +482,13 @@ export class Script extends Node {
      * Array of top-level declarations in the script.
      */
     body:Array<Node>;
+
+    /**
+     * Reconstructs a Script from a JSON representation.
+     * @param json The JSON object (as returned by script.toJson())
+     * @return The reconstructed Script
+     */
+    static fromJson(json: any): Script;
 }
 
 /**

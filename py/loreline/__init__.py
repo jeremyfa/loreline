@@ -175,6 +175,20 @@ class Node:
         """
         return _core.loreline_Json.stringify(self._internal.toJson(), pretty)
 
+    @staticmethod
+    def from_json(json_str: str) -> "Node":
+        """Reconstruct a Node from a JSON string.
+
+        Args:
+            json_str: A JSON string (as returned by ``to_json()``).
+
+        Returns:
+            The reconstructed Node.
+        """
+        parsed = _core.loreline_Json.parse(json_str)
+        internal = _core.loreline_Node.fromJson(parsed)
+        return Node(internal)
+
 
 # ── Script ───────────────────────────────────────────────────────────────
 
@@ -187,6 +201,20 @@ class Script(Node):
 
     def __init__(self, _internal: Any) -> None:
         super().__init__(_internal)
+
+    @staticmethod
+    def from_json(json_str: str) -> "Script":
+        """Reconstruct a Script from a JSON string.
+
+        Args:
+            json_str: A JSON string (as returned by ``to_json()``).
+
+        Returns:
+            The reconstructed Script.
+        """
+        parsed = _core.loreline_Json.parse(json_str)
+        internal = _core.loreline_Script.fromJson(parsed)
+        return Script(internal)
 
 
 # ── Interpreter ──────────────────────────────────────────────────────────

@@ -32,4 +32,5 @@ public:
 	Dictionary extract_translations();
 	String print_script();
 	String to_json(bool pretty = false);
+	static Ref<LorelineScript> from_json(const String &json);
 };

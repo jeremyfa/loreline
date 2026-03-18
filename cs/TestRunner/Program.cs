@@ -177,6 +177,64 @@ class Program
                 }
             }
 
+            // JSON roundtrip test
+            foreach (bool crlf in new[] { false, true })
+            {
+                string modeLabel = crlf ? "CRLF" : "LF";
+                string label = $"{filePath} ~ {modeLabel} ~ json-roundtrip";
+                try
+                {
+                    string content = rawContent.Replace("\r\n", "\n");
+                    if (crlf) content = content.Replace("\n", "\r\n");
+                    Script script = Engine.Parse(content, filePath, HandleFile);
+                    if (script == null)
+                    {
+                        failCount++;
+                        Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        Console.WriteLine("  Error: Failed to parse script");
+                    }
+                    else
+                    {
+                        string json1 = script.ToJson();
+                        Script script2 = Script.FromJson(json1);
+                        string json2 = script2.ToJson();
+
+                        if (json1 == json2)
+                        {
+                            passCount++;
+                            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+                        }
+                        else
+                        {
+                            failCount++;
+                            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                            // Show first difference
+                            var lines1 = json1.Split('\n');
+                            var lines2 = json2.Split('\n');
+                            var minLen = Math.Min(lines1.Length, lines2.Length);
+                            for (int d = 0; d < minLen; d++)
+                            {
+                                if (lines1[d] != lines2[d])
+                                {
+                                    Console.WriteLine($"  > JSON not idempotent at line {d + 1}");
+                                    Console.WriteLine($"  >  json1: {lines1[d]}");
+                                    Console.WriteLine($"  >  json2: {lines2[d]}");
+                                    break;
+                                }
+                            }
+                            if (lines1.Length != lines2.Length)
+                                Console.WriteLine($"  > Line count differs: json1={lines1.Length}, json2={lines2.Length}");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    failCount++;
+                    Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+                    Console.WriteLine($"  Error: {e}");
+                }
+            }
+
             if (failCount > failBefore) fileFailCount++;
         }
 

@@ -230,6 +230,7 @@ LORELINE_PUBLIC Loreline_Node Loreline_currentNode(Loreline_Interpreter* interp)
 /* Utility */
 LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script);
 LORELINE_PUBLIC Loreline_String Loreline_scriptToJson(Loreline_Script* script, bool pretty);
+LORELINE_PUBLIC Loreline_Script* Loreline_scriptFromJson(Loreline_String json);
 
 /* Resource release — only needed for Script and Interpreter handles.
  * Strings and Values are auto-managed via ref counting. */

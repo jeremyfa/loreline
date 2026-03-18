@@ -17,6 +17,7 @@ void LorelineScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("extract_translations"), &LorelineScript::extract_translations);
 	ClassDB::bind_method(D_METHOD("print_script"), &LorelineScript::print_script);
 	ClassDB::bind_method(D_METHOD("to_json", "pretty"), &LorelineScript::to_json, DEFVAL(false));
+	ClassDB::bind_static_method("LorelineScript", D_METHOD("from_json", "json"), &LorelineScript::from_json);
 }
 
 Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
@@ -109,4 +110,16 @@ String LorelineScript::to_json(bool pretty) {
 		return String();
 	}
 	return String::utf8(result.c_str());
+}
+
+Ref<LorelineScript> LorelineScript::from_json(const String &json) {
+	CharString json_utf8 = json.utf8();
+	Loreline_Script *script = Loreline_scriptFromJson(Loreline_String(json_utf8.get_data()));
+	if (!script) {
+		return Ref<LorelineScript>();
+	}
+	Ref<LorelineScript> ref;
+	ref.instantiate();
+	ref->_script = script;
+	return ref;
 }

@@ -584,6 +584,39 @@ public class TestRunner {
                 }
             }
 
+            // JSON roundtrip test
+            for (boolean crlf : new boolean[] { false, true }) {
+                String modeLabel = crlf ? "CRLF" : "LF";
+                String label = filePath + " ~ " + modeLabel + " ~ json-roundtrip";
+                try {
+                    String content = rawContent.replace("\r\n", "\n");
+                    if (crlf) content = content.replace("\n", "\r\n");
+                    Script script = Loreline.parse(content, filePath, TestRunner::handleFile);
+                    if (script == null) {
+                        failCount++;
+                        System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+                        System.out.println("  Error: Failed to parse script");
+                    } else {
+                        String json1 = script.toJson();
+                        Script script2 = Script.fromJson(json1);
+                        String json2 = script2.toJson();
+
+                        if (json1.equals(json2)) {
+                            passCount++;
+                            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+                        } else {
+                            failCount++;
+                            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+                            System.out.println("  > JSON mismatch after roundtrip");
+                        }
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                    System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+                    System.out.println("  Error: " + e);
+                }
+            }
+
             if (failCount > failBefore) fileFailCount++;
         }
 

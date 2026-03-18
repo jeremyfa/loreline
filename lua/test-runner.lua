@@ -661,6 +661,40 @@ local function main()
             end
         end
 
+        -- JSON roundtrip test
+        for _, crlf in ipairs({false, true}) do
+            local mode_label = crlf and "CRLF" or "LF"
+            local json_label = file_path .. " ~ " .. mode_label .. " ~ json-roundtrip"
+            local ok3, err3 = pcall(function()
+                local content = raw_content:gsub("\r\n", "\n")
+                if crlf then content = content:gsub("\n", "\r\n") end
+                local script = __loreline_Loreline.parse(content, file_path, handle_file)
+                if not script then
+                    fail_count = fail_count + 1
+                    io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. json_label .. "\027[0m\n")
+                    io.write("  Error: Failed to parse script\n")
+                else
+                    local json1 = __loreline_Json.stringify(script:toJson(), false)
+                    local script2 = __loreline_Script.fromJson(__loreline_Json.parse(json1))
+                    local json2 = __loreline_Json.stringify(script2:toJson(), false)
+
+                    if json1 == json2 then
+                        pass_count = pass_count + 1
+                        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. json_label .. "\027[0m\n")
+                    else
+                        fail_count = fail_count + 1
+                        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. json_label .. "\027[0m\n")
+                        io.write("  > JSON mismatch after roundtrip\n")
+                    end
+                end
+            end)
+            if not ok3 then
+                fail_count = fail_count + 1
+                io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. json_label .. "\027[0m\n")
+                io.write("  Error: " .. tostring(err3) .. "\n")
+            end
+        end
+
         if fail_count > file_fail_before then
             file_fail_count = file_fail_count + 1
         end

@@ -105,6 +105,15 @@ function Node:to_json(pretty)
     return __loreline_Json.stringify(self._internal:toJson(), pretty or false)
 end
 
+--- Reconstruct a Node from a JSON string.
+-- @param json_str string A JSON string (as returned by `to_json()`).
+-- @return Node The reconstructed Node.
+function Node.from_json(json_str)
+    local parsed = __loreline_Json.parse(json_str)
+    local internal = __loreline_Node.fromJson(parsed)
+    return setmetatable({ _internal = internal }, Node)
+end
+
 -- ── Script ──────────────────────────────────────────────────────────────
 
 --- A parsed Loreline script AST.
@@ -118,6 +127,15 @@ Script.__index = Script
 --- @param internal table The internal Haxe script object.
 function Script._new(internal)
     return setmetatable({ _internal = internal }, Script)
+end
+
+--- Reconstruct a Script from a JSON string.
+-- @param json_str string A JSON string (as returned by `to_json()`).
+-- @return Script The reconstructed Script.
+function Script.from_json(json_str)
+    local parsed = __loreline_Json.parse(json_str)
+    local internal = __loreline_Script.fromJson(parsed)
+    return Script._new(internal)
 end
 
 -- ── Interpreter ─────────────────────────────────────────────────────────

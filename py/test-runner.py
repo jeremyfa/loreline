@@ -16,7 +16,7 @@ import sys
 # Ensure the py/ package is importable when run from the repo root
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from loreline._core import loreline_Loreline, loreline_Interpreter, _hx_AnonObject  # noqa: E402
+from loreline._core import loreline_Loreline, loreline_Interpreter, loreline_Json, loreline_Script, _hx_AnonObject  # noqa: E402
 
 pass_count = 0
 fail_count = 0
@@ -538,6 +538,36 @@ def main():
             except Exception as e:
                 fail_count += 1
                 print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+                print(f"  Error: {e}")
+
+        # JSON roundtrip test
+        for crlf in [False, True]:
+            mode_label = "CRLF" if crlf else "LF"
+            json_label = f"{file_path} ~ {mode_label} ~ json-roundtrip"
+            try:
+                content = raw_content.replace("\r\n", "\n")
+                if crlf:
+                    content = content.replace("\n", "\r\n")
+                script = loreline_Loreline.parse(content, file_path, handle_file)
+                if not script:
+                    fail_count += 1
+                    print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{json_label}\033[0m")
+                    print("  Error: Failed to parse script")
+                else:
+                    json1 = loreline_Json.stringify(script.toJson(), False)
+                    script2 = loreline_Script.fromJson(loreline_Json.parse(json1))
+                    json2 = loreline_Json.stringify(script2.toJson(), False)
+
+                    if json1 == json2:
+                        pass_count += 1
+                        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{json_label}\033[0m")
+                    else:
+                        fail_count += 1
+                        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{json_label}\033[0m")
+                        print("  > JSON mismatch after roundtrip")
+            except Exception as e:
+                fail_count += 1
+                print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{json_label}\033[0m")
                 print(f"  Error: {e}")
 
         if fail_count > fail_before:

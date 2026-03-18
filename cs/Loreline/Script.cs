@@ -22,5 +22,17 @@ namespace Loreline
         {
             this.RuntimeScript = runtimeScript;
         }
+
+        /// <summary>
+        /// Reconstructs a Script from a JSON string.
+        /// </summary>
+        /// <param name="json">A JSON string (as returned by <see cref="Node.ToJson"/>)</param>
+        /// <returns>The reconstructed Script</returns>
+        public static new Script FromJson(string json)
+        {
+            object parsed = Runtime.Json.parse(json);
+            Runtime.Script runtimeScript = Runtime.Script.fromJson(parsed);
+            return new Script(runtimeScript);
+        }
     }
 }

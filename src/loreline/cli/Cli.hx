@@ -402,6 +402,9 @@ class Cli {
             if (testItems.length > 0) {
                 testRoundTrip(script, file, crlf, testItems, restoreInputs);
             }
+
+            // JSON round-trip test: toJson → fromJson → toJson must be stable
+            testJsonRoundTrip(script, file, crlf);
         }
         catch (e:Any) {
             hasFailedTest = true;
@@ -516,6 +519,46 @@ class Cli {
             failCount++;
             hasFailedTest = true;
             print('FAIL'.red().bold() + ' - roundtrip error: $e - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'roundtrip'.gray());
+        }
+    }
+
+    function testJsonRoundTrip(script:Script, file:String, crlf:Bool) {
+        final modeLabel = crlf ? 'CRLF' : 'LF';
+        try {
+            // toJson → stringify → parse → fromJson → toJson → stringify
+            final json1 = Json.stringify(script.toJson());
+            final script2 = Script.fromJson(Json.parse(json1));
+            final json2 = Json.stringify(script2.toJson());
+
+            if (json1 == json2) {
+                passCount++;
+                print('PASS'.green().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'json-roundtrip'.gray());
+            } else {
+                failCount++;
+                hasFailedTest = true;
+                print('FAIL'.red().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'json-roundtrip'.gray());
+
+                // Show first difference
+                final lines1 = json1.split("\n");
+                final lines2 = json2.split("\n");
+                final minLen = Std.int(Math.min(lines1.length, lines2.length));
+                for (i in 0...minLen) {
+                    if (lines1[i] != lines2[i]) {
+                        print('> JSON not idempotent at line ${i + 1}');
+                        print('>  json1: ' + lines1[i].red());
+                        print('>  json2: ' + lines2[i].yellow());
+                        break;
+                    }
+                }
+                if (lines1.length != lines2.length) {
+                    print('> Line count differs: json1=${lines1.length}, json2=${lines2.length}');
+                }
+                print('');
+            }
+        } catch (e:Any) {
+            failCount++;
+            hasFailedTest = true;
+            print('FAIL'.red().bold() + ' - json-roundtrip error: $e - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'json-roundtrip'.gray());
         }
     }
 

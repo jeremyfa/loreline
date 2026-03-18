@@ -82,4 +82,16 @@ public class Node {
     public String toJson() {
         return toJson(false);
     }
+
+    /**
+     * Reconstructs a Node from a JSON string.
+     *
+     * @param json a JSON string (as returned by {@link #toJson()})
+     * @return the reconstructed Node
+     */
+    public static Node fromJson(String json) {
+        Object parsed = loreline.runtime.Json.parse(json);
+        loreline.runtime.Node runtimeNode = loreline.runtime.Node.fromJson(parsed);
+        return new Node(runtimeNode);
+    }
 }

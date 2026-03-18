@@ -37,7 +37,17 @@ class Script extends AstNode {
     public override function toJson():Dynamic {
         final json = super.toJson();
         json.body = [for (decl in body) decl.toJson()];
+        json.indentSize = indentSize;
         return json;
+    }
+
+    /**
+     * Reconstructs a Script from its JSON representation.
+     * @param json The JSON object (as returned by script.toJson())
+     * @return The reconstructed Script
+     */
+    public static function fromJson(json:Dynamic):Script {
+        return JsonToAst.scriptFromJson(json);
     }
 
     public override function type():String {

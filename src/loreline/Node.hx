@@ -361,6 +361,15 @@ class Node {
     }
 
     /**
+     * Reconstructs an AST Node from its JSON representation.
+     * @param json The JSON object (as returned by node.toJson())
+     * @return The reconstructed Node
+     */
+    public static function fromJson(json:Dynamic):Node {
+        return JsonToAst.nodeFromJson(json);
+    }
+
+    /**
      * Converts the node to a JSON representation.
      * @return Dynamic object containing node type and position
      */
@@ -1620,6 +1629,11 @@ class NAlternative extends AstNode {
         json.mode = mode.toString();
         json.items = [for (item in items) item.toJson()];
         json.style = style.toString();
+        if (separatorComments != null) {
+            json.separatorComments = [for (comments in separatorComments)
+                comments != null ? [for (c in comments) c.toJson()] : null
+            ];
+        }
         return json;
     }
 
@@ -2357,6 +2371,9 @@ class NImportStatement extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.path = path.toJson();
+        if (script != null) {
+            json.script = script.toJson();
+        }
         return json;
     }
 }
