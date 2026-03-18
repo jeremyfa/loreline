@@ -254,7 +254,6 @@ class Cli {
         if (hasFailedTest) {
             Sys.exit(1);
         }
-
     }
 
     function testFile(file:String, crlf:Bool) {

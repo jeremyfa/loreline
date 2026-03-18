@@ -46,7 +46,7 @@ class Script extends AstNode {
      * @param json The JSON object (as returned by script.toJson())
      * @return The reconstructed Script
      */
-    public static function fromJson(json:Dynamic):Script {
+    @:keep public static function fromJson(json:Dynamic):Script {
         return JsonToAst.scriptFromJson(json);
     }
 
