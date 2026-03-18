@@ -2244,6 +2244,76 @@ class NUnary extends NExpr {
 }
 
 /**
+ * Represents a ternary conditional expression (condition ? trueExpr : falseExpr).
+ */
+class NTernary extends NExpr {
+    /**
+     * The condition expression.
+     */
+    public var condition:NExpr;
+
+    /**
+     * The expression to evaluate if the condition is true.
+     */
+    public var trueExpr:NExpr;
+
+    /**
+     * The expression to evaluate if the condition is false.
+     */
+    public var falseExpr:NExpr;
+
+    /**
+     * Creates a new ternary expression node.
+     * @param id Node id
+     * @param pos Position in source where this expression appears
+     * @param condition The condition expression
+     * @param trueExpr Expression evaluated when condition is true
+     * @param falseExpr Expression evaluated when condition is false
+     * @param leadingComments Optional comments before
+     * @param trailingComments Optional comments after the expression
+     */
+    public function new(id:NodeId, pos:Position, condition:NExpr, trueExpr:NExpr, falseExpr:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.condition = condition;
+        this.trueExpr = trueExpr;
+        this.falseExpr = falseExpr;
+    }
+
+    override function type():String {
+        return "Ternary";
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (condition != null) {
+            handleNode(condition, this);
+            condition.each(handleNode);
+        }
+        if (trueExpr != null) {
+            handleNode(trueExpr, this);
+            trueExpr.each(handleNode);
+        }
+        if (falseExpr != null) {
+            handleNode(falseExpr, this);
+            falseExpr.each(handleNode);
+        }
+    }
+
+    /**
+     * Converts the ternary expression to a JSON representation.
+     * @return Dynamic object containing ternary data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        json.condition = condition.toJson();
+        json.trueExpr = trueExpr.toJson();
+        json.falseExpr = falseExpr.toJson();
+        return json;
+    }
+}
+
+/**
  * Represents an import statement
  */
 class NImportStatement extends AstNode {

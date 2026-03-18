@@ -428,6 +428,32 @@ class AstPrinter {
                 indentLevel--;
                 indentLevel--;
 
+            case NTernary:
+                final ternary:NTernary = cast node;
+                addLineBreak();
+                indentLevel++;
+                indent();
+                add("condition:");
+                addLineBreak();
+                indentLevel++;
+                printNode(ternary.condition);
+                indentLevel--;
+                addLineBreak();
+                indent();
+                add("trueExpr:");
+                addLineBreak();
+                indentLevel++;
+                printNode(ternary.trueExpr);
+                indentLevel--;
+                addLineBreak();
+                indent();
+                add("falseExpr:");
+                addLineBreak();
+                indentLevel++;
+                printNode(ternary.falseExpr);
+                indentLevel--;
+                indentLevel--;
+
             case NUnary:
                 final unary:NUnary = cast node;
                 add(" op=");

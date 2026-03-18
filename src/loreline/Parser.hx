@@ -1146,7 +1146,7 @@ class ParserContext {
      */
     function parseExpression():NExpr {
         try {
-            final expr = parseLogicalOr();
+            final expr = parseTernary();
 
             // Handle assignments if present
             if (check(OpAssign) || check(OpPlusAssign) || check(OpMinusAssign) ||
@@ -1167,6 +1167,25 @@ class ParserContext {
             }
             return new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
+    }
+
+    /**
+     * Parses ternary expressions (condition ? trueExpr : falseExpr).
+     * Right-associative: a ? b : c ? d : e = a ? b : (c ? d : e)
+     * @return Expression node
+     */
+    function parseTernary():NExpr {
+        var expr = parseLogicalOr();
+
+        if (match(Question)) {
+            final trueExpr = parseTernary();
+            expect(Colon);
+            final falseExpr = parseTernary();
+            expr = attachComments(new NTernary(nextNodeId(NODE), expr.pos, expr, trueExpr, falseExpr));
+            expr.pos = expr.pos.extendedTo(falseExpr.pos);
+        }
+
+        return expr;
     }
 
     /**

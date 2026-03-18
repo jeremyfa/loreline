@@ -1,0 +1,46 @@
+
+state
+  health: 80
+  x: 0
+
+${true ? "yes" : "no"}
+
+${false ? "yes" : "no"}
+
+${1 ? "truthy" : "falsy"}
+
+${0 ? "truthy" : "falsy"}
+
+${true ? "a" : true ? "b" : "c"}
+
+${false ? "a" : true ? "b" : "c"}
+
+${5 > 3 ? "big" : "small"}
+
+x = true ? 1 : 2
+x is $x
+
+${health > 50 ? "healthy" : "hurt"}
+
+/*
+<test>
+- expected: |
+    ~ yes
+
+    ~ no
+
+    ~ truthy
+
+    ~ falsy
+
+    ~ a
+
+    ~ b
+
+    ~ big
+
+    ~ x is 1
+
+    ~ healthy
+</test>
+*/

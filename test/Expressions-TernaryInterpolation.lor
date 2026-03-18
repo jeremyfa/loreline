@@ -1,0 +1,26 @@
+
+state
+  name: "Alice"
+  age: 25
+  health: 30
+
+${true ? "yes" : "no"}
+
+You are ${health > 50 ? "healthy" : "hurt"}
+
+$name is ${age > 17 ? "an adult" : "a minor"}
+
+$name feels ${health > 50 ? "strong" : "weak"} today
+
+/*
+<test>
+- expected: |
+    ~ yes
+
+    ~ You are hurt
+
+    ~ Alice is an adult
+
+    ~ Alice feels weak today
+</test>
+*/

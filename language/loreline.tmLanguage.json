@@ -1451,6 +1451,10 @@
                 {
                     "name": "keyword.operator.logical.loreline",
                     "match": "&&|\\|\\||!|==|!=|>|<|>=|<="
+                },
+                {
+                    "name": "keyword.operator.ternary.loreline",
+                    "match": "\\?|:"
                 }
             ]
         },

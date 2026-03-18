@@ -4236,6 +4236,11 @@ typedef InterpreterOptions = {
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
                 }
 
+            case NTernary:
+                final ternary:NTernary = cast expr;
+                final condValue = evaluateCondition(ternary.condition);
+                condValue ? evaluateExpression(ternary.trueExpr) : evaluateExpression(ternary.falseExpr);
+
             case NCall:
                 evaluateFunctionCall(cast expr, null);
 

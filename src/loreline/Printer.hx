@@ -330,6 +330,8 @@ class Printer {
                 printBinary(cast node);
             case NUnary:
                 printUnary(cast node);
+            case NTernary:
+                printTernary(cast node);
             case NAssign:
                 printAssignment(cast node);
             case _:
@@ -1038,6 +1040,20 @@ class Printer {
         write(getOperator(unary.op));
         printTrailingComments(unary);
         printNode(unary.operand);
+    }
+
+    /**
+     * Prints a ternary expression (condition ? trueExpr : falseExpr).
+     * @param ternary Ternary node to print
+     */
+    function printTernary(ternary:NTernary) {
+        printLeadingComments(ternary);
+        printNode(ternary.condition);
+        write(' ? ');
+        printNode(ternary.trueExpr);
+        write(' : ');
+        printNode(ternary.falseExpr);
+        printTrailingComments(ternary);
     }
 
     /**

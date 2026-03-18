@@ -190,6 +190,8 @@ enum TokenType {
     Arrow;
     /** Colon (:) */
     Colon;
+    /** Question mark (?) */
+    Question;
     /** Comma (,) */
     Comma;
     /** Dot (.) */
@@ -242,6 +244,7 @@ class TokenTypeHelpers {
         return switch [a, b] {
             case [Arrow, Arrow]: true;
             case [Colon, Colon]: true;
+            case [Question, Question]: true;
             case [Dot, Dot]: true;
             case [LBrace, LBrace]: true;
             case [RBrace, RBrace]: true;
@@ -386,6 +389,7 @@ class TokenTypeHelpers {
             case OpNot: '!';
             case Arrow: '->';
             case Colon: ':';
+            case Question: '?';
             case Comma: ',';
             case Dot: '.';
             case LBrace: '{';
@@ -853,6 +857,10 @@ class Token {
                             advance();
                             makeToken(OpLess, startPos);
                         }
+
+                    case "?".code:
+                        pos++;
+                        makeToken(Question);
 
                     case "#".code:
                         final nextC = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
