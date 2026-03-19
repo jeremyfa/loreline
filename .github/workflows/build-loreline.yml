@@ -1029,6 +1029,9 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      - name: Install LLVM (for static framework symbol renaming)
+        run: brew install llvm
+
       - name: Build iOS xcframework
         run: node ./setup --ios
 
@@ -1088,6 +1091,7 @@ jobs:
         run: |
           mkdir -p loreline-ios-pkg/include
           cp -r build/cpp-lib/ios/Loreline.xcframework loreline-ios-pkg/
+          cp -r build/cpp-lib/ios/Loreline-static.xcframework loreline-ios-pkg/
           cp cpp/include/Loreline.h loreline-ios-pkg/include/
           cd loreline-ios-pkg && zip --symlinks -9 ../loreline-ios.zip -r .
 
@@ -1095,7 +1099,6 @@ jobs:
         run: |
           mkdir -p loreline-godot-ios-pkg
           cp -r godot/bin/loreline_godot.xcframework loreline-godot-ios-pkg/
-          cp -r build/cpp-lib/ios/Loreline.xcframework loreline-godot-ios-pkg/
           cd loreline-godot-ios-pkg && zip --symlinks -9 ../loreline-godot-ios.zip -r .
 
       - name: Upload Files
@@ -1362,9 +1365,8 @@ jobs:
           cp artifacts/godot-wasm/libloreline_godot.nothreads.wasm $PKG/bin/web/ 2>/dev/null || true
           cp artifacts/godot-wasm/libloreline_godot.wasm $PKG/bin/web/ 2>/dev/null || true
 
-          # iOS
+          # iOS (Loreline is statically linked into the GDExtension)
           cp -r artifacts/godot-ios/loreline_godot.xcframework $PKG/bin/ios/
-          cp -r artifacts/godot-ios/Loreline.xcframework $PKG/bin/ios/
 
           # Android
           cp artifacts/godot-android/arm64-v8a/libloreline_godot.so $PKG/bin/android/arm64-v8a/
