@@ -406,6 +406,7 @@ class Cli {
             testJsonRoundTrip(script, file, crlf);
         }
         catch (e:Any) {
+            failCount++;
             hasFailedTest = true;
             print('FAIL'.red().bold() + ' - $e - ' + file.gray());
         }

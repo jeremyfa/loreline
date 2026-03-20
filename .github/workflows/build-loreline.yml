@@ -40,20 +40,22 @@ jobs:
 
       - name: Run loreline
         working-directory: .
+        shell: cmd
         run: |
-          ./loreline
+          loreline
 
       - name: Check loreline version
         if: startsWith(github.ref, 'refs/tags/')
         working-directory: .
+        shell: cmd
         run: |
-          $GIT_TAG = $($env:GITHUB_REF).replace("refs/tags/", "")
-          ./loreline version --check-tag $GIT_TAG
+          loreline version --check-tag %GITHUB_REF:refs/tags/=%
 
       - name: Run unit tests
         working-directory: .
+        shell: cmd
         run: |
-          ./loreline test ./test
+          loreline test ./test
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
