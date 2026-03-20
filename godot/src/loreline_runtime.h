@@ -10,16 +10,16 @@
 
 using namespace godot;
 
-class LorelineRuntime : public Node {
-	GDCLASS(LorelineRuntime, Node);
+class Loreline : public Node {
+	GDCLASS(Loreline, Node);
 
 private:
 	bool _initialized;
 
 	// File import handling: userData for parse callback points to a struct
-	// containing the LorelineRuntime pointer and an optional override map.
+	// containing the Loreline pointer and an optional override map.
 	struct FileRequestContext {
-		LorelineRuntime *runtime;
+		Loreline *runtime;
 		String base_dir;
 		Dictionary file_overrides; // path -> content, populated via provide_file()
 	};
@@ -36,8 +36,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	LorelineRuntime();
-	~LorelineRuntime();
+	Loreline();
+	~Loreline();
 
 	Ref<LorelineScript> parse(const String &source, const String &file_path = "");
 	void provide_file(const String &path, const String &content);

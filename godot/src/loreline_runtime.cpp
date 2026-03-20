@@ -3,23 +3,23 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-LorelineRuntime::LorelineRuntime()
+Loreline::Loreline()
 		: _initialized(false) {
 	_file_ctx.runtime = this;
 }
 
-LorelineRuntime::~LorelineRuntime() {
+Loreline::~Loreline() {
 }
 
-void LorelineRuntime::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("parse", "source", "file_path"), &LorelineRuntime::parse, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("provide_file", "path", "content"), &LorelineRuntime::provide_file);
+void Loreline::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("parse", "source", "file_path"), &Loreline::parse, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("provide_file", "path", "content"), &Loreline::provide_file);
 
 	ADD_SIGNAL(MethodInfo("file_requested",
 			PropertyInfo(Variant::STRING, "path")));
 }
 
-void LorelineRuntime::_notification(int p_what) {
+void Loreline::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			Loreline_init();
@@ -43,7 +43,7 @@ void LorelineRuntime::_notification(int p_what) {
 	}
 }
 
-void LorelineRuntime::_on_file_request(
+void Loreline::_on_file_request(
 		Loreline_String path,
 		void (*provide)(Loreline_String content),
 		void *userData) {
@@ -91,9 +91,9 @@ void LorelineRuntime::_on_file_request(
 	provide(Loreline_String());
 }
 
-Ref<LorelineScript> LorelineRuntime::parse(const String &source, const String &file_path) {
+Ref<LorelineScript> Loreline::parse(const String &source, const String &file_path) {
 	if (!_initialized) {
-		UtilityFunctions::push_error("LorelineRuntime: not initialized. Add this node to the scene tree first.");
+		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
 		return Ref<LorelineScript>();
 	}
 
@@ -120,7 +120,7 @@ Ref<LorelineScript> LorelineRuntime::parse(const String &source, const String &f
 			static_cast<void *>(&_file_ctx));
 
 	if (!raw) {
-		UtilityFunctions::push_error("LorelineRuntime: failed to parse script.");
+		UtilityFunctions::push_error("Loreline: failed to parse script.");
 		return Ref<LorelineScript>();
 	}
 
@@ -130,6 +130,6 @@ Ref<LorelineScript> LorelineRuntime::parse(const String &source, const String &f
 	return script;
 }
 
-void LorelineRuntime::provide_file(const String &path, const String &content) {
+void Loreline::provide_file(const String &path, const String &content) {
 	_file_ctx.file_overrides[path] = content;
 }

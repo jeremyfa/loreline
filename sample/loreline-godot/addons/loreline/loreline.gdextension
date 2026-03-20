@@ -38,9 +38,7 @@ linux.debug.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
 linux.release.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
 linux.debug.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
 linux.release.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
-; Mobile: libLoreline alongside the GDExtension
-ios.debug = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
-ios.release = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
+; Mobile
 android.debug.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
 android.release.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
 android.debug.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }

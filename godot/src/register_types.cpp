@@ -3,26 +3,38 @@
 #include "loreline_runtime.h"
 #include "loreline_script.h"
 #include "loreline_interpreter.h"
+#include "loreline_resource_loader.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 
 using namespace godot;
+
+static Ref<LorelineResourceLoader> lor_loader;
 
 void initialize_loreline_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(LorelineRuntime);
+	GDREGISTER_CLASS(Loreline);
 	GDREGISTER_CLASS(LorelineScript);
 	GDREGISTER_CLASS(LorelineInterpreter);
+	GDREGISTER_CLASS(LorelineResourceLoader);
+
+	lor_loader.instantiate();
+	ResourceLoader::get_singleton()->add_resource_format_loader(lor_loader);
 }
 
 void uninitialize_loreline_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
+	}
+	if (lor_loader.is_valid()) {
+		ResourceLoader::get_singleton()->remove_resource_format_loader(lor_loader);
+		lor_loader.unref();
 	}
 }
 

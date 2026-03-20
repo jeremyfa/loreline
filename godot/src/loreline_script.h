@@ -14,7 +14,7 @@ using namespace godot;
 class LorelineScript : public RefCounted {
 	GDCLASS(LorelineScript, RefCounted);
 
-	friend class LorelineRuntime;
+	friend class Loreline;
 
 private:
 	Loreline_Script *_script;
