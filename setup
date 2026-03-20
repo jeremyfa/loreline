@@ -1027,22 +1027,22 @@ async function main() {
             if (process.platform != 'darwin') {
                 throw new Error('iOS GDExtension builds are only supported on macOS');
             }
-            const iosStaticXcfw = path.join(__dirname, 'build', 'cpp-lib', 'ios', 'Loreline-static.xcframework');
-            if (!fs.existsSync(iosStaticXcfw)) {
-                throw new Error('Loreline-static.xcframework not found. Run --ios first.');
+            const iosXcfw = path.join(__dirname, 'build', 'cpp-lib', 'ios', 'Loreline.xcframework');
+            if (!fs.existsSync(iosXcfw)) {
+                throw new Error('Loreline.xcframework not found. Run --ios first.');
             }
 
-            console.log('Building GDExtension for iOS (static)...');
+            console.log('Building GDExtension for iOS...');
 
-            // Device arm64: link against static Loreline
-            const deviceFwDir = path.join(iosStaticXcfw, 'ios-arm64');
+            // Device arm64: link against ios-arm64/Loreline.framework
+            const deviceFwDir = path.join(iosXcfw, 'ios-arm64');
             await command('scons', [
                 'platform=ios', 'arch=arm64', 'target=' + sconsTarget,
                 'loreline_framework_dir=' + deviceFwDir
             ], { cwd: godotDir });
 
             // Simulator arm64
-            const simFwDir = path.join(iosStaticXcfw, 'ios-arm64_x86_64-simulator');
+            const simFwDir = path.join(iosXcfw, 'ios-arm64_x86_64-simulator');
             await command('scons', [
                 'platform=ios', 'arch=arm64', 'ios_simulator=yes', 'target=' + sconsTarget,
                 'loreline_framework_dir=' + simFwDir
@@ -1054,41 +1054,16 @@ async function main() {
                 'loreline_framework_dir=' + simFwDir
             ], { cwd: godotDir });
 
-            // Merge GDExtension wrapper .a with Loreline static lib using libtool
-            const fwName = 'loreline_godot';
-            const binFiles = fs.readdirSync(path.join(godotDir, 'bin')).filter(f => f.includes('loreline_godot'));
-            console.log('  GDExtension iOS build outputs:', binFiles);
-            const deviceGodotA = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64');
-            const simArm64GodotA = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.simulator');
-            const simX86GodotA = path.join(godotDir, 'bin', 'libloreline_godot.ios.x86_64.simulator');
-
-            const deviceLorelineA = path.join(deviceFwDir, 'Loreline.framework', 'Loreline');
-            const simLorelineFat = path.join(simFwDir, 'Loreline.framework', 'Loreline');
-
-            // Extract thin slices from fat simulator Loreline lib
-            const simLorelineArm64 = path.join(godotDir, 'bin', 'loreline-sim-arm64.a');
-            const simLorelineX86 = path.join(godotDir, 'bin', 'loreline-sim-x86_64.a');
-            await command('lipo', ['-thin', 'arm64', simLorelineFat, '-output', simLorelineArm64]);
-            await command('lipo', ['-thin', 'x86_64', simLorelineFat, '-output', simLorelineX86]);
-
-            // Merge device arm64
-            const deviceMerged = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.merged.a');
-            await command('libtool', ['-static', '-o', deviceMerged, deviceGodotA, deviceLorelineA]);
-
-            // Merge sim arm64
-            const simArm64Merged = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.simulator.merged.a');
-            await command('libtool', ['-static', '-o', simArm64Merged, simArm64GodotA, simLorelineArm64]);
-
-            // Merge sim x86_64
-            const simX86Merged = path.join(godotDir, 'bin', 'libloreline_godot.ios.x86_64.simulator.merged.a');
-            await command('libtool', ['-static', '-o', simX86Merged, simX86GodotA, simLorelineX86]);
-
-            // Lipo simulator slices into universal
-            const simUniversal = path.join(godotDir, 'bin', 'libloreline_godot.ios.universal.simulator.a');
+            // Lipo simulator arm64 + x86_64 into universal
+            const simArm64 = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.simulator.dylib');
+            const simX86 = path.join(godotDir, 'bin', 'libloreline_godot.ios.x86_64.simulator.dylib');
+            const simUniversal = path.join(godotDir, 'bin', 'libloreline_godot.ios.universal.simulator.dylib');
             if (fs.existsSync(simUniversal)) fs.unlinkSync(simUniversal);
-            await command('lipo', ['-create', simArm64Merged, simX86Merged, '-output', simUniversal]);
+            await command('lipo', ['-create', simArm64, simX86, '-output', simUniversal]);
 
-            // Wrap static libs in .framework bundles
+            // Wrap dylibs in .framework bundles for proper codesigning
+            const deviceDylib = path.join(godotDir, 'bin', 'libloreline_godot.ios.arm64.dylib');
+            const fwName = 'loreline_godot';
             const fwInfoPlist = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -1106,11 +1081,11 @@ async function main() {
 </dict>
 </plist>`;
 
-            for (const [staticLib, label] of [[deviceMerged, 'device'], [simUniversal, 'simulator']]) {
+            for (const [dylib, label] of [[deviceDylib, 'device'], [simUniversal, 'simulator']]) {
                 const fwDir = path.join(godotDir, 'bin', label, fwName + '.framework');
                 if (fs.existsSync(fwDir)) fs.rmSync(fwDir, { recursive: true, force: true });
                 fs.mkdirSync(fwDir, { recursive: true });
-                fs.copyFileSync(staticLib, path.join(fwDir, fwName));
+                fs.copyFileSync(dylib, path.join(fwDir, fwName));
                 fs.writeFileSync(path.join(fwDir, 'Info.plist'), fwInfoPlist);
             }
 
@@ -1126,7 +1101,7 @@ async function main() {
                 '-output', xcfwOut
             ]);
 
-            console.log('Built: GDExtension iOS static xcframework');
+            console.log('Built: GDExtension iOS xcframework');
         }
 
         // --godot-android: build GDExtension for Android

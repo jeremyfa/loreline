@@ -45,11 +45,10 @@ if env["platform"] == "web":
     else:
         print("Warning: {} not found. Build with: node ./setup --wasm".format(static_lib))
 elif env["platform"] == "ios":
-    # Static-link Loreline into the GDExtension
+    # Dynamic-link against Loreline.framework from xcframework
     loreline_fw_dir = ARGUMENTS.get("loreline_framework_dir", "")
     if loreline_fw_dir:
-        loreline_lib = os.path.join(loreline_fw_dir, "Loreline.framework", "Loreline")
-        env.Append(LINKFLAGS=['-force_load', loreline_lib])
+        env.Append(LINKFLAGS=['-F', loreline_fw_dir, '-framework', 'Loreline'])
     else:
         print("Warning: loreline_framework_dir not set for iOS build")
 elif env["platform"] == "android":
@@ -73,10 +72,10 @@ if env["platform"] == "macos":
         source=sources,
     )
 elif env["platform"] == "ios":
-    # Static library for iOS (merged with Loreline in setup script)
+    # Dylib for iOS, wrapped in .framework by setup script
     sim_suffix = ".simulator" if env.get("ios_simulator", False) else ""
-    library = env.StaticLibrary(
-        "bin/loreline_godot.ios.{}{}".format(env["arch"], sim_suffix),
+    library = env.SharedLibrary(
+        "bin/libloreline_godot.ios.{}{}.dylib".format(env["arch"], sim_suffix),
         source=sources,
     )
 elif env["platform"] == "android":
