@@ -43,3 +43,6 @@ android.debug.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline
 android.release.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
 android.debug.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
 android.release.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
+; iOS: Loreline.xcframework dynamic framework alongside the GDExtension
+ios.debug = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
+ios.release = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }

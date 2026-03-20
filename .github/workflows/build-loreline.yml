@@ -1101,6 +1101,7 @@ jobs:
         run: |
           mkdir -p loreline-godot-ios-pkg
           cp -r godot/bin/loreline_godot.xcframework loreline-godot-ios-pkg/
+          cp -r build/cpp-lib/ios/Loreline.xcframework loreline-godot-ios-pkg/
           cd loreline-godot-ios-pkg && zip --symlinks -9 ../loreline-godot-ios.zip -r .
 
       - name: Upload Files

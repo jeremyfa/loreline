@@ -1087,6 +1087,10 @@ async function main() {
                 fs.mkdirSync(fwDir, { recursive: true });
                 fs.copyFileSync(dylib, path.join(fwDir, fwName));
                 fs.writeFileSync(path.join(fwDir, 'Info.plist'), fwInfoPlist);
+
+                // Set install name so iOS app finds this framework via @rpath
+                const fwBinary = path.join(fwDir, fwName);
+                await command('install_name_tool', ['-id', '@rpath/' + fwName + '.framework/' + fwName, fwBinary]);
             }
 
             // Assemble xcframework from .framework bundles
