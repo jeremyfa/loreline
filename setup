@@ -216,6 +216,7 @@ async function main() {
             '-D', 'HXCPP_STACK_TRACE',
             '-D', 'HXCPP_CHECK_POINTER',
             '-D', 'HXCPP_CPP11',
+            '-D', 'HXCPP_IMMORTAL_STATICS',
             '-D', 'safeMode'
         ];
 

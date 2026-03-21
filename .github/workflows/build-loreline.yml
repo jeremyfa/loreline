@@ -52,10 +52,8 @@ jobs:
           loreline version --check-tag %GITHUB_REF:refs/tags/=%
 
       - name: Run unit tests
-        working-directory: .
         shell: cmd
-        run: |
-          loreline test ./test
+        run: loreline.exe test ./test
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -109,6 +107,7 @@ jobs:
 
 
   loreline-mac:
+
     runs-on: macos-14
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
@@ -299,6 +298,7 @@ jobs:
 
 
   loreline-linux:
+
     strategy:
       matrix:
         include:
@@ -417,6 +417,7 @@ jobs:
 
 
   loreline-neko:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -469,6 +470,7 @@ jobs:
 
 
   loreline-js:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -536,6 +538,7 @@ jobs:
 
 
   loreline-csharp:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -616,6 +619,7 @@ jobs:
           compression-level: 0
 
   loreline-python:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -695,6 +699,7 @@ jobs:
 
 
   loreline-lua:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -771,6 +776,7 @@ jobs:
 
 
   loreline-jvm:
+
     runs-on: "ubuntu-22.04"
     steps:
 
@@ -852,6 +858,7 @@ jobs:
 
 
   loreline-unity:
+
     needs: [loreline-csharp]
     runs-on: ubuntu-22.04
     steps:
@@ -889,6 +896,7 @@ jobs:
 
 
   loreline-web:
+
     needs: [loreline-js]
     runs-on: ubuntu-22.04
     steps:
@@ -923,6 +931,7 @@ jobs:
 
 
   loreline-cpp:
+
     needs: [loreline-mac, loreline-windows, loreline-linux]
     runs-on: ubuntu-22.04
     steps:
@@ -986,6 +995,7 @@ jobs:
 
 
   loreline-ios:
+
     runs-on: macos-14
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
@@ -1122,6 +1132,7 @@ jobs:
 
 
   loreline-android:
+
     runs-on: ubuntu-22.04
     steps:
 
@@ -1215,6 +1226,7 @@ jobs:
 
 
   loreline-wasm:
+
     runs-on: ubuntu-22.04
     steps:
 
@@ -1310,6 +1322,7 @@ jobs:
 
 
   loreline-godot:
+
     needs: [loreline-mac, loreline-windows, loreline-linux, loreline-wasm, loreline-ios, loreline-android]
     runs-on: ubuntu-22.04
     steps:
@@ -1411,6 +1424,7 @@ jobs:
 
 
   loreline-sdl3:
+
     needs: [loreline-mac, loreline-windows, loreline-linux, loreline-ios, loreline-android]
     runs-on: macos-14
     env:
@@ -1593,6 +1607,7 @@ jobs:
 
 
   loreline-sdl3-verify:
+
     needs: [loreline-sdl3]
     strategy:
       matrix:
