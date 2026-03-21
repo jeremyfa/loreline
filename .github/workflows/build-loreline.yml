@@ -1381,6 +1381,21 @@ jobs:
           cp artifacts/android-aar-temp/jni/arm64-v8a/libloreline.so $PKG/bin/android/arm64-v8a/
           cp artifacts/android-aar-temp/jni/x86_64/libloreline.so $PKG/bin/android/x86_64/
 
+          # Copy sample project into package
+          cp -r sample/loreline-godot loreline-godot-pkg/sample
+          # Remove generated/editor files
+          rm -rf loreline-godot-pkg/sample/.godot
+          rm -rf loreline-godot-pkg/sample/android/build
+          rm -rf loreline-godot-pkg/sample/addons/loreline/bin
+          rm -f loreline-godot-pkg/sample/.gitattributes
+          rm -f loreline-godot-pkg/sample/.gitignore
+          rm -f loreline-godot-pkg/sample/.editorconfig
+          rm -f loreline-godot-pkg/sample/export_presets.cfg
+          find loreline-godot-pkg/sample -name "*.import" -delete
+          find loreline-godot-pkg/sample -name "*.uid" -delete
+          # Copy extension into sample so it's ready to use
+          cp -r loreline-godot-pkg/addons loreline-godot-pkg/sample/
+
           cd loreline-godot-pkg && zip --symlinks -9 ../loreline-godot.zip -r .
 
       - name: Upload Files
