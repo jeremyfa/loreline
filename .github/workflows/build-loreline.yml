@@ -51,11 +51,52 @@ jobs:
         run: |
           loreline version --check-tag %GITHUB_REF:refs/tags/=%
 
+      - name: Enable crash dumps
+        shell: powershell
+        run: |
+          New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Force
+          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpFolder" -Value "${{ github.workspace }}\crashdumps" -PropertyType String -Force
+          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpType" -Value 2 -PropertyType DWord -Force
+          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpCount" -Value 10 -PropertyType DWord -Force
+          New-Item -Path "${{ github.workspace }}\crashdumps" -ItemType Directory -Force
+
       - name: Run unit tests
+        id: run_tests
         working-directory: .
         shell: cmd
+        continue-on-error: true
         run: |
           loreline test ./test
+
+      - name: Analyze crash dump
+        if: steps.run_tests.outcome == 'failure'
+        shell: powershell
+        run: |
+          $dumps = Get-ChildItem "${{ github.workspace }}\crashdumps\*.dmp" -ErrorAction SilentlyContinue
+          if ($dumps) {
+            foreach ($dump in $dumps) {
+              Write-Host "=== Analyzing $($dump.Name) ==="
+              & "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe" -z $dump.FullName -c "!analyze -v; kb; .ecxr; kb; q"
+            }
+          } else {
+            Write-Host "No crash dumps found in crashdumps folder"
+            Get-ChildItem "${{ github.workspace }}\crashdumps\" -ErrorAction SilentlyContinue
+          }
+
+      - name: Upload crash dumps
+        if: steps.run_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v6
+        with:
+          name: windows-crash-dumps
+          path: |
+            ${{ github.workspace }}/crashdumps/*.dmp
+            build/cpp/loreline.pdb
+          retention-days: 7
+
+      - name: Check test results
+        if: steps.run_tests.outcome == 'failure'
+        shell: cmd
+        run: exit 1
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
