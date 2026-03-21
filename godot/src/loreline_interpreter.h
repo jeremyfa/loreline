@@ -7,7 +7,13 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#ifndef LORELINE_USE_JS
 #include "Loreline.h"
+#endif
+
+#ifdef LORELINE_USE_JS
+#include <godot_cpp/templates/hash_map.hpp>
+#endif
 
 using namespace godot;
 
@@ -15,8 +21,18 @@ class LorelineInterpreter : public RefCounted {
 	GDCLASS(LorelineInterpreter, RefCounted);
 
 	friend class LorelineScript;
+	friend class Loreline;
 
 private:
+#ifdef LORELINE_USE_JS
+	int _js_id; // ID in the JS object store
+
+	// Registry of active interpreters by JS ID, for event dispatch
+	static HashMap<int, LorelineInterpreter *> _js_registry;
+
+	// Poll JS event queue and dispatch signals to registered interpreters
+	static void _poll_js_events();
+#else
 	Loreline_Interpreter *_interp;
 	void (*_pending_advance)(void);
 	void (*_pending_select)(int);
@@ -45,6 +61,7 @@ private:
 	static Array _convert_options(const Loreline_ChoiceOption *options, int optionCount);
 	static Variant _value_to_variant(const Loreline_Value &value);
 	static Loreline_Value _variant_to_value(const Variant &variant);
+#endif
 
 protected:
 	static void _bind_methods();

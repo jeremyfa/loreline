@@ -36,14 +36,9 @@ sources = Glob(build_dir + "/*.cpp")
 
 # Link against libLoreline
 if env["platform"] == "web":
-    # Web: link against static libLoreline built with Emscripten
-    threads = env.get("threads", False)
-    variant = "threads" if threads else "nothreads"
-    static_lib = os.path.join(loreline_lib_dir, "libLoreline.{}.a".format(variant))
-    if os.path.exists(static_lib):
-        env.Append(LINKFLAGS=[static_lib])
-    else:
-        print("Warning: {} not found. Build with: node ./setup --wasm".format(static_lib))
+    # Web: use loreline.js via JavaScriptBridge instead of native libLoreline
+    # No libLoreline.a linking needed — JS bundle is embedded in the C++ source
+    env.Append(CPPDEFINES=["LORELINE_USE_JS"])
 elif env["platform"] == "ios":
     # Dynamic-link against Loreline.framework from xcframework
     loreline_fw_dir = ARGUMENTS.get("loreline_framework_dir", "")

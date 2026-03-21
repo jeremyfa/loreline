@@ -2,15 +2,38 @@
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#ifdef LORELINE_USE_JS
+#include <godot_cpp/classes/java_script_bridge.hpp>
+#include <godot_cpp/classes/json.hpp>
+
+HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
+#endif
+
 LorelineInterpreter::LorelineInterpreter()
-		: _interp(nullptr), _pending_advance(nullptr), _pending_select(nullptr) {
+#ifdef LORELINE_USE_JS
+		: _js_id(0)
+#else
+		: _interp(nullptr), _pending_advance(nullptr), _pending_select(nullptr)
+#endif
+{
 }
 
 LorelineInterpreter::~LorelineInterpreter() {
+#ifdef LORELINE_USE_JS
+	if (_js_id != 0) {
+		_js_registry.erase(_js_id);
+		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+		if (js) {
+			js->eval("_lorelineBridge.releaseInterpreter(" + String::num_int64(_js_id) + ")", true);
+		}
+		_js_id = 0;
+	}
+#else
 	if (_interp) {
 		Loreline_releaseInterpreter(_interp);
 		_interp = nullptr;
 	}
+#endif
 }
 
 void LorelineInterpreter::_bind_methods() {
@@ -38,7 +61,82 @@ void LorelineInterpreter::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
-// --- Callback bridge ---
+#ifdef LORELINE_USE_JS
+
+void LorelineInterpreter::_poll_js_events() {
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+
+	Variant events_json = js->eval("_lorelineBridge.pollEvents()", true);
+	if (events_json.get_type() != Variant::STRING) return;
+	String events_str = events_json;
+	if (events_str.is_empty()) return;
+
+	Ref<JSON> json_parser;
+	json_parser.instantiate();
+	if (json_parser->parse(events_str) != OK) return;
+
+	Array events = json_parser->get_data();
+	for (int i = 0; i < events.size(); i++) {
+		Dictionary event = events[i];
+		String type = event.get("type", "");
+		int interp_id = event.get("interpId", 0);
+
+		LorelineInterpreter **pp = _js_registry.getptr(interp_id);
+		if (!pp) continue;
+		LorelineInterpreter *interp = *pp;
+
+		if (type == "dialogue") {
+			String character = event.get("character", "");
+			String text = event.get("text", "");
+			Array tags_raw = event.get("tags", Array());
+
+			Array godot_tags;
+			for (int j = 0; j < tags_raw.size(); j++) {
+				Dictionary tag_raw = tags_raw[j];
+				Dictionary tag;
+				tag["value"] = tag_raw.get("value", "");
+				tag["offset"] = tag_raw.get("offset", 0);
+				tag["closing"] = tag_raw.get("closing", false);
+				godot_tags.append(tag);
+			}
+			interp->emit_signal("dialogue", character, text, godot_tags);
+
+		} else if (type == "choice") {
+			Array opts_raw = event.get("options", Array());
+			Array godot_options;
+			for (int j = 0; j < opts_raw.size(); j++) {
+				Dictionary opt_raw = opts_raw[j];
+				Dictionary option;
+				option["text"] = opt_raw.get("text", "");
+				option["enabled"] = opt_raw.get("enabled", true);
+
+				Array opt_tags;
+				if (opt_raw.has("tags")) {
+					Array tags_arr = opt_raw["tags"];
+					for (int k = 0; k < tags_arr.size(); k++) {
+						Dictionary tag_raw = tags_arr[k];
+						Dictionary tag;
+						tag["value"] = tag_raw.get("value", "");
+						tag["offset"] = tag_raw.get("offset", 0);
+						tag["closing"] = tag_raw.get("closing", false);
+						opt_tags.append(tag);
+					}
+				}
+				option["tags"] = opt_tags;
+				godot_options.append(option);
+			}
+			interp->emit_signal("choice", godot_options);
+
+		} else if (type == "finished") {
+			interp->emit_signal("finished");
+		}
+	}
+}
+
+#else
+
+// --- Native callback bridge ---
 
 void LorelineInterpreter::_on_dialogue(
 		Loreline_Interpreter *interpreter,
@@ -144,33 +242,70 @@ Loreline_Value LorelineInterpreter::_variant_to_value(const Variant &variant) {
 	}
 }
 
+#endif // LORELINE_USE_JS
+
 // --- Public methods ---
 
 void LorelineInterpreter::advance() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (js) {
+		js->eval("_lorelineBridge.advance(" + String::num_int64(_js_id) + ")", true);
+		_poll_js_events();
+	}
+#else
 	if (_pending_advance) {
 		auto fn = _pending_advance;
 		_pending_advance = nullptr;
 		fn();
 	}
+#endif
 }
 
 void LorelineInterpreter::select(int index) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (js) {
+		js->eval("_lorelineBridge.select(" + String::num_int64(_js_id) + "," + String::num_int64(index) + ")", true);
+		_poll_js_events();
+	}
+#else
 	if (_pending_select) {
 		auto fn = _pending_select;
 		_pending_select = nullptr;
 		fn(index);
 	}
+#endif
 }
 
 void LorelineInterpreter::start(const String &beat_name) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (js) {
+		String escaped_beat = beat_name.replace("\\", "\\\\").replace("'", "\\'");
+		js->eval("_lorelineBridge.start(" + String::num_int64(_js_id) + ",'" + escaped_beat + "')", true);
+		_poll_js_events();
+	}
+#else
 	if (!_interp) {
 		return;
 	}
 	CharString utf8 = beat_name.utf8();
 	Loreline_start(_interp, Loreline_String(utf8.get_data()));
+#endif
 }
 
 String LorelineInterpreter::save_state() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return String();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return String();
+	Variant result = js->eval("_lorelineBridge.save(" + String::num_int64(_js_id) + ")", true);
+	return result;
+#else
 	if (!_interp) {
 		return String();
 	}
@@ -179,17 +314,37 @@ String LorelineInterpreter::save_state() {
 		return String();
 	}
 	return String::utf8(result.c_str());
+#endif
 }
 
 void LorelineInterpreter::restore_state(const String &data) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (js) {
+		String escaped = data.replace("\\", "\\\\").replace("'", "\\'");
+		js->eval("_lorelineBridge.restore(" + String::num_int64(_js_id) + ",'" + escaped + "')", true);
+		_poll_js_events();
+	}
+#else
 	if (!_interp) {
 		return;
 	}
 	CharString utf8 = data.utf8();
 	Loreline_restore(_interp, Loreline_String(utf8.get_data()));
+#endif
 }
 
 Variant LorelineInterpreter::get_character_field(const String &character, const String &field) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return Variant();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return Variant();
+	String escaped_char = character.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	return js->eval("_lorelineBridge.getCharacterField(" + String::num_int64(_js_id) +
+		",'" + escaped_char + "','" + escaped_field + "')", true);
+#else
 	if (!_interp) {
 		return Variant();
 	}
@@ -200,9 +355,31 @@ Variant LorelineInterpreter::get_character_field(const String &character, const 
 			Loreline_String(char_utf8.get_data()),
 			Loreline_String(field_utf8.get_data()));
 	return _value_to_variant(value);
+#endif
 }
 
 void LorelineInterpreter::set_character_field(const String &character, const String &field, const Variant &value) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	String escaped_char = character.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String js_value;
+	switch (value.get_type()) {
+		case Variant::INT: js_value = String::num_int64(value); break;
+		case Variant::FLOAT: js_value = String::num(value); break;
+		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
+		case Variant::STRING: {
+			String s = value;
+			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			break;
+		}
+		default: js_value = "null"; break;
+	}
+	js->eval("_lorelineBridge.setCharacterField(" + String::num_int64(_js_id) +
+		",'" + escaped_char + "','" + escaped_field + "'," + js_value + ")", true);
+#else
 	if (!_interp) {
 		return;
 	}
@@ -213,9 +390,18 @@ void LorelineInterpreter::set_character_field(const String &character, const Str
 			Loreline_String(char_utf8.get_data()),
 			Loreline_String(field_utf8.get_data()),
 			_variant_to_value(value));
+#endif
 }
 
 Variant LorelineInterpreter::get_state_field(const String &field) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return Variant();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return Variant();
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	return js->eval("_lorelineBridge.getStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "')", true);
+#else
 	if (!_interp) {
 		return Variant();
 	}
@@ -224,9 +410,30 @@ Variant LorelineInterpreter::get_state_field(const String &field) {
 			_interp,
 			Loreline_String(field_utf8.get_data()));
 	return _value_to_variant(value);
+#endif
 }
 
 void LorelineInterpreter::set_state_field(const String &field, const Variant &value) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String js_value;
+	switch (value.get_type()) {
+		case Variant::INT: js_value = String::num_int64(value); break;
+		case Variant::FLOAT: js_value = String::num(value); break;
+		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
+		case Variant::STRING: {
+			String s = value;
+			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			break;
+		}
+		default: js_value = "null"; break;
+	}
+	js->eval("_lorelineBridge.setStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "'," + js_value + ")", true);
+#else
 	if (!_interp) {
 		return;
 	}
@@ -235,9 +442,18 @@ void LorelineInterpreter::set_state_field(const String &field, const Variant &va
 			_interp,
 			Loreline_String(field_utf8.get_data()),
 			_variant_to_value(value));
+#endif
 }
 
 Variant LorelineInterpreter::get_top_level_state_field(const String &field) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return Variant();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return Variant();
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	return js->eval("_lorelineBridge.getTopLevelStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "')", true);
+#else
 	if (!_interp) {
 		return Variant();
 	}
@@ -246,9 +462,30 @@ Variant LorelineInterpreter::get_top_level_state_field(const String &field) {
 			_interp,
 			Loreline_String(field_utf8.get_data()));
 	return _value_to_variant(value);
+#endif
 }
 
 void LorelineInterpreter::set_top_level_state_field(const String &field, const Variant &value) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String js_value;
+	switch (value.get_type()) {
+		case Variant::INT: js_value = String::num_int64(value); break;
+		case Variant::FLOAT: js_value = String::num(value); break;
+		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
+		case Variant::STRING: {
+			String s = value;
+			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			break;
+		}
+		default: js_value = "null"; break;
+	}
+	js->eval("_lorelineBridge.setTopLevelStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "'," + js_value + ")", true);
+#else
 	if (!_interp) {
 		return;
 	}
@@ -257,9 +494,28 @@ void LorelineInterpreter::set_top_level_state_field(const String &field, const V
 			_interp,
 			Loreline_String(field_utf8.get_data()),
 			_variant_to_value(value));
+#endif
 }
 
 Dictionary LorelineInterpreter::current_node() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return Dictionary();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return Dictionary();
+	Variant json_str = js->eval("_lorelineBridge.currentNode(" + String::num_int64(_js_id) + ")", true);
+	if (json_str.get_type() != Variant::STRING) return Dictionary();
+	Ref<JSON> json_parser;
+	json_parser.instantiate();
+	if (json_parser->parse(json_str) != OK) return Dictionary();
+	Dictionary data = json_parser->get_data();
+	Dictionary result;
+	result["type"] = data.get("type", "");
+	result["line"] = data.get("line", 0);
+	result["column"] = data.get("column", 0);
+	result["offset"] = data.get("offset", 0);
+	result["length"] = data.get("length", 0);
+	return result;
+#else
 	if (!_interp) {
 		return Dictionary();
 	}
@@ -274,4 +530,5 @@ Dictionary LorelineInterpreter::current_node() {
 	result["offset"] = node.offset;
 	result["length"] = node.length;
 	return result;
+#endif
 }

@@ -1123,7 +1123,9 @@ async function main() {
 
             const androidArchs = [
                 { arch: 'arm64', abi: 'arm64-v8a' },
-                { arch: 'x86_64', abi: 'x86_64' }
+                { arch: 'arm32', abi: 'armeabi-v7a' },
+                { arch: 'x86_64', abi: 'x86_64' },
+                { arch: 'x86_32', abi: 'x86' }
             ];
 
             // Detect installed NDK version from ANDROID_NDK_ROOT path
@@ -1150,11 +1152,49 @@ async function main() {
             if (!process.env.EMSDK) {
                 throw new Error('EMSDK environment variable is not set. Install Emscripten SDK first.');
             }
-            const wasmLibDir = path.join(__dirname, 'build', 'cpp-lib', 'wasm');
-            const nothreadsLib = path.join(wasmLibDir, 'libLoreline.nothreads.a');
-            if (!fs.existsSync(nothreadsLib)) {
-                throw new Error('WASM libLoreline not found. Run --wasm first.');
+
+            // Generate JS bundle header from loreline.min.js
+            const jsMinPath = path.join(__dirname, 'js', 'loreline.min.js');
+            if (!fs.existsSync(jsMinPath)) {
+                throw new Error('loreline.min.js not found. Run --js first.');
             }
+            const jsBundleHeaderPath = path.join(godotDir, 'src', 'loreline_js_bundle.h');
+            console.log('Generating JS bundle header...');
+            const jsSource = fs.readFileSync(jsMinPath, 'utf8');
+            // Transform ES module JS into eval()-compatible code with window globals.
+            // loreline.min.js has: "use strict";let Xl={},Bn={};(IIFE)(Xl,Bn);export const Loreline=Xl.loreline.Loreline,...;
+            // Strict mode eval scopes var declarations to the eval block (no globals created),
+            // and let is always block-scoped. We need explicit window assignments.
+            let jsSourceForBundle = jsSource;
+            // Remove leading "use strict"; so var declarations can create globals
+            jsSourceForBundle = jsSourceForBundle.replace(/^"use strict";/, '');
+            // Change leading 'let' to 'var' so IIFE parameters survive the eval scope
+            jsSourceForBundle = jsSourceForBundle.replace(/^let /, 'var ');
+            // Extract export declarations and replace with explicit window assignments
+            const exportMatch = jsSourceForBundle.match(/export const (.+);[\s]*$/);
+            if (exportMatch) {
+                jsSourceForBundle = jsSourceForBundle.replace(/export const .+;[\s]*$/, '');
+                const assignments = exportMatch[1].split(/,(?=\w+=)/).map(d => {
+                    const eq = d.indexOf('=');
+                    return 'window.' + d.substring(0, eq) + '=' + d.substring(eq + 1);
+                });
+                jsSourceForBundle += assignments.join(';') + ';';
+            }
+            // Escape for C++ raw string literal using a unique delimiter
+            const headerContent = [
+                '#ifndef LORELINE_JS_BUNDLE_H',
+                '#define LORELINE_JS_BUNDLE_H',
+                '',
+                '// Auto-generated from js/loreline.min.js — do not edit',
+                'static const char LORELINE_JS_BUNDLE[] = R"LORELINE_JS(',
+                jsSourceForBundle,
+                ')LORELINE_JS";',
+                '',
+                '#endif // LORELINE_JS_BUNDLE_H',
+                ''
+            ].join('\n');
+            fs.writeFileSync(jsBundleHeaderPath, headerContent);
+            console.log('Generated: ' + jsBundleHeaderPath);
 
             console.log('Building GDExtension for Web (WASM)...');
 

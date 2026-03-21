@@ -5,7 +5,10 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#ifndef LORELINE_USE_JS
 #include "Loreline.h"
+#endif
+
 #include "loreline_script.h"
 
 using namespace godot;
@@ -16,6 +19,10 @@ class Loreline : public Node {
 private:
 	bool _initialized;
 
+#ifdef LORELINE_USE_JS
+	bool _js_loaded;
+	Dictionary _file_overrides;
+#else
 	// File import handling: userData for parse callback points to a struct
 	// containing the Loreline pointer and an optional override map.
 	struct FileRequestContext {
@@ -30,6 +37,7 @@ private:
 			Loreline_String path,
 			void (*provide)(Loreline_String content),
 			void *userData);
+#endif
 
 protected:
 	static void _bind_methods();

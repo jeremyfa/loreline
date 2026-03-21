@@ -6,7 +6,10 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#ifndef LORELINE_USE_JS
 #include "Loreline.h"
+#endif
+
 #include "loreline_interpreter.h"
 
 using namespace godot;
@@ -17,7 +20,11 @@ class LorelineScript : public RefCounted {
 	friend class Loreline;
 
 private:
+#ifdef LORELINE_USE_JS
+	int _js_id; // ID in the JS object store
+#else
 	Loreline_Script *_script;
+#endif
 
 protected:
 	static void _bind_methods();

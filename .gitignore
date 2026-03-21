@@ -29,4 +29,5 @@ merged-context.txt
 /godot/bin
 /godot/build
 /godot/.sconsign.dblite
-sample/loreline-sdl3/ios/loreline-sdl3.xcodeproj/project.xcworkspace/xcuserdata
+/sample/loreline-sdl3/ios/loreline-sdl3.xcodeproj/project.xcworkspace/xcuserdata
+/godot/src/loreline_js_bundle.h

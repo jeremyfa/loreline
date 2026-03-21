@@ -1267,6 +1267,9 @@ jobs:
       - name: Install scons
         run: pip install scons
 
+      - name: Build loreline.js (needed for GDExtension web bridge)
+        run: node ./setup --js
+
       - name: Build GDExtension wrapper for WASM
         run: node ./setup --godot-wasm
 
