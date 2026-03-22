@@ -392,11 +392,19 @@ jobs:
           cp cpp/include/Loreline.h loreline-linux-pkg/cpp/include/
           cd loreline-linux-pkg && zip --symlinks -9 ../loreline-linux-${{ matrix.arch }}.zip -r .
 
+      - name: Install patchelf
+        run: sudo apt-get install -y patchelf
+
       - name: Create GDExtension zip archive
         run: |
           mkdir -p loreline-godot-linux-pkg
           cp godot/bin/libloreline_godot.${{ matrix.arch }}.so loreline-godot-linux-pkg/
           cp build/cpp-lib/linux/libLoreline.so loreline-godot-linux-pkg/libLoreline.${{ matrix.arch }}.so
+          # Fix RPATH to look for dependencies in the same directory
+          patchelf --set-rpath '$ORIGIN' loreline-godot-linux-pkg/libloreline_godot.${{ matrix.arch }}.so
+          # Update the NEEDED entry to match the arch-suffixed filename
+          patchelf --replace-needed libLoreline.so libLoreline.${{ matrix.arch }}.so \
+            loreline-godot-linux-pkg/libloreline_godot.${{ matrix.arch }}.so
           cd loreline-godot-linux-pkg && zip --symlinks -9 ../loreline-godot-linux-${{ matrix.arch }}.zip -r .
 
       - name: Upload Files
