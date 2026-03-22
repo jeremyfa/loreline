@@ -35,7 +35,7 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 40
-theme_override_constants/margin_right = 50
+theme_override_constants/margin_right = 40
 
 [node name="OutputTable" type="HBoxContainer" parent="ScrollContainer/MarginContainer"]
 layout_mode = 2
