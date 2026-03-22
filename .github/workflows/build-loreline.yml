@@ -1412,6 +1412,11 @@ jobs:
           # Copy extension into sample so it's ready to use
           cp -r loreline-godot-pkg/addons loreline-godot-pkg/sample/
 
+          # Copy story files into sample
+          mkdir -p loreline-godot-pkg/sample/story
+          cp sample/CoffeeShop.lor loreline-godot-pkg/sample/story/
+          cp sample/characters.lor loreline-godot-pkg/sample/story/
+
           cd loreline-godot-pkg && zip --symlinks -9 ../loreline-godot.zip -r .
 
       - name: Upload Files

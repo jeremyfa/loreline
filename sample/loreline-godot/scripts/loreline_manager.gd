@@ -47,6 +47,10 @@ func _ready() -> void:
 	font_regular = load("res://fonts/Outfit-Regular.ttf")
 	font_semibold = load("res://fonts/Outfit-SemiBold.ttf")
 	font_italic = load("res://fonts/Literata-Italic.ttf")
+	if font_regular == null or font_semibold == null or font_italic == null:
+		push_error("Loreline sample: missing font files in res://fonts/ (Outfit-Regular.ttf, Outfit-SemiBold.ttf, Literata-Italic.ttf)")
+		printerr("Loreline sample: missing font files in res://fonts/")
+		return
 
 	# Remove default ScrollContainer panel padding
 	scroll_container.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
@@ -65,7 +69,8 @@ func _ready() -> void:
 
 	var file := FileAccess.open("res://story/CoffeeShop.lor", FileAccess.READ)
 	if file == null:
-		push_error("Failed to open story file: " + str(FileAccess.get_open_error()))
+		push_error("Loreline sample: failed to open res://story/CoffeeShop.lor — " + str(FileAccess.get_open_error()))
+		printerr("Loreline sample: failed to open res://story/CoffeeShop.lor — ensure story files are present")
 		return
 	var source := file.get_as_text()
 	file.close()
