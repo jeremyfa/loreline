@@ -20,6 +20,7 @@ class LorelineScript : public RefCounted {
 	GDCLASS(LorelineScript, RefCounted);
 
 	friend class Loreline;
+	friend class LorelineOptions;
 
 private:
 #ifdef LORELINE_USE_JS

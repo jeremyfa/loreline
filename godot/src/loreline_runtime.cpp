@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
 
@@ -26,7 +27,7 @@ Loreline *Loreline::shared() {
 
 	// Add to scene tree root so the node gets READY/PROCESS notifications
 	// and survives scene changes
-	SceneTree *tree = SceneTree::get_singleton();
+	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (tree && tree->get_root()) {
 		tree->get_root()->call_deferred("add_child", _singleton);
 	}
