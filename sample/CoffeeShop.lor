@@ -16,9 +16,9 @@ beat EnterCoffeeShop
     barista: <stressed> Thanks for your patience with the rush!
 
   else if player.cafeVisits > 0
-    if chance(2)
+    pick
       The scent of dark roasted beans swirls through the air as you step again into your favorite café.
-    else
+    --
       The familiar whir and hiss of the espresso machine welcomes you back to your beloved café.
 
   else
@@ -39,9 +39,9 @@ beat EnterCoffeeShop
 beat CoffeeShop
 
   if player.cafeVisits > 0
-    if chance(2)
+    pick
       You are back near the coffee shop counter.
-    else
+    --
       The barista sees you approaching him again.
 
   player.cafeVisits += 1
@@ -83,15 +83,15 @@ beat CoffeeShop
       barista.friendship += 2
 
       if sarah.present
-        if chance(2)
+        pick
           sarah: <curious> Oh, that smells amazing! Maybe I'll try that next.
-        else
+        --
           sarah: <curious> This aroma is incredible! You'll have to tell me how it tastes.
 
       if james.present
-        if chance(2)
+        pick
           james: <interested> Ethiopian Yirgacheffe? Excellent choice!
-        else
+        --
           james: <interested> They managed to get beans from the Sidamo region? Impressive.
 
       -> ProcessCoffeeEffects
@@ -137,13 +137,13 @@ beat ProcessCoffeeEffects
 
 beat ProductiveMoment
 
-  if chance(4)
+  pick
     The coffee kicks in: you feel invincible.
-  else if chance(3)
+  --
     The caffeine does its work: new energy pulses through your veins.
-  else if chance(2)
+  --
     The coffee works its magic, and you feel ready to tackle anything.
-  else
+  --
     The drink does its job: a wave of energy washes over you.
 
   choice
@@ -308,23 +308,23 @@ beat BaristaChat
 beat SarahChat
 
   if player.jitters
-    if chance(2)
+    pick
       sarah: <concerned> Maybe slow down on the caffeine?
-    else
+    --
       sarah: <concerned> Don't you think you should slow down on the caffeine?
 
   else if sarah.greeted
-    if chance(2)
+    pick
       sarah: <friendly> Oh hey, you're back! Was just thinking about what we were talking about earlier.
-    else
+    --
       sarah: <warm> There you are again! I was hoping you'd come back to finish our conversation.
 
   else
     sarah.greeted = true
 
-    if chance(2)
+    pick
       sarah: <delighted> Well, look who's here! Can't stay long, but it's great running into you.
-    else
+    --
       sarah: <friendly> Ah, so nice to see you! I need to head back to the office soon, but I've got time for a quick break.
 
   choice
@@ -338,9 +338,9 @@ beat SarahChat
       -> CoffeeShop
 
     Get another coffee if player.consumedCoffees > 0
-      if chance(2)
+      pick
         sarah: <amused> This coffee shop really has something special for you, doesn't it?
-      else
+      --
         sarah: <amused> Looks like you found your headquarters!
 
       -> CoffeeShop
@@ -358,35 +358,35 @@ beat SarahChat
 beat JamesChat
 
   if player.jitters
-    if chance(2)
+    pick
       james: <concerned> You seem a bit wired.
-    else
+    --
       james: <worried> That's quite a caffeine buzz you've got there.
 
   else if james.greeted
-    if chance(2)
+    pick
       james: <calm> Back to chat some more? I was just thinking about what we were discussing.
-    else
+    --
       james: <peaceful> Ah, you've returned! I was hoping you'd come back to continue our conversation.
 
   else
     james.greeted = true
 
-    if chance(2)
+    pick
       james: <calm> Taking a break from the caffeine?
-    else
+    --
       james: <peaceful> Enjoying the atmosphere without the extra espresso today?
 
   choice
     Chat about books
       james.present = false
 
-      if chance(2)
+      pick
         You discuss $james's current read, a fascinating book about tea ceremonies around the world.
 
         james: <enthusiastic> We should continue this conversation later!
 
-      else
+      --
         You lose track of time discussing $james's latest literary discovery until he glances at his watch.
 
         james: <apologetic> Oh, I should get going. Great chat though!
@@ -394,9 +394,9 @@ beat JamesChat
       -> CoffeeShop
 
     Order another coffee if player.consumedCoffees > 0
-      if chance(2)
+      pick
         james: <diplomatic> Have you tried their herbal tea? It's quite remarkable.
-      else
+      --
         james: <gentle> Their chamomile blend is actually quite amazing, you know.
 
       -> CoffeeShop
@@ -405,12 +405,12 @@ beat JamesChat
       -> CoffeeShop
 
     Discuss coffee origins if specialBeans > 0
-      if chance(2)
+      pick
         james: <interested> The cultural history of coffee is fascinating.
 
         You have a nice conversation with $james about coffee origins.
 
-      else
+      --
         james: <passionate> Did you know coffee was first discovered by Ethiopian goat herders?
 
         You share an engaging discussion about coffee's journey through history.
