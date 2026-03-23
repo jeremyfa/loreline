@@ -22,6 +22,7 @@ class LorelineInterpreter : public RefCounted {
 
 	friend class LorelineScript;
 	friend class Loreline;
+	friend class LorelineOptions;
 
 private:
 #ifdef LORELINE_USE_JS

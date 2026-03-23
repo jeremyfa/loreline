@@ -1,9 +1,11 @@
 #include "loreline_script.h"
+#include "loreline_options.h"
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef LORELINE_USE_JS
 #include <godot_cpp/classes/java_script_bridge.hpp>
+#include "loreline_js_utils.h"
 #endif
 
 LorelineScript::LorelineScript()
@@ -33,15 +35,15 @@ LorelineScript::~LorelineScript() {
 }
 
 void LorelineScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("play", "beat_name"), &LorelineScript::play, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("resume", "save_data", "beat_name"), &LorelineScript::resume, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("play", "beat_name", "options"), &LorelineScript::play, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
+	ClassDB::bind_method(D_METHOD("resume", "save_data", "beat_name", "options"), &LorelineScript::resume, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 	ClassDB::bind_method(D_METHOD("extract_translations"), &LorelineScript::extract_translations);
 	ClassDB::bind_method(D_METHOD("print_script"), &LorelineScript::print_script);
 	ClassDB::bind_method(D_METHOD("to_json", "pretty"), &LorelineScript::to_json, DEFVAL(false));
 	ClassDB::bind_static_method("LorelineScript", D_METHOD("from_json", "json"), &LorelineScript::from_json);
 }
 
-Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
+Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref<LorelineOptions> &options) {
 #ifdef LORELINE_USE_JS
 	if (_js_id == 0) {
 		return Ref<LorelineInterpreter>();
@@ -52,8 +54,13 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
 		return Ref<LorelineInterpreter>();
 	}
 
-	String escaped_beat = beat_name.replace("\\", "\\\\").replace("'", "\\'");
-	String js_code = "_lorelineBridge.play(" + String::num_int64(_js_id) + ",'" + escaped_beat + "')";
+	String escaped_beat = loreline_escape_js(beat_name);
+	String options_arg = "null";
+	if (options.is_valid()) {
+		String options_json = options->build_js_options_json();
+		options_arg = "'" + loreline_escape_js(options_json) + "'";
+	}
+	String js_code = "_lorelineBridge.play(" + String::num_int64(_js_id) + ",'" + escaped_beat + "'," + options_arg + ")";
 	Variant result = js->eval(js_code, true);
 	int interp_id = result;
 	if (interp_id == 0) {
@@ -64,6 +71,12 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
 	interp.instantiate();
 	interp->_js_id = interp_id;
 	LorelineInterpreter::_js_registry[interp_id] = interp.ptr();
+
+	// Register custom functions for JS path
+	if (options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0)) {
+		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
+	}
+
 	// Don't poll events here — GDScript connects signals AFTER play/resume returns.
 	// Events will be dispatched on the next _process frame.
 	return interp;
@@ -81,14 +94,23 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
 			? Loreline_String()
 			: Loreline_String(beat_utf8.get_data());
 
+	Loreline_InterpreterOptions *native_opts = nullptr;
+	if (options.is_valid()) {
+		native_opts = options->build_native_options();
+	}
+
 	interp->_interp = Loreline_play(
 			_script,
 			LorelineInterpreter::_on_dialogue,
 			LorelineInterpreter::_on_choice,
 			LorelineInterpreter::_on_finish,
 			loreline_beat,
-			nullptr, // translations
+			native_opts,
 			static_cast<void *>(interp.ptr()));
+
+	if (native_opts) {
+		Loreline_releaseOptions(native_opts);
+	}
 
 	if (!interp->_interp) {
 		return Ref<LorelineInterpreter>();
@@ -98,7 +120,7 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name) {
 #endif
 }
 
-Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const String &beat_name) {
+Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const String &beat_name, const Ref<LorelineOptions> &options) {
 #ifdef LORELINE_USE_JS
 	if (_js_id == 0) {
 		return Ref<LorelineInterpreter>();
@@ -109,10 +131,15 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 		return Ref<LorelineInterpreter>();
 	}
 
-	String escaped_save = save_data.replace("\\", "\\\\").replace("'", "\\'");
-	String escaped_beat = beat_name.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_save = loreline_escape_js(save_data);
+	String escaped_beat = loreline_escape_js(beat_name);
+	String options_arg = "null";
+	if (options.is_valid()) {
+		String options_json = options->build_js_options_json();
+		options_arg = "'" + loreline_escape_js(options_json) + "'";
+	}
 	String js_code = "_lorelineBridge.resume(" + String::num_int64(_js_id) +
-		",'" + escaped_save + "','" + escaped_beat + "')";
+		",'" + escaped_save + "','" + escaped_beat + "'," + options_arg + ")";
 	Variant result = js->eval(js_code, true);
 	int interp_id = result;
 	if (interp_id == 0) {
@@ -123,6 +150,12 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 	interp.instantiate();
 	interp->_js_id = interp_id;
 	LorelineInterpreter::_js_registry[interp_id] = interp.ptr();
+
+	// Register custom functions for JS path
+	if (options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0)) {
+		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
+	}
+
 	// Don't poll events here — GDScript connects signals AFTER play/resume returns.
 	// Events will be dispatched on the next _process frame.
 	return interp;
@@ -142,6 +175,11 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 			? Loreline_String()
 			: Loreline_String(beat_utf8.get_data());
 
+	Loreline_InterpreterOptions *native_opts = nullptr;
+	if (options.is_valid()) {
+		native_opts = options->build_native_options();
+	}
+
 	interp->_interp = Loreline_resume(
 			_script,
 			LorelineInterpreter::_on_dialogue,
@@ -149,8 +187,12 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 			LorelineInterpreter::_on_finish,
 			loreline_save,
 			loreline_beat,
-			nullptr, // translations
+			native_opts,
 			static_cast<void *>(interp.ptr()));
+
+	if (native_opts) {
+		Loreline_releaseOptions(native_opts);
+	}
 
 	if (!interp->_interp) {
 		return Ref<LorelineInterpreter>();
@@ -226,7 +268,7 @@ Ref<LorelineScript> LorelineScript::from_json(const String &json) {
 	if (!js) {
 		return Ref<LorelineScript>();
 	}
-	String escaped_json = json.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_json = loreline_escape_js(json);
 	Variant result = js->eval("_lorelineBridge.scriptFromJson('" + escaped_json + "')", true);
 	int script_id = result;
 	if (script_id == 0) {

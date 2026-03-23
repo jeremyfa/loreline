@@ -1,10 +1,13 @@
 #include "loreline_interpreter.h"
+#include "loreline_options.h"
 
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef LORELINE_USE_JS
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include "loreline_js_utils.h"
 
 HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
 #endif
@@ -22,6 +25,7 @@ LorelineInterpreter::~LorelineInterpreter() {
 #ifdef LORELINE_USE_JS
 	if (_js_id != 0) {
 		_js_registry.erase(_js_id);
+		LorelineOptions::unregister_js_functions(_js_id);
 		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 		if (js) {
 			js->eval("_lorelineBridge.releaseInterpreter(" + String::num_int64(_js_id) + ")", true);
@@ -51,14 +55,19 @@ void LorelineInterpreter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("current_node"), &LorelineInterpreter::current_node);
 
 	ADD_SIGNAL(MethodInfo("dialogue",
+			PropertyInfo(Variant::OBJECT, "interpreter"),
 			PropertyInfo(Variant::STRING, "character"),
 			PropertyInfo(Variant::STRING, "text"),
-			PropertyInfo(Variant::ARRAY, "tags")));
+			PropertyInfo(Variant::ARRAY, "tags"),
+			PropertyInfo(Variant::CALLABLE, "advance")));
 
 	ADD_SIGNAL(MethodInfo("choice",
-			PropertyInfo(Variant::ARRAY, "options")));
+			PropertyInfo(Variant::OBJECT, "interpreter"),
+			PropertyInfo(Variant::ARRAY, "options"),
+			PropertyInfo(Variant::CALLABLE, "select")));
 
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("finished",
+			PropertyInfo(Variant::OBJECT, "interpreter")));
 }
 
 #ifdef LORELINE_USE_JS
@@ -100,7 +109,8 @@ void LorelineInterpreter::_poll_js_events() {
 				tag["closing"] = tag_raw.get("closing", false);
 				godot_tags.append(tag);
 			}
-			interp->emit_signal("dialogue", character, text, godot_tags);
+			Callable advance_callable = Callable(interp, "advance");
+			interp->emit_signal("dialogue", interp, character, text, godot_tags, advance_callable);
 
 		} else if (type == "choice") {
 			Array opts_raw = event.get("options", Array());
@@ -126,10 +136,28 @@ void LorelineInterpreter::_poll_js_events() {
 				option["tags"] = opt_tags;
 				godot_options.append(option);
 			}
-			interp->emit_signal("choice", godot_options);
+			Callable select_callable = Callable(interp, "select");
+			interp->emit_signal("choice", interp, godot_options, select_callable);
 
 		} else if (type == "finished") {
-			interp->emit_signal("finished");
+			interp->emit_signal("finished", interp);
+
+		} else if (type == "async_function_call") {
+			int call_id = event.get("callId", 0);
+			String func_name = event.get("name", "");
+			Array args = event.get("args", Array());
+
+			Dictionary *funcs = LorelineOptions::_js_async_function_registry.getptr(interp_id);
+			if (funcs) {
+				Callable fn = funcs->get(func_name, Callable());
+				if (fn.is_valid()) {
+					fn.call(Variant(), args);
+				}
+			}
+			// Resume the interpreter by calling done()
+			if (js) {
+				js->eval("_lorelineBridge.provideFunctionDone(" + String::num_int64(call_id) + ")", true);
+			}
 		}
 	}
 }
@@ -154,7 +182,8 @@ void LorelineInterpreter::_on_dialogue(
 	String godot_text = text.isNull() ? String() : String::utf8(text.c_str());
 	Array godot_tags = _convert_tags(tags, tagCount);
 
-	self->emit_signal("dialogue", godot_character, godot_text, godot_tags);
+	Callable advance_callable = Callable(self, "advance");
+	self->emit_signal("dialogue", self, godot_character, godot_text, godot_tags, advance_callable);
 }
 
 void LorelineInterpreter::_on_choice(
@@ -169,7 +198,8 @@ void LorelineInterpreter::_on_choice(
 
 	Array godot_options = _convert_options(options, optionCount);
 
-	self->emit_signal("choice", godot_options);
+	Callable select_callable = Callable(self, "select");
+	self->emit_signal("choice", self, godot_options, select_callable);
 }
 
 void LorelineInterpreter::_on_finish(
@@ -179,7 +209,7 @@ void LorelineInterpreter::_on_finish(
 	self->_pending_advance = nullptr;
 	self->_pending_select = nullptr;
 
-	self->emit_signal("finished");
+	self->emit_signal("finished", self);
 }
 
 // --- Conversion helpers ---
@@ -285,7 +315,7 @@ void LorelineInterpreter::start(const String &beat_name) {
 	if (_js_id == 0) return;
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (js) {
-		String escaped_beat = beat_name.replace("\\", "\\\\").replace("'", "\\'");
+		String escaped_beat = loreline_escape_js(beat_name);
 		js->eval("_lorelineBridge.start(" + String::num_int64(_js_id) + ",'" + escaped_beat + "')", true);
 		_poll_js_events();
 	}
@@ -322,7 +352,7 @@ void LorelineInterpreter::restore_state(const String &data) {
 	if (_js_id == 0) return;
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (js) {
-		String escaped = data.replace("\\", "\\\\").replace("'", "\\'");
+		String escaped = loreline_escape_js(data);
 		js->eval("_lorelineBridge.restore(" + String::num_int64(_js_id) + ",'" + escaped + "')", true);
 		_poll_js_events();
 	}
@@ -340,8 +370,8 @@ Variant LorelineInterpreter::get_character_field(const String &character, const 
 	if (_js_id == 0) return Variant();
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return Variant();
-	String escaped_char = character.replace("\\", "\\\\").replace("'", "\\'");
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_char = loreline_escape_js(character);
+	String escaped_field = loreline_escape_js(field);
 	return js->eval("_lorelineBridge.getCharacterField(" + String::num_int64(_js_id) +
 		",'" + escaped_char + "','" + escaped_field + "')", true);
 #else
@@ -363,8 +393,8 @@ void LorelineInterpreter::set_character_field(const String &character, const Str
 	if (_js_id == 0) return;
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return;
-	String escaped_char = character.replace("\\", "\\\\").replace("'", "\\'");
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_char = loreline_escape_js(character);
+	String escaped_field = loreline_escape_js(field);
 	String js_value;
 	switch (value.get_type()) {
 		case Variant::INT: js_value = String::num_int64(value); break;
@@ -372,7 +402,7 @@ void LorelineInterpreter::set_character_field(const String &character, const Str
 		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
 		case Variant::STRING: {
 			String s = value;
-			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			js_value = "'" + loreline_escape_js(s) + "'";
 			break;
 		}
 		default: js_value = "null"; break;
@@ -398,7 +428,7 @@ Variant LorelineInterpreter::get_state_field(const String &field) {
 	if (_js_id == 0) return Variant();
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return Variant();
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = loreline_escape_js(field);
 	return js->eval("_lorelineBridge.getStateField(" + String::num_int64(_js_id) +
 		",'" + escaped_field + "')", true);
 #else
@@ -418,7 +448,7 @@ void LorelineInterpreter::set_state_field(const String &field, const Variant &va
 	if (_js_id == 0) return;
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return;
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = loreline_escape_js(field);
 	String js_value;
 	switch (value.get_type()) {
 		case Variant::INT: js_value = String::num_int64(value); break;
@@ -426,7 +456,7 @@ void LorelineInterpreter::set_state_field(const String &field, const Variant &va
 		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
 		case Variant::STRING: {
 			String s = value;
-			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			js_value = "'" + loreline_escape_js(s) + "'";
 			break;
 		}
 		default: js_value = "null"; break;
@@ -450,7 +480,7 @@ Variant LorelineInterpreter::get_top_level_state_field(const String &field) {
 	if (_js_id == 0) return Variant();
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return Variant();
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = loreline_escape_js(field);
 	return js->eval("_lorelineBridge.getTopLevelStateField(" + String::num_int64(_js_id) +
 		",'" + escaped_field + "')", true);
 #else
@@ -470,7 +500,7 @@ void LorelineInterpreter::set_top_level_state_field(const String &field, const V
 	if (_js_id == 0) return;
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return;
-	String escaped_field = field.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_field = loreline_escape_js(field);
 	String js_value;
 	switch (value.get_type()) {
 		case Variant::INT: js_value = String::num_int64(value); break;
@@ -478,7 +508,7 @@ void LorelineInterpreter::set_top_level_state_field(const String &field, const V
 		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
 		case Variant::STRING: {
 			String s = value;
-			js_value = "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+			js_value = "'" + loreline_escape_js(s) + "'";
 			break;
 		}
 		default: js_value = "null"; break;

@@ -67,6 +67,8 @@ public:
 typedef struct Loreline_Script Loreline_Script;
 typedef struct Loreline_Interpreter Loreline_Interpreter;
 typedef struct Loreline_Translations Loreline_Translations;
+typedef struct Loreline_InterpreterOptions Loreline_InterpreterOptions;
+typedef struct Loreline_AsyncResolve Loreline_AsyncResolve;
 
 /* ── Value type (tagged union for character fields) ─────────────────────── */
 
@@ -150,6 +152,25 @@ typedef void (*Loreline_FileHandler)(
     void* userData
 );
 
+/* Sync custom function: called on the host thread, must return immediately. */
+typedef Loreline_Value (*Loreline_CustomFunction)(
+    Loreline_Interpreter* interp,
+    const Loreline_Value* args,
+    int argCount,
+    void* userData
+);
+
+/* Async custom function: called on the host thread, provides result later via resolve handle.
+ * Only works in statement context (not expressions/interpolation). */
+typedef void (*Loreline_AsyncCustomFunction)(
+    Loreline_Interpreter* interp,
+    const Loreline_Value* args,
+    int argCount,
+    Loreline_AsyncResolve* resolve,
+    void* userData
+);
+
+
 /* ── Core functions ─────────────────────────────────────────────────────── */
 
 /* Lifecycle */
@@ -178,6 +199,28 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
 LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Script* script);
 LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* translations);
 
+/* Interpreter options — configure custom functions, strict access, translations */
+LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);
+LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options);
+LORELINE_PUBLIC void Loreline_optionsSetStrictAccess(
+    Loreline_InterpreterOptions* options, bool strict);
+LORELINE_PUBLIC void Loreline_optionsSetTranslations(
+    Loreline_InterpreterOptions* options, Loreline_Translations* translations);
+LORELINE_PUBLIC void Loreline_optionsAddFunction(
+    Loreline_InterpreterOptions* options,
+    Loreline_String name,
+    Loreline_CustomFunction fn,
+    void* userData);
+LORELINE_PUBLIC void Loreline_optionsAddAsyncFunction(
+    Loreline_InterpreterOptions* options,
+    Loreline_String name,
+    Loreline_AsyncCustomFunction fn,
+    void* userData);
+/* Resolve an async custom function call. Can be called from any thread. */
+LORELINE_PUBLIC void Loreline_resolveAsync(
+    Loreline_AsyncResolve* resolve,
+    Loreline_Value result);
+
 /* Playback */
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_Script* script,
@@ -185,7 +228,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
     Loreline_String beatName,
-    Loreline_Translations* translations,
+    Loreline_InterpreterOptions* options,
     void* userData
 );
 
@@ -196,7 +239,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_FinishHandler onFinish,
     Loreline_String saveData,
     Loreline_String beatName,
-    Loreline_Translations* translations,
+    Loreline_InterpreterOptions* options,
     void* userData
 );
 

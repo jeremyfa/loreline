@@ -14,6 +14,8 @@
 
 using namespace godot;
 
+class LorelineOptions;
+
 class LorelineScript : public RefCounted {
 	GDCLASS(LorelineScript, RefCounted);
 
@@ -33,8 +35,8 @@ public:
 	LorelineScript();
 	~LorelineScript();
 
-	Ref<LorelineInterpreter> play(const String &beat_name = "");
-	Ref<LorelineInterpreter> resume(const String &save_data, const String &beat_name = "");
+	Ref<LorelineInterpreter> play(const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
+	Ref<LorelineInterpreter> resume(const String &save_data, const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 
 	Dictionary extract_translations();
 	String print_script();

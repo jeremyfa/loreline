@@ -1,7 +1,7 @@
 extends Control
 
 # Node references
-@onready var runtime: Loreline = $Loreline
+var loreline: Loreline = Loreline.shared()
 @onready var scroll_container: ScrollContainer = $ScrollContainer
 @onready var output_table: HBoxContainer = $ScrollContainer/MarginContainer/OutputTable
 @onready var content_column: VBoxContainer = $ScrollContainer/MarginContainer/OutputTable/ContentColumn
@@ -14,7 +14,6 @@ var font_italic: Font
 
 # State
 var script_data: LorelineScript
-var interpreter: LorelineInterpreter
 var bottom_spacer: Control
 
 # Colors
@@ -48,8 +47,9 @@ func _ready() -> void:
 	font_semibold = load("res://fonts/Outfit-SemiBold.ttf")
 	font_italic = load("res://fonts/Literata-Italic.ttf")
 	if font_regular == null or font_semibold == null or font_italic == null:
-		push_error("Loreline sample: missing font files in res://fonts/ (Outfit-Regular.ttf, Outfit-SemiBold.ttf, Literata-Italic.ttf)")
-		printerr("Loreline sample: missing font files in res://fonts/")
+		var err := "Loreline sample: missing font files in res://fonts/ (Outfit-Regular.ttf, Outfit-SemiBold.ttf, Literata-Italic.ttf)"
+		push_error(err)
+		printerr(err)
 		return
 
 	# Remove default ScrollContainer panel padding
@@ -67,14 +67,23 @@ func _ready() -> void:
 	var scroll_bg := StyleBoxEmpty.new()
 	scrollbar.add_theme_stylebox_override("scroll", scroll_bg)
 
-	var file := FileAccess.open("res://story/CoffeeShop.lor", FileAccess.READ)
-	if file == null:
-		push_error("Loreline sample: failed to open res://story/CoffeeShop.lor — " + str(FileAccess.get_open_error()))
-		printerr("Loreline sample: failed to open res://story/CoffeeShop.lor — ensure story files are present")
+	script_data = loreline.parse("res://story/CoffeeShop.lor")
+	if script_data == null:
+		var err := "Loreline sample: failed to parse res://story/CoffeeShop.lor"
+		push_error(err)
+		printerr(err)
 		return
-	var source := file.get_as_text()
-	file.close()
-	script_data = runtime.parse(source, "res://story/CoffeeShop.lor")
+
+	# To override how files are loaded (e.g. encrypted files, network, etc.),
+	# you can load the source manually and provide a file handler for imports:
+	#
+	# var file := FileAccess.open("res://story/CoffeeShop.lor", FileAccess.READ)
+	# var source := _decrypt(file.get_buffer(file.get_length()))
+	# file.close()
+	# script_data = loreline.parse(source, "res://story/CoffeeShop.lor", _handle_file)
+	#
+	# See _handle_file() below for the file handler example.
+
 	_start_story()
 
 
@@ -94,15 +103,12 @@ func _start_story() -> void:
 	bottom_spacer.custom_minimum_size.y = BOTTOM_PADDING
 	content_column.add_child(bottom_spacer)
 
-	interpreter = script_data.play("")
-	interpreter.dialogue.connect(_on_dialogue)
-	interpreter.choice.connect(_on_choice)
-	interpreter.finished.connect(_on_finished)
+	loreline.play(script_data, _on_dialogue, _on_choice, _on_finished)
 
 
 # --- Signal Handlers ---
 
-func _on_dialogue(character: String, text: String, _tags: Array) -> void:
+func _on_dialogue(interp: LorelineInterpreter, character: String, text: String, _tags: Array, advance: Callable) -> void:
 	# Add spacing before new dialogue if content exists (> 2 because of top_spacer + bottom_spacer)
 	if content_column.get_child_count() > 2:
 		var spacer := Control.new()
@@ -111,7 +117,7 @@ func _on_dialogue(character: String, text: String, _tags: Array) -> void:
 
 	if character != "":
 		# Resolve display name
-		var display_name: String = interpreter.get_character_field(character, "name")
+		var display_name: String = interp.get_character_field(character, "name")
 		if display_name != "":
 			character = display_name
 
@@ -144,10 +150,10 @@ func _on_dialogue(character: String, text: String, _tags: Array) -> void:
 
 	# Auto-advance after delay (matching Unity/web)
 	await get_tree().create_timer(DIALOGUE_DELAY).timeout
-	interpreter.advance()
+	advance.call()
 
 
-func _on_choice(options: Array) -> void:
+func _on_choice(interp: LorelineInterpreter, options: Array, select: Callable) -> void:
 	# Delay before showing choices (matching Unity/web)
 	await get_tree().create_timer(CHOICE_DELAY).timeout
 
@@ -207,7 +213,7 @@ func _on_choice(options: Array) -> void:
 
 		var index := i
 		var container_ref := choices_container
-		btn.pressed.connect(_on_choice_selected.bind(index, btn, container_ref))
+		btn.pressed.connect(_on_choice_selected.bind(index, btn, container_ref, select))
 
 		choices_container.add_child(btn)
 
@@ -222,7 +228,7 @@ func _on_choice(options: Array) -> void:
 	_smooth_scroll_to_bottom()
 
 
-func _on_choice_selected(index: int, selected_btn: Button, container: VBoxContainer) -> void:
+func _on_choice_selected(index: int, selected_btn: Button, container: VBoxContainer, select: Callable) -> void:
 	# Prevent double-clicks
 	for child in container.get_children():
 		if child is Button:
@@ -262,10 +268,10 @@ func _on_choice_selected(index: int, selected_btn: Button, container: VBoxContai
 	# Reset position offset — VBox now places button at top, so net visual change is zero
 	selected_btn.position.y = 0
 
-	interpreter.select(index)
+	select.call(index)
 
 
-func _on_finished() -> void:
+func _on_finished(interp: LorelineInterpreter) -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = SECTION_SPACING * 2
 	_add_content(spacer)
@@ -302,6 +308,13 @@ func _on_finished() -> void:
 	_fade_in(center)
 	_update_keeper()
 	_smooth_scroll_to_bottom()
+
+
+# File handler example for custom loading (encrypted files, network, etc.):
+# func _handle_file(path: String) -> String:
+# 	var f := FileAccess.open(path, FileAccess.READ)
+# 	if f == null: return ""
+# 	return _decrypt(f.get_buffer(f.get_length()))
 
 
 # --- Helpers ---

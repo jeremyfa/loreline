@@ -31,6 +31,9 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
     var _pendingAdvance = {};
     var _pendingSelect = {};
 
+    // Pending done callbacks for async custom function calls
+    var _pendingFunctionDone = {};
+
     // Pending file provide callbacks for async parse (requestId → provide fn)
     var _pendingFileProvides = {};
     var _nextFileRequestId = 1;
@@ -111,12 +114,93 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             _releaseObj(scriptId);
         },
 
-        play: function(scriptId, beatName) {
+        extractTranslations: function(scriptId) {
+            var script = _getObj(scriptId);
+            if (!script) return 0;
+            var translations = Loreline.extractTranslations(script);
+            if (!translations) return 0;
+            return _storeObj(translations);
+        },
+
+        releaseTranslations: function(translationsId) {
+            _releaseObj(translationsId);
+        },
+
+        provideFunctionDone: function(callId) {
+            var fn = _pendingFunctionDone[callId];
+            if (fn) {
+                delete _pendingFunctionDone[callId];
+                fn();
+            }
+        },
+
+        play: function(scriptId, beatName, optionsJson) {
             var script = _getObj(scriptId);
             if (!script) return 0;
             // Pre-allocate ID so callbacks use the correct interpId
             // (Loreline.play fires the first callback synchronously)
             var interpId = _nextId++;
+
+            // Build options if provided
+            var playOptions = null;
+            if (optionsJson) {
+                try {
+                    var parsed = JSON.parse(optionsJson);
+                    playOptions = {};
+                    if (parsed.strictAccess) playOptions.strictAccess = true;
+                    if (parsed.translationsId) {
+                        playOptions.translations = _getObj(parsed.translationsId);
+                    }
+                    if (parsed.functions && parsed.functions.length > 0) {
+                        if (!playOptions.functions) playOptions.functions = {};
+                        for (var fi = 0; fi < parsed.functions.length; fi++) {
+                            var fname = parsed.functions[fi];
+                            playOptions.functions[fname] = (function(n, iid) {
+                                return function(interpreter, args) {
+                                    var argsArr = [];
+                                    if (args) {
+                                        for (var ai = 0; ai < args.length; ai++) {
+                                            argsArr.push(args[ai]);
+                                        }
+                                    }
+                                    var resultJson = Module.ccall(
+                                        'loreline_call_host_function', 'string',
+                                        ['number', 'string', 'string'],
+                                        [iid, n, JSON.stringify(argsArr)]);
+                                    return JSON.parse(resultJson);
+                                };
+                            })(fname, interpId);
+                        }
+                    }
+                    if (parsed.asyncFunctions && parsed.asyncFunctions.length > 0) {
+                        if (!playOptions.functions) playOptions.functions = {};
+                        for (var fi = 0; fi < parsed.asyncFunctions.length; fi++) {
+                            var fname = parsed.asyncFunctions[fi];
+                            playOptions.functions[fname] = (function(n, iid) {
+                                return function(interpreter, args) {
+                                    return new loreline.Async(function(done) {
+                                        var callId = _nextFileRequestId++;
+                                        _pendingFunctionDone[callId] = done;
+                                        var argsArr = [];
+                                        if (args) {
+                                            for (var ai = 0; ai < args.length; ai++) {
+                                                argsArr.push(args[ai]);
+                                            }
+                                        }
+                                        _eventQueue.push({
+                                            type: "async_function_call",
+                                            interpId: iid,
+                                            callId: callId,
+                                            name: n,
+                                            args: argsArr
+                                        });
+                                    });
+                                };
+                            })(fname, interpId);
+                        }
+                    }
+                } catch(e) {}
+            }
 
             var interp = Loreline.play(
                 script,
@@ -177,7 +261,8 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                         interpId: interpId
                     });
                 },
-                beatName || null
+                beatName || null,
+                playOptions
             );
 
             if (!interp) {
@@ -189,11 +274,72 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             return interpId;
         },
 
-        resume: function(scriptId, saveData, beatName) {
+        resume: function(scriptId, saveData, beatName, optionsJson) {
             var script = _getObj(scriptId);
             if (!script) return 0;
             // Pre-allocate ID so callbacks use the correct interpId
             var interpId = _nextId++;
+
+            // Build options if provided
+            var resumeOptions = null;
+            if (optionsJson) {
+                try {
+                    var parsed = JSON.parse(optionsJson);
+                    resumeOptions = {};
+                    if (parsed.strictAccess) resumeOptions.strictAccess = true;
+                    if (parsed.translationsId) {
+                        resumeOptions.translations = _getObj(parsed.translationsId);
+                    }
+                    if (parsed.functions && parsed.functions.length > 0) {
+                        if (!resumeOptions.functions) resumeOptions.functions = {};
+                        for (var fi = 0; fi < parsed.functions.length; fi++) {
+                            var fname = parsed.functions[fi];
+                            resumeOptions.functions[fname] = (function(n, iid) {
+                                return function(interpreter, args) {
+                                    var argsArr = [];
+                                    if (args) {
+                                        for (var ai = 0; ai < args.length; ai++) {
+                                            argsArr.push(args[ai]);
+                                        }
+                                    }
+                                    var resultJson = Module.ccall(
+                                        'loreline_call_host_function', 'string',
+                                        ['number', 'string', 'string'],
+                                        [iid, n, JSON.stringify(argsArr)]);
+                                    return JSON.parse(resultJson);
+                                };
+                            })(fname, interpId);
+                        }
+                    }
+                    if (parsed.asyncFunctions && parsed.asyncFunctions.length > 0) {
+                        if (!resumeOptions.functions) resumeOptions.functions = {};
+                        for (var fi = 0; fi < parsed.asyncFunctions.length; fi++) {
+                            var fname = parsed.asyncFunctions[fi];
+                            resumeOptions.functions[fname] = (function(n, iid) {
+                                return function(interpreter, args) {
+                                    return new loreline.Async(function(done) {
+                                        var callId = _nextFileRequestId++;
+                                        _pendingFunctionDone[callId] = done;
+                                        var argsArr = [];
+                                        if (args) {
+                                            for (var ai = 0; ai < args.length; ai++) {
+                                                argsArr.push(args[ai]);
+                                            }
+                                        }
+                                        _eventQueue.push({
+                                            type: "async_function_call",
+                                            interpId: iid,
+                                            callId: callId,
+                                            name: n,
+                                            args: argsArr
+                                        });
+                                    });
+                                };
+                            })(fname, interpId);
+                        }
+                    }
+                } catch(e) {}
+            }
 
             var interp = Loreline.resume(
                 script,
@@ -255,7 +401,8 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                     });
                 },
                 saveData,
-                beatName || null
+                beatName || null,
+                resumeOptions
             );
 
             if (!interp) {

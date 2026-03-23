@@ -20,8 +20,6 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.098, 0.09, 0.122, 1)
 
-[node name="Loreline" type="Loreline" parent="."]
-
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15

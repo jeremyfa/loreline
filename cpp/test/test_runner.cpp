@@ -415,7 +415,7 @@ struct TestContext {
     /* For save/restore */
     std::string restoreInput;
     std::string filePath;
-    Loreline_Translations* translations;
+    Loreline_InterpreterOptions* options;
 };
 
 /* Forward declarations */
@@ -471,7 +471,7 @@ static void testDialogue(
             if (restoreScript) {
                 Loreline_Interpreter* resumed = Loreline_resume(
                     restoreScript, testDialogue, testChoice, testFinish,
-                    saveData, Loreline_String(), ctx->translations, ctx);
+                    saveData, Loreline_String(), ctx->options, ctx);
                 Loreline_releaseInterpreter(resumed);
                 Loreline_releaseScript(restoreScript);
             } else {
@@ -482,7 +482,7 @@ static void testDialogue(
         } else {
             Loreline_Interpreter* resumed = Loreline_resume(
                 ctx->parsedScript, testDialogue, testChoice, testFinish,
-                saveData, Loreline_String(), ctx->translations, ctx);
+                saveData, Loreline_String(), ctx->options, ctx);
             Loreline_releaseInterpreter(resumed);
         }
         return;
@@ -531,7 +531,7 @@ static void testChoice(
             if (restoreScript) {
                 Loreline_Interpreter* resumed = Loreline_resume(
                     restoreScript, testDialogue, testChoice, testFinish,
-                    saveData, Loreline_String(), ctx->translations, ctx);
+                    saveData, Loreline_String(), ctx->options, ctx);
                 Loreline_releaseInterpreter(resumed);
                 Loreline_releaseScript(restoreScript);
             } else {
@@ -542,7 +542,7 @@ static void testChoice(
         } else {
             Loreline_Interpreter* resumed = Loreline_resume(
                 ctx->parsedScript, testDialogue, testChoice, testFinish,
-                saveData, Loreline_String(), ctx->translations, ctx);
+                saveData, Loreline_String(), ctx->options, ctx);
             Loreline_releaseInterpreter(resumed);
         }
         return;
@@ -572,8 +572,9 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     TestResult result;
     result.expected = item.expected;
 
-    /* Build translations if needed */
+    /* Build translations and options if needed */
     Loreline_Translations* translations = nullptr;
+    Loreline_InterpreterOptions* options = nullptr;
     if (!item.translation.empty()) {
         std::string basePath = filePath.substr(0, filePath.size() - 4);
         std::string translationPath = basePath + "." + item.translation + ".lor";
@@ -588,6 +589,10 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
             if (translationScript) {
                 translations = Loreline_extractTranslations(translationScript);
                 Loreline_releaseScript(translationScript);
+                if (translations) {
+                    options = Loreline_createOptions();
+                    Loreline_optionsSetTranslations(options, translations);
+                }
             }
         }
     }
@@ -618,7 +623,7 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     ctx.parsedScript = nullptr;
     ctx.restoreInput = restoreInput;
     ctx.filePath = filePath;
-    ctx.translations = translations;
+    ctx.options = options;
 
     /* Parse and play */
     Loreline_Script* script = Loreline_parse(content.c_str(), filePath.c_str(), fileHandler, nullptr);
@@ -627,7 +632,7 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
         Loreline_Interpreter* interp = Loreline_play(
             script, testDialogue, testChoice, testFinish,
             item.beat.empty() ? Loreline_String() : Loreline_String(item.beat.c_str()),
-            translations, &ctx);
+            options, &ctx);
         if (interp) {
             Loreline_releaseInterpreter(interp);
         }
@@ -638,6 +643,9 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
         result.error = "Error parsing script";
     }
 
+    if (options) {
+        Loreline_releaseOptions(options);
+    }
     if (translations) {
         Loreline_releaseTranslations(translations);
     }

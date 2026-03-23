@@ -3,14 +3,36 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
+
 #ifdef LORELINE_USE_JS
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include "loreline_js_bundle.h"
 #include "loreline_js_bridge.h"
+#include "loreline_js_utils.h"
 #include "loreline_interpreter.h"
 #endif
+
+Loreline *Loreline::_singleton = nullptr;
+
+Loreline *Loreline::shared() {
+	if (_singleton) return _singleton;
+
+	_singleton = memnew(Loreline);
+	_singleton->set_name("Loreline");
+
+	// Add to scene tree root so the node gets READY/PROCESS notifications
+	// and survives scene changes
+	SceneTree *tree = SceneTree::get_singleton();
+	if (tree && tree->get_root()) {
+		tree->get_root()->call_deferred("add_child", _singleton);
+	}
+
+	return _singleton;
+}
 
 Loreline::Loreline()
 		: _initialized(false)
@@ -27,8 +49,11 @@ Loreline::~Loreline() {
 }
 
 void Loreline::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("parse", "source", "file_path"), &Loreline::parse, DEFVAL(""));
+	ClassDB::bind_static_method("Loreline", D_METHOD("shared"), &Loreline::shared);
+	ClassDB::bind_method(D_METHOD("parse", "source", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("provide_file", "path", "content"), &Loreline::provide_file);
+	ClassDB::bind_method(D_METHOD("play", "script", "on_dialogue", "on_choice", "on_finished", "beat_name", "options"), &Loreline::play, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
+	ClassDB::bind_method(D_METHOD("resume", "script", "on_dialogue", "on_choice", "on_finished", "save_data", "beat_name", "options"), &Loreline::resume, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 
 	ADD_SIGNAL(MethodInfo("file_requested",
 			PropertyInfo(Variant::STRING, "path")));
@@ -37,6 +62,18 @@ void Loreline::_bind_methods() {
 void Loreline::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			if (_singleton && _singleton != this) {
+				UtilityFunctions::push_warning("Loreline: shared instance already exists, this node will be ignored.");
+				return;
+			}
+			_singleton = this;
+
+			// If this node was placed in a scene (not via shared()), reparent
+			// to root viewport so it survives scene changes
+			if (get_parent() != get_tree()->get_root()) {
+				call_deferred("reparent", get_tree()->get_root());
+			}
+
 #ifdef LORELINE_USE_JS
 			if (!_js_loaded) {
 				JavaScriptBridge *js = JavaScriptBridge::get_singleton();
@@ -73,11 +110,12 @@ void Loreline::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (_initialized) {
+			if (_singleton == this && _initialized) {
 #ifndef LORELINE_USE_JS
 				Loreline_dispose();
 #endif
 				_initialized = false;
+				_singleton = nullptr;
 			}
 		} break;
 	}
@@ -97,6 +135,17 @@ void Loreline::_on_file_request(
 		CharString utf8 = content.utf8();
 		provide(Loreline_String(utf8.get_data()));
 		return;
+	}
+
+	// Try the user-provided file handler callable (if any)
+	if (ctx->file_handler.is_valid()) {
+		Variant result = ctx->file_handler.call(godot_path);
+		if (result.get_type() == Variant::STRING) {
+			String content = result;
+			CharString utf8 = content.utf8();
+			provide(Loreline_String(utf8.get_data()));
+			return;
+		}
 	}
 
 	// Emit signal to allow user to override
@@ -133,10 +182,26 @@ void Loreline::_on_file_request(
 }
 #endif
 
-Ref<LorelineScript> Loreline::parse(const String &source, const String &file_path) {
+Ref<LorelineScript> Loreline::parse(const String &source, const String &file_path, const Callable &file_handler) {
 	if (!_initialized) {
 		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
 		return Ref<LorelineScript>();
+	}
+
+	// Convenience: if source looks like a resource path and no file_path given, load it
+	String actual_source = source;
+	String actual_file_path = file_path;
+	if (actual_file_path.is_empty() &&
+			(source.begins_with("res://") || source.begins_with("user://"))) {
+		actual_file_path = source;
+		Ref<FileAccess> file = FileAccess::open(actual_file_path, FileAccess::READ);
+		if (file.is_valid()) {
+			actual_source = file->get_as_text();
+			file->close();
+		} else {
+			UtilityFunctions::push_error("Loreline: failed to open " + actual_file_path);
+			return Ref<LorelineScript>();
+		}
 	}
 
 #ifdef LORELINE_USE_JS
@@ -148,15 +213,15 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 
 	// Build JS call to parse, with file callback if we have a path
 	// Escape source and path for JS string literal
-	String escaped_source = source.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r");
-	String escaped_path = file_path.replace("\\", "\\\\").replace("'", "\\'");
+	String escaped_source = loreline_escape_js(actual_source);
+	String escaped_path = loreline_escape_js(actual_file_path);
 
 	String js_code;
-	if (!file_path.is_empty()) {
+	if (!actual_file_path.is_empty()) {
 		// Create a file callback that reads from Godot resources
 		// We pass file overrides and base_dir into JS scope
-		String base_dir = file_path.get_base_dir();
-		String escaped_base = base_dir.replace("\\", "\\\\").replace("'", "\\'");
+		String base_dir = actual_file_path.get_base_dir();
+		String escaped_base = loreline_escape_js(base_dir);
 
 		// Store file overrides as JSON for JS access
 		String overrides_json = "{}";
@@ -168,7 +233,7 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 				if (i > 0) overrides_json += ",";
 				String key = keys[i];
 				String val = _file_overrides[key];
-				overrides_json += "'" + key.replace("'", "\\'") + "':'" + val.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r") + "'";
+				overrides_json += "'" + loreline_escape_js(key) + "':'" + loreline_escape_js(val) + "'";
 			}
 			overrides_json += "}";
 		}
@@ -196,7 +261,7 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 		return script;
 	} else if (script_id == -1) {
 		// Async file loading — loop to handle file_request events
-		String base_dir = file_path.is_empty() ? String("res://") : file_path.get_base_dir();
+		String base_dir = actual_file_path.is_empty() ? String("res://") : actual_file_path.get_base_dir();
 		int final_script_id = 0;
 		int max_iterations = 1000; // Safety limit
 
@@ -226,20 +291,33 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 					int req_id = evt["requestId"];
 					String req_path = evt["path"];
 
-					// Resolve path and read with FileAccess
-					String full_path = req_path;
-					if (!full_path.begins_with("res://") && !full_path.begins_with("/")) {
-						full_path = base_dir.path_join(req_path);
+					String content_to_provide = "null";
+
+					// Try user-provided file handler first
+					if (file_handler.is_valid()) {
+						Variant handler_result = file_handler.call(req_path);
+						if (handler_result.get_type() == Variant::STRING) {
+							String content = handler_result;
+							String escaped = loreline_escape_js(content);
+							content_to_provide = "'" + escaped + "'";
+						}
 					}
 
-					String content_to_provide = "null";
-					if (FileAccess::file_exists(full_path)) {
-						Ref<FileAccess> file = FileAccess::open(full_path, FileAccess::READ);
-						if (file.is_valid()) {
-							String content = file->get_as_text();
-							file->close();
-							String escaped = content.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r");
-							content_to_provide = "'" + escaped + "'";
+					// Fall back to FileAccess if handler didn't provide content
+					if (content_to_provide == "null") {
+						String full_path = req_path;
+						if (!full_path.begins_with("res://") && !full_path.begins_with("/")) {
+							full_path = base_dir.path_join(req_path);
+						}
+
+						if (FileAccess::file_exists(full_path)) {
+							Ref<FileAccess> file = FileAccess::open(full_path, FileAccess::READ);
+							if (file.is_valid()) {
+								String content = file->get_as_text();
+								file->close();
+								String escaped = loreline_escape_js(content);
+								content_to_provide = "'" + escaped + "'";
+							}
 						}
 					}
 
@@ -270,19 +348,20 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 	return Ref<LorelineScript>();
 
 #else
-	CharString source_utf8 = source.utf8();
-	CharString path_utf8 = file_path.utf8();
+	CharString source_utf8 = actual_source.utf8();
+	CharString path_utf8 = actual_file_path.utf8();
 
 	// Set up the base directory for resolving imports
-	if (!file_path.is_empty()) {
-		_file_ctx.base_dir = file_path.get_base_dir();
+	if (!actual_file_path.is_empty()) {
+		_file_ctx.base_dir = actual_file_path.get_base_dir();
 	} else {
 		_file_ctx.base_dir = "res://";
 	}
 	_file_ctx.file_overrides.clear();
+	_file_ctx.file_handler = file_handler;
 
 	Loreline_String loreline_source = Loreline_String(source_utf8.get_data());
-	Loreline_String loreline_path = file_path.is_empty()
+	Loreline_String loreline_path = actual_file_path.is_empty()
 			? Loreline_String()
 			: Loreline_String(path_utf8.get_data());
 
@@ -310,4 +389,40 @@ void Loreline::provide_file(const String &path, const String &content) {
 #else
 	_file_ctx.file_overrides[path] = content;
 #endif
+}
+
+Ref<LorelineInterpreter> Loreline::play(const Ref<LorelineScript> &script, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, const String &beat_name, const Ref<LorelineOptions> &options) {
+	if (!_initialized) {
+		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
+		return Ref<LorelineInterpreter>();
+	}
+	if (script.is_null()) {
+		UtilityFunctions::push_error("Loreline: script is null.");
+		return Ref<LorelineInterpreter>();
+	}
+	Ref<LorelineInterpreter> interp = script->play(beat_name, options);
+	if (interp.is_valid()) {
+		if (on_dialogue.is_valid()) interp->connect("dialogue", on_dialogue);
+		if (on_choice.is_valid()) interp->connect("choice", on_choice);
+		if (on_finished.is_valid()) interp->connect("finished", on_finished);
+	}
+	return interp;
+}
+
+Ref<LorelineInterpreter> Loreline::resume(const Ref<LorelineScript> &script, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, const String &save_data, const String &beat_name, const Ref<LorelineOptions> &options) {
+	if (!_initialized) {
+		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
+		return Ref<LorelineInterpreter>();
+	}
+	if (script.is_null()) {
+		UtilityFunctions::push_error("Loreline: script is null.");
+		return Ref<LorelineInterpreter>();
+	}
+	Ref<LorelineInterpreter> interp = script->resume(save_data, beat_name, options);
+	if (interp.is_valid()) {
+		if (on_dialogue.is_valid()) interp->connect("dialogue", on_dialogue);
+		if (on_choice.is_valid()) interp->connect("choice", on_choice);
+		if (on_finished.is_valid()) interp->connect("finished", on_finished);
+	}
+	return interp;
 }

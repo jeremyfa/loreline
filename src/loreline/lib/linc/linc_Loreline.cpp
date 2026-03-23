@@ -16,6 +16,7 @@
 #include <loreline/Json.h>
 #include <loreline/InterpreterOptions.h>
 #include <loreline/Timer.h>
+#include <loreline/Async.h>
 #include <haxe/ds/StringMap.h>
 #include "Loreline.h"
 
@@ -235,6 +236,61 @@ private:
     Loreline_Translations& operator=(const Loreline_Translations&);
 };
 
+struct Loreline_AsyncResolve {
+    hx::Object* doneObj;
+
+    Loreline_AsyncResolve() : doneObj(nullptr) {}
+
+    void setDone(hx::Object* d) {
+        doneObj = d;
+        if (doneObj) hx::GCAddRoot(&doneObj);
+    }
+
+    ~Loreline_AsyncResolve() {
+        if (doneObj) {
+            hx::GCRemoveRoot(&doneObj);
+            doneObj = nullptr;
+        }
+    }
+
+private:
+    Loreline_AsyncResolve(const Loreline_AsyncResolve&);
+    Loreline_AsyncResolve& operator=(const Loreline_AsyncResolve&);
+};
+
+struct Loreline_InterpreterOptions {
+    bool strictAccess;
+    hx::Object* translationsObj; /* GC-rooted Haxe StringMap, or nullptr */
+
+    struct FunctionEntry {
+        std::string name;
+        Loreline_CustomFunction syncFn;
+        Loreline_AsyncCustomFunction asyncFn;
+        void* userData;
+    };
+    std::vector<FunctionEntry> functions;
+
+    Loreline_InterpreterOptions()
+        : strictAccess(false), translationsObj(nullptr) {}
+
+    void setTranslations(hx::Object* t) {
+        if (translationsObj) hx::GCRemoveRoot(&translationsObj);
+        translationsObj = t;
+        if (translationsObj) hx::GCAddRoot(&translationsObj);
+    }
+
+    ~Loreline_InterpreterOptions() {
+        if (translationsObj) {
+            hx::GCRemoveRoot(&translationsObj);
+            translationsObj = nullptr;
+        }
+    }
+
+private:
+    Loreline_InterpreterOptions(const Loreline_InterpreterOptions&);
+    Loreline_InterpreterOptions& operator=(const Loreline_InterpreterOptions&);
+};
+
 /* ── Conversion helpers ─────────────────────────────────────────────────── */
 
 static Loreline_String linc_hxToString(::String s) {
@@ -434,6 +490,30 @@ static void linc_Loreline_dispatchOut(std::function<void()> task) {
     }
 }
 
+/* Reverse sync dispatch: hxcpp thread → main thread, blocking.
+ * Used by sync custom functions in threaded mode (Android). */
+static void linc_Loreline_dispatchOutSync(std::function<void()> task) {
+    if (!linc_Loreline_useInternalThread) {
+        task();
+        return;
+    }
+    auto syncMutex = std::make_shared<std::mutex>();
+    auto syncCv = std::make_shared<std::condition_variable>();
+    auto completed = std::make_shared<bool>(false);
+
+    linc_Loreline_dispatchOutFunctions.add([task, syncMutex, syncCv, completed]() {
+        task();
+        {
+            std::lock_guard<std::mutex> lock(*syncMutex);
+            *completed = true;
+        }
+        syncCv->notify_one();
+    });
+
+    std::unique_lock<std::mutex> lock(*syncMutex);
+    syncCv->wait(lock, [completed]() { return *completed; });
+}
+
 /* ── Call macros ─────────────────────────────────────────────────────────── */
 
 #if defined(_MSC_VER)
@@ -489,12 +569,8 @@ LORELINE_PUBLIC void Loreline_dispose(void) {
     LORELINE_BEGIN_CALL
     Loreline_dispose_hx();
     LORELINE_END_CALL
-
-    if (linc_Loreline_thread) {
-        delete linc_Loreline_thread;
-        linc_Loreline_thread = nullptr;
-        linc_Loreline_useInternalThread = false;
-    }
+    // Thread is NOT destroyed — haxe must remain on its original thread.
+    // The thread sleeps on cv.wait() when idle, consuming no CPU.
 }
 
 static LORELINE_NOINLINE void Loreline_gc_hx() {
@@ -746,6 +822,71 @@ void _hx_run(::Dynamic hxPath, ::Dynamic hxCallback) {
 }
 HX_END_LOCAL_FUNC2((void))
 
+/* ── Custom function closures ──────────────────────────────────────────── */
+
+/* Sync custom function: dispatches to host thread (blocks in threaded mode) */
+HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_customFunction,
+    Loreline_CustomFunction, fn, void*, fnUserData,
+    Loreline_Interpreter*, h) HXARGC(2)
+::Dynamic _hx_run(::Dynamic hxInterp, ::Dynamic hxArgs) {
+    linc_ensureInterpHandle(h, hxInterp);
+
+    ::cpp::VirtualArray arr = (::cpp::VirtualArray)hxArgs;
+    int argCount = arr->get_length();
+    std::vector<Loreline_Value> cArgs(argCount);
+    for (int i = 0; i < argCount; i++) {
+        cArgs[i] = linc_hxToValue(arr->__get(i));
+    }
+
+    Loreline_Value result;
+    linc_Loreline_dispatchOutSync([&]() {
+        result = fn(h, cArgs.data(), argCount, fnUserData);
+    });
+
+    return linc_valueToHx(result);
+}
+HX_END_LOCAL_FUNC2(return)
+
+/* Async custom function body: receives done callback, dispatches to host */
+HX_BEGIN_LOCAL_FUNC_S4(::hx::LocalFunc, _hx_Closure_asyncFuncBody,
+    Loreline_AsyncCustomFunction, fn, void*, fnUserData,
+    Loreline_Interpreter*, h,
+    std::shared_ptr<std::vector<Loreline_Value> >, capturedArgs) HXARGC(1)
+void _hx_run(::Dynamic hxDone) {
+    auto resolve = new Loreline_AsyncResolve();
+    resolve->setDone(hxDone.GetPtr());
+
+    auto args = capturedArgs;
+    auto cFn = fn;
+    auto cUserData = fnUserData;
+    auto cH = h;
+
+    LORELINE_BEGIN_DISPATCH_OUT
+    cFn(cH, args->data(), (int)args->size(), resolve, cUserData);
+    LORELINE_END_DISPATCH_OUT
+}
+HX_END_LOCAL_FUNC1((void))
+
+/* Async custom function: returns loreline.Async to pause interpreter */
+HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_asyncCustomFunction,
+    Loreline_AsyncCustomFunction, fn, void*, fnUserData,
+    Loreline_Interpreter*, h) HXARGC(2)
+::Dynamic _hx_run(::Dynamic hxInterp, ::Dynamic hxArgs) {
+    linc_ensureInterpHandle(h, hxInterp);
+
+    ::cpp::VirtualArray arr = (::cpp::VirtualArray)hxArgs;
+    int argCount = arr->get_length();
+    auto cArgs = std::make_shared<std::vector<Loreline_Value> >(argCount);
+    for (int i = 0; i < argCount; i++) {
+        (*cArgs)[i] = linc_hxToValue(arr->__get(i));
+    }
+
+    ::Dynamic asyncFunc = ::Dynamic(
+        new _hx_Closure_asyncFuncBody(fn, fnUserData, h, cArgs));
+    return ::loreline::Async_obj::__new(asyncFunc);
+}
+HX_END_LOCAL_FUNC2(return)
+
 /* ── Parse ──────────────────────────────────────────────────────────────── */
 
 static LORELINE_NOINLINE void Loreline_parse_hx(
@@ -839,7 +980,7 @@ LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* transla
 
 static LORELINE_NOINLINE void Loreline_play_hx(
     Loreline_Interpreter* h, ::Dynamic hxScript,
-    Loreline_String beatName, hx::Object* translationsObj
+    Loreline_String beatName, Loreline_InterpreterOptions* opts
 ) {
     LORELINE_HX_BEGIN
 
@@ -849,9 +990,40 @@ static LORELINE_NOINLINE void Loreline_play_hx(
     ::Dynamic hxFinishHandler = ::Dynamic(new _hx_Closure_finish(h));
 
     ::Dynamic hxOptions = null();
-    if (translationsObj) {
-        ::haxe::ds::StringMap hxTranslations = (::haxe::ds::StringMap)::Dynamic(translationsObj);
-        hxOptions = ::loreline::InterpreterOptions_obj::__new(null(), null(), null(), hxTranslations, null());
+    if (opts) {
+        /* Build Haxe functions StringMap from C entries */
+        ::Dynamic hxFunctions = null();
+        if (!opts->functions.empty()) {
+            ::haxe::ds::StringMap map = ::haxe::ds::StringMap_obj::__new();
+            for (size_t i = 0; i < opts->functions.size(); i++) {
+                const auto& entry = opts->functions[i];
+                ::Dynamic hxFunc;
+                if (entry.syncFn) {
+                    hxFunc = ::Dynamic(
+                        new _hx_Closure_customFunction(entry.syncFn, entry.userData, h));
+                } else {
+                    hxFunc = ::Dynamic(
+                        new _hx_Closure_asyncCustomFunction(entry.asyncFn, entry.userData, h));
+                }
+                map->set(::String(entry.name.c_str()), hxFunc);
+            }
+            hxFunctions = map;
+        }
+
+        ::Dynamic hxTranslations = opts->translationsObj
+            ? ::Dynamic(opts->translationsObj) : null();
+
+        /* customCreateFields is not meaningfully bridgeable through the C API
+         * since it returns Haxe-internal field objects. Passing null causes
+         * the interpreter to use its default field creation, which is correct. */
+
+        hxOptions = ::loreline::InterpreterOptions_obj::__new(
+            hxFunctions,
+            opts->strictAccess,
+            null(), /* customCreateFields — not exposed through C API */
+            hxTranslations,
+            null()  /* stringLiteralProcessors — not exposed */
+        );
     }
 
     try {
@@ -872,7 +1044,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
     Loreline_String beatName,
-    Loreline_Translations* translations,
+    Loreline_InterpreterOptions* options,
     void* userData
 ) {
     if (!script) return nullptr;
@@ -885,10 +1057,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
-    hx::Object* translationsObj = translations ? translations->obj : nullptr;
 
     LORELINE_BEGIN_CALL
-    Loreline_play_hx(h, hxScript, beatName, translationsObj);
+    Loreline_play_hx(h, hxScript, beatName, options);
     LORELINE_END_CALL
 
     return handle;
@@ -899,7 +1070,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
 static LORELINE_NOINLINE void Loreline_resume_hx(
     Loreline_Interpreter* h, ::Dynamic hxScript,
     Loreline_String saveData, Loreline_String beatName,
-    hx::Object* translationsObj
+    Loreline_InterpreterOptions* opts
 ) {
     LORELINE_HX_BEGIN
 
@@ -912,9 +1083,35 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
     ::Dynamic hxFinishHandler = ::Dynamic(new _hx_Closure_finish(h));
 
     ::Dynamic hxOptions = null();
-    if (translationsObj) {
-        ::haxe::ds::StringMap hxTranslations = (::haxe::ds::StringMap)::Dynamic(translationsObj);
-        hxOptions = ::loreline::InterpreterOptions_obj::__new(null(), null(), null(), hxTranslations, null());
+    if (opts) {
+        ::Dynamic hxFunctions = null();
+        if (!opts->functions.empty()) {
+            ::haxe::ds::StringMap map = ::haxe::ds::StringMap_obj::__new();
+            for (size_t i = 0; i < opts->functions.size(); i++) {
+                const auto& entry = opts->functions[i];
+                ::Dynamic hxFunc;
+                if (entry.syncFn) {
+                    hxFunc = ::Dynamic(
+                        new _hx_Closure_customFunction(entry.syncFn, entry.userData, h));
+                } else {
+                    hxFunc = ::Dynamic(
+                        new _hx_Closure_asyncCustomFunction(entry.asyncFn, entry.userData, h));
+                }
+                map->set(::String(entry.name.c_str()), hxFunc);
+            }
+            hxFunctions = map;
+        }
+
+        ::Dynamic hxTranslations = opts->translationsObj
+            ? ::Dynamic(opts->translationsObj) : null();
+
+        hxOptions = ::loreline::InterpreterOptions_obj::__new(
+            hxFunctions,
+            opts->strictAccess,
+            null(),
+            hxTranslations,
+            null()
+        );
     }
 
     try {
@@ -937,7 +1134,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_FinishHandler onFinish,
     Loreline_String saveData,
     Loreline_String beatName,
-    Loreline_Translations* translations,
+    Loreline_InterpreterOptions* options,
     void* userData
 ) {
     if (!script || saveData.isNull()) return nullptr;
@@ -950,10 +1147,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
-    hx::Object* translationsObj = translations ? translations->obj : nullptr;
 
     LORELINE_BEGIN_CALL
-    Loreline_resume_hx(h, hxScript, saveData, beatName, translationsObj);
+    Loreline_resume_hx(h, hxScript, saveData, beatName, options);
     LORELINE_END_CALL
 
     return handle;
@@ -1267,6 +1463,82 @@ LORELINE_PUBLIC Loreline_Script* Loreline_scriptFromJson(Loreline_String json) {
     LORELINE_END_CALL
 
     return handle;
+}
+
+/* ── Interpreter options ────────────────────────────────────────────────── */
+
+LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void) {
+    return new Loreline_InterpreterOptions();
+}
+
+static LORELINE_NOINLINE void Loreline_releaseOptions_hx(Loreline_InterpreterOptions* options) {
+    LORELINE_HX_BEGIN
+    delete options;
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options) {
+    if (!options) return;
+    LORELINE_BEGIN_CALL
+    Loreline_releaseOptions_hx(options);
+    LORELINE_END_CALL
+}
+
+LORELINE_PUBLIC void Loreline_optionsSetStrictAccess(
+    Loreline_InterpreterOptions* options, bool strict
+) {
+    if (options) options->strictAccess = strict;
+}
+
+LORELINE_PUBLIC void Loreline_optionsSetTranslations(
+    Loreline_InterpreterOptions* options, Loreline_Translations* translations
+) {
+    if (options) options->setTranslations(translations ? translations->obj : nullptr);
+}
+
+LORELINE_PUBLIC void Loreline_optionsAddFunction(
+    Loreline_InterpreterOptions* options, Loreline_String name,
+    Loreline_CustomFunction fn, void* userData
+) {
+    if (options && fn && !name.isNull()) {
+        Loreline_InterpreterOptions::FunctionEntry entry;
+        entry.name = std::string(name.c_str());
+        entry.syncFn = fn;
+        entry.asyncFn = nullptr;
+        entry.userData = userData;
+        options->functions.push_back(entry);
+    }
+}
+
+LORELINE_PUBLIC void Loreline_optionsAddAsyncFunction(
+    Loreline_InterpreterOptions* options, Loreline_String name,
+    Loreline_AsyncCustomFunction fn, void* userData
+) {
+    if (options && fn && !name.isNull()) {
+        Loreline_InterpreterOptions::FunctionEntry entry;
+        entry.name = std::string(name.c_str());
+        entry.syncFn = nullptr;
+        entry.asyncFn = fn;
+        entry.userData = userData;
+        options->functions.push_back(entry);
+    }
+}
+
+LORELINE_PUBLIC void Loreline_resolveAsync(
+    Loreline_AsyncResolve* resolve, Loreline_Value result
+) {
+    if (!resolve || !resolve->doneObj) return;
+    hx::Object* doneObj = resolve->doneObj;
+    resolve->doneObj = nullptr;
+
+    LORELINE_BEGIN_CALL
+    LORELINE_HX_BEGIN
+    ::Dynamic(doneObj)->__run();
+    hx::GCRemoveRoot(&doneObj);
+    LORELINE_HX_END
+    LORELINE_END_CALL
+
+    delete resolve;
 }
 
 /* ── Resource release ───────────────────────────────────────────────────── */
