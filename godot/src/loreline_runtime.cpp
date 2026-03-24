@@ -450,14 +450,12 @@ Ref<LorelineInterpreter> Loreline::resume(const Ref<LorelineScript> &script, con
 
 void Loreline::_retain_interpreter(const Ref<LorelineInterpreter> &interp) {
 	_active_interpreters.push_back(interp);
-	UtilityFunctions::print("[Loreline] Retained interpreter (active count: ", _active_interpreters.size(), ")");
 }
 
 void Loreline::_release_interpreter(LorelineInterpreter *interp) {
 	for (int i = 0; i < _active_interpreters.size(); i++) {
 		if (_active_interpreters[i].ptr() == interp) {
 			_active_interpreters.remove_at(i);
-			UtilityFunctions::print("[Loreline] Released interpreter (active count: ", _active_interpreters.size(), ")");
 			return;
 		}
 	}

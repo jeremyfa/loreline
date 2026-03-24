@@ -76,11 +76,9 @@ LorelineInterpreter::LorelineInterpreter()
 		: _interp(nullptr), _pending_advance(nullptr), _pending_select(nullptr)
 #endif
 {
-	UtilityFunctions::print("[Loreline] Interpreter created: ", Variant((uint64_t)this));
 }
 
 LorelineInterpreter::~LorelineInterpreter() {
-	UtilityFunctions::print("[Loreline] Interpreter destroyed: ", Variant((uint64_t)this));
 	// Remove from active list if still there (user dropped ref before finish)
 	Loreline::_release_active_interpreter(this);
 
@@ -278,8 +276,6 @@ void LorelineInterpreter::_on_finish(
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);
 	self->_pending_advance = nullptr;
 	self->_pending_select = nullptr;
-
-	UtilityFunctions::print("[Loreline] Script finished, cleaning up interpreter: ", Variant((uint64_t)self));
 
 	// Keep alive through signal emission via _self_ref, then clean up
 	Loreline::_release_active_interpreter(self);

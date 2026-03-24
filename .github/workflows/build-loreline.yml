@@ -1414,7 +1414,6 @@ jobs:
           rm -f loreline-godot-pkg/sample/.gitattributes
           rm -f loreline-godot-pkg/sample/.gitignore
           rm -f loreline-godot-pkg/sample/.editorconfig
-          rm -f loreline-godot-pkg/sample/export_presets.cfg
           find loreline-godot-pkg/sample -name "*.import" -delete
           find loreline-godot-pkg/sample -name "*.uid" -delete
           # Copy extension into sample so it's ready to use
