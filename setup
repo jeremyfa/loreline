@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from 'node:crypto';
 import { execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -165,6 +166,7 @@ async function main() {
     let buildGodotIos = rawArgs.indexOf('--godot-ios') != -1;
     let buildGodotAndroid = rawArgs.indexOf('--godot-android') != -1;
     let buildGodotWasm = rawArgs.indexOf('--godot-wasm') != -1;
+    let buildUnityPackage = rawArgs.indexOf('--unity-package') != -1;
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
@@ -1597,7 +1599,7 @@ async function main() {
             console.log('Set up sample: loreline-unity');
 
             const unityPluginDir = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Plugins', 'Loreline');
-            const unityResourceDir = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Resources');
+            const unityResourceDir = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Resources', 'Story');
             const csSrcDir = path.join(__dirname, 'cs', 'Loreline');
 
             // Copy C# plugin files
@@ -1612,14 +1614,14 @@ async function main() {
                 console.log('  cs/Loreline/ → sample/loreline-unity/Assets/Plugins/Loreline/');
             }
 
-            // Copy story files as .lor.txt (Unity convention)
+            // Copy story files
             fs.mkdirSync(unityResourceDir, { recursive: true });
             for (const name of ['CoffeeShop.lor', 'characters.lor']) {
                 fs.copyFileSync(
                     path.join(__dirname, 'sample', name),
-                    path.join(unityResourceDir, name + '.txt')
+                    path.join(unityResourceDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-unity/Assets/Resources/' + name + '.txt');
+                console.log('  sample/' + name + ' → sample/loreline-unity/Assets/Resources/' + name);
             }
         }
 
@@ -1904,6 +1906,124 @@ async function main() {
             }
         }
 
+    }
+
+    // ── Build Unity package ─────────────────────────────────────────────────
+    //
+    // Creates a .unitypackage containing the Loreline C# library and
+    // a ScriptedImporter for .lor files.
+
+    if (buildUnityPackage) {
+        console.log('Build Unity package');
+
+        const csSrcDir = path.join(__dirname, 'cs', 'Loreline');
+        if (!fs.existsSync(path.join(csSrcDir, 'Internal'))) {
+            console.error('  Error: cs/Loreline/Internal/ not found — run --cs first');
+            process.exit(1);
+        }
+
+        const importerSrc = path.join(__dirname, 'sample', 'loreline-unity', 'Assets', 'Plugins', 'Loreline', 'Editor', 'LorelineImporter.cs');
+        if (!fs.existsSync(importerSrc)) {
+            console.error('  Error: LorelineImporter.cs not found');
+            process.exit(1);
+        }
+
+        const tempDir = path.join(__dirname, '.unity-package-temp-' + Date.now());
+        const stagingDir = path.join(tempDir, 'staging');
+        const packageDir = path.join(tempDir, 'package');
+        const outputPath = path.join(__dirname, 'loreline.unitypackage');
+
+        try {
+            // Stage files: Assets/Plugins/Loreline/...
+            const pluginDst = path.join(stagingDir, 'Assets', 'Plugins', 'Loreline');
+            fs.cpSync(csSrcDir, pluginDst, { recursive: true });
+
+            // Copy the importer into Editor/
+            const editorDst = path.join(pluginDst, 'Editor');
+            fs.mkdirSync(editorDst, { recursive: true });
+            fs.copyFileSync(importerSrc, path.join(editorDst, 'LorelineImporter.cs'));
+
+            // Build .unitypackage structure
+            fs.mkdirSync(packageDir, { recursive: true });
+
+            function generateGuid(assetPath) {
+                return crypto.createHash('md5').update(assetPath + ' ~ GUID', 'utf8').digest('hex');
+            }
+
+            function generateFileMeta(guid, isCs) {
+                if (isCs) {
+                    return `fileFormatVersion: 2\nguid: ${guid}\nMonoImporter:\n  serializedVersion: 2\n  defaultReferences: []\n  executionOrder: 0\n  icon: {instanceID: 0}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n`;
+                }
+                return `fileFormatVersion: 2\nguid: ${guid}\nDefaultImporter:\n  userData: \n`;
+            }
+
+            function generateDirMeta(guid) {
+                return `fileFormatVersion: 2\nguid: ${guid}\nfolderAsset: yes\nDefaultImporter:\n  userData: \n`;
+            }
+
+            function addAssetToPackage(assetPath, filePath) {
+                // assetPath: e.g. "Assets/Plugins/Loreline/Internal/Foo.cs"
+                // filePath: absolute path to the file on disk (null for directories)
+                const guid = generateGuid(assetPath);
+                const guidDir = path.join(packageDir, guid);
+                fs.mkdirSync(guidDir, { recursive: true });
+                fs.writeFileSync(path.join(guidDir, 'pathname'), assetPath);
+
+                if (filePath === null) {
+                    // Directory
+                    fs.writeFileSync(path.join(guidDir, 'asset.meta'), generateDirMeta(guid));
+                } else {
+                    // File
+                    fs.copyFileSync(filePath, path.join(guidDir, 'asset'));
+                    const isCs = assetPath.endsWith('.cs');
+                    fs.writeFileSync(path.join(guidDir, 'asset.meta'), generateFileMeta(guid, isCs));
+                }
+            }
+
+            // Recursively add all staged files and directories
+            function addDirectory(dirPath, assetsPrefix) {
+                // Add the directory itself
+                addAssetToPackage(assetsPrefix, null);
+
+                const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+                // Process files first
+                for (const entry of entries) {
+                    if (entry.isFile()) {
+                        const fullPath = path.join(dirPath, entry.name);
+                        const assetPath = assetsPrefix + '/' + entry.name;
+                        addAssetToPackage(assetPath, fullPath);
+                    }
+                }
+
+                // Process subdirectories
+                for (const entry of entries) {
+                    if (entry.isDirectory()) {
+                        const fullPath = path.join(dirPath, entry.name);
+                        const assetPath = assetsPrefix + '/' + entry.name;
+                        addDirectory(fullPath, assetPath);
+                    }
+                }
+            }
+
+            // Add parent directories: Assets, Assets/Plugins
+            addAssetToPackage('Assets', null);
+            addAssetToPackage('Assets/Plugins', null);
+
+            // Add the Loreline plugin tree
+            addDirectory(pluginDst, 'Assets/Plugins/Loreline');
+
+            // Create tar.gz
+            await command('tar', ['-czf', outputPath, '.'], { cwd: packageDir });
+
+            console.log('  Created: loreline.unitypackage');
+
+        } finally {
+            // Clean up temp directory
+            if (fs.existsSync(tempDir)) {
+                fs.rmSync(tempDir, { recursive: true, force: true });
+            }
+        }
     }
 
     // ── Run all test suites ─────────────────────────────────────────────────

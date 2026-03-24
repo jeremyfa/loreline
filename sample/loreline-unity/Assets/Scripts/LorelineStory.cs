@@ -121,10 +121,10 @@ public class LorelineStory : MonoBehaviour
         heightKeeper.style.height = 0;
 
         // Load and play story
-        TextAsset mainAsset = Resources.Load<TextAsset>("CoffeeShop.lor");
+        TextAsset mainAsset = Resources.Load<TextAsset>("Story/CoffeeShop");
         if (mainAsset == null)
         {
-            Debug.LogError("Could not load CoffeeShop.lor.txt from Resources!");
+            Debug.LogError("Could not load CoffeeShop.lor from Resources/Story!");
             return;
         }
 
@@ -137,8 +137,8 @@ public class LorelineStory : MonoBehaviour
 
     void HandleFile(string path, Engine.ImportsFileCallback callback)
     {
-        string name = Path.GetFileNameWithoutExtension(path) + ".lor";
-        TextAsset asset = Resources.Load<TextAsset>(name);
+        string name = Path.GetFileNameWithoutExtension(path);
+        TextAsset asset = Resources.Load<TextAsset>("Story/" + name);
         callback(asset != null ? asset.text : null);
     }
 

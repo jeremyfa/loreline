@@ -885,9 +885,11 @@ jobs:
           mkdir -p cs/Loreline
           cp -r cs-temp/Loreline/* cs/Loreline/
           node ./setup --sample unity
+          node ./setup --unity-package
 
       - name: Create zip archive
         run: |
+          cp loreline.unitypackage sample/loreline-unity/
           cd sample/loreline-unity
           zip -r ../../loreline-unity.zip . \
             -x 'Library/*' 'Temp/*' \
@@ -900,6 +902,14 @@ jobs:
           retention-days: 1
           name: loreline-unity.zip
           path: loreline-unity.zip
+          compression-level: 0
+
+      - name: Upload Unity Package
+        uses: actions/upload-artifact@v6
+        with:
+          retention-days: 1
+          name: loreline.unitypackage
+          path: loreline.unitypackage
           compression-level: 0
 
 
@@ -1716,6 +1726,12 @@ jobs:
           name: loreline-unity.zip
           path: .
 
+      - name: Download loreline.unitypackage
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline.unitypackage
+          path: .
+
       - name: Download loreline-web.zip
         uses: actions/download-artifact@v7
         with:
@@ -1801,6 +1817,7 @@ jobs:
             loreline-js.zip
             loreline-csharp.zip
             loreline-unity.zip
+            loreline.unitypackage
             loreline-web.zip
             loreline-python.zip
             loreline-lua.zip
