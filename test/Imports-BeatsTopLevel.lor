@@ -1,0 +1,11 @@
+
+import imports/shared-beat
+
+This is top-level content from the main file.
+
+/*
+<test>
+- expected: |
+    ~ This is top-level content from the main file.
+</test>
+*/

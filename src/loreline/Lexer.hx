@@ -2306,6 +2306,15 @@ class Token {
                 if (cc == "\n".code) {
                     break;
                 }
+                // Stop before comment delimiters
+                if (cc == "/".code && pos + 1 < length) {
+                    final next = input.uCharCodeAt(pos + 1);
+                    if (next == "/".code || next == "*".code) break;
+                }
+                if (cc == "#".code && pos + 1 < length) {
+                    final next = input.uCharCodeAt(pos + 1);
+                    if (isIdentifierPart(next) || next == "-".code) break;
+                }
                 buf.addChar(cc);
                 pos++;
             }

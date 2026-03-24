@@ -714,23 +714,32 @@ typedef InterpreterOptions = {
             }
         }
         else {
-            // Check if there is an implicit beat named "_"
-            for (decl in script) {
-                if (decl is NBeatDecl) {
-                    final beat:NBeatDecl = cast decl;
+            // Look for default beat in root file first (not flattened imports)
+            for (node in script.body) {
+                if (node is NBeatDecl) {
+                    final beat:NBeatDecl = cast node;
                     if (beat.name == "_") {
                         resolvedBeat = beat;
+                        break;
                     }
-                    break;
+                    if (resolvedBeat == null) {
+                        resolvedBeat = beat;
+                    }
                 }
             }
 
+            // Fall back to flattened script (includes imports) if root has no beats
             if (resolvedBeat == null) {
-                // Find first beat if there is no "_"
                 for (decl in script) {
                     if (decl is NBeatDecl) {
-                        resolvedBeat = cast decl;
-                        break;
+                        final beat:NBeatDecl = cast decl;
+                        if (beat.name == "_") {
+                            resolvedBeat = beat;
+                            break;
+                        }
+                        if (resolvedBeat == null) {
+                            resolvedBeat = beat;
+                        }
                     }
                 }
             }

@@ -1,0 +1,15 @@
+
+import imports/shared-beat
+
+beat MainBeat
+  This is from the main file.
+
+/*
+<test>
+- expected: |
+    ~ This is from the main file.
+- beat: ImportedBeat
+  expected: |
+    ~ This is from the imported file.
+</test>
+*/

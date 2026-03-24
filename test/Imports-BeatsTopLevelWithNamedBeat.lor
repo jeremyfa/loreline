@@ -1,0 +1,14 @@
+
+import imports/shared-beat
+
+Top-level content.
+
+beat AnotherBeat
+  You should not see this.
+
+/*
+<test>
+- expected: |
+    ~ Top-level content.
+</test>
+*/
