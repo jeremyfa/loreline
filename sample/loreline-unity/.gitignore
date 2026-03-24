@@ -7,5 +7,6 @@
 /Builds/
 
 # Generated files — copied by CI from cs/Loreline/ and sample/
-/Assets/Plugins/Loreline/
+/Assets/Plugins/Loreline/*
+!/Assets/Plugins/Loreline/Editor/
 /Assets/Resources/Story/

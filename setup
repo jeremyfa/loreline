@@ -1606,9 +1606,12 @@ async function main() {
             if (!fs.existsSync(path.join(csSrcDir, 'Internal'))) {
                 console.warn('  Warning: cs/Loreline/Internal/ not found — run --cs first');
             } else {
-                // Clear stale plugin files, then copy fresh
+                // Clear stale plugin files, then copy fresh (preserve Editor/)
                 if (fs.existsSync(unityPluginDir)) {
-                    fs.rmSync(unityPluginDir, { recursive: true, force: true });
+                    for (const entry of fs.readdirSync(unityPluginDir)) {
+                        if (entry === 'Editor') continue;
+                        fs.rmSync(path.join(unityPluginDir, entry), { recursive: true, force: true });
+                    }
                 }
                 fs.cpSync(csSrcDir, unityPluginDir, { recursive: true });
                 console.log('  cs/Loreline/ → sample/loreline-unity/Assets/Plugins/Loreline/');
