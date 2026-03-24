@@ -25,11 +25,32 @@ Loreline *Loreline::shared() {
 	_singleton = memnew(Loreline);
 	_singleton->set_name("Loreline");
 
-	// Add to scene tree root so the node gets READY/PROCESS notifications
-	// and survives scene changes
+	// Add to scene tree root so the node gets PROCESS notifications
+	// and survives scene changes. Must be immediate (not deferred)
+	// so the singleton is usable right away from GDScript _ready().
 	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (tree && tree->get_root()) {
-		tree->get_root()->call_deferred("add_child", _singleton);
+		tree->get_root()->add_child(_singleton);
+	}
+
+	// Initialize the runtime immediately
+	if (!_singleton->_initialized) {
+#ifdef LORELINE_USE_JS
+		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+		if (js) {
+			js->eval(String::utf8(LORELINE_JS_BUNDLE), true);
+			js->eval(String::utf8(LORELINE_JS_BRIDGE), true);
+			_singleton->_js_loaded = true;
+		}
+#else
+#ifdef ANDROID_ENABLED
+		Loreline_createThread();
+#endif
+		Loreline_init();
+		Loreline_update(0);
+#endif
+		_singleton->_initialized = true;
+		_singleton->set_process(true);
 	}
 
 	return _singleton;
@@ -63,17 +84,14 @@ void Loreline::_bind_methods() {
 void Loreline::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			// Already initialized by shared() — nothing to do
+			if (_initialized) break;
+
 			if (_singleton && _singleton != this) {
 				UtilityFunctions::push_warning("Loreline: shared instance already exists, this node will be ignored.");
 				return;
 			}
 			_singleton = this;
-
-			// If this node was placed in a scene (not via shared()), reparent
-			// to root viewport so it survives scene changes
-			if (get_parent() != get_tree()->get_root()) {
-				call_deferred("reparent", get_tree()->get_root());
-			}
 
 #ifdef LORELINE_USE_JS
 			if (!_js_loaded) {
@@ -403,6 +421,7 @@ Ref<LorelineInterpreter> Loreline::play(const Ref<LorelineScript> &script, const
 	}
 	Ref<LorelineInterpreter> interp = script->play(beat_name, options);
 	if (interp.is_valid()) {
+		_retain_interpreter(interp);
 		if (on_dialogue.is_valid()) interp->connect("dialogue", on_dialogue);
 		if (on_choice.is_valid()) interp->connect("choice", on_choice);
 		if (on_finished.is_valid()) interp->connect("finished", on_finished);
@@ -421,9 +440,31 @@ Ref<LorelineInterpreter> Loreline::resume(const Ref<LorelineScript> &script, con
 	}
 	Ref<LorelineInterpreter> interp = script->resume(save_data, beat_name, options);
 	if (interp.is_valid()) {
+		_retain_interpreter(interp);
 		if (on_dialogue.is_valid()) interp->connect("dialogue", on_dialogue);
 		if (on_choice.is_valid()) interp->connect("choice", on_choice);
 		if (on_finished.is_valid()) interp->connect("finished", on_finished);
 	}
 	return interp;
+}
+
+void Loreline::_retain_interpreter(const Ref<LorelineInterpreter> &interp) {
+	_active_interpreters.push_back(interp);
+	UtilityFunctions::print("[Loreline] Retained interpreter (active count: ", _active_interpreters.size(), ")");
+}
+
+void Loreline::_release_interpreter(LorelineInterpreter *interp) {
+	for (int i = 0; i < _active_interpreters.size(); i++) {
+		if (_active_interpreters[i].ptr() == interp) {
+			_active_interpreters.remove_at(i);
+			UtilityFunctions::print("[Loreline] Released interpreter (active count: ", _active_interpreters.size(), ")");
+			return;
+		}
+	}
+}
+
+void Loreline::_release_active_interpreter(LorelineInterpreter *interp) {
+	if (_singleton) {
+		_singleton->_release_interpreter(interp);
+	}
 }

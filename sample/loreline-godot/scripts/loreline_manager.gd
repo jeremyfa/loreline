@@ -1,7 +1,9 @@
 extends Control
 
-# Node references
+# Loreline runtime
 var loreline: Loreline = Loreline.shared()
+
+# Node references
 @onready var scroll_container: ScrollContainer = $ScrollContainer
 @onready var output_table: HBoxContainer = $ScrollContainer/MarginContainer/OutputTable
 @onready var content_column: VBoxContainer = $ScrollContainer/MarginContainer/OutputTable/ContentColumn
@@ -153,7 +155,7 @@ func _on_dialogue(interp: LorelineInterpreter, character: String, text: String, 
 	advance.call()
 
 
-func _on_choice(interp: LorelineInterpreter, options: Array, select: Callable) -> void:
+func _on_choice(_interp: LorelineInterpreter, options: Array, select: Callable) -> void:
 	# Delay before showing choices (matching Unity/web)
 	await get_tree().create_timer(CHOICE_DELAY).timeout
 
@@ -271,7 +273,7 @@ func _on_choice_selected(index: int, selected_btn: Button, container: VBoxContai
 	select.call(index)
 
 
-func _on_finished(interp: LorelineInterpreter) -> void:
+func _on_finished(_interp: LorelineInterpreter) -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = SECTION_SPACING * 2
 	_add_content(spacer)
@@ -363,9 +365,9 @@ func _gradient_bbcode(text: String) -> String:
 	var t_min := 0.30
 	var t_max := 0.70
 	var result := ""
-	var len := text.length()
-	for i in range(len):
-		var t: float = 0.4 if len <= 1 else t_min + (t_max - t_min) * float(i) / float(len - 1)
+	var text_len := text.length()
+	for i in range(text_len):
+		var t: float = 0.4 if text_len <= 1 else t_min + (t_max - t_min) * float(i) / float(text_len - 1)
 		var r: float; var g: float; var b: float
 		if t <= 0.4:
 			var s := t / 0.4

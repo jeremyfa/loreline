@@ -1,8 +1,65 @@
 #include "loreline_interpreter.h"
+#include "loreline_runtime.h"
 #include "loreline_options.h"
 
 #include <godot_cpp/variant/callable.hpp>
+#include <godot_cpp/variant/callable_custom.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+// --- Custom Callables that hold a Ref<LorelineInterpreter> ---
+// Keeping a reference to the Callable keeps the interpreter alive.
+
+class LorelineAdvanceCallable : public CallableCustom {
+	Ref<LorelineInterpreter> _interp;
+public:
+	LorelineAdvanceCallable(const Ref<LorelineInterpreter> &interp) : _interp(interp) {}
+
+	uint32_t hash() const override { return _interp->get_instance_id(); }
+	String get_as_text() const override { return "LorelineInterpreter::advance()"; }
+	ObjectID get_object() const override { return ObjectID(_interp->get_instance_id()); }
+
+	static bool compare_equal(const CallableCustom *a, const CallableCustom *b) {
+		return a == b;
+	}
+	static bool compare_less(const CallableCustom *a, const CallableCustom *b) {
+		return a < b;
+	}
+	CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
+	CompareLessFunc get_compare_less_func() const override { return compare_less; }
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, GDExtensionCallError &r_call_error) const override {
+		_interp->advance();
+		r_call_error.error = GDEXTENSION_CALL_OK;
+	}
+};
+
+class LorelineSelectCallable : public CallableCustom {
+	Ref<LorelineInterpreter> _interp;
+public:
+	LorelineSelectCallable(const Ref<LorelineInterpreter> &interp) : _interp(interp) {}
+
+	uint32_t hash() const override { return _interp->get_instance_id(); }
+	String get_as_text() const override { return "LorelineInterpreter::select()"; }
+	ObjectID get_object() const override { return ObjectID(_interp->get_instance_id()); }
+
+	static bool compare_equal(const CallableCustom *a, const CallableCustom *b) {
+		return a == b;
+	}
+	static bool compare_less(const CallableCustom *a, const CallableCustom *b) {
+		return a < b;
+	}
+	CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
+	CompareLessFunc get_compare_less_func() const override { return compare_less; }
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, GDExtensionCallError &r_call_error) const override {
+		int index = 0;
+		if (p_argcount > 0 && p_arguments[0]->get_type() == Variant::INT) {
+			index = *p_arguments[0];
+		}
+		_interp->select(index);
+		r_call_error.error = GDEXTENSION_CALL_OK;
+	}
+};
 
 #ifdef LORELINE_USE_JS
 #include <godot_cpp/classes/java_script_bridge.hpp>
@@ -19,9 +76,14 @@ LorelineInterpreter::LorelineInterpreter()
 		: _interp(nullptr), _pending_advance(nullptr), _pending_select(nullptr)
 #endif
 {
+	UtilityFunctions::print("[Loreline] Interpreter created: ", Variant((uint64_t)this));
 }
 
 LorelineInterpreter::~LorelineInterpreter() {
+	UtilityFunctions::print("[Loreline] Interpreter destroyed: ", Variant((uint64_t)this));
+	// Remove from active list if still there (user dropped ref before finish)
+	Loreline::_release_active_interpreter(this);
+
 #ifdef LORELINE_USE_JS
 	if (_js_id != 0) {
 		_js_registry.erase(_js_id);
@@ -182,7 +244,11 @@ void LorelineInterpreter::_on_dialogue(
 	String godot_text = text.isNull() ? String() : String::utf8(text.c_str());
 	Array godot_tags = _convert_tags(tags, tagCount);
 
-	Callable advance_callable = Callable(self, "advance");
+	// Release from active list — the Callable now holds the Ref keeping the interpreter alive
+	Loreline::_release_active_interpreter(self);
+
+	Ref<LorelineInterpreter> self_ref = self->_self_ref;
+	Callable advance_callable(memnew(LorelineAdvanceCallable(self_ref)));
 	self->emit_signal("dialogue", self, godot_character, godot_text, godot_tags, advance_callable);
 }
 
@@ -198,7 +264,11 @@ void LorelineInterpreter::_on_choice(
 
 	Array godot_options = _convert_options(options, optionCount);
 
-	Callable select_callable = Callable(self, "select");
+	// Release from active list — the Callable now holds the Ref keeping the interpreter alive
+	Loreline::_release_active_interpreter(self);
+
+	Ref<LorelineInterpreter> self_ref = self->_self_ref;
+	Callable select_callable(memnew(LorelineSelectCallable(self_ref)));
 	self->emit_signal("choice", self, godot_options, select_callable);
 }
 
@@ -208,6 +278,13 @@ void LorelineInterpreter::_on_finish(
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);
 	self->_pending_advance = nullptr;
 	self->_pending_select = nullptr;
+
+	UtilityFunctions::print("[Loreline] Script finished, cleaning up interpreter: ", Variant((uint64_t)self));
+
+	// Keep alive through signal emission via _self_ref, then clean up
+	Loreline::_release_active_interpreter(self);
+	Variant guard = self->_self_ref;
+	self->_self_ref = Variant();
 
 	self->emit_signal("finished", self);
 }

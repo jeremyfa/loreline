@@ -99,6 +99,10 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 		native_opts = options->build_native_options();
 	}
 
+	// Set _self_ref BEFORE Loreline_play — the first callback fires synchronously
+	// and needs _self_ref to create the advance/select Callable.
+	interp->_self_ref = Variant(interp);
+
 	interp->_interp = Loreline_play(
 			_script,
 			LorelineInterpreter::_on_dialogue,
@@ -113,6 +117,7 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 	}
 
 	if (!interp->_interp) {
+		interp->_self_ref = Variant();
 		return Ref<LorelineInterpreter>();
 	}
 
@@ -180,6 +185,8 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 		native_opts = options->build_native_options();
 	}
 
+	interp->_self_ref = Variant(interp);
+
 	interp->_interp = Loreline_resume(
 			_script,
 			LorelineInterpreter::_on_dialogue,
@@ -195,6 +202,7 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 	}
 
 	if (!interp->_interp) {
+		interp->_self_ref = Variant();
 		return Ref<LorelineInterpreter>();
 	}
 

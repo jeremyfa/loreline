@@ -35,6 +35,7 @@ private:
 	static void _poll_js_events();
 #else
 	Loreline_Interpreter *_interp;
+	Variant _self_ref; // Stores Ref<LorelineInterpreter> as Variant to keep self alive
 	void (*_pending_advance)(void);
 	void (*_pending_select)(int);
 

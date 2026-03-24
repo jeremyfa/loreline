@@ -21,6 +21,7 @@ class Loreline : public Node {
 private:
 	static Loreline *_singleton;
 	bool _initialized;
+	Vector<Ref<LorelineInterpreter>> _active_interpreters;
 
 #ifdef LORELINE_USE_JS
 	bool _js_loaded;
@@ -58,4 +59,8 @@ public:
 
 	Ref<LorelineInterpreter> play(const Ref<LorelineScript> &script, const Callable &on_dialogue = Callable(), const Callable &on_choice = Callable(), const Callable &on_finished = Callable(), const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 	Ref<LorelineInterpreter> resume(const Ref<LorelineScript> &script, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, const String &save_data, const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
+
+	void _retain_interpreter(const Ref<LorelineInterpreter> &interp);
+	void _release_interpreter(LorelineInterpreter *interp);
+	static void _release_active_interpreter(LorelineInterpreter *interp);
 };

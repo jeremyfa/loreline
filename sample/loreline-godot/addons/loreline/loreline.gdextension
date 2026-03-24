@@ -16,8 +16,12 @@ linux.release.arm64 = "res://addons/loreline/bin/linux/libloreline_godot.arm64.s
 ; Mobile
 android.debug.arm64 = "res://addons/loreline/bin/android/arm64-v8a/libloreline_godot.so"
 android.release.arm64 = "res://addons/loreline/bin/android/arm64-v8a/libloreline_godot.so"
+android.debug.arm32 = "res://addons/loreline/bin/android/armeabi-v7a/libloreline_godot.so"
+android.release.arm32 = "res://addons/loreline/bin/android/armeabi-v7a/libloreline_godot.so"
 android.debug.x86_64 = "res://addons/loreline/bin/android/x86_64/libloreline_godot.so"
 android.release.x86_64 = "res://addons/loreline/bin/android/x86_64/libloreline_godot.so"
+android.debug.x86_32 = "res://addons/loreline/bin/android/x86/libloreline_godot.so"
+android.release.x86_32 = "res://addons/loreline/bin/android/x86/libloreline_godot.so"
 ios.debug = "res://addons/loreline/bin/ios/loreline_godot.xcframework"
 ios.release = "res://addons/loreline/bin/ios/loreline_godot.xcframework"
 
@@ -34,15 +38,19 @@ macos.debug = { "res://addons/loreline/bin/macos/libLoreline.dylib": "" }
 macos.release = { "res://addons/loreline/bin/macos/libLoreline.dylib": "" }
 windows.debug.x86_64 = { "res://addons/loreline/bin/windows/Loreline.dll": "" }
 windows.release.x86_64 = { "res://addons/loreline/bin/windows/Loreline.dll": "" }
-linux.debug.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
-linux.release.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
-linux.debug.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
-linux.release.arm64 = { "res://addons/loreline/bin/linux/libLoreline.so": "" }
+linux.debug.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.x86_64.so": "" }
+linux.release.x86_64 = { "res://addons/loreline/bin/linux/libLoreline.x86_64.so": "" }
+linux.debug.arm64 = { "res://addons/loreline/bin/linux/libLoreline.arm64.so": "" }
+linux.release.arm64 = { "res://addons/loreline/bin/linux/libLoreline.arm64.so": "" }
 ; Mobile
 android.debug.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
 android.release.arm64 = { "res://addons/loreline/bin/android/arm64-v8a/libloreline.so": "" }
+android.debug.arm32 = { "res://addons/loreline/bin/android/armeabi-v7a/libloreline.so": "" }
+android.release.arm32 = { "res://addons/loreline/bin/android/armeabi-v7a/libloreline.so": "" }
 android.debug.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
 android.release.x86_64 = { "res://addons/loreline/bin/android/x86_64/libloreline.so": "" }
+android.debug.x86_32 = { "res://addons/loreline/bin/android/x86/libloreline.so": "" }
+android.release.x86_32 = { "res://addons/loreline/bin/android/x86/libloreline.so": "" }
 ; iOS: Loreline.xcframework dynamic framework alongside the GDExtension
 ios.debug = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
 ios.release = { "res://addons/loreline/bin/ios/Loreline.xcframework": "" }
