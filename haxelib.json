@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing", "interactive"],
     "description": "Open-source scripting language for writing interactive fiction",
-    "version": "0.7.1",
+    "version": "0.8.0",
     "classPath": "src/",
-    "releasenote": "Fix lexer error when parsing ${james.currentBooks[0]} in dialogue",
+    "releasenote": "Various improvements in the language",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
