@@ -404,6 +404,9 @@ class Cli {
 
             // JSON round-trip test: toJson → fromJson → toJson must be stable
             testJsonRoundTrip(script, file, crlf);
+
+            // AST printer smoke test: print must not throw
+            testAstPrint(script, file, crlf);
         }
         catch (e:Any) {
             failCount++;
@@ -559,6 +562,25 @@ class Cli {
             failCount++;
             hasFailedTest = true;
             print('FAIL'.red().bold() + ' - json-roundtrip error: $e - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'json-roundtrip'.gray());
+        }
+    }
+
+    function testAstPrint(script:Script, file:String, crlf:Bool) {
+        final modeLabel = crlf ? 'CRLF' : 'LF';
+        try {
+            final output = new AstPrinter().print(script);
+            if (output.length == 0) {
+                failCount++;
+                hasFailedTest = true;
+                print('FAIL'.red().bold() + ' - empty output - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'ast-print'.gray());
+            } else {
+                passCount++;
+                print('PASS'.green().bold() + ' - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'ast-print'.gray());
+            }
+        } catch (e:Any) {
+            failCount++;
+            hasFailedTest = true;
+            print('FAIL'.red().bold() + ' - ast-print error: $e - ' + file.gray() + ' ~ '.gray() + modeLabel.gray() + ' ~ '.gray() + 'ast-print'.gray());
         }
     }
 
