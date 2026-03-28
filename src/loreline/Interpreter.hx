@@ -4362,6 +4362,12 @@ typedef InterpreterOptions = {
                     final i:Int = Std.int(index);
                     ArrayAccess(arrAccess.pos, target, i);
                 }
+                else if (index is String) {
+                    if (target == null) {
+                        throw new RuntimeError('Cannot access field \'$index\' of null', arrAccess.pos);
+                    }
+                    FieldAccess(arrAccess.pos, target, index);
+                }
                 else {
                     throw new RuntimeError('Invalid array access target', arrAccess.pos);
                 }

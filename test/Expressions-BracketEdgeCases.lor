@@ -1,0 +1,71 @@
+
+state
+  items: ["apple", "banana", "cherry"]
+  scores: [100, 50, 75]
+  data: {}
+
+function getLabel(value)
+  return value
+
+beat Main
+  // --- isAssignStart: string with = in bracket key ---
+  data["x=y"] = "equals in key"
+  ${data["x=y"]}
+
+  // --- isAssignStart: string with ] in bracket key ---
+  data["key with ]"] = "stored"
+  ${data["key with ]"]}
+
+  // --- isCallStart: function call after bracket access with ] in key ---
+  data["has ]"] = "bracket value"
+  ${getLabel(data["has ]"])}
+
+  // --- isCallStart: function call after bracket access with ) in key ---
+  data["has )"] = "paren value"
+  ${getLabel(data["has )"])}
+
+  // --- isIdentifierExpressionStart: bracket access with ] in string ---
+  data["test ]"] = "ident test"
+  ${data["test ]"]}
+
+  // --- Bracket access with comparison operators in interpolation ---
+  ${items[0] == "apple" ? "fruit" : "other"}
+
+  ${items[0] != "banana" ? "not banana" : "banana"}
+
+  ${scores[0] >= 100 ? "perfect" : "not perfect"}
+
+  ${scores[1] <= 50 ? "low" : "high"}
+
+  // --- Multiple bracket accesses in one expression ---
+  ${items[0] == "apple" and scores[0] == 100 ? "apple 100" : "other"}
+
+  // --- Combined: string key + comparison ---
+  ${data["x=y"] == "equals in key" ? "match" : "no match"}
+
+/*
+<test>
+- expected: |
+    ~ equals in key
+
+    ~ stored
+
+    ~ bracket value
+
+    ~ paren value
+
+    ~ ident test
+
+    ~ fruit
+
+    ~ not banana
+
+    ~ perfect
+
+    ~ low
+
+    ~ apple 100
+
+    ~ match
+</test>
+*/

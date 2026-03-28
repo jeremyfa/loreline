@@ -1413,11 +1413,17 @@ class Token {
             }
 
             // Handle array access
+            // Handle array access (skip strings inside brackets)
             if (c == "[".code) {
                 pos++;
                 var bracketLevel = 1;
                 while (pos < this.length && bracketLevel > 0) {
                     c = input.uCharCodeAt(pos);
+                    if (c == '"'.code) {
+                        pos = scanStringEnd(pos, false);
+                        if (pos == -1) return false;
+                        continue;
+                    }
                     if (c == "[".code) bracketLevel++;
                     if (c == "]".code) bracketLevel--;
                     pos++;
@@ -1677,12 +1683,20 @@ class Token {
                 continue;
             }
 
-            // Handle bracket access
+            // Handle bracket access (skip strings inside brackets)
             if (c == "[".code) {
-                // Skip everything until closing bracket
                 pos++;
                 while (pos < this.length) {
-                    if (input.uCharCodeAt(pos) == "]".code) {
+                    final bc = input.uCharCodeAt(pos);
+                    if (bc == '"'.code) {
+                        pos = scanStringEnd(pos, false);
+                        if (pos == -1) {
+                            pos = startPos;
+                            return false;
+                        }
+                        continue;
+                    }
+                    if (bc == "]".code) {
                         pos++;
                         break;
                     }
@@ -1776,12 +1790,17 @@ class Token {
                     continue;
                 }
 
-                // Handle bracket access
+                // Handle bracket access (skip strings inside brackets)
                 if (c == "[".code) {
-                    // Skip everything until closing bracket
                     pos++;
                     while (pos < this.length) {
-                        if (input.uCharCodeAt(pos) == "]".code) {
+                        final bc = input.uCharCodeAt(pos);
+                        if (bc == '"'.code) {
+                            pos = scanStringEnd(pos, false);
+                            if (pos == -1) return false;
+                            continue;
+                        }
+                        if (bc == "]".code) {
                             pos++;
                             break;
                         }
@@ -1801,6 +1820,11 @@ class Token {
                 }
                 else if (c == "\r".code || c == "\n".code) {
                     return false;
+                }
+                else if (c == '"'.code) {
+                    // Skip quoted strings so their content isn't matched as operators
+                    pos = scanStringEnd(pos, false);
+                    if (pos == -1) return false;
                 }
                 else if (isIdentifierStart(c)) {
                     if (!readIdent()) return false;
