@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing", "interactive"],
     "description": "Open-source scripting language for writing interactive fiction",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "classPath": "src/",
-    "releasenote": "Various improvements in the language",
+    "releasenote": "Fixes related to ternary operators and expressions",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
