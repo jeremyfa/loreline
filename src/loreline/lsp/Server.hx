@@ -560,6 +560,7 @@ class Server {
     function fetchAst(uri:String, content:String, callback:(lexer:Lexer, parser:Parser, ast:Script)->Void, ?handleError:(err:Any)->Void):Null<Script> {
 
         final lexer = new Lexer(content);
+        lexer.keepOrphanExpressions = true;
         final tokens = lexer.tokenize();
 
         final lexerErrors = lexer.getErrors();

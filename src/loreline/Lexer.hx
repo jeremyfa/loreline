@@ -566,6 +566,10 @@ class Token {
     /** Errors collected during lexing, if any */
     var errors:Array<LexerError> = null;
 
+    /** When true, standalone identifier expressions (without assignment) are parsed as
+     *  variable access instead of unquoted text. Used by LSP for code completion. */
+    public var keepOrphanExpressions:Bool = false;
+
     /**
      * Creates a new lexer for the given input.
      * @param input The source code to lex
@@ -2576,7 +2580,7 @@ class Token {
             }
         }
         else {
-            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && (isIdentifierExpressionStart(pos, true) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
+            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && ((keepOrphanExpressions && isIdentifierExpressionStart(pos, true)) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
                 return null;
             }
         }

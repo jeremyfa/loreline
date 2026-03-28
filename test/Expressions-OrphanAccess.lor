@@ -1,0 +1,38 @@
+
+character narrator
+  name: Narrator
+
+state
+  test: "hello"
+
+beat Main
+  test
+
+  test.truc
+
+  test.truc["bidule"]
+
+  someVar
+
+  narrator: before
+  test
+  narrator: after
+
+/*
+<test>
+- expected: |
+    ~ test
+
+    ~ test.truc
+
+    ~ test.truc["bidule"]
+
+    ~ someVar
+
+    Narrator: before
+
+    ~ test
+
+    Narrator: after
+</test>
+*/
