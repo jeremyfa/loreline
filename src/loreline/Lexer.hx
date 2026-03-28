@@ -1759,8 +1759,8 @@ class Token {
 
             var c = input.uCharCodeAt(pos);
 
-            // Found assign operator
-            if (!isEscape && (c == "=".code ||
+            // Found assign operator (but not comparison operators ==, !=, <=, >=)
+            if (!isEscape && ((c == "=".code && (pos + 1 >= this.length || input.uCharCodeAt(pos + 1) != "=".code)) ||
                 (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == ":".code)))) {
                 return true;
             }
@@ -1806,7 +1806,12 @@ class Token {
                     if (!readIdent()) return false;
                 }
                 else {
-                    pos++;
+                    // Skip two-char comparison operators so their trailing = isn't matched as assignment
+                    if ((c == "=".code || c == "!".code || c == "<".code || c == ">".code) && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "=".code) {
+                        pos += 2;
+                    } else {
+                        pos++;
+                    }
                 }
             }
         }

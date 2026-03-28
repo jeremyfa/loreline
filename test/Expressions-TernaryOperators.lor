@@ -1,0 +1,62 @@
+
+state
+  score: 100
+  level: 5
+  name: "Sam"
+  active: true
+  premium: false
+
+// Equality
+${name == "Sam" ? "match" : "no match"}
+
+// Inequality
+${name != "Sam" ? "stranger" : "friend"}
+
+// Less than or equal
+${level <= 5 ? "beginner" : "experienced"}
+
+// Greater than or equal
+${score >= 100 ? "perfect" : "needs work"}
+
+// Logical and
+${active and premium ? "VIP" : "regular"}
+
+// Logical or
+${active or premium ? "has access" : "locked out"}
+
+// Combined: equality + logical
+${name == "Sam" and score >= 100 ? "top player" : "keep trying"}
+
+// Ternary in dialogue
+narrator: The player is ${score == 100 ? "flawless" : "imperfect"}
+
+// Nested access with equality
+${name != "Alex" ? "welcome" : "go away"}
+
+// Less than
+${level < 10 ? "novice" : "veteran"}
+
+/*
+<test>
+- expected: |
+    ~ match
+
+    ~ friend
+
+    ~ beginner
+
+    ~ perfect
+
+    ~ regular
+
+    ~ has access
+
+    ~ top player
+
+    narrator: The player is flawless
+
+    ~ welcome
+
+    ~ novice
+</test>
+*/
