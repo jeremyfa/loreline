@@ -3813,7 +3813,7 @@ typedef InterpreterOptions = {
                 if (c != " ".code && c != "\t".code) break;
                 indent++;
             }
-            if (indent < line.uLength()) {
+            if (indent > 0) {
                 if (minIndent == -1 || indent < minIndent) {
                     minIndent = indent;
                 }

@@ -1,0 +1,28 @@
+
+state
+  name: "Justin"
+
+character narrator
+  name: Narrator
+
+beat Main
+  // Multiline dialogue where second line starts with interpolation
+  narrator:
+    First line of text.
+    ${name == "Justin" ? "Effrayé" : "Effrayée"}, second line continues here.
+
+  // Multiline dialogue where second line starts with interpolation
+  First line of text.
+  ${name == "Justin" ? "Effrayé" : "Effrayée"}, second line continues here.
+
+/*
+<test>
+- expected: |
+    Narrator:
+      First line of text.
+      Effrayé, second line continues here.
+
+    ~ First line of text.
+      Effrayé, second line continues here.
+</test>
+*/
