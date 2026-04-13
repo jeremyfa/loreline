@@ -277,6 +277,55 @@ class Lens {
         return null;
     }
 
+    /**
+     * Returns the file path of the file containing the given node.
+     * Walks up the parent chain through NImportStatement nodes to
+     * resolve the full path. Returns rootPath if the node is in the root file.
+     */
+    public function getNodeFilePath(node:Node, rootPath:String):String {
+        // Collect NImportStatements from innermost to outermost
+        var importChain:Array<NImportStatement> = [];
+        var current:Node = node;
+        while (current != null) {
+            final importStmt = getFirstParentOfType(current, NImportStatement);
+            if (importStmt != null) {
+                importChain.push(importStmt);
+                current = cast importStmt;
+            } else {
+                break;
+            }
+        }
+
+        if (importChain.length == 0) return rootPath;
+
+        // Resolve paths from outermost to innermost
+        var currentDir = Path.directory(rootPath);
+        var ext = rootPath.endsWith('.lor.txt') ? '.lor.txt' : '.lor';
+        var resolvedPath = rootPath;
+
+        // Reverse: outermost first
+        var i = importChain.length - 1;
+        while (i >= 0) {
+            final importStmt = importChain[i];
+            var importPath = switch importStmt.path.parts[0].partType {
+                case Raw(text): text;
+                case _: "";
+            };
+            if (!Path.isAbsolute(importPath)) {
+                importPath = Path.join([currentDir, importPath]);
+            }
+            importPath = Path.normalize(importPath);
+            if (!importPath.toLowerCase().endsWith(ext)) {
+                importPath += ext;
+            }
+            resolvedPath = importPath;
+            currentDir = Path.directory(resolvedPath);
+            i--;
+        }
+
+        return resolvedPath;
+    }
+
     public function getImportedPaths(rootPath:String):Array<String> {
 
         final result:Array<String> = [];

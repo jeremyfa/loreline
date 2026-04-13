@@ -1068,6 +1068,17 @@ typedef InterpreterOptions = {
     }
 
     /**
+     * Returns the file path of the file containing the current node.
+     * Uses the Lens to walk up through import statements and resolve
+     * the path relative to the given root file path.
+     */
+    public function currentNodeFilePath(rootPath:String):String {
+        final node = currentNode();
+        if (node == null || rootPath == null) return rootPath;
+        return lens.getNodeFilePath(cast node, rootPath);
+    }
+
+    /**
      * Serializes a scope to save data.
      *
      * @param scope The scope to serialize

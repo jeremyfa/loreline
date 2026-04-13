@@ -112,24 +112,35 @@ class Server {
     /**
      * Handle incoming JSON-RPC message
      */
-    public function handleMessage(msg:Message):Null<ResponseMessage> {
+    /**
+     * Synchronous wrapper for handleMessage. Only safe when handleFile is synchronous.
+     * Used by the VS Code extension (Node.js) where file access is sync.
+     */
+    public function handleMessageSync(msg:Message):Null<ResponseMessage> {
+        var result:Null<ResponseMessage> = null;
+        handleMessage(msg, (response) -> { result = response; });
+        return result;
+    }
+
+    public function handleMessage(msg:Message, ?onResponse:(response:Null<ResponseMessage>)->Void):Void {
         try {
             // Check message type and dispatch accordingly
             if (Reflect.hasField(msg, "method")) {
                 if (Reflect.hasField(msg, "id")) {
-                    // Request message
-                    return handleRequest(cast msg);
+                    // Request message (may be async)
+                    handleRequest(cast msg, onResponse);
                 } else {
-                    // Notification message
+                    // Notification message (no response)
                     handleNotification(cast msg);
-                    return null;
+                    if (onResponse != null) onResponse(null);
                 }
+                return;
             }
 
-            return createErrorResponse(null, ErrorCodes.InvalidRequest, "Invalid message");
+            if (onResponse != null) onResponse(createErrorResponse(null, ErrorCodes.InvalidRequest, "Invalid message"));
 
         } catch (e:Dynamic) {
-            return createErrorResponse(null, ErrorCodes.ParseError, Std.string(e));
+            if (onResponse != null) onResponse(createErrorResponse(null, ErrorCodes.ParseError, Std.string(e)));
         }
     }
 
@@ -164,58 +175,86 @@ class Server {
     /**
      * Handle a request message
      */
-    function handleRequest(request:RequestMessage):ResponseMessage {
+    function handleRequest(request:RequestMessage, ?onResponse:(response:ResponseMessage)->Void):Void {
         try {
             if (!initialized && request.method != "initialize") {
                 throw { code: ErrorCodes.ServerNotInitialized, message: "Server not initialized" };
             }
 
-            final result = resolveRequest(request);
-            return createResponse(request.id, result);
+            resolveRequest(request, (result) -> {
+                if (onResponse != null) onResponse(createResponse(request.id, result));
+            });
 
         } catch (e:Any) {
-            if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
-                final err:ResponseError = e;
-                return createErrorResponse(request.id, err.code, err.message);
-            }
-            else {
-                return createErrorResponse(request.id, ErrorCodes.InternalError, Std.string(e));
+            if (onResponse != null) {
+                if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
+                    final err:ResponseError = e;
+                    onResponse(createErrorResponse(request.id, err.code, err.message));
+                }
+                else {
+                    onResponse(createErrorResponse(request.id, ErrorCodes.InternalError, Std.string(e)));
+                }
             }
         }
-        return null;
     }
 
-    function resolveRequest(request:RequestMessage):Any {
+    function resolveRequest(request:RequestMessage, callback:(result:Any)->Void):Void {
 
-        return switch (request.method) {
-            case "initialize":
-                handleInitialize(cast request.params);
+        // Determine which URI needs to be up-to-date before handling
+        final uri = getRequestDocumentUri(request);
 
-            case "shutdown":
-                handleShutdown();
+        // Ensure the document is up-to-date (async-safe), then dispatch
+        updateDocumentIfNeeded(uri, () -> {
+            try {
+                final result:Any = switch (request.method) {
+                    case "initialize":
+                        handleInitialize(cast request.params);
 
-            case "textDocument/completion":
-                handleCompletion(cast request.params);
+                    case "shutdown":
+                        handleShutdown();
 
-            case "textDocument/definition":
-                handleDefinition(cast request.params);
+                    case "textDocument/completion":
+                        handleCompletion(cast request.params);
 
-            case "textDocument/hover":
-                handleHover(cast request.params);
+                    case "textDocument/definition":
+                        handleDefinition(cast request.params);
 
-            case "textDocument/documentSymbol":
-                handleDocumentSymbol(cast request.params);
+                    case "textDocument/hover":
+                        handleHover(cast request.params);
 
-            case "textDocument/references":
-                null; // TODO
+                    case "textDocument/documentSymbol":
+                        handleDocumentSymbol(cast request.params);
 
-            case "textDocument/formatting":
-                handleDocumentFormatting(cast request.params);
+                    case "textDocument/references":
+                        null; // TODO
 
-            case _:
-                throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
-        }
+                    case "textDocument/formatting":
+                        handleDocumentFormatting(cast request.params);
 
+                    case _:
+                        throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
+                }
+                callback(result);
+            } catch (e:Any) {
+                if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
+                    throw e;
+                } else {
+                    throw { code: ErrorCodes.InternalError, message: Std.string(e) };
+                }
+            }
+        });
+
+    }
+
+    /** Extracts the textDocument.uri from a request's params, or null if not applicable. */
+    function getRequestDocumentUri(request:RequestMessage):Null<String> {
+        try {
+            final params:Dynamic = request.params;
+            if (params != null && params.textDocument != null && params.textDocument.uri != null) {
+                return params.textDocument.uri;
+            }
+        } catch (_:Dynamic) {}
+        return null;
     }
 
     /**
@@ -545,14 +584,17 @@ class Server {
         return components.join("/");
     }
 
-    function updateDocumentIfNeeded(uri:String) {
+    function updateDocumentIfNeeded(uri:String, ?callback:()->Void) {
 
         if (dirtyDocuments.exists(uri)) {
             handleFile(pathFromUri(uri), content -> {
                 if (content != null) {
                     updateDocument(uri, content, true);
                 }
+                if (callback != null) callback();
             });
+        } else {
+            if (callback != null) callback();
         }
 
     }
@@ -715,7 +757,6 @@ class Server {
     }):Array<CompletionItem> {
 
         final uri = params.textDocument.uri;
-        updateDocumentIfNeeded(uri);
 
         final ast = documents.get(uri);
         if (ast == null) return [];
@@ -1122,7 +1163,6 @@ class Server {
         final result:Array<LocationLink> = [];
 
         final uri = params.textDocument.uri;
-        updateDocumentIfNeeded(uri);
 
         final ast = documents.get(uri);
         if (ast == null) return result;
@@ -1405,7 +1445,6 @@ class Server {
         position:Position
     }):Null<Hover> {
         final uri = params.textDocument.uri;
-        updateDocumentIfNeeded(uri);
 
         final ast = documents.get(uri);
         if (ast == null) return null;
@@ -1858,7 +1897,11 @@ class Server {
                 for (ref in incomingBeats) {
                     final incoming = lens.getFirstParentOfType(ref.origin, NBeatDecl);
                     if (incoming != null) {
-                        targets.push(makePositionLink(incoming.name, uri, incoming));
+                        if (incoming.name == "_") {
+                            targets.push("*top level*");
+                        } else {
+                            targets.push(makePositionLink(incoming.name, uri, incoming));
+                        }
                     }
                 }
                 description.push("- From: " + targets.join(', '));
@@ -2106,8 +2149,6 @@ class Server {
     function handleDocumentSymbol(params:{
         textDocument:TextDocumentIdentifier
     }):Array<DocumentSymbol> {
-
-        updateDocumentIfNeeded(params.textDocument.uri);
 
         final ast = documents.get(params.textDocument.uri);
         if (ast == null) return [];
