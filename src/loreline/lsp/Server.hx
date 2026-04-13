@@ -516,6 +516,13 @@ class Server {
                         }
                     }
                 }
+
+                // Notify that document parsing is complete
+                onNotification({
+                    jsonrpc: "2.0",
+                    method: "loreline/documentReady",
+                    params: { uri: uri }
+                });
             }, e -> errors.push(e));
 
             // Publish diagnostics
@@ -525,6 +532,13 @@ class Server {
                 if (ast != null) {
                     setDocument(uri, ast);
                 }
+
+                // Notify that document parsing is complete
+                onNotification({
+                    jsonrpc: "2.0",
+                    method: "loreline/documentReady",
+                    params: { uri: uri }
+                });
             });
         }
     }
