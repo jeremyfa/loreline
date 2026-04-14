@@ -424,7 +424,7 @@ beat DecisionTime
   if sarah.present and james.present
     Your friends watch expectantly, hoping you'll make a sensible choice.
   else if sarah.present
-    $sarah watches expectantly, waiting for you decision.
+    $sarah watches expectantly, waiting for your decision.
   else if james.present
     $james watches expectantly, hoping you'll make the right choice.
 
