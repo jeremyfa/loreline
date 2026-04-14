@@ -814,6 +814,23 @@ class Server {
                 case _:
             }
         }
+
+        // Compute the replacement range once per call, used by every completion
+        // item's textEdit. If a trigger character fired this completion, the
+        // trigger is already committed at the cursor and new text should be
+        // inserted (zero-width range). Otherwise (Ctrl+Space) the user may have
+        // typed a partial identifier we want to replace on accept.
+        final cursorLspPos = fromLorelinePosition(lorelinePos);
+        var replacementRange:Range = { start: cursorLspPos, end: cursorLspPos };
+        if (triggerCharacter == null) {
+            final prevText = content.uSubstr(0, lorelinePos.offset);
+            if (RE_IDENTIFIER_BEFORE.match(prevText) && RE_IDENTIFIER_BEFORE.matched(2).uLength() == 0) {
+                final identLen = RE_IDENTIFIER_BEFORE.matched(1).uLength();
+                final startPos = fromLorelinePosition(lorelinePos.withOffset(content, -identLen));
+                replacementRange = { start: startPos, end: cursorLspPos };
+            }
+        }
+
         if (params.context != null && triggerCharacter != null) {
             switch triggerCharacter {
                 case ".": // Field access completion
@@ -850,7 +867,8 @@ class Server {
                                                         insertText: field.name,
                                                         insertTextMode: AsIs,
                                                         insertTextFormat: PlainText,
-                                                        documentation: ''
+                                                        documentation: '',
+                                                        textEdit: makeTextEdit(replacementRange, field.name)
                                                     });
                                                 }
                                                 return items;
@@ -901,7 +919,8 @@ class Server {
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
-                                    documentation: documentationForNode(field)
+                                    documentation: documentationForNode(field),
+                                    textEdit: makeTextEdit(replacementRange, field.name)
                                 });
                             }
                             return items;
@@ -924,7 +943,8 @@ class Server {
                                             insertText: field.name,
                                             insertTextMode: AsIs,
                                             insertTextFormat: PlainText,
-                                            documentation: documentationForNode(field)
+                                            documentation: documentationForNode(field),
+                                            textEdit: makeTextEdit(replacementRange, field.name)
                                         });
                                     }
                                     return items;
@@ -934,13 +954,13 @@ class Server {
                     return [];
 
                 case "$": // Variable interpolation completion
-                    return getVariableCompletions(lens, node, lorelinePos);
+                    return getVariableCompletions(lens, node, lorelinePos, replacementRange);
 
                 case "<": // Tag completion
                     if (node is NFunctionDecl) {
                         return [];
                     }
-                    return getTagCompletions(lens);
+                    return getTagCompletions(lens, replacementRange);
 
                 case "\"": // String completion - no special handling needed
                     return [];
@@ -952,7 +972,7 @@ class Server {
                         final matchedLen = RE_ARROW_BEFORE.matched(0).uLength();
                         final trimmedLen = RE_ARROW_BEFORE.matched(0).rtrim().uLength();
                         final spaces = matchedLen != trimmedLen ? RE_ARROW_BEFORE.matched(0).uSubstr(trimmedLen, matchedLen - trimmedLen) : '';
-                        return getBeatCompletions(lens, node, spaces.uLength() > 0 ? '' : ' ');
+                        return getBeatCompletions(lens, node, spaces.uLength() > 0 ? '' : ' ', replacementRange);
                     }
                     return [];
 
@@ -971,7 +991,7 @@ class Server {
                 final matchedLen = RE_ARROW_BEFORE.matched(0).uLength();
                 final trimmedLen = RE_ARROW_BEFORE.matched(0).rtrim().uLength();
                 final spaces = matchedLen != trimmedLen ? RE_ARROW_BEFORE.matched(0).uSubstr(trimmedLen, matchedLen - trimmedLen) : '';
-                return getBeatCompletions(lens, node, spaces.uLength() > 0 ? '' : ' ');
+                return getBeatCompletions(lens, node, spaces.uLength() > 0 ? '' : ' ', replacementRange);
             }
 
             // Return all available completions for CTRL + Space
@@ -991,7 +1011,8 @@ class Server {
                             insertText: name,
                             insertTextMode: AsIs,
                             insertTextFormat: PlainText,
-                            documentation: ''
+                            documentation: '',
+                            textEdit: makeTextEdit(replacementRange, name)
                         });
                     }
                 }
@@ -1007,7 +1028,8 @@ class Server {
                     insertText: field.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
-                    documentation: documentationForNode(field)
+                    documentation: documentationForNode(field),
+                    textEdit: makeTextEdit(replacementRange, field.name)
                 });
             }
 
@@ -1020,7 +1042,8 @@ class Server {
                     insertText: character.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
-                    documentation: documentationForNode(character)
+                    documentation: documentationForNode(character),
+                    textEdit: makeTextEdit(replacementRange, character.name)
                 });
             }
 
@@ -1034,7 +1057,8 @@ class Server {
                         insertText: func.name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
-                        documentation: documentationForNode(func)
+                        documentation: documentationForNode(func),
+                        textEdit: makeTextEdit(replacementRange, func.name)
                     });
                 }
             }
@@ -1049,7 +1073,8 @@ class Server {
                         insertText: beat.name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
-                        documentation: documentationForNode(beat)
+                        documentation: documentationForNode(beat),
+                        textEdit: makeTextEdit(replacementRange, beat.name)
                     });
                 }
             }
@@ -1063,7 +1088,7 @@ class Server {
     /**
      * Get completion items for variables in scope
      */
-    function getVariableCompletions(lens:Lens, node:Node, lorelinePos:loreline.Position):Array<CompletionItem> {
+    function getVariableCompletions(lens:Lens, node:Node, lorelinePos:loreline.Position, replacementRange:Range):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
 
         // Add locals completion (if inside a function)
@@ -1080,7 +1105,8 @@ class Server {
                         insertText: name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
-                        documentation: ''
+                        documentation: '',
+                        textEdit: makeTextEdit(replacementRange, name)
                     });
                 }
             }
@@ -1093,7 +1119,11 @@ class Server {
                 label: field.name,
                 kind: CompletionItemKind.Variable,
                 detail: "State field",
-                documentation: documentationForNode(field)
+                insertText: field.name,
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: documentationForNode(field),
+                textEdit: makeTextEdit(replacementRange, field.name)
             });
         }
 
@@ -1103,7 +1133,11 @@ class Server {
                 label: character.name,
                 kind: CompletionItemKind.Class,
                 detail: "Character",
-                documentation: documentationForNode(character)
+                insertText: character.name,
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: documentationForNode(character),
+                textEdit: makeTextEdit(replacementRange, character.name)
             });
         }
 
@@ -1117,7 +1151,8 @@ class Server {
                     insertText: func.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
-                    documentation: documentationForNode(func)
+                    documentation: documentationForNode(func),
+                    textEdit: makeTextEdit(replacementRange, func.name)
                 });
             }
         }
@@ -1128,19 +1163,21 @@ class Server {
     /**
      * Get completion items for beats in scope
      */
-    function getBeatCompletions(lens:Lens, node:Node, insert:String):Array<CompletionItem> {
+    function getBeatCompletions(lens:Lens, node:Node, insert:String, replacementRange:Range):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
 
         // Add state fields
         for (beat in lens.getVisibleBeats(node)) {
+            final newText = (insert ?? '') + beat.name;
             items.push({
                 label: beat.name,
                 kind: CompletionItemKind.Class,
                 detail: "Beat",
-                insertText: (insert ?? '') + beat.name,
+                insertText: newText,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
-                documentation: documentationForNode(beat)
+                documentation: documentationForNode(beat),
+                textEdit: makeTextEdit(replacementRange, newText)
             });
         }
 
@@ -1150,7 +1187,7 @@ class Server {
     /**
      * Get completion items for tags based on existing tags in the script
      */
-    function getTagCompletions(lens:Lens):Array<CompletionItem> {
+    function getTagCompletions(lens:Lens, replacementRange:Range):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
         final counts = lens.countTags();
 
@@ -1160,7 +1197,11 @@ class Server {
                 label: tag,
                 kind: CompletionItemKind.Enum,
                 detail: "Tag",
-                documentation: 'Used $uses time' + (uses == 1 ? '' : 's')
+                insertText: tag,
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: 'Used $uses time' + (uses == 1 ? '' : 's'),
+                textEdit: makeTextEdit(replacementRange, tag)
             });
         }
 
@@ -1755,8 +1796,9 @@ class Server {
 
     }
 
-    function makePositionLink(text:String, uri:DocumentUri, node:Node, ?extra:String):String {
-        return '[${text}](${uri}#${node.pos.line},${node.pos.column})' + (extra != null ? ' ($extra)' : '');
+    function makePositionLink(text:String, uri:DocumentUri, node:Node, lens:Lens, ?extra:String):String {
+        final targetUri = resolveNodeUri(uri, node, lens);
+        return '[${text}](${targetUri}#${node.pos.line},${node.pos.column})' + (extra != null ? ' ($extra)' : '');
     }
 
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
@@ -1788,14 +1830,14 @@ class Server {
                 if (HxType.getClass(ref.origin) == NDialogueStatement && !dialogs.exists(ref.target.name)) {
                     if (!dialogs.exists(ref.target.name)) {
                         dialogs.set(ref.target.name, true);
-                        dialogTargets.push(makePositionLink('**' + characterName(ref.target) + '**', uri, ref.target));
+                        dialogTargets.push(makePositionLink('**' + characterName(ref.target) + '**', uri, ref.target, lens));
                     }
                 }
 
                 if (HxType.getClass(ref.origin) == NAccess && !accessed.exists(ref.target.name)) {
                     if (!dialogs.exists(ref.target.name) && !accessed.exists(ref.target.name)) {
                         accessed.set(ref.target.name, true);
-                        otherTargets.push(makePositionLink('' + characterName(ref.target) + '', uri, ref.target));
+                        otherTargets.push(makePositionLink('' + characterName(ref.target) + '', uri, ref.target, lens));
                     }
                 }
             }
@@ -1824,7 +1866,7 @@ class Server {
                 for (ref in modifiedFields) {
                     if (!usedStateTargets.exists(ref.target.id)) {
                         usedStateTargets.set(ref.target.id, true);
-                        stateTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target) + '**');
+                        stateTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target, lens) + '**');
                     }
                 }
             }
@@ -1833,7 +1875,7 @@ class Server {
                 for (ref in readFields) {
                     if (!usedStateTargets.exists(ref.target.id)) {
                         usedStateTargets.set(ref.target.id, true);
-                        stateTargets.push(makePositionLink(ref.target.name, uri, ref.target));
+                        stateTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                     }
                 }
             }
@@ -1875,7 +1917,7 @@ class Server {
                         final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
                         if (refCharacter.id == character.id) {
                             usedCharacterTargets.set(ref.target.id, true);
-                            characterTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target) + '**');
+                            characterTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target, lens) + '**');
                         }
                     }
                 }
@@ -1886,7 +1928,7 @@ class Server {
                             final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
                             if (refCharacter.id == character.id) {
                                 usedCharacterTargets.set(ref.target.id, true);
-                                characterTargets.push(makePositionLink(ref.target.name, uri, ref.target));
+                                characterTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                             }
                         }
                     }
@@ -1914,7 +1956,7 @@ class Server {
                         if (incoming.name == "_") {
                             targets.push("*top level*");
                         } else {
-                            targets.push(makePositionLink(incoming.name, uri, incoming));
+                            targets.push(makePositionLink(incoming.name, uri, incoming, lens));
                         }
                     }
                 }
@@ -1927,10 +1969,10 @@ class Server {
                 final transitionTargets = [];
                 for (ref in outgoingBeats) {
                     if (ref.origin is NTransition) {
-                        transitionTargets.push(makePositionLink(ref.target.name, uri, ref.target));
+                        transitionTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                     }
                     else {
-                        callTargets.push(makePositionLink(ref.target.name, uri, ref.target));
+                        callTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                     }
                 }
                 if (transitionTargets.length > 0) {
@@ -2353,6 +2395,10 @@ class Server {
             start: start,
             end: end
         };
+    }
+
+    inline function makeTextEdit(range:Range, newText:String):TextEdit {
+        return { range: range, newText: newText };
     }
 
     function firstLineRange(range:Range, content:String):Range {
