@@ -471,7 +471,7 @@ static void testDialogue(
             if (restoreScript) {
                 Loreline_Interpreter* resumed = Loreline_resume(
                     restoreScript, testDialogue, testChoice, testFinish,
-                    saveData, Loreline_String(), ctx->options, ctx);
+                    saveData, Loreline_String(), ctx->options, ctx, nullptr, nullptr);
                 Loreline_releaseInterpreter(resumed);
                 Loreline_releaseScript(restoreScript);
             } else {
@@ -482,7 +482,7 @@ static void testDialogue(
         } else {
             Loreline_Interpreter* resumed = Loreline_resume(
                 ctx->parsedScript, testDialogue, testChoice, testFinish,
-                saveData, Loreline_String(), ctx->options, ctx);
+                saveData, Loreline_String(), ctx->options, ctx, nullptr, nullptr);
             Loreline_releaseInterpreter(resumed);
         }
         return;
@@ -531,7 +531,7 @@ static void testChoice(
             if (restoreScript) {
                 Loreline_Interpreter* resumed = Loreline_resume(
                     restoreScript, testDialogue, testChoice, testFinish,
-                    saveData, Loreline_String(), ctx->options, ctx);
+                    saveData, Loreline_String(), ctx->options, ctx, nullptr, nullptr);
                 Loreline_releaseInterpreter(resumed);
                 Loreline_releaseScript(restoreScript);
             } else {
@@ -542,7 +542,7 @@ static void testChoice(
         } else {
             Loreline_Interpreter* resumed = Loreline_resume(
                 ctx->parsedScript, testDialogue, testChoice, testFinish,
-                saveData, Loreline_String(), ctx->options, ctx);
+                saveData, Loreline_String(), ctx->options, ctx, nullptr, nullptr);
             Loreline_releaseInterpreter(resumed);
         }
         return;
@@ -632,7 +632,7 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
         Loreline_Interpreter* interp = Loreline_play(
             script, testDialogue, testChoice, testFinish,
             item.beat.empty() ? Loreline_String() : Loreline_String(item.beat.c_str()),
-            options, &ctx);
+            options, &ctx, nullptr, nullptr);
         if (interp) {
             Loreline_releaseInterpreter(interp);
         }
