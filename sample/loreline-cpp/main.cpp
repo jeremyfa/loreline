@@ -185,9 +185,9 @@ int main(int argc, char* argv[]) {
 
     printf("\n");
 
-    // Play — callbacks fire synchronously, no update loop needed
+    // Play
     Loreline_Interpreter* interp = Loreline_play(
-        script, onDialogue, onChoice, onFinish, Loreline_String(), NULL, NULL
+        script, onDialogue, onChoice, onFinish
     );
 
     // Cleanup

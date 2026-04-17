@@ -1,0 +1,9 @@
+state
+  counter: 0
+
+beat start
+  First line.
+  counter += 1
+  Second line: counter is $counter.
+  counter += 1
+  Third line: counter is $counter.

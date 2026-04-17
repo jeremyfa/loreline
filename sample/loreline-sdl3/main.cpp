@@ -1212,8 +1212,7 @@ static void startStory(AppState* app) {
     }
 
     app->interpreter = Loreline_play(
-        app->script, onDialogue, onChoice, onFinish,
-        Loreline_String(), NULL, NULL
+        app->script, onDialogue, onChoice, onFinish
     );
 }
 

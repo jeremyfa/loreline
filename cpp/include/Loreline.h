@@ -244,17 +244,17 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
 LORELINE_PUBLIC void Loreline_cancelAsync(
     Loreline_AsyncResolve* resolve);
 
-/* Playback */
+/* Playback. All trailing parameters are optional. */
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_Script* script,
     Loreline_DialogueHandler onDialogue,
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
-    Loreline_String beatName,
-    Loreline_InterpreterOptions* options,
-    void* userData,
-    Loreline_UserDataRetain retain,     /* may be NULL */
-    Loreline_UserDataRelease release    /* may be NULL */
+    Loreline_String beatName = Loreline_String(),
+    Loreline_InterpreterOptions* options = NULL,
+    void* userData = NULL,
+    Loreline_UserDataRetain retain = NULL,
+    Loreline_UserDataRelease release = NULL
 );
 
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
@@ -263,11 +263,11 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_ChoiceHandler onChoice,
     Loreline_FinishHandler onFinish,
     Loreline_String saveData,
-    Loreline_String beatName,
-    Loreline_InterpreterOptions* options,
-    void* userData,
-    Loreline_UserDataRetain retain,     /* may be NULL */
-    Loreline_UserDataRelease release    /* may be NULL */
+    Loreline_String beatName = Loreline_String(),
+    Loreline_InterpreterOptions* options = NULL,
+    void* userData = NULL,
+    Loreline_UserDataRetain retain = NULL,
+    Loreline_UserDataRelease release = NULL
 );
 
 /* Interpreter methods */
