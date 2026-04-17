@@ -134,6 +134,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             }
         },
 
+        cancelFunctionDone: function(callId) {
+            // Drop the pending done closure without firing it. The Haxe-side
+            // Async state remains paused until the interpreter is released,
+            // at which point GC collects the orphaned closure.
+            delete _pendingFunctionDone[callId];
+        },
+
         play: function(scriptId, beatName, optionsJson) {
             var script = _getObj(scriptId);
             if (!script) return 0;

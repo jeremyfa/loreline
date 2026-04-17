@@ -96,12 +96,8 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 
 	Loreline_InterpreterOptions *native_opts = nullptr;
 	if (options.is_valid()) {
-		native_opts = options->build_native_options();
+		native_opts = options->build_native_options(interp.ptr(), interp->_fn_contexts);
 	}
-
-	// Set _self_ref BEFORE Loreline_play — the first callback fires synchronously
-	// and needs _self_ref to create the advance/select Callable.
-	interp->_self_ref = Variant(interp);
 
 	interp->_interp = Loreline_play(
 			_script,
@@ -110,16 +106,26 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 			LorelineInterpreter::_on_finish,
 			loreline_beat,
 			native_opts,
-			static_cast<void *>(interp.ptr()));
+			static_cast<void *>(interp.ptr()),
+			&LorelineInterpreter::_retain_interpreter,
+			&LorelineInterpreter::_release_interpreter);
 
 	if (native_opts) {
 		Loreline_releaseOptions(native_opts);
 	}
 
 	if (!interp->_interp) {
-		interp->_self_ref = Variant();
+		// Play failed — free any contexts we just allocated.
+		for (LorelineFunctionCallContext *ctx : interp->_fn_contexts) {
+			delete ctx;
+		}
+		interp->_fn_contexts.clear();
 		return Ref<LorelineInterpreter>();
 	}
+
+	// Retain the options so LorelineFunctionCallContext->options (raw pointer
+	// inside the Haxe userData) stays valid for the interpreter's lifetime.
+	interp->_options_ref = Variant(options);
 
 	return interp;
 #endif
@@ -182,10 +188,8 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 
 	Loreline_InterpreterOptions *native_opts = nullptr;
 	if (options.is_valid()) {
-		native_opts = options->build_native_options();
+		native_opts = options->build_native_options(interp.ptr(), interp->_fn_contexts);
 	}
-
-	interp->_self_ref = Variant(interp);
 
 	interp->_interp = Loreline_resume(
 			_script,
@@ -195,16 +199,25 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 			loreline_save,
 			loreline_beat,
 			native_opts,
-			static_cast<void *>(interp.ptr()));
+			static_cast<void *>(interp.ptr()),
+			&LorelineInterpreter::_retain_interpreter,
+			&LorelineInterpreter::_release_interpreter);
 
 	if (native_opts) {
 		Loreline_releaseOptions(native_opts);
 	}
 
 	if (!interp->_interp) {
-		interp->_self_ref = Variant();
+		for (LorelineFunctionCallContext *ctx : interp->_fn_contexts) {
+			delete ctx;
+		}
+		interp->_fn_contexts.clear();
 		return Ref<LorelineInterpreter>();
 	}
+
+	// Retain the options so LorelineFunctionCallContext->options (raw pointer
+	// inside the Haxe userData) stays valid for the interpreter's lifetime.
+	interp->_options_ref = Variant(options);
 
 	return interp;
 #endif

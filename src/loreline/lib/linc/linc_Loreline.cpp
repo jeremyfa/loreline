@@ -18,6 +18,7 @@
 #include <loreline/Timer.h>
 #include <loreline/Async.h>
 #include <haxe/ds/StringMap.h>
+#include <Reflect.h>
 #include "Loreline.h"
 
 #include <atomic>
@@ -189,9 +190,12 @@ struct Loreline_Interpreter {
     Loreline_ChoiceHandler choiceHandler;
     Loreline_FinishHandler finishHandler;
     void* userData;
+    Loreline_UserDataRetain retain;   /* may be NULL */
+    Loreline_UserDataRelease release; /* may be NULL */
 
     Loreline_Interpreter() : obj(nullptr), pendingCb(nullptr), dialogueHandler(nullptr),
-        choiceHandler(nullptr), finishHandler(nullptr), userData(nullptr) {}
+        choiceHandler(nullptr), finishHandler(nullptr), userData(nullptr),
+        retain(nullptr), release(nullptr) {}
 
     void set(hx::Object* o) {
         obj = o;
@@ -705,7 +709,12 @@ static Loreline_Interpreter* s_dispatchInterp = nullptr;
 
 static LORELINE_NOINLINE void linc_advance_hx(::Dynamic cb) {
     LORELINE_HX_BEGIN
-    cb->__run();
+    try {
+        cb->__run();
+    } catch (::Dynamic e) {
+        ::String msg = (::String)e;
+        fprintf(stderr, "Loreline advance error: %s\n", msg.c_str());
+    }
     LORELINE_HX_END
 }
 
@@ -721,7 +730,12 @@ static void linc_advance() {
 
 static LORELINE_NOINLINE void linc_select_hx(::Dynamic cb, int index) {
     LORELINE_HX_BEGIN
-    cb->__run(index);
+    try {
+        cb->__run(index);
+    } catch (::Dynamic e) {
+        ::String msg = (::String)e;
+        fprintf(stderr, "Loreline select error: %s\n", msg.c_str());
+    }
     LORELINE_HX_END
 }
 
@@ -770,12 +784,24 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxChar, ::Dynamic hxText,
     int tagCount = 0;
     linc_buildTextTags(hxTags, &tags, &tagCount);
     h->setPendingCallback(hxCallback.GetPtr());
+
+    // Retain the host's userData before queueing so the queued lambda can't
+    // fire into a freed interpreter.
+    Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
+
     LORELINE_BEGIN_DISPATCH_OUT
     s_dispatchInterp = h;
-    if (h->dialogueHandler) {
-        h->dialogueHandler(h, character, text, tags, tagCount, linc_advance, h->userData);
+    try {
+        if (h->dialogueHandler) {
+            h->dialogueHandler(h, character, text, tags, tagCount, linc_advance, h->userData);
+        }
+    } catch (...) {
+        delete[] tags;
+        if (h->release) h->release(r);
+        throw;
     }
     delete[] tags;
+    if (h->release) h->release(r);
     LORELINE_END_DISPATCH_OUT
 }
 HX_END_LOCAL_FUNC5((void))
@@ -789,12 +815,22 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxOptions, ::Dynamic hxCallback) {
     int optionCount = 0;
     linc_buildChoiceOptions(hxOptions, &options, &optionCount);
     h->setPendingCallback(hxCallback.GetPtr());
+
+    Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
+
     LORELINE_BEGIN_DISPATCH_OUT
     s_dispatchInterp = h;
-    if (h->choiceHandler) {
-        h->choiceHandler(h, options, optionCount, linc_select, h->userData);
+    try {
+        if (h->choiceHandler) {
+            h->choiceHandler(h, options, optionCount, linc_select, h->userData);
+        }
+    } catch (...) {
+        linc_freeChoiceOptions(options, optionCount);
+        if (h->release) h->release(r);
+        throw;
     }
     linc_freeChoiceOptions(options, optionCount);
+    if (h->release) h->release(r);
     LORELINE_END_DISPATCH_OUT
 }
 HX_END_LOCAL_FUNC3((void))
@@ -804,10 +840,19 @@ HX_BEGIN_LOCAL_FUNC_S1(::hx::LocalFunc, _hx_Closure_finish,
     Loreline_Interpreter*, h) HXARGC(1)
 void _hx_run(::Dynamic hxInterp) {
     linc_ensureInterpHandle(h, hxInterp);
+
+    Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
+
     LORELINE_BEGIN_DISPATCH_OUT
-    if (h->finishHandler) {
-        h->finishHandler(h, h->userData);
+    try {
+        if (h->finishHandler) {
+            h->finishHandler(h, h->userData);
+        }
+    } catch (...) {
+        if (h->release) h->release(r);
+        throw;
     }
+    if (h->release) h->release(r);
     LORELINE_END_DISPATCH_OUT
 }
 HX_END_LOCAL_FUNC1((void))
@@ -824,15 +869,15 @@ HX_END_LOCAL_FUNC2((void))
 
 /* ── Custom function closures ──────────────────────────────────────────── */
 
-/* Sync custom function: dispatches to host thread (blocks in threaded mode) */
+/* Sync custom function: dispatches to host thread (blocks in threaded mode).
+ * Invoked via Reflect.makeVarArgs wrapper, so hxArgs is an Array<Any> of all
+ * positional script arguments. */
 HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_customFunction,
     Loreline_CustomFunction, fn, void*, fnUserData,
-    Loreline_Interpreter*, h) HXARGC(2)
-::Dynamic _hx_run(::Dynamic hxInterp, ::Dynamic hxArgs) {
-    linc_ensureInterpHandle(h, hxInterp);
-
+    Loreline_Interpreter*, h) HXARGC(1)
+::Dynamic _hx_run(::Dynamic hxArgs) {
     ::cpp::VirtualArray arr = (::cpp::VirtualArray)hxArgs;
-    int argCount = arr->get_length();
+    int argCount = arr.mPtr ? arr->get_length() : 0;
     std::vector<Loreline_Value> cArgs(argCount);
     for (int i = 0; i < argCount; i++) {
         cArgs[i] = linc_hxToValue(arr->__get(i));
@@ -845,9 +890,11 @@ HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_customFunction,
 
     return linc_valueToHx(result);
 }
-HX_END_LOCAL_FUNC2(return)
+HX_END_LOCAL_FUNC1(return)
 
-/* Async custom function body: receives done callback, dispatches to host */
+/* Async custom function body: receives done callback, dispatches to host.
+ * Interpreter-level retain/release (set on `h` at Loreline_play time) keeps
+ * userData-dependent host objects alive across the queue-to-flush gap. */
 HX_BEGIN_LOCAL_FUNC_S4(::hx::LocalFunc, _hx_Closure_asyncFuncBody,
     Loreline_AsyncCustomFunction, fn, void*, fnUserData,
     Loreline_Interpreter*, h,
@@ -860,22 +907,33 @@ void _hx_run(::Dynamic hxDone) {
     auto cFn = fn;
     auto cUserData = fnUserData;
     auto cH = h;
+    auto cRetain = h->retain;
+    auto cRelease = h->release;
+    void *cInterpUserData = h->userData;
+
+    Loreline_Retainer *retainer = cRetain ? cRetain(cInterpUserData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
-    cFn(cH, args->data(), (int)args->size(), resolve, cUserData);
+    try {
+        cFn(cH, args->data(), (int)args->size(), resolve, cUserData);
+    } catch (...) {
+        if (cRelease) cRelease(retainer);
+        throw;
+    }
+    if (cRelease) cRelease(retainer);
     LORELINE_END_DISPATCH_OUT
 }
 HX_END_LOCAL_FUNC1((void))
 
-/* Async custom function: returns loreline.Async to pause interpreter */
+/* Async custom function: returns loreline.Async to pause interpreter.
+ * Invoked via Reflect.makeVarArgs wrapper, so hxArgs is an Array<Any> of all
+ * positional script arguments. */
 HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_asyncCustomFunction,
     Loreline_AsyncCustomFunction, fn, void*, fnUserData,
-    Loreline_Interpreter*, h) HXARGC(2)
-::Dynamic _hx_run(::Dynamic hxInterp, ::Dynamic hxArgs) {
-    linc_ensureInterpHandle(h, hxInterp);
-
+    Loreline_Interpreter*, h) HXARGC(1)
+::Dynamic _hx_run(::Dynamic hxArgs) {
     ::cpp::VirtualArray arr = (::cpp::VirtualArray)hxArgs;
-    int argCount = arr->get_length();
+    int argCount = arr.mPtr ? arr->get_length() : 0;
     auto cArgs = std::make_shared<std::vector<Loreline_Value> >(argCount);
     for (int i = 0; i < argCount; i++) {
         (*cArgs)[i] = linc_hxToValue(arr->__get(i));
@@ -885,7 +943,7 @@ HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_asyncCustomFunction,
         new _hx_Closure_asyncFuncBody(fn, fnUserData, h, cArgs));
     return ::loreline::Async_obj::__new(asyncFunc);
 }
-HX_END_LOCAL_FUNC2(return)
+HX_END_LOCAL_FUNC1(return)
 
 /* ── Parse ──────────────────────────────────────────────────────────────── */
 
@@ -1000,11 +1058,17 @@ static LORELINE_NOINLINE void Loreline_play_hx(
                 ::Dynamic hxFunc;
                 if (entry.syncFn) {
                     hxFunc = ::Dynamic(
-                        new _hx_Closure_customFunction(entry.syncFn, entry.userData, h));
+                        new _hx_Closure_customFunction(
+                            entry.syncFn, entry.userData, h));
                 } else {
                     hxFunc = ::Dynamic(
-                        new _hx_Closure_asyncCustomFunction(entry.asyncFn, entry.userData, h));
+                        new _hx_Closure_asyncCustomFunction(
+                            entry.asyncFn, entry.userData, h));
                 }
+                // Wrap with Reflect.makeVarArgs so the Interpreter can invoke
+                // via positional Reflect.callMethod; our closures expect a single
+                // Array<Any> argument containing all script-level positional args.
+                hxFunc = ::Reflect_obj::makeVarArgs(hxFunc);
                 map->set(::String(entry.name.c_str()), hxFunc);
             }
             hxFunctions = map;
@@ -1045,7 +1109,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_FinishHandler onFinish,
     Loreline_String beatName,
     Loreline_InterpreterOptions* options,
-    void* userData
+    void* userData,
+    Loreline_UserDataRetain retain,
+    Loreline_UserDataRelease release
 ) {
     if (!script) return nullptr;
 
@@ -1054,6 +1120,8 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     handle->choiceHandler = onChoice;
     handle->finishHandler = onFinish;
     handle->userData = userData;
+    handle->retain = retain;
+    handle->release = release;
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
@@ -1092,11 +1160,17 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
                 ::Dynamic hxFunc;
                 if (entry.syncFn) {
                     hxFunc = ::Dynamic(
-                        new _hx_Closure_customFunction(entry.syncFn, entry.userData, h));
+                        new _hx_Closure_customFunction(
+                            entry.syncFn, entry.userData, h));
                 } else {
                     hxFunc = ::Dynamic(
-                        new _hx_Closure_asyncCustomFunction(entry.asyncFn, entry.userData, h));
+                        new _hx_Closure_asyncCustomFunction(
+                            entry.asyncFn, entry.userData, h));
                 }
+                // Wrap with Reflect.makeVarArgs so the Interpreter can invoke
+                // via positional Reflect.callMethod; our closures expect a single
+                // Array<Any> argument containing all script-level positional args.
+                hxFunc = ::Reflect_obj::makeVarArgs(hxFunc);
                 map->set(::String(entry.name.c_str()), hxFunc);
             }
             hxFunctions = map;
@@ -1135,7 +1209,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_String saveData,
     Loreline_String beatName,
     Loreline_InterpreterOptions* options,
-    void* userData
+    void* userData,
+    Loreline_UserDataRetain retain,
+    Loreline_UserDataRelease release
 ) {
     if (!script || saveData.isNull()) return nullptr;
 
@@ -1144,6 +1220,8 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     handle->choiceHandler = onChoice;
     handle->finishHandler = onFinish;
     handle->userData = userData;
+    handle->retain = retain;
+    handle->release = release;
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
@@ -1534,6 +1612,29 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
     LORELINE_BEGIN_CALL
     LORELINE_HX_BEGIN
     ::Dynamic(doneObj)->__run();
+    hx::GCRemoveRoot(&doneObj);
+    LORELINE_HX_END
+    LORELINE_END_CALL
+
+    delete resolve;
+}
+
+LORELINE_PUBLIC void Loreline_cancelAsync(
+    Loreline_AsyncResolve* resolve
+) {
+    if (!resolve) return;
+    if (!resolve->doneObj) {
+        delete resolve;
+        return;
+    }
+    hx::Object* doneObj = resolve->doneObj;
+    resolve->doneObj = nullptr;
+
+    // Release the GC root on the done closure without invoking it. The Haxe
+    // side's Async state stays paused until the interpreter itself is
+    // released, at which point the closure becomes collectible.
+    LORELINE_BEGIN_CALL
+    LORELINE_HX_BEGIN
     hx::GCRemoveRoot(&doneObj);
     LORELINE_HX_END
     LORELINE_END_CALL

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/test_async.gd" id="1_script"]
+
+[node name="TestAsync" type="Node"]
+script = ExtResource("1_script")

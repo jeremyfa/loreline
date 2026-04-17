@@ -179,20 +179,22 @@ Loreline_Value LorelineOptions::_on_custom_function(
 		const Loreline_Value *args,
 		int argCount,
 		void *userData) {
-	FunctionCallContext *ctx = static_cast<FunctionCallContext *>(userData);
+	LorelineFunctionCallContext *ctx = static_cast<LorelineFunctionCallContext *>(userData);
 	if (!ctx || !ctx->options) return Loreline_Value::null_val();
 
 	Callable fn = ctx->options->_functions.get(ctx->function_name, Callable());
 	if (!fn.is_valid()) return Loreline_Value::null_val();
 
-	// Build args array: (interpreter_placeholder, args_array)
-	// We pass null for interpreter since we don't have the GDScript wrapper here
+	// Build wrapper Ref FIRST (guard + source for the Variant we pass to GDScript).
+	Ref<LorelineInterpreter> wrapper_ref(ctx->wrapper);
+	Variant wrapper_variant = ctx->wrapper ? Variant(wrapper_ref) : Variant();
+
 	Array gdArgs;
 	for (int i = 0; i < argCount; i++) {
 		gdArgs.append(LorelineInterpreter::_value_to_variant(args[i]));
 	}
 
-	Variant result = fn.call(Variant(), gdArgs);
+	Variant result = fn.call(wrapper_variant, gdArgs);
 	return LorelineInterpreter::_variant_to_value(result);
 }
 
@@ -202,7 +204,7 @@ void LorelineOptions::_on_async_custom_function(
 		int argCount,
 		Loreline_AsyncResolve *resolve,
 		void *userData) {
-	FunctionCallContext *ctx = static_cast<FunctionCallContext *>(userData);
+	LorelineFunctionCallContext *ctx = static_cast<LorelineFunctionCallContext *>(userData);
 	if (!ctx || !ctx->options) {
 		Loreline_resolveAsync(resolve, Loreline_Value::null_val());
 		return;
@@ -214,19 +216,26 @@ void LorelineOptions::_on_async_custom_function(
 		return;
 	}
 
+	// Build wrapper Ref FIRST (guard + source for the resolve Callable and the interp arg).
+	Ref<LorelineInterpreter> wrapper_ref(ctx->wrapper);
+	Variant wrapper_variant = ctx->wrapper ? Variant(wrapper_ref) : Variant();
+
 	Array gdArgs;
 	for (int i = 0; i < argCount; i++) {
 		gdArgs.append(LorelineInterpreter::_value_to_variant(args[i]));
 	}
 
-	// Create a resolve Callable that wraps Loreline_resolveAsync
-	// For now, call the async function and resolve immediately with its return value
-	// TODO: pass a proper resolve Callable for true async support
-	Variant result = fn.call(Variant(), gdArgs);
-	Loreline_resolveAsync(resolve, LorelineInterpreter::_variant_to_value(result));
+	// Build the resolve Callable. It owns the Loreline_AsyncResolve handle
+	// and holds a Ref<LorelineInterpreter> so retaining resolve keeps the
+	// interpreter alive across the async pause.
+	Callable resolve_callable = loreline_make_resolve_callable(resolve, wrapper_ref);
+
+	fn.call(wrapper_variant, gdArgs, resolve_callable);
 }
 
-Loreline_InterpreterOptions *LorelineOptions::build_native_options() {
+Loreline_InterpreterOptions *LorelineOptions::build_native_options(
+		LorelineInterpreter *wrapper,
+		std::vector<LorelineFunctionCallContext *> &out_contexts) {
 	Loreline_InterpreterOptions *opts = Loreline_createOptions();
 
 	if (_strict_access) {
@@ -248,10 +257,12 @@ Loreline_InterpreterOptions *LorelineOptions::build_native_options() {
 		String name = funcNames[i];
 		CharString name_utf8 = name.utf8();
 
-		FunctionCallContext *ctx = new FunctionCallContext();
+		LorelineFunctionCallContext *ctx = new LorelineFunctionCallContext();
 		ctx->options = this;
 		ctx->function_name = name;
 		ctx->is_async = false;
+		ctx->wrapper = wrapper;
+		out_contexts.push_back(ctx);
 
 		Loreline_optionsAddFunction(opts,
 				Loreline_String(name_utf8.get_data()),
@@ -265,10 +276,12 @@ Loreline_InterpreterOptions *LorelineOptions::build_native_options() {
 		String name = asyncFuncNames[i];
 		CharString name_utf8 = name.utf8();
 
-		FunctionCallContext *ctx = new FunctionCallContext();
+		LorelineFunctionCallContext *ctx = new LorelineFunctionCallContext();
 		ctx->options = this;
 		ctx->function_name = name;
 		ctx->is_async = true;
+		ctx->wrapper = wrapper;
+		out_contexts.push_back(ctx);
 
 		Loreline_optionsAddAsyncFunction(opts,
 				Loreline_String(name_utf8.get_data()),
@@ -277,11 +290,6 @@ Loreline_InterpreterOptions *LorelineOptions::build_native_options() {
 	}
 
 	return opts;
-}
-
-void LorelineOptions::release_native_contexts() {
-	// Contexts are owned by the options and freed when options are released
-	// No action needed here since Loreline_releaseOptions handles cleanup
 }
 
 #endif // !LORELINE_USE_JS

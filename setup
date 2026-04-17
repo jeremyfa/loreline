@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import crypto from 'node:crypto';
 import { execSync, spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as url from 'node:url';
@@ -312,9 +312,7 @@ async function main() {
     if (buildCppLib) {
 
         let haxeBuildCppLibArgs = [
-            'build-cpp-lib.hxml',
-            '-D', 'HXCPP_STACK_LINE',
-            '-D', 'HXCPP_STACK_TRACE'
+            'build-cpp-lib.hxml'
         ];
 
         if (process.platform == 'darwin') {

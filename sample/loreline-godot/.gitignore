@@ -12,6 +12,7 @@
 # Generated files — addon binaries copied by CI/setup
 /addons/loreline/bin/
 
-# Story files — copied from sample/
-/story/
+# Story files — copied from sample/ (except hand-written test stories)
+/story/*
+!/story/TestAsync.lor
 

@@ -170,6 +170,20 @@ typedef void (*Loreline_AsyncCustomFunction)(
     void* userData
 );
 
+/* Opaque host-provided retainer. The host decides what this points at; the
+ * Loreline wrapper only passes it between retain and release calls. */
+typedef struct Loreline_Retainer Loreline_Retainer;
+
+/* Called BEFORE a custom-function invocation is queued onto the dispatch
+ * queue. Host implementations typically bump a refcount on whatever object
+ * backs `userData` and return a handle encoding how to release it. Return
+ * NULL if no retention is needed; release will then also be called with NULL. */
+typedef Loreline_Retainer *(*Loreline_UserDataRetain)(void *userData);
+
+/* Called AFTER a custom-function invocation has run (or after an exception
+ * escapes it). Host decrements whatever retain bumped. Safe with NULL. */
+typedef void (*Loreline_UserDataRelease)(Loreline_Retainer *retainer);
+
 
 /* ── Core functions ─────────────────────────────────────────────────────── */
 
@@ -221,6 +235,15 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
     Loreline_AsyncResolve* resolve,
     Loreline_Value result);
 
+/* Cancel an async custom function call without resuming the interpreter.
+ * Releases the resolve handle and its internal GC root on the done closure,
+ * but does not invoke the closure. Use when the host drops the resolve
+ * handle without resolving (e.g. the GDScript Callable was released before
+ * resolve.call() fired). The Haxe-side Async state is cleaned up naturally
+ * when the interpreter itself is released. */
+LORELINE_PUBLIC void Loreline_cancelAsync(
+    Loreline_AsyncResolve* resolve);
+
 /* Playback */
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_Script* script,
@@ -229,7 +252,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_FinishHandler onFinish,
     Loreline_String beatName,
     Loreline_InterpreterOptions* options,
-    void* userData
+    void* userData,
+    Loreline_UserDataRetain retain,     /* may be NULL */
+    Loreline_UserDataRelease release    /* may be NULL */
 );
 
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
@@ -240,7 +265,9 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_String saveData,
     Loreline_String beatName,
     Loreline_InterpreterOptions* options,
-    void* userData
+    void* userData,
+    Loreline_UserDataRetain retain,     /* may be NULL */
+    Loreline_UserDataRelease release    /* may be NULL */
 );
 
 /* Interpreter methods */

@@ -1,0 +1,5 @@
+
+beat start
+  Fetching score...
+  fetchScore()
+  Your score is $score.

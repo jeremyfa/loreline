@@ -6,9 +6,14 @@
 -D static_link
 -D no-compilation
 -D loreline_cpp_lib
--D HXCPP_CHECK_POINTER
--D HXCPP_CPP11
 -D safeMode
 -D hscriptPos
+-D HXCPP_DEBUG_LINK
+-D HXCPP_STACK_LINE
+-D HXCPP_STACK_TRACE
+-D HXCPP_CHECK_POINTER
+-D HXCPP_CPP11
+-D HXCPP_IMMORTAL_STATICS
+-D safeMode
 --macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
 --macro addGlobalMetadata('hscript', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
