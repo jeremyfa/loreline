@@ -127,10 +127,10 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         },
 
         provideFunctionDone: function(callId) {
-            var fn = _pendingFunctionDone[callId];
-            if (fn) {
+            var entry = _pendingFunctionDone[callId];
+            if (entry) {
                 delete _pendingFunctionDone[callId];
-                fn();
+                entry.done();
             }
         },
 
@@ -187,7 +187,9 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                 return function(interpreter, args) {
                                     return new loreline.Async(function(done) {
                                         var callId = _nextFileRequestId++;
-                                        _pendingFunctionDone[callId] = done;
+                                        // Tag the done closure with the interpId so releaseInterpreter
+                                        // can sweep any entries left dangling when the wrapper dies.
+                                        _pendingFunctionDone[callId] = { done: done, interpId: iid };
                                         var argsArr = [];
                                         if (args) {
                                             for (var ai = 0; ai < args.length; ai++) {
@@ -284,6 +286,15 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         resume: function(scriptId, saveData, beatName, optionsJson) {
             var script = _getObj(scriptId);
             if (!script) return 0;
+            // saveData arrives as a JSON string from the C++ side — Loreline.resume
+            // expects a parsed SaveData object (same shape as interp.restore takes).
+            var parsedSaveData;
+            try {
+                parsedSaveData = JSON.parse(saveData);
+            } catch (e) {
+                console.error("Loreline resume: malformed save data JSON:", e);
+                return 0;
+            }
             // Pre-allocate ID so callbacks use the correct interpId
             var interpId = _nextId++;
 
@@ -326,7 +337,8 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                 return function(interpreter, args) {
                                     return new loreline.Async(function(done) {
                                         var callId = _nextFileRequestId++;
-                                        _pendingFunctionDone[callId] = done;
+                                        // Tag with interpId; see note in play:.
+                                        _pendingFunctionDone[callId] = { done: done, interpId: iid };
                                         var argsArr = [];
                                         if (args) {
                                             for (var ai = 0; ai < args.length; ai++) {
@@ -407,7 +419,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                         interpId: interpId
                     });
                 },
-                saveData,
+                parsedSaveData,
                 beatName || null,
                 resumeOptions
             );
@@ -449,6 +461,14 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         releaseInterpreter: function(interpId) {
             delete _pendingAdvance[interpId];
             delete _pendingSelect[interpId];
+            // Sweep any still-pending async-done closures tied to this interpId.
+            // Without this, Haxe `done` closures would remain rooted in
+            // _pendingFunctionDone and keep the Haxe interpreter from being GC'd.
+            for (var callId in _pendingFunctionDone) {
+                if (_pendingFunctionDone[callId].interpId === interpId) {
+                    delete _pendingFunctionDone[callId];
+                }
+            }
             _releaseObj(interpId);
         },
 
@@ -504,30 +524,26 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         getStateField: function(interpId, field) {
             var interp = _getObj(interpId);
             if (!interp) return null;
-            var scope = interp.get_currentScope ? interp.get_currentScope() : null;
-            if (!scope || !scope.state) return null;
-            return scope.state.getField(field);
+            return interp.getStateField(field);
         },
 
         setStateField: function(interpId, field, value) {
             var interp = _getObj(interpId);
-            if (!interp) return;
-            var scope = interp.get_currentScope ? interp.get_currentScope() : null;
-            if (scope && scope.state) {
-                scope.state.setField(field, value);
+            if (interp) {
+                interp.setStateField(field, value);
             }
         },
 
         getTopLevelStateField: function(interpId, field) {
             var interp = _getObj(interpId);
-            if (!interp || !interp.topLevelState) return null;
-            return interp.topLevelState.getField(field);
+            if (!interp) return null;
+            return interp.getTopLevelStateField(field);
         },
 
         setTopLevelStateField: function(interpId, field, value) {
             var interp = _getObj(interpId);
-            if (interp && interp.topLevelState) {
-                interp.topLevelState.setField(field, value);
+            if (interp) {
+                interp.setTopLevelStateField(field, value);
             }
         },
 

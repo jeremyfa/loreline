@@ -1175,11 +1175,17 @@ async function main() {
             const exportMatch = jsSourceForBundle.match(/export const (.+);[\s]*$/);
             if (exportMatch) {
                 jsSourceForBundle = jsSourceForBundle.replace(/export const .+;[\s]*$/, '');
-                const assignments = exportMatch[1].split(/,(?=\w+=)/).map(d => {
+                const parts = exportMatch[1].split(/,(?=\w+=)/);
+                const assignments = parts.map(d => {
                     const eq = d.indexOf('=');
                     return 'window.' + d.substring(0, eq) + '=' + d.substring(eq + 1);
                 });
-                jsSourceForBundle += assignments.join(';') + ';';
+                // Also expose the full lowercase `loreline` namespace so bridge code
+                // can do `new loreline.Async(...)`. Derive the prefix (e.g. `Xl.loreline`)
+                // from the first export's RHS, which is always `<ns>.loreline.<ClassName>`.
+                const firstRhs = parts[0].substring(parts[0].indexOf('=') + 1);
+                const nsPath = firstRhs.replace(/\.[A-Za-z_$][\w$]*$/, '');
+                jsSourceForBundle += 'window.loreline=' + nsPath + ';' + assignments.join(';') + ';';
             }
             // Escape for C++ raw string literal using a unique delimiter
             const headerContent = [

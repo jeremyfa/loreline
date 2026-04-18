@@ -64,6 +64,12 @@ const char *loreline_call_host_function(int interp_id, const char *name, const c
 	Callable fn = funcs->get(func_name, Callable());
 	if (!fn.is_valid()) return "null";
 
+	// Look up the interpreter wrapper so the handler receives the same
+	// `interp` Variant shape as on native.
+	LorelineInterpreter *wrapper = LorelineInterpreter::_get_by_js_id(interp_id);
+	Ref<LorelineInterpreter> wrapper_ref(wrapper);
+	Variant wrapper_variant = wrapper ? Variant(wrapper_ref) : Variant();
+
 	// Parse args JSON array
 	Array gdArgs;
 	if (args_json && args_json[0] != '\0') {
@@ -77,8 +83,7 @@ const char *loreline_call_host_function(int interp_id, const char *name, const c
 		}
 	}
 
-	// Call the GDScript function: fn(interp_placeholder, args_array)
-	Variant result = fn.call(Variant(), gdArgs);
+	Variant result = fn.call(wrapper_variant, gdArgs);
 
 	// Convert result to JSON string for JS
 	String result_json;

@@ -42,6 +42,11 @@ private:
 
 	// Poll JS event queue and dispatch signals to registered interpreters
 	static void _poll_js_events();
+
+public:
+	static LorelineInterpreter *_get_by_js_id(int js_id);
+
+private:
 #else
 	Loreline_Interpreter *_interp;
 	Variant _options_ref; // Retained so LorelineFunctionCallContext->options stays valid

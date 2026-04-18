@@ -69,6 +69,11 @@ public:
 #include "loreline_js_utils.h"
 
 HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
+
+LorelineInterpreter *LorelineInterpreter::_get_by_js_id(int js_id) {
+	LorelineInterpreter **pp = _js_registry.getptr(js_id);
+	return pp ? *pp : nullptr;
+}
 #endif
 
 // Handed to the user's async custom function as its `resolve` argument.
@@ -271,7 +276,10 @@ void LorelineInterpreter::_poll_js_events() {
 				tag["closing"] = tag_raw.get("closing", false);
 				godot_tags.append(tag);
 			}
-			Callable advance_callable = Callable(interp, "advance");
+			// Construct self_ref BEFORE releasing active, so refcount never dips to 0.
+			Ref<LorelineInterpreter> self_ref(interp);
+			Callable advance_callable(memnew(LorelineAdvanceCallable(self_ref)));
+			Loreline::_release_active_interpreter(interp);
 			interp->emit_signal("dialogue", interp, character, text, godot_tags, advance_callable);
 
 		} else if (type == "choice") {
@@ -298,10 +306,16 @@ void LorelineInterpreter::_poll_js_events() {
 				option["tags"] = opt_tags;
 				godot_options.append(option);
 			}
-			Callable select_callable = Callable(interp, "select");
+			Ref<LorelineInterpreter> self_ref(interp);
+			Callable select_callable(memnew(LorelineSelectCallable(self_ref)));
+			Loreline::_release_active_interpreter(interp);
 			interp->emit_signal("choice", interp, godot_options, select_callable);
 
 		} else if (type == "finished") {
+			// Guard refcount through emit_signal. If no external Refs remain
+			// after this iteration, the interpreter is released here.
+			Ref<LorelineInterpreter> guard(interp);
+			Loreline::_release_active_interpreter(interp);
 			interp->emit_signal("finished", interp);
 
 		} else if (type == "async_function_call") {
@@ -324,7 +338,8 @@ void LorelineInterpreter::_poll_js_events() {
 
 			Ref<LorelineInterpreter> interp_ref(interp);
 			Callable resolve_callable = loreline_make_resolve_callable(call_id, interp_ref);
-			fn.call(Variant(), args, resolve_callable);
+			Variant wrapper_variant(interp_ref);
+			fn.call(wrapper_variant, args, resolve_callable);
 		}
 	}
 }
