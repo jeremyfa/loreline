@@ -398,6 +398,15 @@ export class Interpreter {
      * @return The current node or null if no node is being executed
      */
     currentNode(): Node | null;
+
+    /**
+     * Returns the file path of the file containing the current node.
+     * Resolves through import chains relative to the given root file path.
+     *
+     * @param rootPath The file path of the root/main script
+     * @return The file path of the file containing the current node, or rootPath if in the root file
+     */
+    currentNodeFilePath(rootPath: string): string;
 }
 
 /**
