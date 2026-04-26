@@ -119,6 +119,19 @@ body {
 .output-keeper-cell { display: table-cell; width: 0; padding: 0; }
 .output-keeper      { width: 0; overflow: hidden; }
 
+/* Uniform spacing between every direct child of the output column.
+   One rule covers narrative-to-narrative, narrative-to-dialogue,
+   dialogue-to-dialogue, etc. Elements don't manage their own
+   inter-sibling margins. */
+.output-content > * + * { margin-top: 1rem; }
+
+/* Choice blocks want more breathing room than text-to-text — framed
+   buttons carry more visual weight and deserve a clearer separation. */
+.output-content > .preview-choices,
+.output-content > .preview-choices + * {
+  margin-top: 1.75rem;
+}
+
 
 /* ══════════════════════════════════════════════════════════════════════════════
  *  PREVIEW ELEMENTS — Narrative & Dialogue
@@ -133,14 +146,8 @@ body {
   color: var(--text-muted);
   font-family: var(--font-display);
   font-style: italic;
-  margin-bottom: 0.7rem;
   line-height: 1.7;
   font-size: 1.05rem;
-}
-
-/* Dialogue lines (character + text) */
-.preview-line.dialogue {
-  margin-bottom: 0.3rem;
 }
 
 /* Character name — gradient text effect */
@@ -164,7 +171,6 @@ body {
  * ══════════════════════════════════════════════════════════════════════════════ */
 
 .preview-choices {
-  margin-top: 1.15rem;
   display: flex;
   flex-direction: column;
 }
@@ -202,8 +208,7 @@ body {
   color: var(--text);
   background: var(--glow);
   cursor: default;
-  margin-bottom: 1.2rem;
-  transition: transform 0.35s ease-in-out, margin-bottom 0.35s ease;
+  transition: transform 0.35s ease-in-out;
 }
 
 /* Fading state — other choices disappear */
