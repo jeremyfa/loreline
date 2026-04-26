@@ -1947,31 +1947,45 @@ class Server {
 
         if (incomingBeats.length > 0 || outgoingBeats.length > 0) {
 
-            // Add incoming beats (references to this beat)
+            // Add incoming beats (references to this beat). Multiple transitions
+            // from the same parent would each yield a Reference; dedup by the
+            // parent beat's canonical id so the parent appears once.
             if (incomingBeats.length > 0) {
                 final targets = [];
+                final seen = new Map<String, Bool>();
                 for (ref in incomingBeats) {
                     final incoming = lens.getFirstParentOfType(ref.origin, NBeatDecl);
-                    if (incoming != null) {
-                        if (incoming.name == "_") {
-                            targets.push("*top level*");
-                        } else {
-                            targets.push(makePositionLink(incoming.name, uri, incoming, lens));
-                        }
+                    if (incoming == null) continue;
+                    final key = Std.string(incoming.id);
+                    if (seen.exists(key)) continue;
+                    seen.set(key, true);
+                    if (incoming.name == "_") {
+                        targets.push("*top level*");
+                    } else {
+                        targets.push(makePositionLink(incoming.name, uri, incoming, lens));
                     }
                 }
                 description.push("- From: " + targets.join(', '));
             }
 
-            // Add outgoing beats
+            // Add outgoing beats — dedup transitions and calls separately so a
+            // target that is both transitioned to AND called appears in each
+            // list once, not once per statement.
             if (outgoingBeats.length > 0) {
                 final callTargets = [];
                 final transitionTargets = [];
+                final seenTransitions = new Map<String, Bool>();
+                final seenCalls = new Map<String, Bool>();
                 for (ref in outgoingBeats) {
+                    final key = Std.string(ref.target.id);
                     if (ref.origin is NTransition) {
+                        if (seenTransitions.exists(key)) continue;
+                        seenTransitions.set(key, true);
                         transitionTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                     }
                     else {
+                        if (seenCalls.exists(key)) continue;
+                        seenCalls.set(key, true);
                         callTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
                     }
                 }
