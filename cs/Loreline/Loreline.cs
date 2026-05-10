@@ -260,6 +260,35 @@ namespace Loreline
         }
 
         /// <summary>
+        /// Loads translations for a specific locale, walking the script's full import tree.
+        /// </summary>
+        /// <remarks>
+        /// For each file involved in the script (root + transitively imported), looks up the
+        /// corresponding translation file by inserting `.&lt;locale&gt;` before the extension
+        /// (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+        /// silently skipped. Pass the result to <see cref="Interpreter.InterpreterOptions.Translations"/>.
+        /// </remarks>
+        /// <param name="locale">The locale code (e.g. "fr")</param>
+        /// <param name="script">The parsed source script (must have been parsed with a file path, or <paramref name="filePath"/> must be provided)</param>
+        /// <param name="filePath">(optional) Override for where to look for translation files. Defaults to the script's own file path. Can be a `.lor`/`.lor.txt` path or a directory.</param>
+        /// <param name="handleFile">A file handler used to read translation files</param>
+        /// <returns>A translations object to pass as <see cref="Interpreter.InterpreterOptions.Translations"/></returns>
+        public static object LoadLocale(
+            string locale,
+            Script script,
+            string filePath = null,
+            ImportsFileHandler handleFile = null
+        )
+        {
+            ImportsFileHandlerWrap handleFileWrap = null;
+            if (handleFile != null)
+            {
+                handleFileWrap = new ImportsFileHandlerWrap(handleFile);
+            }
+            return Runtime.Loreline.loadLocale(locale, script.RuntimeScript, filePath, handleFileWrap, null);
+        }
+
+        /// <summary>
         /// Prints a parsed script back into Loreline source code.
         /// </summary>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>

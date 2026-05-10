@@ -223,16 +223,37 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 #endif
 }
 
-Dictionary LorelineScript::extract_translations() {
+Ref<LorelineTranslations> LorelineScript::extract_translations() {
 #ifdef LORELINE_USE_JS
-	// TODO: implement translation extraction for JS path
-	return Dictionary();
+	if (_js_id == 0) {
+		return Ref<LorelineTranslations>();
+	}
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) {
+		return Ref<LorelineTranslations>();
+	}
+	Variant result = js->eval("_lorelineBridge.extractTranslations(" +
+			String::num_int64(_js_id) + ")", true);
+	int translations_id = (int)result;
+	if (translations_id == 0) {
+		return Ref<LorelineTranslations>();
+	}
+	Ref<LorelineTranslations> wrapper;
+	wrapper.instantiate();
+	wrapper->_js_id = translations_id;
+	return wrapper;
 #else
 	if (!_script) {
-		return Dictionary();
+		return Ref<LorelineTranslations>();
 	}
-	// TODO: implement translation extraction
-	return Dictionary();
+	Loreline_Translations *handle = Loreline_extractTranslations(_script);
+	if (!handle) {
+		return Ref<LorelineTranslations>();
+	}
+	Ref<LorelineTranslations> wrapper;
+	wrapper.instantiate();
+	wrapper->_handle = handle;
+	return wrapper;
 #endif
 }
 

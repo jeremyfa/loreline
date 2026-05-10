@@ -4,6 +4,7 @@
 #include "loreline_script.h"
 #include "loreline_interpreter.h"
 #include "loreline_options.h"
+#include "loreline_translations.h"
 #include "loreline_resource_loader.h"
 
 #include <gdextension_interface.h>
@@ -24,6 +25,7 @@ void initialize_loreline_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(LorelineScript);
 	GDREGISTER_CLASS(LorelineInterpreter);
 	GDREGISTER_CLASS(LorelineOptions);
+	GDREGISTER_CLASS(LorelineTranslations);
 	GDREGISTER_CLASS(LorelineResourceLoader);
 
 	lor_loader.instantiate();

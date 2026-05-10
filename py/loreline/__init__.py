@@ -490,6 +490,38 @@ class Loreline:
         return _core.loreline_Loreline.extractTranslations(script._internal)
 
     @staticmethod
+    def load_locale(
+        locale: str,
+        script: Script,
+        file_path: Optional[str] = None,
+        handle_file: Optional[ImportsFileHandler] = None,
+        callback: Optional[Callable[[Any], None]] = None,
+    ) -> Any:
+        """Load translations for a specific locale, walking the script's full import tree.
+
+        For each file involved in the script (root + transitively imported), looks up
+        the corresponding translation file by inserting ``.<locale>`` before the
+        extension (e.g. ``characters.lor`` -> ``characters.fr.lor``). Missing
+        translation files are silently skipped.
+
+        Args:
+            locale: The locale code (e.g. ``"fr"``).
+            script: The parsed source script (must have been parsed with a file
+                    path, or ``file_path`` must be provided).
+            file_path: Optional override for where to look for translation files.
+                       Defaults to the script's own file path.
+            handle_file: File handler used to read translation files.
+            callback: Called with the merged translations map. Required when
+                      ``handle_file`` is asynchronous.
+
+        Returns:
+            The merged translations map (synchronously, when ``handle_file`` is sync).
+        """
+        return _core.loreline_Loreline.loadLocale(
+            locale, script._internal, file_path, handle_file, callback,
+        )
+
+    @staticmethod
     def print(script: Script, indent: str = "  ", newline: str = "\n") -> str:
         """Print a parsed script back into Loreline source code.
 

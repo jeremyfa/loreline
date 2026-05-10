@@ -749,16 +749,53 @@ static void linc_select(int index) {
     LORELINE_END_CALL
 }
 
-/* ── File handler bridge ───────────────────────────────────────────────── */
+/* ── File request token ────────────────────────────────────────────────── */
 
-static ::Dynamic s_pendingFileProvide;
+/* Per-call retainer for an in-flight file load. Holds a GC root on the Haxe
+ * callback so it survives across the host's fh() return and any deferred
+ * provide invocation. Mirrors Loreline_Interpreter::pendingCb pattern. */
+struct Loreline_FileRequest {
+    hx::Object* cb;
 
-static void linc_fileProvide(Loreline_String content) {
-    if (!hx::IsNull(s_pendingFileProvide)) {
-        ::Dynamic cb = s_pendingFileProvide;
-        s_pendingFileProvide = null();
-        cb->__run(linc_toHxString(content));
+    Loreline_FileRequest() : cb(nullptr) {}
+
+    void setCallback(hx::Object* c) {
+        if (cb) { hx::GCRemoveRoot(&cb); cb = nullptr; }
+        cb = c;
+        if (cb) hx::GCAddRoot(&cb);
     }
+
+    ~Loreline_FileRequest() {
+        if (cb) { hx::GCRemoveRoot(&cb); cb = nullptr; }
+    }
+
+private:
+    Loreline_FileRequest(const Loreline_FileRequest&);
+    Loreline_FileRequest& operator=(const Loreline_FileRequest&);
+};
+
+static LORELINE_NOINLINE void Loreline_provideFile_hx(Loreline_FileRequest* req, Loreline_String content) {
+    LORELINE_HX_BEGIN
+    hx::Object* cbPtr = req->cb;
+    if (cbPtr) {
+        hx::GCRemoveRoot(&req->cb);
+        req->cb = nullptr;
+        ::Dynamic cb(cbPtr);
+        try {
+            cb->__run(linc_toHxString(content));
+        } catch (::Dynamic e) {
+            fprintf(stderr, "Loreline file provide error: %s\n", ((::String)e).c_str());
+        }
+    }
+    delete req;
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_provideFile(Loreline_FileRequest* request, Loreline_String content) {
+    if (!request) return;
+    LORELINE_BEGIN_CALL
+    Loreline_provideFile_hx(request, content);
+    LORELINE_END_CALL
 }
 
 /* ── Haxe callback closures (using hxcpp local func macros) ────────────── */
@@ -857,13 +894,17 @@ void _hx_run(::Dynamic hxInterp) {
 }
 HX_END_LOCAL_FUNC1((void))
 
-/* File handler: 2 captures (Loreline_FileHandler, void*), 2 Haxe args */
+/* File handler: 2 captures (Loreline_FileHandler, void*), 2 Haxe args.
+ * Allocates a per-call Loreline_FileRequest that GC-roots the Haxe callback,
+ * hands the token to the host. Host MUST eventually call Loreline_provideFile
+ * (sync or async) — that consumes the token and unroots/invokes the callback. */
 HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_fileHandler,
     Loreline_FileHandler, fh, void*, fhData) HXARGC(2)
 void _hx_run(::Dynamic hxPath, ::Dynamic hxCallback) {
-    s_pendingFileProvide = hxCallback;
-    fh(linc_hxToString((::String)hxPath), linc_fileProvide, fhData);
-    s_pendingFileProvide = null();
+    Loreline_FileRequest* req = new Loreline_FileRequest();
+    req->setCallback(hxCallback.GetPtr());
+    fh(linc_hxToString((::String)hxPath), req, fhData);
+    /* return immediately — req is now owned by the host until provideFile consumes it */
 }
 HX_END_LOCAL_FUNC2((void))
 
@@ -947,10 +988,32 @@ HX_END_LOCAL_FUNC1(return)
 
 /* ── Parse ──────────────────────────────────────────────────────────────── */
 
-static LORELINE_NOINLINE void Loreline_parse_hx(
+/* Parse completion closure: 2 captures (C completion fn, userData), 1 Haxe arg
+ * (the resulting Script, may be null on parse failure). Wraps into Loreline_Script*
+ * and dispatches the C completion via DISPATCH_OUT (host's update tick). */
+HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_parseCompletion,
+    Loreline_ParseCompletionCallback, completion, void*, completionData) HXARGC(1)
+void _hx_run(::Dynamic hxScript) {
+    Loreline_Script* script = nullptr;
+    if (!hx::IsNull(hxScript)) {
+        script = new Loreline_Script();
+        script->set(hxScript.GetPtr());
+    }
+    LORELINE_BEGIN_DISPATCH_OUT
+    if (completion) {
+        completion(script, completionData);
+    } else if (script) {
+        /* No callback to take ownership — release to avoid leak */
+        delete script;
+    }
+    LORELINE_END_DISPATCH_OUT
+}
+HX_END_LOCAL_FUNC1((void))
+
+static LORELINE_NOINLINE void Loreline_parseAsync_hx(
     Loreline_String input, Loreline_String filePath,
     Loreline_FileHandler fileHandler, void* fileHandlerData,
-    Loreline_Script** outHandle
+    Loreline_ParseCompletionCallback completionHandler, void* completionHandlerData
 ) {
     LORELINE_HX_BEGIN
 
@@ -962,19 +1025,53 @@ static LORELINE_NOINLINE void Loreline_parse_hx(
         hxFileHandler = ::Dynamic(new _hx_Closure_fileHandler(fileHandler, fileHandlerData));
     }
 
-    try {
-        ::Dynamic hxScript = ::loreline::Loreline_obj::parse(hxInput, hxFilePath, hxFileHandler, null());
+    ::Dynamic hxCompletion = ::Dynamic(new _hx_Closure_parseCompletion(
+        completionHandler, completionHandlerData));
 
-        if (!hx::IsNull(hxScript)) {
-            *outHandle = new Loreline_Script();
-            (*outHandle)->set(hxScript.GetPtr());
-        }
+    try {
+        ::loreline::Loreline_obj::parse(hxInput, hxFilePath, hxFileHandler, hxCompletion);
+        /* Result delivered via hxCompletion — sync (fires inline) or async (fires later) */
     } catch (::Dynamic e) {
-        /* Haxe parse error — return nullptr */
-        fprintf(stderr, "Loreline_parse error: %s\n", ((::String)e).c_str());
+        fprintf(stderr, "Loreline_parseAsync error: %s\n", ((::String)e).c_str());
+        /* Best-effort: notify completion with null on error */
+        if (completionHandler) {
+            LORELINE_BEGIN_DISPATCH_OUT
+            completionHandler(nullptr, completionHandlerData);
+            LORELINE_END_DISPATCH_OUT
+        }
     }
 
     LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_parseAsync(
+    Loreline_String input,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData,
+    Loreline_ParseCompletionCallback completionHandler,
+    void* completionHandlerData
+) {
+    LORELINE_BEGIN_CALL
+    Loreline_parseAsync_hx(input, filePath, fileHandler, fileHandlerData,
+                           completionHandler, completionHandlerData);
+    LORELINE_END_CALL
+}
+
+/* Sync wrapper: condvar-backed wait around Loreline_parseAsync. */
+struct Loreline_ParseSyncSlot {
+    std::mutex mtx;
+    std::condition_variable cv;
+    Loreline_Script* result = nullptr;
+    bool done = false;
+};
+
+static void Loreline_parseSync_completion(Loreline_Script* script, void* userData) {
+    auto* slot = static_cast<Loreline_ParseSyncSlot*>(userData);
+    std::lock_guard<std::mutex> lock(slot->mtx);
+    slot->result = script;
+    slot->done = true;
+    slot->cv.notify_one();
 }
 
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
@@ -983,13 +1080,12 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     Loreline_FileHandler fileHandler,
     void* fileHandlerData
 ) {
-    Loreline_Script* handle = nullptr;
-
-    LORELINE_BEGIN_CALL_SYNC
-    Loreline_parse_hx(input, filePath, fileHandler, fileHandlerData, &handle);
-    LORELINE_END_CALL
-
-    return handle;
+    Loreline_ParseSyncSlot slot;
+    Loreline_parseAsync(input, filePath, fileHandler, fileHandlerData,
+                        Loreline_parseSync_completion, &slot);
+    std::unique_lock<std::mutex> lock(slot.mtx);
+    slot.cv.wait(lock, [&]() { return slot.done; });
+    return slot.result;
 }
 
 /* ── Translations ───────────────────────────────────────────────────────── */
@@ -1032,6 +1128,117 @@ LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* transla
     LORELINE_BEGIN_CALL
     Loreline_releaseTranslations_hx(translations);
     LORELINE_END_CALL
+}
+
+/* LoadLocale completion closure: 2 captures (C completion fn, userData), 1 Haxe arg
+ * (the resulting StringMap, may be null). Wraps into Loreline_Translations* and
+ * dispatches the C completion via DISPATCH_OUT. */
+HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_loadLocaleCompletion,
+    Loreline_LoadLocaleCallback, completion, void*, completionData) HXARGC(1)
+void _hx_run(::Dynamic hxTranslations) {
+    Loreline_Translations* translations = nullptr;
+    if (!hx::IsNull(hxTranslations)) {
+        translations = new Loreline_Translations();
+        translations->set(hxTranslations.GetPtr());
+    }
+    LORELINE_BEGIN_DISPATCH_OUT
+    if (completion) {
+        completion(translations, completionData);
+    } else if (translations) {
+        delete translations;
+    }
+    LORELINE_END_DISPATCH_OUT
+}
+HX_END_LOCAL_FUNC1((void))
+
+static LORELINE_NOINLINE void Loreline_loadLocaleAsync_hx(
+    Loreline_String locale, Loreline_Script* script,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler, void* fileHandlerData,
+    Loreline_LoadLocaleCallback completionHandler, void* completionHandlerData
+) {
+    LORELINE_HX_BEGIN
+
+    ::String hxLocale = linc_toHxString(locale);
+    ::String hxFilePath = linc_toHxString(filePath);
+
+    ::Dynamic hxFileHandler = null();
+    if (fileHandler) {
+        hxFileHandler = ::Dynamic(new _hx_Closure_fileHandler(fileHandler, fileHandlerData));
+    }
+
+    ::Dynamic hxCompletion = ::Dynamic(new _hx_Closure_loadLocaleCompletion(
+        completionHandler, completionHandlerData));
+
+    try {
+        ::loreline::Loreline_obj::loadLocale(
+            hxLocale,
+            (::loreline::Script)::Dynamic(script->obj),
+            hxFilePath,
+            hxFileHandler,
+            hxCompletion
+        );
+    } catch (::Dynamic e) {
+        fprintf(stderr, "Loreline_loadLocaleAsync error: %s\n", ((::String)e).c_str());
+        if (completionHandler) {
+            LORELINE_BEGIN_DISPATCH_OUT
+            completionHandler(nullptr, completionHandlerData);
+            LORELINE_END_DISPATCH_OUT
+        }
+    }
+
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_loadLocaleAsync(
+    Loreline_String locale,
+    Loreline_Script* script,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData,
+    Loreline_LoadLocaleCallback completionHandler,
+    void* completionHandlerData
+) {
+    if (!script) {
+        if (completionHandler) completionHandler(nullptr, completionHandlerData);
+        return;
+    }
+    LORELINE_BEGIN_CALL
+    Loreline_loadLocaleAsync_hx(locale, script, filePath, fileHandler, fileHandlerData,
+                                completionHandler, completionHandlerData);
+    LORELINE_END_CALL
+}
+
+/* Sync wrapper: condvar-backed wait around Loreline_loadLocaleAsync. */
+struct Loreline_LoadLocaleSyncSlot {
+    std::mutex mtx;
+    std::condition_variable cv;
+    Loreline_Translations* result = nullptr;
+    bool done = false;
+};
+
+static void Loreline_loadLocaleSync_completion(Loreline_Translations* translations, void* userData) {
+    auto* slot = static_cast<Loreline_LoadLocaleSyncSlot*>(userData);
+    std::lock_guard<std::mutex> lock(slot->mtx);
+    slot->result = translations;
+    slot->done = true;
+    slot->cv.notify_one();
+}
+
+LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
+    Loreline_String locale,
+    Loreline_Script* script,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData
+) {
+    if (!script) return nullptr;
+    Loreline_LoadLocaleSyncSlot slot;
+    Loreline_loadLocaleAsync(locale, script, filePath, fileHandler, fileHandlerData,
+                             Loreline_loadLocaleSync_completion, &slot);
+    std::unique_lock<std::mutex> lock(slot.mtx);
+    slot.cv.wait(lock, [&]() { return slot.done; });
+    return slot.result;
 }
 
 /* ── Play ───────────────────────────────────────────────────────────────── */

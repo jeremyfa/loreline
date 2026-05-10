@@ -144,7 +144,7 @@ public class LorelineStory extends JFrame {
         }
 
         Script script = Loreline.parse(content, "CoffeeShop.lor",
-            path -> readFile(storyDir + path));
+            (path, callback) -> callback.accept(readFile(storyDir + path)));
 
         if (script == null) {
             appendNarrative("Error: Failed to parse script.");

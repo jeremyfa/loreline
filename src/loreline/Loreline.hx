@@ -199,7 +199,7 @@ class Loreline {
         // No-op file handler for translation files (they shouldn't import anything).
         final noopHandle:ImportsFileHandler = (path, cb) -> cb(null);
 
-        function finalize() {
+        inline function dispatchResult() {
             if (callback != null) callback(result);
         }
 
@@ -228,14 +228,14 @@ class Loreline {
                     }
                 }
                 if (pending == 0 && allProcessed) {
-                    finalize();
+                    dispatchResult();
                 }
             });
         }
 
         allProcessed = true;
         if (pending == 0) {
-            finalize();
+            dispatchResult();
         }
 
         return result;

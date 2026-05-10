@@ -23,6 +23,7 @@ class LorelineInterpreter;
 class LorelineOptions;
 
 #include "loreline_script.h"
+#include "loreline_translations.h"
 
 #ifndef LORELINE_USE_JS
 // Per-function userData for the linc wrapper's custom-function closures.
@@ -43,7 +44,7 @@ private:
 	bool _strict_access;
 	Dictionary _functions;       // String → Callable (sync, signature: (interp, args))
 	Dictionary _async_functions; // String → Callable (async, signature: (interp, args, resolve))
-	Ref<LorelineScript> _translations_script;
+	Ref<LorelineTranslations> _translations;
 
 #ifndef LORELINE_USE_JS
 	static Loreline_Value _on_custom_function(
@@ -87,7 +88,7 @@ public:
 
 	void remove_function(const String &name);
 
-	void set_translations(const Ref<LorelineScript> &translations_script);
+	void set_translations(const Ref<LorelineTranslations> &translations);
 
 	const Dictionary &get_functions() const { return _functions; }
 	const Dictionary &get_async_functions() const { return _async_functions; }
@@ -103,8 +104,6 @@ public:
 #endif
 
 #ifdef LORELINE_USE_JS
-	int _translations_js_id = 0;
-
 	// Registry: maps interp JS ID → (function name → Callable)
 	static HashMap<int, Dictionary> _js_function_registry;
 	static HashMap<int, Dictionary> _js_async_function_registry;

@@ -13,6 +13,7 @@ final class RuntimeBridge {
     private static final MethodHandle START;
     private static final MethodHandle RESTORE;
     private static final MethodHandle PARSE;
+    private static final MethodHandle LOAD_LOCALE;
 
     static {
         try {
@@ -30,6 +31,13 @@ final class RuntimeBridge {
                 loreline.runtime.Loreline.class, "parse",
                 MethodType.methodType(loreline.runtime.Script.class,
                     String.class, String.class,
+                    loreline.internal.jvm.Function.class,
+                    loreline.internal.jvm.Function.class));
+
+            LOAD_LOCALE = lookup.findStatic(
+                loreline.runtime.Loreline.class, "loadLocale",
+                MethodType.methodType(loreline.internal.ds.StringMap.class,
+                    String.class, loreline.runtime.Script.class, String.class,
                     loreline.internal.jvm.Function.class,
                     loreline.internal.jvm.Function.class));
         } catch (ReflectiveOperationException e) {
@@ -62,6 +70,18 @@ final class RuntimeBridge {
                                           loreline.internal.jvm.Function callback) {
         try {
             return (loreline.runtime.Script) PARSE.invoke(input, filePath, handleFile, callback);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static Object loadLocale(String locale, loreline.runtime.Script script, String filePath,
+                             loreline.internal.jvm.Function handleFile,
+                             loreline.internal.jvm.Function callback) {
+        try {
+            return LOAD_LOCALE.invoke(locale, script, filePath, handleFile, callback);
         } catch (RuntimeException | Error e) {
             throw e;
         } catch (Throwable e) {

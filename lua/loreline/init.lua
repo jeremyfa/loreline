@@ -364,6 +364,23 @@ function M.extract_translations(script)
     return __loreline_Loreline.extractTranslations(script._internal)
 end
 
+--- Load translations for a specific locale, walking the script's full import tree.
+-- For each file involved in the script (root + transitively imported), looks up the
+-- corresponding translation file by inserting `.<locale>` before the extension
+-- (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation files are
+-- silently skipped.
+-- @param locale string The locale code (e.g. "fr").
+-- @param script Script The parsed source script.
+-- @param file_path string|nil Optional override for where to look for translation files.
+--   Defaults to the script's own file path. Can be a `.lor`/`.lor.txt` path or a directory.
+-- @param handle_file function File handler used to read translation files.
+-- @param callback function|nil Called with the merged translations map.
+--   Required when `handle_file` is asynchronous.
+-- @return table The merged translations map (synchronously, when `handle_file` is sync).
+function M.load_locale(locale, script, file_path, handle_file, callback)
+    return __loreline_Loreline.loadLocale(locale, script._internal, file_path, handle_file, callback)
+end
+
 --- Print a parsed script back into Loreline source code.
 -- @param script Script A parsed Script from `parse()`.
 -- @param indent string The indentation string (default: two spaces).

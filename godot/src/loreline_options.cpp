@@ -13,15 +13,9 @@ LorelineOptions::LorelineOptions()
 }
 
 LorelineOptions::~LorelineOptions() {
-#ifdef LORELINE_USE_JS
-	if (_translations_js_id != 0) {
-		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
-		if (js) {
-			js->eval("_lorelineBridge.releaseTranslations(" + String::num_int64(_translations_js_id) + ")", true);
-		}
-		_translations_js_id = 0;
-	}
-#endif
+	// _translations is a Ref<LorelineTranslations> — auto-released by Ref<>
+	// reference counting. The wrapper's destructor releases the underlying
+	// handle/id. No manual release needed here.
 }
 
 #ifdef LORELINE_USE_JS
@@ -126,7 +120,7 @@ void LorelineOptions::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "name", "callable"), &LorelineOptions::set_function);
 	ClassDB::bind_method(D_METHOD("set_async_function", "name", "callable"), &LorelineOptions::set_async_function);
 	ClassDB::bind_method(D_METHOD("remove_function", "name"), &LorelineOptions::remove_function);
-	ClassDB::bind_method(D_METHOD("set_translations", "translations_script"), &LorelineOptions::set_translations);
+	ClassDB::bind_method(D_METHOD("set_translations", "translations"), &LorelineOptions::set_translations);
 }
 
 void LorelineOptions::set_strict_access(bool strict) {
@@ -152,29 +146,10 @@ void LorelineOptions::remove_function(const String &name) {
 	_async_functions.erase(name);
 }
 
-void LorelineOptions::set_translations(const Ref<LorelineScript> &translations_script) {
-	_translations_script = translations_script;
-
-#ifdef LORELINE_USE_JS
-	// Release previous translations JS object if any
-	if (_translations_js_id != 0) {
-		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
-		if (js) {
-			js->eval("_lorelineBridge.releaseTranslations(" + String::num_int64(_translations_js_id) + ")", true);
-		}
-		_translations_js_id = 0;
-	}
-
-	// Extract translations from the script on the JS side
-	if (_translations_script.is_valid() && _translations_script->_js_id != 0) {
-		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
-		if (js) {
-			Variant result = js->eval("_lorelineBridge.extractTranslations(" +
-					String::num_int64(_translations_script->_js_id) + ")", true);
-			_translations_js_id = (int)result;
-		}
-	}
-#endif
+void LorelineOptions::set_translations(const Ref<LorelineTranslations> &translations) {
+	// Ref<> assignment automatically releases the previous translations
+	// (if last reference) and retains the new one.
+	_translations = translations;
 }
 
 #ifndef LORELINE_USE_JS
@@ -247,13 +222,12 @@ Loreline_InterpreterOptions *LorelineOptions::build_native_options(
 		Loreline_optionsSetStrictAccess(opts, true);
 	}
 
-	// Extract and set translations if a translation script is provided
-	if (_translations_script.is_valid() && _translations_script->_script) {
-		Loreline_Translations *translations = Loreline_extractTranslations(_translations_script->_script);
-		if (translations) {
-			Loreline_optionsSetTranslations(opts, translations);
-			Loreline_releaseTranslations(translations);
-		}
+	// Set translations from the LorelineTranslations wrapper if attached.
+	// The wrapper owns the underlying handle; we just borrow the pointer for
+	// the duration of options building (Loreline_optionsSetTranslations does
+	// not take ownership).
+	if (_translations.is_valid() && _translations->_handle) {
+		Loreline_optionsSetTranslations(opts, _translations->_handle);
 	}
 
 	// Register sync functions
@@ -338,10 +312,10 @@ String LorelineOptions::build_js_options_json() const {
 	}
 
 #ifdef LORELINE_USE_JS
-	// Include translations JS object ID
-	if (_translations_js_id != 0) {
+	// Include translations JS object ID (from the wrapper, if attached)
+	if (_translations.is_valid() && _translations->_js_id != 0) {
 		if (has_prev) json += ",";
-		json += "\"translationsId\":" + String::num_int64(_translations_js_id);
+		json += "\"translationsId\":" + String::num_int64(_translations->_js_id);
 		has_prev = true;
 	}
 #endif

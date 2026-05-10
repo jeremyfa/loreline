@@ -271,6 +271,33 @@ export class Loreline {
     static extractTranslations(script: Script): Translations;
 
     /**
+     * Loads translations for a specific locale, walking the script's full import tree.
+     *
+     * For each file involved in the script (root + transitively imported), the
+     * corresponding translation file is looked up by inserting `.<locale>` before
+     * the extension (e.g. `characters.lor` → `characters.fr.lor`). Missing translation
+     * files are silently skipped. The returned map can be passed as
+     * `InterpreterOptions.translations` to `play()` or `resume()`.
+     *
+     * @param locale The locale code (e.g. `"fr"`)
+     * @param script The parsed source script (must have been parsed with a file path,
+     *               or `filePath` must be provided)
+     * @param filePath Optional override for where to look for translation files
+     *                 (defaults to `script.filePath`). Can be a `.lor`/`.lor.txt` file
+     *                 path or a directory.
+     * @param handleFile File handler used to read translation files
+     * @param callback Called with the merged translations map. Required if `handleFile` is asynchronous.
+     * @returns The merged translations map (synchronously when `handleFile` is sync)
+     */
+    static loadLocale(
+        locale: string,
+        script: Script,
+        filePath?: string | null,
+        handleFile?: ImportsFileHandler,
+        callback?: (translations: Translations) => void
+    ): Translations | null;
+
+    /**
      * Prints a parsed script back into Loreline source code.
      *
      * @param script The parsed script (result from `parse()`)
@@ -491,6 +518,12 @@ export class Script extends Node {
      * Array of top-level declarations in the script.
      */
     body:Array<Node>;
+
+    /**
+     * The file path this script was parsed from.
+     * May be null if the script was parsed without a file path.
+     */
+    filePath: string | null;
 
     /**
      * Reconstructs a Script from a JSON representation.

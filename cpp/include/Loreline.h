@@ -70,6 +70,12 @@ typedef struct Loreline_Translations Loreline_Translations;
 typedef struct Loreline_InterpreterOptions Loreline_InterpreterOptions;
 typedef struct Loreline_AsyncResolve Loreline_AsyncResolve;
 
+/* Opaque file-load request token. Passed to the host's Loreline_FileHandler;
+ * the host calls Loreline_provideFile(request, content) — sync or async — to
+ * deliver the file content (or NULL for "not found"). The token is consumed
+ * by Loreline_provideFile, which must be called exactly once per request. */
+typedef struct Loreline_FileRequest Loreline_FileRequest;
+
 /* ── Value type (tagged union for character fields) ─────────────────────── */
 
 enum Loreline_ValueType {
@@ -146,9 +152,13 @@ typedef void (*Loreline_FinishHandler)(
     void* userData
 );
 
+/* File handler is async-capable: the host receives an opaque request token and
+ * MUST call Loreline_provideFile(request, content) exactly once — synchronously
+ * inside the handler, or later from any thread. Pass NULL content to signal
+ * "file not found". */
 typedef void (*Loreline_FileHandler)(
     Loreline_String path,
-    void (*provide)(Loreline_String content),
+    Loreline_FileRequest* request,
     void* userData
 );
 
@@ -201,7 +211,15 @@ LORELINE_PUBLIC void Loreline_update(double delta);
  * callbacks are dispatched on the caller's thread via Loreline_update(). */
 LORELINE_PUBLIC void Loreline_createThread(void);
 
-/* Parsing */
+/* File handler — deliver content (or NULL for "not found") to a request token.
+ * Must be called exactly once per token. Safe to call from any thread. */
+LORELINE_PUBLIC void Loreline_provideFile(
+    Loreline_FileRequest* request,
+    Loreline_String content
+);
+
+/* Parsing — synchronous: blocks until parsing + all imports complete.
+ * Returns NULL on parse error. */
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     Loreline_String input,
     Loreline_String filePath,
@@ -209,9 +227,62 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     void* fileHandlerData
 );
 
+/* Parsing — async: returns immediately. Completion fires (on the host's update
+ * tick if Loreline_update is being called, otherwise inline) with the resulting
+ * Loreline_Script* (or NULL on parse error). The host owns the script and must
+ * call Loreline_releaseScript when done. */
+typedef void (*Loreline_ParseCompletionCallback)(
+    Loreline_Script* script,
+    void* userData
+);
+
+LORELINE_PUBLIC void Loreline_parseAsync(
+    Loreline_String input,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData,
+    Loreline_ParseCompletionCallback completionHandler,
+    void* completionHandlerData
+);
+
 /* Translations — extract from a script for localized playback */
 LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Script* script);
 LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* translations);
+
+/* Translations — load all .<locale>.lor files from the script's import tree.
+ * For each file involved in the script (root + transitively imported), looks up
+ * the corresponding translation file by inserting `.<locale>` before the extension
+ * (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+ * silently skipped. Pass the result to `Loreline_optionsSetTranslations`.
+ *
+ * `filePath` may be NULL — defaults to the path the `script` was parsed from.
+ * Can also be a directory path to look up translation files in another folder.
+ *
+ * Synchronous: blocks until all translation files have been loaded. */
+LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
+    Loreline_String locale,
+    Loreline_Script* script,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData
+);
+
+/* Translations — async variant of Loreline_loadLocale. Returns immediately;
+ * completion fires with the resulting handle (or NULL on error). */
+typedef void (*Loreline_LoadLocaleCallback)(
+    Loreline_Translations* translations,
+    void* userData
+);
+
+LORELINE_PUBLIC void Loreline_loadLocaleAsync(
+    Loreline_String locale,
+    Loreline_Script* script,
+    Loreline_String filePath,
+    Loreline_FileHandler fileHandler,
+    void* fileHandlerData,
+    Loreline_LoadLocaleCallback completionHandler,
+    void* completionHandlerData
+);
 
 /* Interpreter options — configure custom functions, strict access, translations */
 LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);

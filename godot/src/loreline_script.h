@@ -11,6 +11,7 @@
 #endif
 
 #include "loreline_interpreter.h"
+#include "loreline_translations.h"
 
 using namespace godot;
 
@@ -21,6 +22,7 @@ class LorelineScript : public RefCounted {
 
 	friend class Loreline;
 	friend class LorelineOptions;
+	friend class LorelineInterpreter;
 
 private:
 #ifdef LORELINE_USE_JS
@@ -39,7 +41,7 @@ public:
 	Ref<LorelineInterpreter> play(const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 	Ref<LorelineInterpreter> resume(const String &save_data, const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 
-	Dictionary extract_translations();
+	Ref<LorelineTranslations> extract_translations();
 	String print_script();
 	String to_json(bool pretty = false);
 	static Ref<LorelineScript> from_json(const String &json);

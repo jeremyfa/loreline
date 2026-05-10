@@ -1,7 +1,10 @@
 #include "loreline_runtime.h"
 
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/variant/callable_custom.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+#include <atomic>
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -18,6 +21,11 @@
 #endif
 
 Loreline *Loreline::_singleton = nullptr;
+
+#ifdef LORELINE_USE_JS
+Vector<Callable> Loreline::_pending_parse_callbacks;
+Vector<Callable> Loreline::_pending_load_locale_callbacks;
+#endif
 
 Loreline *Loreline::shared() {
 	if (_singleton) return _singleton;
@@ -72,8 +80,9 @@ Loreline::~Loreline() {
 
 void Loreline::_bind_methods() {
 	ClassDB::bind_static_method("Loreline", D_METHOD("shared"), &Loreline::shared);
-	ClassDB::bind_method(D_METHOD("parse", "source", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("parse", "source", "on_parsed", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("provide_file", "path", "content"), &Loreline::provide_file);
+	ClassDB::bind_method(D_METHOD("load_locale", "locale", "script", "on_loaded", "file_path", "file_handler"), &Loreline::load_locale, DEFVAL(""), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("play", "script", "on_dialogue", "on_choice", "on_finished", "beat_name", "options"), &Loreline::play, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 	ClassDB::bind_method(D_METHOD("resume", "script", "on_dialogue", "on_choice", "on_finished", "save_data", "beat_name", "options"), &Loreline::resume, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 
@@ -141,9 +150,66 @@ void Loreline::_notification(int p_what) {
 }
 
 #ifndef LORELINE_USE_JS
+
+// CallableCustom that wraps a Loreline_FileRequest. Hands a Godot Callable to
+// the user; when invoked with the file content (or null), fires
+// Loreline_provideFile, which consumes the request token. Mirrors the
+// LorelineAdvanceCallable / LorelineSelectCallable pattern.
+class LorelineFileProvideCallable : public CallableCustom {
+	mutable Loreline_FileRequest *_request;
+	mutable std::atomic<bool> _provided;
+
+public:
+	LorelineFileProvideCallable(Loreline_FileRequest *request)
+			: _request(request), _provided(false) {}
+
+	~LorelineFileProvideCallable() {
+		bool expected = false;
+		if (_provided.compare_exchange_strong(expected, true)) {
+			// Host dropped the Callable without calling provide — release the
+			// request with NULL content so Loreline can finish cleanly.
+			if (_request) {
+				Loreline_provideFile(_request, Loreline_String());
+				_request = nullptr;
+			}
+		}
+	}
+
+	uint32_t hash() const override { return (uint32_t)(uintptr_t)this; }
+	String get_as_text() const override { return "LorelineFileProvide"; }
+	ObjectID get_object() const override { return ObjectID(); }
+
+	static bool compare_equal(const CallableCustom *a, const CallableCustom *b) { return a == b; }
+	static bool compare_less(const CallableCustom *a, const CallableCustom *b) { return a < b; }
+	CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
+	CompareLessFunc get_compare_less_func() const override { return compare_less; }
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, GDExtensionCallError &r_call_error) const override {
+		r_call_error.error = GDEXTENSION_CALL_OK;
+
+		bool expected = false;
+		if (!_provided.compare_exchange_strong(expected, true)) {
+			UtilityFunctions::push_error("LorelineFileProvide: provide called more than once — ignoring");
+			return;
+		}
+
+		Loreline_String content;
+		if (p_argcount >= 1 && p_arguments[0]->get_type() == Variant::STRING) {
+			String s = *p_arguments[0];
+			CharString utf8 = s.utf8();
+			content = Loreline_String(utf8.get_data());
+			Loreline_provideFile(_request, content);
+		} else {
+			// null / not-found
+			Loreline_provideFile(_request, Loreline_String());
+		}
+		_request = nullptr;
+	}
+};
+
 void Loreline::_on_file_request(
 		Loreline_String path,
-		void (*provide)(Loreline_String content),
+		Loreline_FileRequest *request,
 		void *userData) {
 	FileRequestContext *ctx = static_cast<FileRequestContext *>(userData);
 	String godot_path = String::utf8(path.c_str());
@@ -152,19 +218,20 @@ void Loreline::_on_file_request(
 	if (ctx->file_overrides.has(godot_path)) {
 		String content = ctx->file_overrides[godot_path];
 		CharString utf8 = content.utf8();
-		provide(Loreline_String(utf8.get_data()));
+		Loreline_provideFile(request, Loreline_String(utf8.get_data()));
 		return;
 	}
 
-	// Try the user-provided file handler callable (if any)
+	// Try the user-provided file handler callable (async-capable):
+	// hand it a Callable that wraps the request token. The user calls it
+	// (sync or async) with the file content (or null for not-found).
 	if (ctx->file_handler.is_valid()) {
-		Variant result = ctx->file_handler.call(godot_path);
-		if (result.get_type() == Variant::STRING) {
-			String content = result;
-			CharString utf8 = content.utf8();
-			provide(Loreline_String(utf8.get_data()));
-			return;
-		}
+		Callable provide_callable(memnew(LorelineFileProvideCallable(request)));
+		ctx->file_handler.call(godot_path, provide_callable);
+		// Fire-and-forget: the Callable's lifetime owns the request from here.
+		// If the user never invokes provide, the Callable's destructor will
+		// release the request with NULL content.
+		return;
 	}
 
 	// Emit signal to allow user to override
@@ -174,7 +241,7 @@ void Loreline::_on_file_request(
 	if (ctx->file_overrides.has(godot_path)) {
 		String content = ctx->file_overrides[godot_path];
 		CharString utf8 = content.utf8();
-		provide(Loreline_String(utf8.get_data()));
+		Loreline_provideFile(request, Loreline_String(utf8.get_data()));
 		return;
 	}
 
@@ -191,20 +258,41 @@ void Loreline::_on_file_request(
 			String content = file->get_as_text();
 			file->close();
 			CharString utf8 = content.utf8();
-			provide(Loreline_String(utf8.get_data()));
+			Loreline_provideFile(request, Loreline_String(utf8.get_data()));
 			return;
 		}
 	}
 
 	// File not found — provide null
-	provide(Loreline_String());
+	Loreline_provideFile(request, Loreline_String());
 }
 #endif
 
-Ref<LorelineScript> Loreline::parse(const String &source, const String &file_path, const Callable &file_handler) {
+#ifndef LORELINE_USE_JS
+// Per-call binding for the async parse completion thunk.
+struct ParseCompletionBinding {
+	Callable on_parsed;
+};
+
+void Loreline::_on_parse_completion(Loreline_Script *script, void *userData) {
+	ParseCompletionBinding *binding = static_cast<ParseCompletionBinding *>(userData);
+	Ref<LorelineScript> wrapper;
+	if (script) {
+		wrapper.instantiate();
+		wrapper->_script = script;
+	}
+	if (binding->on_parsed.is_valid()) {
+		binding->on_parsed.call(wrapper);
+	}
+	delete binding;
+}
+#endif
+
+void Loreline::parse(const String &source, const Callable &on_parsed, const String &file_path, const Callable &file_handler) {
 	if (!_initialized) {
 		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
-		return Ref<LorelineScript>();
+		if (on_parsed.is_valid()) on_parsed.call(Variant());
+		return;
 	}
 
 	// Convenience: if source looks like a resource path and no file_path given, load it
@@ -219,7 +307,8 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 			file->close();
 		} else {
 			UtilityFunctions::push_error("Loreline: failed to open " + actual_file_path);
-			return Ref<LorelineScript>();
+			if (on_parsed.is_valid()) on_parsed.call(Variant());
+			return;
 		}
 	}
 
@@ -227,44 +316,18 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) {
 		UtilityFunctions::push_error("Loreline: JavaScriptBridge not available.");
-		return Ref<LorelineScript>();
+		if (on_parsed.is_valid()) on_parsed.call(Variant());
+		return;
 	}
 
-	// Build JS call to parse, with file callback if we have a path
-	// Escape source and path for JS string literal
+	// Build JS call to parse. Pass null fileCallback (the C++ side handles
+	// file requests via the per-frame _process polling now).
 	String escaped_source = loreline_escape_js(actual_source);
 	String escaped_path = loreline_escape_js(actual_file_path);
 
 	String js_code;
 	if (!actual_file_path.is_empty()) {
-		// Create a file callback that reads from Godot resources
-		// We pass file overrides and base_dir into JS scope
-		String base_dir = actual_file_path.get_base_dir();
-		String escaped_base = loreline_escape_js(base_dir);
-
-		// Store file overrides as JSON for JS access
-		String overrides_json = "{}";
-		if (_file_overrides.size() > 0) {
-			// Build JSON manually
-			overrides_json = "{";
-			Array keys = _file_overrides.keys();
-			for (int i = 0; i < keys.size(); i++) {
-				if (i > 0) overrides_json += ",";
-				String key = keys[i];
-				String val = _file_overrides[key];
-				overrides_json += "'" + loreline_escape_js(key) + "':'" + loreline_escape_js(val) + "'";
-			}
-			overrides_json += "}";
-		}
-
-		js_code = String("(function(){") +
-			"var overrides=" + overrides_json + ";" +
-			"return _lorelineBridge.parse('" + escaped_source + "','" + escaped_path + "'," +
-			"function(path){" +
-				"if(overrides[path]!==undefined)return overrides[path];" +
-				"return null;" +
-			"});" +
-			"})()";
+		js_code = "_lorelineBridge.parse('" + escaped_source + "','" + escaped_path + "',null)";
 	} else {
 		js_code = "_lorelineBridge.parse('" + escaped_source + "',null,null)";
 	}
@@ -273,98 +336,20 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 	int script_id = result;
 
 	if (script_id > 0) {
-		// Synchronous completion (no imports or all overrides hit)
+		// Synchronous completion (no imports / sync handler hit)
 		Ref<LorelineScript> script;
 		script.instantiate();
 		script->_js_id = script_id;
-		return script;
-	} else if (script_id == -1) {
-		// Async file loading — loop to handle file_request events
-		String base_dir = actual_file_path.is_empty() ? String("res://") : actual_file_path.get_base_dir();
-		int final_script_id = 0;
-		int max_iterations = 1000; // Safety limit
-
-		for (int iter = 0; iter < max_iterations; iter++) {
-			Variant events_var = js->eval("_lorelineBridge.pollEvents()", true);
-			String events_json = events_var;
-			if (events_json.is_empty()) {
-				continue;
-			}
-
-			// Parse the events JSON array manually
-			// Events are: [{type:"file_request",requestId:N,path:"..."}, {type:"parse_complete",scriptId:N}]
-			Ref<JSON> json_parser;
-			json_parser.instantiate();
-			Error err = json_parser->parse(events_json);
-			if (err != OK) {
-				break;
-			}
-
-			Array events = json_parser->get_data();
-			bool done = false;
-			for (int i = 0; i < events.size(); i++) {
-				Dictionary evt = events[i];
-				String type = evt["type"];
-
-				if (type == "file_request") {
-					int req_id = evt["requestId"];
-					String req_path = evt["path"];
-
-					String content_to_provide = "null";
-
-					// Try user-provided file handler first
-					if (file_handler.is_valid()) {
-						Variant handler_result = file_handler.call(req_path);
-						if (handler_result.get_type() == Variant::STRING) {
-							String content = handler_result;
-							String escaped = loreline_escape_js(content);
-							content_to_provide = "'" + escaped + "'";
-						}
-					}
-
-					// Fall back to FileAccess if handler didn't provide content
-					if (content_to_provide == "null") {
-						String full_path = req_path;
-						if (!full_path.begins_with("res://") && !full_path.begins_with("/")) {
-							full_path = base_dir.path_join(req_path);
-						}
-
-						if (FileAccess::file_exists(full_path)) {
-							Ref<FileAccess> file = FileAccess::open(full_path, FileAccess::READ);
-							if (file.is_valid()) {
-								String content = file->get_as_text();
-								file->close();
-								String escaped = loreline_escape_js(content);
-								content_to_provide = "'" + escaped + "'";
-							}
-						}
-					}
-
-					// Provide the file content — this may trigger more file_requests or parse_complete
-					String provide_code = "_lorelineBridge.provideFile(" + String::num_int64(req_id) + "," + content_to_provide + ")";
-					js->eval(provide_code, true);
-				} else if (type == "parse_complete") {
-					final_script_id = evt["scriptId"];
-					done = true;
-					break;
-				}
-			}
-			if (done) break;
-		}
-
-		if (final_script_id > 0) {
-			Ref<LorelineScript> script;
-			script.instantiate();
-			script->_js_id = final_script_id;
-			return script;
-		}
-
-		UtilityFunctions::push_error("Loreline: failed to parse script (async file loading).");
-		return Ref<LorelineScript>();
+		if (on_parsed.is_valid()) on_parsed.call(script);
+		return;
 	}
-
+	if (script_id == -1) {
+		// Async — completion will arrive via _process draining events.
+		_pending_parse_callbacks.push_back(on_parsed);
+		return;
+	}
 	UtilityFunctions::push_error("Loreline: failed to parse script.");
-	return Ref<LorelineScript>();
+	if (on_parsed.is_valid()) on_parsed.call(Variant());
 
 #else
 	CharString source_utf8 = actual_source.utf8();
@@ -384,21 +369,14 @@ Ref<LorelineScript> Loreline::parse(const String &source, const String &file_pat
 			? Loreline_String()
 			: Loreline_String(path_utf8.get_data());
 
-	Loreline_Script *raw = Loreline_parse(
+	ParseCompletionBinding *binding = new ParseCompletionBinding{ on_parsed };
+	Loreline_parseAsync(
 			loreline_source,
 			loreline_path,
 			_on_file_request,
-			static_cast<void *>(&_file_ctx));
-
-	if (!raw) {
-		UtilityFunctions::push_error("Loreline: failed to parse script.");
-		return Ref<LorelineScript>();
-	}
-
-	Ref<LorelineScript> script;
-	script.instantiate();
-	script->_script = raw;
-	return script;
+			static_cast<void *>(&_file_ctx),
+			_on_parse_completion,
+			binding);
 #endif
 }
 
@@ -407,6 +385,101 @@ void Loreline::provide_file(const String &path, const String &content) {
 	_file_overrides[path] = content;
 #else
 	_file_ctx.file_overrides[path] = content;
+#endif
+}
+
+#ifndef LORELINE_USE_JS
+struct LoadLocaleCompletionBinding {
+	Callable on_loaded;
+};
+
+void Loreline::_on_load_locale_completion(Loreline_Translations *translations, void *userData) {
+	LoadLocaleCompletionBinding *binding = static_cast<LoadLocaleCompletionBinding *>(userData);
+	Ref<LorelineTranslations> wrapper;
+	if (translations) {
+		wrapper.instantiate();
+		wrapper->_handle = translations;
+	}
+	if (binding->on_loaded.is_valid()) {
+		binding->on_loaded.call(wrapper);
+	}
+	delete binding;
+}
+#endif
+
+void Loreline::load_locale(const String &locale, const Ref<LorelineScript> &script, const Callable &on_loaded, const String &file_path, const Callable &file_handler) {
+	if (!_initialized) {
+		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
+		if (on_loaded.is_valid()) on_loaded.call(Variant());
+		return;
+	}
+	if (script.is_null()) {
+		UtilityFunctions::push_error("Loreline.load_locale: script is null.");
+		if (on_loaded.is_valid()) on_loaded.call(Variant());
+		return;
+	}
+
+#ifdef LORELINE_USE_JS
+	if (script->_js_id == 0) {
+		UtilityFunctions::push_error("Loreline.load_locale: script has no JS id.");
+		if (on_loaded.is_valid()) on_loaded.call(Variant());
+		return;
+	}
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) {
+		if (on_loaded.is_valid()) on_loaded.call(Variant());
+		return;
+	}
+
+	String locale_escaped = loreline_escape_js(locale);
+	String fp_escaped = loreline_escape_js(file_path);
+
+	String js_code = String("_lorelineBridge.loadLocale(") +
+		String::num_int64(script->_js_id) + ",'" + locale_escaped + "','" + fp_escaped + "',null)";
+
+	Variant result = js->eval(js_code, true);
+	int translations_id = (int)result;
+
+	if (translations_id > 0) {
+		Ref<LorelineTranslations> wrapper;
+		wrapper.instantiate();
+		wrapper->_js_id = translations_id;
+		if (on_loaded.is_valid()) on_loaded.call(wrapper);
+		return;
+	}
+	if (translations_id == -1) {
+		_pending_load_locale_callbacks.push_back(on_loaded);
+		return;
+	}
+	UtilityFunctions::push_error("Loreline.load_locale: failed for locale '" + locale + "'.");
+	if (on_loaded.is_valid()) on_loaded.call(Variant());
+#else
+	if (!script->_script) {
+		UtilityFunctions::push_error("Loreline.load_locale: script has no underlying handle.");
+		if (on_loaded.is_valid()) on_loaded.call(Variant());
+		return;
+	}
+
+	// Re-use the runtime's file handler context for resolving translation files
+	_file_ctx.file_handler = file_handler;
+
+	CharString locale_utf8 = locale.utf8();
+	CharString fp_utf8 = file_path.utf8();
+
+	Loreline_String loreline_locale = Loreline_String(locale_utf8.get_data());
+	Loreline_String loreline_path = file_path.is_empty()
+			? Loreline_String()
+			: Loreline_String(fp_utf8.get_data());
+
+	LoadLocaleCompletionBinding *binding = new LoadLocaleCompletionBinding{ on_loaded };
+	Loreline_loadLocaleAsync(
+			loreline_locale,
+			script->_script,
+			loreline_path,
+			_on_file_request,
+			static_cast<void *>(&_file_ctx),
+			_on_load_locale_completion,
+			binding);
 #endif
 }
 

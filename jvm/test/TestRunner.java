@@ -51,8 +51,8 @@ public class TestRunner {
         }
     }
 
-    static String handleFile(String path) {
-        return readFile(path);
+    static void handleFile(String path, java.util.function.Consumer<String> callback) {
+        callback.accept(readFile(path));
     }
 
     static String insertTagsInText(String text, List<TextTag> tags, boolean multiline) {
@@ -266,23 +266,23 @@ public class TestRunner {
         final int fSaveAtDialogue = saveAtDialogue;
         final String fContent = content;
 
-        // Build options
+        // Parse the script up-front so we can resolve translations across imports
+        Script earlyScript = null;
+        try {
+            earlyScript = Loreline.parse(content, filePath, TestRunner::handleFile);
+        } catch (Exception e) {
+            // parse error will be reported when we call play() below; fall through
+        }
+
+        // Build translations and options if a translation is requested
         InterpreterOptions options = null;
         Object translationVal = testItem.get("translation");
-        if (translationVal != null) {
+        if (translationVal != null && earlyScript != null) {
             String lang = translationVal.toString();
-            String basePath = filePath.substring(0, filePath.length() - 4);
-            String translationPath = basePath + "." + lang + ".lor";
-            String translationContent = readFile(translationPath);
-            if (translationContent != null) {
-                if (crlf) translationContent = translationContent.replace("\r\n", "\n").replace("\n", "\r\n");
-                else translationContent = translationContent.replace("\r\n", "\n");
-                Script translationScript = Loreline.parse(translationContent, translationPath, TestRunner::handleFile);
-                if (translationScript != null) {
-                    Object translations = Loreline.extractTranslations(translationScript);
-                    options = new InterpreterOptions();
-                    options.translations = translations;
-                }
+            Object translations = Loreline.loadLocale(lang, earlyScript, filePath, TestRunner::handleFile);
+            if (translations != null) {
+                options = new InterpreterOptions();
+                options.translations = translations;
             }
         }
 
@@ -384,7 +384,7 @@ public class TestRunner {
         choiceHandlerRef[0] = onChoice;
 
         try {
-            Script script = Loreline.parse(fContent, filePath, TestRunner::handleFile);
+            Script script = earlyScript;
             if (script != null) {
                 parsedScript[0] = script;
                 Loreline.play(script, onDialogue, onChoice, onFinish, beatName, fOptions);

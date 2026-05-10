@@ -125,6 +125,45 @@ public final class Loreline {
     }
 
     /**
+     * Loads translations for a specific locale.
+     * Walks the script's full import tree and loads `.<locale>.lor` files for each.
+     * Defaults to looking up translations next to the source files.
+     *
+     * @param locale the locale code (e.g. "fr")
+     * @param script the parsed source script
+     * @param handleFile a file handler used to read translation files
+     * @return a translations object to pass as InterpreterOptions.translations
+     */
+    public static Object loadLocale(String locale, Script script, ImportsFileHandler handleFile) {
+        return loadLocale(locale, script, null, handleFile);
+    }
+
+    /**
+     * Loads translations for a specific locale, walking the script's full import tree.
+     * For each file involved in the script (root + transitively imported), looks up the
+     * corresponding translation file by inserting `.<locale>` before the extension
+     * (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+     * silently skipped.
+     *
+     * @param locale the locale code (e.g. "fr")
+     * @param script the parsed source script
+     * @param filePath optional override for where to look for translation files; pass null to
+     *                 default to `script.filePath`. Can be a `.lor`/`.lor.txt` path or a directory.
+     * @param handleFile a file handler used to read translation files
+     * @return a translations object to pass as InterpreterOptions.translations
+     */
+    public static Object loadLocale(String locale, Script script, String filePath,
+                                    ImportsFileHandler handleFile) {
+        loreline.internal.jvm.Function fileHandlerBridge = null;
+        if (handleFile != null) {
+            fileHandlerBridge = new ImportsFileHandlerBridge(handleFile);
+        }
+
+        return RuntimeBridge.loadLocale(locale, script.runtimeScript, filePath,
+                                         fileHandlerBridge, null);
+    }
+
+    /**
      * Prints a parsed script back into Loreline source code.
      *
      * @param script the parsed script
@@ -160,7 +199,6 @@ public final class Loreline {
     // --- Bridge class for imports file handler ---
 
     private static class ImportsFileHandlerBridge extends loreline.internal.jvm.Function {
-        private static final Object[] ARGS_1 = new Object[1];
         private final ImportsFileHandler handler;
 
         ImportsFileHandlerBridge(ImportsFileHandler handler) {
@@ -169,11 +207,18 @@ public final class Loreline {
 
         @Override
         public void invoke(Object arg1, Object arg2) {
-            // arg1 = file path, arg2 = callback function
-            String content = handler.handle((String) arg1);
-            loreline.internal.jvm.Function callback = (loreline.internal.jvm.Function) arg2;
-            ARGS_1[0] = content;
-            callback.invokeDynamic(ARGS_1);
+            // arg1 = file path, arg2 = Haxe callback function
+            final String path = (String) arg1;
+            final loreline.internal.jvm.Function hxCallback =
+                (loreline.internal.jvm.Function) arg2;
+            // Pass the user a Consumer that, when called (sync or async), fires
+            // the underlying Haxe callback. Allocate a fresh args array per
+            // dispatch — async-safe (a static array would race if the user
+            // invokes the consumer from another thread).
+            handler.handle(path, content -> {
+                Object[] args = new Object[]{ content };
+                hxCallback.invokeDynamic(args);
+            });
         }
     }
 }

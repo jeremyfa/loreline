@@ -416,26 +416,18 @@ class Program
         Script parsedScript = null;
         TestResult testResult = new TestResult { Expected = expected };
 
-        // Build options
+        // Parse the script up-front so loadLocale can walk its import tree
+        Script earlyScript = Engine.Parse(content, filePath, HandleFile);
+
+        // Build options (translations loaded across the import tree)
         Interpreter.InterpreterOptions options = Interpreter.InterpreterOptions.Default();
-        if (item.Translation != null)
+        if (item.Translation != null && earlyScript != null)
         {
             string lang = item.Translation;
-            string basePath = filePath.Substring(0, filePath.Length - 4);
-            string translationPath = basePath + "." + lang + ".lor";
-            string translationContent = File.ReadAllText(translationPath, Encoding.UTF8);
-            if (crlf)
+            object translations = Engine.LoadLocale(lang, earlyScript, filePath, HandleFile);
+            if (translations != null)
             {
-                translationContent = translationContent.Replace("\r\n", "\n").Replace("\n", "\r\n");
-            }
-            else
-            {
-                translationContent = translationContent.Replace("\r\n", "\n");
-            }
-            Script translationScript = Engine.Parse(translationContent, translationPath, HandleFile);
-            if (translationScript != null)
-            {
-                options.Translations = Engine.ExtractTranslations(translationScript);
+                options.Translations = translations;
             }
         }
 
@@ -569,7 +561,7 @@ class Program
 
         try
         {
-            Script script = Engine.Parse(content, filePath, HandleFile);
+            Script script = earlyScript;
             if (script != null)
             {
                 parsedScript = script;

@@ -256,6 +256,39 @@ void LorelineInterpreter::_poll_js_events() {
 	for (int i = 0; i < events.size(); i++) {
 		Dictionary event = events[i];
 		String type = event.get("type", "");
+
+		// Handle global (non-interpreter) completion events first.
+		if (type == "parse_complete") {
+			int script_id = event.get("scriptId", 0);
+			Ref<LorelineScript> script;
+			if (script_id != 0) {
+				script.instantiate();
+				script->_js_id = script_id;
+			}
+			// FIFO: oldest pending parse callback receives this completion.
+			if (!Loreline::_pending_parse_callbacks.is_empty()) {
+				Callable cb = Loreline::_pending_parse_callbacks[0];
+				Loreline::_pending_parse_callbacks.remove_at(0);
+				if (cb.is_valid()) cb.call(script);
+			}
+			continue;
+		}
+		if (type == "load_locale_complete") {
+			int translations_id = event.get("translationsId", 0);
+			Ref<LorelineTranslations> translations;
+			if (translations_id != 0) {
+				translations.instantiate();
+				translations->_js_id = translations_id;
+			}
+			if (!Loreline::_pending_load_locale_callbacks.is_empty()) {
+				Callable cb = Loreline::_pending_load_locale_callbacks[0];
+				Loreline::_pending_load_locale_callbacks.remove_at(0);
+				if (cb.is_valid()) cb.call(translations);
+			}
+			continue;
+		}
+
+		// Per-interpreter events
 		int interp_id = event.get("interpId", 0);
 
 		LorelineInterpreter **pp = _js_registry.getptr(interp_id);

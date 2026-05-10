@@ -122,6 +122,46 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             return _storeObj(translations);
         },
 
+        // --- Load translations for a locale (supports async file loading) ---
+        loadLocale: function(scriptId, locale, filePath, fileCallback) {
+            try {
+                var script = _getObj(scriptId);
+                if (!script) return 0;
+                var handleFile = function(path, provide) {
+                    if (fileCallback) {
+                        var content = fileCallback(path);
+                        if (content !== null && content !== undefined) {
+                            provide(content);
+                            return;
+                        }
+                    }
+                    var reqId = _nextFileRequestId++;
+                    _pendingFileProvides[reqId] = provide;
+                    _eventQueue.push({
+                        type: "file_request",
+                        requestId: reqId,
+                        path: path
+                    });
+                };
+                var syncResult = Loreline.loadLocale(
+                    locale, script, filePath || null, handleFile,
+                    function(translations) {
+                        _eventQueue.push({
+                            type: "load_locale_complete",
+                            translationsId: translations ? _storeObj(translations) : 0
+                        });
+                    }
+                );
+                if (syncResult) {
+                    return _storeObj(syncResult);
+                }
+                return -1; // async
+            } catch (e) {
+                console.error("Loreline loadLocale error:", e);
+                return 0;
+            }
+        },
+
         releaseTranslations: function(translationsId) {
             _releaseObj(translationsId);
         },

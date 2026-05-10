@@ -248,24 +248,18 @@ def run_test(file_path, content, test_item, crlf):
     parsed_script = [None]
     result = [None]  # (passed, actual, expected, error)
 
-    # Build options
+    # Parse the script up-front so loadLocale can walk its import tree
+    early_script = loreline_Loreline.parse(content, file_path, handle_file)
+
+    # Build options (translations loaded across the import tree)
     options = None
     translation_val = test_item.get("translation")
-    if translation_val:
+    if translation_val and early_script:
         lang = translation_val
-        base_path = file_path[: -4]  # strip .lor
-        translation_path = base_path + "." + lang + ".lor"
-        with open(translation_path, "r", encoding="utf-8") as f:
-            translation_content = f.read()
-        if crlf:
-            translation_content = translation_content.replace("\r\n", "\n").replace("\n", "\r\n")
-        else:
-            translation_content = translation_content.replace("\r\n", "\n")
-        translation_script = loreline_Loreline.parse(
-            translation_content, translation_path, handle_file
+        translations = loreline_Loreline.loadLocale(
+            lang, early_script, file_path, handle_file, None
         )
-        if translation_script:
-            translations = loreline_Loreline.extractTranslations(translation_script)
+        if translations:
             options = _hx_AnonObject({"translations": translations})
 
     # Load restoreFile content if specified
@@ -367,7 +361,7 @@ def run_test(file_path, content, test_item, crlf):
             select(index)
 
     try:
-        script = loreline_Loreline.parse(content, file_path, handle_file)
+        script = early_script
         if script:
             parsed_script[0] = script
             loreline_Loreline.play(

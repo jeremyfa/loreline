@@ -110,12 +110,12 @@ struct TestItem {
 
 /* ── File handler for Loreline_parse ────────────────────────────────────── */
 
-static void fileHandler(Loreline_String path, void (*provide)(Loreline_String content), void* userData) {
+static void fileHandler(Loreline_String path, Loreline_FileRequest* request, void* userData) {
     std::string content = readFile(path.c_str());
     if (content.empty()) {
-        provide(Loreline_String());
+        Loreline_provideFile(request, Loreline_String());
     } else {
-        provide(Loreline_String(content.c_str()));
+        Loreline_provideFile(request, Loreline_String(content.c_str()));
     }
 }
 
@@ -572,30 +572,9 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     TestResult result;
     result.expected = item.expected;
 
-    /* Build translations and options if needed */
+    /* Translations and options will be built after parsing the script */
     Loreline_Translations* translations = nullptr;
     Loreline_InterpreterOptions* options = nullptr;
-    if (!item.translation.empty()) {
-        std::string basePath = filePath.substr(0, filePath.size() - 4);
-        std::string translationPath = basePath + "." + item.translation + ".lor";
-        std::string translationContent = readFile(translationPath);
-        if (!translationContent.empty()) {
-            translationContent = replaceAll(translationContent, "\r\n", "\n");
-            if (crlf) {
-                translationContent = replaceAll(translationContent, "\n", "\r\n");
-            }
-            Loreline_Script* translationScript = Loreline_parse(
-                translationContent.c_str(), translationPath.c_str(), fileHandler, nullptr);
-            if (translationScript) {
-                translations = Loreline_extractTranslations(translationScript);
-                Loreline_releaseScript(translationScript);
-                if (translations) {
-                    options = Loreline_createOptions();
-                    Loreline_optionsSetTranslations(options, translations);
-                }
-            }
-        }
-    }
 
     /* Load restoreFile content */
     std::string restoreInput;
@@ -628,6 +607,17 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     /* Parse and play */
     Loreline_Script* script = Loreline_parse(content.c_str(), filePath.c_str(), fileHandler, nullptr);
     if (script) {
+        /* Load translations after parse: walks the import tree and loads .<locale>.lor for each file */
+        if (!item.translation.empty()) {
+            translations = Loreline_loadLocale(
+                item.translation.c_str(), script, Loreline_String(), fileHandler, nullptr);
+            if (translations) {
+                options = Loreline_createOptions();
+                Loreline_optionsSetTranslations(options, translations);
+                ctx.options = options;
+            }
+        }
+
         ctx.parsedScript = script;
         Loreline_Interpreter* interp = Loreline_play(
             script, testDialogue, testChoice, testFinish,

@@ -317,27 +317,19 @@ local function run_test(file_path, content, test_item, crlf)
     local parsed_script = {nil}
     local result = {nil}
 
-    -- Build options
+    -- Parse the script up-front so loadLocale can walk its import tree
+    local early_script = __loreline_Loreline.parse(content, file_path, handle_file)
+
+    -- Build options (translations loaded across the import tree)
     local options = nil
     local translation_val = test_item.translation
-    if translation_val then
+    if translation_val and early_script then
         local lang = translation_val
-        local base_path = file_path:sub(1, -5)  -- strip .lor
-        local translation_path = base_path .. "." .. lang .. ".lor"
-        local translation_content = read_file(translation_path)
-        if translation_content then
-            if crlf then
-                translation_content = translation_content:gsub("\r\n", "\n"):gsub("\n", "\r\n")
-            else
-                translation_content = translation_content:gsub("\r\n", "\n")
-            end
-            local translation_script = __loreline_Loreline.parse(
-                translation_content, translation_path, handle_file
-            )
-            if translation_script then
-                local translations = __loreline_Loreline.extractTranslations(translation_script)
-                options = _hx_o({__fields__={translations=true}, translations=translations})
-            end
+        local translations = __loreline_Loreline.loadLocale(
+            lang, early_script, file_path, handle_file, nil
+        )
+        if translations then
+            options = _hx_o({__fields__={translations=true}, translations=translations})
         end
     end
 
@@ -457,7 +449,7 @@ local function run_test(file_path, content, test_item, crlf)
     end
 
     local ok, err = pcall(function()
-        local script = __loreline_Loreline.parse(content, file_path, handle_file)
+        local script = early_script
         if script then
             parsed_script[1] = script
             __loreline_Loreline.play(
