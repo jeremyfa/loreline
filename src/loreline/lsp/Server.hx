@@ -4,6 +4,7 @@ import Type as HxType;
 import haxe.Json;
 import haxe.io.Path;
 import loreline.Error;
+import loreline.Imports;
 import loreline.Lexer;
 import loreline.Node;
 import loreline.Parser;
@@ -1356,13 +1357,8 @@ class Server {
 
                 importPath = Path.normalize(importPath);
 
-                var ext = '.lor';
-                if (rootPath != null && rootPath.endsWith('.lor.txt')) {
-                    ext = '.lor.txt';
-                }
-
-                if (!importPath.toLowerCase().endsWith(ext)) {
-                    importPath += ext;
+                if (!Imports.isLorFilePath(importPath)) {
+                    importPath += Imports.lorExtension(rootPath);
                 }
 
                 uri = uriFromPath(importPath);

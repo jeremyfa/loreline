@@ -1,0 +1,29 @@
+
+import imports/greetings
+
+beat Main
+  Welcome to the root file. #intro
+  Shared text. #shared
+  -> Greetings
+
+/*
+<test>
+- expected: |
+    ~ Welcome to the root file.
+
+    ~ Shared text.
+
+    ~ Hello from import.
+
+    ~ Shared text.
+- translation: fr
+  expected: |
+    ~ Bienvenue dans le fichier racine.
+
+    ~ Texte partagé (depuis la racine).
+
+    ~ Bonjour depuis l'import.
+
+    ~ Texte partagé (depuis l'import).
+</test>
+*/

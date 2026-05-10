@@ -4,6 +4,7 @@ import haxe.io.Path;
 import loreline.Lexer;
 
 using StringTools;
+using loreline.Utf8;
 
 typedef ImportsFileHandler = (path:String, callback:(data:String)->Void)->Void;
 
@@ -20,6 +21,62 @@ private class ImportsLoopInfo {
 }
 
 class Imports {
+
+    /** Returns true if `c` matches `lowerExpected` (lowercase ASCII letter) case-insensitively. */
+    static inline function sameLetterCi(c:Int, lowerExpected:Int):Bool {
+        return c == lowerExpected || c == lowerExpected - 32; // 'a' (97) - 'A' (65) = 32
+    }
+
+    /** True if `path` ends with `.lor.txt` (case-insensitive on letters). */
+    public static inline function endsWithLorTxt(path:String):Bool {
+        if (path == null) return false;
+        final n = path.uLength();
+        if (n < 8) return false;
+        return path.uCharCodeAt(n - 8) == '.'.code
+            && sameLetterCi(path.uCharCodeAt(n - 7), 'l'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 6), 'o'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 5), 'r'.code)
+            && path.uCharCodeAt(n - 4) == '.'.code
+            && sameLetterCi(path.uCharCodeAt(n - 3), 't'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 2), 'x'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 1), 't'.code);
+    }
+
+    /** True if `path` ends with `.lor` (but not `.lor.txt`). */
+    public static inline function endsWithLor(path:String):Bool {
+        if (path == null) return false;
+        final n = path.uLength();
+        if (n < 4) return false;
+        return path.uCharCodeAt(n - 4) == '.'.code
+            && sameLetterCi(path.uCharCodeAt(n - 3), 'l'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 2), 'o'.code)
+            && sameLetterCi(path.uCharCodeAt(n - 1), 'r'.code);
+    }
+
+    /**
+     * Returns the canonical Loreline extension for a path: `.lor.txt` if the path
+     * ends with that, otherwise `.lor` (also returned for paths with no Loreline
+     * extension at all — matches the fallback used elsewhere).
+     */
+    public static inline function lorExtension(path:String):String {
+        return endsWithLorTxt(path) ? '.lor.txt' : '.lor';
+    }
+
+    /** True if `path` ends with `.lor` or `.lor.txt`. */
+    public static inline function isLorFilePath(path:String):Bool {
+        return endsWithLorTxt(path) || endsWithLor(path);
+    }
+
+    /**
+     * Strips the Loreline extension from a path. Removes `.lor.txt` if present,
+     * otherwise removes `.lor` if present, otherwise returns the path unchanged.
+     */
+    public static inline function stripLorExtension(path:String):String {
+        if (path == null) return null;
+        if (endsWithLorTxt(path)) return path.uSubstr(0, path.uLength() - 8);
+        if (endsWithLor(path)) return path.uSubstr(0, path.uLength() - 4);
+        return path;
+    }
 
     var handleFile:ImportsFileHandler;
 
@@ -54,9 +111,7 @@ class Imports {
         this.hasErrors = false;
         this.pendingImports = 0;
 
-        if (rootPath != null && rootPath.endsWith('.lor.txt')) {
-            ext = '.lor.txt';
-        }
+        ext = lorExtension(rootPath);
 
         final resolvedImports:Map<String,Tokens> = new Map();
         final toImport:Array<String> = [];
@@ -150,7 +205,7 @@ class Imports {
                             path = Path.join([cwd, path]);
                         }
                         path = Path.normalize(path);
-                        if (!path.toLowerCase().endsWith(ext)) {
+                        if (!isLorFilePath(path)) {
                             path += ext;
                         }
                         if (!visitedImports.exists(path)) {

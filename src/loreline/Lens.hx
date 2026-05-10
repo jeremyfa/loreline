@@ -2,6 +2,7 @@ package loreline;
 
 import haxe.ds.Either;
 import haxe.io.Path;
+import loreline.Imports;
 import loreline.Node;
 import loreline.Position;
 
@@ -300,7 +301,7 @@ class Lens {
 
         // Resolve paths from outermost to innermost
         var currentDir = Path.directory(rootPath);
-        var ext = rootPath.endsWith('.lor.txt') ? '.lor.txt' : '.lor';
+        var ext = Imports.lorExtension(rootPath);
         var resolvedPath = rootPath;
 
         // Reverse: outermost first
@@ -315,7 +316,7 @@ class Lens {
                 importPath = Path.join([currentDir, importPath]);
             }
             importPath = Path.normalize(importPath);
-            if (!importPath.toLowerCase().endsWith(ext)) {
+            if (!Imports.isLorFilePath(importPath)) {
                 importPath += ext;
             }
             resolvedPath = importPath;
@@ -324,6 +325,52 @@ class Lens {
         }
 
         return resolvedPath;
+    }
+
+    /**
+     * Returns the path of the node's source file relative to the root script,
+     * with any Loreline extension (`.lor`/`.lor.txt`) stripped.
+     * - Returns "." for nodes in the root script.
+     * - Returns the import chain path joined and normalized for nodes in imported files
+     *   (e.g. "imports/foo", "../bar").
+     * Used by the interpreter to look up scoped translation keys.
+     */
+    public function getNodeRelativeFilePath(node:Node):String {
+        // Collect NImportStatements from innermost to outermost
+        var importChain:Array<NImportStatement> = null;
+        var current:Node = node;
+        while (current != null) {
+            final importStmt = getFirstParentOfType(current, NImportStatement);
+            if (importStmt != null) {
+                if (importChain == null)
+                    importChain = [];
+                importChain.push(importStmt);
+                current = cast importStmt;
+            } else {
+                break;
+            }
+        }
+
+        if (importChain == null || importChain.length == 0) return ".";
+
+        // Join the import path strings from outermost to innermost.
+        // Each import path is relative to its parent's directory.
+        var resolved:String = null;
+        var i = importChain.length - 1;
+        while (i >= 0) {
+            final importStmt = importChain[i];
+            final importPath = switch importStmt.path.parts[0].partType {
+                case Raw(text): text;
+                case _: "";
+            };
+            if (resolved == null) {
+                resolved = importPath;
+            } else {
+                resolved = Path.join([Path.directory(resolved), importPath]);
+            }
+            i--;
+        }
+        return Imports.stripLorExtension(Path.normalize(resolved));
     }
 
     public function getImportedPaths(rootPath:String):Array<String> {
@@ -342,10 +389,7 @@ class Lens {
             script = this.script;
         }
 
-        var ext = '.lor';
-        if (rootPath != null && rootPath.endsWith('.lor.txt')) {
-            ext = '.lor.txt';
-        }
+        final ext = Imports.lorExtension(rootPath);
 
         for (node in script.body) {
             if (node is NImportStatement) {
@@ -362,7 +406,7 @@ class Lens {
 
                 importPath = Path.normalize(importPath);
 
-                if (!importPath.toLowerCase().endsWith(ext)) {
+                if (!Imports.isLorFilePath(importPath)) {
                     importPath += ext;
                 }
 

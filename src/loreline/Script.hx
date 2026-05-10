@@ -15,6 +15,12 @@ class Script extends AstNode {
     public var indentSize:Int = 2;
 
     /**
+     * The file path this script was parsed from.
+     * May be null if the script was parsed without a file path.
+     */
+    public var filePath:String = null;
+
+    /**
      * Array of top-level declarations in the script.
      */
     public var body:Array<AstNode>;
@@ -38,6 +44,7 @@ class Script extends AstNode {
         final json = super.toJson();
         json.body = [for (decl in body) decl.toJson()];
         json.indentSize = indentSize;
+        if (filePath != null) json.filePath = filePath;
         return json;
     }
 

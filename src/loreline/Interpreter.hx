@@ -4,6 +4,7 @@ import Type.ValueType;
 import haxe.ds.StringMap;
 import loreline.Arrays;
 import loreline.AstUtils;
+import loreline.Lens;
 import loreline.Lexer;
 import loreline.Node;
 import loreline.Objects;
@@ -3444,13 +3445,6 @@ typedef InterpreterOptions = {
     }
 
     /**
-     * Evaluates a string literal into text with tags.
-     * This handles interpolation and tag processing.
-     *
-     * @param str The string literal to evaluate
-     * @return Object containing the evaluated text and any tags
-     */
-    /**
      * If translations are available, checks for a hash comment on the node and returns
      * the translated string literal if found. Otherwise returns the original string.
      */
@@ -3458,6 +3452,14 @@ typedef InterpreterOptions = {
         if (translations != null) {
             final id = findHashCommentId(node, str);
             if (id != null) {
+                // Try scoped key first if we know the script's file path
+                if (script.filePath != null) {
+                    final relPath = lens.getNodeRelativeFilePath(node);
+                    final scoped = translations.get(relPath + '#' + id);
+                    if (scoped != null) {
+                        return scoped;
+                    }
+                }
                 final translated = translations.get(id);
                 if (translated != null) {
                     return translated;
@@ -3471,6 +3473,13 @@ typedef InterpreterOptions = {
         return AstUtils.findHashComment(node, str);
     }
 
+    /**
+     * Evaluates a string literal into text with tags.
+     * This handles interpolation and tag processing.
+     *
+     * @param str The string literal to evaluate
+     * @return Object containing the evaluated text and any tags
+     */
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
         // Run string literal processors (e.g. plural pipe syntax)
         for (i in 0...stringLiteralProcessors.length) {

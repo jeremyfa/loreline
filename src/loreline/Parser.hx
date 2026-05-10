@@ -1,6 +1,7 @@
 package loreline;
 
 import haxe.io.Path;
+import loreline.Imports;
 import loreline.Lexer;
 import loreline.Node;
 
@@ -102,6 +103,9 @@ class ParserContext {
         final startPos = currentPos();
         final nodes = [];
         final script = new Script(nextNodeId(NODE), startPos, nodes);
+        if (context != null) {
+            script.filePath = context.path;
+        }
 
         while (!isAtEnd()) {
             try {
@@ -459,13 +463,8 @@ class ParserContext {
 
         importPath = Path.normalize(importPath);
 
-        var ext = '.lor';
-        if (context.rootPath.endsWith('.lor.txt')) {
-            ext = '.lor.txt';
-        }
-
-        if (!importPath.toLowerCase().endsWith(ext)) {
-            importPath += ext;
+        if (!Imports.isLorFilePath(importPath)) {
+            importPath += Imports.lorExtension(context.rootPath);
         }
 
         if (context.imported.exists(importPath)) {

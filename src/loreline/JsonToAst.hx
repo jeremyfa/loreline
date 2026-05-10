@@ -26,6 +26,7 @@ class JsonToAst {
         final body:Array<AstNode> = [for (item in bodyArr) cast nodeFromJson(item)];
         final script = new Script(id, pos, body);
         script.indentSize = json.indentSize != null ? (json.indentSize : Int) : 2;
+        if (json.filePath != null) script.filePath = json.filePath;
         applyComments(script, json);
         return script;
     }

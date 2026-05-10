@@ -1,11 +1,15 @@
 package loreline;
 
+import haxe.io.Path;
 import loreline.AstUtils;
 import loreline.Imports;
 import loreline.Interpreter;
+import loreline.Lens;
 import loreline.Lexer;
 import loreline.Node.NStringLiteral;
 import loreline.Parser;
+
+using loreline.Utf8;
 
 /**
  * The main public API for Loreline runtime.
@@ -97,6 +101,165 @@ class Loreline {
         }
 
         return result;
+    }
+
+    /**
+     * Loads translations for a specific locale, walking the script's full import tree.
+     *
+     * For each file involved in the script (root + transitively imported), the
+     * corresponding translation file is looked up by inserting `.<locale>` before
+     * the extension (e.g. `characters.lor` → `characters.fr.lor`). Missing translation
+     * files are silently skipped.
+     *
+     * Each translation key is stored under both:
+     *   - a global key `<id>` (first occurrence wins, root file priority)
+     *   - a scoped key `<source-rel-path>#<id>` (always set per file, allows override)
+     *
+     * The interpreter prefers the scoped key when looking up a translation.
+     *
+     * @param locale The locale code (e.g. "fr")
+     * @param script The parsed source script (must have been parsed with a file path
+     *               or `filePath` must be provided)
+     * @param filePath (optional) Override where to look for translation files. If null,
+     *                 defaults to `script.filePath`. Can be a `.lor`/`.lor.txt` file path
+     *                 (translations sit alongside source files) or a directory path
+     *                 (translations are all in that directory).
+     * @param handleFile (optional) File handler for reading translation files
+     * @param callback (optional) Called with the merged translations map. Required for async file handlers.
+     * @return The merged translations map (synchronously, when `handleFile` is sync)
+     */
+    public static function loadLocale(locale:String, script:Script, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(translations:Map<String, NStringLiteral>)->Void):Null<Map<String, NStringLiteral>> {
+
+        if (filePath == null) {
+            filePath = script.filePath;
+        }
+        if (filePath == null) {
+            throw new Error("Cannot load locale: no filePath provided and script.filePath is null");
+        }
+        if (handleFile == null) {
+            throw new Error("Cannot load locale: handleFile is required");
+        }
+
+        // Determine which Loreline extension we're working with: prefer the source script's
+        // extension when known, otherwise infer from filePath. The result is the canonical
+        // lowercase ".lor" or ".lor.txt" used to build translation file names.
+        final ext = (script.filePath != null && Imports.endsWithLorTxt(script.filePath))
+            ? '.lor.txt'
+            : Imports.lorExtension(filePath);
+
+        // Determine where to look for translation files.
+        // If filePath ends with .lor / .lor.txt, treat its directory as the lookup base.
+        // Otherwise treat filePath as a directory (strip trailing separator if any).
+        final translationsBaseDir:String = if (Imports.isLorFilePath(filePath)) {
+            Path.directory(filePath);
+        }
+        else {
+            final fpLen = filePath.uLength();
+            final lastChar = fpLen > 0 ? filePath.uCharCodeAt(fpLen - 1) : 0;
+            (lastChar == '/'.code || lastChar == '\\'.code)
+                ? filePath.uSubstr(0, fpLen - 1)
+                : filePath;
+        };
+
+        // Source script's own root path is needed to compute relative paths
+        // (the scoped keys reference paths relative to script.filePath, not filePath).
+        final sourceRootPath = script.filePath;
+
+        // Build parallel arrays of source-relative paths and translation absolute paths.
+        // Root file:
+        final relativePaths:Array<String> = [];
+        final translationPaths:Array<String> = [];
+
+        if (sourceRootPath != null) {
+            final rootBaseName = Path.withoutDirectory(sourceRootPath);
+            final rootStem = Imports.stripLorExtension(rootBaseName);
+            final rootTransName = rootStem + '.' + locale + ext;
+            relativePaths.push('.');
+            translationPaths.push(Path.normalize(Path.join([translationsBaseDir, rootTransName])));
+        }
+
+        // Imported files
+        if (sourceRootPath != null) {
+            final lens = new Lens(script);
+            final sourceRootDir = Path.directory(sourceRootPath);
+            final importedAbsPaths = lens.getImportedPaths(sourceRootPath);
+            for (importAbsPath in importedAbsPaths) {
+                final importRelPath = relativePath(sourceRootDir, importAbsPath);
+                final importStem = Imports.stripLorExtension(importRelPath);
+                final importTransRelPath = importStem + '.' + locale + ext;
+                relativePaths.push(Imports.stripLorExtension(Path.normalize(importRelPath)));
+                translationPaths.push(Path.normalize(Path.join([translationsBaseDir, importTransRelPath])));
+            }
+        }
+
+        final result:Map<String, NStringLiteral> = new Map();
+        var pending = relativePaths.length;
+        var allProcessed = false;
+
+        // No-op file handler for translation files (they shouldn't import anything).
+        final noopHandle:ImportsFileHandler = (path, cb) -> cb(null);
+
+        function finalize() {
+            if (callback != null) callback(result);
+        }
+
+        for (i in 0...relativePaths.length) {
+            final relPath = relativePaths[i];
+            final transPath = translationPaths[i];
+            handleFile(transPath, content -> {
+                pending--;
+                if (content != null) {
+                    try {
+                        final transScript = parse(content, transPath, noopHandle);
+                        if (transScript != null) {
+                            final translations = AstUtils.extractTranslations(transScript);
+                            for (id => str in translations) {
+                                // Scoped key: always set
+                                result.set(relPath + '#' + id, str);
+                                // Global key: first one wins
+                                if (!result.exists(id)) {
+                                    result.set(id, str);
+                                }
+                            }
+                        }
+                    } catch (e:Any) {
+                        // Translation file parse error: skip this file silently to keep
+                        // the loadLocale resilient. The caller still gets whatever loaded.
+                    }
+                }
+                if (pending == 0 && allProcessed) {
+                    finalize();
+                }
+            });
+        }
+
+        allProcessed = true;
+        if (pending == 0) {
+            finalize();
+        }
+
+        return result;
+    }
+
+    /**
+     * Computes a relative path from `fromDir` to `toPath`, both expected to be
+     * normalized absolute paths. Returns a forward-slash-separated relative path.
+     */
+    static function relativePath(fromDir:String, toPath:String):String {
+        final from = Path.normalize(fromDir);
+        final to = Path.normalize(toPath);
+        final fromParts = from.split('/');
+        final toParts = to.split('/');
+        var commonLen = 0;
+        while (commonLen < fromParts.length && commonLen < toParts.length && fromParts[commonLen] == toParts[commonLen]) {
+            commonLen++;
+        }
+        final upCount = fromParts.length - commonLen;
+        final result:Array<String> = [];
+        for (i in 0...upCount) result.push('..');
+        for (i in commonLen...toParts.length) result.push(toParts[i]);
+        if (result.length == 0) return '.';
+        return result.join('/');
     }
 
     /**
@@ -192,6 +355,54 @@ class Loreline {
      */
     public static function extractTranslations(script:Script):Map<String, NStringLiteral> {
         return AstUtils.extractTranslations(script);
+    }
+
+    /**
+     * Generates a translation file body for the given source `script`.
+     *
+     * Each translatable string in the source that has an `#id` marker
+     * becomes one entry in the output. If `existing` is provided
+     * (typically the result of `extractTranslations` on a previously-saved
+     * translation file), entries already filled in there are preserved
+     * verbatim; otherwise each entry seeds with the source text.
+     *
+     * Companion to the `loreline translate ... --lang xx` CLI command.
+     *
+     * @param script The parsed source script
+     * @param existing (optional) Existing translations to preserve when merging
+     * @return The translation file body as a string, ready to write to disk
+     */
+    public static function generateTranslationFile(script:Script, ?existing:Map<String, NStringLiteral>):String {
+        return AstUtils.generateTranslationFile(script, existing, new Printer());
+    }
+
+    /**
+     * Inserts `#id` markers after every translatable string in `content`
+     * that doesn't already have one. `script` must be the AST parsed
+     * from the same `content`. Returns the rewritten content.
+     *
+     * Equivalent to the `--auto-ids` flag of the `loreline translate` CLI.
+     */
+    public static function insertLocalizationKeys(content:String, script:Script):String {
+        return AstUtils.insertLocalizationKeys(content, script);
+    }
+
+    /**
+     * Strips every `#id` marker emitted by `insertLocalizationKeys` (or
+     * authored manually). The inverse operation. Returns the rewritten
+     * content. Equivalent to the `--clear` flag of the `loreline translate` CLI.
+     */
+    public static function removeLocalizationKeys(content:String, script:Script):String {
+        return AstUtils.removeLocalizationKeys(content, script);
+    }
+
+    /**
+     * Returns every translatable string in `script` along with its `#id`
+     * (or null when untagged). Useful for diagnostics — e.g. counting
+     * untagged entries before offering an auto-IDs prompt.
+     */
+    public static function extractTranslatableEntries(script:Script):Array<{id:String, str:NStringLiteral}> {
+        return AstUtils.extractTranslatableEntries(script);
     }
 
     /**

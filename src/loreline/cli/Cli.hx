@@ -312,17 +312,9 @@ class Cli {
                 var options:InterpreterOptions = null;
                 if (item.translation != null) {
                     final lang:String = item.translation;
-                    final basePath = file.substring(0, file.length - 4); // strip .lor
-                    final translationPath = basePath + "." + lang + ".lor";
-                    var translationContent = File.getContent(translationPath);
-                    if (crlf) {
-                        translationContent = translationContent.replace("\r\n", "\n").replace("\n", "\r\n");
-                    } else {
-                        translationContent = translationContent.replace("\r\n", "\n");
-                    }
-                    final translationScript = Loreline.parse(translationContent, translationPath, handleFile);
-                    if (translationScript != null) {
-                        options = ({translations: AstUtils.extractTranslations(translationScript)} : InterpreterOptions);
+                    final translations = Loreline.loadLocale(lang, script, file, handleFile);
+                    if (translations != null) {
+                        options = ({translations: translations} : InterpreterOptions);
                     }
                 }
                 final testCase = new InterpreterTestCase(
@@ -463,17 +455,9 @@ class Cli {
                 var rtOptions:InterpreterOptions = null;
                 if (item.translation != null) {
                     final lang:String = item.translation;
-                    final basePath = file.substring(0, file.length - 4);
-                    final translationPath = basePath + "." + lang + ".lor";
-                    var translationContent = File.getContent(translationPath);
-                    if (crlf) {
-                        translationContent = translationContent.replace("\r\n", "\n").replace("\n", "\r\n");
-                    } else {
-                        translationContent = translationContent.replace("\r\n", "\n");
-                    }
-                    final translationScript = Loreline.parse(translationContent, translationPath, handleFile);
-                    if (translationScript != null) {
-                        rtOptions = ({translations: AstUtils.extractTranslations(translationScript)} : InterpreterOptions);
+                    final translations = Loreline.loadLocale(lang, script, file, handleFile);
+                    if (translations != null) {
+                        rtOptions = ({translations: translations} : InterpreterOptions);
                     }
                 }
                 final rtTestCase = new InterpreterTestCase(
