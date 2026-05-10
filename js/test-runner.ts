@@ -146,24 +146,10 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
         let dialogueCount: number = 0;
         let parsedScript: Script | null = null;
 
-        // Build options
+        // Translations are built after parsing the main script so that
+        // loadLocale can walk the import tree and merge per-file `.<locale>.lor`
+        // siblings. See the parse block below.
         let options: InterpreterOptions | undefined = undefined;
-        if (testItem.translation) {
-            const lang: string = testItem.translation;
-            const basePath: string = filePath.substring(0, filePath.length - 4);
-            const translationPath: string = basePath + '.' + lang + '.lor';
-            let translationContent: string = readFileSync(translationPath, 'utf-8');
-            if (crlf) {
-                translationContent = translationContent.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
-            } else {
-                translationContent = translationContent.replace(/\r\n/g, '\n');
-            }
-            const translationScript: Script | null = Loreline.parse(translationContent, translationPath, handleFile);
-            if (translationScript) {
-                const translations: Translations = Loreline.extractTranslations(translationScript);
-                options = { translations };
-            }
-        }
 
         // Load restoreFile content if specified
         let restoreInput: string | null = null;
@@ -258,12 +244,21 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
 
         try {
             const script: Script | null = Loreline.parse(content, filePath, handleFile);
-            if (script) {
-                parsedScript = script;
-                Loreline.play(script, handleDialogue, handleChoice, handleFinish, beatName, options);
-            } else {
+            if (!script) {
                 resolve({ passed: false, actual: output, expected, error: 'Error parsing script' });
+                return;
             }
+            parsedScript = script;
+
+            if (testItem.translation) {
+                const lang: string = testItem.translation;
+                const translations: Translations | null = Loreline.loadLocale(lang, script, filePath, handleFile);
+                if (translations) {
+                    options = { translations };
+                }
+            }
+
+            Loreline.play(script, handleDialogue, handleChoice, handleFinish, beatName, options);
         } catch (e) {
             resolve({ passed: false, actual: output, expected, error: (e as Error).toString() });
         }
