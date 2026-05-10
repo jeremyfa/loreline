@@ -5,6 +5,12 @@
  * (including save/restore, translations, roundtrips, LF/CRLF), and
  * validates output against expected results.
  *
+ * Note: ast-print is intentionally only run by the CLI test runner —
+ * AstPrinter is a pure Haxe debug pretty-printer with no target-specific
+ * behavior, so a single CLI run is enough to catch any missing node-type
+ * case. That's why the CLI test count is higher than each per-target
+ * runner's count.
+ *
  * Compile with C++17 (for std::filesystem):
  *   clang++ -std=c++17 -o test_runner test_runner.cpp \
  *     -Icpp/include -L<builddir> -lLoreline -Wl,-rpath,@executable_path

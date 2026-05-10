@@ -549,6 +549,14 @@ class Cli {
         }
     }
 
+    /**
+     * Smoke-test that AstPrinter handles every node type encountered in real
+     * `.lor` scripts (the default switch case throws on an unhandled type).
+     * AstPrinter is pure Haxe with no target-specific behavior, so this check
+     * only runs in the CLI suite — per-target runners (C++, JVM, Python, Lua,
+     * C#) skip it. That accounts for the difference between the CLI test
+     * count and each per-target runner's count.
+     */
     function testAstPrint(script:Script, file:String, crlf:Bool) {
         final modeLabel = crlf ? 'CRLF' : 'LF';
         try {

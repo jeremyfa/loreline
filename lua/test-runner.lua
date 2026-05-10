@@ -8,6 +8,12 @@ Follows the same test protocol as the JS, C#, C++, and Python test runners:
   - Runs each test in LF and CRLF modes
   - Runs roundtrip (parse -> print -> parse -> print) stability checks
   - Reports pass/fail counts
+
+Note: ast-print is intentionally only run by the CLI test runner —
+AstPrinter is a pure Haxe debug pretty-printer with no target-specific
+behavior, so a single CLI run is enough to catch any missing node-type
+case. That's why the CLI test count is higher than each per-target
+runner's count.
 ]]
 
 -- Add lua/ to package path so we can require loreline.core
