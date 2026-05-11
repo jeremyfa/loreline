@@ -1064,14 +1064,14 @@ static std::string readFileStr(const char* relativePath, const std::string& base
  * ══════════════════════════════════════════════════════════════════════════════ */
 
 static void onFileRequest(Loreline_String filePath,
-                          void (*provide)(Loreline_String content),
+                          Loreline_FileRequest* request,
                           void* /* userData */)
 {
     std::string content = readFileStr(filePath.c_str(), g_app->basePath);
     if (content.empty()) {
-        provide(Loreline_String());
+        Loreline_provideFile(request, Loreline_String());
     } else {
-        provide(Loreline_String(content.c_str()));
+        Loreline_provideFile(request, Loreline_String(content.c_str()));
     }
 }
 
