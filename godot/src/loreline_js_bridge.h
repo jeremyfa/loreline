@@ -56,7 +56,11 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         },
 
         // --- Parse (supports async file loading) ---
-        parse: function(source, filePath, fileCallback) {
+        // fileContextId is a C++-side id used to route file_request events
+        // and the eventual parse_complete event back to the right per-call
+        // file context. Threaded through events so C++ can free its context
+        // when parsing finishes (success, error, or otherwise).
+        parse: function(source, filePath, fileCallback, fileContextId) {
             try {
                 var handleFile = null;
                 if (filePath) {
@@ -69,12 +73,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                 return;
                             }
                         }
-                        // 2. Queue file_request for C++ to handle via FileAccess
+                        // 2. Queue file_request for C++ to handle.
                         var reqId = _nextFileRequestId++;
                         _pendingFileProvides[reqId] = provide;
                         _eventQueue.push({
                             type: "file_request",
                             requestId: reqId,
+                            fileContextId: fileContextId,
                             path: path
                         });
                         // provide() will be called later by provideFile()
@@ -85,7 +90,8 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 var syncResult = Loreline.parse(source, filePath || null, handleFile, function(script) {
                     _eventQueue.push({
                         type: "parse_complete",
-                        scriptId: script ? _storeObj(script) : 0
+                        scriptId: script ? _storeObj(script) : 0,
+                        fileContextId: fileContextId
                     });
                 });
                 if (syncResult) {
@@ -123,7 +129,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         },
 
         // --- Load translations for a locale (supports async file loading) ---
-        loadLocale: function(scriptId, locale, filePath, fileCallback) {
+        loadLocale: function(scriptId, locale, filePath, fileCallback, fileContextId) {
             try {
                 var script = _getObj(scriptId);
                 if (!script) return 0;
@@ -140,6 +146,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                     _eventQueue.push({
                         type: "file_request",
                         requestId: reqId,
+                        fileContextId: fileContextId,
                         path: path
                     });
                 };
@@ -148,7 +155,8 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                     function(translations) {
                         _eventQueue.push({
                             type: "load_locale_complete",
-                            translationsId: translations ? _storeObj(translations) : 0
+                            translationsId: translations ? _storeObj(translations) : 0,
+                            fileContextId: fileContextId
                         });
                     }
                 );

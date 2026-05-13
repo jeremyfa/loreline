@@ -64,11 +64,68 @@ public:
 };
 
 #ifdef LORELINE_USE_JS
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include "loreline_js_utils.h"
 
 HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
+
+// CallableCustom passed to the user's file_handler on the JS backend. When the
+// user calls it with content, evals `_lorelineBridge.provideFile(reqId, content)`
+// to resume `imports.resolve` in the JS Loreline. If the Callable is dropped
+// without being invoked, the destructor sends a null content so the JS side
+// doesn't wedge waiting for a response.
+class LorelineJsProvideFileCallable : public CallableCustom {
+	mutable int _request_id;
+	mutable std::atomic<bool> _provided;
+
+public:
+	LorelineJsProvideFileCallable(int request_id) : _request_id(request_id), _provided(false) {}
+
+	~LorelineJsProvideFileCallable() {
+		bool expected = false;
+		if (_provided.compare_exchange_strong(expected, true) && _request_id > 0) {
+			JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+			if (js) {
+				js->eval(String("_lorelineBridge.provideFile(") + String::num_int64(_request_id) + ",null)", true);
+			}
+		}
+	}
+
+	uint32_t hash() const override { return (uint32_t)(uintptr_t)this; }
+	String get_as_text() const override { return "LorelineJsProvideFile"; }
+	ObjectID get_object() const override { return ObjectID(); }
+
+	static bool compare_equal(const CallableCustom *a, const CallableCustom *b) { return a == b; }
+	static bool compare_less(const CallableCustom *a, const CallableCustom *b) { return a < b; }
+	CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
+	CompareLessFunc get_compare_less_func() const override { return compare_less; }
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, GDExtensionCallError &r_call_error) const override {
+		r_call_error.error = GDEXTENSION_CALL_OK;
+
+		bool expected = false;
+		if (!_provided.compare_exchange_strong(expected, true)) {
+			UtilityFunctions::push_error("LorelineJsProvideFile: provide called more than once — ignoring");
+			return;
+		}
+
+		JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+		if (!js) return;
+
+		String js_code = "_lorelineBridge.provideFile(" + String::num_int64(_request_id) + ",";
+		if (p_argcount >= 1 && p_arguments[0]->get_type() == Variant::STRING) {
+			String s = *p_arguments[0];
+			js_code += "'" + loreline_escape_js(s) + "'";
+		} else {
+			js_code += "null";
+		}
+		js_code += ")";
+		js->eval(js_code, true);
+		_request_id = 0;
+	}
+};
 
 LorelineInterpreter *LorelineInterpreter::_get_by_js_id(int js_id) {
 	LorelineInterpreter **pp = _js_registry.getptr(js_id);
@@ -260,31 +317,94 @@ void LorelineInterpreter::_poll_js_events() {
 		// Handle global (non-interpreter) completion events first.
 		if (type == "parse_complete") {
 			int script_id = event.get("scriptId", 0);
+			int ctx_id = event.get("fileContextId", 0);
 			Ref<LorelineScript> script;
 			if (script_id != 0) {
 				script.instantiate();
 				script->_js_id = script_id;
 			}
-			// FIFO: oldest pending parse callback receives this completion.
-			if (!Loreline::_pending_parse_callbacks.is_empty()) {
-				Callable cb = Loreline::_pending_parse_callbacks[0];
-				Loreline::_pending_parse_callbacks.remove_at(0);
-				if (cb.is_valid()) cb.call(script);
+			Loreline *runtime = Loreline::_singleton;
+			// Free the per-call JS file context for this parse, if still alive.
+			if (runtime && ctx_id > 0 && runtime->_js_file_contexts.has(ctx_id)) {
+				memdelete(runtime->_js_file_contexts[ctx_id]);
+				runtime->_js_file_contexts.erase(ctx_id);
+			}
+			// FIFO: oldest pending parse result receives this completion.
+			// Push to the emit drain queue so the user's await has time to
+			// connect; the drain runs immediately after this poll in the same
+			// _process tick, which is still safe because parse() returned
+			// earlier (before any _process tick).
+			if (runtime && !runtime->_pending_parse_results.is_empty()) {
+				Ref<LorelineParseResult> result = runtime->_pending_parse_results[0];
+				runtime->_pending_parse_results.remove_at(0);
+				runtime->_queue_parse_emit(
+						result,
+						script.is_valid() ? Variant(script) : Variant());
 			}
 			continue;
 		}
 		if (type == "load_locale_complete") {
 			int translations_id = event.get("translationsId", 0);
+			int ctx_id = event.get("fileContextId", 0);
 			Ref<LorelineTranslations> translations;
 			if (translations_id != 0) {
 				translations.instantiate();
 				translations->_js_id = translations_id;
 			}
-			if (!Loreline::_pending_load_locale_callbacks.is_empty()) {
-				Callable cb = Loreline::_pending_load_locale_callbacks[0];
-				Loreline::_pending_load_locale_callbacks.remove_at(0);
-				if (cb.is_valid()) cb.call(translations);
+			Loreline *runtime = Loreline::_singleton;
+			// Free the per-call JS file context for this load_locale, if still alive.
+			if (runtime && ctx_id > 0 && runtime->_js_file_contexts.has(ctx_id)) {
+				memdelete(runtime->_js_file_contexts[ctx_id]);
+				runtime->_js_file_contexts.erase(ctx_id);
 			}
+			if (runtime && !runtime->_pending_load_locale_results.is_empty()) {
+				Ref<LorelineLoadLocaleResult> result = runtime->_pending_load_locale_results[0];
+				runtime->_pending_load_locale_results.remove_at(0);
+				runtime->_queue_load_locale_emit(
+						result,
+						translations.is_valid() ? Variant(translations) : Variant());
+			}
+			continue;
+		}
+		if (type == "file_request") {
+			int request_id = event.get("requestId", 0);
+			int ctx_id = event.get("fileContextId", 0);
+			String path = event.get("path", "");
+
+			Loreline *runtime = Loreline::_singleton;
+			JsFileContext *ctx = (runtime && runtime->_js_file_contexts.has(ctx_id))
+					? runtime->_js_file_contexts[ctx_id]
+					: nullptr;
+
+			// 1. User-provided file handler takes priority.
+			if (ctx && ctx->file_handler.is_valid()) {
+				Callable provide_cb(memnew(LorelineJsProvideFileCallable(request_id)));
+				ctx->file_handler.call(path, provide_cb);
+				continue;
+			}
+
+			// 2. Default: resolve via FileAccess against the call's base_dir.
+			String base_dir = ctx ? ctx->base_dir : String("res://");
+			String full_path = path;
+			if (!full_path.begins_with("res://") && !full_path.begins_with("user://") && !full_path.begins_with("/")) {
+				full_path = base_dir.path_join(path);
+			}
+
+			String content;
+			bool found = false;
+			if (FileAccess::file_exists(full_path)) {
+				Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::READ);
+				if (f.is_valid()) {
+					content = f->get_as_text();
+					f->close();
+					found = true;
+				}
+			}
+
+			String js_code = "_lorelineBridge.provideFile(" + String::num_int64(request_id) + ",";
+			js_code += found ? ("'" + loreline_escape_js(content) + "'") : String("null");
+			js_code += ")";
+			js->eval(js_code, true);
 			continue;
 		}
 

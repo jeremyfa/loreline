@@ -69,17 +69,16 @@ func _ready() -> void:
 	var scroll_bg := StyleBoxEmpty.new()
 	scrollbar.add_theme_stylebox_override("scroll", scroll_bg)
 
-	# parse() is non-blocking: it returns immediately and fires the on_parsed
-	# Callable when parsing + all imports have resolved.
-	loreline.parse("res://story/CoffeeShop.lor", func(script):
-		if script == null:
-			var err := "Loreline sample: failed to parse res://story/CoffeeShop.lor"
-			push_error(err)
-			printerr(err)
-			return
-		script_data = script
-		_start_story()
-	)
+	# parse() returns a Signal you can await — it fires `completed(script)`
+	# once parsing + all imports have resolved.
+	var script = await loreline.parse("res://story/CoffeeShop.lor")
+	if script == null:
+		var err := "Loreline sample: failed to parse res://story/CoffeeShop.lor"
+		push_error(err)
+		printerr(err)
+		return
+	script_data = script
+	_start_story()
 
 	# To override how files are loaded (e.g. encrypted files, network, etc.),
 	# you can load the source manually and provide a file handler for imports.
@@ -89,7 +88,7 @@ func _ready() -> void:
 	# var file := FileAccess.open("res://story/CoffeeShop.lor", FileAccess.READ)
 	# var source := _decrypt(file.get_buffer(file.get_length()))
 	# file.close()
-	# loreline.parse(source, _on_parsed, "res://story/CoffeeShop.lor", _handle_file)
+	# var script = await loreline.parse(source, "res://story/CoffeeShop.lor", _handle_file)
 	#
 	# func _handle_file(path: String, provide: Callable) -> void:
 	#     # Sync example: read inline and call provide immediately.

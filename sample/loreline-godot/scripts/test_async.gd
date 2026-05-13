@@ -7,7 +7,7 @@ func _ready() -> void:
 	var options := LorelineOptions.new()
 	options.set_async_function("fetchScore", _fetch_score)
 
-	var script := loreline.parse("res://story/TestAsync.lor")
+	var script = await loreline.parse("res://story/TestAsync.lor")
 	if script == null:
 		printerr("Failed to parse TestAsync.lor")
 		return

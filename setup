@@ -352,6 +352,7 @@ async function main() {
                 '-framework', 'Foundation', '-lpthread'
             ]);
             await command('install_name_tool', ['-id', '@rpath/libLoreline.dylib', armDylib]);
+            await command('codesign', ['--force', '--sign', '-', armDylib]);
 
             // Link x86_64 dylib
             const x64Dylib = path.join(buildDir, 'libLoreline-x86_64.dylib');
@@ -363,6 +364,7 @@ async function main() {
                 '-framework', 'Foundation', '-lpthread'
             ]);
             await command('install_name_tool', ['-id', '@rpath/libLoreline.dylib', x64Dylib]);
+            await command('codesign', ['--force', '--sign', '-', x64Dylib]);
 
             // Create universal dylib
             const outputDylib = path.join(buildDir, 'libLoreline.dylib');
@@ -371,6 +373,8 @@ async function main() {
                 '-create', armDylib, x64Dylib,
                 '-output', outputDylib
             ]);
+            // Re-sign the universal dylib (lipo combines but doesn't preserve sigs)
+            await command('codesign', ['--force', '--sign', '-', outputDylib]);
 
             console.log('Built: ' + outputDylib);
         }
@@ -1019,6 +1023,12 @@ async function main() {
                         gdextLib
                     ]);
                     console.log('Patched dylib to use @loader_path for libLoreline');
+
+                    // Re-sign with ad-hoc signature: install_name_tool invalidates
+                    // the existing signature, and macOS Sequoia+ refuses to load
+                    // dylibs with broken signatures (Code Signature Invalid).
+                    await command('codesign', ['--force', '--sign', '-', gdextLib]);
+                    console.log('Re-signed dylib (ad-hoc) after install_name_tool');
                 }
             }
         }

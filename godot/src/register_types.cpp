@@ -3,7 +3,9 @@
 #include "loreline_runtime.h"
 #include "loreline_script.h"
 #include "loreline_interpreter.h"
+#include "loreline_load_locale_result.h"
 #include "loreline_options.h"
+#include "loreline_parse_result.h"
 #include "loreline_translations.h"
 #include "loreline_resource_loader.h"
 
@@ -26,6 +28,8 @@ void initialize_loreline_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(LorelineInterpreter);
 	GDREGISTER_CLASS(LorelineOptions);
 	GDREGISTER_CLASS(LorelineTranslations);
+	GDREGISTER_CLASS(LorelineParseResult);
+	GDREGISTER_CLASS(LorelineLoadLocaleResult);
 	GDREGISTER_CLASS(LorelineResourceLoader);
 
 	lor_loader.instantiate();

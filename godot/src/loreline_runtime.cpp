@@ -22,11 +22,6 @@
 
 Loreline *Loreline::_singleton = nullptr;
 
-#ifdef LORELINE_USE_JS
-Vector<Callable> Loreline::_pending_parse_callbacks;
-Vector<Callable> Loreline::_pending_load_locale_callbacks;
-#endif
-
 Loreline *Loreline::shared() {
 	if (_singleton) return _singleton;
 
@@ -70,9 +65,6 @@ Loreline::Loreline()
 		, _js_loaded(false)
 #endif
 {
-#ifndef LORELINE_USE_JS
-	_file_ctx.runtime = this;
-#endif
 }
 
 Loreline::~Loreline() {
@@ -80,14 +72,10 @@ Loreline::~Loreline() {
 
 void Loreline::_bind_methods() {
 	ClassDB::bind_static_method("Loreline", D_METHOD("shared"), &Loreline::shared);
-	ClassDB::bind_method(D_METHOD("parse", "source", "on_parsed", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
-	ClassDB::bind_method(D_METHOD("provide_file", "path", "content"), &Loreline::provide_file);
-	ClassDB::bind_method(D_METHOD("load_locale", "locale", "script", "on_loaded", "file_path", "file_handler"), &Loreline::load_locale, DEFVAL(""), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("parse", "source", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("load_locale", "locale", "script", "file_path", "file_handler"), &Loreline::load_locale, DEFVAL(""), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("play", "script", "on_dialogue", "on_choice", "on_finished", "beat_name", "options"), &Loreline::play, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 	ClassDB::bind_method(D_METHOD("resume", "script", "on_dialogue", "on_choice", "on_finished", "save_data", "beat_name", "options"), &Loreline::resume, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
-
-	ADD_SIGNAL(MethodInfo("file_requested",
-			PropertyInfo(Variant::STRING, "path")));
 }
 
 void Loreline::_notification(int p_what) {
@@ -134,11 +122,29 @@ void Loreline::_notification(int p_what) {
 #else
 				Loreline_update(get_process_delta_time());
 #endif
+				// Drain pending parse/load_locale emits AFTER the runtime/JS
+				// poll has populated them. This way the user's await has had
+				// at least one frame to connect before we fire the signal.
+				_drain_pending_emits();
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (_singleton == this && _initialized) {
+				// Release any pending emit refs cleanly; the underlying parse
+				// pipeline is torn down by Loreline_dispose / JS bridge teardown.
+				_pending_parse_emits.clear();
+				_pending_load_locale_emits.clear();
+#ifdef LORELINE_USE_JS
+				_pending_parse_results.clear();
+				_pending_load_locale_results.clear();
+				// Free any in-flight JS file contexts left by parses or
+				// load_locale calls that didn't complete before shutdown.
+				for (KeyValue<int, JsFileContext *> &e : _js_file_contexts) {
+					memdelete(e.value);
+				}
+				_js_file_contexts.clear();
+#endif
 #ifndef LORELINE_USE_JS
 				Loreline_dispose();
 #endif
@@ -146,6 +152,41 @@ void Loreline::_notification(int p_what) {
 				_singleton = nullptr;
 			}
 		} break;
+	}
+}
+
+void Loreline::_queue_parse_emit(const Ref<LorelineParseResult> &result, const Variant &script_arg) {
+	PendingParseEmit pe;
+	pe.result = result;
+	pe.script_arg = script_arg;
+	_pending_parse_emits.push_back(pe);
+}
+
+void Loreline::_queue_load_locale_emit(const Ref<LorelineLoadLocaleResult> &result, const Variant &translations_arg) {
+	PendingLoadLocaleEmit pe;
+	pe.result = result;
+	pe.translations_arg = translations_arg;
+	_pending_load_locale_emits.push_back(pe);
+}
+
+void Loreline::_drain_pending_emits() {
+	if (!_pending_parse_emits.is_empty()) {
+		Vector<PendingParseEmit> drain = _pending_parse_emits;
+		_pending_parse_emits.clear();
+		for (int i = 0; i < drain.size(); i++) {
+			if (drain[i].result.is_valid()) {
+				drain[i].result->emit_signal("completed", drain[i].script_arg);
+			}
+		}
+	}
+	if (!_pending_load_locale_emits.is_empty()) {
+		Vector<PendingLoadLocaleEmit> drain = _pending_load_locale_emits;
+		_pending_load_locale_emits.clear();
+		for (int i = 0; i < drain.size(); i++) {
+			if (drain[i].result.is_valid()) {
+				drain[i].result->emit_signal("completed", drain[i].translations_arg);
+			}
+		}
 	}
 }
 
@@ -211,20 +252,12 @@ void Loreline::_on_file_request(
 		Loreline_String path,
 		Loreline_FileRequest *request,
 		void *userData) {
-	FileRequestContext *ctx = static_cast<FileRequestContext *>(userData);
+	NativeFileContext *ctx = static_cast<NativeFileContext *>(userData);
 	String godot_path = String::utf8(path.c_str());
 
-	// Check if the user has provided an override via provide_file()
-	if (ctx->file_overrides.has(godot_path)) {
-		String content = ctx->file_overrides[godot_path];
-		CharString utf8 = content.utf8();
-		Loreline_provideFile(request, Loreline_String(utf8.get_data()));
-		return;
-	}
-
-	// Try the user-provided file handler callable (async-capable):
-	// hand it a Callable that wraps the request token. The user calls it
-	// (sync or async) with the file content (or null for not-found).
+	// 1. User-provided file handler (async-capable): hand it a Callable that
+	// wraps the request token. The user calls it (sync or later) with the
+	// file content (or null for not-found).
 	if (ctx->file_handler.is_valid()) {
 		Callable provide_callable(memnew(LorelineFileProvideCallable(request)));
 		ctx->file_handler.call(godot_path, provide_callable);
@@ -234,21 +267,10 @@ void Loreline::_on_file_request(
 		return;
 	}
 
-	// Emit signal to allow user to override
-	ctx->runtime->emit_signal("file_requested", godot_path);
-
-	// Check again after signal (user may have called provide_file in handler)
-	if (ctx->file_overrides.has(godot_path)) {
-		String content = ctx->file_overrides[godot_path];
-		CharString utf8 = content.utf8();
-		Loreline_provideFile(request, Loreline_String(utf8.get_data()));
-		return;
-	}
-
-	// Default: read from Godot resource system
-	// The path from Loreline is relative to the source file, so prepend base_dir
+	// 2. Default: read from Godot resource system.
+	// Path from Loreline is relative to the source file, so prepend base_dir.
 	String full_path = godot_path;
-	if (!full_path.begins_with("res://") && !full_path.begins_with("/")) {
+	if (!full_path.begins_with("res://") && !full_path.begins_with("user://") && !full_path.begins_with("/")) {
 		full_path = ctx->base_dir.path_join(godot_path);
 	}
 
@@ -269,9 +291,15 @@ void Loreline::_on_file_request(
 #endif
 
 #ifndef LORELINE_USE_JS
-// Per-call binding for the async parse completion thunk.
+// Per-call binding for the async parse completion thunk. Holds the result Ref
+// (so the LorelineParseResult survives until the underlying async parse fires
+// the completion, which may happen synchronously inside parse() itself,
+// since Loreline_parseAsync may call back inline; see linc_Loreline.cpp:1033)
+// AND owns the per-call NativeFileContext that was passed to
+// Loreline_parseAsync as userData. The thunk frees both.
 struct ParseCompletionBinding {
-	Callable on_parsed;
+	Ref<LorelineParseResult> result;
+	NativeFileContext *ctx;
 };
 
 void Loreline::_on_parse_completion(Loreline_Script *script, void *userData) {
@@ -281,18 +309,25 @@ void Loreline::_on_parse_completion(Loreline_Script *script, void *userData) {
 		wrapper.instantiate();
 		wrapper->_script = script;
 	}
-	if (binding->on_parsed.is_valid()) {
-		binding->on_parsed.call(wrapper);
+	if (Loreline::_singleton) {
+		Loreline::_singleton->_queue_parse_emit(
+				binding->result,
+				wrapper.is_valid() ? Variant(wrapper) : Variant());
 	}
+	delete binding->ctx;
 	delete binding;
 }
 #endif
 
-void Loreline::parse(const String &source, const Callable &on_parsed, const String &file_path, const Callable &file_handler) {
+Signal Loreline::parse(const String &source, const String &file_path, const Callable &file_handler) {
+	Ref<LorelineParseResult> result;
+	result.instantiate();
+	Signal sig(result.ptr(), "completed");
+
 	if (!_initialized) {
 		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
-		if (on_parsed.is_valid()) on_parsed.call(Variant());
-		return;
+		_queue_parse_emit(result, Variant());
+		return sig;
 	}
 
 	// Convenience: if source looks like a resource path and no file_path given, load it
@@ -307,90 +342,96 @@ void Loreline::parse(const String &source, const Callable &on_parsed, const Stri
 			file->close();
 		} else {
 			UtilityFunctions::push_error("Loreline: failed to open " + actual_file_path);
-			if (on_parsed.is_valid()) on_parsed.call(Variant());
-			return;
+			_queue_parse_emit(result, Variant());
+			return sig;
 		}
 	}
+
+	String base_dir = actual_file_path.is_empty()
+			? String("res://")
+			: actual_file_path.get_base_dir();
 
 #ifdef LORELINE_USE_JS
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) {
 		UtilityFunctions::push_error("Loreline: JavaScriptBridge not available.");
-		if (on_parsed.is_valid()) on_parsed.call(Variant());
-		return;
+		_queue_parse_emit(result, Variant());
+		return sig;
 	}
 
-	// Build JS call to parse. Pass null fileCallback (the C++ side handles
-	// file requests via the per-frame _process polling now).
+	JsFileContext *ctx = memnew(JsFileContext);
+	ctx->base_dir = base_dir;
+	ctx->file_handler = file_handler;
+	int ctx_id = ++_next_js_file_ctx_id;
+	_js_file_contexts[ctx_id] = ctx;
+
 	String escaped_source = loreline_escape_js(actual_source);
 	String escaped_path = loreline_escape_js(actual_file_path);
 
 	String js_code;
 	if (!actual_file_path.is_empty()) {
-		js_code = "_lorelineBridge.parse('" + escaped_source + "','" + escaped_path + "',null)";
+		js_code = "_lorelineBridge.parse('" + escaped_source + "','" + escaped_path + "',null,"
+				+ String::num_int64(ctx_id) + ")";
 	} else {
-		js_code = "_lorelineBridge.parse('" + escaped_source + "',null,null)";
+		js_code = "_lorelineBridge.parse('" + escaped_source + "',null,null,"
+				+ String::num_int64(ctx_id) + ")";
 	}
 
-	Variant result = js->eval(js_code, true);
-	int script_id = result;
+	Variant js_result = js->eval(js_code, true);
+	int script_id = js_result;
 
 	if (script_id > 0) {
-		// Synchronous completion (no imports / sync handler hit)
-		Ref<LorelineScript> script;
-		script.instantiate();
-		script->_js_id = script_id;
-		if (on_parsed.is_valid()) on_parsed.call(script);
-		return;
+		// Synchronous completion (no imports / sync handler hit). The JS
+		// bridge also queued a parse_complete event with the same ctx_id,
+		// which will free the ctx when drained. We push the script ref now
+		// so the await resolves on the next process tick.
+		Ref<LorelineScript> script_ref;
+		script_ref.instantiate();
+		script_ref->_js_id = script_id;
+		_queue_parse_emit(result, script_ref);
+		return sig;
 	}
 	if (script_id == -1) {
-		// Async — completion will arrive via _process draining events.
-		_pending_parse_callbacks.push_back(on_parsed);
-		return;
+		// Async — completion will arrive via _poll_js_events draining events.
+		_pending_parse_results.push_back(result);
+		return sig;
 	}
+
+	// Error path: JS bridge returned 0 (caught exception). No completion
+	// event will arrive, so free the ctx we just inserted.
+	memdelete(_js_file_contexts[ctx_id]);
+	_js_file_contexts.erase(ctx_id);
 	UtilityFunctions::push_error("Loreline: failed to parse script.");
-	if (on_parsed.is_valid()) on_parsed.call(Variant());
+	_queue_parse_emit(result, Variant());
+	return sig;
 
 #else
+	NativeFileContext *ctx = new NativeFileContext{ base_dir, file_handler };
+
 	CharString source_utf8 = actual_source.utf8();
 	CharString path_utf8 = actual_file_path.utf8();
-
-	// Set up the base directory for resolving imports
-	if (!actual_file_path.is_empty()) {
-		_file_ctx.base_dir = actual_file_path.get_base_dir();
-	} else {
-		_file_ctx.base_dir = "res://";
-	}
-	_file_ctx.file_overrides.clear();
-	_file_ctx.file_handler = file_handler;
 
 	Loreline_String loreline_source = Loreline_String(source_utf8.get_data());
 	Loreline_String loreline_path = actual_file_path.is_empty()
 			? Loreline_String()
 			: Loreline_String(path_utf8.get_data());
 
-	ParseCompletionBinding *binding = new ParseCompletionBinding{ on_parsed };
+	ParseCompletionBinding *binding = new ParseCompletionBinding{ result, ctx };
 	Loreline_parseAsync(
 			loreline_source,
 			loreline_path,
 			_on_file_request,
-			static_cast<void *>(&_file_ctx),
+			static_cast<void *>(ctx),
 			_on_parse_completion,
 			binding);
-#endif
-}
-
-void Loreline::provide_file(const String &path, const String &content) {
-#ifdef LORELINE_USE_JS
-	_file_overrides[path] = content;
-#else
-	_file_ctx.file_overrides[path] = content;
+	return sig;
 #endif
 }
 
 #ifndef LORELINE_USE_JS
 struct LoadLocaleCompletionBinding {
-	Callable on_loaded;
+	Ref<LorelineLoadLocaleResult> result;
+	NativeFileContext *ctx;
 };
 
 void Loreline::_on_load_locale_completion(Loreline_Translations *translations, void *userData) {
@@ -400,68 +441,88 @@ void Loreline::_on_load_locale_completion(Loreline_Translations *translations, v
 		wrapper.instantiate();
 		wrapper->_handle = translations;
 	}
-	if (binding->on_loaded.is_valid()) {
-		binding->on_loaded.call(wrapper);
+	if (Loreline::_singleton) {
+		Loreline::_singleton->_queue_load_locale_emit(
+				binding->result,
+				wrapper.is_valid() ? Variant(wrapper) : Variant());
 	}
+	delete binding->ctx;
 	delete binding;
 }
 #endif
 
-void Loreline::load_locale(const String &locale, const Ref<LorelineScript> &script, const Callable &on_loaded, const String &file_path, const Callable &file_handler) {
+Signal Loreline::load_locale(const String &locale, const Ref<LorelineScript> &script, const String &file_path, const Callable &file_handler) {
+	Ref<LorelineLoadLocaleResult> result;
+	result.instantiate();
+	Signal sig(result.ptr(), "completed");
+
 	if (!_initialized) {
 		UtilityFunctions::push_error("Loreline: not initialized. Add this node to the scene tree first.");
-		if (on_loaded.is_valid()) on_loaded.call(Variant());
-		return;
+		_queue_load_locale_emit(result, Variant());
+		return sig;
 	}
 	if (script.is_null()) {
 		UtilityFunctions::push_error("Loreline.load_locale: script is null.");
-		if (on_loaded.is_valid()) on_loaded.call(Variant());
-		return;
+		_queue_load_locale_emit(result, Variant());
+		return sig;
 	}
+
+	String base_dir = file_path.is_empty() ? String("res://") : file_path.get_base_dir();
 
 #ifdef LORELINE_USE_JS
 	if (script->_js_id == 0) {
 		UtilityFunctions::push_error("Loreline.load_locale: script has no JS id.");
-		if (on_loaded.is_valid()) on_loaded.call(Variant());
-		return;
+		_queue_load_locale_emit(result, Variant());
+		return sig;
 	}
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) {
-		if (on_loaded.is_valid()) on_loaded.call(Variant());
-		return;
+		_queue_load_locale_emit(result, Variant());
+		return sig;
 	}
+
+	JsFileContext *ctx = memnew(JsFileContext);
+	ctx->base_dir = base_dir;
+	ctx->file_handler = file_handler;
+	int ctx_id = ++_next_js_file_ctx_id;
+	_js_file_contexts[ctx_id] = ctx;
 
 	String locale_escaped = loreline_escape_js(locale);
 	String fp_escaped = loreline_escape_js(file_path);
 
 	String js_code = String("_lorelineBridge.loadLocale(") +
-		String::num_int64(script->_js_id) + ",'" + locale_escaped + "','" + fp_escaped + "',null)";
+		String::num_int64(script->_js_id) + ",'" + locale_escaped + "','" + fp_escaped + "',null,"
+		+ String::num_int64(ctx_id) + ")";
 
-	Variant result = js->eval(js_code, true);
-	int translations_id = (int)result;
+	Variant js_result = js->eval(js_code, true);
+	int translations_id = (int)js_result;
 
 	if (translations_id > 0) {
 		Ref<LorelineTranslations> wrapper;
 		wrapper.instantiate();
 		wrapper->_js_id = translations_id;
-		if (on_loaded.is_valid()) on_loaded.call(wrapper);
-		return;
+		_queue_load_locale_emit(result, wrapper);
+		return sig;
 	}
 	if (translations_id == -1) {
-		_pending_load_locale_callbacks.push_back(on_loaded);
-		return;
+		_pending_load_locale_results.push_back(result);
+		return sig;
 	}
+
+	// Error path: free the ctx we just inserted.
+	memdelete(_js_file_contexts[ctx_id]);
+	_js_file_contexts.erase(ctx_id);
 	UtilityFunctions::push_error("Loreline.load_locale: failed for locale '" + locale + "'.");
-	if (on_loaded.is_valid()) on_loaded.call(Variant());
+	_queue_load_locale_emit(result, Variant());
+	return sig;
 #else
 	if (!script->_script) {
 		UtilityFunctions::push_error("Loreline.load_locale: script has no underlying handle.");
-		if (on_loaded.is_valid()) on_loaded.call(Variant());
-		return;
+		_queue_load_locale_emit(result, Variant());
+		return sig;
 	}
 
-	// Re-use the runtime's file handler context for resolving translation files
-	_file_ctx.file_handler = file_handler;
+	NativeFileContext *ctx = new NativeFileContext{ base_dir, file_handler };
 
 	CharString locale_utf8 = locale.utf8();
 	CharString fp_utf8 = file_path.utf8();
@@ -471,15 +532,16 @@ void Loreline::load_locale(const String &locale, const Ref<LorelineScript> &scri
 			? Loreline_String()
 			: Loreline_String(fp_utf8.get_data());
 
-	LoadLocaleCompletionBinding *binding = new LoadLocaleCompletionBinding{ on_loaded };
+	LoadLocaleCompletionBinding *binding = new LoadLocaleCompletionBinding{ result, ctx };
 	Loreline_loadLocaleAsync(
 			loreline_locale,
 			script->_script,
 			loreline_path,
 			_on_file_request,
-			static_cast<void *>(&_file_ctx),
+			static_cast<void *>(ctx),
 			_on_load_locale_completion,
 			binding);
+	return sig;
 #endif
 }
 

@@ -8,7 +8,7 @@ var phase: String = "first_run"  # "first_run" → "resumed" → "done"
 
 
 func _ready() -> void:
-	lor_script = loreline.parse("res://story/TestSaveRestore.lor")
+	lor_script = await loreline.parse("res://story/TestSaveRestore.lor")
 	if lor_script == null:
 		printerr("Failed to parse TestSaveRestore.lor")
 		return
