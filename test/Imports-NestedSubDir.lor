@@ -1,0 +1,17 @@
+
+import imports/parent
+
+beat Main
+  Root line.
+  -> Parent
+
+/*
+<test>
+- expected: |
+    ~ Root line.
+
+    ~ Parent line.
+
+    ~ Deeper line.
+</test>
+*/

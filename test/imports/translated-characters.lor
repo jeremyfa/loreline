@@ -1,0 +1,7 @@
+
+character barista
+  name: Alex
+
+beat Greeting
+  barista: Welcome to the cafe! #barista-greet
+  -> Order

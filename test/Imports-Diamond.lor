@@ -1,0 +1,36 @@
+
+import imports/left
+import imports/right
+
+beat Main
+  Root line.
+  choice
+    Go left
+      -> Left
+    Go right
+      -> Right
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Root line.
+
+    + Go left
+    + Go right
+
+    ~ Left line.
+
+    ~ Shared line.
+- choices: [1]
+  expected: |
+    ~ Root line.
+
+    + Go left
+    + Go right
+
+    ~ Right line.
+
+    ~ Shared line.
+</test>
+*/

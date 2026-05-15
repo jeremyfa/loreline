@@ -1,0 +1,37 @@
+
+import imports/nested-a
+
+beat Main
+  Root line. #root-line
+  Chain key from root. #chain-key
+  -> A
+
+/*
+<test>
+- expected: |
+    ~ Root line.
+
+    ~ Chain key from root.
+
+    ~ A line.
+
+    ~ Chain key from A.
+
+    ~ B line.
+
+    ~ Chain key from B.
+- translation: fr
+  expected: |
+    ~ Ligne racine.
+
+    ~ Clef chaîne depuis la racine.
+
+    ~ Ligne A.
+
+    ~ Clef chaîne depuis A.
+
+    ~ Ligne B.
+
+    ~ Clef chaîne depuis A.
+</test>
+*/

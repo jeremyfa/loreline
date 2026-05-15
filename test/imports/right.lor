@@ -1,0 +1,6 @@
+
+import shared
+
+beat Right
+  Right line.
+  -> Shared

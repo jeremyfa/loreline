@@ -1,0 +1,17 @@
+
+import imports/jumper
+
+beat Main
+  Root line.
+  -> Jumper
+
+/*
+<test>
+- expected: |
+    ~ Root line.
+
+    ~ Jumper line.
+
+    ~ Target line.
+</test>
+*/

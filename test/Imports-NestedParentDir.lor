@@ -1,0 +1,17 @@
+
+import imports/helpers/inner
+
+beat Main
+  Root line.
+  -> Inner
+
+/*
+<test>
+- expected: |
+    ~ Root line.
+
+    ~ Inner line.
+
+    ~ Sibling-of-helpers line.
+</test>
+*/

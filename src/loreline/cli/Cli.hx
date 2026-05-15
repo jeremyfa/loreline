@@ -158,7 +158,15 @@ class Cli {
     }
 
     function handleFile(path:String, cb:(content:String)->Void) {
-        cb(File.getContent(path));
+        // Pass null for missing files (the contract Imports.resolve and
+        // Loreline.loadLocale both expect). loadLocale silently skips
+        // missing translation files; the parser surfaces missing imports
+        // as a parse error.
+        if (FileSystem.exists(path) && !FileSystem.isDirectory(path)) {
+            cb(File.getContent(path));
+        } else {
+            cb(null);
+        }
     }
 
     function json(file:String) {

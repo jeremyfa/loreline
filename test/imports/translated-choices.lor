@@ -1,0 +1,9 @@
+
+beat Order
+  choice
+    Espresso #opt-espresso
+      barista: One espresso! #reply-espresso
+    Latte #opt-latte
+      barista: One latte! #reply-latte
+    Tea #opt-tea
+      barista: Tea, of course. #reply-tea

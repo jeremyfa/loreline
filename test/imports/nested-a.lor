@@ -1,0 +1,7 @@
+
+import nested-b
+
+beat A
+  A line. #a-line
+  Chain key from A. #chain-key
+  -> B

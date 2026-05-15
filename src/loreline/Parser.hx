@@ -457,8 +457,13 @@ class ParserContext {
         }
         var importPath = rawImportPath;
 
+        // Relative import paths are resolved against the IMPORTING file's
+        // directory, matching how Imports.resolve walks the tree at lex time.
+        // For the root script context.path == context.rootPath, so single-level
+        // imports behave identically; the distinction only matters for nested
+        // imports where context.path is a deeper file.
         if (!Path.isAbsolute(importPath)) {
-            importPath = Path.join([Path.directory(context.rootPath), importPath]);
+            importPath = Path.join([Path.directory(context.path), importPath]);
         }
 
         importPath = Path.normalize(importPath);
@@ -480,6 +485,11 @@ class ParserContext {
         if (importedTokens == null) {
             throw new ParseError("Failed to import file at path " + importPath + " (" + rawImportPath + ")", currentPos());
         }
+
+        // Mark this path as imported BEFORE recursing, so a deeper file that
+        // imports it again (cycle or diamond) hits the early-return at the top
+        // of this method instead of trying to re-attach a duplicate body.
+        context.imported.set(importPath, true);
 
         final tempParser = new Parser(importedTokens, {
             rootPath: context.rootPath,

@@ -163,27 +163,49 @@ class AstUtils {
      * Insert localization key hash comments directly into source text.
      * Returns the modified source content. Does NOT use the Printer,
      * so all existing content (comments, formatting, test blocks) is preserved.
+     *
+     * When `includeImports` is false and `node` is a `Script`, imported
+     * scripts are skipped — their byte offsets refer to other files'
+     * contents and would land at wrong positions in `content`. Use this
+     * for per-file rewrites that walk imports externally.
+     *
+     * When `reservedIds` is provided, it's used (and mutated) as the
+     * shared existing-IDs set across calls. Useful for project-wide
+     * coordination: pass the same map to every per-file call so
+     * file B's generation avoids every ID already in file A (both
+     * pre-existing AND just-generated). Existing IDs found in this
+     * file are added to the map; newly-generated IDs are added too.
      */
-    public static function insertLocalizationKeys(content:String, node:AstNode):String {
+    public static function insertLocalizationKeys(content:String, node:AstNode, includeImports:Bool = true, ?reservedIds:Map<String, Bool>):String {
         final rng = new Random();
         final sourceLines = content.split("\n");
 
-        // Collect all existing hash IDs from the entire AST
-        // (hash comments may land on sibling nodes rather than the text node itself)
-        final existingIds = new Map<String, Bool>();
-        node.each((child, _) -> {
+        final eachFn:((Node, Node) -> Void) -> Void =
+            (!includeImports && Std.isOfType(node, Script))
+                ? (cast(node, Script)).eachExcludingImported
+                : node.each;
+
+        // Use the shared reserved set if provided so newly-generated IDs
+        // avoid collisions across per-file calls (the caller passes the
+        // same map to each invocation). Otherwise build a local set.
+        final existingIds:Map<String, Bool> = reservedIds != null ? reservedIds : new Map();
+
+        // Add this node's own hash IDs to existingIds (and therefore to
+        // the shared reservedIds, when provided — so subsequent callers
+        // see this file's pre-existing IDs too).
+        eachFn((child, _) -> {
             if (Std.isOfType(child, AstNode)) {
                 final astChild:AstNode = cast child;
                 if (astChild.trailingComments != null)
-                    for (c in astChild.trailingComments) if (c.isHash) existingIds.set(StringTools.trim(c.content), true);
+                    for (c in astChild.trailingComments) if (c.isHash) existingIds.set(c.content, true);
                 if (astChild.leadingComments != null)
-                    for (c in astChild.leadingComments) if (c.isHash) existingIds.set(StringTools.trim(c.content), true);
+                    for (c in astChild.leadingComments) if (c.isHash) existingIds.set(c.content, true);
             }
         });
 
         // Collect insertions using byte offsets (right after each NStringLiteral)
         final insertions:Array<{offset:Int, text:String}> = [];
-        node.each((child, _) -> {
+        eachFn((child, _) -> {
             var str:NStringLiteral = null;
             if (Std.isOfType(child, NTextStatement)) str = (cast(child, NTextStatement)).content;
             else if (Std.isOfType(child, NDialogueStatement)) str = (cast(child, NDialogueStatement)).content;
@@ -198,7 +220,7 @@ class AstUtils {
                 var id:String;
                 var iterations:Int = 0;
                 do {
-                    id = randomId(rng, 4 + Std.int(iterations * 0.01));
+                    id = randomId(rng, 7 + Std.int(iterations * 0.01));
                     iterations++;
                 }
                 while (existingIds.exists(id));
@@ -340,6 +362,61 @@ class AstUtils {
             }
         });
         return result;
+    }
+
+    /**
+     * Returns true iff `node` contains at least one translatable string
+     * (NTextStatement / NDialogueStatement / NChoiceOption text) that has
+     * no `#id` hash comment. Used by tooling to gate "add tags?" prompts
+     * without doing any AST or content mutation. Stops at the first
+     * untagged occurrence.
+     */
+    public static function hasUntaggedTranslatableStrings(node:AstNode):Bool {
+        var found = false;
+        node.each((child, _) -> {
+            if (found) return;
+            var astNode:AstNode = null;
+            var str:NStringLiteral = null;
+            if (Std.isOfType(child, NTextStatement)) {
+                astNode = cast child; str = (cast(child, NTextStatement)).content;
+            } else if (Std.isOfType(child, NDialogueStatement)) {
+                astNode = cast child; str = (cast(child, NDialogueStatement)).content;
+            } else if (Std.isOfType(child, NChoiceOption)) {
+                final opt:NChoiceOption = cast child;
+                if (opt.text != null) { astNode = cast child; str = opt.text; }
+            }
+            if (str != null && astNode != null && findHashComment(astNode, str) == null) {
+                found = true;
+            }
+        });
+        return found;
+    }
+
+    /**
+     * Lex-only scan of `content` for every hash-comment identifier
+     * (`#xxxx`). Cheap compared to a full parse — runs the lexer, walks
+     * tokens, pulls out every `CommentHash` payload. No AST is built, no
+     * imports are resolved.
+     *
+     * Use for project-wide reserved-IDs registries: scanning every
+     * `.lor` file in a project to collect every hash ID currently in
+     * use, so a subsequent `insertLocalizationKeys` call can be passed
+     * the union as its `reservedIds` and avoid generating any of them.
+     *
+     * Fills + returns `out`; allocates a fresh map when `out` is null.
+     */
+    public static function collectHashIds(content:String, ?out:Map<String, Bool>):Map<String, Bool> {
+        if (out == null) out = new Map();
+        if (content == null) return out;
+        final lexer = new Lexer(content);
+        final tokens = lexer.tokenize();
+        for (tok in tokens) {
+            switch (tok.type) {
+                case CommentHash(c): out.set(c, true);
+                case _:
+            }
+        }
+        return out;
     }
 
     /**
@@ -584,14 +661,14 @@ class AstUtils {
      */
     public static function findHashComment(node:AstNode, ?str:NStringLiteral):Null<String> {
         if (node.trailingComments != null)
-            for (c in node.trailingComments) if (c.isHash) return StringTools.trim(c.content);
+            for (c in node.trailingComments) if (c.isHash) return c.content;
         if (node.leadingComments != null)
-            for (c in node.leadingComments) if (c.isHash) return StringTools.trim(c.content);
+            for (c in node.leadingComments) if (c.isHash) return c.content;
         if (str != null) {
             if (str.trailingComments != null)
-                for (c in str.trailingComments) if (c.isHash) return StringTools.trim(c.content);
+                for (c in str.trailingComments) if (c.isHash) return c.content;
             if (str.leadingComments != null)
-                for (c in str.leadingComments) if (c.isHash) return StringTools.trim(c.content);
+                for (c in str.leadingComments) if (c.isHash) return c.content;
         }
         return null;
     }

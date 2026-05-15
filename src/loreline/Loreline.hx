@@ -214,12 +214,12 @@ class Loreline {
                         if (transScript != null) {
                             final translations = AstUtils.extractTranslations(transScript);
                             for (id => str in translations) {
-                                // Scoped key: always set
+                                // Scoped per file. The interpreter walks the
+                                // import ancestor chain at lookup time, so a
+                                // translation in an ancestor's file naturally
+                                // applies to descendants that don't have their
+                                // own translation for the same key.
                                 result.set(relPath + '#' + id, str);
-                                // Global key: first one wins
-                                if (!result.exists(id)) {
-                                    result.set(id, str);
-                                }
                             }
                         }
                     } catch (e:Any) {
@@ -381,10 +381,33 @@ class Loreline {
      * that doesn't already have one. `script` must be the AST parsed
      * from the same `content`. Returns the rewritten content.
      *
+     * When `includeImports` is false, imported scripts are skipped — their
+     * byte offsets refer to other files' contents and would corrupt
+     * `content`. Tooling that walks imports externally should pass false.
+     *
+     * When `reservedIds` is provided, it's used (and mutated) as the
+     * shared existing-IDs set across calls — useful for coordinating
+     * ID generation across multiple per-file invocations so that file
+     * B's auto-IDs avoid every ID already in file A. Existing IDs from
+     * this file's hash comments are added to the map; newly-generated
+     * IDs are added too.
+     *
      * Equivalent to the `--auto-ids` flag of the `loreline translate` CLI.
      */
-    public static function insertLocalizationKeys(content:String, script:Script):String {
-        return AstUtils.insertLocalizationKeys(content, script);
+    public static function insertLocalizationKeys(content:String, script:Script, includeImports:Bool = true, ?reservedIds:Map<String, Bool>):String {
+        return AstUtils.insertLocalizationKeys(content, script, includeImports, reservedIds);
+    }
+
+    /**
+     * Lex-only scan of `content` for every hash-comment identifier
+     * (`#xxxx`). Cheap compared to a full parse — runs the lexer over
+     * the text and pulls out every `CommentHash` payload. Use to build
+     * project-wide reserved-IDs registries.
+     *
+     * Fills and returns `out` (or a fresh map when `out` is null).
+     */
+    public static function collectHashIds(content:String, ?out:Map<String, Bool>):Map<String, Bool> {
+        return AstUtils.collectHashIds(content, out);
     }
 
     /**
@@ -397,12 +420,23 @@ class Loreline {
     }
 
     /**
-     * Returns every translatable string in `script` along with its `#id`
-     * (or null when untagged). Useful for diagnostics — e.g. counting
-     * untagged entries before offering an auto-IDs prompt.
+     * Returns every `#id`-tagged translatable string in `script` paired
+     * with its id. Strings WITHOUT an `#id` marker are filtered out — use
+     * `hasUntaggedTranslatableStrings` to detect those.
      */
     public static function extractTranslatableEntries(script:Script):Array<{id:String, str:NStringLiteral}> {
         return AstUtils.extractTranslatableEntries(script);
+    }
+
+    /**
+     * Returns true iff `script` contains at least one translatable
+     * string (text statement, dialogue, or choice option) that has no
+     * `#id` hash comment. Non-mutating — purely an AST inspection.
+     * Used by tooling to gate "add tags?" prompts before generating
+     * translation files.
+     */
+    public static function hasUntaggedTranslatableStrings(script:Script):Bool {
+        return AstUtils.hasUntaggedTranslatableStrings(script);
     }
 
     /**

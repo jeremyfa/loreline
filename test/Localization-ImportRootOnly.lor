@@ -1,0 +1,29 @@
+
+import imports/import-no-translation
+
+beat Main
+  Welcome to the root file. #intro
+  Shared text. #shared
+  -> NoTranslation
+
+/*
+<test>
+- expected: |
+    ~ Welcome to the root file.
+
+    ~ Shared text.
+
+    ~ Imported line.
+
+    ~ Shared text.
+- translation: fr
+  expected: |
+    ~ Bienvenue dans le fichier racine.
+
+    ~ Texte partagé.
+
+    ~ Imported line.
+
+    ~ Texte partagé.
+</test>
+*/

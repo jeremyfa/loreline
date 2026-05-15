@@ -3447,22 +3447,21 @@ typedef InterpreterOptions = {
     /**
      * If translations are available, checks for a hash comment on the node and returns
      * the translated string literal if found. Otherwise returns the original string.
+     *
+     * Walks the import ancestor chain from the node's own file up to root,
+     * trying each scoped key in turn. A translation defined in an ancestor's
+     * `.<lang>.lor` file applies to descendants that don't translate the same
+     * key themselves. Siblings (non-ancestor files) never share translations.
      */
     function getTranslatedString(node:AstNode, str:NStringLiteral):NStringLiteral {
         if (translations != null) {
             final id = findHashCommentId(node, str);
-            if (id != null) {
-                // Try scoped key first if we know the script's file path
-                if (script.filePath != null) {
-                    final relPath = lens.getNodeRelativeFilePath(node);
+            if (id != null && script.filePath != null) {
+                for (relPath in lens.getNodeAncestorFilePaths(node)) {
                     final scoped = translations.get(relPath + '#' + id);
                     if (scoped != null) {
                         return scoped;
                     }
-                }
-                final translated = translations.get(id);
-                if (translated != null) {
-                    return translated;
                 }
             }
         }

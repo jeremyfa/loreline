@@ -1,0 +1,6 @@
+
+import ../other/target
+
+beat Jumper
+  Jumper line.
+  -> Target

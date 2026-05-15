@@ -1,0 +1,6 @@
+
+import ../sibling-of-helpers
+
+beat Inner
+  Inner line.
+  -> SiblingOfHelpers

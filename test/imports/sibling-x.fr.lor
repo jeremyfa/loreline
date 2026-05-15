@@ -1,0 +1,6 @@
+
+#x-only // X-only line.
+Ligne X spécifique.
+
+#shared-key // X version of shared.
+Version X de partagé.

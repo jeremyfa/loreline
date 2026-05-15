@@ -328,6 +328,63 @@ class Lens {
     }
 
     /**
+     * Returns the chain of file paths from the node's own source file up to
+     * the root script, with each Loreline extension stripped. Used by the
+     * interpreter for hierarchical translation fallback through the import
+     * ancestor chain.
+     *
+     * The order is most-specific first, root last:
+     *   - node in root.lor                                → ["."]
+     *   - node in imports/foo.lor (imported by root)      → ["imports/foo", "."]
+     *   - node in imports/bar.lor (imported by foo.lor)   → ["imports/bar", "imports/foo", "."]
+     */
+    public function getNodeAncestorFilePaths(node:Node):Array<String> {
+        // Collect NImportStatements from innermost to outermost
+        var importChain:Array<NImportStatement> = [];
+        var current:Node = node;
+        while (current != null) {
+            final importStmt = getFirstParentOfType(current, NImportStatement);
+            if (importStmt != null) {
+                importChain.push(importStmt);
+                current = cast importStmt;
+            } else {
+                break;
+            }
+        }
+
+        final result:Array<String> = [];
+
+        // Walk outermost → innermost, building the chain incrementally.
+        // Each step adds one more import resolution; we keep every intermediate
+        // file path so callers can try them in fallback order.
+        var resolved:String = null;
+        var i = importChain.length - 1;
+        while (i >= 0) {
+            final importStmt = importChain[i];
+            final importPath = switch importStmt.path.parts[0].partType {
+                case Raw(text): text;
+                case _: "";
+            };
+            if (resolved == null) {
+                resolved = importPath;
+            } else {
+                resolved = Path.join([Path.directory(resolved), importPath]);
+            }
+            result.push(Imports.stripLorExtension(Path.normalize(resolved)));
+            i--;
+        }
+
+        // We collected outermost → innermost. Reverse so the node's own file
+        // comes first.
+        result.reverse();
+
+        // Append root as the final fallback.
+        result.push(".");
+
+        return result;
+    }
+
+    /**
      * Returns the path of the node's source file relative to the root script,
      * with any Loreline extension (`.lor`/`.lor.txt`) stripped.
      * - Returns "." for nodes in the root script.

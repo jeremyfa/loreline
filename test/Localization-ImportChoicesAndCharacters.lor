@@ -1,0 +1,30 @@
+
+import imports/translated-characters
+import imports/translated-choices
+
+beat Main
+  -> Greeting
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    Alex: Welcome to the cafe!
+
+    + Espresso
+    + Latte
+    + Tea
+
+    Alex: One latte!
+- translation: fr
+  choices: [1]
+  expected: |
+    Alex: Bienvenue dans le café !
+
+    + Expresso
+    + Latté
+    + Thé
+
+    Alex: Un latté !
+</test>
+*/

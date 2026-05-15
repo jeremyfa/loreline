@@ -1,0 +1,33 @@
+
+import imports/sibling-x
+import imports/sibling-y
+
+beat Main
+  Root line. #shared-key
+  -> X
+
+/*
+<test>
+- expected: |
+    ~ Root line.
+
+    ~ X-only line.
+
+    ~ X version of shared.
+
+    ~ Y-only line.
+
+    ~ Y version of shared.
+- translation: fr
+  expected: |
+    ~ Ligne racine.
+
+    ~ Ligne X spécifique.
+
+    ~ Version X de partagé.
+
+    ~ Y-only line.
+
+    ~ Ligne racine.
+</test>
+*/
