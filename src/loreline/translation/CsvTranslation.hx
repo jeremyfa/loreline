@@ -21,6 +21,10 @@ using loreline.Utf8;
  *
  * Quoting follows RFC 4180: values containing the separator, quotes, or newlines
  * must be wrapped in double-quotes; literal quotes are doubled (`""`).
+ *
+ * **The locale-column value must be valid Loreline body content** — it is
+ * written verbatim into the synthesised `.lor` and re-parsed by Loreline.
+ * See the full rules in `loreline.translation.TranslationFormats`.
  */
 class CsvTranslation {
 

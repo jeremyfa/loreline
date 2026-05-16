@@ -476,6 +476,9 @@ jobs:
       - name: Run Neko tests
         run: node run test ./test
 
+      - name: Run CLI integration tests
+        run: node run test-cli ./test-cli
+
 
   loreline-js:
 

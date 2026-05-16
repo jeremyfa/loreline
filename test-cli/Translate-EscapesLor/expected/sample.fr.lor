@@ -1,0 +1,12 @@
+
+#count // You have $count items in your cart.
+You have $count items in your cart.
+
+#total // The total is $$5 for $count items.
+The total is $$5 for $count items.
+
+#greeting // <friendly>Welcome back!</friendly>
+<friendly>Welcome back!</friendly>
+
+#escapes // Use \<price> for literal angle brackets.
+Use \<price> for literal angle brackets.

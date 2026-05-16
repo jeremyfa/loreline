@@ -1,0 +1,3 @@
+args: [translate, sample.lor, --lang, fr]
+exitCode: 1
+stderrContains: "Expected"

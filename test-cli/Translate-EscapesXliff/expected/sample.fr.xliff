@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext">
+    <body>
+      <trans-unit id="count">
+        <source>You have $count items in your cart.</source>
+        <target>You have $count items in your cart.</target>
+      </trans-unit>
+      <trans-unit id="total">
+        <source>The total is $$5 for $count items.</source>
+        <target>The total is $$5 for $count items.</target>
+      </trans-unit>
+      <trans-unit id="greeting">
+        <source>&lt;friendly&gt;Welcome back!&lt;/friendly&gt;</source>
+        <target>&lt;friendly&gt;Welcome back!&lt;/friendly&gt;</target>
+      </trans-unit>
+      <trans-unit id="escapes">
+        <source>Use \&lt;price&gt; for literal angle brackets.</source>
+        <target>Use \&lt;price&gt; for literal angle brackets.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

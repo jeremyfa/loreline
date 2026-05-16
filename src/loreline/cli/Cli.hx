@@ -12,6 +12,7 @@ import loreline.test.TestCase;
 import loreline.test.TestRunner;
 import sys.FileSystem;
 import sys.io.File;
+import sys.io.Process;
 
 using StringTools;
 using loreline.Utf8;
@@ -118,6 +119,12 @@ class Cli {
                 case 'test':
                     if (args.length >= 2)
                         test(args[1]);
+                    else
+                        fail('Missing path argument');
+
+                case 'test-cli':
+                    if (args.length >= 2)
+                        testCli(args[1]);
                     else
                         fail('Missing path argument');
 
@@ -267,6 +274,307 @@ class Cli {
         if (hasFailedTest) {
             Sys.exit(1);
         }
+    }
+
+    /**
+     * Folder-based CLI integration test runner.
+     *
+     * Discovers immediate subdirectories of `dir` that contain a `spec.yml`
+     * file and runs each as one integration test:
+     *   1. Wipes and recreates `.tmp/cli-test-runs/<name>/` as the workspace.
+     *   2. Copies `<test>/input/**` into the workspace.
+     *   3. Spawns `neko run.n <spec.args>` with the workspace as cwd
+     *      (achieved by appending the workspace path as the last arg, which
+     *      the CLI's bootstrap interprets as the cwd to switch to).
+     *   4. Applies the spec's assertions:
+     *      - exit code matches `spec.exitCode` (default 0)
+     *      - stdout contains `spec.stdoutContains` (if set)
+     *      - stderr contains `spec.stderrContains` (if set)
+     *      - every file under `<test>/expected/` exists in the workspace and
+     *        matches byte-for-byte
+     *      - every path in `spec.expectMissing` does NOT exist in the workspace
+     *   5. On pass, deletes the workspace. On failure, keeps it so the
+     *      developer can inspect the actual outputs.
+     */
+    function testCli(dir:String) {
+
+        passCount = 0;
+        failCount = 0;
+
+        if (!FileSystem.exists(dir) || !FileSystem.isDirectory(dir)) {
+            fail('Invalid test-cli directory: $dir');
+        }
+
+        final cwd = Sys.getCwd();
+        final runNPath = Path.join([cwd, "run.n"]);
+        if (!FileSystem.exists(runNPath)) {
+            fail('Cannot find run.n at $runNPath — build the CLI first (e.g. `node run`).');
+        }
+
+        final runsRoot = Path.join([cwd, ".tmp", "cli-test-runs"]);
+        createDirectoryRecursive(runsRoot);
+
+        // Discover test-case folders (alphabetical for deterministic order).
+        final testFolders:Array<{name:String, path:String}> = [];
+        for (entry in FileSystem.readDirectory(dir)) {
+            final folder = Path.join([dir, entry]);
+            if (FileSystem.isDirectory(folder)
+                && FileSystem.exists(Path.join([folder, "spec.yml"]))) {
+                testFolders.push({ name: entry, path: folder });
+            }
+        }
+        testFolders.sort((a, b) -> Reflect.compare(a.name, b.name));
+
+        var fileCount = 0;
+        var fileFailCount = 0;
+        for (tf in testFolders) {
+            fileCount++;
+            final failBefore = failCount;
+            // Run each fixture twice: once with LF line endings (as-authored),
+            // once with CRLF (transformed at copy time). This mirrors the unit
+            // test runner's LF/CRLF dual pass and catches line-ending bugs in
+            // the parser, the generators, or the read/write pipeline.
+            runOneCliTest(tf.name, tf.path, runNPath, runsRoot, false);
+            runOneCliTest(tf.name, tf.path, runNPath, runsRoot, true);
+            if (failCount > failBefore) fileFailCount++;
+        }
+
+        print('');
+        if (failCount > 0) {
+            final total = passCount + failCount;
+            print('  $failCount of $total CLI test cases failed'.red().bold());
+        }
+        else if (fileCount == 0) {
+            print('  No CLI test cases found under $dir'.gray());
+        }
+        else {
+            print('  All $passCount CLI test cases passed'.green().bold());
+        }
+        print('');
+
+        if (hasFailedTest) {
+            Sys.exit(1);
+        }
+    }
+
+    function runOneCliTest(name:String, testPath:String, runNPath:String, runsRoot:String, crlf:Bool):Void {
+
+        final modeLabel = crlf ? "CRLF" : "LF";
+        final displayName = name + " ~ " + modeLabel;
+        final workspaceName = crlf ? (name + "__CRLF") : name;
+        final workspace = Path.join([runsRoot, workspaceName]);
+        // Wipe any leftover workspace from a prior run.
+        if (FileSystem.exists(workspace)) {
+            deleteDirectoryRecursive(workspace);
+        }
+        createDirectoryRecursive(workspace);
+
+        // Copy input/ contents into the workspace. In CRLF mode, transform
+        // text content's line endings to CRLF as we copy.
+        final inputDir = Path.join([testPath, "input"]);
+        if (FileSystem.exists(inputDir) && FileSystem.isDirectory(inputDir)) {
+            copyDirectoryRecursive(inputDir, workspace, crlf);
+        }
+
+        // Read spec.yml.
+        final specPath = Path.join([testPath, "spec.yml"]);
+        final specContent = File.getContent(specPath);
+        var spec:Dynamic;
+        try {
+            spec = Yaml.parse(specContent);
+        } catch (e:Any) {
+            recordCliFailure(displayName, workspace, 'failed to parse spec.yml: ' + Std.string(e));
+            return;
+        }
+        if (spec == null || spec.args == null || !(spec.args is Array)) {
+            recordCliFailure(displayName, workspace, 'spec.yml must define an `args` array.');
+            return;
+        }
+
+        final argsList:Array<Dynamic> = cast spec.args;
+        final stringArgs = [for (a in argsList) Std.string(a)];
+        final expectedExitCode:Int = spec.exitCode != null ? (cast spec.exitCode:Int) : 0;
+        final stdoutContains:String = spec.stdoutContains != null ? Std.string(spec.stdoutContains) : null;
+        final stderrContains:String = spec.stderrContains != null ? Std.string(spec.stderrContains) : null;
+        final expectMissingRaw:Array<Dynamic> = (spec.expectMissing != null && (spec.expectMissing is Array))
+            ? cast spec.expectMissing
+            : [];
+        final expectMissing = [for (p in expectMissingRaw) Std.string(p)];
+
+        // Spawn the CLI: `neko <abs-run.n> <spec.args...> <workspace>`.
+        // Trailing workspace is the cwd-switch convention used by Cli.main.
+        final processArgs = [runNPath].concat(stringArgs).concat([workspace]);
+        var stdout = "";
+        var stderr = "";
+        var exitCode = -1;
+        try {
+            final proc = new Process("neko", processArgs);
+            stdout = proc.stdout.readAll().toString();
+            stderr = proc.stderr.readAll().toString();
+            exitCode = proc.exitCode();
+            proc.close();
+        } catch (e:Any) {
+            recordCliFailure(displayName, workspace, 'failed to spawn `neko ${processArgs.join(" ")}`: ' + Std.string(e));
+            return;
+        }
+
+        var failures:Array<String> = [];
+
+        if (exitCode != expectedExitCode) {
+            failures.push('exit code: expected $expectedExitCode, got $exitCode');
+        }
+        if (stdoutContains != null && stdout.indexOf(stdoutContains) == -1) {
+            failures.push('stdout missing expected substring: "$stdoutContains"');
+        }
+        if (stderrContains != null && stderr.indexOf(stderrContains) == -1) {
+            failures.push('stderr missing expected substring: "$stderrContains"');
+        }
+
+        // Compare every file under expected/ to the workspace counterpart.
+        // In CRLF mode the expected content is transformed the same way the
+        // input was, since the CLI is expected to preserve the surrounding
+        // line-ending style.
+        final expectedDir = Path.join([testPath, "expected"]);
+        if (FileSystem.exists(expectedDir) && FileSystem.isDirectory(expectedDir)) {
+            final relExpectedFiles = listFilesRecursive(expectedDir, "");
+            for (rel in relExpectedFiles) {
+                final expectedFile = Path.join([expectedDir, rel]);
+                final actualFile = Path.join([workspace, rel]);
+                if (!FileSystem.exists(actualFile)) {
+                    failures.push('expected file missing in workspace: $rel');
+                    continue;
+                }
+                var expected = File.getContent(expectedFile);
+                if (crlf) {
+                    expected = expected.split("\r\n").join("\n").split("\n").join("\r\n");
+                }
+                final actual = File.getContent(actualFile);
+                if (expected != actual) {
+                    failures.push('file content mismatch: $rel\n' + formatDiff(expected, actual));
+                }
+            }
+        }
+
+        // Verify expectMissing.
+        for (rel in expectMissing) {
+            final p = Path.join([workspace, rel]);
+            if (FileSystem.exists(p)) {
+                failures.push('file expected to be missing but exists: $rel');
+            }
+        }
+
+        if (failures.length == 0) {
+            passCount++;
+            print(('PASS'.green() + ' - ' + displayName.gray()));
+            // Clean up on success.
+            deleteDirectoryRecursive(workspace);
+        }
+        else {
+            recordCliFailure(displayName, workspace, failures.join('\n'), stdout, stderr);
+        }
+    }
+
+    function recordCliFailure(name:String, workspace:String, message:String, ?stdout:String, ?stderr:String):Void {
+        failCount++;
+        hasFailedTest = true;
+        print(('FAIL'.red() + ' - ' + name + (' (workspace: ' + workspace + ')').gray()));
+        for (line in message.split('\n')) {
+            print('  ' + line);
+        }
+        if (stdout != null && stdout.length > 0) {
+            print(('  --- stdout ---').gray());
+            for (line in stdout.split('\n')) print('  ' + line);
+        }
+        if (stderr != null && stderr.length > 0) {
+            print(('  --- stderr ---').gray());
+            for (line in stderr.split('\n')) print('  ' + line);
+        }
+    }
+
+    /**
+     * Line-based unified diff: shows up to 30 differing lines as `- expected`
+     * / `+ actual`. Trailing newline differences are surfaced explicitly.
+     */
+    function formatDiff(expected:String, actual:String):String {
+        final exp = expected.split('\n');
+        final act = actual.split('\n');
+        final buf = new StringBuf();
+        var shown = 0;
+        final maxShown = 30;
+        final maxLines = exp.length > act.length ? exp.length : act.length;
+        for (i in 0...maxLines) {
+            final e = i < exp.length ? exp[i] : null;
+            final a = i < act.length ? act[i] : null;
+            if (e == a) continue;
+            if (shown >= maxShown) {
+                buf.add('  ... (' + (maxLines - i) + ' more differing lines)\n');
+                break;
+            }
+            if (e != null) buf.add('  - ' + e + '\n');
+            if (a != null) buf.add('  + ' + a + '\n');
+            shown++;
+        }
+        return buf.toString();
+    }
+
+    // ── Recursive file-system helpers ─────────────────────────────────
+
+    function createDirectoryRecursive(path:String):Void {
+        if (FileSystem.exists(path)) return;
+        final parent = Path.directory(path);
+        if (parent.length > 0 && parent != path && !FileSystem.exists(parent)) {
+            createDirectoryRecursive(parent);
+        }
+        FileSystem.createDirectory(path);
+    }
+
+    function deleteDirectoryRecursive(path:String):Void {
+        if (!FileSystem.exists(path)) return;
+        if (FileSystem.isDirectory(path)) {
+            for (entry in FileSystem.readDirectory(path)) {
+                deleteDirectoryRecursive(Path.join([path, entry]));
+            }
+            FileSystem.deleteDirectory(path);
+        } else {
+            FileSystem.deleteFile(path);
+        }
+    }
+
+    function copyDirectoryRecursive(src:String, dst:String, convertToCrlf:Bool = false):Void {
+        if (!FileSystem.exists(dst)) FileSystem.createDirectory(dst);
+        for (entry in FileSystem.readDirectory(src)) {
+            final s = Path.join([src, entry]);
+            final d = Path.join([dst, entry]);
+            if (FileSystem.isDirectory(s)) {
+                copyDirectoryRecursive(s, d, convertToCrlf);
+            } else if (convertToCrlf) {
+                final content = File.getContent(s);
+                final converted = content.split("\r\n").join("\n").split("\n").join("\r\n");
+                File.saveContent(d, converted);
+            } else {
+                File.copy(s, d);
+            }
+        }
+    }
+
+    /**
+     * Returns every file (not directory) under `root`, as paths relative to
+     * `root`. `prefix` is used internally to accumulate the path during
+     * recursion; pass "" at the top level.
+     */
+    function listFilesRecursive(root:String, prefix:String):Array<String> {
+        final result:Array<String> = [];
+        final base = prefix.length == 0 ? root : Path.join([root, prefix]);
+        for (entry in FileSystem.readDirectory(base)) {
+            final relPath = prefix.length == 0 ? entry : prefix + "/" + entry;
+            final fullPath = Path.join([base, entry]);
+            if (FileSystem.isDirectory(fullPath)) {
+                for (sub in listFilesRecursive(root, relPath)) result.push(sub);
+            } else {
+                result.push(relPath);
+            }
+        }
+        return result;
     }
 
     function testFile(file:String, crlf:Bool) {
@@ -620,6 +928,10 @@ class Cli {
         final clearIds = argFlag(args, "clear");
         final lang = argValue(args, "lang", !clearIds);
         final generateIds = argFlag(args, "auto-ids");
+        // `--auto-ids-seed N` forces `--auto-ids` to use a deterministic RNG,
+        // so the generated `#id` markers are stable across runs. Intended for
+        // integration tests; production users don't need to set this.
+        final autoIdsSeed = argValue(args, "auto-ids-seed", false);
         var format = argValue(args, "format", false);
         if (format == null || format == "") format = "lor";
         if (format != "lor" && format != "po" && format != "xliff" && format != "csv" && format != "tsv") {
@@ -647,7 +959,10 @@ class Cli {
             }
 
             if (generateIds) {
-                content = AstUtils.insertLocalizationKeys(content, script);
+                final rng = (autoIdsSeed != null && autoIdsSeed != "")
+                    ? new loreline.Random(Std.parseFloat(autoIdsSeed))
+                    : null;
+                content = AstUtils.insertLocalizationKeys(content, script, true, null, rng);
                 File.saveContent(file, content);
                 script = Loreline.parse(content, file, handleFile);
             }
@@ -670,7 +985,16 @@ class Cli {
                 }
             }
 
-            final output = Loreline.generateTranslationFile(script, existingTranslations, format, lang);
+            var output = Loreline.generateTranslationFile(script, existingTranslations, format, lang);
+            // Match the line-ending style of the existing translation file (if any),
+            // else of the source. The generators always emit `\n`; convert to `\r\n`
+            // when the surrounding context is CRLF, so a CRLF project stays CRLF.
+            final styleProbe = FileSystem.exists(translationPath)
+                ? File.getContent(translationPath)
+                : content;
+            if (styleProbe.indexOf("\r\n") >= 0) {
+                output = output.split("\r\n").join("\n").split("\n").join("\r\n");
+            }
             File.saveContent(translationPath, output);
 
             print('Translation file ' + (existingTranslations != null ? 'updated' : 'created') + ': ' + translationPath);

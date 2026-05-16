@@ -1,0 +1,28 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgctxt "intro"
+msgid "The cafe smells wonderful."
+msgstr "The cafe smells wonderful."
+
+msgctxt "welcome"
+msgid "Welcome to our cafe!"
+msgstr "Welcome to our cafe!"
+
+msgctxt "opt-order"
+msgid "Order coffee"
+msgstr "Order coffee"
+
+msgctxt "order-reply"
+msgid "One coffee coming up."
+msgstr "One coffee coming up."
+
+msgctxt "opt-look"
+msgid "Just looking"
+msgstr "Just looking"
+
+msgctxt "look-reply"
+msgid "Take your time."
+msgstr "Take your time."

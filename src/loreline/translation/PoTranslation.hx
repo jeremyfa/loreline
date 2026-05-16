@@ -21,6 +21,10 @@ using loreline.Utf8;
  *
  * PO files are mono-locale by design; the `locale` parameter is accepted for
  * API uniformity with the other format converters but unused here.
+ *
+ * **msgstr must be valid Loreline body content** — its value is written
+ * verbatim into the synthesised `.lor` and re-parsed by Loreline. See the
+ * full rules in `loreline.translation.TranslationFormats`.
  */
 class PoTranslation {
 

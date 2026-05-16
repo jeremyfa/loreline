@@ -1,0 +1,4 @@
+args: [translate, sample.lor, --clear]
+stdoutContains: "Localization keys removed"
+expectMissing:
+  - sample.fr.lor

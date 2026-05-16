@@ -417,6 +417,12 @@ public class TestRunner {
         }
 
         String testDir = args[0];
+
+        // Test fixtures exercise every supported translation format.
+        Loreline.translationFormat("po", true);
+        Loreline.translationFormat("xliff", true);
+        Loreline.translationFormat("csv", true);
+
         List<String> testFiles = collectTestFiles(testDir);
 
         if (testFiles.isEmpty()) {

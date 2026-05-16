@@ -394,6 +394,12 @@ def main():
         sys.exit(1)
 
     test_dir = sys.argv[1]
+
+    # Test fixtures exercise every supported translation format.
+    loreline_Loreline.translationFormat("po", True)
+    loreline_Loreline.translationFormat("xliff", True)
+    loreline_Loreline.translationFormat("csv", True)
+
     test_files = collect_test_files(test_dir)
 
     if not test_files:

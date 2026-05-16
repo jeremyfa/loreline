@@ -1,0 +1,11 @@
+character barista
+  name: Alex
+
+state
+  count: 3
+
+beat menu
+  You have $count items in your cart. #count
+  The total is $$5 for $count items. #total
+  barista: <friendly>Welcome back!</friendly> #greeting
+  Use \<price> for literal angle brackets. #escapes

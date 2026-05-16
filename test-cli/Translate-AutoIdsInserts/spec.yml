@@ -1,0 +1,2 @@
+args: [translate, sample.lor, --lang, fr, --auto-ids, --auto-ids-seed, "1"]
+stdoutContains: "Translation file created"

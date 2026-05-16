@@ -1,0 +1,3 @@
+args: [translate, does-not-exist.lor, --lang, fr]
+exitCode: 1
+stderrContains: "Invalid file"

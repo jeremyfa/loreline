@@ -664,6 +664,11 @@ int main(int argc, char* argv[]) {
 
     Loreline_init();
 
+    /* Test fixtures exercise every supported translation format. */
+    Loreline_translationFormat(Loreline_String("po"), true);
+    Loreline_translationFormat(Loreline_String("xliff"), true);
+    Loreline_translationFormat(Loreline_String("csv"), true);
+
     auto testFiles = collectTestFiles(testDir);
     if (testFiles.empty()) {
         fprintf(stderr, "No test files found in %s\n", testDir.c_str());

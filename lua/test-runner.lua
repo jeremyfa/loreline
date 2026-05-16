@@ -486,6 +486,12 @@ local function main()
     end
 
     local test_dir = arg[1]
+
+    -- Test fixtures exercise every supported translation format.
+    __loreline_Loreline.translationFormat("po", true)
+    __loreline_Loreline.translationFormat("xliff", true)
+    __loreline_Loreline.translationFormat("csv", true)
+
     local test_files = collect_test_files(test_dir)
 
     if #test_files == 0 then

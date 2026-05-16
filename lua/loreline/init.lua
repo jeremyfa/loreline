@@ -364,6 +364,17 @@ function M.extract_translations(script)
     return __loreline_Loreline.extractTranslations(script._internal)
 end
 
+--- Enable or disable runtime support for an alternate translation file format.
+-- By default only `.<locale>.lor` files are tried by `load_locale`. Call this
+-- to opt in to additional formats. Known names: "po" (.po), "xliff" (.xliff,
+-- .xlf), "csv" (.csv, .tsv). Unknown names are accepted silently for
+-- forward compatibility.
+-- @param name string The format short name.
+-- @param enabled boolean Whether to enable (true) or disable (false) the format.
+function M.translation_format(name, enabled)
+    __loreline_Loreline.translationFormat(name, enabled)
+end
+
 --- Load translations for a specific locale, walking the script's full import tree.
 -- For each file involved in the script (root + transitively imported), looks up the
 -- corresponding translation file by inserting `.<locale>` before the extension

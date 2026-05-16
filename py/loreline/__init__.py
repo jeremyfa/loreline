@@ -490,6 +490,17 @@ class Loreline:
         return _core.loreline_Loreline.extractTranslations(script._internal)
 
     @staticmethod
+    def translation_format(name: str, enabled: bool) -> None:
+        """Enable or disable runtime support for an alternate translation file format.
+
+        By default only ``.<locale>.lor`` files are tried by ``load_locale``. Call
+        this to opt in to additional formats. Known names: ``"po"`` (.po),
+        ``"xliff"`` (.xliff, .xlf), ``"csv"`` (.csv, .tsv). Unknown names are
+        accepted silently for forward compatibility.
+        """
+        _core.loreline_Loreline.translationFormat(name, enabled)
+
+    @staticmethod
     def load_locale(
         locale: str,
         script: Script,

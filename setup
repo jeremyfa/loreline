@@ -1283,7 +1283,7 @@ async function main() {
                 content = content.replace(/\b\.Loreline\.Internal\.Hscript\b/g, '.hscript');
                 content = content.replace(/\bstring Loreline\.Internal\.Hscript\b/g, 'string hscript');
                 content = content.replace(/\bnamespace cs\b/g, 'namespace Loreline.Internal.Cs');
-                content = content.replace(/\bcs.\b/g, 'Loreline.Internal.Cs.');
+                content = content.replace(/\bcs\.\b/g, 'Loreline.Internal.Cs.');
                 content = content.replace(/\bloreline\b/g, 'Loreline.Runtime');
                 content = content.replace(/\bLoreline\.Internal\./g, 'global::Loreline.Internal.');
                 content = content.replace(/\bnamespace global::Loreline\.Internal\./g, 'namespace Loreline.Internal.');

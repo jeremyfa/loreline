@@ -1,0 +1,20 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgctxt "count"
+msgid "You have $count items in your cart."
+msgstr "You have $count items in your cart."
+
+msgctxt "total"
+msgid "The total is $$5 for $count items."
+msgstr "The total is $$5 for $count items."
+
+msgctxt "greeting"
+msgid "<friendly>Welcome back!</friendly>"
+msgstr "<friendly>Welcome back!</friendly>"
+
+msgctxt "escapes"
+msgid "Use \\<price> for literal angle brackets."
+msgstr "Use \\<price> for literal angle brackets."

@@ -35,6 +35,12 @@ class Program
         }
 
         string testDir = args[0];
+
+        // Test fixtures exercise every supported translation format.
+        Engine.TranslationFormat("po", true);
+        Engine.TranslationFormat("xliff", true);
+        Engine.TranslationFormat("csv", true);
+
         var testFiles = CollectTestFiles(testDir);
 
         if (testFiles.Count == 0)

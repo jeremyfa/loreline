@@ -1,0 +1,13 @@
+character barista
+  name: Alex
+
+beat menu
+  The cafe smells wonderful. #intro
+  barista: "Welcome to our cafe!" #welcome
+  choice
+    Order coffee #opt-order
+      barista: One coffee coming up. #order-reply
+    "Just looking" #opt-look
+      "Take your time." #look-reply
+    "Leave the cafe" #opt-leave
+      "You step outside." #leave-reply

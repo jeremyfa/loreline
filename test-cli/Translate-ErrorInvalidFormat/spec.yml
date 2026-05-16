@@ -1,0 +1,3 @@
+args: [translate, sample.lor, --lang, fr, --format, json]
+exitCode: 1
+stderrContains: "Unsupported translation format"

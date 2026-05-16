@@ -22,6 +22,26 @@ using loreline.Utf8;
  * Format families can also be removed entirely at compile time with
  * `-D loreline_no_po`, `-D loreline_no_xliff`, `-D loreline_no_csv`. The
  * corresponding converter classes are then eliminated by DCE.
+ *
+ * ## Translation strings must be valid Loreline body content
+ *
+ * Every original / translation string in every supported format
+ * (msgid/msgstr in PO, source/target in XLIFF, source/locale columns in
+ * CSV/TSV) is written as-is into a synthesised `.lor` body that is then
+ * re-parsed by the standard Loreline parser. The string therefore has to
+ * be **valid Loreline body content**, following the same rules that apply
+ * to text in a `.lor` source file:
+ *
+ *  - `$var` and `${expr}` perform interpolation; use `$$` for a literal `$`.
+ *  - `<tag>` / `</tag>` are tag markup; use `\<` for a literal `<`.
+ *  - `\n`, `\t`, `\r`, `\\` are the usual escape sequences for newline,
+ *    tab, carriage return and backslash.
+ *  - Bare `"` characters are allowed and pass through as literal quotes.
+ *
+ * Translators who want to use these features just write the corresponding
+ * Loreline syntax in their localised string and it round-trips intact.
+ * Translators who want literal characters must apply the same escapes they
+ * would in the original `.lor`.
  */
 class TranslationFormats {
 

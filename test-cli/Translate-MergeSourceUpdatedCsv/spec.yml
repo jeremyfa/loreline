@@ -1,0 +1,2 @@
+args: [translate, sample.lor, --lang, fr, --format, csv]
+stdoutContains: "Translation file updated"

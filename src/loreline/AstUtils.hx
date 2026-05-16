@@ -176,8 +176,8 @@ class AstUtils {
      * pre-existing AND just-generated). Existing IDs found in this
      * file are added to the map; newly-generated IDs are added too.
      */
-    public static function insertLocalizationKeys(content:String, node:AstNode, includeImports:Bool = true, ?reservedIds:Map<String, Bool>):String {
-        final rng = new Random();
+    public static function insertLocalizationKeys(content:String, node:AstNode, includeImports:Bool = true, ?reservedIds:Map<String, Bool>, ?rng:Random):String {
+        if (rng == null) rng = new Random();
         final sourceLines = content.split("\n");
 
         final eachFn:((Node, Node) -> Void) -> Void =

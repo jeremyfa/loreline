@@ -41,6 +41,10 @@ using loreline.Utf8;
  *     (the file is assumed to be in the requested locale).
  *
  * Empty/missing `<target>` → entry skipped.
+ *
+ * **`<target>` must be valid Loreline body content** — its text is written
+ * verbatim into the synthesised `.lor` and re-parsed by Loreline. See the
+ * full rules in `loreline.translation.TranslationFormats`.
  */
 class XliffTranslation {
 

@@ -260,6 +260,20 @@ namespace Loreline
         }
 
         /// <summary>
+        /// Enable or disable runtime support for an alternate translation file format.
+        /// </summary>
+        /// <remarks>
+        /// By default only `.&lt;locale&gt;.lor` files are tried by <see cref="LoadLocale"/>.
+        /// Call this to opt in to additional formats. Known names: "po" (.po),
+        /// "xliff" (.xliff, .xlf), "csv" (.csv, .tsv). Unknown names are accepted
+        /// silently for forward compatibility.
+        /// </remarks>
+        public static void TranslationFormat(string name, bool enabled)
+        {
+            Runtime.Loreline.translationFormat(name, enabled);
+        }
+
+        /// <summary>
         /// Loads translations for a specific locale, walking the script's full import tree.
         /// </summary>
         /// <remarks>

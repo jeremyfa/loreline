@@ -1,0 +1,3 @@
+args: [translate, sample.lor]
+exitCode: 1
+stderrContains: "--lang is required"

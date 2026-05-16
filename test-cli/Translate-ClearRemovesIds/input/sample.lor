@@ -1,0 +1,6 @@
+character barista
+  name: Alex
+
+beat menu
+  The cafe smells wonderful. #intro
+  barista: "Welcome to our cafe!" #welcome
