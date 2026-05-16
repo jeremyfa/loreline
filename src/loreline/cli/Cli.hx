@@ -228,6 +228,11 @@ class Cli {
         var fileCount = 0;
         var fileFailCount = 0;
 
+        // Test fixtures exercise every supported translation format.
+        Loreline.translationFormat("po", true);
+        Loreline.translationFormat("xliff", true);
+        Loreline.translationFormat("csv", true);
+
         if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
             var dir = path;
             for (file in FileSystem.readDirectory(dir)) {
@@ -615,6 +620,17 @@ class Cli {
         final clearIds = argFlag(args, "clear");
         final lang = argValue(args, "lang", !clearIds);
         final generateIds = argFlag(args, "auto-ids");
+        var format = argValue(args, "format", false);
+        if (format == null || format == "") format = "lor";
+        if (format != "lor" && format != "po" && format != "xliff" && format != "csv" && format != "tsv") {
+            fail('Unsupported translation format: $format (expected one of: lor, po, xliff, csv, tsv)');
+        }
+
+        // Enable alternate translation formats so that an existing file can be
+        // read back as the merge baseline.
+        Loreline.translationFormat("po", true);
+        Loreline.translationFormat("xliff", true);
+        Loreline.translationFormat("csv", true);
 
         if (!FileSystem.exists(file) || FileSystem.isDirectory(file))
             fail('Invalid file: $file');
@@ -636,20 +652,25 @@ class Cli {
                 script = Loreline.parse(content, file, handleFile);
             }
 
-            final basePath = file.substring(0, file.length - 4);
-            final translationPath = basePath + "." + lang + ".lor";
+            final basePath = file.uSubstring(0, file.uLength() - 4);
+            final translationPath = basePath + "." + lang + "." + format;
 
             var existingTranslations:Map<String, Node.NStringLiteral> = null;
             if (FileSystem.exists(translationPath)) {
                 final transContent = File.getContent(translationPath);
                 if (transContent.trim().length > 0) {
-                    final transScript = Loreline.parse(transContent, translationPath, handleFile);
-                    if (transScript != null)
-                        existingTranslations = AstUtils.extractTranslations(transScript);
+                    final lorBody = (format == "lor")
+                        ? transContent
+                        : convertExistingToLor(transContent, format, lang);
+                    if (lorBody != null && lorBody.trim().length > 0) {
+                        final transScript = Loreline.parse(lorBody, translationPath, handleFile);
+                        if (transScript != null)
+                            existingTranslations = AstUtils.extractTranslations(transScript);
+                    }
                 }
             }
 
-            final output = AstUtils.generateTranslationFile(script, existingTranslations, new Printer());
+            final output = Loreline.generateTranslationFile(script, existingTranslations, format, lang);
             File.saveContent(translationPath, output);
 
             print('Translation file ' + (existingTranslations != null ? 'updated' : 'created') + ': ' + translationPath);
@@ -667,6 +688,16 @@ class Cli {
             fail(e, file);
         }
 
+    }
+
+    function convertExistingToLor(content:String, format:String, locale:String):String {
+        return switch (format) {
+            case "po":    loreline.translation.PoTranslation.toLoreline(content, locale);
+            case "xliff": loreline.translation.XliffTranslation.toLoreline(content, locale);
+            case "csv":   loreline.translation.CsvTranslation.toLoreline(content, locale);
+            case "tsv":   loreline.translation.CsvTranslation.tsvToLoreline(content, locale);
+            case _: null;
+        }
     }
 
     function play(file:String) {

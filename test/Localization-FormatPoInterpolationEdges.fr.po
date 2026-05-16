@@ -1,0 +1,24 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgctxt "simple"
+msgid "Simple has $count items"
+msgstr "Simple a $count articles"
+
+msgctxt "complex"
+msgid "Complex makes ${count * 2} pairs"
+msgstr "Complexe fait ${count * 2} paires"
+
+msgctxt "dollar"
+msgid "Dollar shows $$5 bucks"
+msgstr "Dollar montre $$5 dollars"
+
+msgctxt "mixed"
+msgid "Mixed combo $$${count}"
+msgstr "Mixte combo $$${count}"
+
+msgctxt "end"
+msgid "End with $count!"
+msgstr "Fin avec $count !"

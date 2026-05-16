@@ -174,6 +174,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             _releaseObj(translationsId);
         },
 
+        // --- Translation formats (PO, XLIFF, CSV...) ---
+        // Enable/disable runtime support for an alternate translation file format.
+        // Names: "po", "xliff", "csv". Unknown names accepted silently.
+        translationFormat: function(name, enabled) {
+            Loreline.translationFormat(name, enabled);
+        },
+
         provideFunctionDone: function(callId) {
             var entry = _pendingFunctionDone[callId];
             if (entry) {

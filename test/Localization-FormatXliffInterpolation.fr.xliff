@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="cafe">
+    <body>
+      <trans-unit id="item-count">
+        <source>You have $count items</source>
+        <target>Vous avez $count articles</target>
+      </trans-unit>
+      <trans-unit id="drink-reply">
+        <source>You ordered $count drinks</source>
+        <target>Vous avez commandé $count boissons</target>
+      </trans-unit>
+      <trans-unit id="opt-take">
+        <source>Take $count items</source>
+        <target>Prendre $count articles</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

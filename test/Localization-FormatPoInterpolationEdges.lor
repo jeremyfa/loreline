@@ -1,0 +1,36 @@
+
+state
+  count: 3
+
+beat Start
+  "Simple has $count items" #simple
+  "Complex makes ${count * 2} pairs" #complex
+  "Dollar shows $$5 bucks" #dollar
+  "Mixed combo $$${count}" #mixed
+  "End with $count!" #end
+
+/*
+<test>
+- expected: |
+    ~ Simple has 3 items
+
+    ~ Complex makes 6 pairs
+
+    ~ Dollar shows $5 bucks
+
+    ~ Mixed combo $3
+
+    ~ End with 3!
+- translation: fr
+  expected: |
+    ~ Simple a 3 articles
+
+    ~ Complexe fait 6 paires
+
+    ~ Dollar montre $5 dollars
+
+    ~ Mixte combo $3
+
+    ~ Fin avec 3 !
+</test>
+*/

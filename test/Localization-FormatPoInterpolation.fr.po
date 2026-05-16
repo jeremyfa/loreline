@@ -1,0 +1,16 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgctxt "item-count"
+msgid "You have $count items"
+msgstr "Vous avez $count articles"
+
+msgctxt "drink-reply"
+msgid "You ordered $count drinks"
+msgstr "Vous avez commandé $count boissons"
+
+msgctxt "opt-take"
+msgid "Take $count items"
+msgstr "Prendre $count articles"

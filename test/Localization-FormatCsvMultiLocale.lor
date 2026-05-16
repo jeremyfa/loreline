@@ -1,0 +1,14 @@
+
+beat Main
+  Hello world. #greeting
+  Goodbye. #farewell
+
+/*
+<test>
+- translation: fr
+  expected: |
+    ~ Bonjour le monde.
+
+    ~ Au revoir.
+</test>
+*/

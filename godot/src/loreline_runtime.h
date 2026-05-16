@@ -124,6 +124,11 @@ public:
 	//   var translations = await loreline.load_locale("fr", script)
 	Signal load_locale(const String &locale, const Ref<LorelineScript> &script, const String &file_path = "", const Callable &file_handler = Callable());
 
+	// Enable or disable runtime support for an alternate translation file
+	// format. By default only `.<locale>.lor` is tried.
+	// Known names: "po", "xliff", "csv". Unknown names accepted silently.
+	void translation_format(const String &name, bool enabled);
+
 	Ref<LorelineInterpreter> play(const Ref<LorelineScript> &script, const Callable &on_dialogue = Callable(), const Callable &on_choice = Callable(), const Callable &on_finished = Callable(), const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 	Ref<LorelineInterpreter> resume(const Ref<LorelineScript> &script, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, const String &save_data, const String &beat_name = "", const Ref<LorelineOptions> &options = Ref<LorelineOptions>());
 

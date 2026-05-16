@@ -284,6 +284,20 @@ LORELINE_PUBLIC void Loreline_loadLocaleAsync(
     void* completionHandlerData
 );
 
+/* Enable or disable runtime support for an alternate translation file format.
+ *
+ * By default, only `.<locale>.lor` files are tried by Loreline_loadLocale.
+ * Call this to opt in to additional formats:
+ *   - "po"    — GNU gettext PO (.po)
+ *   - "xliff" — XLIFF 1.2 / 2.x (.xliff, .xlf)
+ *   - "csv"   — CSV / TSV (.csv, .tsv)
+ *
+ * Unknown names are accepted silently (forward-compat). */
+LORELINE_PUBLIC void Loreline_translationFormat(
+    Loreline_String name,
+    bool enabled
+);
+
 /* Interpreter options — configure custom functions, strict access, translations */
 LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);
 LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options);

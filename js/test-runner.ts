@@ -289,6 +289,11 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
+    // Test fixtures exercise every supported translation format.
+    Loreline.translationFormat('po', true);
+    Loreline.translationFormat('xliff', true);
+    Loreline.translationFormat('csv', true);
+
     for (const filePath of testFiles) {
         const rawContent: string = readFileSync(filePath, 'utf-8');
         const testItems: TestItem[] = extractTests(rawContent);

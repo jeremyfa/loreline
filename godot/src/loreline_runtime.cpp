@@ -74,6 +74,7 @@ void Loreline::_bind_methods() {
 	ClassDB::bind_static_method("Loreline", D_METHOD("shared"), &Loreline::shared);
 	ClassDB::bind_method(D_METHOD("parse", "source", "file_path", "file_handler"), &Loreline::parse, DEFVAL(""), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("load_locale", "locale", "script", "file_path", "file_handler"), &Loreline::load_locale, DEFVAL(""), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("translation_format", "name", "enabled"), &Loreline::translation_format);
 	ClassDB::bind_method(D_METHOD("play", "script", "on_dialogue", "on_choice", "on_finished", "beat_name", "options"), &Loreline::play, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 	ClassDB::bind_method(D_METHOD("resume", "script", "on_dialogue", "on_choice", "on_finished", "save_data", "beat_name", "options"), &Loreline::resume, DEFVAL(""), DEFVAL(Ref<LorelineOptions>()));
 }
@@ -542,6 +543,19 @@ Signal Loreline::load_locale(const String &locale, const Ref<LorelineScript> &sc
 			_on_load_locale_completion,
 			binding);
 	return sig;
+#endif
+}
+
+void Loreline::translation_format(const String &name, bool enabled) {
+#ifdef LORELINE_USE_JS
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	String escaped = loreline_escape_js(name);
+	String js_code = String("_lorelineBridge.translationFormat('") + escaped + "'," + (enabled ? "true" : "false") + ")";
+	js->eval(js_code, true);
+#else
+	CharString name_utf8 = name.utf8();
+	Loreline_translationFormat(Loreline_String(name_utf8.get_data()), enabled);
 #endif
 }
 

@@ -298,6 +298,22 @@ export class Loreline {
     ): Translations | null;
 
     /**
+     * Enable or disable runtime support for an alternate translation file format.
+     *
+     * By default only `.<locale>.lor` files are tried by `loadLocale`. Call
+     * this to opt in to additional formats:
+     * - `"po"`    — GNU gettext PO (`.po`)
+     * - `"xliff"` — XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
+     * - `"csv"`   — CSV / TSV (`.csv`, `.tsv`)
+     *
+     * Unknown names are accepted silently (forward-compat for future formats).
+     *
+     * @param name The format identifier (see above)
+     * @param enabled True to enable the format, false to disable
+     */
+    static translationFormat(name: string, enabled: boolean): void;
+
+    /**
      * Prints a parsed script back into Loreline source code.
      *
      * @param script The parsed script (result from `parse()`)

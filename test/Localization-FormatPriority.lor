@@ -1,0 +1,11 @@
+
+beat Main
+  Hello world. #greeting
+
+/*
+<test>
+- translation: fr
+  expected: |
+    ~ Bonjour le monde (from .lor).
+</test>
+*/

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="cafe">
+    <body>
+      <trans-unit id="intro">
+        <source>The cafe smells wonderful.</source>
+        <target>Le café sent très bon.</target>
+      </trans-unit>
+      <trans-unit id="welcome">
+        <source>Welcome! What can I get you?</source>
+        <target>Bienvenue ! Qu'est-ce que je te sers ?</target>
+      </trans-unit>
+      <trans-unit id="opt-espresso">
+        <source>Espresso</source>
+        <target>Expresso</target>
+      </trans-unit>
+      <trans-unit id="espresso-reply">
+        <source>One espresso!</source>
+        <target>Un expresso !</target>
+      </trans-unit>
+      <trans-unit id="opt-latte">
+        <source>Latte</source>
+        <target>Latté</target>
+      </trans-unit>
+      <trans-unit id="latte-reply">
+        <source>One latte!</source>
+        <target>Un latté !</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

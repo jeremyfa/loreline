@@ -125,6 +125,21 @@ public final class Loreline {
     }
 
     /**
+     * Enable or disable runtime support for an alternate translation file format.
+     *
+     * By default only `.<locale>.lor` files are tried by loadLocale. Call this
+     * to opt in to additional formats. Known names:
+     *   - "po"    — GNU gettext PO (.po)
+     *   - "xliff" — XLIFF 1.2 / 2.x (.xliff, .xlf)
+     *   - "csv"   — CSV / TSV (.csv, .tsv)
+     *
+     * Unknown names are accepted silently (forward-compat).
+     */
+    public static void translationFormat(String name, boolean enabled) {
+        loreline.runtime.Loreline.translationFormat(name, enabled);
+    }
+
+    /**
      * Loads translations for a specific locale.
      * Walks the script's full import tree and loads `.<locale>.lor` files for each.
      * Defaults to looking up translations next to the source files.

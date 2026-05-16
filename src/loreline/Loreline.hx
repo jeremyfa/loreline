@@ -140,12 +140,24 @@ class Loreline {
             throw new Error("Cannot load locale: handleFile is required");
         }
 
-        // Determine which Loreline extension we're working with: prefer the source script's
-        // extension when known, otherwise infer from filePath. The result is the canonical
-        // lowercase ".lor" or ".lor.txt" used to build translation file names.
-        final ext = (script.filePath != null && Imports.endsWithLorTxt(script.filePath))
-            ? '.lor.txt'
-            : Imports.lorExtension(filePath);
+        // Wrap to enable alternate translation file formats (PO, XLIFF, CSV/TSV).
+        // Pass-through if no format was enabled via Loreline.translationFormat();
+        // otherwise the wrap tries each enabled format as a sibling and converts
+        // the first match to a synthesized .lor translation body before handing
+        // it back to loadLocale.
+        handleFile = loreline.translation.TranslationFormats.wrap(handleFile, locale);
+
+        // Determine which Loreline extension we're working with for translation files.
+        // By default, always ".lor" — ".lor.txt" translations are only considered when
+        // built with -D loreline_lor_txt (which restores the previous behavior of
+        // matching the source script's extension).
+        final ext = #if loreline_lor_txt
+            (script.filePath != null && Imports.endsWithLorTxt(script.filePath))
+                ? '.lor.txt'
+                : Imports.lorExtension(filePath);
+        #else
+            '.lor';
+        #end
 
         // Determine where to look for translation files.
         // If filePath ends with .lor / .lor.txt, treat its directory as the lookup base.
@@ -358,6 +370,24 @@ class Loreline {
     }
 
     /**
+     * Enable or disable runtime support for an alternate translation file format.
+     *
+     * By default, only `.<locale>.lor` files are tried by `loadLocale`. Call this
+     * to opt in to additional formats. Known names:
+     *   - `"po"`   — GNU gettext PO (`.po`)
+     *   - `"xliff"` — XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
+     *   - `"csv"`  — CSV / TSV (`.csv`, `.tsv`)
+     *
+     * Unknown names are accepted silently (forward-compat for future formats).
+     *
+     * @param name The format identifier (see above)
+     * @param enabled True to enable the format, false to disable
+     */
+    public static function translationFormat(name:String, enabled:Bool):Void {
+        loreline.translation.TranslationFormats.translationFormat(name, enabled);
+    }
+
+    /**
      * Generates a translation file body for the given source `script`.
      *
      * Each translatable string in the source that has an `#id` marker
@@ -372,8 +402,20 @@ class Loreline {
      * @param existing (optional) Existing translations to preserve when merging
      * @return The translation file body as a string, ready to write to disk
      */
-    public static function generateTranslationFile(script:Script, ?existing:Map<String, NStringLiteral>):String {
-        return AstUtils.generateTranslationFile(script, existing, new Printer());
+    public static function generateTranslationFile(script:Script, ?existing:Map<String, NStringLiteral>, ?format:String, ?locale:String):String {
+        if (format == null || format == "lor") {
+            return AstUtils.generateTranslationFile(script, existing, new Printer());
+        }
+        if (locale == null || locale == "") {
+            throw new Error("A locale is required when generating a translation file in format '" + format + "'");
+        }
+        return switch (format) {
+            case "po":    loreline.translation.PoTranslation.fromScript(script, existing, locale);
+            case "xliff": loreline.translation.XliffTranslation.fromScript(script, existing, locale);
+            case "csv":   loreline.translation.CsvTranslation.fromScript(script, existing, locale);
+            case "tsv":   loreline.translation.CsvTranslation.tsvFromScript(script, existing, locale);
+            case _: throw new Error("Unknown translation file format: '" + format + "'");
+        }
     }
 
     /**

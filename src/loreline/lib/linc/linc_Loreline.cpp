@@ -1241,6 +1241,27 @@ LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
     return slot.result;
 }
 
+/* ── Translation formats ────────────────────────────────────────────────── */
+
+static LORELINE_NOINLINE void Loreline_translationFormat_hx(
+    Loreline_String name,
+    bool enabled
+) {
+    LORELINE_HX_BEGIN
+    ::String hxName = linc_toHxString(name);
+    ::loreline::Loreline_obj::translationFormat(hxName, enabled);
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_translationFormat(
+    Loreline_String name,
+    bool enabled
+) {
+    LORELINE_BEGIN_CALL
+    Loreline_translationFormat_hx(name, enabled);
+    LORELINE_END_CALL
+}
+
 /* ── Play ───────────────────────────────────────────────────────────────── */
 
 static LORELINE_NOINLINE void Loreline_play_hx(

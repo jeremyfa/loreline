@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="es" datatype="plaintext" original="greetings">
+    <body>
+      <trans-unit id="greeting">
+        <source>Hello world.</source>
+        <target>Hola mundo.</target>
+      </trans-unit>
+      <trans-unit id="farewell">
+        <source>Goodbye.</source>
+        <target>Adiós.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file source-language="en" target-language="fr" datatype="plaintext" original="greetings">
+    <body>
+      <trans-unit id="greeting">
+        <source>Hello world.</source>
+        <target>Bonjour le monde.</target>
+      </trans-unit>
+      <trans-unit id="farewell">
+        <source>Goodbye.</source>
+        <target>Au revoir.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

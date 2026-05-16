@@ -1,0 +1,3 @@
+msgctxt "greeting"
+msgid "Hello world."
+msgstr "Bonjour le monde (from .po, should NOT be used)."
