@@ -47,23 +47,48 @@ class TranslationFormats {
 
     /**
      * Registered formats. Order is the lookup priority.
-     * Each entry: short name (used by `translationFormat`), file extension,
-     * and the converter that turns the format's file content into a Loreline
-     * translation file body (the same shape as a `.<locale>.lor` file).
+     * Each entry: short name (used by `translationFormat`) and file extension.
+     * The converter for each `ext` is dispatched explicitly in `convert()` —
+     * see the comment there for why we don't store function refs here.
      */
-    static final formats:Array<{name:String, ext:String, convert:(content:String, locale:String)->String}> = [
+    static final formats:Array<{name:String, ext:String}> = [
         #if !loreline_no_po
-        { name: "po", ext: ".po", convert: PoTranslation.toLoreline },
+        { name: "po", ext: ".po" },
         #end
         #if !loreline_no_xliff
-        { name: "xliff", ext: ".xliff", convert: XliffTranslation.toLoreline },
-        { name: "xliff", ext: ".xlf",   convert: XliffTranslation.toLoreline },
+        { name: "xliff", ext: ".xliff" },
+        { name: "xliff", ext: ".xlf" },
         #end
         #if !loreline_no_csv
-        { name: "csv", ext: ".csv", convert: CsvTranslation.toLoreline },
-        { name: "csv", ext: ".tsv", convert: CsvTranslation.tsvToLoreline },
+        { name: "csv", ext: ".csv" },
+        { name: "csv", ext: ".tsv" },
         #end
     ];
+
+    /**
+     * Dispatches a file's content to its format converter by extension.
+     *
+     * Explicit `switch` rather than a function pointer stored in `formats`
+     * so every converter has a direct call site visible to dead-code
+     * elimination / AOT trim analysis. The reflective `Closure(typeof(X),
+     * "toLoreline", …)` Haxe would otherwise emit on C# is invisible to
+     * .NET's `PublishAot` trimmer and silently drops the converter bodies.
+     */
+    static function convert(ext:String, content:String, locale:String):String {
+        return switch (ext) {
+            #if !loreline_no_po
+            case ".po": PoTranslation.toLoreline(content, locale);
+            #end
+            #if !loreline_no_xliff
+            case ".xliff" | ".xlf": XliffTranslation.toLoreline(content, locale);
+            #end
+            #if !loreline_no_csv
+            case ".csv": CsvTranslation.toLoreline(content, locale);
+            case ".tsv": CsvTranslation.tsvToLoreline(content, locale);
+            #end
+            case _: throw new haxe.Exception("Unknown translation format extension: " + ext);
+        }
+    }
 
     /**
      * Per-format enabled state. Empty by default → all formats disabled.
@@ -191,7 +216,7 @@ class TranslationFormats {
 
         underlying(candidate, content -> {
             if (content != null) {
-                cb(f.convert(content, locale));
+                cb(convert(f.ext, content, locale));
             } else {
                 tryNext(underlying, stem, locale, withLocaleSuffix, index + 1, cb);
             }
