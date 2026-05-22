@@ -131,12 +131,58 @@ class TranslationFormats {
      *
      * `underlying` is assumed non-null (loadLocale validates this before
      * calling wrap).
+     *
+     * Returns both the wrapped handler and an accessor for the most recent
+     * converter error captured during this wrap's lifetime. When a converter
+     * throws on a malformed file, the wrapper records the error (with the
+     * actual file path) and falls through to the next enabled format — so a
+     * broken `.fr.po` doesn't block a valid `.fr.xliff`. The caller reads
+     * `lastError()` after dispatch completes to surface the failure.
      */
-    public static function wrap(underlying:ImportsFileHandler, locale:String):ImportsFileHandler {
+    public static function wrap(underlying:ImportsFileHandler, locale:String):WrappedFileHandler {
         // Fast path: no format enabled → just pass through. No overhead.
-        if (!anyEnabled()) return underlying;
+        if (!anyEnabled()) return new WrappedFileHandler(underlying, () -> null);
 
-        return (path, cb) -> {
+        var captured:Null<loreline.Error> = null;
+
+        function tryNext(stem:String, withLocaleSuffix:Bool, index:Int, cb:(content:String)->Void):Void {
+            if (index >= formats.length) {
+                if (withLocaleSuffix) {
+                    tryNext(stem, false, 0, cb);
+                } else {
+                    cb(null);
+                }
+                return;
+            }
+
+            final f = formats[index];
+            if (enabled.get(f.name) != true) {
+                tryNext(stem, withLocaleSuffix, index + 1, cb);
+                return;
+            }
+
+            final candidate = withLocaleSuffix
+                ? stem + "." + locale + f.ext
+                : stem + f.ext;
+
+            underlying(candidate, content -> {
+                if (content != null) {
+                    try {
+                        cb(convert(f.ext, content, locale));
+                    } catch (e:loreline.Error) {
+                        // Record under this file's actual path and fall through
+                        // to the next format. loadLocale promotes `lastError()`
+                        // into Loreline._lastError after the dispatch loop.
+                        captured = new loreline.Error('Failed to load translation file "$candidate": ' + e.message);
+                        tryNext(stem, withLocaleSuffix, index + 1, cb);
+                    }
+                } else {
+                    tryNext(stem, withLocaleSuffix, index + 1, cb);
+                }
+            });
+        }
+
+        final wrapped:ImportsFileHandler = (path, cb) -> {
             underlying(path, content -> {
                 if (content != null) {
                     cb(content);
@@ -167,9 +213,11 @@ class TranslationFormats {
                     ? withoutLorExt.uSubstr(0, withoutLorExt.uLength() - localeSuffix.uLength())
                     : withoutLorExt;
 
-                tryNext(underlying, stem, locale, true, 0, cb);
+                tryNext(stem, true, 0, cb);
             });
         };
+
+        return new WrappedFileHandler(wrapped, () -> captured);
     }
 
     /**
@@ -184,43 +232,25 @@ class TranslationFormats {
         return s.uSubstr(sLen - suffixLen, suffixLen) == suffix;
     }
 
-    static function tryNext(
-        underlying:ImportsFileHandler,
-        stem:String,
-        locale:String,
-        withLocaleSuffix:Bool,
-        index:Int,
-        cb:(content:String)->Void
-    ):Void {
-        if (index >= formats.length) {
-            if (withLocaleSuffix) {
-                // Done with the suffixed pass; switch to the non-suffixed pass
-                // for formats that can self-identify their locale.
-                tryNext(underlying, stem, locale, false, 0, cb);
-            } else {
-                // Exhausted both passes.
-                cb(null);
-            }
-            return;
-        }
+}
 
-        final f = formats[index];
-        if (enabled.get(f.name) != true) {
-            tryNext(underlying, stem, locale, withLocaleSuffix, index + 1, cb);
-            return;
-        }
+/**
+ * Result of `TranslationFormats.wrap()`:
+ * - `handler` is the wrapped file handler that adds alternate-format lookups.
+ * - `lastError()` returns the most recent converter error captured during
+ *   this wrap's lifetime (or null). Caller reads after dispatch completes.
+ *
+ * Defined as a class (not a typedef) because Haxe Lua wraps anonymous-struct
+ * function fields in `function(_, ...) return underlying(...) end` (the `_`
+ * eats an implicit `self` arg), which breaks direct function-style invocation.
+ * Class fields don't get that treatment.
+ */
+class WrappedFileHandler {
+    public final handler:loreline.ImportsFileHandler;
+    public final lastError:()->Null<loreline.Error>;
 
-        final candidate = withLocaleSuffix
-            ? stem + "." + locale + f.ext
-            : stem + f.ext;
-
-        underlying(candidate, content -> {
-            if (content != null) {
-                cb(convert(f.ext, content, locale));
-            } else {
-                tryNext(underlying, stem, locale, withLocaleSuffix, index + 1, cb);
-            }
-        });
+    public function new(handler:loreline.ImportsFileHandler, lastError:()->Null<loreline.Error>) {
+        this.handler = handler;
+        this.lastError = lastError;
     }
-
 }

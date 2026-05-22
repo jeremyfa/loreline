@@ -375,6 +375,16 @@ function M.translation_format(name, enabled)
     __loreline_Loreline.translationFormat(name, enabled)
 end
 
+--- Return the error from the most recent failed `parse()` or `load_locale()`
+-- call, or `nil` on success.
+-- In async mode (callback supplied) the callback fires with `nil` on failure
+-- and this function tells you what went wrong. In sync mode the call throws,
+-- and this is set to the same error so it can be inspected after the catch.
+-- Not thread-safe — read immediately after the call returns.
+function M.last_error()
+    return __loreline_Loreline.lastError()
+end
+
 --- Load translations for a specific locale, walking the script's full import tree.
 -- For each file involved in the script (root + transitively imported), looks up the
 -- corresponding translation file by inserting `.<locale>` before the extension

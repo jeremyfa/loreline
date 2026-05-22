@@ -21,6 +21,32 @@ using loreline.Utf8;
 class Loreline {
 
     /**
+     * The error produced by the most recent `parse()` or `loadLocale()` call,
+     * or `null` when the most recent such call succeeded.
+     *
+     * Used in async mode (when a `callback` argument is supplied): the
+     * callback fires with `null` to signal failure, and `lastError()` returns
+     * the actual error. In sync mode the error is thrown directly and this
+     * field is still populated so the caller can inspect it after a
+     * `try/catch`.
+     *
+     * Cleared at the very start of every public API call that supports it,
+     * so a later successful call hides earlier errors.
+     *
+     * Not thread-safe — if you call Loreline from multiple threads, read
+     * `lastError()` immediately after the call returns, before another
+     * Loreline call on another thread can interleave.
+     */
+    static var _lastError:Null<Error> = null;
+
+    /**
+     * @see _lastError
+     */
+    public static function lastError():Null<Error> {
+        return _lastError;
+    }
+
+    /**
      * Parses the given text input and creates an executable `Script` instance from it.
      *
      * This is the first step in working with a Loreline script. The returned
@@ -31,11 +57,16 @@ class Loreline {
      * @param handleFile
      *          (optional) A file handler to read imports. If that handler is asynchronous, then `parse()` method
      *          will return null and `callback` argument should be used to get the final script
-     * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously
+     * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously.
+     *                 When a callback is supplied, parse errors are reported by invoking it with `null` and the error becomes
+     *                 readable via `Loreline.lastError()` — `parse()` itself never throws in that mode. Without a callback,
+     *                 the call throws on error as usual.
      * @return The parsed script as an AST `Script` instance (if loaded synchronously)
-     * @throws loreline.Error If the script contains syntax errors or other parsing issues
+     * @throws loreline.Error If the script contains syntax errors or other parsing issues (sync mode only)
      */
     public static function parse(input:String, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(script:Script)->Void):Null<Script> {
+
+        _lastError = null;
 
         final lexer = new Lexer(input);
         final tokens = lexer.tokenize();
@@ -48,7 +79,7 @@ class Loreline {
 
         final lexerErrors = lexer.getErrors();
         if (lexerErrors != null && lexerErrors.length > 0) {
-            throw lexerErrors[0];
+            return _reportParseError(lexerErrors[0], callback);
         }
 
         var result:Script = null;
@@ -59,9 +90,14 @@ class Loreline {
 
             final imports = new Imports();
             imports.resolve(filePath, tokens, handleFile, (error) -> {
-                throw error;
+                _reportParseError(error, callback);
             },
             (hasErrors, resolvedImports) -> {
+
+                // If imports.resolve already reported an error via the
+                // error-callback above, skip the rest — we don't want to
+                // dispatch a partial parse on top of a missing import.
+                if (_lastError != null) return;
 
                 final parser = new Parser(tokens, {
                     rootPath: filePath,
@@ -74,7 +110,9 @@ class Loreline {
                 final parseErrors = parser.getErrors();
 
                 if (parseErrors != null && parseErrors.length > 0) {
-                    throw parseErrors[0];
+                    result = null;
+                    _reportParseError(parseErrors[0], callback);
+                    return;
                 }
 
                 if (callback != null) {
@@ -93,7 +131,7 @@ class Loreline {
         final parseErrors = parser.getErrors();
 
         if (parseErrors != null && parseErrors.length > 0) {
-            throw parseErrors[0];
+            return _reportParseError(parseErrors[0], callback);
         }
 
         if (callback != null) {
@@ -101,6 +139,21 @@ class Loreline {
         }
 
         return result;
+    }
+
+    /**
+     * Publishes `e` to `_lastError`, then routes:
+     *  - if a callback is provided (async-mode contract): call it with `null`
+     *    and return null. Never throw.
+     *  - otherwise: throw `e` (sync-mode contract).
+     */
+    static function _reportParseError(e:Error, ?callback:(script:Script)->Void):Null<Script> {
+        _lastError = e;
+        if (callback != null) {
+            callback(null);
+            return null;
+        }
+        throw e;
     }
 
     /**
@@ -126,9 +179,16 @@ class Loreline {
      *                 (translations are all in that directory).
      * @param handleFile (optional) File handler for reading translation files
      * @param callback (optional) Called with the merged translations map. Required for async file handlers.
-     * @return The merged translations map (synchronously, when `handleFile` is sync)
+     *                 When supplied, errors are routed by calling the callback with `null`; the call never throws and
+     *                 `Loreline.lastError()` returns the underlying error (including the file path that failed). Without
+     *                 a callback, the call throws on error as usual.
+     * @return The merged translations map (synchronously, when `handleFile` is sync), or `null` if a translation file
+     *         exists but is invalid. Missing translation files are still skipped silently — `lastError()` is only set
+     *         when a file is present but can't be parsed (broken `.lor`, malformed `.po`/`.xliff`/`.csv`, etc.).
      */
     public static function loadLocale(locale:String, script:Script, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(translations:Map<String, NStringLiteral>)->Void):Null<Map<String, NStringLiteral>> {
+
+        _lastError = null;
 
         if (filePath == null) {
             filePath = script.filePath;
@@ -141,11 +201,15 @@ class Loreline {
         }
 
         // Wrap to enable alternate translation file formats (PO, XLIFF, CSV/TSV).
-        // Pass-through if no format was enabled via Loreline.translationFormat();
-        // otherwise the wrap tries each enabled format as a sibling and converts
-        // the first match to a synthesized .lor translation body before handing
-        // it back to loadLocale.
-        handleFile = loreline.translation.TranslationFormats.wrap(handleFile, locale);
+        // Pass-through (with a null lastError) if no format was enabled via
+        // Loreline.translationFormat(); otherwise the wrap tries each enabled
+        // format as a sibling and converts the first match to a synthesized
+        // .lor translation body. Converter errors are captured into
+        // `wrappedLastError()` and promoted to `_lastError` after the dispatch
+        // loop below.
+        final wrapped = loreline.translation.TranslationFormats.wrap(handleFile, locale);
+        handleFile = wrapped.handler;
+        final wrappedLastError = wrapped.lastError;
 
         // Determine which Loreline extension we're working with for translation files.
         // By default, always ".lor" — ".lor.txt" translations are only considered when
@@ -207,11 +271,26 @@ class Loreline {
         final result:Map<String, NStringLiteral> = new Map();
         var pending = relativePaths.length;
         var allProcessed = false;
+        // First parse error (own or via the wrapper) encountered during the
+        // dispatch loop. Promoted to `_lastError` at the end so we know
+        // exactly which file failed.
+        var firstParseError:Null<Error> = null;
 
         // No-op file handler for translation files (they shouldn't import anything).
         final noopHandle:ImportsFileHandler = (path, cb) -> cb(null);
 
-        inline function dispatchResult() {
+        function dispatchResult() {
+            // Determine if anything went wrong: a per-file parse error wins,
+            // otherwise check the wrapper's captured converter error.
+            final finalError = firstParseError != null ? firstParseError : wrappedLastError();
+            if (finalError != null) {
+                _lastError = finalError;
+                if (callback != null) {
+                    callback(null);
+                    return;
+                }
+                throw finalError;
+            }
             if (callback != null) callback(result);
         }
 
@@ -222,6 +301,8 @@ class Loreline {
                 pending--;
                 if (content != null) {
                     try {
+                        // Use a local handle that bypasses the callback path
+                        // of `parse()` so any errors throw synchronously here.
                         final transScript = parse(content, transPath, noopHandle);
                         if (transScript != null) {
                             final translations = AstUtils.extractTranslations(transScript);
@@ -234,9 +315,17 @@ class Loreline {
                                 result.set(relPath + '#' + id, str);
                             }
                         }
+                    } catch (e:Error) {
+                        // Translation file parse error: remember the first one
+                        // (with file context) and keep going so other files
+                        // still get tried; final routing happens in dispatchResult.
+                        if (firstParseError == null) {
+                            firstParseError = new Error('Failed to load translation file "$transPath": ' + e.message);
+                        }
                     } catch (e:Any) {
-                        // Translation file parse error: skip this file silently to keep
-                        // the loadLocale resilient. The caller still gets whatever loaded.
+                        if (firstParseError == null) {
+                            firstParseError = new Error('Failed to load translation file "$transPath": ' + Std.string(e));
+                        }
                     }
                 }
                 if (pending == 0 && allProcessed) {
@@ -250,7 +339,7 @@ class Loreline {
             dispatchResult();
         }
 
-        return result;
+        return _lastError != null ? null : result;
     }
 
     /**
@@ -379,6 +468,11 @@ class Loreline {
      *   - `"csv"`  — CSV / TSV (`.csv`, `.tsv`)
      *
      * Unknown names are accepted silently (forward-compat for future formats).
+     *
+     * Malformed files in an enabled format (e.g. broken XML in a `.xliff`,
+     * a `.po` with an unterminated quoted string) surface as `loreline.Error`
+     * out of `loadLocale` — caught via try/catch in sync mode, or via
+     * `Loreline.lastError()` after a callback fires with `null` in async mode.
      *
      * @param name The format identifier (see above)
      * @param enabled True to enable the format, false to disable

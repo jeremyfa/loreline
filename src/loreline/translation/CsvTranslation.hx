@@ -38,11 +38,12 @@ class CsvTranslation {
 
     static function convert(content:String, sep:Int, locale:String):String {
         final rows = parseRows(content, sep);
-        if (rows.length < 2) return ""; // need header + at least one data row
+        if (rows.length < 1) throw new loreline.Error("Invalid CSV: header row required");
+        if (rows.length < 2) return ""; // valid header but no data rows = empty translation set
 
         final header = rows[0];
         final keyCol = findColumn(header, ["key"]);
-        if (keyCol < 0) return "";
+        if (keyCol < 0) throw new loreline.Error("Invalid CSV: 'key' column not found in header");
 
         final sourceCol = findColumn(header, ["source", "en", "original"]);
 

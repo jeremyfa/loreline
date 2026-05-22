@@ -274,6 +274,23 @@ namespace Loreline
         }
 
         /// <summary>
+        /// Returns the error from the most recent failed <see cref="Parse"/> or
+        /// <see cref="LoadLocale"/> call, or <c>null</c> on success.
+        /// </summary>
+        /// <remarks>
+        /// In async mode (callback supplied) the callback fires with <c>null</c>
+        /// on failure and this method tells you what went wrong. In sync mode
+        /// the call throws, and this field is set to the same error so it can
+        /// be inspected after the catch.
+        ///
+        /// Not thread-safe — read immediately after the call returns.
+        /// </remarks>
+        public static Runtime.Error LastError()
+        {
+            return Runtime.Loreline.lastError();
+        }
+
+        /// <summary>
         /// Loads translations for a specific locale, walking the script's full import tree.
         /// </summary>
         /// <remarks>

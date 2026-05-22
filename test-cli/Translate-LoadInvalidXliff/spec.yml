@@ -1,0 +1,3 @@
+args: [translate, sample.lor, --lang, fr, --format, xliff]
+exitCode: 1
+stderrContains: "Invalid XLIFF"

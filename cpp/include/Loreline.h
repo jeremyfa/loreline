@@ -298,6 +298,19 @@ LORELINE_PUBLIC void Loreline_translationFormat(
     bool enabled
 );
 
+/* Returns the error message from the most recent failed Loreline_parse() or
+ * Loreline_loadLocale() call, or an empty string when the most recent such
+ * call succeeded.
+ *
+ * Used when a callback variant was supplied: the callback fires with a null
+ * script/translations to signal failure, and this function tells you what
+ * went wrong. Without a callback, errors typically surface as exceptions on
+ * supported targets — this still mirrors the same value so it can be read
+ * after recovery.
+ *
+ * Not thread-safe — read immediately after the call returns. */
+LORELINE_PUBLIC Loreline_String Loreline_lastError(void);
+
 /* Interpreter options — configure custom functions, strict access, translations */
 LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);
 LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options);

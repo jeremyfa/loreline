@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext">
+    <body>
+      <trans-unit id="intro">
+        <source>The cafe smells wonderful.</source>
+        <target>Le café sent très bon.</target>
+      <!-- missing </trans-unit> closing tag breaks the XML -->
+    </body>
+  </file>
+</xliff>

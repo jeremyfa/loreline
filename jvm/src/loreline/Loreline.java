@@ -140,6 +140,21 @@ public final class Loreline {
     }
 
     /**
+     * Returns the error from the most recent failed {@code parse()} or
+     * {@code loadLocale()} call, or {@code null} on success.
+     *
+     * In async mode (callback supplied) the callback fires with {@code null}
+     * on failure and this method tells you what went wrong. In sync mode the
+     * call throws, and this field is set to the same error so it can be
+     * inspected after the catch.
+     *
+     * Not thread-safe — read immediately after the call returns.
+     */
+    public static loreline.runtime.Error lastError() {
+        return loreline.runtime.Loreline.lastError();
+    }
+
+    /**
      * Loads translations for a specific locale.
      * Walks the script's full import tree and loads `.<locale>.lor` files for each.
      * Defaults to looking up translations next to the source files.

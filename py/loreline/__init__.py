@@ -501,6 +501,20 @@ class Loreline:
         _core.loreline_Loreline.translationFormat(name, enabled)
 
     @staticmethod
+    def last_error() -> Optional[Any]:
+        """Return the error from the most recent failed ``parse()`` or
+        ``load_locale()`` call, or ``None`` on success.
+
+        In async mode (callback supplied) the callback fires with ``None`` on
+        failure and this method tells you what went wrong. In sync mode the
+        call throws, and this field is set to the same error so it can be
+        inspected after the catch.
+
+        Not thread-safe — read immediately after the call returns.
+        """
+        return _core.loreline_Loreline.lastError()
+
+    @staticmethod
     def load_locale(
         locale: str,
         script: Script,

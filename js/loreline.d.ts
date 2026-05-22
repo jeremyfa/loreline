@@ -314,6 +314,19 @@ export class Loreline {
     static translationFormat(name: string, enabled: boolean): void;
 
     /**
+     * Returns the error from the most recent failed `parse()` or `loadLocale()`
+     * call, or `null` on success.
+     *
+     * In async mode (callback supplied) the callback fires with `null` on
+     * failure and this method tells you what went wrong. In sync mode the
+     * call throws, and this is set to the same error so it can be inspected
+     * after the catch.
+     *
+     * Not thread-safe — read immediately after the call returns.
+     */
+    static lastError(): Error | null;
+
+    /**
      * Prints a parsed script back into Loreline source code.
      *
      * @param script The parsed script (result from `parse()`)

@@ -1,0 +1,5 @@
+args: [translate, sample.lor, --lang, fr]
+exitCode: 1
+# A lexer/parser error from the broken .fr.lor — match whatever the
+# Loreline parser produces (here: the unexpected `{` after `beat invalid`).
+stderrContains: "Expected"

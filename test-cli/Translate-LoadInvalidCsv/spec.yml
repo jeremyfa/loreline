@@ -1,0 +1,3 @@
+args: [translate, sample.lor, --lang, fr, --format, csv]
+exitCode: 1
+stderrContains: "Invalid CSV"

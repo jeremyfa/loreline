@@ -53,7 +53,7 @@ class XliffTranslation {
         try {
             root = XmlParser.parse(content);
         } catch (e:Dynamic) {
-            return "";
+            throw new loreline.Error("Invalid XLIFF: " + Std.string(e));
         }
 
         // Find the <xliff> element (may be wrapped by the document node).
@@ -64,7 +64,7 @@ class XliffTranslation {
                 break;
             }
         }
-        if (xliff == null) return "";
+        if (xliff == null) throw new loreline.Error("Invalid XLIFF: missing <xliff> root element");
 
         // Determine version: 2.x has srcLang/trgLang at xliff level,
         // 1.2 puts target-language at file level.

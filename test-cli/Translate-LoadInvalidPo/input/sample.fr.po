@@ -1,0 +1,8 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgctxt "intro"
+msgid "The cafe smells wonderful.
+msgstr "Le café sent très bon."

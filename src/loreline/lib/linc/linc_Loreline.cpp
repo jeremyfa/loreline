@@ -1262,6 +1262,28 @@ LORELINE_PUBLIC void Loreline_translationFormat(
     LORELINE_END_CALL
 }
 
+/* ── Last error ─────────────────────────────────────────────────────────── */
+
+static LORELINE_NOINLINE void Loreline_lastError_hx(Loreline_String* out) {
+    LORELINE_HX_BEGIN
+    ::Dynamic err = ::loreline::Loreline_obj::lastError();
+    if (err != null()) {
+        ::String msg = err->__Field(HX_CSTRING("message"), ::hx::paccDynamic);
+        if (msg != null()) {
+            *out = linc_hxToString(msg);
+        }
+    }
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC Loreline_String Loreline_lastError(void) {
+    Loreline_String out;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_lastError_hx(&out);
+    LORELINE_END_CALL
+    return out;
+}
+
 /* ── Play ───────────────────────────────────────────────────────────────── */
 
 static LORELINE_NOINLINE void Loreline_play_hx(

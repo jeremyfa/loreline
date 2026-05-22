@@ -1,0 +1,3 @@
+args: [translate, sample.lor, --lang, fr, --format, po]
+exitCode: 1
+stderrContains: "Invalid PO"

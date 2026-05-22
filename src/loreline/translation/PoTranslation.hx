@@ -242,7 +242,8 @@ class PoTranslation {
                 i++;
             }
         }
-        return buf.toString();
+        // Reached end-of-line without seeing the closing `"`. The PO file is malformed.
+        throw new loreline.Error("Invalid PO: unterminated quoted string");
     }
 
     static inline function trimLeft(s:String):String {
