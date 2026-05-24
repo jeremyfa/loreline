@@ -13,6 +13,7 @@
 #include <loreline/Script.h>
 #include <loreline/Interpreter.h>
 #include <loreline/Loreline.h>
+#include <loreline/Error.h>
 #include <loreline/Json.h>
 #include <loreline/InterpreterOptions.h>
 #include <loreline/Timer.h>
@@ -1266,12 +1267,9 @@ LORELINE_PUBLIC void Loreline_translationFormat(
 
 static LORELINE_NOINLINE void Loreline_lastError_hx(Loreline_String* out) {
     LORELINE_HX_BEGIN
-    ::Dynamic err = ::loreline::Loreline_obj::lastError();
-    if (err != null()) {
-        ::String msg = err->__Field(HX_CSTRING("message"), ::hx::paccDynamic);
-        if (msg != null()) {
-            *out = linc_hxToString(msg);
-        }
+    ::loreline::Error err = ::loreline::Loreline_obj::lastError();
+    if (err != null() && err->message != null()) {
+        *out = linc_hxToString(err->message);
     }
     LORELINE_HX_END
 }
