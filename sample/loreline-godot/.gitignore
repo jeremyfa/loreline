@@ -17,3 +17,9 @@
 !/story/TestAsync.lor
 !/story/TestSaveRestore.lor
 
+# Web test harness artifacts (created by run-web-test.sh)
+/node_modules/
+/package.json
+/package-lock.json
+/.tmp-web/
+

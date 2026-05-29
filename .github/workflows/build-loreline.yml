@@ -1448,6 +1448,92 @@ jobs:
           compression-level: 0
 
 
+  loreline-godot-test-linux:
+
+    needs: [loreline-godot]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - name: Download assembled Godot package
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-godot.zip
+          path: .
+
+      - name: Extract package
+        run: |
+          mkdir -p godot-pkg
+          unzip -qo loreline-godot.zip -d godot-pkg
+
+      - name: Install Godot 4.6.1 stable
+        run: |
+          curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          sudo mv /tmp/godot-bin/Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Import sample project
+        run: godot --headless --path godot-pkg/sample --import || true
+
+      - name: Run save/restore test scene
+        run: bash godot-pkg/sample/run-headless-test.sh scenes/test_saverestore.tscn "TEST PASSED"
+
+      - name: Run async test scene
+        run: |
+          bash godot-pkg/sample/run-headless-test.sh scenes/test_async.tscn "FINISHED" "DIALOGUE: Your score is 42." "[async] fetchScore resolving"
+
+      - name: Run GC regression scene (must survive 35s of post-FINISHED idle, 2+ forced collects)
+        run: |
+          RUN_TIMEOUT=60 bash godot-pkg/sample/run-headless-test.sh scenes/test_gc_crash_repro.tscn "GC_REGRESSION_OK"
+
+
+  loreline-godot-test-web:
+
+    needs: [loreline-godot]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - name: Download assembled Godot package
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-godot.zip
+          path: .
+
+      - name: Extract package
+        run: |
+          mkdir -p godot-pkg
+          unzip -qo loreline-godot.zip -d godot-pkg
+
+      - name: Install Godot 4.6.1 stable
+        run: |
+          curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          sudo mv /tmp/godot-bin/Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Install Godot 4.6.1 export templates
+        run: |
+          curl -fsSL -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_export_templates.tpz
+          mkdir -p /tmp/templates-extract
+          unzip -q /tmp/templates.tpz -d /tmp/templates-extract
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.6.1.stable"
+          mv /tmp/templates-extract/templates/* "$HOME/.local/share/godot/export_templates/4.6.1.stable/"
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Run web smoke test (export + serve + Playwright)
+        run: bash godot-pkg/sample/run-web-test.sh
+
+
   loreline-sdl3:
 
     needs: [loreline-mac, loreline-windows, loreline-linux, loreline-ios, loreline-android]
@@ -1682,7 +1768,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6

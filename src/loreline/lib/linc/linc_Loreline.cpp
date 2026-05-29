@@ -1854,13 +1854,17 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
     Loreline_AsyncResolve* resolve, Loreline_Value result
 ) {
     if (!resolve || !resolve->doneObj) return;
+    // Keep the doneObj pointer accessible after we run it, but DO NOT clear
+    // resolve->doneObj here — the ~Loreline_AsyncResolve destructor uses that
+    // field to decide whether to call hx::GCRemoveRoot on the registered
+    // root address `&resolve->doneObj`. Removing the registration on a local
+    // copy of the pointer (different address) leaks the real root and the
+    // GC then walks freed memory on the next collect.
     hx::Object* doneObj = resolve->doneObj;
-    resolve->doneObj = nullptr;
 
     LORELINE_BEGIN_CALL
     LORELINE_HX_BEGIN
     ::Dynamic(doneObj)->__run();
-    hx::GCRemoveRoot(&doneObj);
     LORELINE_HX_END
     LORELINE_END_CALL
 
@@ -1875,18 +1879,13 @@ LORELINE_PUBLIC void Loreline_cancelAsync(
         delete resolve;
         return;
     }
-    hx::Object* doneObj = resolve->doneObj;
-    resolve->doneObj = nullptr;
 
     // Release the GC root on the done closure without invoking it. The Haxe
     // side's Async state stays paused until the interpreter itself is
     // released, at which point the closure becomes collectible.
-    LORELINE_BEGIN_CALL
-    LORELINE_HX_BEGIN
-    hx::GCRemoveRoot(&doneObj);
-    LORELINE_HX_END
-    LORELINE_END_CALL
-
+    // ~Loreline_AsyncResolve removes the root on the correct address
+    // (`&resolve->doneObj`); don't clear the field early or call GCRemoveRoot
+    // on a local copy here — that would leak the real registration.
     delete resolve;
 }
 

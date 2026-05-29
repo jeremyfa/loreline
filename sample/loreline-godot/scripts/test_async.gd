@@ -34,3 +34,6 @@ func _on_choice(_interp, _options: Array, _select: Callable) -> void:
 
 func _on_finished(_interp) -> void:
 	print("FINISHED")
+	# Auto-quit headless/exported runs. Editor runs keep the window open.
+	if not OS.has_feature("editor") or DisplayServer.get_name() == "headless":
+		get_tree().call_deferred("quit")

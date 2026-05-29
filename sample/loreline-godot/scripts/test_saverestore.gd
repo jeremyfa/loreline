@@ -67,3 +67,6 @@ func _report(passed: bool, detail: String) -> void:
 		print("TEST PASSED")
 	else:
 		print("TEST FAILED: ", detail)
+	# Auto-quit headless/exported runs. Editor runs keep the window open.
+	if not OS.has_feature("editor") or DisplayServer.get_name() == "headless":
+		get_tree().call_deferred("quit", 0 if passed else 1)
