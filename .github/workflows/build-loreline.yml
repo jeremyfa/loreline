@@ -470,7 +470,6 @@ jobs:
       - name: Setup haxelib
         run: |
           mkdir -p .haxelib
-          haxelib dev hscript git/hscript --quiet
           haxelib dev yaml git/yaml --quiet
 
       - name: Run Neko tests
@@ -680,8 +679,6 @@ jobs:
       - name: Setup haxelib
         run: |
           mkdir -p .haxelib
-          haxelib dev hscript git/hscript --quiet
-
       - name: Build Python
         run: node ./setup --py
 
@@ -758,8 +755,6 @@ jobs:
       - name: Setup haxelib
         run: |
           mkdir -p .haxelib
-          haxelib dev hscript git/hscript --quiet
-
       - name: Build Lua
         run: node ./setup --lua
 
@@ -838,8 +833,6 @@ jobs:
       - name: Setup haxelib
         run: |
           mkdir -p .haxelib
-          haxelib dev hscript git/hscript --quiet
-
       - name: Build JVM
         run: node ./setup --jvm
 
