@@ -9,9 +9,9 @@ import org.objectweb.asm.commons.*;
  * ASM-based package relocator for Loreline JVM target.
  *
  * Relocates packages in the Haxe-generated jar:
- *   loreline/* -> loreline/runtime/*
+ *   loreline/* -> loreline/runtime/*   (this also covers the vendored script
+ *                                       engine loreline/lorscript/* -> loreline/runtime/lorscript/*)
  *   haxe/*     -> loreline/internal/*
- *   hscript/*  -> loreline/internal/hscript/*
  *
  * Also fixes Haxe JVM backend generic erasure issues:
  *   The Haxe JVM backend generates checkcast instructions that cast Object[]
@@ -36,9 +36,6 @@ public class Relocator {
         Remapper remapper = new Remapper() {
             @Override
             public String map(String internalName) {
-                if (internalName.startsWith("hscript/")) {
-                    return "loreline/internal/hscript/" + internalName.substring("hscript/".length());
-                }
                 if (internalName.startsWith("haxe/")) {
                     return "loreline/internal/" + internalName.substring("haxe/".length());
                 }
@@ -122,9 +119,6 @@ public class Relocator {
     }
 
     private static String remapResourceName(String name) {
-        if (name.startsWith("hscript/")) {
-            return "loreline/internal/hscript/" + name.substring("hscript/".length());
-        }
         if (name.startsWith("haxe/")) {
             return "loreline/internal/" + name.substring("haxe/".length());
         }
@@ -213,8 +207,7 @@ public class Relocator {
         private static boolean isAppArrayType(String type) {
             return type.startsWith("[L") && (
                 type.startsWith("[Lloreline/") ||
-                type.startsWith("[Lhaxe/") ||
-                type.startsWith("[Lhscript/")
+                type.startsWith("[Lhaxe/")
             );
         }
     }
