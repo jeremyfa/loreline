@@ -229,6 +229,29 @@ class Lens {
     }
 
     /**
+     * Collects the unique names of all characters that speak in a dialogue
+     * anywhere within the given node's subtree (including dialogues nested in
+     * choices, if branches, alternatives, etc.).
+     * @param node Root of the subtree to scan
+     * @return Unique speaker names, in first-seen order
+     */
+    public function getDialogueSpeakers(node:Node):Array<String> {
+        final speakers:Array<String> = [];
+        final seen = new Map<String, Bool>();
+        traverse(node, (child, parent) -> {
+            if (child is NDialogueStatement) {
+                final dialogue:NDialogueStatement = cast child;
+                if (dialogue.character != null && !seen.exists(dialogue.character)) {
+                    seen.set(dialogue.character, true);
+                    speakers.push(dialogue.character);
+                }
+            }
+            return true;
+        });
+        return speakers;
+    }
+
+    /**
      * Gets the parent node of a given node
      * @param node Child node
      * @return Parent node or null if none found

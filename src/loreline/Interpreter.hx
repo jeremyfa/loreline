@@ -693,6 +693,36 @@ typedef InterpreterOptions = {
             }
         }
 
+        // In the permissive "default unnamed beat" situation (top-level dialogues/choices
+        // wrapped in a beat named "_"), infer a character for every dialogue speaker so that
+        // e.g. `barista.name := Alex` works even without an explicit `character barista {}`.
+        inferImplicitCharactersFromRootBeat();
+
+    }
+
+    /**
+     * Registers an implicit (empty) character for every dialogue speaker mentioned inside the
+     * default unnamed beat ("_"), unless a top-level character or state field already uses that
+     * name. Runs after explicit declarations are initialized so it never overrides them.
+     */
+    function inferImplicitCharactersFromRootBeat() {
+
+        for (beat in lens.getNodesOfType(NBeatDecl)) {
+            if (beat.name != "_") continue;
+
+            for (name in lens.getDialogueSpeakers(beat)) {
+                // State fields win over characters in resolveAccess, so skip those collisions
+                // too (the inferred character would be unreachable anyway).
+                if (topLevelCharacters.exists(name)) continue;
+                if (Objects.fieldExists(this, topLevelState.fields, name)) continue;
+
+                // Empty fields => parity with an explicit `character <name> {}`. The decl node
+                // id is irrelevant (characters are keyed by name and the node isn't retained),
+                // so a placeholder id is fine.
+                initializeTopLevelCharacter(new NCharacterDecl(NodeId.UNDEFINED, beat.pos, name, beat.pos, []));
+            }
+        }
+
     }
 
     /**
