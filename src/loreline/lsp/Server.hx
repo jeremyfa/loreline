@@ -453,17 +453,15 @@ class Server {
                         }
                     }
 
-                    #if hscript
                     // Check for errors in functions
                     for (func in lens.getNodesOfType(NFunctionDecl, false)) {
                         if (!func.external) {
-                            final funcHscript = lens.getFuncHscript(func);
-                            if (funcHscript.error != null) {
-                                addDiagnostic(uri, funcHscript.error.pos, funcHscript.error.message, DiagnosticSeverity.Error);
+                            final funcLorscript = lens.getFuncLorscript(func);
+                            if (funcLorscript.error != null) {
+                                addDiagnostic(uri, funcLorscript.error.pos, funcLorscript.error.message, DiagnosticSeverity.Error);
                             }
                         }
                     }
-                    #end
 
                     // Look for transitions to unknown beats
                     for (transition in lens.getNodesOfType(NTransition, false)) {
@@ -852,12 +850,11 @@ class Server {
                         }
                         else if (beforeNode is NFunctionDecl) {
                             final func:NFunctionDecl = cast beforeNode;
-                            #if hscript
-                            final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
-                            if (hscriptCompletion?.completion != null) {
-                                switch hscriptCompletion.completion.expr.e {
+                            final lorscriptCompletion = lens.getLorscriptCompletion(func, lorelinePos);
+                            if (lorscriptCompletion?.completion != null) {
+                                switch lorscriptCompletion.completion.expr.e {
                                     case EField(e, f):
-                                        switch hscriptCompletion.completion.t {
+                                        switch lorscriptCompletion.completion.t {
                                             case TAnon(fields):
                                                 final items:Array<CompletionItem> = [];
                                                 for (field in fields) {
@@ -878,7 +875,6 @@ class Server {
                                     case _:
                                 }
                             }
-                            #end
                             resolved = lens.resolveAccessInFunction(func, beforePos);
                         }
                         else {
@@ -1001,10 +997,9 @@ class Server {
             // Add locals completion (if inside a function)
             if (node is NFunctionDecl) {
                 final func:NFunctionDecl = cast node;
-                #if hscript
-                final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
-                if (hscriptCompletion?.locals != null) {
-                    for (name => local in hscriptCompletion.locals) {
+                final lorscriptCompletion = lens.getLorscriptCompletion(func, lorelinePos);
+                if (lorscriptCompletion?.locals != null) {
+                    for (name => local in lorscriptCompletion.locals) {
                         items.push({
                             label: name,
                             kind: CompletionItemKind.Field,
@@ -1017,7 +1012,6 @@ class Server {
                         });
                     }
                 }
-                #end
             }
 
             // Add state field completions
@@ -1095,10 +1089,9 @@ class Server {
         // Add locals completion (if inside a function)
         if (node is NFunctionDecl) {
             final func:NFunctionDecl = cast node;
-            #if hscript
-            final hscriptCompletion = lens.getHscriptCompletion(func, lorelinePos);
-            if (hscriptCompletion?.locals != null) {
-                for (name => local in hscriptCompletion.locals) {
+            final lorscriptCompletion = lens.getLorscriptCompletion(func, lorelinePos);
+            if (lorscriptCompletion?.locals != null) {
+                for (name => local in lorscriptCompletion.locals) {
                     items.push({
                         label: name,
                         kind: CompletionItemKind.Field,
@@ -1111,7 +1104,6 @@ class Server {
                     });
                 }
             }
-            #end
         }
 
         // Add state fields
@@ -2022,16 +2014,15 @@ class Server {
 
     function makeFunctionHover(func:NFunctionDecl, content:String, lens:Lens, lorelinePos:loreline.Position):Hover {
 
-        #if hscript
         var expr = null;
         try {
-            expr = lens.getHscriptExpr(func, lorelinePos);
+            expr = lens.getLorscriptExpr(func, lorelinePos);
         }
         catch (e:Dynamic) {}
         if (expr != null) {
 
-            final codeToHscript = lens.getFuncHscript(func).codeToHscript;
-            final exprPos = codeToHscript.toLorelinePos(func.pos, expr.pmin, expr.pmax);
+            final codeToLorscript = lens.getFuncLorscript(func).codeToLorscript;
+            final exprPos = codeToLorscript.toLorelinePos(func.pos, expr.pmin, expr.pmax);
 
             // TODO: this is pretty basic for now, could be improved at some point
             final title = switch expr.e {
@@ -2072,7 +2063,6 @@ class Server {
 
             return makeHover(hoverTitle(title ?? 'Expression'), hoverDescriptionForNode(func), content, func, exprPos);
         }
-        #end
 
         return makeFunctionDeclHover(func, content);
 

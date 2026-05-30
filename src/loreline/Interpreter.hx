@@ -437,9 +437,7 @@ typedef InterpreterOptions = {
  * managing the runtime state, and interacting with the host application
  * through handler functions.
  */
-#if hscript
-@:allow(loreline.HscriptInterp)
-#end
+@:allow(loreline.lorscript.Interp)
 #if js
 @:expose
 #end
@@ -2239,14 +2237,13 @@ typedef InterpreterOptions = {
 
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
-        #if hscript
         if (func.name != null) {
             if (!func.external || !topLevelFunctions.exists(func.name)) {
-                final codeToHscript = new CodeToHscript();
+                final codeToLorscript = new CodeToLorscript();
                 try {
-                    final expr = codeToHscript.process(func.code + (func.external ? " {}" : ""));
+                    final expr = codeToLorscript.process(func.code + (func.external ? " {}" : ""));
                     #if loreline_debug_functions
-                    final offsets = @:privateAccess codeToHscript.posOffsets;
+                    final offsets = @:privateAccess codeToLorscript.posOffsets;
                     trace('\n'+func.code);
                     trace('\n'+expr);
                     trace(offsets.length + ' / ' + expr.uLength());
@@ -2260,17 +2257,17 @@ typedef InterpreterOptions = {
                     trace(origChars.join(" "));
                     trace(chars.join(" "));
                     #end
-                    final parser = new hscript.Parser();
+                    final parser = new loreline.lorscript.Parser();
                     parser.allowJSON = true;
                     parser.allowTypes = true;
                     final ast = parser.parseString(expr);
-                    final interp = new HscriptInterp(this);
+                    final interp = new loreline.lorscript.Interp(this);
                     final value:Dynamic = interp.execute(ast);
                     topLevelFunctions.set(func.name, value);
                 }
                 catch (e:Any) {
                     #if loreline_debug_functions
-                    trace(codeToHscript.output.toString());
+                    trace(codeToLorscript.output.toString());
                     #end
                     throw new RuntimeError('Failed to parse function code: $e', func.pos);
                 }
@@ -2279,9 +2276,6 @@ typedef InterpreterOptions = {
         else {
             throw new RuntimeError('Top level function must have a name', func.pos);
         }
-        #else
-        throw new RuntimeError('Hscript is required to parse this function', func.pos);
-        #end
 
     }
 
@@ -3992,22 +3986,13 @@ typedef InterpreterOptions = {
                             return result;
                         }
                         catch (e:Dynamic) {
-                            #if hscript
-                            if (e is hscript.Expr.Error) {
-                                final hscriptErr:hscript.Expr.Error = cast e;
-                                #if hscriptPos
+                            if (e is loreline.lorscript.Expr.Error) {
+                                final lorscriptErr:loreline.lorscript.Expr.Error = cast e;
                                 throw new RuntimeError(
-                                    'Error when evaluating function (${hscriptErr.pmin}-${hscriptErr.pmax}): ' + hscriptErr.e,
+                                    'Error when evaluating function (${lorscriptErr.pmin}-${lorscriptErr.pmax}): ' + lorscriptErr.e,
                                     call.pos
                                 );
-                                #else
-                                throw new RuntimeError(
-                                    'Error when evaluating function: ' + hscriptErr,
-                                    call.pos
-                                );
-                                #end
                             }
-                            #end
                             throw new RuntimeError(
                                 'Error when calling function: ' + e,
                                 call.pos

@@ -201,7 +201,6 @@ async function main() {
         }
         await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
         await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
-        await command(haxelib, ['dev', 'hscript', 'git/hscript', '--quiet'], { cwd: __dirname });
         await command(haxelib, ['dev', 'yaml', 'git/yaml', '--quiet'], { cwd: __dirname });
         if (buildJvm) {
             await command(haxelib, ['dev', 'hxjava', 'git/hxjava', '--quiet'], { cwd: __dirname });
@@ -1239,13 +1238,11 @@ async function main() {
         let haxeBuildCsArgs = [
             '--class-path', 'src',
             '--cs', 'build/cs',
-            '--library', 'hscript',
             '-D', 'no-compilation',
             '-D', 'no-root',
             '-D', 'real-position',
             '-D', 'loreline_use_cs_types',
             '-D', 'loreline_cs_api',
-            '-D', 'hscriptPos',
             '-D', 'erase-generics',
             '--main', 'loreline.lib.Library'
         ];
@@ -1279,9 +1276,11 @@ async function main() {
                 );
 
                 content = content.replace(/\bhaxe\b/g, 'Loreline.Internal');
-                content = content.replace(/\bhscript\b/g, 'Loreline.Internal.Hscript');
-                content = content.replace(/\b\.Loreline\.Internal\.Hscript\b/g, '.hscript');
-                content = content.replace(/\bstring Loreline\.Internal\.Hscript\b/g, 'string hscript');
+                // The vendored script engine `loreline.lorscript` -> Loreline.Internal.Lorscript.
+                // Must run BEFORE the generic `loreline` -> Loreline.Runtime rule below; the
+                // capitalized 3rd namespace segment makes these files land in
+                // cs/Loreline/Internal/Lorscript/ without colliding with cs/Loreline/Runtime/.
+                content = content.replace(/\bloreline\.lorscript\b/g, 'Loreline.Internal.Lorscript');
                 content = content.replace(/\bnamespace cs\b/g, 'namespace Loreline.Internal.Cs');
                 content = content.replace(/\bcs\.\b/g, 'Loreline.Internal.Cs.');
                 content = content.replace(/\bloreline\b/g, 'Loreline.Runtime');
@@ -1358,13 +1357,11 @@ async function main() {
         let haxeBuildJsArgs = [
             '--class-path', 'src',
             '--js', 'js/loreline.js',
-            '--library', 'hscript',
             '-D', 'js-es=6',
             '-D', 'loreline_use_js_types',
             '-D', 'loreline_typedef_options',
             '-D', 'loreline_functions_map_dynamic_access',
             '-D', 'loreline_node_id_class',
-            '-D', 'hscriptPos',
             '--main', 'loreline.lib.Library'
         ];
 
@@ -1400,8 +1397,6 @@ async function main() {
         let haxeBuildPyArgs = [
             '--class-path', 'src',
             '--python', 'py/loreline/_core.py',
-            '--library', 'hscript',
-            '-D', 'hscriptPos',
             '-D', 'loreline_typedef_options',
             '-D', 'loreline_functions_map_dynamic_access',
             '-D', 'loreline_node_id_class',
@@ -1433,7 +1428,7 @@ async function main() {
         // Remove the main() xpcall at the end, keep static init
         lua = lua.replace(/\nlocal success, err = _G\.xpcall\(function\(\)[\s\S]*$/, '\n');
         // Remove unused external library references (rex_pcre2/EReg, luv)
-        // — EReg is only used by hscript's XML metadata parser, never by loreline
+        // — EReg is only used by lorscript's XML metadata parser, never by loreline itself
         // — luv is only used by Sys.time/Sys.sleep, replaced below with vanilla Lua
         lua = lua.replace(/^__lua_lib_lrexlib_Rex = .*\n/m, '');
         lua = lua.replace(/^__lua_lib_luv_Misc = .*\n/m, '');
@@ -1442,7 +1437,7 @@ async function main() {
         // Remove entire EReg class definition (EReg.new through EReg.prototype.__class__)
         lua = lua.replace(/EReg\.new = function[\s\S]*?EReg\.prototype\.__class__ = +EReg\n/m, '');
         lua = lua.replace(/_hxClasses\["EReg"\] = EReg\nEReg\.__name__ = "EReg"\n/m, '');
-        // Replace the single EReg usage (hscript XML metadata) with native Lua string.gsub
+        // Replace the single EReg usage (lorscript XML metadata) with native Lua string.gsub
         lua = lua.replace(
             /EReg\.new\("[^"]*", "[^"]*"\):replace\((\w+), ""\)/g,
             '_G.string.gsub($1, "[\\n\\r\\t]+", "")'
@@ -1486,7 +1481,7 @@ async function main() {
             'else return _G.tostring(obj)\n        end',
             'else\n            local s = _G.tostring(obj)\n            if _G.math.type(obj) == "float" and obj == _G.math.floor(obj) then s = _G.string.format("%d", obj) end\n            return s\n        end'
         );
-        // Fix hscript Parser nil comparison: Lua's string.byte returns nil at end-of-input,
+        // Fix lorscript Parser nil comparison: Lua's string.byte returns nil at end-of-input,
         // which gets assigned to self.char; comparing nil < 0 is a Lua runtime error.
         // Replace with a nil-safe check (nil means "no char buffered", same as -1).
         lua = lua.replace(/self\.char < 0/g, '(not self.char or self.char < 0)');

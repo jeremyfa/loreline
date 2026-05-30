@@ -19,15 +19,19 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package loreline;
+package loreline.lorscript;
 
-// This is a modified version of original `hscript.Interp`, which has better support
-// of loreline types and objects. It also get access to the loreline interpreter context.
-// The rest of hscript behaviour stays unchanged
+// This is the loreline script interpreter, a modified version of the original
+// `hscript.Interp` (now vendored as `loreline.lorscript`) with better support of
+// loreline types and objects. It also gets access to the loreline interpreter context.
+// The rest of the hscript behaviour stays unchanged.
 
 import haxe.Constraints.IMap;
 import haxe.PosInfos;
-import hscript.Expr;
+import loreline.lorscript.Expr;
+import loreline.Interpreter;
+import loreline.Objects;
+import loreline.Arrays;
 import loreline.Node.NBeatDecl;
 
 private enum Stop {
@@ -36,7 +40,7 @@ private enum Stop {
     SReturn;
 }
 
-class HscriptInterp {
+class Interp {
 
     public var variables : Map<String,Dynamic>;
     var locals : Map<String,{ r : Dynamic }>;
@@ -47,9 +51,7 @@ class HscriptInterp {
     var declared : Array<{ n : String, old : { r : Dynamic } }>;
     var returnValue : Dynamic;
 
-    #if hscriptPos
     var curExpr : Expr;
-    #end
 
     final interpreter:Interpreter;
 
@@ -75,11 +77,9 @@ class HscriptInterp {
     }
 
     public function posInfos(): PosInfos {
-        #if hscriptPos
-            if (curExpr != null)
-                return cast { fileName : curExpr.origin, lineNumber : curExpr.line };
-        #end
-        return cast { fileName : "hscript", lineNumber : 0 };
+        if (curExpr != null)
+            return cast { fileName : curExpr.origin, lineNumber : curExpr.line };
+        return cast { fileName : "lorscript", lineNumber : 0 };
     }
 
     function initOps() {
@@ -123,6 +123,19 @@ class HscriptInterp {
         assignOp(">>>=",function(v1,v2) return v1 >>> v2);
     }
 
+    // Force DCE to retain IntIterator and its hasNext/next methods. The `...` binop
+    // above creates `new IntIterator(...)`, but the value immediately flows through
+    // Dynamic (see makeIterator), so the methods are never seen as typed-used and get
+    // stripped, crashing `a...b` ranges with EInvalidIterator on DCE targets (incl. Neko).
+    // IntIterator.hasNext/next are `inline` in the Haxe std lib, so *calling* them inlines
+    // them away and keeps nothing; we must *reference* them as values, which forces Haxe
+    // to materialize real (non-inline) runtime methods that DCE then retains.
+    // (This replaces the `keep('IntIterator')` macro from hscript's extraParams.hxml.)
+    @:keep static function __keepIntIterator():Array<Dynamic> {
+        final it = new IntIterator(0, 0);
+        return [it.hasNext, it.next];
+    }
+
     function setVar( name : String, v : Dynamic ) {
 
         if (!variables.exists(name)) {
@@ -137,7 +150,7 @@ class HscriptInterp {
 
     function assign( e1 : Expr, e2 : Expr ) : Dynamic {
         var v = expr(e2);
-        switch( hscript.Tools.expr(e1) ) {
+        switch( Tools.expr(e1) ) {
         case EIdent(id):
             var l = locals.get(id);
             if( l == null )
@@ -175,7 +188,7 @@ class HscriptInterp {
 
     function evalAssignOp(op,fop,e1,e2) : Dynamic {
         var v;
-        switch( hscript.Tools.expr(e1) ) {
+        switch( Tools.expr(e1) ) {
         case EIdent(id):
             var l = locals.get(id);
             v = fop(expr(e1),expr(e2));
@@ -213,10 +226,8 @@ class HscriptInterp {
     }
 
     function increment( e : Expr, prefix : Bool, delta : Int ) : Dynamic {
-        #if hscriptPos
         curExpr = e;
         var e = e.e;
-        #end
         switch(e) {
         case EIdent(id):
             var l = locals.get(id);
@@ -323,8 +334,8 @@ class HscriptInterp {
         }
     }
 
-    inline function error(e : #if hscriptPos ErrorDef #else Error #end, rethrow=false ) : Dynamic {
-        #if hscriptPos var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line); #end
+    inline function error(e : ErrorDef, rethrow=false ) : Dynamic {
+        var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line);
         if( rethrow ) this.rethrow(e) else throw e;
         return null;
     }
@@ -366,10 +377,8 @@ class HscriptInterp {
     }
 
     public function expr( e : Expr ) : Dynamic {
-        #if hscriptPos
         curExpr = e;
         var e = e.e;
-        #end
         switch( e ) {
         case EConst(c):
             switch( c ) {
@@ -421,7 +430,7 @@ class HscriptInterp {
             for( p in params )
                 args.push(expr(p));
 
-            switch( hscript.Tools.expr(e) ) {
+            switch( Tools.expr(e) ) {
             case EField(e,f):
                 var obj = expr(e);
                 if( obj == null ) error(EInvalidAccess(f));
@@ -520,18 +529,16 @@ class HscriptInterp {
             }
             return f;
         case EArrayDecl(arr):
-            if( arr.length > 0 && hscript.Tools.expr(arr[0]).match(EBinop("=>", _)) ) {
+            if( arr.length > 0 && Tools.expr(arr[0]).match(EBinop("=>", _)) ) {
                 var keys = [];
                 var values = [];
                 for( e in arr ) {
-                    switch(hscript.Tools.expr(e)) {
+                    switch(Tools.expr(e)) {
                     case EBinop("=>", eKey, eValue):
                         keys.push(expr(eKey));
                         values.push(expr(eValue));
                     default:
-                        #if hscriptPos
                         curExpr = e;
-                        #end
                         error(ECustom("Invalid map key=>value expression"));
                     }
                 }

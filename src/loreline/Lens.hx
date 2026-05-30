@@ -22,17 +22,15 @@ class Reference<T:Node> {
 
 }
 
-#if hscript
-
-class FuncHscript {
+class FuncLorscript {
 
     public var func(default, null):NFunctionDecl;
 
-    public var codeToHscript(default, null):CodeToHscript;
+    public var codeToLorscript(default, null):CodeToLorscript;
 
-    public var hscript(default, null):String = null;
+    public var lorscript(default, null):String = null;
 
-    public var expr(default, null):hscript.Expr = null;
+    public var expr(default, null):loreline.lorscript.Expr = null;
 
     public var error(default, null):loreline.Error = null;
 
@@ -40,39 +38,38 @@ class FuncHscript {
 
         this.func = func;
 
-        this.codeToHscript = new CodeToHscript();
+        this.codeToLorscript = new CodeToLorscript();
 
         try {
-            this.hscript = codeToHscript.process(func.code);
+            this.lorscript = codeToLorscript.process(func.code);
         }
         catch (e:Any) {
             if (e is Error) {
                 this.error = e;
                 this.error.pos = func.pos.withOffset(
-                    codeToHscript.input,
+                    codeToLorscript.input,
                     this.error.pos.offset,
                     this.error.pos.length,
                     func.pos.offset
                 );
             }
-            this.hscript = codeToHscript.output.toString();
+            this.lorscript = codeToLorscript.output.toString();
         }
 
         try {
-            final parser = new hscript.Parser();
+            final parser = new loreline.lorscript.Parser();
             parser.resumeErrors = false;
             parser.allowJSON = true;
             parser.allowTypes = true;
-            this.expr = parser.parseString(hscript, func.name ?? '?');
+            this.expr = parser.parseString(lorscript, func.name ?? '?');
         }
         catch (e:Any) {
             if (this.error == null) {
-                if (e is hscript.Expr.Error) {
-                    final hscriptError:hscript.Expr.Error = cast e;
-                    #if hscriptPos
+                if (e is loreline.lorscript.Expr.Error) {
+                    final lorscriptError:loreline.lorscript.Expr.Error = cast e;
                     this.error = new WrappedError(
-                        hscriptError,
-                        switch hscriptError.e {
+                        lorscriptError,
+                        switch lorscriptError.e {
                             case EInvalidChar(c): 'Invalid character: $c';
                             case EUnexpected(s): 'Unexpected: $s';
                             case EUnterminatedString: 'Unterminated string';
@@ -84,31 +81,13 @@ class FuncHscript {
                             case EInvalidAccess(f): 'Invalid access: $f';
                             case ECustom(msg): msg;
                         },
-                        codeToHscript.toLorelinePos(func.pos, hscriptError.pmin, hscriptError.pmax)
+                        codeToLorscript.toLorelinePos(func.pos, lorscriptError.pmin, lorscriptError.pmax)
                     );
-                    #else
-                    this.error = new WrappedError(
-                        hscriptError,
-                        switch hscriptError {
-                            case EInvalidChar(c): 'Invalid character: $c';
-                            case EUnexpected(s): 'Unexpected: $s';
-                            case EUnterminatedString: 'Unterminated string';
-                            case EUnterminatedComment: 'Unterminated comment';
-                            case EInvalidPreprocessor(msg): 'Invalid preprocessor: $msg';
-                            case EUnknownVariable(v): 'Unknown variable: $v';
-                            case EInvalidIterator(v): 'Invalid iterator: $v';
-                            case EInvalidOp(op): 'Invalid operator: $op';
-                            case EInvalidAccess(f): 'Invalid access: $f';
-                            case ECustom(msg): msg;
-                        },
-                        func.pos
-                    );
-                    #end
                 }
                 else if (e is Error) {
                     this.error = cast e;
                     this.error.pos = func.pos.withOffset(
-                        codeToHscript.input,
+                        codeToLorscript.input,
                         this.error.pos.offset,
                         this.error.pos.length,
                         func.pos.offset
@@ -117,11 +96,11 @@ class FuncHscript {
             }
 
             try {
-                final parser = new hscript.Parser();
+                final parser = new loreline.lorscript.Parser();
                 parser.resumeErrors = true;
                 parser.allowJSON = true;
                 parser.allowTypes = true;
-                this.expr = parser.parseString(hscript, func.name ?? '?');
+                this.expr = parser.parseString(lorscript, func.name ?? '?');
             }
             catch (e2) {}
         }
@@ -131,15 +110,13 @@ class FuncHscript {
 }
 
 @:structInit
-class HscriptCompletion {
+class LorscriptCompletion {
 
-    public var locals:Map<String, hscript.Checker.TType> = null;
+    public var locals:Map<String, loreline.lorscript.Checker.TType> = null;
 
-    public var completion:hscript.Checker.Completion = null;
+    public var completion:loreline.lorscript.Checker.Completion = null;
 
 }
-
-#end
 
 /**
  * Utility class for analyzing Loreline scripts without executing them.
@@ -158,9 +135,7 @@ class Lens {
     /** Map of node IDs to their child nodes */
     final childNodes:NodeIdMap<Array<Node>> = new NodeIdMap();
 
-    #if hscript
-    final hscriptFunctions:NodeIdMap<FuncHscript> = new NodeIdMap();
-    #end
+    final lorscriptFunctions:NodeIdMap<FuncLorscript> = new NodeIdMap();
 
     public function new(script:Script) {
         this.script = script;
@@ -1393,26 +1368,24 @@ class Lens {
 
     }
 
-    #if hscript
-
-    public function getFuncHscript(func:NFunctionDecl):FuncHscript {
+    public function getFuncLorscript(func:NFunctionDecl):FuncLorscript {
 
         final id = func.id;
 
-        var info = hscriptFunctions.get(id);
+        var info = lorscriptFunctions.get(id);
 
         if (info == null) {
-            info = new FuncHscript(func);
-            hscriptFunctions.set(id, info);
+            info = new FuncLorscript(func);
+            lorscriptFunctions.set(id, info);
         }
 
         return info;
 
     }
 
-    public function getHscriptExpr(func:NFunctionDecl, pos:Position):hscript.Expr {
+    public function getLorscriptExpr(func:NFunctionDecl, pos:Position):loreline.lorscript.Expr {
 
-        final info = getFuncHscript(func);
+        final info = getFuncLorscript(func);
 
         if (info.expr == null) {
             return null;
@@ -1420,32 +1393,30 @@ class Lens {
 
         final offset = pos.offset - func.pos.offset;
 
-        var bestExpr:hscript.Expr = null;
+        var bestExpr:loreline.lorscript.Expr = null;
 
-        #if hscriptPos
-        var handler:(expr:hscript.Expr)->Void = null;
+        var handler:(expr:loreline.lorscript.Expr)->Void = null;
         handler = expr -> {
             if (expr != null) {
-                final min = info.codeToHscript.inputPosFromProcessedPos(expr.pmin);
-                final max = info.codeToHscript.inputPosFromProcessedPos(expr.pmax);
+                final min = info.codeToLorscript.inputPosFromProcessedPos(expr.pmin);
+                final max = info.codeToLorscript.inputPosFromProcessedPos(expr.pmax);
 
                 if (offset >= min && offset <= max) {
                     bestExpr = expr;
                 }
 
-                hscript.Tools.iter(expr, handler);
+                loreline.lorscript.Tools.iter(expr, handler);
             }
         };
-        hscript.Tools.iter(info.expr, handler);
-        #end
+        loreline.lorscript.Tools.iter(info.expr, handler);
 
         return bestExpr;
 
     }
 
-    public function resolveHscriptAccess(func:NFunctionDecl, expr:hscript.Expr):Null<Node> {
+    public function resolveLorscriptAccess(func:NFunctionDecl, expr:loreline.lorscript.Expr):Null<Node> {
 
-        switch #if hscriptPos expr.e #else expr #end {
+        switch expr.e {
 
             case EIdent(name):
 
@@ -1484,7 +1455,7 @@ class Lens {
             case EField(e, f):
                 // Recursively resolve the target object
                 var targetNode = if (e != null) {
-                    resolveHscriptAccess(func, e);
+                    resolveLorscriptAccess(func, e);
                 }
                 else {
                     null;
@@ -1532,20 +1503,20 @@ class Lens {
 
     }
 
-    public function isHscriptExpr(input:Any):Bool {
+    public function isLorscriptExpr(input:Any):Bool {
 
-        return input != null && Reflect.hasField(input, "e") && (Reflect.field(input, "e") is hscript.Expr.ExprDef);
+        return input != null && Reflect.hasField(input, "e") && (Reflect.field(input, "e") is loreline.lorscript.Expr.ExprDef);
 
     }
 
-    public function getHscriptCompletion(func:NFunctionDecl, pos:Position):HscriptCompletion {
+    public function getLorscriptCompletion(func:NFunctionDecl, pos:Position):LorscriptCompletion {
 
-        final info = getFuncHscript(func);
+        final info = getFuncLorscript(func);
 
         final inputPos = pos.offset - func.pos.offset + pos.length;
-        final processedPos = info.codeToHscript.processedPosFromInputPos(inputPos);
+        final processedPos = info.codeToLorscript.processedPosFromInputPos(inputPos);
 
-        var truncated = info.hscript.uSubstring(0, Std.int(Math.min(processedPos, info.hscript.uLength())));
+        var truncated = info.lorscript.uSubstring(0, Std.int(Math.min(processedPos, info.lorscript.uLength())));
 
         var fullLen = truncated.uLength();
         truncated = truncated.uSubstring(truncated.uIndexOf('{') + 1, fullLen);
@@ -1556,8 +1527,8 @@ class Lens {
         }
         truncated = spaces.toString() + truncated;
 
-        var completion:hscript.Checker.Completion = null;
-        var checker = new hscript.Checker();
+        var completion:loreline.lorscript.Checker.Completion = null;
+        var checker = new loreline.lorscript.Checker();
         try {
             @:privateAccess {
                 checker.types.parser.allowJSON = true;
@@ -1569,7 +1540,7 @@ class Lens {
             }
         }
         catch (e:Any) {
-            if (e is hscript.Checker.Completion) {
+            if (e is loreline.lorscript.Checker.Completion) {
                 completion = cast e;
             }
         }
@@ -1582,23 +1553,17 @@ class Lens {
 
     }
 
-    #end
-
     public function resolveAccessInFunction(func:NFunctionDecl, pos:Position):Null<Node> {
 
-        #if hscript
-
-        final info = getFuncHscript(func);
+        final info = getFuncLorscript(func);
         if (info.expr == null) {
             return null;
         }
 
-        final expr = getHscriptExpr(func, pos);
+        final expr = getLorscriptExpr(func, pos);
         if (expr != null) {
-            return resolveHscriptAccess(func, expr);
+            return resolveLorscriptAccess(func, expr);
         }
-
-        #end
 
         return null;
 

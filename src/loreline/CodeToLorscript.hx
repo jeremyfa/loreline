@@ -3,7 +3,7 @@ package loreline;
 using StringTools;
 using loreline.Utf8;
 
-enum abstract CodeToHscriptStackType(Int) {
+enum abstract CodeToLorscriptStackType(Int) {
 
     var ObjectBrace = 0;
 
@@ -36,14 +36,14 @@ enum abstract CodeToHscriptStackType(Int) {
 }
 
 /**
- * Preprocesses Loreline script code to make it compatible with HScript.
- * This class converts Loreline syntax into valid HScript syntax by:
+ * Preprocesses Loreline script code to make it compatible with lorscript.
+ * This class converts Loreline syntax into valid lorscript syntax by:
  * - Converting 'and' and 'or' operators to '&&' and '||'
  * - Adding parentheses around control structure conditions
  * - Adding semicolons and braces where needed
  * - Processing string literals and comments
  */
-class CodeToHscript {
+class CodeToLorscript {
     /**
      * List of control flow keywords that may need special handling
      */
@@ -122,18 +122,18 @@ class CodeToHscript {
     /**
      * A stack to keep track of whether we are inside an object or array literal or not
      */
-    var stack:Array<CodeToHscriptStackType>;
+    var stack:Array<CodeToLorscriptStackType>;
 
     /**
-     * Creates a new CodeToHscript instance.
+     * Creates a new CodeToLorscript instance.
      */
     public function new() {}
 
     /**
-     * Processes a Loreline script code string and converts it to HScript compatible code.
+     * Processes a Loreline script code string and converts it to lorscript compatible code.
      *
      * @param input The Loreline script code to process
-     * @return The processed HScript compatible code
+     * @return The processed lorscript compatible code
      */
     public function process(input:String) {
 
@@ -1004,7 +1004,7 @@ class CodeToHscript {
         return foundContent ? pos : startPos;
     }
 
-    inline function stackPush(item:CodeToHscriptStackType) {
+    inline function stackPush(item:CodeToLorscriptStackType) {
         #if loreline_debug_function_token_stack
         trace('PUSH $item i=$index output=${output.toString()}');
         #end
