@@ -1946,7 +1946,9 @@ class ParserContext {
             }
 
             final prev = previous();
-            needsSeparator = (prev.type != Colon && prev.type != LineBreak);
+            // Unindent closes a nested indented block at a line boundary, so it
+            // separates fields like LineBreak.
+            needsSeparator = (prev.type != Colon && prev.type != LineBreak && prev.type != Unindent);
         }
 
         while (match(LineBreak) || match(Indent) || match(Unindent)) {}
@@ -1998,7 +2000,9 @@ class ParserContext {
             }
 
             final prev = previous();
-            needsSeparator = (prev.type != Colon && prev.type != LineBreak);
+            // Unindent closes a nested indented block at a line boundary, so it
+            // separates fields like LineBreak.
+            needsSeparator = (prev.type != Colon && prev.type != LineBreak && prev.type != Unindent);
         }
 
         while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}

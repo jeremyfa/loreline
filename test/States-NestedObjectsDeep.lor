@@ -1,0 +1,21 @@
+state
+  stats:
+    str:
+      name: strength
+      value: 2
+    dex:
+      name: dexterity
+      value: 3
+
+Strength is $stats.str.name with value $stats.str.value
+
+Dexterity is $stats.dex.name with value $stats.dex.value
+
+/*
+<test>
+- expected: |
+    ~ Strength is strength with value 2
+
+    ~ Dexterity is dexterity with value 3
+</test>
+*/
