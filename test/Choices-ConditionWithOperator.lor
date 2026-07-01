@@ -1,0 +1,29 @@
+// A single-line `if` condition may still use binary operators. The
+// condition fix stops a condition at end of line, so an operator that belongs
+// to the condition (on the same line) must still parse as part of it, not leak
+// into the next option when inside a choice.
+
+state
+  score: 4
+  bonus: 3
+
+beat Start
+  choice
+    Open gate if score + bonus >= 5
+      You opened the gate.
+    Secret path if score + bonus >= 10
+      A hidden route.
+    Fallback if score > bonus
+      The fallback.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Open gate
+    - Secret path
+    + Fallback
+
+    ~ You opened the gate.
+</test>
+*/

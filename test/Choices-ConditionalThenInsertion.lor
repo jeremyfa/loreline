@@ -1,0 +1,26 @@
+// An `if` condition must stop at end of line. And in a choice, a conditional option
+// directly followed by an insertion must not be parsed as `false + Extra`.
+
+beat Start
+  choice
+    Alpha
+    Beta if false
+    +Extra
+    Gamma
+
+beat Extra
+  choice
+    E1
+    E2
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Alpha
+    - Beta
+    + E1
+    + E2
+    + Gamma
+</test>
+*/

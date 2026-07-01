@@ -1,0 +1,75 @@
+// choices()/choices_all()/choices_disabled() must stay correct across a
+// save/restore when the choice contains an insertion, on both restore paths:
+// saving at the presented choice (saveAtChoice) and saving at a dialogue
+// emitted while the insertion is still collecting its options (saveAtDialogue).
+
+beat Start
+  choice
+    Base 1
+    +InsertedOptions
+    Base 2
+      "Enabled: $choices()"
+      "All: $choices_all()"
+      "Disabled: $choices_disabled()"
+
+beat InsertedOptions
+  "Preparing options."
+  choice
+    Ins 1
+    Ins 2 if false
+
+/*
+<test>
+- choices: [3]
+  expected: |
+    ~ Preparing options.
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+- choices: [3]
+  saveAtChoice: 0
+  expected: |
+    ~ Preparing options.
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+- choices: [3]
+  saveAtDialogue: 0
+  expected: |
+    ~ Preparing options.
+
+    ~ Preparing options.
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+</test>
+*/

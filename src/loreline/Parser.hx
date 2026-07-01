@@ -68,6 +68,11 @@ class ParserContext {
     /** Flag indicating if a line break follows the current token */
     var lineBreakAfterToken:Bool;
 
+    /** While set, a trailing `if` condition is parsed single-line: advance() does
+        not skip line breaks, so the condition ends at its line and cannot swallow
+        the statement/option that follows it (e.g. an insertion on the next line). */
+    var parsingCondition:Bool = false;
+
     /** Node id counter, to ensure each parsed node has a unique id */
     var currentNodeId:NodeId;
 
@@ -169,6 +174,9 @@ class ParserContext {
      * @return The previous token
      */
     function advance(advanceLineBreaks:Bool = true):Token {
+        // An `if` condition is single-line: while parsing it, don't skip
+        // line breaks, so it stops at end of line instead of consuming the next line.
+        if (parsingCondition) advanceLineBreaks = false;
         final prev = tokens[current];
         if (!isAtEnd()) {
             lastTokenEnd = prev.pos;
@@ -2035,6 +2043,8 @@ class ParserContext {
      * @return Expression node
      */
     function parseConditionExpression():NExpr {
+        final prevParsingCondition = parsingCondition;
+        parsingCondition = true;
         final hasParen = match(LParen);
         var expr:NExpr = null;
         try {
@@ -2051,6 +2061,7 @@ class ParserContext {
             addError(e);
             expr = new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
+        parsingCondition = prevParsingCondition;
         if (hasParen) expect(RParen);
         return expr;
     }
