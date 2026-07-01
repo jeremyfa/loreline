@@ -1,0 +1,19 @@
+// Targeting: a number after `if` in a dialogue line is only a trailing
+// condition when a real comparison follows. `if 5 minutes` stays literal;
+// `if 5 > 3` is a condition and is stripped from the shown text.
+
+character dave
+  name: Dave
+
+beat Start
+  dave: come back if 5 minutes
+  dave: come back if 5 > 3
+
+/*
+<test>
+- expected: |
+    Dave: come back if 5 minutes
+
+    Dave: come back
+</test>
+*/

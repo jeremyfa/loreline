@@ -1,0 +1,100 @@
+// Targeting / false-positive checks: a number after `if` that is not followed
+// by an operator is NOT a condition (stays literal), a `-` that is not a
+// line-start prefix is NOT a once option, and `if5` glued to a number is not a
+// condition. Real number-leading conditions still work.
+
+state
+  score: 4
+  gold: 10
+  cost: 3
+
+beat NumberText
+  choice
+    Wait if 5 minutes
+      Waited.
+    Leave
+      Left.
+
+beat NumberCondition
+  choice
+    Wait if 5 > 3
+      Waited.
+    Leave
+      Left.
+
+beat NegativeLiteral
+  choice
+    Keep if score > -1
+      Kept.
+    Leave
+      Left.
+
+beat OnceLabelNumber
+  choice
+    - Buy 2 apples
+      Bought.
+    Leave
+      Left.
+
+beat MinusThenTransition
+  choice
+    Trade if gold - cost >= 0 -> Traded
+    Leave
+      Left.
+
+beat Traded
+  Traded ok.
+
+beat GluedIf
+  choice
+    Wait if5 now
+      Waited.
+    Leave
+      Left.
+
+/*
+<test>
+- beat: NumberText
+  choices: [0]
+  expected: |
+    + Wait if 5 minutes
+    + Leave
+
+    ~ Waited.
+- beat: NumberCondition
+  choices: [0]
+  expected: |
+    + Wait
+    + Leave
+
+    ~ Waited.
+- beat: NegativeLiteral
+  choices: [0]
+  expected: |
+    + Keep
+    + Leave
+
+    ~ Kept.
+- beat: OnceLabelNumber
+  choices: [0]
+  expected: |
+    + Buy 2 apples
+    + Leave
+
+    ~ Bought.
+- beat: MinusThenTransition
+  choices: [0]
+  expected: |
+    + Trade
+    + Leave
+
+    ~ Traded ok.
+- beat: GluedIf
+  choices: [0]
+  expected: |
+    + Wait if5 now
+    + Leave
+
+    ~ Waited.
+</test>
+*/

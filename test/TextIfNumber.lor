@@ -1,0 +1,17 @@
+// Targeting: a number after `if` in a narration line is only a trailing
+// condition when a real comparison follows. `if 5 minutes` stays literal;
+// `if 5 > 3` is a condition and is stripped from the shown text.
+
+beat Start
+  Rest here if 5 minutes
+
+  Rest here if 5 > 3
+
+/*
+<test>
+- expected: |
+    ~ Rest here if 5 minutes
+
+    ~ Rest here
+</test>
+*/

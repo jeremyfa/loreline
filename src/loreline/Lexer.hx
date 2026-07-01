@@ -1217,13 +1217,13 @@ class Token {
             return true;
         }
 
-        // If "if" is directly followed by an identifier start (without space), that's not a if
-        if (pos == startPos && startPos < this.length && isIdentifierStart(input.uCharCodeAt(startPos))) {
+        // If "if" is directly followed by an identifier or digit (without space), that's part of a word, not an if
+        if (pos == startPos && startPos < this.length && (isIdentifierStart(input.uCharCodeAt(startPos)) || isDigit(input.uCharCodeAt(startPos)))) {
             return false;
         }
 
-        // Must start with identifier or opening parenthesis
-        if (pos >= this.length || !isIdentifierStart(input.uCharCodeAt(pos))) {
+        // Must start with identifier, number, or opening parenthesis
+        if (pos >= this.length || (!isIdentifierStart(input.uCharCodeAt(pos)) && !isDigit(input.uCharCodeAt(pos)))) {
             return false;
         }
 
@@ -1231,6 +1231,11 @@ class Token {
             if (input.uCharCodeAt(pos) == "(".code) {
                 // Function call
                 return true;
+            } else if (isDigit(input.uCharCodeAt(pos))) {
+                // Number literal operand
+                while (pos < this.length && (isDigit(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == ".".code)) {
+                    pos++;
+                }
             } else {
                 if (!readIdent()) {
                     return false;
@@ -2201,7 +2206,14 @@ class Token {
                 i--;
             }
             else if (token.type == OpMinus) {
-                return true;
+                // A once-option `-` starts its line; a binary minus (e.g. `score - bonus`
+                // in a condition) does not. Require the `-` to be first on its line so the
+                // operand after it is not read as option text.
+                i--;
+                while (i >= 0 && (tokenized[i].type.isComment() || tokenized[i].type == Indent || tokenized[i].type == Unindent)) {
+                    i--;
+                }
+                return i < 0 || tokenized[i].type == LineBreak;
             }
             else {
                 return false;

@@ -1,0 +1,35 @@
+// A choice condition may use a binary `-` and may start with a number literal.
+// A leading `- ` still marks a once option; a `-` inside a condition (or a
+// number-leading condition like `4 - bonus`) must lex as an expression, not be
+// swallowed as option text.
+
+state
+  score: 4
+  bonus: 3
+
+beat Start
+  choice
+    - Once option
+      Picked once.
+    Keep if score - bonus >= 0
+      Kept.
+    Drop if score - bonus < 0
+      Dropped.
+    Threshold if 4 - bonus < 2
+      Threshold met.
+    High if 10 > score
+      High.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    + Once option
+    + Keep
+    - Drop
+    + Threshold
+    + High
+
+    ~ Kept.
+</test>
+*/
