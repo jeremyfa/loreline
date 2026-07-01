@@ -1653,7 +1653,8 @@ typedef InterpreterOptions = {
                     final parentBeat = currentScope.beat;
 
                     final optionsDone = wrapNext(() -> presentChoice(choice, options, next));
-                    evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex);
+                    // Resuming the root choice's Phase 1 with a pre-filled result.
+                    evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex, true);
                     optionsDone.sync = false;
                 });
             } else {
@@ -2847,7 +2848,9 @@ typedef InterpreterOptions = {
             presentChoice(choice, options, next);
         });
 
-        evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb);
+        // Nested insertion runs (reached via evalInsertion) have an insertion
+        // scope on the stack; only the real top-level choice owns the buffers.
+        evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb, null, currentInsertion == null);
         optionsDone.sync = false;
 
     }
@@ -2953,14 +2956,24 @@ typedef InterpreterOptions = {
 
     }
 
-    function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void, ?startIndex:Int) {
+    function evalChoiceOptionsAndInsertions(beat:NBeatDecl, choice:NChoiceStatement, result:Array<ChoiceOption>, next:()->Void, ?startIndex:Int, isChoiceRoot:Bool = true) {
 
         // Get options
         final options = choice.options;
 
-        // Clear choice evaluation context for introspection functions
-        _choiceEvalTexts.resize(0);
-        _choiceEvalEnabled.resize(0);
+        // Only the root choice evaluation owns the _choiceEval* introspection
+        // buffers that choices()/choices_all()/choices_disabled() read. Nested
+        // insertion runs must leave them alone: the root's merge loop below
+        // appends each insertion's options once, in order. Seed from options
+        // collected so far (empty on a fresh choice, pre-filled on a restore).
+        if (isChoiceRoot) {
+            _choiceEvalTexts.resize(0);
+            _choiceEvalEnabled.resize(0);
+            for (opt in result) {
+                _choiceEvalTexts.push(opt.text);
+                _choiceEvalEnabled.push(opt.enabled);
+            }
+        }
 
         // Then iterate through each child node in the body
         var index = startIndex != null ? startIndex : 0;
@@ -2973,8 +2986,10 @@ typedef InterpreterOptions = {
                 for (i in 0...insertion.options.length) {
                     final opt = insertion.options[i];
                     result.push(opt);
-                    _choiceEvalTexts.push(opt.text);
-                    _choiceEvalEnabled.push(opt.enabled);
+                    if (isChoiceRoot) {
+                        _choiceEvalTexts.push(opt.text);
+                        _choiceEvalEnabled.push(opt.enabled);
+                    }
                 }
                 insertion = null;
             }
@@ -3002,8 +3017,10 @@ typedef InterpreterOptions = {
                         node: option,
                         insertion: currentInsertion
                     });
-                    _choiceEvalTexts.push(content.text);
-                    _choiceEvalEnabled.push(enabled);
+                    if (isChoiceRoot) {
+                        _choiceEvalTexts.push(content.text);
+                        _choiceEvalEnabled.push(enabled);
+                    }
                     done.cb();
                     done.sync = false;
                 }

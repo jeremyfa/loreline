@@ -1,0 +1,84 @@
+// The choices()/choices_all()/choices_disabled() introspection helpers must
+// return the full flattened choice list (in order, no duplicates) even when the
+// choice contains insertions. See issue #28.
+
+beat MidCollection
+  choice
+    Base option 1
+    Base option 2
+    +InsertedOptions
+    Base option 3
+    +Summarize
+
+beat InsertedOptions
+  choice
+    Insertion 1
+    Insertion 2
+
+beat Summarize
+  "List of choices: $choices()"
+
+beat OptionBody
+  choice
+    Alpha
+    +PlainGroup
+    Beta
+      "Beta chosen, choices were: $choices()"
+
+beat PlainGroup
+  choice
+    G1
+    G2
+
+beat DisabledInsertion
+  choice
+    Alpha
+    +MixedGroup
+    Gamma if false
+    Delta
+      "All: $choices_all()"
+      "Enabled: $choices()"
+      "Disabled: $choices_disabled()"
+
+beat MixedGroup
+  choice
+    G1
+    G2 if false
+
+/*
+<test>
+- beat: MidCollection
+  choices: [0]
+  expected: |
+    ~ List of choices: [Base option 1, Base option 2, Insertion 1, Insertion 2, Base option 3]
+
+    + Base option 1
+    + Base option 2
+    + Insertion 1
+    + Insertion 2
+    + Base option 3
+- beat: OptionBody
+  choices: [3]
+  expected: |
+    + Alpha
+    + G1
+    + G2
+    + Beta
+
+    ~ Beta chosen, choices were: [Alpha, G1, G2, Beta]
+- beat: DisabledInsertion
+  choices: [4]
+  expected: |
+    + Alpha
+    + G1
+    - G2
+    - Gamma
+    + Delta
+
+    ~ All: [Alpha, G1, G2, Gamma, Delta]
+
+    ~ Enabled: [Alpha, G1, Delta]
+
+    ~ Disabled: [G2, Gamma]
+</test>
+*/
