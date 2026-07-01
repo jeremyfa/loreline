@@ -6,18 +6,18 @@ character barista
   name: Alex
 
 beat Order
-  Alex: What would you like?
+  barista: What would you like?
   choice
     + SeasonalDrinks if weekend
     Espresso
-      Alex: One espresso!
+      barista: One espresso!
 
 beat SeasonalDrinks
   choice
     Pumpkin Spice Latte
-      Alex: One PSL!
+      barista: One PSL!
     Peppermint Mocha
-      Alex: One peppermint mocha!
+      barista: One peppermint mocha!
 
 /*
 <test>
