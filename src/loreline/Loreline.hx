@@ -1,5 +1,9 @@
 package loreline;
 
+#if (cs && (loreline_cs_api || loreline_use_cs_types) && !erase_generics)
+#error "The Loreline C# API defines (loreline_cs_api / loreline_use_cs_types) require -D erase-generics. Plain Haxe to C# consumers should omit all loreline_* C# defines."
+#end
+
 import haxe.io.Path;
 import loreline.AstUtils;
 import loreline.Imports;

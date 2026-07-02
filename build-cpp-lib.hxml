@@ -1,7 +1,6 @@
 --class-path src
 --main loreline.lib.Library
 --library hxcpp
---library yaml
 -D static_link
 -D no-compilation
 -D loreline_cpp_lib

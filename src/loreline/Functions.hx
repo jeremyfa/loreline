@@ -344,7 +344,7 @@ class Functions {
     public function bool(value:Any):Bool {
         if (value is Bool) return (value : Bool);
         if (value is String) return (value : String).length > 0;
-        if (value is Array) return (value : Array<Any>).length > 0;
+        if (Arrays.isArray(value)) return Arrays.arrayLength(value) > 0;
         if (value is Int) return (value : Int) != 0;
         if (value is Float) return (value : Float) != 0;
         return value != null;

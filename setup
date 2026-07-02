@@ -155,6 +155,7 @@ async function main() {
     let buildCppLibTest = rawArgs.indexOf('--cpp-lib-test') != -1;
     let buildCs = rawArgs.indexOf('--cs') != -1;
     let buildCsDll = rawArgs.indexOf('--cs-dll') != -1;
+    let buildCsGenerics = rawArgs.indexOf('--cs-generics') != -1;
     let buildJs = rawArgs.indexOf('--js') != -1;
     let buildPython = rawArgs.indexOf('--python') != -1 || rawArgs.indexOf('--py') != -1;
     let buildLua = rawArgs.indexOf('--lua') != -1;
@@ -194,14 +195,13 @@ async function main() {
     }
 
     // Install dependencies (only needed for build targets, not --sample or --test)
-    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildWasm || buildCs || buildJs || buildPython || buildLua || buildJvm) {
+    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildWasm || buildCs || buildCsGenerics || buildJs || buildPython || buildLua || buildJvm) {
         var haxelibRepoPath = path.join(__dirname, '.haxelib');
         if (!fs.existsSync(haxelibRepoPath)) {
             fs.mkdirSync(haxelibRepoPath);
         }
         await command(haxelib, ['dev', 'hxcpp', 'git/hxcpp', '--quiet'], { cwd: __dirname });
         await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
-        await command(haxelib, ['dev', 'yaml', 'git/yaml', '--quiet'], { cwd: __dirname });
         if (buildJvm) {
             await command(haxelib, ['dev', 'hxjava', 'git/hxjava', '--quiet'], { cwd: __dirname });
         }
@@ -1339,6 +1339,35 @@ async function main() {
 
     }
 
+    if (buildCsGenerics) {
+        console.log('Export loreline test runner for C# without erase-generics (plain Haxe consumer build)');
+
+        fs.rmSync('build/cs-generics', { recursive: true, force: true });
+
+        await command(haxe, ['build-cs-generics.hxml'].concat(haxeBuildArgs));
+
+        if (fs.existsSync('build/cs-generics/hxcs_build.txt')) fs.unlinkSync('build/cs-generics/hxcs_build.txt');
+
+        // Transient test project: compiles the raw haxe output as-is (no namespace
+        // rewriting, no loreline_* defines). InvariantGlobalization keeps float
+        // formatting locale-stable (the distribution patches Std.cs instead, which
+        // is not needed for a self-contained test executable).
+        fs.writeFileSync('build/cs-generics/LorelineGenericsTest.csproj', `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>LorelineGenericsTest</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NoWarn>$(NoWarn);CS0108;CS0114;CS0162;CS0168;CS0219;CS0649;IL2026;IL2060;IL2067;IL2070;IL2072;IL2075;IL3053</NoWarn>
+    <PublishAot Condition="'$(AotBuild)' == 'true'">true</PublishAot>
+  </PropertyGroup>
+</Project>
+`);
+    }
+
     if (buildJs) {
         console.log('Export loreline for Javascript');
 
@@ -2037,27 +2066,42 @@ async function main() {
         const aotBin = path.join(aotPublishDir, process.platform == 'win32' ? 'TestRunner.exe' : 'TestRunner');
         await command(aotBin, ['./test']);
 
-        // 4. JS build + tests
+        // 4. C# (with generics) build + tests (plain Haxe consumer mode)
+        console.log('\n=== C# (with generics) build + tests ===');
+        await command('node', ['./setup', '--cs-generics']);
+        await command('dotnet', ['run', '--project', 'build/cs-generics', '--', 'test', './test']);
+
+        // 5. C# (with generics) AOT build + tests
+        console.log('\n=== C# (with generics) AOT build + tests ===');
+        const noeraseAotPublishDir = path.join('build', 'cs-generics', 'bin', 'Release', 'net8.0', rid, 'publish');
+        await command('dotnet', [
+            'publish', 'build/cs-generics', '-c', 'Release',
+            '-r', rid, '-p:AotBuild=true'
+        ]);
+        const noeraseAotBin = path.join(noeraseAotPublishDir, process.platform == 'win32' ? 'LorelineGenericsTest.exe' : 'LorelineGenericsTest');
+        await command(noeraseAotBin, ['test', './test']);
+
+        // 6. JS build + tests
         console.log('\n=== JS build + tests ===');
         await command('node', ['./setup', '--js']);
         await command('npx', ['tsx', 'js/test-runner.ts', './test']);
 
-        // 5. C++ lib build + tests
+        // 7. C++ lib build + tests
         console.log('\n=== C++ lib build + test ===');
         await command('node', ['./setup', '--cpp-lib']);
         await command('node', ['./setup', '--cpp-lib-test']);
 
-        // 6. Python build + tests
+        // 8. Python build + tests
         console.log('\n=== Python build + tests ===');
         await command('node', ['./setup', '--py']);
         await command('python3', ['py/test-runner.py', './test']);
 
-        // 7. Lua build + tests
+        // 9. Lua build + tests
         console.log('\n=== Lua build + tests ===');
         await command('node', ['./setup', '--lua']);
         await command('lua', ['lua/test-runner.lua', './test']);
 
-        // 8. JVM build + tests
+        // 10. JVM build + tests
         console.log('\n=== JVM build + tests ===');
         await command('node', ['./setup', '--jvm']);
         const jvmCpSep = process.platform == 'win32' ? ';' : ':';

@@ -1,0 +1,7 @@
+--class-path src
+--main loreline.cli.Cli
+-D loreline_auto_wrap_functions
+--macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
+--cs build/cs-generics
+-D no-compilation
+-D real-position

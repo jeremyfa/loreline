@@ -381,7 +381,7 @@ class Cli {
         final specContent = File.getContent(specPath);
         var spec:Dynamic;
         try {
-            spec = Yaml.parse(specContent);
+            spec = MiniYaml.parse(specContent);
         } catch (e:Any) {
             recordCliFailure(displayName, workspace, 'failed to parse spec.yml: ' + Std.string(e));
             return;
@@ -614,7 +614,7 @@ class Cli {
                     if (testStart != -1) {
                         final testEnd = comment.content.uIndexOf('</test>', testStart + 6);
                         if (testEnd != -1) {
-                            final testYml = Yaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
+                            final testYml = MiniYaml.parse(comment.content.uSubstring(testStart + 6, testEnd).trim());
                             if (testYml != null && testYml is Array) {
                                 for (item in (testYml:Array<Dynamic>)) {
                                     var restoreInput:String = null;
@@ -640,8 +640,10 @@ class Cli {
             for (idx in 0...testItems.length) {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
-                final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
-                final saveAtDialogue:Int = item.saveAtDialogue != null ? item.saveAtDialogue : -1;
+                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
+                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
+                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
+                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
                 var options:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;
@@ -783,8 +785,10 @@ class Cli {
             for (idx in 0...testItems.length) {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
-                final saveAtChoice:Int = item.saveAtChoice != null ? item.saveAtChoice : -1;
-                final saveAtDialogue:Int = item.saveAtDialogue != null ? item.saveAtDialogue : -1;
+                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
+                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
+                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
+                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
                 var rtOptions:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;

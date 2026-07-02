@@ -1,5 +1,14 @@
 package loreline;
 
+/**
+ * Array access helpers working on `Any`-held values.
+ *
+ * The fallback views are typed `Array<Dynamic>` on purpose: on Haxe's C#
+ * target without erase-generics, `Array<Dynamic>` compiles to the raw
+ * `Array` interface (identity cast), while `Array<Any>` compiles to the
+ * concrete `Array<object>` and converts (copies) arrays whose element type
+ * is a value type, e.g. `Array<Int>`. See CS_COMPATIBILITY.md.
+ */
 class Arrays {
 
     public static function isArray(array:Any):Bool {
@@ -34,7 +43,7 @@ class Arrays {
         }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         return arr.length;
 
     }
@@ -53,7 +62,7 @@ class Arrays {
         }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         return if (i >= 0 && i < arr.length) {
             arr[i];
         }
@@ -77,7 +86,7 @@ class Arrays {
         }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         arr[i] = value;
 
     }
@@ -105,7 +114,7 @@ class Arrays {
         }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         arr.push(value);
     }
 
@@ -117,7 +126,7 @@ class Arrays {
         if (isJavaList(array)) return javaListPop(array);
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         return arr.pop();
 
     }
@@ -130,7 +139,7 @@ class Arrays {
         if (isJavaList(array)) return javaListShift(array);
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         return arr.shift();
 
     }
@@ -143,7 +152,7 @@ class Arrays {
         if (isJavaList(array)) { javaListInsert(array, index, value); return; }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         arr.insert(index, value);
 
     }
@@ -156,7 +165,7 @@ class Arrays {
         if (isJavaList(array)) { javaListRemoveAt(array, index); return; }
         #end
 
-        final arr:Array<Any> = array;
+        final arr:Array<Dynamic> = array;
         arr.splice(index, 1);
 
     }

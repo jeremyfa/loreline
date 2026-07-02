@@ -470,7 +470,6 @@ jobs:
       - name: Setup haxelib
         run: |
           mkdir -p .haxelib
-          haxelib dev yaml git/yaml --quiet
 
       - name: Run Neko tests
         run: node run test ./test
@@ -613,6 +612,18 @@ jobs:
 
       - name: Run C# AOT tests
         run: ./build/cs/bin/TestRunner/Release/net8.0/linux-x64/publish/TestRunner ./test
+
+      - name: Build C# (with generics) test runner
+        run: node ./setup --cs-generics
+
+      - name: Run C# (with generics) tests
+        run: dotnet run --project build/cs-generics -- test ./test
+
+      - name: Publish C# (with generics) AOT
+        run: dotnet publish build/cs-generics -c Release -r linux-x64 -p:AotBuild=true
+
+      - name: Run C# (with generics) AOT tests
+        run: ./build/cs-generics/bin/Release/net8.0/linux-x64/publish/LorelineGenericsTest test ./test
 
       - name: Create zip archive
         working-directory: cs

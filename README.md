@@ -29,6 +29,7 @@ npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
 node ./setup --js          # Build JavaScript library (js/loreline.js)
 node ./setup --cs          # Export C# source files (cs/Loreline/)
 node ./setup --cs --cs-dll # Export C# + build Loreline.dll
+node ./setup --cs-generics # Export C# test runner without erase-generics (see CS_COMPATIBILITY.md)
 node ./setup --py          # Build Python package (py/loreline/)
 node ./setup --lua         # Build Lua module (lua/loreline/)
 node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
@@ -62,7 +63,7 @@ python3 py/test-runner.py ./test        # Run Python tests only
 lua5.4 lua/test-runner.lua ./test       # Run Lua tests only
 npx tsx js/test-runner.ts ./test        # Run JS tests only
 java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
-node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + JS + C++ lib + Python + Lua + JVM)
+node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + JVM)
 ```
 
 ## License

@@ -3995,15 +3995,9 @@ typedef InterpreterOptions = {
         else if (value is String) {
             (value:String).length > 0;
         }
-        #if ((loreline_cs_api || loreline_jvm_api) && !macro)
         else if (Arrays.isArray(value)) {
             Arrays.arrayLength(value) > 0;
         }
-        #else
-        else if (value is Array) {
-            (value:Array<Any>).length > 0;
-        }
-        #end
         else if (value is Int) {
             (value:Int) != 0;
         }
@@ -4296,16 +4290,9 @@ typedef InterpreterOptions = {
                         final v:String = operand;
                         (v == null || v.length == 0);
                     }
-                    #if ((loreline_cs_api || loreline_jvm_api) && !macro)
                     case OpNot if (Arrays.isArray(operand)): {
                         Arrays.arrayLength(operand) == 0;
                     }
-                    #else
-                    case OpNot if (operand is Array): {
-                        final v:Array<Any> = operand;
-                        (v == null || v.length == 0);
-                    }
-                    #end
                     case OpNot if (operand is Int): {
                         final v:Int = operand;
                         (v == 0);
