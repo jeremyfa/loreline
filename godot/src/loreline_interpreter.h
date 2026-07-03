@@ -50,7 +50,7 @@ private:
 #else
 	Loreline_Interpreter *_interp;
 	Variant _options_ref; // Retained so LorelineFunctionCallContext->options stays valid
-	std::vector<LorelineFunctionCallContext *> _fn_contexts; // owned — freed in destructor
+	std::vector<LorelineFunctionCallContext *> _fn_contexts; // owned, freed in destructor
 	void (*_pending_advance)(void);
 	void (*_pending_select)(int);
 

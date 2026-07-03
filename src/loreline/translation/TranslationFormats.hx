@@ -15,7 +15,7 @@ using loreline.Utf8;
  * them on the fly to the Loreline translation format.
  *
  * Each format must be **opted in** at runtime via `translationFormat(name, true)`.
- * By default, no alternate format is tried — the behaviour is identical to
+ * By default, no alternate format is tried. The behaviour is identical to
  * the original `.lor`-only setup, so the file handler doesn't get spammed
  * with requests for formats the developer doesn't use.
  *
@@ -48,8 +48,8 @@ class TranslationFormats {
     /**
      * Registered formats. Order is the lookup priority.
      * Each entry: short name (used by `translationFormat`) and file extension.
-     * The converter for each `ext` is dispatched explicitly in `convert()` —
-     * see the comment there for why we don't store function refs here.
+     * The converter for each `ext` is dispatched explicitly in `convert()`.
+     * See the comment there for why we don't store function refs here.
      */
     static final formats:Array<{name:String, ext:String}> = [
         #if !loreline_no_po
@@ -71,7 +71,7 @@ class TranslationFormats {
      * Explicit `switch` rather than a function pointer stored in `formats`
      * so every converter has a direct call site visible to dead-code
      * elimination / AOT trim analysis. The reflective `Closure(typeof(X),
-     * "toLoreline", …)` Haxe would otherwise emit on C# is invisible to
+     * "toLoreline", ...)` Haxe would otherwise emit on C# is invisible to
      * .NET's `PublishAot` trimmer and silently drops the converter bodies.
      */
     static function convert(ext:String, content:String, locale:String):String {
@@ -91,7 +91,7 @@ class TranslationFormats {
     }
 
     /**
-     * Per-format enabled state. Empty by default → all formats disabled.
+     * Per-format enabled state. Empty by default, so all formats are disabled.
      * The user opts in via `translationFormat(name, true)`.
      */
     static final enabled:Map<String, Bool> = new Map();
@@ -125,7 +125,7 @@ class TranslationFormats {
      *
      * Two passes:
      *   1. With locale suffix: `<stem>.<locale><ext>`
-     *   2. Without locale suffix: `<stem><ext>` — only useful for formats
+     *   2. Without locale suffix: `<stem><ext>`. Only useful for formats
      *      that self-identify their locale (XLIFF target-language, CSV
      *      column header) or are mono-locale by convention (PO).
      *
@@ -135,12 +135,12 @@ class TranslationFormats {
      * Returns both the wrapped handler and an accessor for the most recent
      * converter error captured during this wrap's lifetime. When a converter
      * throws on a malformed file, the wrapper records the error (with the
-     * actual file path) and falls through to the next enabled format — so a
+     * actual file path) and falls through to the next enabled format, so a
      * broken `.fr.po` doesn't block a valid `.fr.xliff`. The caller reads
      * `lastError()` after dispatch completes to surface the failure.
      */
     public static function wrap(underlying:ImportsFileHandler, locale:String):WrappedFileHandler {
-        // Fast path: no format enabled → just pass through. No overhead.
+        // Fast path: no format enabled, just pass through. No overhead.
         if (!anyEnabled()) return new WrappedFileHandler(underlying, () -> null);
 
         var captured:Null<loreline.Error> = null;

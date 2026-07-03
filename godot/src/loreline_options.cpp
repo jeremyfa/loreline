@@ -13,7 +13,7 @@ LorelineOptions::LorelineOptions()
 }
 
 LorelineOptions::~LorelineOptions() {
-	// _translations is a Ref<LorelineTranslations> — auto-released by Ref<>
+	// _translations is a Ref<LorelineTranslations>, auto-released by Ref<>
 	// reference counting. The wrapper's destructor releases the underlying
 	// handle/id. No manual release needed here.
 }

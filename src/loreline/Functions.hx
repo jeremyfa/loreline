@@ -96,7 +96,7 @@ class Functions {
         target.set("choices_all", this.choices_all);
     }
 
-    // ── Private helper ────────────────────────────────────────────────
+    // -- Private helper ------------------------------------------------
 
     function rng():Float {
         if (_random == null) {
@@ -105,7 +105,7 @@ class Functions {
         return _random.next();
     }
 
-    // ── Math ──────────────────────────────────────────────────────────
+    // -- Math ----------------------------------------------------------
 
     /**
      * Rounds a number down to the nearest whole number.
@@ -206,7 +206,7 @@ class Functions {
     /**
      * Raises a number to the given power.
      *
-     * `pow(2, 3)` returns `8` (2 × 2 × 2). `pow(9, 0.5)` returns `3` (square root).
+     * `pow(2, 3)` returns `8` (2 x 2 x 2). `pow(9, 0.5)` returns `3` (square root).
      *
      * ```lor
      * area = pow(side_length, 2)
@@ -217,7 +217,7 @@ class Functions {
         return Math.pow(base, exp);
     }
 
-    // ── Random ────────────────────────────────────────────────────────
+    // -- Random --------------------------------------------------------
 
     /**
      * Returns a random whole number between min and max, including both ends.
@@ -274,7 +274,7 @@ class Functions {
         return min + rng() * (max - min);
     }
 
-    // ── Timing ────────────────────────────────────────────────────────
+    // -- Timing --------------------------------------------------------
 
     /**
      * Pauses the script for the given number of seconds before continuing.
@@ -298,7 +298,7 @@ class Functions {
         });
     }
 
-    // ── Type Conversion ───────────────────────────────────────────────
+    // -- Type Conversion -----------------------------------------------
 
     /**
      * Converts a value to a number. Strings like `"3.14"` are parsed;
@@ -350,7 +350,7 @@ class Functions {
         return value != null;
     }
 
-    // ── String ────────────────────────────────────────────────────────
+    // -- String --------------------------------------------------------
 
     /**
      * Returns the number of characters in a string.
@@ -518,7 +518,7 @@ class Functions {
         return result.toString();
     }
 
-    // ── Text ──────────────────────────────────────────────────────────
+    // -- Text ----------------------------------------------------------
 
     /**
      * Returns `singular` when count is 1, `plural_form` otherwise.
@@ -542,7 +542,7 @@ class Functions {
         return n == 1 ? singular : plural_form;
     }
 
-    // ── Array ─────────────────────────────────────────────────────────
+    // -- Array ---------------------------------------------------------
 
     /**
      * Returns the number of elements in an array.
@@ -800,7 +800,7 @@ class Functions {
         return array;
     }
 
-    // ── Map ───────────────────────────────────────────────────────────
+    // -- Map -----------------------------------------------------------
 
     /**
      * Returns the number of keys in a map.
@@ -904,7 +904,7 @@ class Functions {
         return copy;
     }
 
-    // ── Game State ────────────────────────────────────────────────────
+    // -- Game State ----------------------------------------------------
 
     /**
      * Returns the name of the beat that is currently running.
@@ -939,7 +939,7 @@ class Functions {
      * ```
      */
     public function has_beat(name:Any):Bool {
-        if (name is NBeatDecl) return true; // reachable — we resolved it
+        if (name is NBeatDecl) return true; // reachable, we resolved it
         final nameStr:String = cast name;
         // Walk the stack bottom-up, scanning each scope's beat body for nested beat declarations
         @:privateAccess var i = interpreter.stack.length - 1;
@@ -1001,7 +1001,7 @@ class Functions {
         }
     }
 
-    // ── Choice introspection ───────────────────────────────────────────
+    // -- Choice introspection -------------------------------------------
 
     /**
      * Returns an array of text strings for all **enabled** choice options

@@ -1,5 +1,5 @@
 /*
- * Loreline — Native C++ API
+ * Loreline: Native C++ API
  *
  * Public header for the Loreline interactive fiction runtime.
  * Link against libLoreline.dylib / libLoreline.so / Loreline.dll.
@@ -13,7 +13,7 @@
 
 #include <stddef.h>
 
-/* ── Visibility ─────────────────────────────────────────────────────────── */
+/* -- Visibility ----------------------------------------------------------- */
 
 #if defined(_WIN32) || defined(__CYGWIN__)
   #ifdef BUILDING_LORELINE
@@ -40,7 +40,7 @@
   #endif
 #endif
 
-/* ── Loreline_String (ref-counted) ──────────────────────────────────────── */
+/* -- Loreline_String (ref-counted) ---------------------------------------- */
 
 struct Loreline_StringData;
 
@@ -62,7 +62,7 @@ public:
     operator bool() const;
 };
 
-/* ── Opaque handle types ────────────────────────────────────────────────── */
+/* -- Opaque handle types -------------------------------------------------- */
 
 typedef struct Loreline_Script Loreline_Script;
 typedef struct Loreline_Interpreter Loreline_Interpreter;
@@ -71,12 +71,12 @@ typedef struct Loreline_InterpreterOptions Loreline_InterpreterOptions;
 typedef struct Loreline_AsyncResolve Loreline_AsyncResolve;
 
 /* Opaque file-load request token. Passed to the host's Loreline_FileHandler;
- * the host calls Loreline_provideFile(request, content) — sync or async — to
+ * the host calls Loreline_provideFile(request, content), sync or async, to
  * deliver the file content (or NULL for "not found"). The token is consumed
  * by Loreline_provideFile, which must be called exactly once per request. */
 typedef struct Loreline_FileRequest Loreline_FileRequest;
 
-/* ── Value type (tagged union for character fields) ─────────────────────── */
+/* -- Value type (tagged union for character fields) ----------------------- */
 
 enum Loreline_ValueType {
     Loreline_Null = 0,
@@ -102,7 +102,7 @@ struct LORELINE_PUBLIC Loreline_Value {
     static Loreline_Value from_string(Loreline_String v);
 };
 
-/* ── Node info ──────────────────────────────────────────────────────────── */
+/* -- Node info ------------------------------------------------------------ */
 
 struct Loreline_Node {
     Loreline_String type;
@@ -112,7 +112,7 @@ struct Loreline_Node {
     int length;
 };
 
-/* ── Data structs ───────────────────────────────────────────────────────── */
+/* -- Data structs --------------------------------------------------------- */
 
 struct Loreline_TextTag {
     Loreline_String value;
@@ -127,7 +127,7 @@ struct Loreline_ChoiceOption {
     bool enabled;
 };
 
-/* ── Callback typedefs ──────────────────────────────────────────────────── */
+/* -- Callback typedefs ---------------------------------------------------- */
 
 typedef void (*Loreline_DialogueHandler)(
     Loreline_Interpreter* interpreter,
@@ -153,8 +153,8 @@ typedef void (*Loreline_FinishHandler)(
 );
 
 /* File handler is async-capable: the host receives an opaque request token and
- * MUST call Loreline_provideFile(request, content) exactly once — synchronously
- * inside the handler, or later from any thread. Pass NULL content to signal
+ * MUST call Loreline_provideFile(request, content) exactly once, either
+ * synchronously inside the handler or later from any thread. Pass NULL content to signal
  * "file not found". */
 typedef void (*Loreline_FileHandler)(
     Loreline_String path,
@@ -195,30 +195,30 @@ typedef Loreline_Retainer *(*Loreline_UserDataRetain)(void *userData);
 typedef void (*Loreline_UserDataRelease)(Loreline_Retainer *retainer);
 
 
-/* ── Core functions ─────────────────────────────────────────────────────── */
+/* -- Core functions ------------------------------------------------------- */
 
 /* Lifecycle */
 LORELINE_PUBLIC void Loreline_init(void);
 LORELINE_PUBLIC void Loreline_dispose(void);
 LORELINE_PUBLIC void Loreline_gc(void);
 
-/* Update — call from the host's main loop.
+/* Update: call from the host's main loop.
  * Flushes pending callbacks and runs periodic GC. */
 LORELINE_PUBLIC void Loreline_update(double delta);
 
-/* Threading — creates a dedicated internal thread for Loreline.
+/* Threading: creates a dedicated internal thread for Loreline.
  * When active, incoming calls route to the internal thread;
  * callbacks are dispatched on the caller's thread via Loreline_update(). */
 LORELINE_PUBLIC void Loreline_createThread(void);
 
-/* File handler — deliver content (or NULL for "not found") to a request token.
+/* File handler: deliver content (or NULL for "not found") to a request token.
  * Must be called exactly once per token. Safe to call from any thread. */
 LORELINE_PUBLIC void Loreline_provideFile(
     Loreline_FileRequest* request,
     Loreline_String content
 );
 
-/* Parsing — synchronous: blocks until parsing + all imports complete.
+/* Synchronous parsing: blocks until parsing + all imports complete.
  * Returns NULL on parse error. */
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     Loreline_String input,
@@ -227,7 +227,7 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     void* fileHandlerData
 );
 
-/* Parsing — async: returns immediately. Completion fires (on the host's update
+/* Async parsing: returns immediately. Completion fires (on the host's update
  * tick if Loreline_update is being called, otherwise inline) with the resulting
  * Loreline_Script* (or NULL on parse error). The host owns the script and must
  * call Loreline_releaseScript when done. */
@@ -245,17 +245,17 @@ LORELINE_PUBLIC void Loreline_parseAsync(
     void* completionHandlerData
 );
 
-/* Translations — extract from a script for localized playback */
+/* Translations: extract from a script for localized playback */
 LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Script* script);
 LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* translations);
 
-/* Translations — load all .<locale>.lor files from the script's import tree.
+/* Translations: load all .<locale>.lor files from the script's import tree.
  * For each file involved in the script (root + transitively imported), looks up
  * the corresponding translation file by inserting `.<locale>` before the extension
- * (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+ * (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation files are
  * silently skipped. Pass the result to `Loreline_optionsSetTranslations`.
  *
- * `filePath` may be NULL — defaults to the path the `script` was parsed from.
+ * `filePath` may be NULL: it defaults to the path the `script` was parsed from.
  * Can also be a directory path to look up translation files in another folder.
  *
  * Synchronous: blocks until all translation files have been loaded. */
@@ -267,7 +267,7 @@ LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
     void* fileHandlerData
 );
 
-/* Translations — async variant of Loreline_loadLocale. Returns immediately;
+/* Translations: async variant of Loreline_loadLocale. Returns immediately;
  * completion fires with the resulting handle (or NULL on error). */
 typedef void (*Loreline_LoadLocaleCallback)(
     Loreline_Translations* translations,
@@ -288,9 +288,9 @@ LORELINE_PUBLIC void Loreline_loadLocaleAsync(
  *
  * By default, only `.<locale>.lor` files are tried by Loreline_loadLocale.
  * Call this to opt in to additional formats:
- *   - "po"    — GNU gettext PO (.po)
- *   - "xliff" — XLIFF 1.2 / 2.x (.xliff, .xlf)
- *   - "csv"   — CSV / TSV (.csv, .tsv)
+ *   - "po":    GNU gettext PO (.po)
+ *   - "xliff": XLIFF 1.2 / 2.x (.xliff, .xlf)
+ *   - "csv":   CSV / TSV (.csv, .tsv)
  *
  * Unknown names are accepted silently (forward-compat). */
 LORELINE_PUBLIC void Loreline_translationFormat(
@@ -305,13 +305,13 @@ LORELINE_PUBLIC void Loreline_translationFormat(
  * Used when a callback variant was supplied: the callback fires with a null
  * script/translations to signal failure, and this function tells you what
  * went wrong. Without a callback, errors typically surface as exceptions on
- * supported targets — this still mirrors the same value so it can be read
+ * supported targets. This still mirrors the same value so it can be read
  * after recovery.
  *
- * Not thread-safe — read immediately after the call returns. */
+ * Not thread-safe: read immediately after the call returns. */
 LORELINE_PUBLIC Loreline_String Loreline_lastError(void);
 
-/* Interpreter options — configure custom functions, strict access, translations */
+/* Interpreter options: configure custom functions, strict access, translations */
 LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);
 LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options);
 LORELINE_PUBLIC void Loreline_optionsSetStrictAccess(
@@ -391,7 +391,7 @@ LORELINE_PUBLIC Loreline_Value Loreline_getTopLevelStateField(
 LORELINE_PUBLIC void Loreline_setTopLevelStateField(
     Loreline_Interpreter* interp, Loreline_String field, Loreline_Value value);
 
-/* Current node — returns info about the node being executed.
+/* Current node: returns info about the node being executed.
  * Returns a Loreline_Node with type set to null if no node is current. */
 LORELINE_PUBLIC Loreline_Node Loreline_currentNode(Loreline_Interpreter* interp);
 
@@ -400,7 +400,7 @@ LORELINE_PUBLIC Loreline_String Loreline_printScript(Loreline_Script* script);
 LORELINE_PUBLIC Loreline_String Loreline_scriptToJson(Loreline_Script* script, bool pretty);
 LORELINE_PUBLIC Loreline_Script* Loreline_scriptFromJson(Loreline_String json);
 
-/* Resource release — only needed for Script and Interpreter handles.
+/* Resource release: only needed for Script and Interpreter handles.
  * Strings and Values are auto-managed via ref counting. */
 LORELINE_PUBLIC void Loreline_releaseScript(Loreline_Script* script);
 LORELINE_PUBLIC void Loreline_releaseInterpreter(Loreline_Interpreter* interp);

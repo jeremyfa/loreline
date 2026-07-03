@@ -157,7 +157,7 @@ class AstUtils {
         });
     }
 
-    // ── Localization ─────────────────────────────────────────────────
+    // -- Localization -------------------------------------------------
 
     /**
      * Insert localization key hash comments directly into source text.
@@ -165,7 +165,7 @@ class AstUtils {
      * so all existing content (comments, formatting, test blocks) is preserved.
      *
      * When `includeImports` is false and `node` is a `Script`, imported
-     * scripts are skipped — their byte offsets refer to other files'
+     * scripts are skipped. Their byte offsets refer to other files'
      * contents and would land at wrong positions in `content`. Use this
      * for per-file rewrites that walk imports externally.
      *
@@ -191,7 +191,7 @@ class AstUtils {
         final existingIds:Map<String, Bool> = reservedIds != null ? reservedIds : new Map();
 
         // Add this node's own hash IDs to existingIds (and therefore to
-        // the shared reservedIds, when provided — so subsequent callers
+        // the shared reservedIds, when provided, so subsequent callers
         // see this file's pre-existing IDs too).
         eachFn((child, _) -> {
             if (Std.isOfType(child, AstNode)) {
@@ -318,7 +318,7 @@ class AstUtils {
 
     /**
      * Extract translations from a parsed translation file.
-     * Returns a map of localization key → NStringLiteral.
+     * Returns a map of localization key -> NStringLiteral.
      * Looks for hash comments (#key) on text/dialogue nodes.
      */
     public static function extractTranslations(node:AstNode):Map<String, NStringLiteral> {
@@ -394,7 +394,7 @@ class AstUtils {
 
     /**
      * Lex-only scan of `content` for every hash-comment identifier
-     * (`#xxxx`). Cheap compared to a full parse — runs the lexer, walks
+     * (`#xxxx`). Cheap compared to a full parse. Runs the lexer, walks
      * tokens, pulls out every `CommentHash` payload. No AST is built, no
      * imports are resolved.
      *
@@ -458,12 +458,12 @@ class AstUtils {
         return buf.toString();
     }
 
-    // ── Private helpers ─────────────────────────────────────────────
+    // -- Private helpers ---------------------------------------------
 
     /**
      * Transform a Raw text part from unquoted to quoted context.
-     * - Remove unquoted-only escapes: \= → =, \{ → {, \X → X (for X not in {n,t,r,\,<})
-     * - Add quoted-only escapes: " → \"
+     * - Remove unquoted-only escapes: \= -> =, \{ -> {, \X -> X (for X not in {n,t,r,\,<})
+     * - Add quoted-only escapes: " -> \"
      * - Keep shared escapes: \n, \t, \r, \\, \<, $$
      */
     static function unquotedRawToQuotedRaw(text:String):String {
@@ -473,13 +473,13 @@ class AstUtils {
             final c = text.charCodeAt(i);
             if (c == '\\'.code && i + 1 < text.length) {
                 final next = text.charCodeAt(i + 1);
-                // Shared escapes — keep as-is
+                // Shared escapes, keep as-is
                 if (next == 'n'.code || next == 't'.code || next == 'r'.code || next == '\\'.code || next == '<'.code) {
                     result.addChar(c);
                     result.addChar(next);
                     i += 2;
                 } else {
-                    // Unquoted-only escape (\=, \{, etc.) — remove the backslash
+                    // Unquoted-only escape (\=, \{, etc.), remove the backslash
                     result.addChar(next);
                     i += 2;
                 }
@@ -497,7 +497,7 @@ class AstUtils {
 
     /**
      * Transform a Raw text part from quoted to unquoted context.
-     * - Remove quoted-only escapes: \" → "
+     * - Remove quoted-only escapes: \" -> "
      * - Keep shared escapes: \n, \t, \r, \\, \<, $$
      */
     static function quotedRawToUnquotedRaw(text:String):String {
@@ -508,11 +508,11 @@ class AstUtils {
             if (c == '\\'.code && i + 1 < text.length) {
                 final next = text.charCodeAt(i + 1);
                 if (next == '"'.code) {
-                    // Quoted-only escape — remove backslash
+                    // Quoted-only escape, remove backslash
                     result.addChar(next);
                     i += 2;
                 } else {
-                    // All other escapes — keep as-is
+                    // All other escapes, keep as-is
                     result.addChar(c);
                     result.addChar(next);
                     i += 2;

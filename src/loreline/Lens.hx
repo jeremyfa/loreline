@@ -332,9 +332,9 @@ class Lens {
      * ancestor chain.
      *
      * The order is most-specific first, root last:
-     *   - node in root.lor                                → ["."]
-     *   - node in imports/foo.lor (imported by root)      → ["imports/foo", "."]
-     *   - node in imports/bar.lor (imported by foo.lor)   → ["imports/bar", "imports/foo", "."]
+     *   - node in root.lor                                -> ["."]
+     *   - node in imports/foo.lor (imported by root)      -> ["imports/foo", "."]
+     *   - node in imports/bar.lor (imported by foo.lor)   -> ["imports/bar", "imports/foo", "."]
      */
     public function getNodeAncestorFilePaths(node:Node):Array<String> {
         // Collect NImportStatements from innermost to outermost
@@ -352,7 +352,7 @@ class Lens {
 
         final result:Array<String> = [];
 
-        // Walk outermost → innermost, building the chain incrementally.
+        // Walk outermost -> innermost, building the chain incrementally.
         // Each step adds one more import resolution; we keep every intermediate
         // file path so callers can try them in fallback order.
         var resolved:String = null;
@@ -372,7 +372,7 @@ class Lens {
             i--;
         }
 
-        // We collected outermost → innermost. Reverse so the node's own file
+        // We collected outermost -> innermost. Reverse so the node's own file
         // comes first.
         result.reverse();
 

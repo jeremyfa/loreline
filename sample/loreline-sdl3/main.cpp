@@ -1,5 +1,5 @@
 /*
- * Loreline SDL3 Sample — CoffeeShop
+ * Loreline SDL3 Sample: CoffeeShop
  *
  * Cross-platform graphical app that runs the CoffeeShop story using SDL3
  * for rendering and stb_truetype for text. Matches the visual design of
@@ -11,9 +11,9 @@
  *   ./build-mac.sh    ./build-linux.sh    build-windows.bat
  */
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  INCLUDES
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
@@ -31,12 +31,12 @@
 #include <cmath>
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  THEME CONSTANTS
  *
  *  Dark theme palette matching the Loreline website playground preview.
  *  See: sample/loreline-web/index.html :root variables.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 struct Color { Uint8 r, g, b, a; };
 
@@ -48,7 +48,7 @@ static const Color COL_BORDER    = { 0x2e, 0x2a, 0x3a, 0xff }; /* borders   */
 static const Color COL_PURPLE    = { 0x8b, 0x5c, 0xf6, 0xff }; /* accent    */
 static const Color COL_GLOW      = { 0x8b, 0x5c, 0xf6, 0x1a }; /* 10% alpha */
 
-/* Character-name gradient: 135deg #ff5eab 0% → #8b5cf6 40% → #56a0f6 100% */
+/* Character-name gradient: 135deg #ff5eab 0% -> #8b5cf6 40% -> #56a0f6 100% */
 static const Color GRAD_START = { 0xff, 0x5e, 0xab, 0xff };
 static const Color GRAD_MID   = { 0x8b, 0x5c, 0xf6, 0xff };
 static const Color GRAD_END   = { 0x56, 0xa0, 0xf6, 0xff };
@@ -62,7 +62,7 @@ static const double ANIM_FADEIN      = 0.45;  /* fade-in duration            */
 static const double ANIM_CHOICE_P2   = 0.3;   /* phase 2 start (slide up)    */
 static const double ANIM_CHOICE_P3   = 0.7;   /* phase 3 start (finalize)    */
 
-/* Layout (logical pixels — scaled by DPI) */
+/* Layout (logical pixels, scaled by DPI) */
 static const float CONTENT_MAX_WIDTH = 700.0f;
 static const float PADDING_TOP       = 32.0f;
 static const float PADDING_SIDE      = 24.0f;
@@ -85,14 +85,14 @@ static const float FONT_SIZE_CHOICE    = 16.0f;
 static const float FONT_SIZE_SMALL     = 15.0f;
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  FONT ATLAS
  *
  *  Uses stb_truetype's pack API to bake glyphs into a texture atlas at
- *  startup. Covers Basic Latin + Latin-1 Supplement (U+0020–U+00FF) and
- *  General Punctuation (U+2000–U+206F) for em-dash, curly quotes, etc.
+ *  startup. Covers Basic Latin + Latin-1 Supplement (U+0020-U+00FF) and
+ *  General Punctuation (U+2000-U+206F) for em-dash, curly quotes, etc.
  *  Each font (narrative italic, UI regular, UI semibold) gets its own atlas.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static const int ATLAS_SIZE = 1024;
 
@@ -287,7 +287,7 @@ static float drawTextGradient(SDL_Renderer* renderer, const FontAtlas* fa,
         const stbtt_packedchar* g = getGlyph(fa, cp);
 
         /* Compute gradient position for this character.
-         * Map to 0.30–0.70 range (not full 0–1) to approximate the 135°
+         * Map to 0.30-0.70 range (not full 0-1) to approximate the 135 degree
          * diagonal angle effect, matching the Unity sample's softer look. */
         float charPos = (x - startX + g->xadvance * 0.5f) / totalWidth;
         float charCenter = 0.30f + charPos * 0.40f;
@@ -323,12 +323,12 @@ static float drawTextGradient(SDL_Renderer* renderer, const FontAtlas* fa,
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
- *  TEXT LAYOUT — Word wrapping
+/* ==============================================================================
+ *  TEXT LAYOUT: Word wrapping
  *
  *  Breaks text into lines that fit within a given max width. Returns a vector
  *  of (startIndex, length) pairs representing each wrapped line.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 struct TextLine {
     int start;
@@ -376,11 +376,11 @@ static std::vector<TextLine> wrapText(const FontAtlas* fa, const char* text,
             }
 
             if (x + spaceWidth + wordWidth <= maxWidth || lastWordEnd == lineStart) {
-                /* Word fits (or it's the first word — must include it) */
+                /* Word fits (or it's the first word, must include it) */
                 x += spaceWidth + wordWidth;
                 lastWordEnd = i;
             } else {
-                /* Word doesn't fit — break here */
+                /* Word doesn't fit: break here */
                 break;
             }
             /* Skip spaces between words */
@@ -411,12 +411,12 @@ static std::vector<TextLine> wrapText(const FontAtlas* fa, const char* text,
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  ELEMENT TYPES
  *
  *  Story content is stored as a list of elements. Each element has a type,
  *  position, animation state, and type-specific data.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 enum ElementType {
     ELEM_NARRATIVE,
@@ -478,13 +478,13 @@ struct Element {
 };
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  PENDING ACTIONS (timed callbacks)
  *
  *  Used to implement delays between dialogue lines, before choices appear,
  *  and before the play-again button shows. Mirrors the web sample's
  *  setTimeout-based approach.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 struct PendingAction {
     double fireTime;
@@ -503,18 +503,18 @@ struct PendingAction {
 };
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  APPLICATION STATE
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
 
     /* Fonts */
-    FontAtlas narrativeFont;   /* Literata Italic — for narrative text  */
-    FontAtlas uiFont;          /* Outfit Regular — for dialogue & choices */
-    FontAtlas uiBoldFont;      /* Outfit SemiBold — for character names   */
+    FontAtlas narrativeFont;   /* Literata Italic: for narrative text  */
+    FontAtlas uiFont;          /* Outfit Regular: for dialogue & choices */
+    FontAtlas uiBoldFont;      /* Outfit SemiBold: for character names   */
 
     /* Loreline */
     Loreline_Script* script;
@@ -531,7 +531,7 @@ struct AppState {
     float scrollStart;
     double scrollAnimStart;
     float contentHeight;
-    float maxContentHeight;  /* height keeper — only grows */
+    float maxContentHeight;  /* height keeper, only grows */
 
     /* Timing */
     double currentTime;
@@ -554,12 +554,12 @@ struct AppState {
 static AppState* g_app = NULL; /* for Loreline callbacks */
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  SCROLL SYSTEM
  *
  *  Smooth scroll with quadratic ease-in-out, matching the web sample.
  *  Duration scales with distance (250..600ms).
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static void scrollToBottom(AppState* app) {
     float maxScroll = app->contentHeight - (float)app->winH + PADDING_TOP * app->scale;
@@ -576,7 +576,7 @@ static void updateScroll(AppState* app) {
 
     double elapsed = app->currentTime - app->scrollAnimStart;
     float dist = app->scrollTarget - app->scrollStart;
-    float duration = 0.4f; /* constant duration — larger distances just scroll faster */
+    float duration = 0.4f; /* constant duration: larger distances just scroll faster */
 
     float t = (float)(elapsed / duration);
     if (t > 1.0f) t = 1.0f;
@@ -589,12 +589,12 @@ static void updateScroll(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  CONTENT MANAGEMENT
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 /* On wide mobile screens (landscape), cap content width so there is enough
- * vertical space for text.  The limit is 1.3× the window height. */
+ * vertical space for text.  The limit is 1.3x the window height. */
 static float computeMaxContentWidth(AppState* app) {
     float maxW = CONTENT_MAX_WIDTH * app->scale;
     float heightCap = (float)app->winH * 1.3f;
@@ -787,11 +787,11 @@ static void clearContent(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  ANIMATION UPDATES
  *
  *  Called each frame to update fade-in and choice selection animations.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 /* CSS "ease" approximation: cubic-bezier(0.25, 0.1, 0.25, 1.0) */
 static float easeOut(float t) {
@@ -870,9 +870,9 @@ static void updateAnimations(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  RENDERING
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static void renderElement(AppState* app, const Element& el, float contentX,
                           float contentW, float scrollOff)
@@ -1027,13 +1027,13 @@ static void render(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  RESOURCE LOADING
  *
  *  Uses SDL_IOFromFile for cross-platform asset access.
  *  On Android, this reads from the APK's assets/ directory.
  *  On iOS, SDL_GetBasePath() returns the app bundle path.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static std::string readFileStr(const char* relativePath, const std::string& basePath) {
     std::string fullPath;
@@ -1056,12 +1056,12 @@ static std::string readFileStr(const char* relativePath, const std::string& base
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  LORELINE INTEGRATION
  *
  *  Callbacks that bridge Loreline events to the visual element system.
  *  Each callback creates UI elements and schedules delayed actions.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static void onFileRequest(Loreline_String filePath,
                           Loreline_FileRequest* request,
@@ -1086,7 +1086,7 @@ static void onDialogue(Loreline_Interpreter* interp,
     AppState* app = g_app;
 
     if (!character.isNull()) {
-        /* Dialogue — resolve display name */
+        /* Dialogue: resolve display name */
         Loreline_Value nameVal = Loreline_getCharacterField(interp, character, "name");
         const char* displayName = (nameVal.type == Loreline_StringValue && nameVal.stringValue)
             ? nameVal.stringValue.c_str()
@@ -1193,9 +1193,9 @@ static void processPendingActions(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  STORY LIFECYCLE
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static void startStory(AppState* app) {
     /* Clean up previous interpreter */
@@ -1217,9 +1217,9 @@ static void startStory(AppState* app) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  INPUT HANDLING
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 static void handleClick(AppState* app, float mx, float my) {
     float contentX = computeContentX(app);
@@ -1302,12 +1302,12 @@ static void handleHover(AppState* app, float mx, float my) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  SDL3 APP CALLBACKS
  *
  *  Modern SDL3 entry point. SDL handles platform-specific lifecycle (iOS
  *  UIKit, Android Activity, desktop main loop) and calls these four functions.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -1321,7 +1321,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    /* Prevent SDL from synthesizing mouse events from touch input —
+    /* Prevent SDL from synthesizing mouse events from touch input:
      * we handle finger events directly for proper tap-vs-scroll. */
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
@@ -1329,7 +1329,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 
     /* Create window */
-    app->window = SDL_CreateWindow("Loreline — SDL3 Sample",
+    app->window = SDL_CreateWindow("Loreline - SDL3 Sample",
                                    960, 640,
                                    SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!app->window) {
@@ -1520,7 +1520,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
     case SDL_EVENT_FINGER_UP: {
         if (!app->isTouchDragging) {
-            /* Short tap — treat as click */
+            /* Short tap: treat as click */
             float fx = event->tfinger.x * (float)app->winW;
             float fy = event->tfinger.y * (float)app->winH;
             handleClick(app, fx, fy);

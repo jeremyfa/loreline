@@ -1,11 +1,11 @@
 /*
- * Loreline C++ Library — Full Test Runner
+ * Loreline C++ Library: Full Test Runner
  *
  * Reads .lor test files, parses <test> YAML blocks, runs all tests
  * (including save/restore, translations, roundtrips, LF/CRLF), and
  * validates output against expected results.
  *
- * Note: ast-print is intentionally only run by the CLI test runner —
+ * Note: ast-print is intentionally only run by the CLI test runner.
  * AstPrinter is a pure Haxe debug pretty-printer with no target-specific
  * behavior, so a single CLI run is enough to catch any missing node-type
  * case. That's why the CLI test count is higher than each per-target
@@ -30,21 +30,21 @@
 
 namespace fs = std::filesystem;
 
-/* ── Globals ────────────────────────────────────────────────────────────── */
+/* -- Globals -------------------------------------------------------------- */
 
 static int passCount = 0;
 static int failCount = 0;
 static int fileCount = 0;
 static int fileFailCount = 0;
 
-/* ── ANSI color helpers ─────────────────────────────────────────────────── */
+/* -- ANSI color helpers --------------------------------------------------- */
 
 #define CLR_BOLD_GREEN "\x1b[1m\x1b[32m"
 #define CLR_BOLD_RED   "\x1b[1m\x1b[31m"
 #define CLR_GRAY       "\x1b[90m"
 #define CLR_RESET      "\x1b[0m"
 
-/* ── Utility ────────────────────────────────────────────────────────────── */
+/* -- Utility -------------------------------------------------------------- */
 
 static std::string readFile(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
@@ -101,7 +101,7 @@ static bool startsWith(const std::string& s, const std::string& prefix) {
     return s.compare(0, prefix.size(), prefix) == 0;
 }
 
-/* ── Test item struct ───────────────────────────────────────────────────── */
+/* -- Test item struct ----------------------------------------------------- */
 
 struct TestItem {
     std::string beat;
@@ -114,7 +114,7 @@ struct TestItem {
     std::string translation;
 };
 
-/* ── File handler for Loreline_parse ────────────────────────────────────── */
+/* -- File handler for Loreline_parse -------------------------------------- */
 
 static void fileHandler(Loreline_String path, Loreline_FileRequest* request, void* userData) {
     std::string content = readFile(path.c_str());
@@ -125,7 +125,7 @@ static void fileHandler(Loreline_String path, Loreline_FileRequest* request, voi
     }
 }
 
-/* ── Test file collection ───────────────────────────────────────────────── */
+/* -- Test file collection ------------------------------------------------- */
 
 static std::vector<std::string> collectTestFiles(const std::string& dir) {
     std::vector<std::string> files;
@@ -156,7 +156,7 @@ static std::vector<std::string> collectTestFiles(const std::string& dir) {
     return files;
 }
 
-/* ── Parse [1, 2, 3] int list ───────────────────────────────────────────── */
+/* -- Parse [1, 2, 3] int list --------------------------------------------- */
 
 static std::vector<int> parseIntList(const std::string& value) {
     std::vector<int> result;
@@ -179,7 +179,7 @@ static std::vector<int> parseIntList(const std::string& value) {
     return result;
 }
 
-/* ── Extract <test> blocks and parse YAML ───────────────────────────────── */
+/* -- Extract <test> blocks and parse YAML --------------------------------- */
 
 static std::vector<TestItem> parseTestItems(const std::string& yaml) {
     std::vector<TestItem> items;
@@ -310,7 +310,7 @@ static std::vector<TestItem> extractTests(const std::string& content) {
     return tests;
 }
 
-/* ── Insert tags into text ──────────────────────────────────────────────── */
+/* -- Insert tags into text ------------------------------------------------ */
 
 static std::string insertTagsInText(const char* text, const Loreline_TextTag* tags, int tagCount, bool multiline) {
     if (!text) return "";
@@ -355,7 +355,7 @@ static std::string insertTagsInText(const char* text, const Loreline_TextTag* ta
     return trimEnd(result);
 }
 
-/* ── Compare output ─────────────────────────────────────────────────────── */
+/* -- Compare output ------------------------------------------------------- */
 
 static int compareOutput(const std::string& expected, const std::string& actual) {
     auto expectedLines = splitLines(trim(replaceAll(expected, "\r\n", "\n")));
@@ -396,7 +396,7 @@ static void showDiff(const std::string& expected, const std::string& actual) {
     }
 }
 
-/* ── Test result ────────────────────────────────────────────────────────── */
+/* -- Test result ---------------------------------------------------------- */
 
 struct TestResult {
     bool passed = false;
@@ -405,7 +405,7 @@ struct TestResult {
     std::string error;
 };
 
-/* ── Run a single test ──────────────────────────────────────────────────── */
+/* -- Run a single test ---------------------------------------------------- */
 
 struct TestContext {
     std::string* output;
@@ -557,7 +557,7 @@ static void testChoice(
     ctx->choiceCount++;
 
     if (ctx->choices.empty()) {
-        /* No more choices — treat as finish */
+        /* No more choices: treat as finish */
         testFinish(interp, userData);
     } else {
         int index = ctx->choices[0];
@@ -566,7 +566,7 @@ static void testChoice(
     }
 }
 
-/* ── Canonical custom functions ─────────────────────────────────────────────
+/* -- Canonical custom functions ---------------------------------------------
  * Used by test/Functions-Custom.lor to verify the custom-function contract via
  * the C API: each receives (interp, args, argCount), where args is an array and
  * the interpreter can read/write runtime state. The linc layer already adapts
@@ -701,7 +701,7 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     return result;
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
+/* -- Main ----------------------------------------------------------------- */
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -736,7 +736,7 @@ int main(int argc, char* argv[]) {
         fileCount++;
         int failBefore = failCount;
 
-        /* Run each test item × {LF, CRLF} */
+        /* Run each test item x {LF, CRLF} */
         for (const auto& item : testItems) {
             for (int mode = 0; mode < 2; mode++) {
                 bool crlf = (mode == 1);
@@ -790,7 +790,7 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            /* Structural check: print → parse → print must be stable */
+            /* Structural check: print -> parse -> print must be stable */
             Loreline_String print1 = Loreline_printScript(script1);
             Loreline_releaseScript(script1);
 

@@ -34,7 +34,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
     // Pending done callbacks for async custom function calls
     var _pendingFunctionDone = {};
 
-    // Pending file provide callbacks for async parse (requestId → provide fn)
+    // Pending file provide callbacks for async parse (requestId -> provide fn)
     var _pendingFileProvides = {};
     var _nextFileRequestId = 1;
 
@@ -85,7 +85,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                         // provide() will be called later by provideFile()
                     };
                 }
-                // Use async parse with callback — if handleFile defers provide(),
+                // Use async parse with callback: if handleFile defers provide(),
                 // parse() returns null and callback fires when all imports resolve
                 var syncResult = Loreline.parse(source, filePath || null, handleFile, function(script) {
                     _eventQueue.push({
@@ -341,7 +341,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         resume: function(scriptId, saveData, beatName, optionsJson) {
             var script = _getObj(scriptId);
             if (!script) return 0;
-            // saveData arrives as a JSON string from the C++ side — Loreline.resume
+            // saveData arrives as a JSON string from the C++ side. Loreline.resume
             // expects a parsed SaveData object (same shape as interp.restore takes).
             var parsedSaveData;
             try {

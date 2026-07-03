@@ -12,7 +12,7 @@ beat Main
     + Bonus
 
 // Insertion body runs during collection:
-// bonus=5, points += 5 → 15 before any choice is made.
+// bonus=5, points += 5 -> 15 before any choice is made.
 // After save/restore, the insertion should NOT re-run
 // because the state already reflects its side effects.
 beat Bonus

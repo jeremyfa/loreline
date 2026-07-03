@@ -1,5 +1,5 @@
 /*
- * linc_Loreline.cpp — Bridge between Loreline.h (public C++ API) and Haxe/hxcpp
+ * linc_Loreline.cpp - Bridge between Loreline.h (public C++ API) and Haxe/hxcpp
  *
  * Implements all Loreline_* functions declared in Loreline.h.
  * Compiled by hxcpp as part of the static library build.
@@ -32,12 +32,12 @@
 #include <thread>
 #include <vector>
 
-/* ── hxcpp runtime entry points ─────────────────────────────────────────── */
+/* -- hxcpp runtime entry points ------------------------------------------- */
 
 extern "C" void hxcpp_set_top_of_stack();
 extern "C" const char* hxRunLibrary();
 
-/* ── Loreline_StringData (ref-counted) ──────────────────────────────────── */
+/* -- Loreline_StringData (ref-counted) ------------------------------------ */
 
 struct Loreline_StringData {
     std::atomic<int> refCount;
@@ -66,7 +66,7 @@ static void linc_releaseStringData(Loreline_StringData* d) {
     }
 }
 
-/* ── Loreline_String implementation ─────────────────────────────────────── */
+/* -- Loreline_String implementation --------------------------------------- */
 
 LORELINE_PUBLIC Loreline_String::Loreline_String() : ptr(nullptr) {}
 
@@ -122,7 +122,7 @@ LORELINE_PUBLIC Loreline_String::operator bool() const {
     return ptr != nullptr;
 }
 
-/* ── Loreline_Value convenience constructors ────────────────────────────── */
+/* -- Loreline_Value convenience constructors ------------------------------ */
 
 LORELINE_PUBLIC Loreline_Value Loreline_Value::null_val() {
     Loreline_Value v;
@@ -160,7 +160,7 @@ LORELINE_PUBLIC Loreline_Value Loreline_Value::from_string(Loreline_String s) {
     return v;
 }
 
-/* ── Opaque handles ─────────────────────────────────────────────────────── */
+/* -- Opaque handles ------------------------------------------------------- */
 
 struct Loreline_Script {
     hx::Object* obj;
@@ -296,7 +296,7 @@ private:
     Loreline_InterpreterOptions& operator=(const Loreline_InterpreterOptions&);
 };
 
-/* ── Conversion helpers ─────────────────────────────────────────────────── */
+/* -- Conversion helpers --------------------------------------------------- */
 
 static Loreline_String linc_hxToString(::String s) {
     if (s == null()) return Loreline_String();
@@ -343,7 +343,7 @@ static ::Dynamic linc_valueToHx(Loreline_Value v) {
     }
 }
 
-/* ── Thread worker ──────────────────────────────────────────────────────── */
+/* -- Thread worker -------------------------------------------------------- */
 
 class Loreline_Thread {
 public:
@@ -416,7 +416,7 @@ private:
     bool stopFlag;
 };
 
-/* ── Dispatch-out queue ─────────────────────────────────────────────────── */
+/* -- Dispatch-out queue --------------------------------------------------- */
 
 class Loreline_FunctionQueue {
 public:
@@ -442,7 +442,7 @@ private:
     std::vector<std::function<void()>> functionQueue;
 };
 
-/* ── Static state ───────────────────────────────────────────────────────── */
+/* -- Static state --------------------------------------------------------- */
 
 static bool linc_Loreline_didCallHaxeMain = false;
 static bool linc_Loreline_useInternalThread = false;
@@ -452,7 +452,7 @@ static Loreline_Thread* linc_Loreline_thread = nullptr;
 static Loreline_FunctionQueue linc_Loreline_dispatchOutFunctions;
 static double linc_Loreline_gcAccum = 0.0;
 
-/* ── ensureHaxeThread ───────────────────────────────────────────────────── */
+/* -- ensureHaxeThread ----------------------------------------------------- */
 
 static void linc_Loreline_ensureHaxeThread() {
     std::thread::id currentThreadId = std::this_thread::get_id();
@@ -469,7 +469,7 @@ static void linc_Loreline_ensureHaxeThread() {
     }
 }
 
-/* ── schedule / scheduleSync / dispatchOut ───────────────────────────────── */
+/* -- schedule / scheduleSync / dispatchOut --------------------------------- */
 
 static void linc_Loreline_schedule(std::function<void()> task) {
     if (linc_Loreline_useInternalThread && linc_Loreline_thread) {
@@ -495,7 +495,7 @@ static void linc_Loreline_dispatchOut(std::function<void()> task) {
     }
 }
 
-/* Reverse sync dispatch: hxcpp thread → main thread, blocking.
+/* Reverse sync dispatch: hxcpp thread -> main thread, blocking.
  * Used by sync custom functions in threaded mode (Android). */
 static void linc_Loreline_dispatchOutSync(std::function<void()> task) {
     if (!linc_Loreline_useInternalThread) {
@@ -519,7 +519,7 @@ static void linc_Loreline_dispatchOutSync(std::function<void()> task) {
     syncCv->wait(lock, [completed]() { return *completed; });
 }
 
-/* ── Call macros ─────────────────────────────────────────────────────────── */
+/* -- Call macros ----------------------------------------------------------- */
 
 #if defined(_MSC_VER)
     #define LORELINE_NOINLINE __declspec(noinline)
@@ -550,7 +550,7 @@ static void linc_Loreline_dispatchOutSync(std::function<void()> task) {
 #define LORELINE_END_DISPATCH_OUT \
     });
 
-/* ── API implementation ─────────────────────────────────────────────────── */
+/* -- API implementation --------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_init_hx() {
     LORELINE_HX_BEGIN
@@ -574,7 +574,7 @@ LORELINE_PUBLIC void Loreline_dispose(void) {
     LORELINE_BEGIN_CALL
     Loreline_dispose_hx();
     LORELINE_END_CALL
-    // Thread is NOT destroyed — haxe must remain on its original thread.
+    // Thread is NOT destroyed, haxe must remain on its original thread.
     // The thread sleeps on cv.wait() when idle, consuming no CPU.
 }
 
@@ -603,7 +603,7 @@ static LORELINE_NOINLINE void Loreline_update_hx(double delta) {
 
 LORELINE_PUBLIC void Loreline_update(double delta) {
     /* After the first update() call, always defer callbacks through the dispatch
-     * queue — even in single-threaded mode. This ensures game engines (Godot, Unity)
+     * queue, even in single-threaded mode. This ensures game engines (Godot, Unity)
      * can connect signal handlers between play() and the first callback dispatch. */
     linc_Loreline_deferCallbacks = true;
 
@@ -632,7 +632,7 @@ LORELINE_PUBLIC void Loreline_createThread(void) {
     LORELINE_END_CALL
 }
 
-/* ── Callback wrapper helpers ───────────────────────────────────────────── */
+/* -- Callback wrapper helpers --------------------------------------------- */
 
 /* Build a Loreline_TextTag array from Haxe Array<TextTag>.
  * Caller must delete[] the returned array. */
@@ -704,7 +704,7 @@ static void linc_freeChoiceOptions(Loreline_ChoiceOption* options, int count) {
     delete[] options;
 }
 
-/* ── Callback dispatch helpers ─────────────────────────────────────────── */
+/* -- Callback dispatch helpers ------------------------------------------- */
 
 static Loreline_Interpreter* s_dispatchInterp = nullptr;
 
@@ -750,7 +750,7 @@ static void linc_select(int index) {
     LORELINE_END_CALL
 }
 
-/* ── File request token ────────────────────────────────────────────────── */
+/* -- File request token -------------------------------------------------- */
 
 /* Per-call retainer for an in-flight file load. Holds a GC root on the Haxe
  * callback so it survives across the host's fh() return and any deferred
@@ -799,7 +799,7 @@ LORELINE_PUBLIC void Loreline_provideFile(Loreline_FileRequest* request, Lorelin
     LORELINE_END_CALL
 }
 
-/* ── Haxe callback closures (using hxcpp local func macros) ────────────── */
+/* -- Haxe callback closures (using hxcpp local func macros) -------------- */
 
 /* Helper: lazily set the interpreter handle from the Haxe callback.
  * During play(), callbacks fire synchronously before play() returns,
@@ -898,18 +898,18 @@ HX_END_LOCAL_FUNC1((void))
 /* File handler: 2 captures (Loreline_FileHandler, void*), 2 Haxe args.
  * Allocates a per-call Loreline_FileRequest that GC-roots the Haxe callback,
  * hands the token to the host. Host MUST eventually call Loreline_provideFile
- * (sync or async) — that consumes the token and unroots/invokes the callback. */
+ * (sync or async). That consumes the token and unroots/invokes the callback. */
 HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_fileHandler,
     Loreline_FileHandler, fh, void*, fhData) HXARGC(2)
 void _hx_run(::Dynamic hxPath, ::Dynamic hxCallback) {
     Loreline_FileRequest* req = new Loreline_FileRequest();
     req->setCallback(hxCallback.GetPtr());
     fh(linc_hxToString((::String)hxPath), req, fhData);
-    /* return immediately — req is now owned by the host until provideFile consumes it */
+    /* return immediately, req is now owned by the host until provideFile consumes it */
 }
 HX_END_LOCAL_FUNC2((void))
 
-/* ── Custom function closures ──────────────────────────────────────────── */
+/* -- Custom function closures -------------------------------------------- */
 
 /* Sync custom function: dispatches to host thread (blocks in threaded mode).
  * Invoked via Reflect.makeVarArgs wrapper, so hxArgs is an Array<Any> of all
@@ -987,7 +987,7 @@ HX_BEGIN_LOCAL_FUNC_S3(::hx::LocalFunc, _hx_Closure_asyncCustomFunction,
 }
 HX_END_LOCAL_FUNC1(return)
 
-/* ── Parse ──────────────────────────────────────────────────────────────── */
+/* -- Parse ---------------------------------------------------------------- */
 
 /* Parse completion closure: 2 captures (C completion fn, userData), 1 Haxe arg
  * (the resulting Script, may be null on parse failure). Wraps into Loreline_Script*
@@ -1004,7 +1004,7 @@ void _hx_run(::Dynamic hxScript) {
     if (completion) {
         completion(script, completionData);
     } else if (script) {
-        /* No callback to take ownership — release to avoid leak */
+        /* No callback to take ownership, release to avoid leak */
         delete script;
     }
     LORELINE_END_DISPATCH_OUT
@@ -1031,7 +1031,7 @@ static LORELINE_NOINLINE void Loreline_parseAsync_hx(
 
     try {
         ::loreline::Loreline_obj::parse(hxInput, hxFilePath, hxFileHandler, hxCompletion);
-        /* Result delivered via hxCompletion — sync (fires inline) or async (fires later) */
+        /* Result delivered via hxCompletion, sync (fires inline) or async (fires later) */
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_parseAsync error: %s\n", ((::String)e).c_str());
         /* Best-effort: notify completion with null on error */
@@ -1089,7 +1089,7 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     return slot.result;
 }
 
-/* ── Translations ───────────────────────────────────────────────────────── */
+/* -- Translations --------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_extractTranslations_hx(
     Loreline_Script* script, Loreline_Translations** outHandle
@@ -1242,7 +1242,7 @@ LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
     return slot.result;
 }
 
-/* ── Translation formats ────────────────────────────────────────────────── */
+/* -- Translation formats -------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_translationFormat_hx(
     Loreline_String name,
@@ -1263,7 +1263,7 @@ LORELINE_PUBLIC void Loreline_translationFormat(
     LORELINE_END_CALL
 }
 
-/* ── Last error ─────────────────────────────────────────────────────────── */
+/* -- Last error ----------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_lastError_hx(Loreline_String* out) {
     LORELINE_HX_BEGIN
@@ -1282,7 +1282,7 @@ LORELINE_PUBLIC Loreline_String Loreline_lastError(void) {
     return out;
 }
 
-/* ── Play ───────────────────────────────────────────────────────────────── */
+/* -- Play ----------------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_play_hx(
     Loreline_Interpreter* h, ::Dynamic hxScript,
@@ -1332,9 +1332,9 @@ static LORELINE_NOINLINE void Loreline_play_hx(
         hxOptions = ::loreline::InterpreterOptions_obj::__new(
             hxFunctions,
             opts->strictAccess,
-            null(), /* customCreateFields — not exposed through C API */
+            null(), /* customCreateFields, not exposed through C API */
             hxTranslations,
-            null()  /* stringLiteralProcessors — not exposed */
+            null()  /* stringLiteralProcessors, not exposed */
         );
     }
 
@@ -1381,7 +1381,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     return handle;
 }
 
-/* ── Resume ─────────────────────────────────────────────────────────────── */
+/* -- Resume --------------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_resume_hx(
     Loreline_Interpreter* h, ::Dynamic hxScript,
@@ -1481,7 +1481,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     return handle;
 }
 
-/* ── Interpreter methods ────────────────────────────────────────────────── */
+/* -- Interpreter methods -------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_start_hx(Loreline_Interpreter* interp, Loreline_String beatName) {
     LORELINE_HX_BEGIN
@@ -1537,7 +1537,7 @@ LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, Loreline_Str
     LORELINE_END_CALL
 }
 
-/* ── Character access ───────────────────────────────────────────────────── */
+/* -- Character access ----------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_getCharacterField_hx(
     Loreline_Interpreter* interp, Loreline_String character, Loreline_String field,
@@ -1583,7 +1583,7 @@ LORELINE_PUBLIC void Loreline_setCharacterField(
     LORELINE_END_CALL
 }
 
-/* ── State field access ─────────────────────────────────────────────────── */
+/* -- State field access --------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_getStateField_hx(
     Loreline_Interpreter* interp, Loreline_String field, Loreline_Value* outResult
@@ -1628,7 +1628,7 @@ LORELINE_PUBLIC void Loreline_setStateField(
     LORELINE_END_CALL
 }
 
-/* ── Top-level state field access ──────────────────────────────────────── */
+/* -- Top-level state field access ---------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_getTopLevelStateField_hx(
     Loreline_Interpreter* interp, Loreline_String field, Loreline_Value* outResult
@@ -1673,7 +1673,7 @@ LORELINE_PUBLIC void Loreline_setTopLevelStateField(
     LORELINE_END_CALL
 }
 
-/* ── Current node ──────────────────────────────────────────────────────── */
+/* -- Current node -------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_currentNode_hx(
     Loreline_Interpreter* interp, Loreline_Node* outResult
@@ -1714,7 +1714,7 @@ LORELINE_PUBLIC Loreline_Node Loreline_currentNode(Loreline_Interpreter* interp)
     return result;
 }
 
-/* ── Utility ────────────────────────────────────────────────────────────── */
+/* -- Utility -------------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_printScript_hx(
     Loreline_Script* script, Loreline_String* outResult
@@ -1791,7 +1791,7 @@ LORELINE_PUBLIC Loreline_Script* Loreline_scriptFromJson(Loreline_String json) {
     return handle;
 }
 
-/* ── Interpreter options ────────────────────────────────────────────────── */
+/* -- Interpreter options -------------------------------------------------- */
 
 LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void) {
     return new Loreline_InterpreterOptions();
@@ -1855,7 +1855,7 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
 ) {
     if (!resolve || !resolve->doneObj) return;
     // Keep the doneObj pointer accessible after we run it, but DO NOT clear
-    // resolve->doneObj here — the ~Loreline_AsyncResolve destructor uses that
+    // resolve->doneObj here, the ~Loreline_AsyncResolve destructor uses that
     // field to decide whether to call hx::GCRemoveRoot on the registered
     // root address `&resolve->doneObj`. Removing the registration on a local
     // copy of the pointer (different address) leaks the real root and the
@@ -1885,11 +1885,11 @@ LORELINE_PUBLIC void Loreline_cancelAsync(
     // released, at which point the closure becomes collectible.
     // ~Loreline_AsyncResolve removes the root on the correct address
     // (`&resolve->doneObj`); don't clear the field early or call GCRemoveRoot
-    // on a local copy here — that would leak the real registration.
+    // on a local copy here, that would leak the real registration.
     delete resolve;
 }
 
-/* ── Resource release ───────────────────────────────────────────────────── */
+/* -- Resource release ----------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_releaseScript_hx(Loreline_Script* script) {
     LORELINE_HX_BEGIN

@@ -1,5 +1,5 @@
 /*
- * Loreline C++ Sample — CoffeeShop
+ * Loreline C++ Sample: CoffeeShop
  *
  * Interactive console app that runs the CoffeeShop story.
  * Build with CMake (see CMakeLists.txt) or directly:
@@ -17,7 +17,7 @@
 #include <sstream>
 #include <string>
 
-/* ── Helpers ───────────────────────────────────────────────────────────── */
+/* -- Helpers ------------------------------------------------------------- */
 
 static std::string readFile(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
@@ -27,7 +27,7 @@ static std::string readFile(const std::string& path) {
     return ss.str();
 }
 
-/* ── File handler (for imports like "characters.lor") ──────────────────── */
+/* -- File handler (for imports like "characters.lor") -------------------- */
 
 static void onFileRequest(
     Loreline_String path,
@@ -44,7 +44,7 @@ static void onFileRequest(
     }
 }
 
-/* ── Dialogue handler ──────────────────────────────────────────────────── */
+/* -- Dialogue handler ---------------------------------------------------- */
 
 static void onDialogue(
     Loreline_Interpreter* interp,
@@ -58,7 +58,7 @@ static void onDialogue(
     const char* t = text.c_str();
 
     if (!character.isNull()) {
-        // Dialogue — resolve display name
+        // Dialogue: resolve display name
         Loreline_Value nameVal = Loreline_getCharacterField(interp, character, "name");
         const char* displayName = (nameVal.type == Loreline_StringValue && nameVal.stringValue)
             ? nameVal.stringValue.c_str()
@@ -89,7 +89,7 @@ static void onDialogue(
     advance();
 }
 
-/* ── Choice handler ────────────────────────────────────────────────────── */
+/* -- Choice handler ------------------------------------------------------ */
 
 static void onChoice(
     Loreline_Interpreter* /* interp */,
@@ -115,7 +115,7 @@ static void onChoice(
 
         char buf[64];
         if (!fgets(buf, sizeof(buf), stdin)) {
-            // EOF — pick first enabled option
+            // EOF: pick first enabled option
             for (int i = 0; i < optionCount; i++) {
                 if (options[i].enabled) {
                     printf("\n");
@@ -141,11 +141,11 @@ static void onChoice(
                 }
             }
         }
-        // Invalid input — try again
+        // Invalid input, try again
     }
 }
 
-/* ── Finish handler ────────────────────────────────────────────────────── */
+/* -- Finish handler ------------------------------------------------------ */
 
 static void onFinish(
     Loreline_Interpreter* /* interp */,
@@ -154,7 +154,7 @@ static void onFinish(
     // Story complete
 }
 
-/* ── Main ──────────────────────────────────────────────────────────────── */
+/* -- Main ---------------------------------------------------------------- */
 
 int main(int argc, char* argv[]) {
     // Default story file, can be overridden via argv[1]

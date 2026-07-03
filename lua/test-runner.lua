@@ -10,9 +10,9 @@ Follows the same test protocol as the JS, C#, C++, and Python test runners:
   - Reports pass/fail counts
 
 Drives the PUBLIC `loreline` module (the same API a real user uses), so the
-suite exercises the public wrapper layer end to end — including custom functions.
+suite exercises the public wrapper layer end to end, including custom functions.
 
-Note: ast-print is intentionally only run by the CLI test runner —
+Note: ast-print is intentionally only run by the CLI test runner.
 AstPrinter is a pure Haxe debug pretty-printer with no target-specific
 behavior, so a single CLI run is enough to catch any missing node-type
 case. That's why the CLI test count is higher than each per-target
@@ -30,7 +30,7 @@ local fail_count = 0
 local file_count = 0
 local file_fail_count = 0
 
--- ── Helpers ──────────────────────────────────────────────────────────────
+-- -- Helpers --------------------------------------------------------------
 
 local function read_file(path)
     local f = io.open(path, "r")
@@ -185,7 +185,7 @@ local function compare_output(expected, actual)
     return -1
 end
 
--- ── Minimal YAML parser ─────────────────────────────────────────────────
+-- -- Minimal YAML parser -------------------------------------------------
 
 local function parse_yaml_value(s)
     s = s:match("^%s*(.-)%s*$") or ""
@@ -313,7 +313,7 @@ local function extract_tests(content)
     return tests
 end
 
--- ── Test runner ──────────────────────────────────────────────────────────
+-- -- Test runner ----------------------------------------------------------
 
 local function run_test(file_path, content, test_item, crlf)
     -- Normalize line endings
@@ -483,7 +483,7 @@ local function run_test(file_path, content, test_item, crlf)
     return result[1][1], result[1][2], result[1][3], result[1][4]
 end
 
--- ── Main ─────────────────────────────────────────────────────────────────
+-- -- Main -----------------------------------------------------------------
 
 local function main()
     if #arg < 1 then

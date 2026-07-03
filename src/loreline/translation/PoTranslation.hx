@@ -10,19 +10,19 @@ using loreline.Utf8;
  * Converts GNU gettext PO file content into a Loreline translation file body.
  *
  * Mapping:
- *   msgctxt "<key>"        → #<key> hash comment (preferred if present)
- *   msgid   "<source>"     → fallback for key if no msgctxt, else used as
- *                            `// <source>` reference comment
- *   msgstr  "<translated>" → the translation text line
+ *   msgctxt "<key>"        -> #<key> hash comment (preferred if present)
+ *   msgid   "<source>"     -> fallback for key if no msgctxt, else used as
+ *                             `// <source>` reference comment
+ *   msgstr  "<translated>" -> the translation text line
  *
- * Empty `msgstr` → entry skipped.
- * Plural forms (`msgstr[N]`) → take `msgstr[0]`.
- * Multi-line msgid/msgstr (`msgid ""\n"line1"\n"line2"`) → concatenated.
+ * Empty `msgstr` -> entry skipped.
+ * Plural forms (`msgstr[N]`) -> take `msgstr[0]`.
+ * Multi-line msgid/msgstr (`msgid ""\n"line1"\n"line2"`) -> concatenated.
  *
  * PO files are mono-locale by design; the `locale` parameter is accepted for
  * API uniformity with the other format converters but unused here.
  *
- * **msgstr must be valid Loreline body content** — its value is written
+ * **msgstr must be valid Loreline body content**. Its value is written
  * verbatim into the synthesised `.lor` and re-parsed by Loreline. See the
  * full rules in `loreline.translation.TranslationFormats`.
  */
@@ -110,7 +110,7 @@ class PoTranslation {
 
     /**
      * Escape a string for use inside a PO double-quoted string literal.
-     * Escapes `\` → `\\` and `"` → `\"`. Other escapes (like `\n` from the
+     * Escapes `\` -> `\\` and `"` -> `\"`. Other escapes (like `\n` from the
      * Loreline printer) round-trip correctly because they get re-applied by
      * the Loreline parser when the synthesized body is re-parsed.
      */
@@ -183,7 +183,7 @@ class PoTranslation {
                 case "msgctxt": current.msgctxt = combined;
                 case "msgid":   current.msgid   = combined;
                 case "msgstr":  current.msgstr  = combined;
-                case _: // Including msgstr[0] etc. — take msgstr[0] only.
+                case _: // Including msgstr[0] etc. - take msgstr[0] only.
                     if (keyword == "msgstr[0]") current.msgstr = combined;
             }
             i = j;

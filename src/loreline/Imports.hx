@@ -56,7 +56,7 @@ class Imports {
     /**
      * Returns the canonical Loreline extension for a path: `.lor.txt` if the path
      * ends with that, otherwise `.lor` (also returned for paths with no Loreline
-     * extension at all — matches the fallback used elsewhere).
+     * extension at all. Matches the fallback used elsewhere).
      */
     public static inline function lorExtension(path:String):String {
         return endsWithLorTxt(path) ? '.lor.txt' : '.lor';

@@ -129,9 +129,9 @@ public final class Loreline {
      *
      * By default only `.<locale>.lor` files are tried by loadLocale. Call this
      * to opt in to additional formats. Known names:
-     *   - "po"    — GNU gettext PO (.po)
-     *   - "xliff" — XLIFF 1.2 / 2.x (.xliff, .xlf)
-     *   - "csv"   — CSV / TSV (.csv, .tsv)
+     *   - "po":    GNU gettext PO (.po)
+     *   - "xliff": XLIFF 1.2 / 2.x (.xliff, .xlf)
+     *   - "csv":   CSV / TSV (.csv, .tsv)
      *
      * Unknown names are accepted silently (forward-compat).
      */
@@ -148,7 +148,7 @@ public final class Loreline {
      * call throws, and this field is set to the same error so it can be
      * inspected after the catch.
      *
-     * Not thread-safe — read immediately after the call returns.
+     * Not thread-safe: read immediately after the call returns.
      */
     public static loreline.runtime.Error lastError() {
         return loreline.runtime.Loreline.lastError();
@@ -172,7 +172,7 @@ public final class Loreline {
      * Loads translations for a specific locale, walking the script's full import tree.
      * For each file involved in the script (root + transitively imported), looks up the
      * corresponding translation file by inserting `.<locale>` before the extension
-     * (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+     * (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation files are
      * silently skipped.
      *
      * @param locale the locale code (e.g. "fr")
@@ -243,7 +243,7 @@ public final class Loreline {
                 (loreline.internal.jvm.Function) arg2;
             // Pass the user a Consumer that, when called (sync or async), fires
             // the underlying Haxe callback. Allocate a fresh args array per
-            // dispatch — async-safe (a static array would race if the user
+            // dispatch. This is async-safe (a static array would race if the user
             // invokes the consumer from another thread).
             handler.handle(path, content -> {
                 Object[] args = new Object[]{ content };

@@ -13,7 +13,7 @@ using Loreline;
 // runs each test in LF and CRLF modes, runs roundtrip + json-roundtrip
 // stability checks, and reports pass/fail counts.
 //
-// Note: ast-print is intentionally only run by the CLI test runner —
+// Note: ast-print is intentionally only run by the CLI test runner.
 // AstPrinter is a pure Haxe debug pretty-printer with no target-specific
 // behavior, so a single CLI run is enough to catch any missing node-type
 // case. That's why the CLI test count is higher than each per-target
@@ -112,7 +112,7 @@ class Program
                         continue;
                     }
 
-                    // Structural check: print → parse → print must be stable
+                    // Structural check: print -> parse -> print must be stable
                     string print1 = Engine.Print(script1, "  ", newline);
                     Script script2 = Engine.Parse(print1, filePath, HandleFile);
                     if (script2 == null)

@@ -77,7 +77,7 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
 	}
 
-	// Don't poll events here — GDScript connects signals AFTER play/resume returns.
+	// Don't poll events here: GDScript connects signals AFTER play/resume returns.
 	// Events will be dispatched on the next _process frame.
 	return interp;
 
@@ -115,7 +115,7 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 	}
 
 	if (!interp->_interp) {
-		// Play failed — free any contexts we just allocated.
+		// Play failed: free any contexts we just allocated.
 		for (LorelineFunctionCallContext *ctx : interp->_fn_contexts) {
 			delete ctx;
 		}
@@ -167,7 +167,7 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
 	}
 
-	// Don't poll events here — GDScript connects signals AFTER play/resume returns.
+	// Don't poll events here: GDScript connects signals AFTER play/resume returns.
 	// Events will be dispatched on the next _process frame.
 	return interp;
 
