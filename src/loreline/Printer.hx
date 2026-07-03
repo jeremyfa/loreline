@@ -823,7 +823,7 @@ class Printer {
     /**
      * Writes a Raw text part for a double-quoted string literal.
      * Escape sequences are preserved as-is from the AST (already in correct form for quoted context).
-     * Content inside quotes is written verbatim — no indentation is added for continuation lines.
+     * Content inside quotes is written verbatim, no indentation is added for continuation lines.
      */
     function writeQuotedRaw(text:String) {
         if (text.indexOf("\n") == -1) {

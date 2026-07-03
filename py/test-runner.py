@@ -9,9 +9,9 @@ Follows the same test protocol as the JS, C#, and C++ test runners:
   - Reports pass/fail counts
 
 Drives the PUBLIC `loreline` binding (the same API a real user uses), so the
-suite exercises the public wrapper layer end to end — including custom functions.
+suite exercises the public wrapper layer end to end, including custom functions.
 
-Note: ast-print is intentionally only run by the CLI test runner —
+Note: ast-print is intentionally only run by the CLI test runner.
 AstPrinter is a pure Haxe debug pretty-printer with no target-specific
 behavior, so a single CLI run is enough to catch any missing node-type
 case. That's why the CLI test count is higher than each per-target
@@ -45,7 +45,7 @@ custom_test_functions = {
 }
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────
+# -- Helpers --------------------------------------------------------------
 
 def collect_test_files(directory):
     """Recursively collect .lor test files, skipping imports/ and modified/ dirs."""
@@ -70,7 +70,7 @@ def handle_file(path, callback):
 
 
 def insert_tags_in_text(text, tags, multiline):
-    """Replicate TestRunner.insertTagsInText — insert tag markers into text."""
+    """Replicate TestRunner.insertTagsInText: insert tag markers into text."""
     offsets_with_tags = set()
     for tag in tags:
         offsets_with_tags.add(tag.offset)
@@ -154,7 +154,7 @@ def parse_simple_yaml(text):
 
         # Inside a block scalar?
         if block_key is not None:
-            # Empty line — could be part of block or end of it
+            # Empty line, could be part of block or end of it
             if stripped == "":
                 # Peek ahead: if next non-empty line is still indented, this is part of block
                 block_lines.append("")
@@ -244,7 +244,7 @@ def extract_tests(content):
     return tests
 
 
-# ── Test runner ──────────────────────────────────────────────────────────
+# -- Test runner ----------------------------------------------------------
 
 def run_test(file_path, content, test_item, crlf):
     """Run a single test case. Returns (passed, actual, expected, error)."""
@@ -387,7 +387,7 @@ def run_test(file_path, content, test_item, crlf):
     return result[0]
 
 
-# ── Main ─────────────────────────────────────────────────────────────────
+# -- Main -----------------------------------------------------------------
 
 def main():
     global pass_count, fail_count, file_count, file_fail_count

@@ -82,7 +82,7 @@ void Loreline::_bind_methods() {
 void Loreline::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			// Already initialized by shared() — nothing to do
+			// Already initialized by shared(), nothing to do
 			if (_initialized) break;
 
 			if (_singleton && _singleton != this) {
@@ -208,7 +208,7 @@ public:
 	~LorelineFileProvideCallable() {
 		bool expected = false;
 		if (_provided.compare_exchange_strong(expected, true)) {
-			// Host dropped the Callable without calling provide — release the
+			// Host dropped the Callable without calling provide: release the
 			// request with NULL content so Loreline can finish cleanly.
 			if (_request) {
 				Loreline_provideFile(_request, Loreline_String());
@@ -231,7 +231,7 @@ public:
 
 		bool expected = false;
 		if (!_provided.compare_exchange_strong(expected, true)) {
-			UtilityFunctions::push_error("LorelineFileProvide: provide called more than once — ignoring");
+			UtilityFunctions::push_error("LorelineFileProvide: provide called more than once, ignoring");
 			return;
 		}
 
@@ -286,7 +286,7 @@ void Loreline::_on_file_request(
 		}
 	}
 
-	// File not found — provide null
+	// File not found: provide null
 	Loreline_provideFile(request, Loreline_String());
 }
 #endif
@@ -393,7 +393,7 @@ Signal Loreline::parse(const String &source, const String &file_path, const Call
 		return sig;
 	}
 	if (script_id == -1) {
-		// Async — completion will arrive via _poll_js_events draining events.
+		// Async: completion will arrive via _poll_js_events draining events.
 		_pending_parse_results.push_back(result);
 		return sig;
 	}

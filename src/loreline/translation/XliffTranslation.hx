@@ -11,6 +11,7 @@ using loreline.Utf8;
  * Converts XLIFF (1.2 or 2.x) file content into a Loreline translation file body.
  *
  * XLIFF 1.2 layout:
+ *   ```xml
  *   <xliff version="1.2">
  *     <file source-language="en" target-language="fr">
  *       <body>
@@ -21,8 +22,10 @@ using loreline.Utf8;
  *       </body>
  *     </file>
  *   </xliff>
+ *   ```
  *
  * XLIFF 2.x layout:
+ *   ```xml
  *   <xliff version="2.0" srcLang="en" trgLang="fr">
  *     <file id="...">
  *       <unit id="intro">
@@ -33,6 +36,7 @@ using loreline.Utf8;
  *       </unit>
  *     </file>
  *   </xliff>
+ *   ```
  *
  * Locale filter:
  *   - 1.2: only `<file target-language="<locale>">` is converted
@@ -40,9 +44,9 @@ using loreline.Utf8;
  *   - If no target-language attribute is present anywhere, we take everything
  *     (the file is assumed to be in the requested locale).
  *
- * Empty/missing `<target>` → entry skipped.
+ * Empty/missing `<target>` -> entry skipped.
  *
- * **`<target>` must be valid Loreline body content** — its text is written
+ * **`<target>` must be valid Loreline body content**. Its text is written
  * verbatim into the synthesised `.lor` and re-parsed by Loreline. See the
  * full rules in `loreline.translation.TranslationFormats`.
  */

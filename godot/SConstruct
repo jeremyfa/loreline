@@ -37,7 +37,7 @@ sources = Glob(build_dir + "/*.cpp")
 # Link against libLoreline
 if env["platform"] == "web":
     # Web: use loreline.js via JavaScriptBridge instead of native libLoreline
-    # No libLoreline.a linking needed — JS bundle is embedded in the C++ source
+    # No libLoreline.a linking needed: the JS bundle is embedded in the C++ source
     env.Append(CPPDEFINES=["LORELINE_USE_JS"])
 elif env["platform"] == "ios":
     # Dynamic-link against Loreline.framework from xcframework

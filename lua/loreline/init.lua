@@ -5,7 +5,7 @@ local core = require("loreline.core")
 
 local M = {}
 
--- ── Internal helpers ────────────────────────────────────────────────────
+-- -- Internal helpers ----------------------------------------------------
 
 --- Convert an internal Haxe array to a plain Lua table (1-indexed).
 local function hx_array_to_lua(arr)
@@ -54,7 +54,7 @@ local function wrap_options(options)
     return result
 end
 
--- ── Node ────────────────────────────────────────────────────────────────
+-- -- Node ----------------------------------------------------------------
 
 --- Base class for Loreline AST nodes.
 -- Provides access to the node type, unique ID, and JSON export.
@@ -114,7 +114,7 @@ function Node.from_json(json_str)
     return setmetatable({ _internal = internal }, Node)
 end
 
--- ── Script ──────────────────────────────────────────────────────────────
+-- -- Script --------------------------------------------------------------
 
 --- A parsed Loreline script AST.
 -- Obtain via `loreline.parse()`. Pass to `loreline.play()` or
@@ -138,7 +138,7 @@ function Script.from_json(json_str)
     return Script._new(internal)
 end
 
--- ── Interpreter ─────────────────────────────────────────────────────────
+-- -- Interpreter ---------------------------------------------------------
 
 --- A running Loreline script interpreter.
 -- Provides methods to save/restore state and access character data.
@@ -252,7 +252,7 @@ function Interpreter:current_node()
     return setmetatable({ _internal = node }, Node)
 end
 
--- ── Callback bridges ────────────────────────────────────────────────────
+-- -- Callback bridges ----------------------------------------------------
 
 -- Adapt custom functions to the documented `(interpreter, args)` signature.
 -- The core passes the raw interpreter followed by the script arguments as an
@@ -286,7 +286,7 @@ local function make_finish_bridge(handle_finish)
     end
 end
 
--- ── Public API ──────────────────────────────────────────────────────────
+-- -- Public API ----------------------------------------------------------
 
 --- Parse a Loreline script string into a Script AST.
 -- @param source string The `.lor` script content.
@@ -406,7 +406,7 @@ end
 -- In async mode (callback supplied) the callback fires with `nil` on failure
 -- and this function tells you what went wrong. In sync mode the call throws,
 -- and this is set to the same error so it can be inspected after the catch.
--- Not thread-safe — read immediately after the call returns.
+-- Not thread-safe: read immediately after the call returns.
 function M.last_error()
     return __loreline_Loreline.lastError()
 end

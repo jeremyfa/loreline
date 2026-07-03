@@ -8,7 +8,7 @@ from typing import Any, Callable, List, Optional
 from . import _core
 
 
-# ── Types ────────────────────────────────────────────────────────────────
+# -- Types ----------------------------------------------------------------
 
 @dataclass
 class TextTag:
@@ -38,7 +38,7 @@ class ChoiceOption:
     """Whether this choice option is currently enabled."""
 
 
-# ── Type aliases for callbacks ───────────────────────────────────────────
+# -- Type aliases for callbacks -------------------------------------------
 
 DialogueHandler = Callable[["Interpreter", Optional[str], str, List[TextTag], Callable[[], None]], None]
 """Called when dialogue text should be displayed.
@@ -76,7 +76,7 @@ Args:
 """
 
 
-# ── Internal helpers ─────────────────────────────────────────────────────
+# -- Internal helpers -----------------------------------------------------
 
 def _wrap_tag(tag: _core.loreline_TextTag) -> TextTag:
     """Convert an internal TextTag to the public type."""
@@ -158,7 +158,7 @@ def _make_finish_bridge(handle_finish: FinishHandler) -> Callable:
     return bridge
 
 
-# ── Node ─────────────────────────────────────────────────────────────────
+# -- Node -----------------------------------------------------------------
 
 class Node:
     """Base class for Loreline AST nodes.
@@ -224,7 +224,7 @@ class Node:
         return Node(internal)
 
 
-# ── Script ───────────────────────────────────────────────────────────────
+# -- Script ---------------------------------------------------------------
 
 class Script(Node):
     """A parsed Loreline script AST.
@@ -251,7 +251,7 @@ class Script(Node):
         return Script(internal)
 
 
-# ── Interpreter ──────────────────────────────────────────────────────────
+# -- Interpreter ----------------------------------------------------------
 
 class Interpreter:
     """A running Loreline script interpreter.
@@ -377,7 +377,7 @@ class Interpreter:
         return Node(node) if node is not None else None
 
 
-# ── Loreline (main API) ─────────────────────────────────────────────────
+# -- Loreline (main API) -------------------------------------------------
 
 class Loreline:
     """Main public API for the Loreline interactive fiction runtime.
@@ -544,7 +544,7 @@ class Loreline:
         call throws, and this field is set to the same error so it can be
         inspected after the catch.
 
-        Not thread-safe — read immediately after the call returns.
+        Not thread-safe: read immediately after the call returns.
         """
         return _core.loreline_Loreline.lastError()
 

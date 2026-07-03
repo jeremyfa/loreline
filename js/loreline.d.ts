@@ -275,7 +275,7 @@ export class Loreline {
      *
      * For each file involved in the script (root + transitively imported), the
      * corresponding translation file is looked up by inserting `.<locale>` before
-     * the extension (e.g. `characters.lor` → `characters.fr.lor`). Missing translation
+     * the extension (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation
      * files are silently skipped. The returned map can be passed as
      * `InterpreterOptions.translations` to `play()` or `resume()`.
      *
@@ -302,9 +302,9 @@ export class Loreline {
      *
      * By default only `.<locale>.lor` files are tried by `loadLocale`. Call
      * this to opt in to additional formats:
-     * - `"po"`    — GNU gettext PO (`.po`)
-     * - `"xliff"` — XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
-     * - `"csv"`   — CSV / TSV (`.csv`, `.tsv`)
+     * - `"po"`:    GNU gettext PO (`.po`)
+     * - `"xliff"`: XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
+     * - `"csv"`:   CSV / TSV (`.csv`, `.tsv`)
      *
      * Unknown names are accepted silently (forward-compat for future formats).
      *
@@ -322,7 +322,7 @@ export class Loreline {
      * call throws, and this is set to the same error so it can be inspected
      * after the catch.
      *
-     * Not thread-safe — read immediately after the call returns.
+     * Not thread-safe: read immediately after the call returns.
      */
     static lastError(): Error | null;
 

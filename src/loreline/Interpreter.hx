@@ -416,7 +416,7 @@ typedef InterpreterOptions = {
     public var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any #if !loreline_typedef_options = null #end;
 
     /**
-     * Optional translations map (localization key → translated string literal).
+     * Optional translations map (localization key -> translated string literal).
      * Built from a parsed translation file using AstUtils.extractTranslations().
      */
     #if loreline_typedef_options @:optional #end
@@ -449,7 +449,7 @@ typedef InterpreterOptions = {
     final script:Script;
 
     /**
-     * Optional translations map (localization key → translated string literal).
+     * Optional translations map (localization key -> translated string literal).
      * When set, evaluateString() substitutes tagged text with translated versions.
      */
     public var translations:Null<Map<String, NStringLiteral>>;
@@ -1536,7 +1536,7 @@ typedef InterpreterOptions = {
         moveNext = () -> {
 
             if (currentInsertion?.options != null) {
-                // Insertion's choice has collected options — stop body evaluation.
+                // Insertion's choice has collected options, stop body evaluation.
                 // Same early-exit as evalNodeBody uses.
                 pop();
                 next();
@@ -1619,11 +1619,11 @@ typedef InterpreterOptions = {
         else if (currentScope.head is NChoiceOption) {
             final option:NChoiceOption = cast currentScope.head;
             if (scopeLevel + 1 < stack.length) {
-                // Deeper scopes exist from restore — resume into them.
+                // Deeper scopes exist from restore, resume into them.
                 // This skips already-executed nodes in the option body.
                 resumeNodeBody(option, scopeLevel + 1, option.body, next);
             } else {
-                // No deeper scopes — fresh entry into option body
+                // No deeper scopes, fresh entry into option body
                 // (normal insertion pick, not a save/restore scenario)
                 evalNodeBody(currentScope.beat, option, option.body, next);
             }
@@ -1934,7 +1934,7 @@ typedef InterpreterOptions = {
             }
         }
 
-        // Restore the insertion's own stack (NOT pushed via push() — matching runtime behavior)
+        // Restore the insertion's own stack (NOT pushed via push(), matching runtime behavior)
         if (saved.stack != null) {
             insertion.stack = [];
             for (savedScope in saved.stack) {
@@ -3027,7 +3027,7 @@ typedef InterpreterOptions = {
                 else if (option.insertion != null) {
                     final done = wrapNext(moveNext);
                     if (!enabled) {
-                        // Condition is false — skip this insertion entirely
+                        // Condition is false, skip this insertion entirely
                         done.cb();
                     } else {
                         insertion = new RuntimeInsertion(nextInsertionId++, option.insertion);
@@ -3636,7 +3636,7 @@ typedef InterpreterOptions = {
                         }
                         else if (c == "#".code) {
                             if (prevIsHash) {
-                                // ## → single #
+                                // ## -> single #
                                 buf.addChar(c);
                                 prevIsHash = false;
                             }

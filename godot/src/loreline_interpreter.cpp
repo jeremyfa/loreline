@@ -107,7 +107,7 @@ public:
 
 		bool expected = false;
 		if (!_provided.compare_exchange_strong(expected, true)) {
-			UtilityFunctions::push_error("LorelineJsProvideFile: provide called more than once — ignoring");
+			UtilityFunctions::push_error("LorelineJsProvideFile: provide called more than once, ignoring");
 			return;
 		}
 
@@ -137,7 +137,7 @@ LorelineInterpreter *LorelineInterpreter::_get_by_js_id(int js_id) {
 // Invoking resumes the interpreter; dropping without invoking cancels the
 // async call and lets the interpreter clean up naturally on release.
 //
-// Holds Ref<LorelineInterpreter> on both backends — retaining the resolve
+// Holds Ref<LorelineInterpreter> on both backends: retaining the resolve
 // Callable keeps the interpreter alive (and transitively options via
 // LorelineInterpreter::_options_ref), and provides a valid ObjectID so
 // GDScript accepts the Callable.
@@ -193,7 +193,7 @@ public:
 		r_call_error.error = GDEXTENSION_CALL_OK;
 		bool expected = false;
 		if (!_resolved.compare_exchange_strong(expected, true)) {
-			UtilityFunctions::push_warning("LorelineResolveCallable: resolve called more than once — ignoring");
+			UtilityFunctions::push_warning("LorelineResolveCallable: resolve called more than once, ignoring");
 			return;
 		}
 #ifdef LORELINE_USE_JS
@@ -254,7 +254,7 @@ LorelineInterpreter::~LorelineInterpreter() {
 		Loreline_releaseInterpreter(_interp);
 		_interp = nullptr;
 	}
-	// Free per-function contexts now that the Haxe interpreter is gone — no
+	// Free per-function contexts now that the Haxe interpreter is gone: no
 	// further callbacks can fire on them. Must happen after releaseInterpreter
 	// so any in-flight callback already saw a valid ctx.
 	for (LorelineFunctionCallContext *ctx : _fn_contexts) {
@@ -482,7 +482,7 @@ void LorelineInterpreter::_poll_js_events() {
 				fn = funcs->get(func_name, Callable());
 			}
 			if (!fn.is_valid()) {
-				// No registered function — resume the interpreter so it doesn't wedge.
+				// No registered function: resume the interpreter so it doesn't wedge.
 				if (js) {
 					js->eval("_lorelineBridge.provideFunctionDone(" + String::num_int64(call_id) + ")", true);
 				}
@@ -521,7 +521,7 @@ void LorelineInterpreter::_on_dialogue(
 	String godot_text = text.isNull() ? String() : String::utf8(text.c_str());
 	Array godot_tags = _convert_tags(tags, tagCount);
 
-	// Release from active list — the Callable now holds the Ref keeping the interpreter alive
+	// Release from active list: the Callable now holds the Ref keeping the interpreter alive
 	Loreline::_release_active_interpreter(self);
 
 	Callable advance_callable(memnew(LorelineAdvanceCallable(self_ref)));
@@ -535,7 +535,7 @@ void LorelineInterpreter::_on_choice(
 		void (*select)(int index),
 		void *userData) {
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);
-	// Construct the Ref FIRST (strict overlap — see _on_dialogue).
+	// Construct the Ref FIRST (strict overlap, see _on_dialogue).
 	Ref<LorelineInterpreter> self_ref(self);
 
 	self->_pending_select = select;
@@ -543,14 +543,14 @@ void LorelineInterpreter::_on_choice(
 
 	Array godot_options = _convert_options(options, optionCount);
 
-	// Release from active list — the Callable now holds the Ref keeping the interpreter alive
+	// Release from active list: the Callable now holds the Ref keeping the interpreter alive
 	Loreline::_release_active_interpreter(self);
 
 	Callable select_callable(memnew(LorelineSelectCallable(self_ref)));
 	self->emit_signal("choice", self, godot_options, select_callable);
 }
 
-// Interpreter-level retain/release — passed to Loreline_play/resume, invoked
+// Interpreter-level retain/release: passed to Loreline_play/resume, invoked
 // around every queued callback in the linc wrapper.
 Loreline_Retainer *LorelineInterpreter::_retain_interpreter(void *userData) {
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);

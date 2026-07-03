@@ -4,7 +4,7 @@ var loreline: Loreline = Loreline.shared()
 var lor_script: LorelineScript
 var saved_data: String = ""
 var dialogue_count: int = 0
-var phase: String = "first_run"  # "first_run" → "resumed" → "done"
+var phase: String = "first_run"  # "first_run" -> "resumed" -> "done"
 
 
 func _ready() -> void:
@@ -45,7 +45,7 @@ func _on_finished(_interp: LorelineInterpreter) -> void:
 
 		# Create a fresh interpreter from the save. The Haxe save semantics
 		# mean the saved dialogue (dialogue 2) is re-fired on resume, then
-		# execution continues from there (dialogue 3 → finish).
+		# execution continues from there (dialogue 3 -> finish).
 		var resumed := loreline.resume(lor_script, _on_dialogue, _on_choice, _on_finished, saved_data)
 		if resumed == null:
 			printerr("resume() returned null")

@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loreline — Web Sample</title>
+<title>Loreline - Web Sample</title>
 <style>
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  FONTS
  *  Self-hosted subsets of Literata (italic, for narrative) and Outfit (for UI).
  *  Only the latin subset is included to keep the sample lightweight.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
-/* Literata italic — used for narrator/narrative text */
+/* Literata italic: used for narrator/narrative text */
 @font-face {
   font-family: 'Literata';
   font-style: italic;
@@ -24,7 +24,7 @@
                  U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Outfit — used for dialogue text, character names, choices, and buttons */
+/* Outfit: used for dialogue text, character names, choices, and buttons */
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -37,19 +37,19 @@
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  THEME VARIABLES
  *  Dark theme palette matching the Loreline website playground preview.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 :root {
-  --bg:            #0f0d15;   /* Page background — deep dark purple-black       */
-  --bg-card:       #15131b;   /* Output area background — slightly lighter      */
-  --text:          #f0eef5;   /* Primary text — dialogue, selected choices      */
-  --text-muted:    #a09cb0;   /* Secondary text — narrative, unselected choices */
-  --text-dim:      #6b6580;   /* Tertiary text — "Play Again" button            */
-  --border:        #2e2a3a;   /* Subtle borders — choice outlines               */
-  --purple:        #8b5cf6;   /* Accent — choice hover/selected highlight       */
+  --bg:            #0f0d15;   /* Page background: deep dark purple-black        */
+  --bg-card:       #15131b;   /* Output area background: slightly lighter       */
+  --text:          #f0eef5;   /* Primary text: dialogue, selected choices       */
+  --text-muted:    #a09cb0;   /* Secondary text: narrative, unselected choices  */
+  --text-dim:      #6b6580;   /* Tertiary text: "Play Again" button             */
+  --border:        #2e2a3a;   /* Subtle borders: choice outlines                */
+  --purple:        #8b5cf6;   /* Accent: choice hover/selected highlight        */
   --glow:          rgba(139, 92, 246, 0.1); /* Accent background glow           */
 
   /* Gradient applied to character names via background-clip: text */
@@ -61,12 +61,12 @@
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  LAYOUT
  *  Full-viewport dark preview. The output area spans the entire window width
  *  so the scrollbar sits at the right edge of the viewport. Content inside is
  *  centered with a max-width for comfortable reading.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -78,7 +78,7 @@ body {
   min-height: 100vh;
 }
 
-/* Full-width scroll container — scrollbar at the window's right edge */
+/* Full-width scroll container: scrollbar at the window's right edge */
 #output {
   position: relative;
   width: 100%;
@@ -97,7 +97,7 @@ body {
 #output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ==============================================================================
  *  SCROLL-STABLE TABLE LAYOUT
  *
  *  When choice buttons are selected, the unchosen options fade out and are
@@ -106,13 +106,13 @@ body {
  *  with two cells:
  *
  *    .output-table (display: table)
- *      .output-content  — holds the actual story content (width: 100%)
- *      .output-keeper   — a zero-width cell whose height only ever increases
+ *      .output-content:  holds the actual story content (width: 100%)
+ *      .output-keeper:   a zero-width cell whose height only ever increases
  *
  *  The keeper cell acts as a "high-water mark" for content height. Because
  *  the table row height is determined by the tallest cell, the scroll area
  *  never shrinks even when content elements are removed or hidden.
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 .output-table       { display: table; width: 100%; max-width: 700px; margin: 0 auto; }
 .output-content     { display: table-cell; width: 100%; vertical-align: top; }
@@ -125,7 +125,7 @@ body {
    inter-sibling margins. */
 .output-content > * + * { margin-top: 1rem; }
 
-/* Choice blocks want more breathing room than text-to-text — framed
+/* Choice blocks want more breathing room than text-to-text: framed
    buttons carry more visual weight and deserve a clearer separation. */
 .output-content > .preview-choices,
 .output-content > .preview-choices + * {
@@ -133,15 +133,15 @@ body {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
- *  PREVIEW ELEMENTS — Narrative & Dialogue
- * ══════════════════════════════════════════════════════════════════════════════ */
+/* ==============================================================================
+ *  PREVIEW ELEMENTS: Narrative & Dialogue
+ * ============================================================================== */
 
 .preview-line {
   padding: 0.1rem 0;
 }
 
-/* Narrator text — italic serif, muted color */
+/* Narrator text: italic serif, muted color */
 .preview-line.narrative {
   color: var(--text-muted);
   font-family: var(--font-display);
@@ -150,7 +150,7 @@ body {
   font-size: 1.05rem;
 }
 
-/* Character name — gradient text effect */
+/* Character name: gradient text effect */
 .preview-line .char-name {
   background: var(--gradient-text);
   -webkit-background-clip: text;
@@ -160,15 +160,15 @@ body {
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
- *  PREVIEW ELEMENTS — Choices
+/* ==============================================================================
+ *  PREVIEW ELEMENTS: Choices
  *
  *  Choice buttons go through a 3-phase animation when selected:
  *    1. The selected button gets .selected (purple highlight),
  *       other buttons get .fading (fade out over 0.25s)
  *    2. The selected button slides to the top via translateY
  *    3. Other buttons get .hidden (display: none), selected resets to static
- * ══════════════════════════════════════════════════════════════════════════════ */
+ * ============================================================================== */
 
 .preview-choices {
   display: flex;
@@ -193,7 +193,7 @@ body {
   margin-top: 0;
 }
 
-/* Hover state — purple accent border and subtle glow */
+/* Hover state: purple accent border and subtle glow */
 @media (hover: hover) {
   .preview-choice:hover {
     border-color: var(--purple);
@@ -202,7 +202,7 @@ body {
   }
 }
 
-/* Selected state — stays highlighted while animating */
+/* Selected state: stays highlighted while animating */
 .preview-choice.selected {
   border-color: var(--purple);
   color: var(--text);
@@ -211,22 +211,22 @@ body {
   transition: transform 0.35s ease-in-out;
 }
 
-/* Fading state — other choices disappear */
+/* Fading state: other choices disappear */
 .preview-choice.fading {
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
 }
 
-/* Hidden state — removed from layout after animation */
+/* Hidden state: removed from layout after animation */
 .preview-choice.hidden {
   display: none;
 }
 
 
-/* ══════════════════════════════════════════════════════════════════════════════
- *  PREVIEW ELEMENTS — Play Again Button
- * ══════════════════════════════════════════════════════════════════════════════ */
+/* ==============================================================================
+ *  PREVIEW ELEMENTS: Play Again Button
+ * ============================================================================== */
 
 .preview-reset {
   margin-top: 1.1rem;
@@ -255,27 +255,27 @@ body {
 
 <script type="module">
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  LORELINE WEB SAMPLE — Reference Implementation
+// ==============================================================================
+//  LORELINE WEB SAMPLE: Reference Implementation
 //
 //  This file demonstrates how to integrate the Loreline runtime into a web
 //  page. It loads a .lor script, plays it, and renders dialogue, narrative
 //  text, and interactive choices with smooth animations.
 //
 //  The display matches the Loreline website playground preview.
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 import { Loreline } from './loreline.js';
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  DOM REFERENCES
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 const output = document.getElementById('output');
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  SCROLL-STABLE TABLE LAYOUT
 //
 //  We build a two-column CSS table inside the output container. The table is
@@ -287,7 +287,7 @@ const output = document.getElementById('output');
 //  This prevents scroll jumps: when choice buttons are hidden after selection,
 //  the keeper column maintains the previous maximum height, so the scrollable
 //  area never shrinks unexpectedly.
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 const tableWrap = document.createElement('div');
 tableWrap.className = 'output-table';
@@ -307,12 +307,12 @@ tableWrap.appendChild(keeperCell);
 output.appendChild(tableWrap);
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  TIMER MANAGEMENT
 //
 //  All setTimeout calls used for animation sequencing are tracked here so they
 //  can be cancelled when restarting the story (prevents orphaned callbacks).
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 let pendingTimers = [];
 
@@ -326,9 +326,9 @@ function clearTimers() {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  ANIMATION HELPERS
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 /**
  * Fades in an element with a subtle upward slide.
@@ -405,9 +405,9 @@ function scrollToBottom() {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  OUTPUT MANAGEMENT
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 /**
  * Clears all story output and resets the height keeper.
@@ -420,9 +420,9 @@ function clearOutput() {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  RENDERING — Dialogue & Narrative
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+//  RENDERING: Dialogue & Narrative
+// ==============================================================================
 
 /**
  * Appends a line of dialogue or narrative text to the output.
@@ -470,8 +470,8 @@ function appendDialogue(character, text) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  RENDERING — Choices
+// ==============================================================================
+//  RENDERING: Choices
 //
 //  When the player selects a choice, a 3-phase animation plays:
 //
@@ -487,7 +487,7 @@ function appendDialogue(character, text) {
 //      The faded buttons get "hidden" (display: none) to remove them from
 //      the layout. The selected button's transform is reset to its natural
 //      position. The Loreline callback is invoked to continue the story.
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 /**
  * Renders choice buttons and handles selection with animated transitions.
@@ -513,7 +513,7 @@ function showChoices(options, choiceCallback) {
       // Prevent double-clicks during animation
       if (choiceContainer.querySelector('.preview-choice.selected')) return;
 
-      // ── Phase 1: Highlight selected, fade others ──
+      // -- Phase 1: Highlight selected, fade others --
       for (const b of buttons) {
         if (b === btn) {
           b.classList.add('selected');
@@ -522,7 +522,7 @@ function showChoices(options, choiceCallback) {
         }
       }
 
-      // ── Phase 2: Slide selected button to top of container ──
+      // -- Phase 2: Slide selected button to top of container --
       pendingTimers.push(setTimeout(function () {
         const offset = btn.getBoundingClientRect().top
                      - choiceContainer.getBoundingClientRect().top;
@@ -531,7 +531,7 @@ function showChoices(options, choiceCallback) {
         }
       }, 300));
 
-      // ── Phase 3: Finalize layout and continue the story ──
+      // -- Phase 3: Finalize layout and continue the story --
       pendingTimers.push(setTimeout(function () {
         // Remove faded buttons from layout
         for (const b of buttons) {
@@ -561,9 +561,9 @@ function showChoices(options, choiceCallback) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  RENDERING — Story Finished
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+//  RENDERING: Story Finished
+// ==============================================================================
 
 /**
  * Shows a "Play Again" button after the story ends.
@@ -588,7 +588,7 @@ function showFinished() {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  LORELINE INTEGRATION
 //
 //  This section shows the canonical pattern for running a Loreline script
@@ -605,7 +605,7 @@ function showFinished() {
 //  Each handler receives a callback that MUST be called to advance the
 //  script. This gives you full control over pacing (e.g., adding delays,
 //  waiting for user interaction, or playing animations between lines).
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 /**
  * Import handler for Loreline's "import" statements.
@@ -627,7 +627,7 @@ function handleFile(path, callback) {
 /**
  * Loreline dialogue handler.
  *
- * Called for every line of text in the script — both narrative (character
+ * Called for every line of text in the script, both narrative (character
  * is null) and dialogue (character is the speaker's name).
  *
  * We display the text immediately and auto-advance after a 600ms delay,
@@ -702,9 +702,9 @@ function showError(e) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 //  STORY LOADER
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 /**
  * Starts (or restarts) the story.
@@ -719,7 +719,7 @@ function startStory() {
   fetch('story/CoffeeShop.lor')
     .then(r => r.text())
     .then(content => {
-      // Parse with file path + import handler (async imports → use callback)
+      // Parse with file path + import handler (async imports -> use callback)
       Loreline.parse(content, 'CoffeeShop.lor', handleFile, function (script) {
         Loreline.play(script, handleDialogue, handleChoice, handleFinish);
       });

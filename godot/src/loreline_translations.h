@@ -19,7 +19,7 @@ using namespace godot;
  * Obtained from `LorelineScript::extract_translations()` or
  * `Loreline::load_locale()`. Pass to `LorelineOptions::set_translations()`.
  *
- * Opaque to GDScript — users only pass it around.
+ * Opaque to GDScript: users only pass it around.
  */
 class LorelineTranslations : public RefCounted {
 	GDCLASS(LorelineTranslations, RefCounted);

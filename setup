@@ -171,7 +171,7 @@ async function main() {
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
-    // --sample [web|unity|cpp|python|lua|sdl3|java] — copy built files into sample projects
+    // --sample [web|unity|cpp|python|lua|sdl3|java]: copy built files into sample projects
     let setupSample = rawArgs.indexOf('--sample') != -1;
     let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', 'sdl3', or 'java'
     if (setupSample) {
@@ -506,11 +506,11 @@ async function main() {
         const iphonesimSDK = execSync('xcrun --sdk iphonesimulator --show-sdk-path').toString().trim();
 
         // hxcpp produces .a files with a suffix based on platform/arch:
-        //   iphoneos + ARM64 → libLibrary.iphoneos-64.a
-        //   iphonesim + M64  → libLibrary.iphonesim-64.a  (both x86_64 and arm64)
+        //   iphoneos + ARM64 -> libLibrary.iphoneos-64.a
+        //   iphonesim + M64  -> libLibrary.iphonesim-64.a  (both x86_64 and arm64)
         const hxcppStaticLibName = (debug ? 'libLibrary-debug' : 'libLibrary');
 
-        // ── Device arm64 ──────────────────────────────────────────────
+        // -- Device arm64 ----------------------------------------------
         await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
             '--cpp', 'build/cpp-lib/ios',
             '-D', 'iphoneos'
@@ -530,7 +530,7 @@ async function main() {
         ].concat(iosLinkFrameworks));
         await command('install_name_tool', ['-id', '@rpath/Loreline.framework/Loreline', deviceDylib]);
 
-        // ── Simulator arm64 ──────────────────────────────────────────
+        // -- Simulator arm64 ------------------------------------------
         await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
             '--cpp', 'build/cpp-lib/ios',
             '-D', 'iphonesim', '-D', 'simulator'
@@ -555,7 +555,7 @@ async function main() {
             '-Wl,-force_load,' + path.join(iosBuildDir, simArm64StaticLib)
         ].concat(iosLinkFrameworks));
 
-        // ── Simulator x86_64 ─────────────────────────────────────────
+        // -- Simulator x86_64 -----------------------------------------
         await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
             '--cpp', 'build/cpp-lib/ios',
             '-D', 'iphonesim', '-D', 'simulator'
@@ -625,7 +625,7 @@ async function main() {
 
         console.log('Built: ' + xcframeworkPath);
 
-        // ── Static .xcframework with symbol renaming ─────────────────────
+        // -- Static .xcframework with symbol renaming ---------------------
 
         const llvmPrefix = execSync('brew --prefix llvm').toString().trim();
         const llvmNm = path.join(llvmPrefix, 'bin', 'llvm-nm');
@@ -919,7 +919,7 @@ async function main() {
             '-D', 'HXCPP_STACK_TRACE'
         ];
 
-        // Step 1: Haxe → C++ (once, with emscripten define)
+        // Step 1: Haxe -> C++ (once, with emscripten define)
         await command(haxe, haxeBuildCppLibArgs.concat(haxeBuildArgs).concat([
             '--cpp', 'build/cpp-lib/wasm-nothreads',
             '-D', 'emscripten'
@@ -1201,7 +1201,7 @@ async function main() {
                 '#ifndef LORELINE_JS_BUNDLE_H',
                 '#define LORELINE_JS_BUNDLE_H',
                 '',
-                '// Auto-generated from js/loreline.min.js — do not edit',
+                '// Auto-generated from js/loreline.min.js, do not edit',
                 'static const char LORELINE_JS_BUNDLE[] = R"LORELINE_JS(',
                 jsSourceForBundle,
                 ')LORELINE_JS";',
@@ -1404,7 +1404,7 @@ async function main() {
 
         // Post-process: guard the main() entry-point call
         let py = fs.readFileSync('py/loreline/_core.py', 'utf8');
-        // Haxe generates a top-level main() call at the end — guard it
+        // Haxe generates a top-level main() call at the end: guard it
         py = py.replace(/\n(loreline_lib_Library\.main\(\))\s*$/, '\nif __name__ == "__main__":\n    $1\n');
         fs.writeFileSync('py/loreline/_core.py', py);
     }
@@ -1425,8 +1425,8 @@ async function main() {
         // Remove the main() xpcall at the end, keep static init
         lua = lua.replace(/\nlocal success, err = _G\.xpcall\(function\(\)[\s\S]*$/, '\n');
         // Remove unused external library references (rex_pcre2/EReg, luv)
-        // — EReg is only used by lorscript's XML metadata parser, never by loreline itself
-        // — luv is only used by Sys.time/Sys.sleep, replaced below with vanilla Lua
+        // - EReg is only used by lorscript's XML metadata parser, never by loreline itself
+        // - luv is only used by Sys.time/Sys.sleep, replaced below with vanilla Lua
         lua = lua.replace(/^__lua_lib_lrexlib_Rex = .*\n/m, '');
         lua = lua.replace(/^__lua_lib_luv_Misc = .*\n/m, '');
         lua = lua.replace(/^__lua_lib_luv_Thread = .*\n/m, '');
@@ -1510,7 +1510,7 @@ async function main() {
             }
         }
 
-        // Step 1: Haxe build → core jar
+        // Step 1: Haxe build -> core jar
         fs.mkdirSync(path.join(__dirname, 'build', 'jvm'), { recursive: true });
         await command(haxe, ['build-jvm.hxml'].concat(haxeBuildArgs));
 
@@ -1536,7 +1536,7 @@ async function main() {
                 .map(f => path.join(__dirname, 'jvm', 'src', 'loreline', f))
         ]);
 
-        // Step 4: Merge relocated jar + wrapper classes → final loreline.jar
+        // Step 4: Merge relocated jar + wrapper classes -> final loreline.jar
         const mergeDir = path.join(__dirname, 'build', 'jvm', 'jar-merge');
         if (fs.existsSync(mergeDir)) fs.rmSync(mergeDir, { recursive: true, force: true });
         fs.mkdirSync(mergeDir, { recursive: true });
@@ -1558,7 +1558,7 @@ async function main() {
         console.log('Built: jvm/loreline.jar');
     }
 
-    // ── Set up sample projects ──────────────────────────────────────────────
+    // -- Set up sample projects ----------------------------------------------
     //
     // Copies built runtime files and story scripts into the sample directories.
     // Usage:
@@ -1583,10 +1583,10 @@ async function main() {
             // Copy loreline.js runtime
             const jsSrc = path.join(__dirname, 'js', 'loreline.js');
             if (!fs.existsSync(jsSrc)) {
-                console.warn('  Warning: js/loreline.js not found — run --js first');
+                console.warn('  Warning: js/loreline.js not found, run --js first');
             } else {
                 fs.copyFileSync(jsSrc, path.join(webDir, 'loreline.js'));
-                console.log('  js/loreline.js → sample/loreline-web/loreline.js');
+                console.log('  js/loreline.js -> sample/loreline-web/loreline.js');
             }
 
             // Copy story files into story/ subfolder
@@ -1596,7 +1596,7 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(storyDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-web/story/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-web/story/' + name);
             }
         }
 
@@ -1610,7 +1610,7 @@ async function main() {
 
             // Copy C# plugin files
             if (!fs.existsSync(path.join(csSrcDir, 'Internal'))) {
-                console.warn('  Warning: cs/Loreline/Internal/ not found — run --cs first');
+                console.warn('  Warning: cs/Loreline/Internal/ not found, run --cs first');
             } else {
                 // Clear stale plugin files, then copy fresh (preserve Editor/)
                 if (fs.existsSync(unityPluginDir)) {
@@ -1620,7 +1620,7 @@ async function main() {
                     }
                 }
                 fs.cpSync(csSrcDir, unityPluginDir, { recursive: true });
-                console.log('  cs/Loreline/ → sample/loreline-unity/Assets/Plugins/Loreline/');
+                console.log('  cs/Loreline/ -> sample/loreline-unity/Assets/Plugins/Loreline/');
             }
 
             // Copy story files
@@ -1630,7 +1630,7 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(unityResourceDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-unity/Assets/Resources/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-unity/Assets/Resources/' + name);
             }
         }
 
@@ -1671,7 +1671,7 @@ async function main() {
                 path.join(__dirname, 'cpp', 'include', 'Loreline.h'),
                 path.join(includeDir, 'Loreline.h')
             );
-            console.log('  cpp/include/Loreline.h → sample/loreline-cpp/loreline/include/Loreline.h');
+            console.log('  cpp/include/Loreline.h -> sample/loreline-cpp/loreline/include/Loreline.h');
 
             // Copy platform library
             const platformDir = path.join(lorelineDir, platformSubdir);
@@ -1681,7 +1681,7 @@ async function main() {
                     path.join(buildLibDir, libFile),
                     path.join(platformDir, libFile)
                 );
-                console.log('  ' + libFile + ' → sample/loreline-cpp/loreline/' + platformSubdir + '/' + libFile);
+                console.log('  ' + libFile + ' -> sample/loreline-cpp/loreline/' + platformSubdir + '/' + libFile);
             }
 
             // Copy story files
@@ -1691,7 +1691,7 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(storyDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-cpp/story/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-cpp/story/' + name);
             }
         }
 
@@ -1712,7 +1712,7 @@ async function main() {
             if (!fs.existsSync(stbPath)) {
                 console.log('  Downloading stb_truetype.h...');
                 await downloadFile(stbUrl, stbPath);
-                console.log('  → stb_truetype.h');
+                console.log('  -> stb_truetype.h');
             }
 
             // 2. Download SDL3 prebuilt binaries for all platforms
@@ -1736,7 +1736,7 @@ async function main() {
                 await downloadFile(sdl3ReleaseUrl + '/' + arch.name, tmpPath);
                 await extractArchive(tmpPath, destDir);
                 fs.unlinkSync(tmpPath);
-                console.log('  → sdl3/' + arch.dir + '/');
+                console.log('  -> sdl3/' + arch.dir + '/');
             }
 
             // 3. Download SDL3 Java sources for Android (SDLActivity etc.)
@@ -1759,7 +1759,7 @@ async function main() {
                 console.log('  Downloading SDL3 ' + jf + '...');
                 await downloadFile(sdl3JavaBaseUrl + jf, dest);
             }
-            console.log('  → android/.../org/libsdl/app/ (SDL3 Java sources)');
+            console.log('  -> android/.../org/libsdl/app/ (SDL3 Java sources)');
 
             // 4. Copy Loreline header
             const sdl3IncludeDir = path.join(sdl3LorelineDir, 'include');
@@ -1768,7 +1768,7 @@ async function main() {
                 path.join(__dirname, 'cpp', 'include', 'Loreline.h'),
                 path.join(sdl3IncludeDir, 'Loreline.h')
             );
-            console.log('  cpp/include/Loreline.h → loreline/include/Loreline.h');
+            console.log('  cpp/include/Loreline.h -> loreline/include/Loreline.h');
 
             // 4. Copy Loreline platform libraries (whatever is available)
             const sdl3PlatformMappings = [
@@ -1787,7 +1787,7 @@ async function main() {
                     const src = path.join(srcDir, f);
                     if (fs.existsSync(src)) {
                         fs.copyFileSync(src, path.join(destPlatDir, f));
-                        console.log('  ' + f + ' → loreline/' + pm.dest + '/' + f);
+                        console.log('  ' + f + ' -> loreline/' + pm.dest + '/' + f);
                     }
                 }
             }
@@ -1798,7 +1798,7 @@ async function main() {
                 const destIos = path.join(sdl3LorelineDir, 'ios', 'Loreline.xcframework');
                 fs.mkdirSync(path.join(sdl3LorelineDir, 'ios'), { recursive: true });
                 fs.cpSync(sdl3IosXcfw, destIos, { recursive: true });
-                console.log('  Loreline.xcframework → loreline/ios/Loreline.xcframework');
+                console.log('  Loreline.xcframework -> loreline/ios/Loreline.xcframework');
             }
 
             // Copy Android JNI .so files if available
@@ -1807,7 +1807,7 @@ async function main() {
                 const destAndroidJni = path.join(sdl3LorelineDir, 'android', 'jni');
                 fs.mkdirSync(path.join(sdl3LorelineDir, 'android'), { recursive: true });
                 fs.cpSync(sdl3AndroidJni, destAndroidJni, { recursive: true });
-                console.log('  android JNI libs → loreline/android/jni/');
+                console.log('  android JNI libs -> loreline/android/jni/');
             }
 
             // 5. Copy story files
@@ -1817,12 +1817,12 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(sdl3StoryDir, name)
                 );
-                console.log('  sample/' + name + ' → story/' + name);
+                console.log('  sample/' + name + ' -> story/' + name);
             }
 
             // 6. Android assets are copied by build-android.sh before Gradle
             // runs (symlinks aren't followed by AAPT when packaging the APK).
-            // Nothing to do here — the build script handles it.
+            // Nothing to do here: the build script handles it.
         }
 
         // loreline-python: needs py/loreline/ (from --py) + story files
@@ -1842,7 +1842,7 @@ async function main() {
                 const src = path.join(pySrcDir, file);
                 if (fs.existsSync(src)) {
                     fs.copyFileSync(src, path.join(pyPkgDir, file));
-                    console.log('  py/loreline/' + file + ' → sample/loreline-python/loreline/' + file);
+                    console.log('  py/loreline/' + file + ' -> sample/loreline-python/loreline/' + file);
                 }
             }
 
@@ -1853,7 +1853,7 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(pyStoryDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-python/story/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-python/story/' + name);
             }
         }
 
@@ -1874,7 +1874,7 @@ async function main() {
                 const src = path.join(luaSrcDir, file);
                 if (fs.existsSync(src)) {
                     fs.copyFileSync(src, path.join(luaPkgDir, file));
-                    console.log('  lua/loreline/' + file + ' → sample/loreline-lua/loreline/' + file);
+                    console.log('  lua/loreline/' + file + ' -> sample/loreline-lua/loreline/' + file);
                 }
             }
 
@@ -1884,7 +1884,7 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(luaStoryDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-lua/story/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-lua/story/' + name);
             }
         }
 
@@ -1898,10 +1898,10 @@ async function main() {
             // Copy loreline.jar
             const jarSrc = path.join(__dirname, 'jvm', 'loreline.jar');
             if (!fs.existsSync(jarSrc)) {
-                console.warn('  Warning: jvm/loreline.jar not found — run --jvm first');
+                console.warn('  Warning: jvm/loreline.jar not found, run --jvm first');
             } else {
                 fs.copyFileSync(jarSrc, path.join(javaDir, 'loreline.jar'));
-                console.log('  jvm/loreline.jar → sample/loreline-java/loreline.jar');
+                console.log('  jvm/loreline.jar -> sample/loreline-java/loreline.jar');
             }
 
             // Copy story files
@@ -1911,13 +1911,13 @@ async function main() {
                     path.join(__dirname, 'sample', name),
                     path.join(javaStoryDir, name)
                 );
-                console.log('  sample/' + name + ' → sample/loreline-java/story/' + name);
+                console.log('  sample/' + name + ' -> sample/loreline-java/story/' + name);
             }
         }
 
     }
 
-    // ── Build Unity package ─────────────────────────────────────────────────
+    // -- Build Unity package -------------------------------------------------
     //
     // Creates a .unitypackage containing the Loreline C# library and
     // a ScriptedImporter for .lor files.
@@ -1927,7 +1927,7 @@ async function main() {
 
         const csSrcDir = path.join(__dirname, 'cs', 'Loreline');
         if (!fs.existsSync(path.join(csSrcDir, 'Internal'))) {
-            console.error('  Error: cs/Loreline/Internal/ not found — run --cs first');
+            console.error('  Error: cs/Loreline/Internal/ not found, run --cs first');
             process.exit(1);
         }
 
@@ -2035,7 +2035,7 @@ async function main() {
         }
     }
 
-    // ── Run all test suites ─────────────────────────────────────────────────
+    // -- Run all test suites -------------------------------------------------
     //
     // Replicates test-all.sh in cross-platform Node.js:
     //   1. Neko tests (via node run)

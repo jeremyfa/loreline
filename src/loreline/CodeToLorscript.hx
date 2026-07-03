@@ -382,7 +382,7 @@ class CodeToLorscript {
                     currentPosOffset++;
                 }
                 else if (c == "$".code) {
-                    // $$ → literal dollar sign
+                    // $$ -> literal dollar sign
                     add("$".code);
                 }
                 else {

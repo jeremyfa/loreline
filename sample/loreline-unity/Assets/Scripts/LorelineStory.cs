@@ -7,7 +7,7 @@ using Loreline;
 
 /// <summary>
 /// Self-contained Loreline story player for Unity using UI Toolkit.
-/// Creates all UI programmatically — just add this to an empty GameObject and press Play.
+/// Creates all UI programmatically: just add this to an empty GameObject and press Play.
 /// Runs the CoffeeShop.lor sample story.
 /// </summary>
 public class LorelineStory : MonoBehaviour
@@ -19,7 +19,7 @@ public class LorelineStory : MonoBehaviour
     private VisualElement contentColumn;
     private VisualElement heightKeeper;
 
-    // Timer management — tracked for cancellation on restart
+    // Timer management, tracked for cancellation on restart
     private List<IVisualElementScheduledItem> pendingTimers = new List<IVisualElementScheduledItem>();
 
     // Scroll animation state
@@ -42,7 +42,7 @@ public class LorelineStory : MonoBehaviour
         Engine.Update(Time.deltaTime);
     }
 
-    // ── UI Setup ──────────────────────────────────────────────────────────────
+    // -- UI Setup --------------------------------------------------------------
 
     void SetupUIDocument()
     {
@@ -74,7 +74,7 @@ public class LorelineStory : MonoBehaviour
         var root = uiDocument.rootVisualElement;
         root.Clear();
 
-        // Apply stylesheet (only once — Clear() doesn't remove stylesheets)
+        // Apply stylesheet (only once, Clear() doesn't remove stylesheets)
         if (stylesheet != null && !root.styleSheets.Contains(stylesheet))
         {
             root.styleSheets.Add(stylesheet);
@@ -82,7 +82,7 @@ public class LorelineStory : MonoBehaviour
 
         root.AddToClassList("root");
 
-        // ScrollView — vertical, full screen
+        // ScrollView: vertical, full screen
         scrollView = new ScrollView(ScrollViewMode.Vertical);
         scrollView.AddToClassList("scroll-view");
         scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
@@ -93,12 +93,12 @@ public class LorelineStory : MonoBehaviour
         contentWrapper.AddToClassList("content-wrapper");
         scrollView.Add(contentWrapper);
 
-        // Content column — story elements go here
+        // Content column: story elements go here
         contentColumn = new VisualElement();
         contentColumn.AddToClassList("content-column");
         contentWrapper.Add(contentColumn);
 
-        // Keeper column — zero width, height only grows (prevents scroll jumps)
+        // Keeper column: zero width, height only grows (prevents scroll jumps)
         var keeperColumn = new VisualElement();
         keeperColumn.AddToClassList("keeper-column");
         contentWrapper.Add(keeperColumn);
@@ -107,7 +107,7 @@ public class LorelineStory : MonoBehaviour
         keeperColumn.Add(heightKeeper);
     }
 
-    // ── Story Loading ─────────────────────────────────────────────────────────
+    // -- Story Loading ---------------------------------------------------------
 
     void StartStory()
     {
@@ -142,7 +142,7 @@ public class LorelineStory : MonoBehaviour
         callback(asset != null ? asset.text : null);
     }
 
-    // ── Story Handlers ────────────────────────────────────────────────────────
+    // -- Story Handlers --------------------------------------------------------
 
     void OnDialogue(Interpreter.Dialogue dialogue)
     {
@@ -173,7 +173,7 @@ public class LorelineStory : MonoBehaviour
         ShowFinished();
     }
 
-    // ── Rendering: Dialogue & Narrative ───────────────────────────────────────
+    // -- Rendering: Dialogue & Narrative ---------------------------------------
 
     void AppendDialogue(string character, string text)
     {
@@ -201,7 +201,7 @@ public class LorelineStory : MonoBehaviour
         ScrollToBottom();
     }
 
-    // ── Rendering: Choices ────────────────────────────────────────────────────
+    // -- Rendering: Choices ----------------------------------------------------
 
     void ShowChoices(Interpreter.ChoiceOption[] options, System.Action<int> choiceCallback)
     {
@@ -293,7 +293,7 @@ public class LorelineStory : MonoBehaviour
         ScrollToBottom();
     }
 
-    // ── Rendering: Story Finished ─────────────────────────────────────────────
+    // -- Rendering: Story Finished ---------------------------------------------
 
     void ShowFinished()
     {
@@ -319,7 +319,7 @@ public class LorelineStory : MonoBehaviour
         };
     }
 
-    // ── Animation Helpers ─────────────────────────────────────────────────────
+    // -- Animation Helpers -----------------------------------------------------
 
     /// <summary>
     /// Fades in an element with a subtle upward slide, using USS transition classes.
@@ -338,7 +338,7 @@ public class LorelineStory : MonoBehaviour
 
     /// <summary>
     /// Updates the height keeper to the current content height.
-    /// The keeper's height only ever increases — this prevents scroll jumps
+    /// The keeper's height only ever increases, which prevents scroll jumps
     /// when choice buttons are hidden after selection.
     /// </summary>
     void UpdateHeightKeeper()
@@ -402,7 +402,7 @@ public class LorelineStory : MonoBehaviour
         scrollCoroutine = null;
     }
 
-    // ── Timer Management ──────────────────────────────────────────────────────
+    // -- Timer Management ------------------------------------------------------
 
     /// <summary>
     /// Schedules an action after a delay (in milliseconds).
@@ -428,13 +428,13 @@ public class LorelineStory : MonoBehaviour
         pendingTimers.Clear();
     }
 
-    // ── Utility ───────────────────────────────────────────────────────────────
+    // -- Utility ---------------------------------------------------------------
 
     /// <summary>
     /// Wraps each visible character in a color tag that interpolates along a gradient,
     /// approximating the web sample's linear-gradient(135deg, #ff5eab 0%, #8b5cf6 40%, #56a0f6 100%).
-    /// The 135° diagonal angle means the visible horizontal range is narrower than 0–100%,
-    /// so we map characters to the 0.15–0.85 range of the original gradient for a softer look.
+    /// The 135 degree diagonal angle means the visible horizontal range is narrower than 0-100%,
+    /// so we map characters to the 0.15-0.85 range of the original gradient for a softer look.
     /// </summary>
     static string GradientRichText(string text)
     {
@@ -446,7 +446,7 @@ public class LorelineStory : MonoBehaviour
         float r1 = 139, g1 = 92,  b1 = 246;  // #8b5cf6
         float r2 = 86,  g2 = 160, b2 = 246;  // #56a0f6
 
-        // Narrower range to approximate the 135° diagonal effect
+        // Narrower range to approximate the 135 degree diagonal effect
         const float tMin = 0.30f;
         const float tMax = 0.70f;
 
@@ -458,7 +458,7 @@ public class LorelineStory : MonoBehaviour
             // Map character position to the narrower gradient range
             float t = len > 1 ? tMin + (tMax - tMin) * i / (len - 1) : 0.4f;
 
-            // Interpolate between stops: 0→0.4 is stop0→stop1, 0.4→1.0 is stop1→stop2
+            // Interpolate between stops: 0->0.4 is stop0->stop1, 0.4->1.0 is stop1->stop2
             float r, g, b;
             if (t <= 0.4f)
             {

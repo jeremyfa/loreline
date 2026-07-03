@@ -1564,7 +1564,7 @@ class NAlternative extends AstNode {
     public var mode:AlternativeMode;
 
     /**
-     * Array of item blocks — each item is a block of statements.
+     * Array of item blocks. Each item is a block of statements.
      */
     public var items:Array<NBlock>;
 

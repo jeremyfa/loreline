@@ -1956,7 +1956,7 @@ class Server {
                 description.push("- From: " + targets.join(', '));
             }
 
-            // Add outgoing beats — dedup transitions and calls separately so a
+            // Add outgoing beats, deduplicate transitions and calls separately so a
             // target that is both transitioned to AND called appears in each
             // list once, not once per statement.
             if (outgoingBeats.length > 0) {

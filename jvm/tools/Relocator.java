@@ -289,14 +289,14 @@ public class Relocator {
 
         @Override
         public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-            // Don't clear pending on field access — the getfield -> checkcast -> iload -> aaload
+            // Don't clear pending on field access: the getfield -> checkcast -> iload -> aaload
             // pattern sometimes has a getfield for the index array between checkcast and aaload
             super.visitFieldInsn(opcode, owner, name, descriptor);
         }
 
         @Override
         public void visitIntInsn(int opcode, int operand) {
-            // bipush, sipush etc. can appear as index computation — keep state
+            // bipush, sipush etc. can appear as index computation, so keep state
             super.visitIntInsn(opcode, operand);
         }
 

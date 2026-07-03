@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Loreline Python Sample — CoffeeShop
+Loreline Python Sample: CoffeeShop
 
 Interactive console app that runs the CoffeeShop story.
 
@@ -35,7 +35,7 @@ def handle_dialogue(interp: Interpreter, character, text: str, tags, advance):
     formatted = text.replace("\n", "\n ")
 
     if character is not None:
-        # Dialogue — resolve display name
+        # Dialogue: resolve display name
         name = interp.get_character_field(character, "name")
         display_name = name if name else character
         print(f" {display_name}: {formatted}")

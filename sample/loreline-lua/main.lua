@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
---- Loreline Lua Sample — CoffeeShop
+--- Loreline Lua Sample: CoffeeShop
 --
 -- Interactive console app that runs the CoffeeShop story.
 --
@@ -36,7 +36,7 @@ local function handle_dialogue(interp, character, text, tags, advance)
     local formatted = text:gsub("\n", "\n ")
 
     if character ~= nil then
-        -- Dialogue — resolve display name
+        -- Dialogue: resolve display name
         local name = interp:get_character_field(character, "name")
         local display_name = name or character
         io.write(" " .. display_name .. ": " .. formatted .. "\n")

@@ -77,7 +77,7 @@ if [ "$exit_code" -eq 124 ]; then
     exit 1
 fi
 
-# Hard failure marker — only the test scripts ever print this.
+# Hard failure marker: only the test scripts ever print this.
 if grep -q "TEST FAILED:" "$log_file"; then
     echo "FAIL: scene reported TEST FAILED" >&2
     exit 1
