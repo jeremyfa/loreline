@@ -3,7 +3,7 @@ package app.loreline.sdl3sample;
 import org.libsdl.app.SDLActivity;
 
 /**
- * Loreline SDL3 Sample — Android entry point.
+ * Loreline SDL3 Sample: Android entry point.
  *
  * Extends SDLActivity which handles:
  * - Native library loading (libmain.so, libSDL3.so)

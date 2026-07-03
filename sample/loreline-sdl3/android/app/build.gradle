@@ -36,7 +36,7 @@ android {
                 '../../sdl3/android/jniLibs',
                 '../../loreline/android/jni'
             ]
-            // Story and font files — setup script creates symlinks in
+            // Story and font files: setup script creates symlinks in
             // src/main/assets/ pointing to the shared story/ and fonts/ dirs
             assets.srcDirs = ['src/main/assets']
         }

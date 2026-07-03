@@ -381,7 +381,7 @@ async function main(): Promise<void> {
                     continue;
                 }
 
-                // Structural check: print → parse → print must be stable
+                // Structural check: print -> parse -> print must be stable
                 const print1: string = Loreline.print(script1, '  ', newline);
                 const script2: Script | null = Loreline.parse(print1, filePath, handleFile);
                 if (!script2) {

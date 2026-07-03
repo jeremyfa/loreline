@@ -37,7 +37,7 @@ class Loreline {
      * Cleared at the very start of every public API call that supports it,
      * so a later successful call hides earlier errors.
      *
-     * Not thread-safe — if you call Loreline from multiple threads, read
+     * Not thread-safe: if you call Loreline from multiple threads, read
      * `lastError()` immediately after the call returns, before another
      * Loreline call on another thread can interleave.
      */
@@ -63,7 +63,7 @@ class Loreline {
      *          will return null and `callback` argument should be used to get the final script
      * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously.
      *                 When a callback is supplied, parse errors are reported by invoking it with `null` and the error becomes
-     *                 readable via `Loreline.lastError()` — `parse()` itself never throws in that mode. Without a callback,
+     *                 readable via `Loreline.lastError()`. `parse()` itself never throws in that mode. Without a callback,
      *                 the call throws on error as usual.
      * @return The parsed script as an AST `Script` instance (if loaded synchronously)
      * @throws loreline.Error If the script contains syntax errors or other parsing issues (sync mode only)
@@ -99,7 +99,7 @@ class Loreline {
             (hasErrors, resolvedImports) -> {
 
                 // If imports.resolve already reported an error via the
-                // error-callback above, skip the rest — we don't want to
+                // error-callback above, skip the rest. We don't want to
                 // dispatch a partial parse on top of a missing import.
                 if (_lastError != null) return;
 
@@ -165,7 +165,7 @@ class Loreline {
      *
      * For each file involved in the script (root + transitively imported), the
      * corresponding translation file is looked up by inserting `.<locale>` before
-     * the extension (e.g. `characters.lor` → `characters.fr.lor`). Missing translation
+     * the extension (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation
      * files are silently skipped.
      *
      * Each translation key is stored under both:
@@ -187,7 +187,7 @@ class Loreline {
      *                 `Loreline.lastError()` returns the underlying error (including the file path that failed). Without
      *                 a callback, the call throws on error as usual.
      * @return The merged translations map (synchronously, when `handleFile` is sync), or `null` if a translation file
-     *         exists but is invalid. Missing translation files are still skipped silently — `lastError()` is only set
+     *         exists but is invalid. Missing translation files are still skipped silently. `lastError()` is only set
      *         when a file is present but can't be parsed (broken `.lor`, malformed `.po`/`.xliff`/`.csv`, etc.).
      */
     public static function loadLocale(locale:String, script:Script, ?filePath:String, ?handleFile:ImportsFileHandler, ?callback:(translations:Map<String, NStringLiteral>)->Void):Null<Map<String, NStringLiteral>> {
@@ -216,7 +216,7 @@ class Loreline {
         final wrappedLastError = wrapped.lastError;
 
         // Determine which Loreline extension we're working with for translation files.
-        // By default, always ".lor" — ".lor.txt" translations are only considered when
+        // By default, always ".lor": ".lor.txt" translations are only considered when
         // built with -D loreline_lor_txt (which restores the previous behavior of
         // matching the source script's extension).
         final ext = #if loreline_lor_txt
@@ -467,15 +467,15 @@ class Loreline {
      *
      * By default, only `.<locale>.lor` files are tried by `loadLocale`. Call this
      * to opt in to additional formats. Known names:
-     *   - `"po"`   — GNU gettext PO (`.po`)
-     *   - `"xliff"` — XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
-     *   - `"csv"`  — CSV / TSV (`.csv`, `.tsv`)
+     *   - `"po"`:    GNU gettext PO (`.po`)
+     *   - `"xliff"`: XLIFF 1.2 / 2.x (`.xliff`, `.xlf`)
+     *   - `"csv"`:   CSV / TSV (`.csv`, `.tsv`)
      *
      * Unknown names are accepted silently (forward-compat for future formats).
      *
      * Malformed files in an enabled format (e.g. broken XML in a `.xliff`,
      * a `.po` with an unterminated quoted string) surface as `loreline.Error`
-     * out of `loadLocale` — caught via try/catch in sync mode, or via
+     * out of `loadLocale`, caught via try/catch in sync mode, or via
      * `Loreline.lastError()` after a callback fires with `null` in async mode.
      *
      * @param name The format identifier (see above)
@@ -521,12 +521,12 @@ class Loreline {
      * that doesn't already have one. `script` must be the AST parsed
      * from the same `content`. Returns the rewritten content.
      *
-     * When `includeImports` is false, imported scripts are skipped — their
+     * When `includeImports` is false, imported scripts are skipped, their
      * byte offsets refer to other files' contents and would corrupt
      * `content`. Tooling that walks imports externally should pass false.
      *
      * When `reservedIds` is provided, it's used (and mutated) as the
-     * shared existing-IDs set across calls — useful for coordinating
+     * shared existing-IDs set across calls, useful for coordinating
      * ID generation across multiple per-file invocations so that file
      * B's auto-IDs avoid every ID already in file A. Existing IDs from
      * this file's hash comments are added to the map; newly-generated
@@ -540,7 +540,7 @@ class Loreline {
 
     /**
      * Lex-only scan of `content` for every hash-comment identifier
-     * (`#xxxx`). Cheap compared to a full parse — runs the lexer over
+     * (`#xxxx`). Cheap compared to a full parse. Runs the lexer over
      * the text and pulls out every `CommentHash` payload. Use to build
      * project-wide reserved-IDs registries.
      *
@@ -561,7 +561,7 @@ class Loreline {
 
     /**
      * Returns every `#id`-tagged translatable string in `script` paired
-     * with its id. Strings WITHOUT an `#id` marker are filtered out — use
+     * with its id. Strings WITHOUT an `#id` marker are filtered out. Use
      * `hasUntaggedTranslatableStrings` to detect those.
      */
     public static function extractTranslatableEntries(script:Script):Array<{id:String, str:NStringLiteral}> {
@@ -569,9 +569,9 @@ class Loreline {
     }
 
     /**
-     * Returns true iff `script` contains at least one translatable
+     * Returns true if `script` contains at least one translatable
      * string (text statement, dialogue, or choice option) that has no
-     * `#id` hash comment. Non-mutating — purely an AST inspection.
+     * `#id` hash comment. Non-mutating, purely an AST inspection.
      * Used by tooling to gate "add tags?" prompts before generating
      * translation files.
      */

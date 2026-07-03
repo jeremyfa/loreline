@@ -28,7 +28,7 @@ class LorelineOptions;
 #ifndef LORELINE_USE_JS
 // Per-function userData for the linc wrapper's custom-function closures.
 // Lifetime is owned by LorelineInterpreter (via _fn_contexts) so contexts
-// never outlive their interpreter — no dangling `wrapper` pointer risk.
+// never outlive their interpreter, so no dangling `wrapper` pointer risk.
 struct LorelineFunctionCallContext {
 	LorelineOptions *options;
 	String function_name;
@@ -42,8 +42,8 @@ class LorelineOptions : public RefCounted {
 
 private:
 	bool _strict_access;
-	Dictionary _functions;       // String → Callable (sync, signature: (interp, args))
-	Dictionary _async_functions; // String → Callable (async, signature: (interp, args, resolve))
+	Dictionary _functions;       // String -> Callable (sync, signature: (interp, args))
+	Dictionary _async_functions; // String -> Callable (async, signature: (interp, args, resolve))
 	Ref<LorelineTranslations> _translations;
 
 #ifndef LORELINE_USE_JS
@@ -82,7 +82,7 @@ public:
 	// The function does its async work (await, etc.) and then calls
 	// `resolve.call()` to resume the interpreter. Calling resolve more than
 	// once is a no-op. Dropping the resolve Callable without calling it
-	// cancels the async call — the interpreter stays paused and is cleaned
+	// cancels the async call: the interpreter stays paused and is cleaned
 	// up naturally when it is eventually released.
 	void set_async_function(const String &name, const Callable &fn);
 
@@ -104,7 +104,7 @@ public:
 #endif
 
 #ifdef LORELINE_USE_JS
-	// Registry: maps interp JS ID → (function name → Callable)
+	// Registry: maps interp JS ID -> (function name -> Callable)
 	static HashMap<int, Dictionary> _js_function_registry;
 	static HashMap<int, Dictionary> _js_async_function_registry;
 

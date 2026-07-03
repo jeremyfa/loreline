@@ -283,7 +283,7 @@ namespace Loreline
         /// the call throws, and this field is set to the same error so it can
         /// be inspected after the catch.
         ///
-        /// Not thread-safe — read immediately after the call returns.
+        /// Not thread-safe: read immediately after the call returns.
         /// </remarks>
         public static Runtime.Error LastError()
         {
@@ -296,7 +296,7 @@ namespace Loreline
         /// <remarks>
         /// For each file involved in the script (root + transitively imported), looks up the
         /// corresponding translation file by inserting `.&lt;locale&gt;` before the extension
-        /// (e.g. `characters.lor` → `characters.fr.lor`). Missing translation files are
+        /// (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation files are
         /// silently skipped. Pass the result to <see cref="Interpreter.InterpreterOptions.Translations"/>.
         /// </remarks>
         /// <param name="locale">The locale code (e.g. "fr")</param>

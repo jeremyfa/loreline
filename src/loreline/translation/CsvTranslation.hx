@@ -12,8 +12,8 @@ using loreline.Utf8;
  * Requires a header row. Recognized columns (case-insensitive):
  *   - "key" (required, used as `#key` in the synthesized .lor)
  *   - "source" / "en" / "original" (optional, used as `// <source>` reference)
- *   - the column whose header equals `locale` = the translation
- *     → a single multi-locale CSV (`key, source, en, fr, es, de`) can serve
+ *   - the column whose header equals `locale` = the translation,
+ *     so a single multi-locale CSV (`key, source, en, fr, es, de`) can serve
  *     every locale.
  *
  * Fallback: if no column header matches `locale`, the last column is used as
@@ -22,7 +22,7 @@ using loreline.Utf8;
  * Quoting follows RFC 4180: values containing the separator, quotes, or newlines
  * must be wrapped in double-quotes; literal quotes are doubled (`""`).
  *
- * **The locale-column value must be valid Loreline body content** — it is
+ * **The locale-column value must be valid Loreline body content**. It is
  * written verbatim into the synthesised `.lor` and re-parsed by Loreline.
  * See the full rules in `loreline.translation.TranslationFormats`.
  */

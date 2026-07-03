@@ -308,7 +308,7 @@ class Cli {
         final cwd = Sys.getCwd();
         final runNPath = Path.join([cwd, "run.n"]);
         if (!FileSystem.exists(runNPath)) {
-            fail('Cannot find run.n at $runNPath — build the CLI first (e.g. `node run`).');
+            fail('Cannot find run.n at $runNPath - build the CLI first (e.g. `node run`).');
         }
 
         final runsRoot = Path.join([cwd, ".tmp", "cli-test-runs"]);
@@ -517,7 +517,7 @@ class Cli {
         return buf.toString();
     }
 
-    // ── Recursive file-system helpers ─────────────────────────────────
+    // -- Recursive file-system helpers ---------------------------------
 
     function createDirectoryRecursive(path:String):Void {
         if (FileSystem.exists(path)) return;
@@ -729,7 +729,7 @@ class Cli {
                 testRoundTrip(script, file, crlf, testItems, restoreInputs);
             }
 
-            // JSON round-trip test: toJson → fromJson → toJson must be stable
+            // JSON round-trip test: toJson -> fromJson -> toJson must be stable
             testJsonRoundTrip(script, file, crlf);
 
             // AST printer smoke test: print must not throw
@@ -749,7 +749,7 @@ class Cli {
             final newline = crlf ? "\r\n" : "\n";
             final printer = new Printer("  ", newline);
 
-            // Structural check: print → parse → print must be stable
+            // Structural check: print -> parse -> print must be stable
             final print1 = printer.print(script);
             final script2 = Loreline.parse(print1, file, handleFile);
             final print2 = printer.print(script2);
@@ -849,7 +849,7 @@ class Cli {
     function testJsonRoundTrip(script:Script, file:String, crlf:Bool) {
         final modeLabel = crlf ? 'CRLF' : 'LF';
         try {
-            // toJson → stringify → parse → fromJson → toJson → stringify
+            // toJson -> stringify -> parse -> fromJson -> toJson -> stringify
             final json1 = Json.stringify(script.toJson());
             final script2 = Script.fromJson(Json.parse(json1));
             final json2 = Json.stringify(script2.toJson());
@@ -890,7 +890,7 @@ class Cli {
      * Smoke-test that AstPrinter handles every node type encountered in real
      * `.lor` scripts (the default switch case throws on an unhandled type).
      * AstPrinter is pure Haxe with no target-specific behavior, so this check
-     * only runs in the CLI suite — per-target runners (C++, JVM, Python, Lua,
+     * only runs in the CLI suite, per-target runners (C++, JVM, Python, Lua,
      * C#) skip it. That accounts for the difference between the CLI test
      * count and each per-target runner's count.
      */

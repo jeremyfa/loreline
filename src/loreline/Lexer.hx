@@ -694,15 +694,15 @@ class Token {
             var currentIndent = countIndentation();
 
             if (currentIndent > indentStack[indentStack.length - 1]) {
-                // Indent - just check that it's more than previous level
+                // Indent, just check that it's more than previous level
                 if (indentStack.length == 1) {
-                    // First indent seen — detect indent size from source
+                    // First indent seen, detect indent size from source
                     detectedIndentSize = currentIndent - indentStack[0];
                 }
                 indentStack.push(currentIndent);
                 indentTokens.push(makeToken(Indent));
             } else if (currentIndent < indentStack[indentStack.length - 1]) {
-                // Unindent - pop until we find a matching or lower level
+                // Unindent, pop until we find a matching or lower level
                 while (indentStack.length > 0 && currentIndent < indentStack[indentStack.length - 1]) {
                     indentStack.pop();
                     indentTokens.push(makeToken(Unindent));
@@ -2406,7 +2406,7 @@ class Token {
             // Tag close: unconditional (mirrors readString()'s else-if c == '>');
             // inTag can only be true if allowTags was true when the < was seen
             if (c == '>'.code && inTag) inTag = false;
-            // Interpolation (no escaped guard needed — \ already consumed by p+=2 above)
+            // Interpolation (no escaped guard needed, `\` already consumed by p+=2 above)
             if (c == '$'.code && p + 1 < length) {
                 final next = input.uCharCodeAt(p + 1);
                 if (next == '{'.code) {
@@ -2418,7 +2418,7 @@ class Token {
                         final ic = input.uCharCodeAt(p);
                         if (ic == '\\'.code) { p += 2; continue; }
                         if (ic == '\n'.code) return -1;
-                        // // line comment always leads to \n → multiline → reject immediately
+                        // // line comment always leads to \n -> multiline -> reject immediately
                         if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '/'.code) return -1;
                         // /* */ block comment: skip entirely, reject if it spans a line
                         if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '*'.code) {
@@ -2706,7 +2706,7 @@ class Token {
                 final nextLinePos = skipWhitespaceAndComments(eolPos, true);
                 if (nextLinePos <= eolPos || nextLinePos >= length) return null;
                 final nextChar = input.uCharCodeAt(nextLinePos);
-                // Blank line, comment, or another quoted string → not a continuation
+                // Blank line, comment, or another quoted string -> not a continuation
                 if (nextChar == '\n'.code || nextChar == '\r'.code || nextChar == '"'.code ||
                     (nextChar == '/'.code && nextLinePos + 1 < length &&
                         (input.uCharCodeAt(nextLinePos + 1) == '/'.code || input.uCharCodeAt(nextLinePos + 1) == '*'.code))) return null;
@@ -2734,9 +2734,9 @@ class Token {
                     final kw = input.uSubstr(nextLinePos, wordEnd - nextLinePos);
                     if (kw != 'null' && kw != 'true' && kw != 'false' && KEYWORDS.exists(kw)) return null;
                 }
-                // Same column, looks like narrative text → paragraph combining will merge → proceed as unquoted
+                // Same column, looks like narrative text -> paragraph combining will merge -> proceed as unquoted
             } else if (!hasSameLineContent) {
-                return null; // isValue + nothing after closing quote → pure quoted string
+                return null; // isValue + nothing after closing quote -> pure quoted string
             }
             // Fall through: treat as unquoted string (quote chars handled by inner loop)
         }
@@ -2879,7 +2879,7 @@ class Token {
                 // # in unquoted string: handle ## escape or break for hash comment
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 if (nextChar == "#".code) {
-                    // ## escape: keep both in buffer, interpreter converts ## → #
+                    // ## escape: keep both in buffer, interpreter converts ## -> #
                     buf.addChar("#".code);
                     buf.addChar("#".code);
                     advance();

@@ -57,7 +57,7 @@ func _ready() -> void:
 	# Remove default ScrollContainer panel padding
 	scroll_container.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 
-	# Style scrollbar — thin, subtle
+	# Style scrollbar: thin, subtle
 	var scrollbar := scroll_container.get_v_scroll_bar()
 	scrollbar.custom_minimum_size.x = 7
 	var grabber_style := StyleBoxFlat.new()
@@ -69,7 +69,7 @@ func _ready() -> void:
 	var scroll_bg := StyleBoxEmpty.new()
 	scrollbar.add_theme_stylebox_override("scroll", scroll_bg)
 
-	# parse() returns a Signal you can await — it fires `completed(script)`
+	# parse() returns a Signal you can await. It fires `completed(script)`
 	# once parsing + all imports have resolved.
 	var script = await loreline.parse("res://story/CoffeeShop.lor")
 	if script == null:
@@ -147,7 +147,7 @@ func _on_dialogue(interp: LorelineInterpreter, character: String, text: String, 
 		_add_content(label)
 		_fade_in(label)
 	else:
-		# Narrative text — italic, muted
+		# Narrative text: italic, muted
 		var text_label := Label.new()
 		text_label.text = text
 		text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -277,7 +277,7 @@ func _on_choice_selected(index: int, selected_btn: Button, container: VBoxContai
 	for child in container.get_children():
 		if child is Button and child != selected_btn:
 			child.visible = false
-	# Reset position offset — VBox now places button at top, so net visual change is zero
+	# Reset position offset: VBox now places button at top, so net visual change is zero
 	selected_btn.position.y = 0
 
 	select.call(index)
@@ -368,7 +368,7 @@ func _smooth_scroll_to_bottom() -> void:
 
 
 func _gradient_bbcode(text: String) -> String:
-	# 3-stop gradient matching Unity/web: #ff5eab → #8b5cf6 → #56a0f6
+	# 3-stop gradient matching Unity/web: #ff5eab -> #8b5cf6 -> #56a0f6
 	var r0 := 255.0; var g0 := 94.0;  var b0 := 171.0  # #ff5eab (pink)
 	var r1 := 139.0; var g1 := 92.0;  var b1 := 246.0  # #8b5cf6 (purple)
 	var r2 := 86.0;  var g2 := 160.0; var b2 := 246.0  # #56a0f6 (blue)

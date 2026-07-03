@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Loreline Java Desktop Sample — Swing application.
+ * Loreline Java Desktop Sample: Swing application.
  *
  * A self-contained story player that matches the visual design of the
  * loreline-web and loreline-unity samples. Uses Java2D custom painting
@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class LorelineStory extends JFrame {
 
-    // ── Theme Colors (matching web sample CSS variables) ─────────────────────
+    // -- Theme Colors (matching web sample CSS variables) ---------------------
 
     static final Color BG        = new Color(0x15, 0x13, 0x1b);
     static final Color TEXT       = new Color(0xf0, 0xee, 0xf5);
@@ -38,12 +38,12 @@ public class LorelineStory extends JFrame {
     static final Color PURPLE     = new Color(0x8b, 0x5c, 0xf6);
     static final Color GLOW       = new Color(139, 92, 246, 26); // ~0.1 alpha
 
-    // Gradient stops for character names: #ff5eab → #8b5cf6 (40%) → #56a0f6
+    // Gradient stops for character names: #ff5eab -> #8b5cf6 (40%) -> #56a0f6
     static final Color GRAD_0 = new Color(0xff, 0x5e, 0xab);
     static final Color GRAD_1 = new Color(0x8b, 0x5c, 0xf6);
     static final Color GRAD_2 = new Color(0x56, 0xa0, 0xf6);
 
-    // ── Fonts ────────────────────────────────────────────────────────────────
+    // -- Fonts ----------------------------------------------------------------
 
     static Font narrativeFont; // Literata Italic
     static Font dialogueFont;  // Outfit Regular
@@ -51,14 +51,14 @@ public class LorelineStory extends JFrame {
     static Font choiceFont;    // Outfit Regular, smaller
     static Font resetFont;     // Outfit Regular, smaller still
 
-    // ── Layout Constants ─────────────────────────────────────────────────────
+    // -- Layout Constants -----------------------------------------------------
 
     static final int CONTENT_WIDTH = 700;
     static final int SIDE_PAD = 16;
     static final int LINE_PAD_V = 2;       // vertical padding per line
     static final float LINE_HEIGHT = 1.7f;
 
-    // ── Instance State ───────────────────────────────────────────────────────
+    // -- Instance State -------------------------------------------------------
 
     private final JPanel contentPanel;
     private final JPanel heightKeeper;
@@ -70,7 +70,7 @@ public class LorelineStory extends JFrame {
     private long scrollStartTime;
     private int scrollStart, scrollDuration;
 
-    // ── Constructor ──────────────────────────────────────────────────────────
+    // -- Constructor ----------------------------------------------------------
 
     public LorelineStory() {
         super("Loreline \u2014 Java Sample");
@@ -131,7 +131,7 @@ public class LorelineStory extends JFrame {
         getContentPane().add(scrollPane, BorderLayout.CENTER);
     }
 
-    // ── Story Loading ────────────────────────────────────────────────────────
+    // -- Story Loading --------------------------------------------------------
 
     private void startStory() {
         clearOutput();
@@ -162,7 +162,7 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ── Loreline Handlers ────────────────────────────────────────────────────
+    // -- Loreline Handlers ----------------------------------------------------
 
     private void onDialogue(Interpreter interp, String character, String text,
                             List<TextTag> tags, Runnable advance) {
@@ -194,7 +194,7 @@ public class LorelineStory extends JFrame {
         showFinished();
     }
 
-    // ── Rendering: Dialogue & Narrative ──────────────────────────────────────
+    // -- Rendering: Dialogue & Narrative --------------------------------------
 
     private void appendNarrative(String text) {
         StoryLine line = new StoryLine(null, text);
@@ -216,7 +216,7 @@ public class LorelineStory extends JFrame {
         scrollToBottom();
     }
 
-    // ── Rendering: Choices ───────────────────────────────────────────────────
+    // -- Rendering: Choices ---------------------------------------------------
 
     private void showChoices(List<ChoiceOption> options,
                              java.util.function.IntConsumer callback) {
@@ -331,7 +331,7 @@ public class LorelineStory extends JFrame {
         addLineComponent(choiceContainer);
     }
 
-    // ── Rendering: Story Finished ────────────────────────────────────────────
+    // -- Rendering: Story Finished --------------------------------------------
 
     private void showFinished() {
         scheduleDelayed(500, () -> {
@@ -353,7 +353,7 @@ public class LorelineStory extends JFrame {
         });
     }
 
-    // ── Animation: Fade In ───────────────────────────────────────────────────
+    // -- Animation: Fade In ---------------------------------------------------
 
     private void fadeIn(JComponent comp) {
         comp.putClientProperty("fadeAlpha", 0f);
@@ -387,7 +387,7 @@ public class LorelineStory extends JFrame {
         return v instanceof Float ? (Float) v : 0f;
     }
 
-    // ── Animation: Smooth Scroll ─────────────────────────────────────────────
+    // -- Animation: Smooth Scroll ---------------------------------------------
 
     private void scrollToBottom() {
         SwingUtilities.invokeLater(() -> {
@@ -419,7 +419,7 @@ public class LorelineStory extends JFrame {
         });
     }
 
-    // ── Timer Management ─────────────────────────────────────────────────────
+    // -- Timer Management -----------------------------------------------------
 
     private void scheduleDelayed(int delayMs, Runnable action) {
         Timer t = new Timer(delayMs, e -> action.run());
@@ -451,11 +451,11 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    //  INNER CLASSES — Custom Components
-    // ══════════════════════════════════════════════════════════════════════════
+    // ==========================================================================
+    //  INNER CLASSES: Custom Components
+    // ==========================================================================
 
-    // ── StoryLine: Narrative & Dialogue ───────────────────────────────────────
+    // -- StoryLine: Narrative & Dialogue ---------------------------------------
 
     /**
      * Custom-painted component for a single line of narrative or dialogue.
@@ -625,7 +625,7 @@ public class LorelineStory extends JFrame {
                         namePartAs.getIterator(), frc);
                     float nameWidth = nameLayout.getAdvance();
 
-                    // Draw name part with gradient (narrower range matching Unity's 0.30–0.70)
+                    // Draw name part with gradient (narrower range matching Unity's 0.30-0.70)
                     if (nameWidth > 1) {
                         float fullW = nameWidth / 0.40f;
                         float gx0 = x - 0.30f * fullW;
@@ -687,7 +687,7 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ── ChoiceButton ─────────────────────────────────────────────────────────
+    // -- ChoiceButton ---------------------------------------------------------
 
     /**
      * Custom-painted choice button with rounded rect border, hover, selected,
@@ -732,7 +732,7 @@ public class LorelineStory extends JFrame {
 
         @Override
         public Dimension getPreferredSize() {
-            // During collapse animation, an explicit size is set — honor it
+            // During collapse animation, an explicit size is set: honor it
             if (isPreferredSizeSet()) {
                 return super.getPreferredSize();
             }
@@ -804,9 +804,9 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ── ResetButton ──────────────────────────────────────────────────────────
+    // -- ResetButton ----------------------------------------------------------
 
-    /** "Play again" button — smaller, dim text, same rounded style. */
+    /** "Play again" button: smaller, dim text, same rounded style. */
     static class ResetButton extends JPanel {
         final String text;
         private boolean hovered;
@@ -873,7 +873,7 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ── DarkScrollBarUI ──────────────────────────────────────────────────────
+    // -- DarkScrollBarUI ------------------------------------------------------
 
     /** Minimal dark scrollbar matching the web sample's thin custom scrollbar. */
     static class DarkScrollBarUI extends BasicScrollBarUI {
@@ -918,9 +918,9 @@ public class LorelineStory extends JFrame {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
+    // ==========================================================================
     //  MAIN
-    // ══════════════════════════════════════════════════════════════════════════
+    // ==========================================================================
 
     public static void main(String[] args) {
         // Load custom fonts

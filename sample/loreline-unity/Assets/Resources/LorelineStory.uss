@@ -1,5 +1,5 @@
 /* ============================================================================
- *  LORELINE STORY — Unity UI Toolkit Stylesheet
+ *  LORELINE STORY: Unity UI Toolkit Stylesheet
  *
  *  Dark theme matching the Loreline web sample (sample/loreline-web).
  *  Colors, spacing, and animations are ported from the web CSS.
@@ -16,7 +16,7 @@
 
 
 /* ============================================================================
- *  ROOT — Full-screen dark background
+ *  ROOT: Full-screen dark background
  * ============================================================================ */
 
 .root {
@@ -28,14 +28,14 @@
 
 
 /* ============================================================================
- *  SCROLL VIEW — Full-screen, thin scrollbar
+ *  SCROLL VIEW: Full-screen, thin scrollbar
  * ============================================================================ */
 
 .scroll-view {
     flex-grow: 1;
 }
 
-/* Thin scrollbar track — transparent */
+/* Thin scrollbar track, transparent */
 .scroll-view .unity-scroller--vertical {
     width: 7px;
 }
@@ -45,7 +45,7 @@
     border-width: 0;
 }
 
-/* Scrollbar thumb — subtle dark border color */
+/* Scrollbar thumb, subtle dark border color */
 .scroll-view .unity-scroller--vertical .unity-base-slider__dragger {
     background-color: rgb(46, 42, 58);
     border-radius: 4px;
@@ -61,7 +61,7 @@
 
 
 /* ============================================================================
- *  TWO-COLUMN LAYOUT — Scroll-stable (matching web "table" trick)
+ *  TWO-COLUMN LAYOUT: Scroll-stable (matching web "table" trick)
  *
  *  The content-wrapper is a horizontal flex row with two children:
  *    - content-column: holds all story elements (flex-grow: 1)
@@ -89,7 +89,7 @@
 
 
 /* ============================================================================
- *  NARRATIVE TEXT — Serif, muted color
+ *  NARRATIVE TEXT: Serif, muted color
  * ============================================================================ */
 
 .narrative {
@@ -104,7 +104,7 @@
 
 
 /* ============================================================================
- *  DIALOGUE TEXT — Sans-serif, primary color
+ *  DIALOGUE TEXT: Sans-serif, primary color
  * ============================================================================ */
 
 .dialogue {
@@ -149,7 +149,7 @@
     background-color: rgba(139, 92, 246, 0.1);
 }
 
-/* Selected state — purple highlight, transition for slide animation */
+/* Selected state: purple highlight, transition for slide animation */
 .choice-button.selected {
     border-color: rgb(139, 92, 246);
     color: rgb(240, 238, 245);
@@ -160,7 +160,7 @@
     transition-timing-function: ease-in-out, ease;
 }
 
-/* Fading state — other choices disappear */
+/* Fading state: other choices disappear */
 .choice-button.fading {
     opacity: 0;
     transition-property: opacity;

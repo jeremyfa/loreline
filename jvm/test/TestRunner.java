@@ -15,7 +15,7 @@ import java.util.regex.*;
  *   - Runs roundtrip (parse -> print -> parse -> print) stability checks
  *   - Reports pass/fail counts
  *
- * Note: ast-print is intentionally only run by the CLI test runner —
+ * Note: ast-print is intentionally only run by the CLI test runner.
  * AstPrinter is a pure Haxe debug pretty-printer with no target-specific
  * behavior, so a single CLI run is enough to catch any missing node-type
  * case. That's why the CLI test count is higher than each per-target
@@ -27,7 +27,7 @@ public class TestRunner {
     static int fileCount = 0;
     static int fileFailCount = 0;
 
-    // ── Helpers ──────────────────────────────────────────────────────────
+    // -- Helpers ----------------------------------------------------------
 
     static List<String> collectTestFiles(String directory) {
         List<String> files = new ArrayList<>();
@@ -116,7 +116,7 @@ public class TestRunner {
         return -1;
     }
 
-    // ── YAML parser ─────────────────────────────────────────────────────
+    // -- YAML parser -----------------------------------------------------
 
     @SuppressWarnings("unchecked")
     static List<Map<String, Object>> parseSimpleYaml(String text) {
@@ -235,7 +235,7 @@ public class TestRunner {
         return tests;
     }
 
-    // ── Test runner ─────────────────────────────────────────────────────
+    // -- Test runner -----------------------------------------------------
 
     @SuppressWarnings("unchecked")
     // Canonical host-registered functions used by test/Functions-Custom.lor to verify
@@ -428,7 +428,7 @@ public class TestRunner {
         return result[0];
     }
 
-    // ── Main ────────────────────────────────────────────────────────────
+    // -- Main ------------------------------------------------------------
 
     public static void main(String[] args) {
         if (args.length < 1) {
