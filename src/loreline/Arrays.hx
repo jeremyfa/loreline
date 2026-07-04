@@ -7,7 +7,7 @@ package loreline;
  * target without erase-generics, `Array<Dynamic>` compiles to the raw
  * `Array` interface (identity cast), while `Array<Any>` compiles to the
  * concrete `Array<object>` and converts (copies) arrays whose element type
- * is a value type, e.g. `Array<Int>`. See CS_COMPATIBILITY.md.
+ * is a value type, e.g. `Array<Int>`.
  */
 class Arrays {
 
