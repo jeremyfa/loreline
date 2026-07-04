@@ -18,6 +18,11 @@ class Equal {
         if (a == b)
             return true;
 
+        // Not equal above, so if either side is null they cannot match
+        // (also protects the container checks below from null values)
+        if (a == null || b == null)
+            return false;
+
         if (Arrays.isArray(a)) {
             if (Arrays.isArray(b)) {
                 return arrayEqual(interpreter, a, b);

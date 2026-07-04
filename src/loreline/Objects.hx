@@ -8,7 +8,10 @@ class Objects {
 
     public static function isFields(value:Any):Bool {
 
-        if (value is Fields) {
+        if (value == null) {
+            return false;
+        }
+        else if (value is Fields) {
             return true;
         }
         else if (value is StringMap) {
@@ -215,6 +218,11 @@ class Objects {
         return new java.util.LinkedHashMap();
         #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         return cs.Syntax.code('new System.Collections.Generic.Dictionary<string,object>()');
+        #elseif (js && loreline_use_js_types && !macro)
+        // Plain JS object: idiomatic for JS hosts and JSON-friendly.
+        // Reads/writes go through the Reflect fallbacks in this class.
+        final fields:Dynamic = {};
+        return fields;
         #else
         return new Map<String,Any>();
         #end

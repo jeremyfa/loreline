@@ -79,28 +79,13 @@ const char *loreline_call_host_function(int interp_id, const char *name, const c
 
 	Variant result = fn.call(wrapper_variant, gdArgs);
 
-	// Convert result to JSON string for JS
+	// Convert result to JSON string for JS (containers included)
 	String result_json;
-	switch (result.get_type()) {
-		case Variant::INT:
-			result_json = String::num_int64(result);
-			break;
-		case Variant::FLOAT:
-			result_json = String::num(result);
-			break;
-		case Variant::BOOL:
-			result_json = ((bool)result) ? "true" : "false";
-			break;
-		case Variant::STRING: {
-			// JSON-encode the string
-			String s = result;
-			s = s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
-			result_json = "\"" + s + "\"";
-			break;
-		}
-		default:
-			result_json = "null";
-			break;
+	if (result.get_type() == Variant::NIL) {
+		result_json = "null";
+	}
+	else {
+		result_json = JSON::stringify(result);
 	}
 
 	// Copy to a malloc'd buffer that persists after return

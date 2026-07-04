@@ -222,6 +222,9 @@ class RuntimeScope {
  * beat's declaring scope; empty for top-level beats). Produced whenever
  * an expression reads an identifier that resolves to a beat.
  */
+#if js
+@:expose
+#end
 class RuntimeBeatRef {
 
     /**
@@ -252,6 +255,16 @@ class RuntimeBeatRef {
             return ref.beat;
         }
         return null;
+    }
+
+    /**
+     * Returns the name of the beat if the given runtime value is a beat
+     * declaration or a beat reference, null otherwise. Used by host
+     * bindings, where beat values cross the boundary as their name.
+     */
+    public static function beatNameOf(value:Any):Null<String> {
+        final beat = beatOf(value);
+        return beat != null ? beat.name : null;
     }
 
 }
@@ -1496,6 +1509,16 @@ typedef InterpreterOptions = {
             final keys = Objects.getJavaMapKeys(fields);
             for (key in keys) {
                 Reflect.setField(result, key, serializeValue(Objects.getJavaMapField(fields, key)));
+            }
+        }
+        #elseif (js && loreline_use_js_types && !macro)
+        else if (Type.getClass(fields) == null) {
+            // Plain JS object fields (js types mode): same diffing as StringMap
+            for (key in Reflect.fields(fields)) {
+                final value:Any = Reflect.field(fields, key);
+                if (originalFields == null || !Objects.fieldExists(this, originalFields, key) || !Equal.equal(this, Objects.getField(this, originalFields, key), value)) {
+                    Reflect.setField(result, key, serializeValue(value));
+                }
             }
         }
         #end
@@ -4768,6 +4791,13 @@ typedef InterpreterOptions = {
             cs.Syntax.code('result[{0}] = {1}', field.name, val);
         }
         return cs.Syntax.code('result');
+        #elseif (js && loreline_use_js_types && !macro)
+        // Plain JS object, consistent with Objects.createFields on this target.
+        final obj:Dynamic = {};
+        for (field in expr) {
+            Reflect.setField(obj, field.name, evaluateExpression(field.value));
+        }
+        return obj;
         #else
         final obj = new Map<String, Any>();
         for (field in expr) {

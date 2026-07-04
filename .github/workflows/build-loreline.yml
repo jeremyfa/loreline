@@ -1489,6 +1489,9 @@ jobs:
         run: |
           bash godot-pkg/sample/run-headless-test.sh scenes/test_async.tscn "FINISHED" "DIALOGUE: Your score is 42." "[async] fetchScore resolving"
 
+      - name: Run container fields test scene
+        run: bash godot-pkg/sample/run-headless-test.sh scenes/test_fields.tscn "TEST PASSED"
+
       - name: Run GC regression scene (must survive 35s of post-FINISHED idle, 2+ forced collects)
         run: |
           RUN_TIMEOUT=60 bash godot-pkg/sample/run-headless-test.sh scenes/test_gc_crash_repro.tscn "GC_REGRESSION_OK"
