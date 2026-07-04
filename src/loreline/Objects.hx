@@ -8,7 +8,10 @@ class Objects {
 
     public static function isFields(value:Any):Bool {
 
-        if (value is Fields) {
+        if (value == null) {
+            return false;
+        }
+        else if (value is Fields) {
             return true;
         }
         else if (value is StringMap) {
@@ -220,6 +223,11 @@ class Objects {
         // writes go through the Reflect fallbacks in this class, which
         // dispatch on the runtime type.
         final fields:Dynamic = untyped __gdscript__("{}");
+        return fields;
+        #elseif (js && loreline_use_js_types && !macro)
+        // Plain JS object: idiomatic for JS hosts and JSON-friendly.
+        // Reads/writes go through the Reflect fallbacks in this class.
+        final fields:Dynamic = {};
         return fields;
         #else
         return new Map<String,Any>();

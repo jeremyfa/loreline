@@ -71,6 +71,26 @@ public:
 
 HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
 
+// Parses a JSON string returned by the JS bridge into a Variant.
+// Values cross the eval boundary as JSON so containers (arrays,
+// dictionaries) survive; scalars ride the same way for uniformity.
+static Variant loreline_json_to_variant(const Variant &json_str) {
+	if (json_str.get_type() != Variant::STRING) return Variant();
+	String s = json_str;
+	if (s.is_empty()) return Variant();
+	Ref<JSON> json_parser;
+	json_parser.instantiate();
+	if (json_parser->parse(s) != OK) return Variant();
+	return json_parser->get_data();
+}
+
+// Serializes a Variant (including arrays and dictionaries) into a
+// JS expression that rebuilds the value on the JS side.
+static String loreline_variant_to_js_json(const Variant &value) {
+	String json = JSON::stringify(value);
+	return "JSON.parse('" + loreline_escape_js(json) + "')";
+}
+
 // CallableCustom passed to the user's file_handler on the JS backend. When the
 // user calls it with content, evals `_lorelineBridge.provideFile(reqId, content)`
 // to resume `imports.resolve` in the JS Loreline. If the Callable is dropped
@@ -619,6 +639,24 @@ Variant LorelineInterpreter::_value_to_variant(const Loreline_Value &value) {
 			return Variant(value.boolValue);
 		case Loreline_StringValue:
 			return Variant(String::utf8(value.stringValue.c_str()));
+		case Loreline_ArrayValue: {
+			Array arr;
+			const int len = value.arrayValue.length();
+			for (int i = 0; i < len; i++) {
+				arr.append(_value_to_variant(value.arrayValue.get(i)));
+			}
+			return arr;
+		}
+		case Loreline_ObjectValue: {
+			Dictionary dict;
+			const int count = value.objectValue.count();
+			for (int i = 0; i < count; i++) {
+				Loreline_String key = value.objectValue.keyAt(i);
+				if (key.isNull()) continue;
+				dict[String::utf8(key.c_str())] = _value_to_variant(value.objectValue.get(key.c_str()));
+			}
+			return dict;
+		}
 		case Loreline_Null:
 		default:
 			return Variant();
@@ -636,6 +674,44 @@ Loreline_Value LorelineInterpreter::_variant_to_value(const Variant &variant) {
 		case Variant::STRING: {
 			String s = variant;
 			return Loreline_Value::from_string(Loreline_String(s.utf8().get_data()));
+		}
+		case Variant::ARRAY: {
+			Array arr = variant;
+			Loreline_Array result = Loreline_Array::create();
+			const int len = (int)arr.size();
+			for (int i = 0; i < len; i++) {
+				result.push(_variant_to_value(arr[i]));
+			}
+			return Loreline_Value::from_array(result);
+		}
+		case Variant::DICTIONARY: {
+			Dictionary dict = variant;
+			Loreline_Object result = Loreline_Object::create();
+			Array keys = dict.keys();
+			const int count = (int)keys.size();
+			for (int i = 0; i < count; i++) {
+				// Loreline fields are string-keyed: non-string keys are stringified
+				String key = String(keys[i]);
+				result.set(key.utf8().get_data(), _variant_to_value(dict[keys[i]]));
+			}
+			return Loreline_Value::from_object(result);
+		}
+		// Packed arrays convert like plain arrays
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY: {
+			// Variant supports generic indexed iteration over packed arrays
+			// through implicit conversion to Array
+			Array arr = variant;
+			Loreline_Array result = Loreline_Array::create();
+			const int len = (int)arr.size();
+			for (int i = 0; i < len; i++) {
+				result.push(_variant_to_value(arr[i]));
+			}
+			return Loreline_Value::from_array(result);
 		}
 		case Variant::NIL:
 		default:
@@ -746,8 +822,8 @@ Variant LorelineInterpreter::get_character_field(const String &character, const 
 	if (!js) return Variant();
 	String escaped_char = loreline_escape_js(character);
 	String escaped_field = loreline_escape_js(field);
-	return js->eval("_lorelineBridge.getCharacterField(" + String::num_int64(_js_id) +
-		",'" + escaped_char + "','" + escaped_field + "')", true);
+	return loreline_json_to_variant(js->eval("_lorelineBridge.getCharacterField(" + String::num_int64(_js_id) +
+		",'" + escaped_char + "','" + escaped_field + "')", true));
 #else
 	if (!_interp) {
 		return Variant();
@@ -769,20 +845,8 @@ void LorelineInterpreter::set_character_field(const String &character, const Str
 	if (!js) return;
 	String escaped_char = loreline_escape_js(character);
 	String escaped_field = loreline_escape_js(field);
-	String js_value;
-	switch (value.get_type()) {
-		case Variant::INT: js_value = String::num_int64(value); break;
-		case Variant::FLOAT: js_value = String::num(value); break;
-		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
-		case Variant::STRING: {
-			String s = value;
-			js_value = "'" + loreline_escape_js(s) + "'";
-			break;
-		}
-		default: js_value = "null"; break;
-	}
 	js->eval("_lorelineBridge.setCharacterField(" + String::num_int64(_js_id) +
-		",'" + escaped_char + "','" + escaped_field + "'," + js_value + ")", true);
+		",'" + escaped_char + "','" + escaped_field + "'," + loreline_variant_to_js_json(value) + ")", true);
 #else
 	if (!_interp) {
 		return;
@@ -803,8 +867,8 @@ Variant LorelineInterpreter::get_state_field(const String &field) {
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return Variant();
 	String escaped_field = loreline_escape_js(field);
-	return js->eval("_lorelineBridge.getStateField(" + String::num_int64(_js_id) +
-		",'" + escaped_field + "')", true);
+	return loreline_json_to_variant(js->eval("_lorelineBridge.getStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "')", true));
 #else
 	if (!_interp) {
 		return Variant();
@@ -823,20 +887,8 @@ void LorelineInterpreter::set_state_field(const String &field, const Variant &va
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return;
 	String escaped_field = loreline_escape_js(field);
-	String js_value;
-	switch (value.get_type()) {
-		case Variant::INT: js_value = String::num_int64(value); break;
-		case Variant::FLOAT: js_value = String::num(value); break;
-		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
-		case Variant::STRING: {
-			String s = value;
-			js_value = "'" + loreline_escape_js(s) + "'";
-			break;
-		}
-		default: js_value = "null"; break;
-	}
 	js->eval("_lorelineBridge.setStateField(" + String::num_int64(_js_id) +
-		",'" + escaped_field + "'," + js_value + ")", true);
+		",'" + escaped_field + "'," + loreline_variant_to_js_json(value) + ")", true);
 #else
 	if (!_interp) {
 		return;
@@ -855,8 +907,8 @@ Variant LorelineInterpreter::get_top_level_state_field(const String &field) {
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return Variant();
 	String escaped_field = loreline_escape_js(field);
-	return js->eval("_lorelineBridge.getTopLevelStateField(" + String::num_int64(_js_id) +
-		",'" + escaped_field + "')", true);
+	return loreline_json_to_variant(js->eval("_lorelineBridge.getTopLevelStateField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "')", true));
 #else
 	if (!_interp) {
 		return Variant();
@@ -875,20 +927,8 @@ void LorelineInterpreter::set_top_level_state_field(const String &field, const V
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return;
 	String escaped_field = loreline_escape_js(field);
-	String js_value;
-	switch (value.get_type()) {
-		case Variant::INT: js_value = String::num_int64(value); break;
-		case Variant::FLOAT: js_value = String::num(value); break;
-		case Variant::BOOL: js_value = ((bool)value) ? "true" : "false"; break;
-		case Variant::STRING: {
-			String s = value;
-			js_value = "'" + loreline_escape_js(s) + "'";
-			break;
-		}
-		default: js_value = "null"; break;
-	}
 	js->eval("_lorelineBridge.setTopLevelStateField(" + String::num_int64(_js_id) +
-		",'" + escaped_field + "'," + js_value + ")", true);
+		",'" + escaped_field + "'," + loreline_variant_to_js_json(value) + ")", true);
 #else
 	if (!_interp) {
 		return;

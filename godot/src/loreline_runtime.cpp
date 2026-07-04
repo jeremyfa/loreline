@@ -22,6 +22,39 @@
 
 Loreline *Loreline::_singleton = nullptr;
 
+#ifdef LORELINE_USE_JS
+
+// Defined in loreline_options.cpp (EMSCRIPTEN_KEEPALIVE).
+extern "C" const char *loreline_call_host_function(int interp_id, const char *name, const char *args_json);
+
+// Installs window._lorelineCallHost, the synchronous JS -> wasm entry point
+// used by the bridge's custom function wrappers. The bridge itself is eval'd
+// in the page's global context, where Emscripten's Module object is not
+// visible, and side-module (GDExtension) exports never appear on Module
+// anyway, so Module.ccall cannot reach loreline_call_host_function. Instead
+// we run a NON-global eval (which executes inside the engine module's scope,
+// where wasmTable and GodotRuntime are visible) and bind our exported
+// function through its table index, marshalling strings via GodotRuntime.
+static void loreline_install_call_host(JavaScriptBridge *js) {
+	String install = String(
+		"window._lorelineCallHost = (function() {"
+		" if (typeof wasmTable === 'undefined' || typeof GodotRuntime === 'undefined') return null;"
+		" var fn = wasmTable.get(") + String::num_int64((int64_t)(uintptr_t)&loreline_call_host_function) + String(");"
+		" if (!fn) return null;"
+		" return function(interpId, name, argsJson) {"
+		"  var namePtr = GodotRuntime.allocString(name);"
+		"  var argsPtr = GodotRuntime.allocString(argsJson);"
+		"  var retPtr = fn(interpId, namePtr, argsPtr);"
+		"  GodotRuntime.free(namePtr);"
+		"  GodotRuntime.free(argsPtr);"
+		"  return retPtr ? GodotRuntime.parseString(retPtr) : 'null';"
+		" };"
+		"})();");
+	js->eval(install, false);
+}
+
+#endif // LORELINE_USE_JS
+
 Loreline *Loreline::shared() {
 	if (_singleton) return _singleton;
 
@@ -43,6 +76,7 @@ Loreline *Loreline::shared() {
 		if (js) {
 			js->eval(String::utf8(LORELINE_JS_BUNDLE), true);
 			js->eval(String::utf8(LORELINE_JS_BRIDGE), true);
+			loreline_install_call_host(js);
 			_singleton->_js_loaded = true;
 		}
 #else
@@ -97,6 +131,7 @@ void Loreline::_notification(int p_what) {
 				if (js) {
 					js->eval(String::utf8(LORELINE_JS_BUNDLE), true);
 					js->eval(String::utf8(LORELINE_JS_BRIDGE), true);
+					loreline_install_call_host(js);
 					_js_loaded = true;
 				}
 			}

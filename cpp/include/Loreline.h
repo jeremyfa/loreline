@@ -4,7 +4,14 @@
  * Public header for the Loreline interactive fiction runtime.
  * Link against libLoreline.dylib / libLoreline.so / Loreline.dll.
  *
- * All Loreline_String values are ref-counted and auto-managed.
+ * All Loreline_String, Loreline_Array and Loreline_Object values are
+ * ref-counted and auto-managed. Containers are deep-copy snapshots that
+ * hold no runtime pointers: they are safe to keep and to pass across
+ * threads by value, and mutating them never affects interpreter state
+ * (pass them back through a setter to apply changes).
+ * Beat values and beat references cross the boundary as their beat name
+ * string, usable with the dynamic beat APIs; the captured scope chain
+ * does not survive the trip.
  * Only Script and Interpreter handles require explicit release.
  */
 
@@ -76,14 +83,78 @@ typedef struct Loreline_AsyncResolve Loreline_AsyncResolve;
  * by Loreline_provideFile, which must be called exactly once per request. */
 typedef struct Loreline_FileRequest Loreline_FileRequest;
 
-/* -- Value type (tagged union for character fields) ----------------------- */
+/* -- Value type (tagged union for state and character fields) ------------- */
 
 enum Loreline_ValueType {
     Loreline_Null = 0,
     Loreline_Int,
     Loreline_Float,
     Loreline_Bool,
-    Loreline_StringValue
+    Loreline_StringValue,
+    Loreline_ArrayValue,
+    Loreline_ObjectValue
+};
+
+struct LORELINE_PUBLIC Loreline_Value;
+
+/* Ref-counted array of values, auto-managed like Loreline_String.
+ *
+ * Containers crossing the API are DEEP-COPY SNAPSHOTS: a value returned
+ * by a getter is fully owned by the host and safe to keep or pass across
+ * threads; mutating it never affects interpreter state. To apply changes,
+ * pass the container back through a setter (which copies it in). */
+struct Loreline_ArrayData;
+
+class LORELINE_PUBLIC Loreline_Array {
+    Loreline_ArrayData* ptr;
+    friend struct Loreline_Value;
+public:
+    Loreline_Array();
+    Loreline_Array(const Loreline_Array& o);
+    Loreline_Array(Loreline_Array&& o);
+    ~Loreline_Array();
+    Loreline_Array& operator=(const Loreline_Array& o);
+    Loreline_Array& operator=(Loreline_Array&& o);
+
+    /* Creates a new, empty array (host-side, to build setter values) */
+    static Loreline_Array create();
+
+    int length() const;
+    Loreline_Value get(int index) const;
+    void set(int index, Loreline_Value value);
+    void push(Loreline_Value value);
+    bool isNull() const;
+    operator bool() const;
+};
+
+/* Ref-counted string-keyed object, auto-managed like Loreline_String.
+ * Entries keep insertion order; key lookup is a linear scan, intended
+ * for the typical field counts of story state. Same deep-copy snapshot
+ * semantics as Loreline_Array. */
+struct Loreline_ObjectData;
+
+class LORELINE_PUBLIC Loreline_Object {
+    Loreline_ObjectData* ptr;
+    friend struct Loreline_Value;
+public:
+    Loreline_Object();
+    Loreline_Object(const Loreline_Object& o);
+    Loreline_Object(Loreline_Object&& o);
+    ~Loreline_Object();
+    Loreline_Object& operator=(const Loreline_Object& o);
+    Loreline_Object& operator=(Loreline_Object&& o);
+
+    /* Creates a new, empty object (host-side, to build setter values) */
+    static Loreline_Object create();
+
+    int count() const;
+    Loreline_String keyAt(int index) const;
+    Loreline_Value get(const char* key) const;
+    void set(const char* key, Loreline_Value value);
+    bool exists(const char* key) const;
+    void remove(const char* key);
+    bool isNull() const;
+    operator bool() const;
 };
 
 struct LORELINE_PUBLIC Loreline_Value {
@@ -94,12 +165,16 @@ struct LORELINE_PUBLIC Loreline_Value {
         bool boolValue;
     };
     Loreline_String stringValue;
+    Loreline_Array arrayValue;
+    Loreline_Object objectValue;
 
     static Loreline_Value null_val();
     static Loreline_Value from_int(int v);
     static Loreline_Value from_float(double v);
     static Loreline_Value from_bool(bool v);
     static Loreline_Value from_string(Loreline_String v);
+    static Loreline_Value from_array(Loreline_Array v);
+    static Loreline_Value from_object(Loreline_Object v);
 };
 
 /* -- Node info ------------------------------------------------------------ */
