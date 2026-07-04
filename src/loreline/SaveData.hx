@@ -92,6 +92,21 @@ typedef SaveDataScope = {
     var ?head:SaveDataNode;
     /** Insertion related to this scope, if any */
     var ?insertion:Int;
+    /** Captured scope chain, when this scope runs a beat invoked through a beat reference */
+    var ?captured:Array<SaveDataScope>;
+}
+
+/**
+ * Represents a beat reference stored as a state field value.
+ * Discriminated from plain field objects by `type == "$beatRef"`.
+ */
+typedef SaveDataBeatRef = {
+    /** Marker, always "$beatRef" */
+    var type:String;
+    /** The referenced beat */
+    var beat:SaveDataBeat;
+    /** The captured scope chain, if any */
+    var ?stack:Array<SaveDataScope>;
 }
 
 /**

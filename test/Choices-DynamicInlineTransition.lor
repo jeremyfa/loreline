@@ -1,0 +1,34 @@
+
+state
+  dest: "CoffeeRoom"
+
+beat Main
+  Where to?
+  choice
+    Go to the coffee room -> beat(dest)
+    Stay here
+      You stayed.
+
+beat CoffeeRoom
+  You entered the coffee room.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Where to?
+
+    + Go to the coffee room
+    + Stay here
+
+    ~ You entered the coffee room.
+- choices: [1]
+  expected: |
+    ~ Where to?
+
+    + Go to the coffee room
+    + Stay here
+
+    ~ You stayed.
+</test>
+*/

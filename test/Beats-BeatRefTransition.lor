@@ -1,0 +1,23 @@
+
+beat Main
+  new state
+    code: "alpha"
+
+  beat Ending
+    Ending with $code.
+
+  ref = Ending
+  -> Hub
+
+beat Hub
+  At the hub.
+  -> beat(ref)
+
+/*
+<test>
+- expected: |
+    ~ At the hub.
+
+    ~ Ending with alpha.
+</test>
+*/

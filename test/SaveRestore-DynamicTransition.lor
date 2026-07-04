@@ -1,0 +1,39 @@
+
+state
+  dest: "Chapter2"
+
+beat Main
+  Chapter one.
+  -> beat(dest, "hero")
+
+beat Chapter2(role)
+  Chapter two as $role.
+  choice
+    Continue
+      The $role continues.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Chapter one.
+
+    ~ Chapter two as hero.
+
+    + Continue
+
+    ~ The hero continues.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Chapter one.
+
+    ~ Chapter two as hero.
+
+    + Continue
+
+    + Continue
+
+    ~ The hero continues.
+</test>
+*/

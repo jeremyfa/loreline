@@ -1,0 +1,18 @@
+
+// call() works inside function code too, but only for calling other functions
+
+function helper(a, b)
+  return a + b
+
+function compute(x)
+  return call("helper", x, 10)
+
+beat Main
+  The total is $compute(5)
+
+/*
+<test>
+- expected: |
+    ~ The total is 15
+</test>
+*/

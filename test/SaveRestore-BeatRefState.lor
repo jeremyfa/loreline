@@ -1,0 +1,68 @@
+
+beat Main
+  new state
+    gem: "opal"
+
+  beat Vault
+    The vault holds $gem.
+    choice
+      Take it
+        You take the $gem.
+      Leave it
+        You leave the $gem.
+
+  ref = Vault
+  -> Town
+
+beat Town
+  In town.
+  beat(ref)
+  Back in town.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ In town.
+
+    ~ The vault holds opal.
+
+    + Take it
+    + Leave it
+
+    ~ You take the opal.
+
+    ~ Back in town.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ In town.
+
+    ~ The vault holds opal.
+
+    + Take it
+    + Leave it
+
+    + Take it
+    + Leave it
+
+    ~ You leave the opal.
+
+    ~ Back in town.
+- choices: [0]
+  saveAtDialogue: 1
+  expected: |
+    ~ In town.
+
+    ~ The vault holds opal.
+
+    ~ The vault holds opal.
+
+    + Take it
+    + Leave it
+
+    ~ You take the opal.
+
+    ~ Back in town.
+</test>
+*/

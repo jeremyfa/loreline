@@ -1,0 +1,40 @@
+
+state
+  dest: null
+
+beat Main
+  dest = Finale
+  Chapter one.
+  choice
+    Continue
+      Continuing on.
+  -> beat(dest)
+
+beat Finale
+  The finale.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Chapter one.
+
+    + Continue
+
+    ~ Continuing on.
+
+    ~ The finale.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Chapter one.
+
+    + Continue
+
+    + Continue
+
+    ~ Continuing on.
+
+    ~ The finale.
+</test>
+*/

@@ -629,7 +629,39 @@ class Token {
                 case KwCharacter:
                     nextBlock = CharacterIndent;
                 case KwBeat:
-                    nextBlock = BeatIndent;
+                    // A `beat` keyword right after `->` or `+` is a dynamic target
+                    // (e.g. `-> beat(expr)`), not a beat declaration. Skipping the
+                    // classifier prevents a later Indent block from being
+                    // misclassified as a beat body.
+                    var prevIndex = tokens.length - 2;
+                    while (prevIndex >= 0) {
+                        switch tokens[prevIndex].type {
+                            case CommentLine(_) | CommentMultiLine(_):
+                                prevIndex--;
+                            case _:
+                                break;
+                        }
+                    }
+                    final isDynamicTargetKeyword = prevIndex >= 0 && switch tokens[prevIndex].type {
+                        case Arrow | OpPlus: true;
+                        case _: false;
+                    };
+                    // A `beat` keyword directly followed by `(` is a dynamic beat
+                    // call statement (e.g. `beat("Name")`), not a declaration either.
+                    var lookahead = pos;
+                    while (lookahead < length) {
+                        final c = input.uCharCodeAt(lookahead);
+                        if (c == " ".code || c == "\t".code) {
+                            lookahead++;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    final isBeatCallStatement = lookahead < length && input.uCharCodeAt(lookahead) == "(".code;
+                    if (!isDynamicTargetKeyword && !isBeatCallStatement) {
+                        nextBlock = BeatIndent;
+                    }
                 case KwChoice:
                     nextBlock = ChoiceIndent;
                 case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator:
@@ -1487,6 +1519,14 @@ class Token {
             while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
                 pos++;
             }
+            // Optional argument list right after the identifier: -> Name(args)
+            // or a dynamic target: -> beat(expr, args). Single-line, balanced.
+            if (pos < this.length && input.uCharCodeAt(pos) == "(".code) {
+                pos = skipBalancedParens(pos, parentBlockType() == KwBeat);
+                if (pos == -1) {
+                    return false;
+                }
+            }
         }
         else {
             return false;
@@ -1533,6 +1573,14 @@ class Token {
             pos++;
             while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
                 pos++;
+            }
+            // Optional argument list right after the identifier: + Name(args)
+            // or a dynamic target: + beat(expr, args). Single-line, balanced.
+            if (pos < this.length && input.uCharCodeAt(pos) == "(".code) {
+                pos = skipBalancedParens(pos, parentBlockType() == KwBeat);
+                if (pos == -1) {
+                    return false;
+                }
             }
         }
         else {
@@ -2318,7 +2366,7 @@ class Token {
         while (i >= 0) {
             final token = tokenized[i];
             switch token.type {
-                case Identifier(_) | RParen | RBracket:
+                case Identifier(_) | RParen | RBracket | KwBeat:
                     return true;
                 case CommentLine(_) | CommentMultiLine(_) | CommentHash(_) | Indent | Unindent | LineBreak:
                     // Continue
@@ -2510,6 +2558,46 @@ class Token {
             }
             else break;
         }
+        return p;
+    }
+
+    /**
+     * Stateless lookahead: scans exactly one balanced (...) group starting at `(`.
+     * Single-line only. Line and block comments inside are handled like nextToken()
+     * does; nested " strings are handled via scanStringEnd().
+     * Returns the position after the closing paren, or -1 on newline/unterminated.
+     */
+    function skipBalancedParens(p:Int, allowTags:Bool):Int {
+        if (p >= length || input.uCharCodeAt(p) != "(".code) return -1;
+        p++;
+        var depth = 1;
+        while (p < length && depth > 0) {
+            final ic = input.uCharCodeAt(p);
+            if (ic == '\\'.code) { p += 2; continue; }
+            if (ic == '\n'.code) return -1;
+            if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '/'.code) return -1;
+            if (ic == '/'.code && p + 1 < length && input.uCharCodeAt(p + 1) == '*'.code) {
+                p += 2;
+                while (true) {
+                    if (p >= length) return -1;
+                    if (input.uCharCodeAt(p) == '\n'.code) return -1;
+                    if (p + 1 < length && input.uCharCodeAt(p) == '*'.code && input.uCharCodeAt(p + 1) == '/'.code) {
+                        p += 2; break;
+                    }
+                    p++;
+                }
+                continue;
+            }
+            if (ic == '"'.code) {
+                p = scanStringEnd(p, allowTags);
+                if (p == -1) return -1;
+                continue;
+            }
+            if (ic == '('.code) depth++;
+            else if (ic == ')'.code) depth--;
+            p++;
+        }
+        if (depth != 0) return -1;
         return p;
     }
 

@@ -1,0 +1,20 @@
+
+// A static transition to a nested beat captures the declaring scope
+// chain when it is live, so the beat keeps its parent temporary state
+// across the stack clear.
+
+beat Main
+  new state
+    tone: "warm"
+
+  beat Ending
+    A $tone ending.
+
+  -> Ending
+
+/*
+<test>
+- expected: |
+    ~ A warm ending.
+</test>
+*/

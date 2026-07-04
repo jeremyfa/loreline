@@ -1,0 +1,37 @@
+
+state
+  sub: "Detour"
+
+beat Main
+  Before.
+  beat(sub, "42")
+  After.
+
+beat Detour(code)
+  Code $code inside.
+
+  More inside.
+
+/*
+<test>
+- expected: |
+    ~ Before.
+
+    ~ Code 42 inside.
+
+    ~ More inside.
+
+    ~ After.
+- saveAtDialogue: 1
+  expected: |
+    ~ Before.
+
+    ~ Code 42 inside.
+
+    ~ Code 42 inside.
+
+    ~ More inside.
+
+    ~ After.
+</test>
+*/

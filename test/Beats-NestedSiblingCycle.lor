@@ -1,0 +1,39 @@
+
+// Nested sibling beats can reference each other by name in both
+// directions (order-independent lexical resolution), including a
+// forward reference before the declaration line.
+
+state
+  bounces: 0
+
+beat Main
+  Starting the cycle.
+  -> First
+
+  beat First
+    In first, bounces $bounces.
+    if bounces < 2
+      bounces += 1
+      -> Second
+    -> .
+
+  beat Second
+    In second.
+    -> First
+
+/*
+<test>
+- expected: |
+    ~ Starting the cycle.
+
+    ~ In first, bounces 0.
+
+    ~ In second.
+
+    ~ In first, bounces 1.
+
+    ~ In second.
+
+    ~ In first, bounces 2.
+</test>
+*/
