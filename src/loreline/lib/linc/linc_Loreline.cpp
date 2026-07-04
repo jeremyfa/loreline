@@ -18,6 +18,10 @@
 #include <loreline/InterpreterOptions.h>
 #include <loreline/Timer.h>
 #include <loreline/Async.h>
+#include <loreline/Arrays.h>
+#include <loreline/Objects.h>
+#include <loreline/RuntimeBeatRef.h>
+#include <loreline/NBeatDecl.h>
 #include <haxe/ds/StringMap.h>
 #include <Reflect.h>
 #include "Loreline.h"
@@ -158,6 +162,232 @@ LORELINE_PUBLIC Loreline_Value Loreline_Value::from_string(Loreline_String s) {
     v.intValue = 0;
     v.stringValue = s;
     return v;
+}
+
+LORELINE_PUBLIC Loreline_Value Loreline_Value::from_array(Loreline_Array a) {
+    Loreline_Value v;
+    v.type = Loreline_ArrayValue;
+    v.intValue = 0;
+    v.arrayValue = a;
+    return v;
+}
+
+LORELINE_PUBLIC Loreline_Value Loreline_Value::from_object(Loreline_Object o) {
+    Loreline_Value v;
+    v.type = Loreline_ObjectValue;
+    v.intValue = 0;
+    v.objectValue = o;
+    return v;
+}
+
+/* -- Loreline_ArrayData / Loreline_ObjectData (ref-counted) ---------------- */
+/* Same lifetime model as Loreline_StringData, but allocated with new/delete
+ * because the payloads hold RAII members. Values inside are fully owned
+ * deep copies: no hxcpp GC pointers, safe to cross threads by value. */
+
+struct Loreline_ArrayData {
+    std::atomic<int> refCount;
+    std::vector<Loreline_Value> items;
+    Loreline_ArrayData() { refCount.store(1, std::memory_order_relaxed); }
+};
+
+static void linc_retainArrayData(Loreline_ArrayData* d) {
+    if (d) d->refCount.fetch_add(1, std::memory_order_relaxed);
+}
+
+static void linc_releaseArrayData(Loreline_ArrayData* d) {
+    if (d && d->refCount.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+        delete d;
+    }
+}
+
+struct Loreline_ObjectData {
+    std::atomic<int> refCount;
+    std::vector<std::pair<Loreline_String, Loreline_Value>> entries;
+    Loreline_ObjectData() { refCount.store(1, std::memory_order_relaxed); }
+};
+
+static void linc_retainObjectData(Loreline_ObjectData* d) {
+    if (d) d->refCount.fetch_add(1, std::memory_order_relaxed);
+}
+
+static void linc_releaseObjectData(Loreline_ObjectData* d) {
+    if (d && d->refCount.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+        delete d;
+    }
+}
+
+/* -- Loreline_Array implementation ------------------------------------------ */
+
+LORELINE_PUBLIC Loreline_Array::Loreline_Array() : ptr(nullptr) {}
+
+LORELINE_PUBLIC Loreline_Array::Loreline_Array(const Loreline_Array& o) : ptr(o.ptr) {
+    linc_retainArrayData(ptr);
+}
+
+LORELINE_PUBLIC Loreline_Array::Loreline_Array(Loreline_Array&& o) : ptr(o.ptr) {
+    o.ptr = nullptr;
+}
+
+LORELINE_PUBLIC Loreline_Array::~Loreline_Array() {
+    linc_releaseArrayData(ptr);
+}
+
+LORELINE_PUBLIC Loreline_Array& Loreline_Array::operator=(const Loreline_Array& o) {
+    if (this != &o) {
+        linc_retainArrayData(o.ptr);
+        linc_releaseArrayData(ptr);
+        ptr = o.ptr;
+    }
+    return *this;
+}
+
+LORELINE_PUBLIC Loreline_Array& Loreline_Array::operator=(Loreline_Array&& o) {
+    if (this != &o) {
+        linc_releaseArrayData(ptr);
+        ptr = o.ptr;
+        o.ptr = nullptr;
+    }
+    return *this;
+}
+
+LORELINE_PUBLIC Loreline_Array Loreline_Array::create() {
+    Loreline_Array a;
+    a.ptr = new Loreline_ArrayData();
+    return a;
+}
+
+LORELINE_PUBLIC int Loreline_Array::length() const {
+    return ptr ? (int)ptr->items.size() : 0;
+}
+
+LORELINE_PUBLIC Loreline_Value Loreline_Array::get(int index) const {
+    if (ptr && index >= 0 && index < (int)ptr->items.size()) {
+        return ptr->items[index];
+    }
+    return Loreline_Value::null_val();
+}
+
+LORELINE_PUBLIC void Loreline_Array::set(int index, Loreline_Value value) {
+    if (ptr && index >= 0 && index < (int)ptr->items.size()) {
+        ptr->items[index] = value;
+    }
+}
+
+LORELINE_PUBLIC void Loreline_Array::push(Loreline_Value value) {
+    if (ptr) {
+        ptr->items.push_back(value);
+    }
+}
+
+LORELINE_PUBLIC bool Loreline_Array::isNull() const {
+    return ptr == nullptr;
+}
+
+LORELINE_PUBLIC Loreline_Array::operator bool() const {
+    return ptr != nullptr;
+}
+
+/* -- Loreline_Object implementation ----------------------------------------- */
+
+LORELINE_PUBLIC Loreline_Object::Loreline_Object() : ptr(nullptr) {}
+
+LORELINE_PUBLIC Loreline_Object::Loreline_Object(const Loreline_Object& o) : ptr(o.ptr) {
+    linc_retainObjectData(ptr);
+}
+
+LORELINE_PUBLIC Loreline_Object::Loreline_Object(Loreline_Object&& o) : ptr(o.ptr) {
+    o.ptr = nullptr;
+}
+
+LORELINE_PUBLIC Loreline_Object::~Loreline_Object() {
+    linc_releaseObjectData(ptr);
+}
+
+LORELINE_PUBLIC Loreline_Object& Loreline_Object::operator=(const Loreline_Object& o) {
+    if (this != &o) {
+        linc_retainObjectData(o.ptr);
+        linc_releaseObjectData(ptr);
+        ptr = o.ptr;
+    }
+    return *this;
+}
+
+LORELINE_PUBLIC Loreline_Object& Loreline_Object::operator=(Loreline_Object&& o) {
+    if (this != &o) {
+        linc_releaseObjectData(ptr);
+        ptr = o.ptr;
+        o.ptr = nullptr;
+    }
+    return *this;
+}
+
+LORELINE_PUBLIC Loreline_Object Loreline_Object::create() {
+    Loreline_Object o;
+    o.ptr = new Loreline_ObjectData();
+    return o;
+}
+
+LORELINE_PUBLIC int Loreline_Object::count() const {
+    return ptr ? (int)ptr->entries.size() : 0;
+}
+
+LORELINE_PUBLIC Loreline_String Loreline_Object::keyAt(int index) const {
+    if (ptr && index >= 0 && index < (int)ptr->entries.size()) {
+        return ptr->entries[index].first;
+    }
+    return Loreline_String();
+}
+
+LORELINE_PUBLIC Loreline_Value Loreline_Object::get(const char* key) const {
+    if (ptr && key) {
+        for (auto& entry : ptr->entries) {
+            if (entry.first.c_str() && strcmp(entry.first.c_str(), key) == 0) {
+                return entry.second;
+            }
+        }
+    }
+    return Loreline_Value::null_val();
+}
+
+LORELINE_PUBLIC void Loreline_Object::set(const char* key, Loreline_Value value) {
+    if (!ptr || !key) return;
+    for (auto& entry : ptr->entries) {
+        if (entry.first.c_str() && strcmp(entry.first.c_str(), key) == 0) {
+            entry.second = value;
+            return;
+        }
+    }
+    ptr->entries.push_back(std::make_pair(Loreline_String(key), value));
+}
+
+LORELINE_PUBLIC bool Loreline_Object::exists(const char* key) const {
+    if (ptr && key) {
+        for (auto& entry : ptr->entries) {
+            if (entry.first.c_str() && strcmp(entry.first.c_str(), key) == 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+LORELINE_PUBLIC void Loreline_Object::remove(const char* key) {
+    if (!ptr || !key) return;
+    for (auto it = ptr->entries.begin(); it != ptr->entries.end(); ++it) {
+        if (it->first.c_str() && strcmp(it->first.c_str(), key) == 0) {
+            ptr->entries.erase(it);
+            return;
+        }
+    }
+}
+
+LORELINE_PUBLIC bool Loreline_Object::isNull() const {
+    return ptr == nullptr;
+}
+
+LORELINE_PUBLIC Loreline_Object::operator bool() const {
+    return ptr != nullptr;
 }
 
 /* -- Opaque handles ------------------------------------------------------- */
@@ -314,7 +544,11 @@ static ::String linc_toHxString(const Loreline_String& s) {
     return ::String(s.c_str());
 }
 
-static Loreline_Value linc_hxToValue(::Dynamic val) {
+/* Bounds recursion when deep-copying containers and doubles as a cycle
+ * guard: values nested deeper than this become null. */
+static const int LINC_VALUE_MAX_DEPTH = 64;
+
+static Loreline_Value linc_hxToValueDepth(::Dynamic val, int depth) {
     if (hx::IsNull(val)) return Loreline_Value::null_val();
     int t = val->__GetType();
     switch (t) {
@@ -327,8 +561,53 @@ static Loreline_Value linc_hxToValue(::Dynamic val) {
         case vtString:
             return Loreline_Value::from_string(((::String)val).c_str());
         default:
-            return Loreline_Value::null_val();
+            break;
     }
+
+    if (depth >= LINC_VALUE_MAX_DEPTH) {
+        return Loreline_Value::null_val();
+    }
+
+    /* Beat values and beat references cross the boundary as their beat
+     * name string: the captured scope chain is not representable host-side,
+     * but the name remains usable with the dynamic beat APIs. Must be
+     * checked before isFields, whose unknown-object default is true. */
+    {
+        ::loreline::NBeatDecl beat = ::loreline::RuntimeBeatRef_obj::beatOf(val);
+        if (hx::IsNotNull(beat)) {
+            ::String name = beat->name;
+            if (hx::IsNull(name)) return Loreline_Value::null_val();
+            return Loreline_Value::from_string(Loreline_String(name.c_str()));
+        }
+    }
+
+    if (::loreline::Arrays_obj::isArray(val)) {
+        Loreline_Array arr = Loreline_Array::create();
+        int len = ::loreline::Arrays_obj::arrayLength(val);
+        for (int i = 0; i < len; i++) {
+            arr.push(linc_hxToValueDepth(::loreline::Arrays_obj::arrayGet(val, i), depth + 1));
+        }
+        return Loreline_Value::from_array(arr);
+    }
+
+    if (::loreline::Objects_obj::isFields(val)) {
+        Loreline_Object obj = Loreline_Object::create();
+        ::Array< ::String > keys = ::loreline::Objects_obj::getFields(null(), val);
+        int len = keys->length;
+        for (int i = 0; i < len; i++) {
+            ::String key = keys->__get(i);
+            if (hx::IsNull(key)) continue;
+            ::Dynamic fieldVal = ::loreline::Objects_obj::getField(null(), val, key);
+            obj.set(key.c_str(), linc_hxToValueDepth(fieldVal, depth + 1));
+        }
+        return Loreline_Value::from_object(obj);
+    }
+
+    return Loreline_Value::null_val();
+}
+
+static Loreline_Value linc_hxToValue(::Dynamic val) {
+    return linc_hxToValueDepth(val, 0);
 }
 
 static ::Dynamic linc_valueToHx(Loreline_Value v) {
@@ -338,6 +617,26 @@ static ::Dynamic linc_valueToHx(Loreline_Value v) {
         case Loreline_Bool:   return (bool)v.boolValue;
         case Loreline_StringValue:
             return v.stringValue.isNull() ? (::Dynamic)null() : (::Dynamic)::String(v.stringValue.c_str());
+        case Loreline_ArrayValue: {
+            if (v.arrayValue.isNull()) return null();
+            ::Dynamic arr = ::loreline::Arrays_obj::createArray();
+            int len = v.arrayValue.length();
+            for (int i = 0; i < len; i++) {
+                ::loreline::Arrays_obj::arrayPush(arr, linc_valueToHx(v.arrayValue.get(i)));
+            }
+            return arr;
+        }
+        case Loreline_ObjectValue: {
+            if (v.objectValue.isNull()) return null();
+            ::Dynamic fields = ::loreline::Objects_obj::createFields(null(), null(), null());
+            int len = v.objectValue.count();
+            for (int i = 0; i < len; i++) {
+                Loreline_String key = v.objectValue.keyAt(i);
+                if (key.isNull()) continue;
+                ::loreline::Objects_obj::setField(null(), fields, ::String(key.c_str()), linc_valueToHx(v.objectValue.get(key.c_str())));
+            }
+            return fields;
+        }
         default:
             return null();
     }

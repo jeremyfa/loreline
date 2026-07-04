@@ -19,6 +19,11 @@ func _ready() -> void:
 		_report(false, "async phase failed")
 		return
 
+	var ok_fields := await _run_fields()
+	if not ok_fields:
+		_report(false, "fields phase failed: " + _fl_fail_reason)
+		return
+
 	_report(true, "")
 
 
@@ -147,3 +152,153 @@ func _as_finished(_interp) -> void:
 	_as_got_finished = true
 	_as_ok = _as_got_score_dialogue and _as_got_finished
 	_as_done = true
+
+
+# ---------------------------------------------------------------------------
+# Container fields phase (replicates test_fields.gd)
+# ---------------------------------------------------------------------------
+
+var _fl_done: bool = false
+var _fl_ok: bool = false
+var _fl_dialogue_count: int = 0
+var _fl_report_arg = null
+var _fl_failed: bool = false
+var _fl_fail_reason: String = ""
+
+
+func _run_fields() -> bool:
+	var options := LorelineOptions.new()
+	options.set_function("getConfig", _fl_get_config)
+	options.set_function("sendReport", _fl_send_report)
+	options.set_async_function("fetchBonus", _fl_fetch_bonus)
+
+	var script = await loreline.parse("res://story/TestFields.lor")
+	if script == null:
+		printerr("Failed to parse TestFields.lor")
+		_fl_fail_reason = "parse failed"
+		return false
+
+	loreline.play(script, _fl_dialogue, _fl_choice, _fl_finished, "", options)
+
+	while not _fl_done:
+		await get_tree().process_frame
+
+	return _fl_ok
+
+
+func _fl_fail(reason: String) -> void:
+	if not _fl_failed:
+		_fl_failed = true
+		_fl_fail_reason = reason
+
+
+func _fl_get_config(_interp: LorelineInterpreter, _args: Array):
+	return {"volume": 5, "tags": ["a", "b"]}
+
+
+func _fl_send_report(_interp: LorelineInterpreter, args: Array):
+	if args.size() > 0:
+		_fl_report_arg = args[0]
+	return null
+
+
+func _fl_fetch_bonus(interp: LorelineInterpreter, args: Array, resolve: Callable) -> void:
+	await get_tree().process_frame
+	# Container arguments must survive the async custom function path
+	if args.size() != 2 or typeof(args[0]) != TYPE_ARRAY or args[0].size() != 2 or args[0][0] != "sword":
+		_fl_fail("async function array argument did not arrive, got: " + str(args))
+	elif typeof(args[1]) != TYPE_DICTIONARY or args[1].get("name") != "Ana" or int(args[1].get("level")) != 3:
+		_fl_fail("async function dictionary argument did not arrive, got: " + str(args))
+	else:
+		interp.set_state_field("bonus", {"granted": ["cape"], "count": 1})
+	resolve.call()
+
+
+func _fl_check_initial_state(interp: LorelineInterpreter) -> void:
+	# Script-declared array
+	var inventory = interp.get_state_field("inventory")
+	if typeof(inventory) != TYPE_ARRAY or inventory.size() != 2 or inventory[0] != "sword" or inventory[1] != "shield":
+		_fl_fail("inventory did not read as expected array, got: " + str(inventory))
+		return
+
+	# Script-declared object
+	var profile = interp.get_state_field("profile")
+	if typeof(profile) != TYPE_DICTIONARY or profile.get("name") != "Ana" or int(profile.get("level")) != 3:
+		_fl_fail("profile did not read as expected dictionary, got: " + str(profile))
+		return
+
+	# Host-built nested container round-trip
+	var payload := {"items": ["potion", 42], "active": true}
+	interp.set_state_field("payload", payload)
+	var back = interp.get_state_field("payload")
+	if typeof(back) != TYPE_DICTIONARY or typeof(back.get("items")) != TYPE_ARRAY or back["items"].size() != 2 or back["items"][0] != "potion" or int(back["items"][1]) != 42 or back.get("active") != true:
+		_fl_fail("payload did not round-trip, got: " + str(back))
+		return
+
+	# Deep-copy snapshot semantics: mutating a returned copy must not leak
+	back["active"] = false
+	back["items"].append("extra")
+	var fresh = interp.get_state_field("payload")
+	if fresh.get("active") != true or fresh["items"].size() != 2:
+		_fl_fail("mutating a returned copy leaked into interpreter state, got: " + str(fresh))
+		return
+
+	# Character field containers
+	interp.set_character_field("ana", "traits", ["bold", "curious"])
+	var traits = interp.get_character_field("ana", "traits")
+	if typeof(traits) != TYPE_ARRAY or traits.size() != 2 or traits[0] != "bold" or traits[1] != "curious":
+		_fl_fail("character traits did not round-trip, got: " + str(traits))
+		return
+
+	# Beat references cross as their beat name string
+	var beat_ref = interp.get_state_field("beatRef")
+	if typeof(beat_ref) != TYPE_STRING or beat_ref != "start":
+		_fl_fail("beat reference did not read as its name string, got: " + str(beat_ref))
+		return
+
+
+func _fl_check_function_results(interp: LorelineInterpreter) -> void:
+	# Dictionary returned by a custom function, stored in script state
+	var config = interp.get_state_field("config")
+	if typeof(config) != TYPE_DICTIONARY or int(config.get("volume")) != 5:
+		_fl_fail("custom function dictionary return did not round-trip, got: " + str(config))
+		return
+	var tags = config.get("tags")
+	if typeof(tags) != TYPE_ARRAY or tags.size() != 2 or tags[0] != "a" or tags[1] != "b":
+		_fl_fail("nested array in custom function return did not round-trip, got: " + str(tags))
+		return
+
+	# Dictionary passed as a custom function argument
+	if typeof(_fl_report_arg) != TYPE_DICTIONARY or _fl_report_arg.get("name") != "Ana" or int(_fl_report_arg.get("level")) != 3:
+		_fl_fail("custom function dictionary argument did not arrive, got: " + str(_fl_report_arg))
+		return
+
+
+func _fl_check_async_results(interp: LorelineInterpreter) -> void:
+	# Container written from inside the async function while the script was paused
+	var bonus = interp.get_state_field("bonus")
+	if typeof(bonus) != TYPE_DICTIONARY or int(bonus.get("count")) != 1 or typeof(bonus.get("granted")) != TYPE_ARRAY or bonus["granted"].size() != 1 or bonus["granted"][0] != "cape":
+		_fl_fail("bonus set during async function did not round-trip, got: " + str(bonus))
+		return
+
+
+func _fl_dialogue(interp: LorelineInterpreter, _character: String, text: String, _tags: Array, advance: Callable) -> void:
+	_fl_dialogue_count += 1
+	print("[fields] DIALOGUE ", _fl_dialogue_count, ": ", text)
+	if _fl_dialogue_count == 1:
+		_fl_check_initial_state(interp)
+	elif _fl_dialogue_count == 2:
+		_fl_check_function_results(interp)
+	elif _fl_dialogue_count == 3:
+		_fl_check_async_results(interp)
+	advance.call()
+
+
+func _fl_choice(_interp, _options: Array, _select: Callable) -> void:
+	pass
+
+
+func _fl_finished(_interp) -> void:
+	print("[fields] FINISHED")
+	_fl_ok = not _fl_failed
+	_fl_done = true

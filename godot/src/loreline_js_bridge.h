@@ -41,6 +41,20 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
     // Event queue: C++ polls this after play/advance/select/start/restore calls
     var _eventQueue = [];
 
+    // Serializes runtime values to JSON for the eval boundary. Beat values
+    // and beat references cross as their beat name string, matching the
+    // native converter; stringifying them raw would recurse into
+    // interpreter internals (captured scopes, AST nodes).
+    function _lorStringify(value) {
+        return JSON.stringify(value === undefined ? null : value, function(key, v) {
+            if (v != null && typeof v === "object" && loreline.RuntimeBeatRef) {
+                var beatName = loreline.RuntimeBeatRef.beatNameOf(v);
+                if (beatName != null) return beatName;
+            }
+            return v;
+        });
+    }
+
     window._lorelineBridge = {
         // --- Runtime ---
         update: function(delta) {
@@ -50,7 +64,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
         // --- Event queue ---
         pollEvents: function() {
             if (_eventQueue.length === 0) return "";
-            var events = JSON.stringify(_eventQueue);
+            var events = _lorStringify(_eventQueue);
             _eventQueue = [];
             return events;
         },
@@ -225,10 +239,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                             argsArr.push(args[ai]);
                                         }
                                     }
-                                    var resultJson = Module.ccall(
-                                        'loreline_call_host_function', 'string',
-                                        ['number', 'string', 'string'],
-                                        [iid, n, JSON.stringify(argsArr)]);
+                                    // _lorelineCallHost is installed by the C++ runtime
+                                    // (module-scope eval); Module is not visible from
+                                    // this global-context script.
+                                    var callHost = window._lorelineCallHost;
+                                    var resultJson = callHost
+                                        ? callHost(iid, n, _lorStringify(argsArr))
+                                        : "null";
                                     return JSON.parse(resultJson);
                                 };
                             })(fname, interpId);
@@ -375,10 +392,12 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                             argsArr.push(args[ai]);
                                         }
                                     }
-                                    var resultJson = Module.ccall(
-                                        'loreline_call_host_function', 'string',
-                                        ['number', 'string', 'string'],
-                                        [iid, n, JSON.stringify(argsArr)]);
+                                    // See note in play: _lorelineCallHost comes from
+                                    // the C++ runtime's module-scope install.
+                                    var callHost = window._lorelineCallHost;
+                                    var resultJson = callHost
+                                        ? callHost(iid, n, _lorStringify(argsArr))
+                                        : "null";
                                     return JSON.parse(resultJson);
                                 };
                             })(fname, interpId);
@@ -563,10 +582,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             }
         },
 
+        // Field values cross the eval boundary as JSON strings so that
+        // containers (arrays, objects) survive; the C++ side parses them.
         getCharacterField: function(interpId, character, field) {
             var interp = _getObj(interpId);
-            if (!interp) return null;
-            return interp.getCharacterField(character, field);
+            if (!interp) return 'null';
+            var value = interp.getCharacterField(character, field);
+            return _lorStringify(value);
         },
 
         setCharacterField: function(interpId, character, field, value) {
@@ -578,8 +600,9 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
 
         getStateField: function(interpId, field) {
             var interp = _getObj(interpId);
-            if (!interp) return null;
-            return interp.getStateField(field);
+            if (!interp) return 'null';
+            var value = interp.getStateField(field);
+            return _lorStringify(value);
         },
 
         setStateField: function(interpId, field, value) {
@@ -591,8 +614,9 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
 
         getTopLevelStateField: function(interpId, field) {
             var interp = _getObj(interpId);
-            if (!interp) return null;
-            return interp.getTopLevelStateField(field);
+            if (!interp) return 'null';
+            var value = interp.getTopLevelStateField(field);
+            return _lorStringify(value);
         },
 
         setTopLevelStateField: function(interpId, field, value) {

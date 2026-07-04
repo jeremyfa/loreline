@@ -399,6 +399,10 @@ export class Interpreter {
     /**
      * Gets a specific field of a character.
      *
+     * Container values (key-value objects and arrays) are plain JS objects
+     * and arrays: field accessors and custom functions exchange idiomatic
+     * JS values in both directions.
+     *
      * @param character The name of the character
      * @param name The name of the field to get
      * @return The field value or null if the character or field doesn't exist

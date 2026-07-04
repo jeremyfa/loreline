@@ -1,0 +1,19 @@
+
+character ana
+  name: Ana
+
+state
+  inventory: [sword, shield]
+  profile: { name: Ana, level: 3 }
+  config: null
+  bonus: null
+  beatRef: null
+
+beat start
+  beatRef = start
+  Checking initial fields.
+  config = getConfig()
+  sendReport(profile)
+  Checking function results.
+  fetchBonus(inventory, profile)
+  Checking async results.

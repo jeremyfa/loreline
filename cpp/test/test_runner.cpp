@@ -701,6 +701,180 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     return result;
 }
 
+/* -- Programmatic container field test ------------------------------------- */
+/* Exercises the Loreline_Array / Loreline_Object value model through the
+ * state and character field accessors: script-declared containers read
+ * from C++, host-built containers set and read back, deep-copy snapshot
+ * semantics, and nested values. Runs while the interpreter is paused at
+ * its first dialogue (live, stable point to call the accessors). */
+
+static void containerTestCheck(Loreline_Interpreter* interp, bool* okOut, std::string* errorOut) {
+    bool ok = true;
+    std::string error;
+
+    /* 1. Read a script-declared array */
+    Loreline_Value inv = Loreline_getStateField(interp, Loreline_String("inventory"));
+    if (inv.type != Loreline_ArrayValue) { ok = false; error = "inventory is not an array"; }
+    else if (inv.arrayValue.length() != 2) { ok = false; error = "inventory length != 2"; }
+    else {
+        Loreline_Value item0 = inv.arrayValue.get(0);
+        if (item0.type != Loreline_StringValue || strcmp(item0.stringValue.c_str(), "sword") != 0) {
+            ok = false; error = "inventory[0] != sword";
+        }
+    }
+
+    /* 2. Read a script-declared object with nested values */
+    if (ok) {
+        Loreline_Value prof = Loreline_getStateField(interp, Loreline_String("profile"));
+        if (prof.type != Loreline_ObjectValue) { ok = false; error = "profile is not an object"; }
+        else {
+            Loreline_Value name = prof.objectValue.get("name");
+            Loreline_Value level = prof.objectValue.get("level");
+            if (name.type != Loreline_StringValue || strcmp(name.stringValue.c_str(), "Ana") != 0) {
+                ok = false; error = "profile.name != Ana";
+            }
+            else if (level.type != Loreline_Int || level.intValue != 3) {
+                ok = false; error = "profile.level != 3";
+            }
+        }
+    }
+
+    /* 3. Build a nested container host-side, set it, read it back */
+    if (ok) {
+        Loreline_Array items = Loreline_Array::create();
+        items.push(Loreline_Value::from_string(Loreline_String("potion")));
+        items.push(Loreline_Value::from_int(42));
+        Loreline_Object payload = Loreline_Object::create();
+        payload.set("items", Loreline_Value::from_array(items));
+        payload.set("active", Loreline_Value::from_bool(true));
+        Loreline_setStateField(interp, Loreline_String("payload"), Loreline_Value::from_object(payload));
+
+        Loreline_Value back = Loreline_getStateField(interp, Loreline_String("payload"));
+        if (back.type != Loreline_ObjectValue) { ok = false; error = "payload did not round-trip as object"; }
+        else {
+            Loreline_Value backItems = back.objectValue.get("items");
+            Loreline_Value backActive = back.objectValue.get("active");
+            if (backItems.type != Loreline_ArrayValue || backItems.arrayValue.length() != 2) {
+                ok = false; error = "payload.items did not round-trip";
+            }
+            else if (backItems.arrayValue.get(1).type != Loreline_Int || backItems.arrayValue.get(1).intValue != 42) {
+                ok = false; error = "payload.items[1] != 42";
+            }
+            else if (backActive.type != Loreline_Bool || !backActive.boolValue) {
+                ok = false; error = "payload.active != true";
+            }
+        }
+    }
+
+    /* 4. Deep-copy snapshot semantics: mutating a returned copy must
+     * not affect interpreter state until set back */
+    if (ok) {
+        Loreline_Value copy = Loreline_getStateField(interp, Loreline_String("payload"));
+        copy.objectValue.set("active", Loreline_Value::from_bool(false));
+        Loreline_Value fresh = Loreline_getStateField(interp, Loreline_String("payload"));
+        Loreline_Value freshActive = fresh.objectValue.get("active");
+        if (freshActive.type != Loreline_Bool || !freshActive.boolValue) {
+            ok = false; error = "mutating a returned copy leaked into interpreter state";
+        }
+    }
+
+    /* 5. Character field containers */
+    if (ok) {
+        Loreline_Array traits = Loreline_Array::create();
+        traits.push(Loreline_Value::from_string(Loreline_String("bold")));
+        Loreline_setCharacterField(interp, Loreline_String("ana"), Loreline_String("traits"), Loreline_Value::from_array(traits));
+        Loreline_Value backTraits = Loreline_getCharacterField(interp, Loreline_String("ana"), Loreline_String("traits"));
+        if (backTraits.type != Loreline_ArrayValue || backTraits.arrayValue.length() != 1) {
+            ok = false; error = "character traits did not round-trip";
+        }
+    }
+
+    /* 6. Beat references cross as their beat name string */
+    if (ok) {
+        Loreline_Value ref = Loreline_getStateField(interp, Loreline_String("ref"));
+        if (ref.type != Loreline_StringValue || strcmp(ref.stringValue.c_str(), "Main") != 0) {
+            ok = false; error = "beat reference did not read as its name string";
+        }
+    }
+
+    *okOut = ok;
+    *errorOut = error;
+}
+
+struct ContainerTestContext {
+    bool ok = false;
+    std::string error = "dialogue handler never ran";
+};
+
+static void containerTestDialogue(
+    Loreline_Interpreter* interp,
+    Loreline_String character,
+    Loreline_String text,
+    const Loreline_TextTag* tags,
+    int tagCount,
+    void (*advance)(void),
+    void* userData
+) {
+    ContainerTestContext* ctx = (ContainerTestContext*)userData;
+    containerTestCheck(interp, &ctx->ok, &ctx->error);
+    advance();
+}
+
+static void containerTestChoice(
+    Loreline_Interpreter* interp,
+    const Loreline_ChoiceOption* options,
+    int optionCount,
+    void (*select)(int index),
+    void* userData
+) {
+    select(0);
+}
+
+static void containerTestFinish(Loreline_Interpreter* interp, void* userData) {}
+
+static void runContainerFieldTest() {
+    const char* source =
+        "\n"
+        "character ana\n"
+        "  name: Ana\n"
+        "\n"
+        "state\n"
+        "  inventory: [sword, shield]\n"
+        "  profile: { name: Ana, level: 3 }\n"
+        "  ref: null\n"
+        "\n"
+        "beat Main\n"
+        "  ref = Main\n"
+        "  Checking fields.\n";
+
+    ContainerTestContext ctx;
+
+    Loreline_Script* script = Loreline_parse(source, "container-fields.lor", nullptr, nullptr);
+    if (script) {
+        Loreline_Interpreter* interp = Loreline_play(
+            script, containerTestDialogue, containerTestChoice, containerTestFinish,
+            Loreline_String(), nullptr, &ctx);
+        if (interp) {
+            Loreline_releaseInterpreter(interp);
+        }
+        Loreline_releaseScript(script);
+    } else {
+        ctx.ok = false;
+        ctx.error = "Error parsing container fields script";
+    }
+
+    if (ctx.ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "capi ~ container fields round-trip" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "capi ~ container fields round-trip" CLR_RESET "\n");
+        printf("  > %s\n", ctx.error.c_str());
+    }
+    fflush(stdout);
+}
+
 /* -- Main ----------------------------------------------------------------- */
 
 int main(int argc, char* argv[]) {
@@ -929,6 +1103,10 @@ int main(int argc, char* argv[]) {
 
         if (failCount > failBefore) fileFailCount++;
     }
+
+    /* Programmatic C API checks (not driven by .lor test blocks) */
+    fileCount++;
+    runContainerFieldTest();
 
     int total = passCount + failCount;
     printf("\n");

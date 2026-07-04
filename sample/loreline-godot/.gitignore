@@ -16,6 +16,7 @@
 /story/*
 !/story/TestAsync.lor
 !/story/TestSaveRestore.lor
+!/story/TestFields.lor
 
 # Web test harness artifacts (created by run-web-test.sh)
 /node_modules/
