@@ -8,7 +8,7 @@ Loreline works everywhere: game engines, web apps, or standalone projects. It ad
 
 ### Get started
 
-The documentation and an interactive playground are available on **[loreline.app](https://loreline.app)**.
+The documentation, an interactive playground and a downloadable editor (Loreline Writer) are available on **[loreline.app](https://loreline.app)**.
 
 ## Building Loreline
 
@@ -29,7 +29,7 @@ npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
 node ./setup --js          # Build JavaScript library (js/loreline.js)
 node ./setup --cs          # Export C# source files (cs/Loreline/)
 node ./setup --cs --cs-dll # Export C# + build Loreline.dll
-node ./setup --cs-generics # Export C# test runner without erase-generics (see CS_COMPATIBILITY.md)
+node ./setup --cs-generics # Export C# test runner without erase-generics
 node ./setup --py          # Build Python package (py/loreline/)
 node ./setup --lua         # Build Lua module (lua/loreline/)
 node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
