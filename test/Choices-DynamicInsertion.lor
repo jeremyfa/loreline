@@ -1,0 +1,47 @@
+
+state
+  kind: "Extra"
+  showBonus: true
+
+beat Main
+  choice
+    Regular
+      Picked regular.
+    + beat(kind + "Options")
+    + beat("BonusOptions") if showBonus
+
+beat ExtraOptions
+  choice
+    Extra choice
+      Picked extra.
+
+beat BonusOptions
+  choice
+    Bonus choice
+      Picked bonus.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Regular
+    + Extra choice
+    + Bonus choice
+
+    ~ Picked regular.
+- choices: [1]
+  expected: |
+    + Regular
+    + Extra choice
+    + Bonus choice
+
+    ~ Picked extra.
+- choices: [2]
+  expected: |
+    + Regular
+    + Extra choice
+    + Bonus choice
+
+    ~ Picked bonus.
+</test>
+*/

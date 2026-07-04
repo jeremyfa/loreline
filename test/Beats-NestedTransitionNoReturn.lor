@@ -1,0 +1,28 @@
+
+// Transitions keep their control-flow semantics with scope capture:
+// the stack is cleared, the transitioned beat's end is the script end
+// (no return to parent), and the captured chain is resolution context
+// only, dropped again by any further transition.
+
+beat Main
+  new state
+    tone: "warm"
+
+  beat Ending
+    A $tone ending.
+    -> Coda
+
+  -> Ending
+  This line never runs.
+
+beat Coda
+  Coda tone is $tone.
+
+/*
+<test>
+- expected: |
+    ~ A warm ending.
+
+    ~ Coda tone is null.
+</test>
+*/

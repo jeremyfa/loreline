@@ -1,0 +1,25 @@
+
+character guide
+  name: Guide
+
+state
+  sub: "Detour"
+
+beat Main
+  guide: Before the detour.
+  beat(sub)
+  guide: After the detour.
+
+beat Detour
+  guide: This is the detour.
+
+/*
+<test>
+- expected: |
+    Guide: Before the detour.
+
+    Guide: This is the detour.
+
+    Guide: After the detour.
+</test>
+*/

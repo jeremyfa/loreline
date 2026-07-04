@@ -1,0 +1,22 @@
+
+state
+  which: "Greet"
+
+beat Main
+  beat(which, "Ana")
+  -> beat(which + "End", "Bo")
+
+beat Greet(name)
+  Hello $name.
+
+beat GreetEnd(name)
+  The end for $name.
+
+/*
+<test>
+- expected: |
+    ~ Hello Ana.
+
+    ~ The end for Bo.
+</test>
+*/

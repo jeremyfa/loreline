@@ -403,7 +403,14 @@ class ParserContext {
                     throw new ParseError("Expected 'state' after 'new'", currentPos());
                 }
                 ensureInBeat(parseStateDecl(true));
-            case KwBeat: parseBeatDecl();
+            case KwBeat:
+                if (peek().type == LParen) {
+                    // Dynamic beat call statement: beat(expr, args...)
+                    ensureInBeat(parseBeatCall());
+                }
+                else {
+                    parseBeatDecl();
+                }
             case KwCharacter if (topLevel): parseCharacterDecl();
             case LString(_, _, _): ensureInBeat(parseTextStatement());
             case Identifier(_) if (peek().type == Colon): ensureInBeat(parseDialogueStatement());
@@ -679,6 +686,31 @@ class ParserContext {
         // final namePos = currentPos();
         // beatNode.pos.length += namePos.offset + namePos.length - (beatNode.pos.offset + beatNode.pos.length);
         beatNode.name = expectIdentifier();
+
+        // Optional parameter list: beat Name(a, b = expr)
+        if (match(LParen)) {
+            final params:Array<NBeatParam> = [];
+            if (!check(RParen)) {
+                do {
+                    while (match(LineBreak)) {}
+                    final paramPos = currentPos();
+                    final paramName = expectIdentifier();
+                    var defaultValue:NExpr = null;
+                    if (match(OpAssign)) {
+                        defaultValue = parseExpression();
+                    }
+                    for (existing in params) {
+                        if (existing.name == paramName) {
+                            addError(new ParseError('Duplicate beat parameter: $paramName', paramPos));
+                        }
+                    }
+                    params.push(new NBeatParam(paramName, paramPos, defaultValue));
+                    while (match(LineBreak)) {}
+                } while (match(Comma));
+            }
+            expect(RParen);
+            beatNode.params = params;
+        }
 
         final blockStart = parseBlockStart();
         final blockEnd:TokenType = blockStart.type == Indent ? Unindent : RBrace;
@@ -1124,8 +1156,35 @@ class ParserContext {
             return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), ".", prevNonWhitespaceOrComment().pos));
         }
 
+        // Dynamic target: -> beat(expr, args...)
+        if (check(KwBeat)) {
+            final targetStart = currentPos();
+            advance();
+            expect(LParen);
+            final callArgs = parseCallArguments();
+            if (callArgs.length == 0) {
+                addError(new ParseError('beat() requires a target expression', targetStart));
+            }
+            final node = new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
+            node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
+            if (callArgs.length > 1) {
+                node.args = callArgs.slice(1);
+            }
+            return attachComments(node);
+        }
+
         final target = expectIdentifier();
-        return attachComments(new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
+        final targetPos = prevNonWhitespaceOrComment().pos;
+
+        // Optional arguments: -> SomeBeat(args...)
+        var args:Array<NExpr> = null;
+        if (match(LParen)) {
+            args = parseCallArguments();
+        }
+
+        final node = new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, targetPos);
+        node.args = args;
+        return attachComments(node);
     }
 
     /**
@@ -1136,8 +1195,54 @@ class ParserContext {
         final startPos = currentPos();
         expect(OpPlus);
 
+        // Dynamic target: + beat(expr, args...)
+        if (check(KwBeat)) {
+            final targetStart = currentPos();
+            advance();
+            expect(LParen);
+            final callArgs = parseCallArguments();
+            if (callArgs.length == 0) {
+                addError(new ParseError('beat() requires a target expression', targetStart));
+            }
+            final node = new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
+            node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
+            if (callArgs.length > 1) {
+                node.args = callArgs.slice(1);
+            }
+            return attachComments(node);
+        }
+
         final target = expectIdentifier();
-        return attachComments(new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, prevNonWhitespaceOrComment().pos));
+        final targetPos = prevNonWhitespaceOrComment().pos;
+
+        // Optional arguments: + SomeBeat(args...)
+        var args:Array<NExpr> = null;
+        if (match(LParen)) {
+            args = parseCallArguments();
+        }
+
+        final node = new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), target, targetPos);
+        node.args = args;
+        return attachComments(node);
+    }
+
+    /**
+     * Parses a dynamic beat call statement (beat(expr, args...)).
+     * @return Beat call node
+     */
+    function parseBeatCall():NBeatCall {
+        final startPos = currentPos();
+        expect(KwBeat);
+        expect(LParen);
+        final callArgs = parseCallArguments();
+        if (callArgs.length == 0) {
+            addError(new ParseError('beat() requires a target expression', startPos));
+        }
+        final node = new NBeatCall(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), callArgs.length > 0 ? callArgs[0] : null, startPos.extendedTo(prevNonWhitespaceOrComment().pos));
+        if (callArgs.length > 1) {
+            node.args = callArgs.slice(1);
+        }
+        return attachComments(node);
     }
 
     /**

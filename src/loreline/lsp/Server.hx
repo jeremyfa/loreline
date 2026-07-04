@@ -464,8 +464,9 @@ class Server {
                     }
 
                     // Look for transitions to unknown beats
+                    // (dynamic targets are resolved at runtime, skip them)
                     for (transition in lens.getNodesOfType(NTransition, false)) {
-                        if (transition.target != '.') {
+                        if (transition.targetExpr == null && transition.target != '.') {
                             if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
                                 addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error);
                             }
@@ -473,8 +474,9 @@ class Server {
                     }
 
                     // Look for insertions of unknown beats
+                    // (dynamic targets are resolved at runtime, skip them)
                     for (insertion in lens.getNodesOfType(NInsertion, false)) {
-                        if (insertion.target != '.') {
+                        if (insertion.targetExpr == null && insertion.target != '.') {
                             if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
                                 addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error);
                             }
@@ -1242,6 +1244,19 @@ class Server {
 
                 case NAccess:
                     final access:NAccess = cast node;
+
+                    // Beat parameter usage: jump to the parameter name
+                    final beatParam = lens.findBeatParamFromAccess(access);
+                    if (beatParam != null) {
+                        result.push({
+                            targetUri: resolveNodeUri(uri, beatParam.beat, lens),
+                            targetRange: rangeFromLorelinePosition(beatParam.param.namePos, content),
+                            targetSelectionRange: rangeFromLorelinePosition(beatParam.param.namePos, content),
+                            originSelectionRange: rangeFromLorelinePosition(access.pos, content)
+                        });
+                        return result;
+                    }
+
                     final resolved = lens.resolveAccess(access);
                     if (resolved != null) {
                         final peekNode:Node = switch HxType.getClass(resolved) {
@@ -1507,9 +1522,35 @@ class Server {
 
     function makeNodeHover(lorelinePos:loreline.Position, lens:Lens, uri:DocumentUri, content:String, node:Node):Null<Hover> {
 
+        // Parameter hint when hovering an argument of a call,
+        // beat call, transition or insertion
+        final callArg = lens.findCallArgument(node);
+        if (callArg != null) {
+            final argHover = makeCallArgumentHover(callArg.owner, callArg.index, lens, uri, content, node);
+            if (argHover != null) return argHover;
+        }
+
+        // Hovering a constant string target of a dynamic beat
+        // call/transition/insertion shows the resolved beat
+        final constTargetBeat = findConstantStringTargetBeat(node, lens);
+        if (constTargetBeat != null) {
+            return makeBeatDeclHover(constTargetBeat, uri, content, lens, node);
+        }
+
         switch HxType.getClass(node) {
             case NBeatDecl:
-                return makeBeatDeclHover(cast node, uri, content, lens);
+                final beatDecl:NBeatDecl = cast node;
+                // Parameter hover when pointing at a name in the declaration signature
+                if (beatDecl.params != null) {
+                    for (param in beatDecl.params) {
+                        if (param.namePos != null && param.namePos.length > 0 &&
+                            lorelinePos.offset >= param.namePos.offset &&
+                            lorelinePos.offset <= param.namePos.offset + param.namePos.length) {
+                            return makeBeatParamHover(param, beatDecl, content, beatDecl, param.namePos);
+                        }
+                    }
+                }
+                return makeBeatDeclHover(beatDecl, uri, content, lens);
             case NStateDecl:
                 return makeStateDeclHover(cast node, content);
             case NCharacterDecl:
@@ -1546,6 +1587,9 @@ class Server {
                 else {
                     return makeHover(hoverTitle('Insertion'), hoverDescriptionForNode(cast node), content, node);
                 }
+            case NBeatCall:
+                // Dynamic beat call: target is resolved at runtime
+                return makeHover(hoverTitle('Beat call'), hoverDescriptionForNode(cast node), content, node);
             case NObjectField:
                 return makeObjectFieldHover(cast node, content);
             case NAccess:
@@ -1992,8 +2036,22 @@ class Server {
 
         while (description[description.length-1] == "" || description[description.length-1] == "---") description.pop();
 
+        // Show the full signature when the beat declares parameters
+        var titleName = beatDecl.name;
+        if (beatDecl.params != null && beatDecl.params.length > 0) {
+            final parts = [];
+            for (param in beatDecl.params) {
+                var part = param.name;
+                if (param.defaultValue != null) {
+                    part += ' = ' + printLoreline(param.defaultValue);
+                }
+                parts.push(part);
+            }
+            titleName += '(' + parts.join(', ') + ')';
+        }
+
         return makeHover(
-            hoverTitle('Beat', beatDecl.name),
+            hoverTitle('Beat', titleName),
             description,
             content,
             origin ?? beatDecl
@@ -2013,6 +2071,10 @@ class Server {
     }
 
     function makeFunctionHover(func:NFunctionDecl, content:String, lens:Lens, lorelinePos:loreline.Position):Hover {
+
+        // Parameter hover when pointing at a name in the signature parens
+        final paramHover = makeFunctionSignatureParamHover(func, content, lorelinePos);
+        if (paramHover != null) return paramHover;
 
         var expr = null;
         try {
@@ -2090,6 +2152,254 @@ class Server {
 
     }
 
+    /**
+     * Creates a hover for a beat parameter, showing its default value when any.
+     */
+    function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
+
+        final description:Array<String> = [];
+        if (param.defaultValue != null) {
+            description.push('Default: `' + printLoreline(param.defaultValue) + '`');
+        }
+
+        return makeHover(hoverTitle('Parameter', param.name, 'beat ' + beatDecl.name), description, content, anchor, pos);
+
+    }
+
+    /**
+     * Creates a hover for a function parameter from its raw signature entry
+     * (e.g. "level = 1": name before the first `=`, default after).
+     */
+    function makeFunctionParamHover(rawArg:String, func:NFunctionDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
+
+        final eqIndex = rawArg.indexOf('=');
+        final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
+
+        final description:Array<String> = [];
+        if (eqIndex != -1) {
+            description.push('Default: `' + rawArg.substr(eqIndex + 1).trim() + '`');
+        }
+
+        final origin = func.name != null ? 'function ' + func.name : 'function';
+        return makeHover(hoverTitle('Parameter', paramName, origin), description, content, anchor, pos);
+
+    }
+
+    /**
+     * Returns the raw text of a constant string literal (single Raw part), null otherwise.
+     */
+    function constantStringValue(expr:NExpr):Null<String> {
+
+        if (expr is NStringLiteral) {
+            final str:NStringLiteral = cast expr;
+            if (str.parts != null && str.parts.length == 1) {
+                switch str.parts[0].partType {
+                    case Raw(text): return text;
+                    case _:
+                }
+            }
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Resolves the static beat name of a call/transition/insertion owner,
+     * when it can be known without running the script: a static target name,
+     * or a constant string literal target expression.
+     */
+    function staticBeatTargetName(owner:Node):Null<String> {
+
+        switch HxType.getClass(owner) {
+            case NBeatCall:
+                final beatCall:NBeatCall = cast owner;
+                return constantStringValue(beatCall.targetExpr);
+            case NTransition:
+                final transition:NTransition = cast owner;
+                if (transition.targetExpr != null) return constantStringValue(transition.targetExpr);
+                if (transition.target != '.' && transition.target != '_') return transition.target;
+            case NInsertion:
+                final insertion:NInsertion = cast owner;
+                if (insertion.targetExpr != null) return constantStringValue(insertion.targetExpr);
+                return insertion.target;
+            case _:
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Creates a parameter hint hover for the argument at the given index of
+     * a call, beat call, transition or insertion, when the callee's
+     * parameters can be resolved statically. Returns null otherwise.
+     */
+    function makeCallArgumentHover(owner:Node, index:Int, lens:Lens, uri:DocumentUri, content:String, anchor:Node):Null<Hover> {
+
+        switch HxType.getClass(owner) {
+
+            case NCall:
+                final call:NCall = cast owner;
+                if (call.target is NAccess) {
+                    final access:NAccess = cast call.target;
+                    if (access.target == null && access.name != null) {
+                        // Beats win over functions, matching runtime precedence
+                        final beat = lens.findBeatByNameFromNode(access.name, owner);
+                        if (beat != null) {
+                            return makeBeatParamHoverAt(beat, index, content, anchor);
+                        }
+                        final resolved = lens.resolveAccess(access);
+                        if (resolved is NFunctionDecl) {
+                            final func:NFunctionDecl = cast resolved;
+                            if (func.args != null && index < func.args.length) {
+                                return makeFunctionParamHover(func.args[index], func, content, anchor);
+                            }
+                        }
+                    }
+                }
+
+            case NBeatCall | NTransition | NInsertion:
+                final name = staticBeatTargetName(owner);
+                if (name != null) {
+                    final beat = lens.findBeatByNameFromNode(name, owner);
+                    if (beat != null) {
+                        return makeBeatParamHoverAt(beat, index, content, anchor);
+                    }
+                }
+
+            case _:
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Param hover for the beat's parameter at the given index, if declared.
+     */
+    function makeBeatParamHoverAt(beat:NBeatDecl, index:Int, content:String, anchor:Node):Null<Hover> {
+
+        if (beat.params != null && index < beat.params.length) {
+            return makeBeatParamHover(beat.params[index], beat, content, anchor);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * When the given node is the constant string target of a dynamic beat
+     * call/transition/insertion (e.g. "Quest" in `beat("Quest", ...)`),
+     * returns the resolved beat declaration.
+     */
+    function findConstantStringTargetBeat(node:Node, lens:Lens):Null<NBeatDecl> {
+
+        final parent = lens.getParentNode(node);
+        if (parent == null) return null;
+
+        var isTarget = false;
+        switch HxType.getClass(parent) {
+            case NBeatCall:
+                isTarget = (cast parent:NBeatCall).targetExpr == node;
+            case NTransition:
+                isTarget = (cast parent:NTransition).targetExpr == node;
+            case NInsertion:
+                isTarget = (cast parent:NInsertion).targetExpr == node;
+            case _:
+        }
+        if (!isTarget) return null;
+
+        final name = constantStringValue(cast node);
+        if (name == null) return null;
+
+        return lens.findBeatByNameFromNode(name, parent);
+
+    }
+
+    /**
+     * When the given position points at a parameter name inside the
+     * function's signature parens, returns a parameter hover. The signature
+     * is scanned from the source (raw args carry no positions), mirroring
+     * the lexer's top-level comma splitting; bails out (no hover) on any
+     * inconsistency rather than guessing.
+     */
+    function makeFunctionSignatureParamHover(func:NFunctionDecl, content:String, lorelinePos:loreline.Position):Null<Hover> {
+
+        if (func.args == null || func.args.length == 0) return null;
+
+        // Locate the opening paren on the declaration line
+        final max = content.length;
+        var i = func.pos.offset;
+        var openParen = -1;
+        while (i < max) {
+            final c = content.charCodeAt(i);
+            if (c == '\n'.code) return null;
+            if (c == '('.code) {
+                openParen = i;
+                break;
+            }
+            i++;
+        }
+        if (openParen == -1) return null;
+
+        // Split segments on top-level commas up to the matching close paren
+        final segments:Array<{start:Int, end:Int}> = [];
+        var depth = 1;
+        var inString = false;
+        var segStart = openParen + 1;
+        i = openParen + 1;
+        while (i < max && depth > 0) {
+            final c = content.charCodeAt(i);
+            if (c == '\n'.code) return null;
+            if (inString) {
+                if (c == '\\'.code) i++;
+                else if (c == '"'.code) inString = false;
+            }
+            else if (c == '"'.code) {
+                inString = true;
+            }
+            else if (c == '('.code) {
+                depth++;
+            }
+            else if (c == ')'.code) {
+                depth--;
+                if (depth == 0) {
+                    segments.push({start: segStart, end: i});
+                }
+            }
+            else if (c == ','.code && depth == 1) {
+                segments.push({start: segStart, end: i});
+                segStart = i + 1;
+            }
+            i++;
+        }
+        if (depth != 0 || segments.length != func.args.length) return null;
+
+        // Find the identifier range of each segment and match the position
+        for (index in 0...segments.length) {
+            final segment = segments[index];
+            var identStart = segment.start;
+            while (identStart < segment.end && StringTools.isSpace(content, identStart)) identStart++;
+            var identEnd = identStart;
+            while (identEnd < segment.end) {
+                final c = content.charCodeAt(identEnd);
+                final isIdent = (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code) || (c >= '0'.code && c <= '9'.code) || c == '_'.code;
+                if (!isIdent) break;
+                identEnd++;
+            }
+            if (identEnd == identStart) continue;
+            if (lorelinePos.offset >= identStart && lorelinePos.offset <= identEnd) {
+                // The whole signature sits on the declaration line
+                final identPos = new loreline.Position(func.pos.line, func.pos.column + (identStart - func.pos.offset), identStart, identEnd - identStart);
+                return makeFunctionParamHover(func.args[index], func, content, func, identPos);
+            }
+        }
+
+        return null;
+
+    }
+
     function makeChoiceHover(choice:NChoiceStatement, content:String):Hover {
 
         return makeHover(hoverTitle('Choice'), hoverDescriptionForNode(choice), content, choice);
@@ -2115,6 +2425,12 @@ class Server {
     }
 
     function makeAccessHover(access:NAccess, uri:DocumentUri, content:String, lens:Lens):Hover {
+
+        // Beat parameter usage (params shadow state fields, innermost beat first)
+        final beatParam = lens.findBeatParamFromAccess(access);
+        if (beatParam != null) {
+            return makeBeatParamHover(beatParam.param, beatParam.beat, content, access);
+        }
 
         final resolved = lens.resolveAccess(access);
         if (resolved != null) {

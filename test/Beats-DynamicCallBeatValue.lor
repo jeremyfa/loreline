@@ -1,0 +1,20 @@
+
+beat Main
+  target = Detour
+  Before.
+  beat(target)
+  After.
+
+beat Detour
+  Inside detour.
+
+/*
+<test>
+- expected: |
+    ~ Before.
+
+    ~ Inside detour.
+
+    ~ After.
+</test>
+*/

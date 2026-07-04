@@ -1,0 +1,47 @@
+
+// The captured chain of a transitioned-to beat survives save/restore,
+// including MUTATED values written through the chain, and a transition
+// performed after restore still drops the restored captured context.
+
+beat Main
+  new state
+    tone: "warm"
+
+  beat Ending
+    tone = "cold"
+    Now $tone in the ending.
+    choice
+      Continue
+        Still $tone after the choice.
+        -> Coda
+
+  -> Ending
+
+beat Coda
+  Coda tone is $tone.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Now cold in the ending.
+
+    + Continue
+
+    ~ Still cold after the choice.
+
+    ~ Coda tone is null.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ Now cold in the ending.
+
+    + Continue
+
+    + Continue
+
+    ~ Still cold after the choice.
+
+    ~ Coda tone is null.
+</test>
+*/

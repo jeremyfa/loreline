@@ -1,0 +1,25 @@
+
+state
+  prefix: "Second"
+
+beat Main
+  First stop.
+  -> beat("Middle")
+
+beat Middle
+  Middle stop.
+  -> beat(prefix + "Ending")
+
+beat SecondEnding
+  Reached the second ending.
+
+/*
+<test>
+- expected: |
+    ~ First stop.
+
+    ~ Middle stop.
+
+    ~ Reached the second ending.
+</test>
+*/

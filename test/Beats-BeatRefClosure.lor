@@ -1,0 +1,42 @@
+
+// A beat reference retains the scope chain where it was created:
+// invoking it from another beat resolves state and sibling beats
+// from the original context, not from the call site.
+
+state
+  mood: "calm"
+
+beat Main
+  new state
+    secret: "ruby"
+
+  beat Sibling
+    Sibling reporting.
+
+  beat Inner
+    The secret is $secret and mood is $mood.
+    Sibling()
+
+  ref = Inner
+  -> Elsewhere
+
+beat Elsewhere
+  new state
+    secret: "fake"
+
+  Elsewhere begins.
+  beat(ref)
+  Elsewhere ends.
+
+/*
+<test>
+- expected: |
+    ~ Elsewhere begins.
+
+    ~ The secret is ruby and mood is calm.
+
+    ~ Sibling reporting.
+
+    ~ Elsewhere ends.
+</test>
+*/

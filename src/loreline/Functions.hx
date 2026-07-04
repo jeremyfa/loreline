@@ -939,7 +939,7 @@ class Functions {
      * ```
      */
     public function has_beat(name:Any):Bool {
-        if (name is NBeatDecl) return true; // reachable, we resolved it
+        if (RuntimeBeatRef.beatOf(name) != null) return true; // reachable, we resolved it
         final nameStr:String = cast name;
         // Walk the stack bottom-up, scanning each scope's beat body for nested beat declarations
         @:privateAccess var i = interpreter.stack.length - 1;
@@ -990,9 +990,9 @@ class Functions {
                 i--;
             }
             return 0;
-        } else if (name is NBeatDecl) {
-            // Beat reference (from bareword or dot notation)
-            @:privateAccess return interpreter.getBeatVisitCount(cast name);
+        } else if (RuntimeBeatRef.beatOf(name) != null) {
+            // Beat value or beat reference (from bareword or dot notation)
+            @:privateAccess return interpreter.getBeatVisitCount(RuntimeBeatRef.beatOf(name));
         } else {
             // Named beat string: use scope-aware lookup
             @:privateAccess final beat = interpreter.resolveBeatByName(cast name);

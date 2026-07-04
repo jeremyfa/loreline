@@ -786,6 +786,46 @@ class NCharacterDecl extends AstNode {
 }
 
 /**
+ * A single parameter in a beat declaration, e.g. `name` or `mood = "happy"`
+ * in `beat Greet(name, mood = "happy")`.
+ */
+class NBeatParam {
+
+    /**
+     * Name of the parameter.
+     */
+    public var name:String;
+
+    /**
+     * Position of the parameter name in source.
+     */
+    public var namePos:Position;
+
+    /**
+     * Optional default value expression, evaluated when no argument is provided.
+     */
+    public var defaultValue:Null<NExpr>;
+
+    public function new(name:String, namePos:Position, ?defaultValue:NExpr) {
+        this.name = name;
+        this.namePos = namePos;
+        this.defaultValue = defaultValue;
+    }
+
+    public function toJson():Dynamic {
+        final json:Dynamic = {
+            name: name,
+            namePos: namePos.toJson()
+        };
+        if (defaultValue != null) {
+            json.defaultValue = defaultValue.toJson();
+        }
+        return json;
+    }
+
+}
+
+/**
  * Represents a beat (scene) declaration in the AST.
  */
 class NBeatDecl extends AstNode {
@@ -804,6 +844,12 @@ class NBeatDecl extends AstNode {
      * Block style of this beat
      */
     public var style:BlockStyle;
+
+    /**
+     * Optional parameters of this beat (null when the declaration has no parens).
+     * At runtime they become beat-scoped temporary state fields.
+     */
+    public var params:Null<Array<NBeatParam>> = null;
 
     /**
      * Creates a new beat declaration node.
@@ -827,6 +873,15 @@ class NBeatDecl extends AstNode {
     public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
         super.each(handleNode);
 
+        if (params != null) {
+            for (param in params) {
+                if (param.defaultValue != null) {
+                    handleNode(param.defaultValue, this);
+                    param.defaultValue.each(handleNode);
+                }
+            }
+        }
+
         if (body != null) {
             for (i in 0...body.length) {
                 final child = body[i];
@@ -843,6 +898,9 @@ class NBeatDecl extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.name = name;
+        if (params != null) {
+            json.params = [for (param in params) param.toJson()];
+        }
         json.body = [for (node in body) node.toJson()];
         json.style = style.toString();
         return json;
@@ -1704,7 +1762,7 @@ class NCall extends NExpr {
  */
 class NTransition extends AstNode {
     /**
-     * Name of the target beat.
+     * Name of the target beat (null when the target is dynamic, see targetExpr).
      */
     public var target:String;
 
@@ -1712,6 +1770,18 @@ class NTransition extends AstNode {
      * Position of the target part of the transition
      */
     public var targetPos:Position;
+
+    /**
+     * Dynamic target expression, from the `-> beat(expr)` form.
+     * When set, `target` is null and the expression is resolved at runtime.
+     */
+    public var targetExpr:Null<NExpr> = null;
+
+    /**
+     * Optional arguments passed to the target beat, from
+     * `-> SomeBeat(args...)` or `-> beat(expr, args...)`.
+     */
+    public var args:Null<Array<NExpr>> = null;
 
     /**
      * Creates a new transition node.
@@ -1731,14 +1801,38 @@ class NTransition extends AstNode {
         return "Transition";
     }
 
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (targetExpr != null) {
+            handleNode(targetExpr, this);
+            targetExpr.each(handleNode);
+        }
+
+        if (args != null) {
+            for (arg in args) {
+                handleNode(arg, this);
+                arg.each(handleNode);
+            }
+        }
+    }
+
     /**
      * Converts the transition to a JSON representation.
      * @return Dynamic object containing transition data
      */
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
-        json.target = target;
+        if (targetExpr != null) {
+            json.targetExpr = targetExpr.toJson();
+        }
+        else {
+            json.target = target;
+        }
         json.targetPos = targetPos.toJson();
+        if (args != null) {
+            json.args = [for (arg in args) arg.toJson()];
+        }
         return json;
     }
 }
@@ -1748,7 +1842,7 @@ class NTransition extends AstNode {
  */
 class NInsertion extends AstNode {
     /**
-     * Name of the target beat.
+     * Name of the target beat (null when the target is dynamic, see targetExpr).
      */
     public var target:String;
 
@@ -1756,6 +1850,18 @@ class NInsertion extends AstNode {
      * Position of the target part of the insertion
      */
     public var targetPos:Position;
+
+    /**
+     * Dynamic target expression, from the `+ beat(expr)` form.
+     * When set, `target` is null and the expression is resolved at runtime.
+     */
+    public var targetExpr:Null<NExpr> = null;
+
+    /**
+     * Optional arguments passed to the target beat, from
+     * `+ SomeBeat(args...)` or `+ beat(expr, args...)`.
+     */
+    public var args:Null<Array<NExpr>> = null;
 
     /**
      * Creates a new insertion node.
@@ -1775,14 +1881,109 @@ class NInsertion extends AstNode {
         return "Insertion";
     }
 
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (targetExpr != null) {
+            handleNode(targetExpr, this);
+            targetExpr.each(handleNode);
+        }
+
+        if (args != null) {
+            for (arg in args) {
+                handleNode(arg, this);
+                arg.each(handleNode);
+            }
+        }
+    }
+
     /**
      * Converts the insertion to a JSON representation.
      * @return Dynamic object containing insertion data
      */
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
-        json.target = target;
+        if (targetExpr != null) {
+            json.targetExpr = targetExpr.toJson();
+        }
+        else {
+            json.target = target;
+        }
         json.targetPos = targetPos.toJson();
+        if (args != null) {
+            json.args = [for (arg in args) arg.toJson()];
+        }
+        return json;
+    }
+}
+
+/**
+ * Represents a dynamic beat call statement: `beat(expr, args...)`.
+ * Runs the resolved beat as a stack-preserving call (like a static
+ * `SomeBeat(args...)` call), with the target resolved at runtime.
+ */
+class NBeatCall extends AstNode {
+    /**
+     * Target expression, resolved at runtime to a beat
+     * (a string name, a beat value or a beat reference).
+     */
+    public var targetExpr:NExpr;
+
+    /**
+     * Position of the `beat(...)` target part.
+     */
+    public var targetPos:Position;
+
+    /**
+     * Optional arguments passed to the target beat.
+     */
+    public var args:Null<Array<NExpr>> = null;
+
+    /**
+     * Creates a new dynamic beat call node.
+     * @param pos Position in source where this call appears
+     * @param targetExpr Expression resolving to the target beat
+     * @param targetPos Position of the target part
+     * @param leadingComments Optional comments before the call
+     * @param trailingComments Optional comments after the call
+     */
+    public function new(id:NodeId, pos:Position, targetExpr:NExpr, targetPos:Position, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.targetExpr = targetExpr;
+        this.targetPos = targetPos;
+    }
+
+    override function type():String {
+        return "BeatCall";
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (targetExpr != null) {
+            handleNode(targetExpr, this);
+            targetExpr.each(handleNode);
+        }
+
+        if (args != null) {
+            for (arg in args) {
+                handleNode(arg, this);
+                arg.each(handleNode);
+            }
+        }
+    }
+
+    /**
+     * Converts the beat call to a JSON representation.
+     * @return Dynamic object containing beat call data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        json.targetExpr = targetExpr.toJson();
+        json.targetPos = targetPos.toJson();
+        if (args != null) {
+            json.args = [for (arg in args) arg.toJson()];
+        }
         return json;
     }
 }

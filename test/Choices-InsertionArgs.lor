@@ -1,0 +1,38 @@
+
+beat Main
+  choice
+    Regular
+      Picked regular.
+    + Extras("Gold")
+    + beat("Extras", "Silver")
+
+beat Extras(metal)
+  choice
+    Take the $metal coin
+      You took the $metal coin.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Regular
+    + Take the Gold coin
+    + Take the Silver coin
+
+    ~ Picked regular.
+- choices: [1]
+  expected: |
+    + Regular
+    + Take the Gold coin
+    + Take the Silver coin
+
+    ~ You took the Gold coin.
+- choices: [2]
+  expected: |
+    + Regular
+    + Take the Gold coin
+    + Take the Silver coin
+
+    ~ You took the Silver coin.
+</test>
+*/

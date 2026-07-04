@@ -1,0 +1,41 @@
+
+beat Main
+  Intro line.
+  Quest("Dragon", 3)
+
+beat Quest(target, level = 1)
+  Hunting $target at level $level.
+  choice
+    Fight
+      You fought the $target.
+    Flee
+      You fled from the $target.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Intro line.
+
+    ~ Hunting Dragon at level 3.
+
+    + Fight
+    + Flee
+
+    ~ You fought the Dragon.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Intro line.
+
+    ~ Hunting Dragon at level 3.
+
+    + Fight
+    + Flee
+
+    + Fight
+    + Flee
+
+    ~ You fled from the Dragon.
+</test>
+*/

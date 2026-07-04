@@ -1,0 +1,27 @@
+
+// Beat names resolve lexically from their position, order-independent:
+// a nested beat is visible in its whole scope (even before its
+// declaration line) and shadows a same-named top-level beat.
+
+beat Main
+  beat("Report")
+
+  beat Report
+    Nested report.
+
+  beat("Report")
+  -> beat("Report")
+
+beat Report
+  Top level report.
+
+/*
+<test>
+- expected: |
+    ~ Nested report.
+
+    ~ Nested report.
+
+    ~ Nested report.
+</test>
+*/

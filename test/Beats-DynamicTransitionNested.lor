@@ -1,0 +1,17 @@
+
+beat Main
+  Entering main.
+
+  beat Nested
+    Inside nested beat.
+
+  -> beat("Nes" + "ted")
+
+/*
+<test>
+- expected: |
+    ~ Entering main.
+
+    ~ Inside nested beat.
+</test>
+*/

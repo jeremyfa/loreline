@@ -140,7 +140,7 @@ enum RuntimeAccess {
      * @param pos Position in the source code where this access occurs
      * @param beat The beat declaration node
      */
-    BeatAccess(pos:Position, beat:NBeatDecl);
+    BeatAccess(pos:Position, ref:RuntimeBeatRef);
 
 }
 
@@ -190,6 +190,14 @@ class RuntimeScope {
     public var insertion:RuntimeInsertion = null;
 
     /**
+     * If this scope runs a beat invoked through a beat reference, this is
+     * the scope chain captured when the reference was created (closure).
+     * Name resolution inside this scope walks this chain instead of the
+     * scopes below it in the stack, then jumps to top-level.
+     */
+    public var captured:Array<RuntimeScope> = null;
+
+    /**
      * Finds a nested beat declaration with the given name in this scope, if any.
      *
      * @param name The name of the beat to find
@@ -202,6 +210,46 @@ class RuntimeScope {
             if (beat.name == name) {
                 return beat;
             }
+        }
+        return null;
+    }
+
+}
+
+/**
+ * A first-class beat reference: the beat plus the scope chain captured
+ * where the reference was created (from root up to and including the
+ * beat's declaring scope; empty for top-level beats). Produced whenever
+ * an expression reads an identifier that resolves to a beat.
+ */
+class RuntimeBeatRef {
+
+    /**
+     * The referenced beat declaration.
+     */
+    public var beat(default, null):NBeatDecl;
+
+    /**
+     * The captured scope chain (closure). Empty for top-level beats.
+     */
+    public var stack(default, null):Array<RuntimeScope>;
+
+    public function new(beat:NBeatDecl, stack:Array<RuntimeScope>) {
+        this.beat = beat;
+        this.stack = stack;
+    }
+
+    /**
+     * Returns the underlying beat if the given runtime value is a beat
+     * declaration or a beat reference, null otherwise.
+     */
+    public static function beatOf(value:Any):Null<NBeatDecl> {
+        if (value is NBeatDecl) {
+            return cast value;
+        }
+        if (value is RuntimeBeatRef) {
+            final ref:RuntimeBeatRef = cast value;
+            return ref.beat;
         }
         return null;
     }
@@ -789,9 +837,31 @@ typedef InterpreterOptions = {
      *
      * @return A SaveData object containing the serialized state
      */
+    /**
+     * Insertions map of the save() currently in progress, so that value
+     * serialization (beat references with captured scopes) can link
+     * insertions correctly. Null outside of save().
+     */
+    var _saveInsertions:Dynamic<SaveDataInsertion> = null;
+
+    /**
+     * Scopes currently being serialized, used to break cycles when a beat
+     * reference stored in a scope's state captures that same scope.
+     */
+    final _serializingScopes:Array<RuntimeScope> = [];
+
+    /**
+     * Saved insertions and restore cache of the restore() currently in
+     * progress, so that value restoration (beat references with captured
+     * scopes) can rebuild scope chains. Null outside of restore().
+     */
+    var _restoreSavedInsertions:Dynamic<SaveDataInsertion> = null;
+    var _restoreInsertionsCache:Map<Int, RuntimeInsertion> = null;
+
     public function save():SaveData {
 
         final insertions:Dynamic<SaveDataInsertion> = {};
+        _saveInsertions = insertions;
 
         final result:SaveData = {
             version: 1,
@@ -827,6 +897,8 @@ typedef InterpreterOptions = {
             result.insertions = insertions;
         }
 
+        _saveInsertions = null;
+
         return result;
 
     }
@@ -854,6 +926,11 @@ typedef InterpreterOptions = {
         _choiceEvalTexts.resize(0);
         _choiceEvalEnabled.resize(0);
 
+        // Restore context for beat reference values (captured scope chains)
+        final restoredInsertions = new Map<Int, RuntimeInsertion>();
+        _restoreSavedInsertions = saveData.insertions;
+        _restoreInsertionsCache = restoredInsertions;
+
         // Restore top level state
         restoreState(topLevelState, saveData.state);
 
@@ -864,7 +941,6 @@ typedef InterpreterOptions = {
         restoreNodeStates(saveData.nodeStates);
 
         // Restore scope stack (share restoredInsertions map for pending options)
-        final restoredInsertions = new Map<Int, RuntimeInsertion>();
         if (!restoreStack(saveData.stack, saveData.insertions, restoredInsertions)) {
             // If failed to restore stack, simply resolve last known top level beat as fallback
             beatToResume = restoreBeatToResume(saveData.stack);
@@ -888,6 +964,9 @@ typedef InterpreterOptions = {
                 _choiceEvalEnabled.push(entry.disabled != true);
             }
         }
+
+        _restoreSavedInsertions = null;
+        _restoreInsertionsCache = null;
 
     }
 
@@ -981,16 +1060,49 @@ typedef InterpreterOptions = {
      * @param name The name of the field to get
      * @return The field value or null if the field doesn't exist in any scope
      */
+    /**
+     * Walks scopes for name resolution, innermost to outermost, starting at
+     * `startIndex` (-1 for the innermost scope). When a scope carries a
+     * captured chain (the closure boundary of a beat invoked through a beat
+     * reference), the walk diverts into that chain (innermost to outermost,
+     * recursively) and then STOPS, skipping the scopes below the boundary:
+     * resolution inside a ref-invoked beat is lexical, not dynamic.
+     * `visit` returns true to stop the walk.
+     */
+    function eachResolutionScope(startIndex:Int, visit:(scope:RuntimeScope)->Bool):Void {
+
+        walkResolutionScopes(stack, startIndex == -1 ? stack.length - 1 : startIndex, visit);
+
+    }
+
+    function walkResolutionScopes(scopes:Array<RuntimeScope>, startIndex:Int, visit:(scope:RuntimeScope)->Bool):Void {
+
+        var i = startIndex;
+        while (i >= 0) {
+            final scope = scopes[i];
+            if (visit(scope)) return;
+            if (scope.captured != null) {
+                // Closure boundary: continue into the captured chain, then stop
+                walkResolutionScopes(scope.captured, scope.captured.length - 1, visit);
+                return;
+            }
+            i--;
+        }
+
+    }
+
     public function getStateField(name:String):Any {
 
-        var i = stack.length - 1;
-        while (i >= 0) {
-            final scope = stack[i];
+        var found = false;
+        var result:Any = null;
+        eachResolutionScope(-1, scope -> {
 
             // Check temporary state
             if (scope.state != null) {
                 if (Objects.fieldExists(this, scope.state.fields, name)) {
-                    return Objects.getField(this, scope.state.fields, name);
+                    result = Objects.getField(this, scope.state.fields, name);
+                    found = true;
+                    return true;
                 }
             }
 
@@ -999,13 +1111,16 @@ typedef InterpreterOptions = {
                 final stateInNode = nodeStates.get(scope.node.id);
                 if (stateInNode != null) {
                     if (Objects.fieldExists(this, stateInNode.fields, name)) {
-                        return Objects.getField(this, stateInNode.fields, name);
+                        result = Objects.getField(this, stateInNode.fields, name);
+                        found = true;
+                        return true;
                     }
                 }
             }
 
-            i--;
-        }
+            return false;
+        });
+        if (found) return result;
 
         // Fall back to top-level state
         if (Objects.fieldExists(this, topLevelState.fields, name)) {
@@ -1026,15 +1141,15 @@ typedef InterpreterOptions = {
      */
     public function setStateField(name:String, value:Any):Void {
 
-        var i = stack.length - 1;
-        while (i >= 0) {
-            final scope = stack[i];
+        var done = false;
+        eachResolutionScope(-1, scope -> {
 
             // Check temporary state
             if (scope.state != null) {
                 if (Objects.fieldExists(this, scope.state.fields, name)) {
                     Objects.setField(this, scope.state.fields, name, value);
-                    return;
+                    done = true;
+                    return true;
                 }
             }
 
@@ -1044,13 +1159,15 @@ typedef InterpreterOptions = {
                 if (stateInNode != null) {
                     if (Objects.fieldExists(this, stateInNode.fields, name)) {
                         Objects.setField(this, stateInNode.fields, name, value);
-                        return;
+                        done = true;
+                        return true;
                     }
                 }
             }
 
-            i--;
-        }
+            return false;
+        });
+        if (done) return;
 
         // Fall back to top-level state
         Objects.setField(this, topLevelState.fields, name, value);
@@ -1119,6 +1236,10 @@ typedef InterpreterOptions = {
             id: scope.id
         };
 
+        // Track scopes being serialized to break cycles when a beat
+        // reference stored in a scope's state captures that same scope
+        _serializingScopes.push(scope);
+
         if (scope.beat != null) {
             result.beat = serializeBeatReference(scope.beat);
         }
@@ -1142,6 +1263,12 @@ typedef InterpreterOptions = {
         if (scope.insertion != null) {
             result.insertion = serializeInsertion(scope.insertion, insertions);
         }
+
+        if (scope.captured != null) {
+            result.captured = [for (captured in scope.captured) serializeScope(captured, insertions)];
+        }
+
+        _serializingScopes.pop();
 
         return result;
 
@@ -1431,6 +1558,35 @@ typedef InterpreterOptions = {
             return arr;
         }
 
+        // Handle beat values and beat references: serialize as a marked
+        // beat reference object, with the captured chain when present
+        final asBeat = RuntimeBeatRef.beatOf(value);
+        if (asBeat != null) {
+            final serializedRef:SaveDataBeatRef = {
+                type: "$beatRef",
+                beat: serializeBeatReference(asBeat)
+            };
+            if (value is RuntimeBeatRef) {
+                final ref:RuntimeBeatRef = cast value;
+                if (ref.stack.length > 0) {
+                    // Break cycles: when the chain contains a scope currently
+                    // being serialized, degrade to a chainless reference
+                    var cyclic = false;
+                    for (captured in ref.stack) {
+                        if (_serializingScopes.indexOf(captured) != -1) {
+                            cyclic = true;
+                            break;
+                        }
+                    }
+                    if (!cyclic) {
+                        final insertions:Dynamic<SaveDataInsertion> = _saveInsertions != null ? _saveInsertions : {};
+                        serializedRef.stack = [for (captured in ref.stack) serializeScope(captured, insertions)];
+                    }
+                }
+            }
+            return (serializedRef:Any);
+        }
+
         // Handle objects/maps recursively
         return serializeFields(value);
 
@@ -1469,6 +1625,8 @@ typedef InterpreterOptions = {
                     resumeAlternative(cast node, scopeLevel, next);
                 case NCall if (isBeatCall(node, scopeLevel)):
                     resumeCall(cast node, scopeLevel, next);
+                case NBeatCall:
+                    resumeBeatCall(cast node, scopeLevel, next);
 
                 case _:
                     throw new RuntimeError('Resume execution not supported from node within stack: ${Type.getClassName(Type.getClass(node))}', node.pos);
@@ -1479,6 +1637,8 @@ typedef InterpreterOptions = {
 
                 case NCall if (!isBeatCall(node)):
                     evalCall(cast node, next);
+                case NBeatCall:
+                    evalBeatCall(cast node, next);
                 case NChoiceStatement:
                     evalChoice(cast node, next);
                 case NTextStatement:
@@ -1750,39 +1910,34 @@ typedef InterpreterOptions = {
     function resumeCall(call:NCall, scopeLevel:Int, next:()->Void) {
 
         // If target is a simple identifier, it might be a nested beat call
-        if (call.target is NAccess) {
-            final access:NAccess = cast call.target;
-            if (access.target == null) {
-                // Look for matching beat in current scope and parent scopes
-                var beatName = access.name;
-                var resolvedBeat:NBeatDecl = null;
-
-                // Search through scopes from innermost to outermost
-                var i = stack.length - 1;
-                while (i >= 0) {
-                    final scope = stack[i];
-                    final beatInScope = scope.beatByName(beatName);
-                    if (beatInScope != null) {
-                        resolvedBeat = beatInScope;
-                        break;
-                    }
-                    i--;
-                }
-
-                // If not found in scopes, check top level beats
-                if (resolvedBeat == null && topLevelBeats.exists(beatName)) {
-                    resolvedBeat = topLevelBeats.get(beatName);
-                }
-
-                // If beat found, evaluate it
-                if (resolvedBeat != null) {
-                    resumeBeatRun(resolvedBeat, scopeLevel, next);
-                    return;
-                }
-            }
+        // (resolved lexically from the call's position, like evalCall)
+        final resolvedRef = resolveBeatRefFromCall(call);
+        if (resolvedRef != null) {
+            resumeBeatRun(resolvedRef.beat, scopeLevel, next);
+            return;
         }
 
         throw new RuntimeError('Cannot resume through a function call that is not at the bottom of the stack', call.pos);
+
+    }
+
+    /**
+     * Resumes execution through a dynamic beat call statement (beat(expr)).
+     * The restored child scope already knows which beat it was running
+     * (restored by node id), so no expression re-evaluation is needed.
+     *
+     * @param call The beat call node to resume
+     * @param scopeLevel The scope level to resume at
+     * @param next Callback to call when the call execution completes
+     */
+    function resumeBeatCall(call:NBeatCall, scopeLevel:Int, next:()->Void) {
+
+        if (scopeLevel >= 0 && scopeLevel < stack.length && stack[scopeLevel].node is NBeatDecl) {
+            resumeBeatRun(cast stack[scopeLevel].node, scopeLevel, next);
+            return;
+        }
+
+        throw new RuntimeError('Cannot resume through a beat call that is not at the bottom of the stack', call.pos);
 
     }
 
@@ -1871,13 +2026,25 @@ typedef InterpreterOptions = {
             insertion = restoreInsertion(savedScope.insertion, savedInsertions, restoredInsertions);
         }
 
+        // Restore captured scope chain (closure of a ref-invoked beat)
+        var captured:Array<RuntimeScope> = null;
+        if (savedScope.captured != null) {
+            captured = [];
+            for (savedCaptured in savedScope.captured) {
+                final capturedScope = restoreScopeItem(savedCaptured, savedInsertions, restoredInsertions);
+                if (capturedScope == null) return null;
+                captured.push(capturedScope);
+            }
+        }
+
         return ({
             beat: beat,
             node: node,
             state: state,
             beats: beats,
             head: head,
-            insertion: insertion
+            insertion: insertion,
+            captured: captured
         } : RuntimeScope);
 
     }
@@ -2222,6 +2389,29 @@ typedef InterpreterOptions = {
             return arr;
         }
 
+        // Handle beat references (marked with type == "$beatRef")
+        if (Reflect.field(value, "type") == "$beatRef") {
+            final savedRef:SaveDataBeatRef = cast value;
+            final beat = restoreBeat(savedRef.beat);
+            if (beat == null) return null;
+            var chain:Array<RuntimeScope> = [];
+            if (savedRef.stack != null) {
+                final savedInsertions:Dynamic<SaveDataInsertion> = _restoreSavedInsertions != null ? _restoreSavedInsertions : {};
+                final cache = _restoreInsertionsCache != null ? _restoreInsertionsCache : new Map<Int, RuntimeInsertion>();
+                for (savedScope in savedRef.stack) {
+                    final scope = restoreScopeItem(savedScope, savedInsertions, cache);
+                    if (scope == null) {
+                        // Captured scope could not be restored:
+                        // degrade to a chainless reference
+                        chain = [];
+                        break;
+                    }
+                    chain.push(scope);
+                }
+            }
+            return new RuntimeBeatRef(beat, chain);
+        }
+
         return restoreFields(null, value);
     }
 
@@ -2551,6 +2741,60 @@ typedef InterpreterOptions = {
     }
 
     /**
+     * Evaluates transition/insertion/call arguments in the caller scope and
+     * checks arity against the target beat's declared parameters.
+     * Returns the evaluated values, or null when there are no arguments.
+     *
+     * @param beat The target beat
+     * @param args The argument expressions, if any
+     * @param pos Position used to report arity errors
+     */
+    function evaluateBeatArgs(beat:NBeatDecl, args:Null<Array<NExpr>>, pos:Position):Null<Array<Any>> {
+
+        if (args == null || args.length == 0) return null;
+
+        final numParams = beat.params != null ? beat.params.length : 0;
+        if (args.length > numParams) {
+            throw new RuntimeError('Beat ${beat.name} expects at most $numParams argument(s), got ${args.length}', pos);
+        }
+
+        return [for (arg in args) evaluateExpression(arg)];
+
+    }
+
+    /**
+     * Seeds beat parameters as beat-scoped temporary state on the given scope.
+     * Missing arguments get their default value (evaluated now, in the new
+     * scope, so defaults can read outer state), or null.
+     *
+     * @param scope The freshly pushed scope of the beat being run
+     * @param beat The beat being run
+     * @param values Evaluated argument values, or null
+     */
+    function seedBeatParams(scope:RuntimeScope, beat:NBeatDecl, values:Null<Array<Any>>):Void {
+
+        final params = beat.params;
+        if (params == null || params.length == 0) return;
+
+        if (scope.state == null) {
+            scope.state = new RuntimeState(this, beat, null, null);
+        }
+
+        for (i in 0...params.length) {
+            final param = params[i];
+            var value:Any = null;
+            if (values != null && i < values.length) {
+                value = values[i];
+            }
+            else if (param.defaultValue != null) {
+                value = evaluateExpression(param.defaultValue);
+            }
+            Objects.setField(this, scope.state.fields, param.name, value);
+        }
+
+    }
+
+    /**
      * Finishes script execution and calls the finish handler.
      */
     function finish():Void {
@@ -2568,9 +2812,10 @@ typedef InterpreterOptions = {
      *
      * @param beat The beat to transition to
      */
-    function transitionToBeat(beat:NBeatDecl) {
+    function transitionToBeat(beat:NBeatDecl, ?argValues:Array<Any>, ?capturedChain:Array<RuntimeScope>) {
 
         // Clear stack and temporary states
+        // (arguments, if any, were evaluated by the caller before this)
         while (pop()) {};
 
         // Reset scope id
@@ -2591,7 +2836,7 @@ typedef InterpreterOptions = {
         // execution chain is the finish trigger
         finishTrigger = done;
 
-        evalBeatRun(beat, done.cb);
+        evalBeatRun(beat, done.cb, argValues, capturedChain);
         done.sync = false;
 
     }
@@ -2627,6 +2872,8 @@ typedef InterpreterOptions = {
                 evalAssignment(cast node, next);
             case NCall:
                 evalCall(cast node, next);
+            case NBeatCall:
+                evalBeatCall(cast node, next);
 
             case NTransition:
                 // When evaluating transition, we discard the
@@ -2676,7 +2923,7 @@ typedef InterpreterOptions = {
      * @param insertion If any, the insertion related to this evaluation
      * @param next Callback to call when execution completes
      */
-    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:RuntimeInsertion, next:()->Void) {
+    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:RuntimeInsertion, ?argValues:Array<Any>, ?capturedChain:Array<RuntimeScope>, next:()->Void) {
 
         // Push new scope
         push({
@@ -2684,6 +2931,19 @@ typedef InterpreterOptions = {
             node: node,
             insertion: insertion
         });
+
+        // When entering a beat body (node == beat), seed its declared
+        // parameters as beat-scoped temporary state
+        if (node == beat && beat != null && beat.params != null) {
+            seedBeatParams(currentScope, beat, argValues);
+        }
+
+        // When entering a beat invoked through a beat reference, attach the
+        // captured scope chain (closure) so name resolution inside the beat
+        // walks that chain instead of the scopes below on the stack
+        if (node == beat && beat != null && capturedChain != null && capturedChain.length > 0) {
+            currentScope.captured = capturedChain;
+        }
 
         // Then iterate through each child node in the body
         var index = 0;
@@ -2734,10 +2994,10 @@ typedef InterpreterOptions = {
      * @param beat The beat to evaluate
      * @param next Callback to call when evaluation completes
      */
-    function evalBeatRun(beat:NBeatDecl, next:()->Void) {
+    function evalBeatRun(beat:NBeatDecl, next:()->Void, ?argValues:Array<Any>, ?capturedChain:Array<RuntimeScope>) {
 
         incrementBeatVisitCount(beat);
-        evalNodeBody(beat, beat, beat.body, next);
+        evalNodeBody(beat, beat, beat.body, null, argValues, capturedChain, next);
 
     }
 
@@ -3060,34 +3320,51 @@ typedef InterpreterOptions = {
 
     function evalInsertion(insertion:RuntimeInsertion, next:()->Void) {
 
-        final beatName = insertion.origin.target;
-        var resolvedBeat:NBeatDecl = null;
+        final origin = insertion.origin;
+        var resolvedRef:RuntimeBeatRef = null;
 
-        // Look for matching beat in scopes recursively
-        var i = stack.length - 1;
-        while (i >= 0) {
-            final scope = stack[i];
-            final beatInScope = scope.beatByName(beatName);
-            if (beatInScope != null) {
-                resolvedBeat = beatInScope;
-                break;
-            }
-            i--;
+        if (origin.targetExpr != null) {
+            // Dynamic target: + beat(expr, args...)
+            final value:Any = evaluateExpression(origin.targetExpr);
+            resolvedRef = resolveDynamicBeatTarget(value, origin);
         }
+        else {
+            final beatName = origin.target;
 
-        // If no beat was found, look at top level beats
-        if (resolvedBeat == null) {
-            if (topLevelBeats.exists(beatName)) {
-                resolvedBeat = topLevelBeats.get(beatName);
+            // Resolve lexically from the insertion's position
+            resolvedRef = resolveBeatRefFromNode(beatName, origin);
+
+            // If still nothing found, not good...
+            if (resolvedRef == null) {
+                throw beatNotFoundError(beatName, origin);
             }
         }
 
-        // If still nothing found, not good...
-        if (resolvedBeat == null) {
-            throw new RuntimeError('Beat $beatName not found', script.pos);
-        }
+        // Evaluate arguments at splice time, in the caller scope
+        final resolvedBeat = resolvedRef.beat;
+        final argValues = evaluateBeatArgs(resolvedBeat, origin.args, origin.pos);
 
-        evalNodeBody(resolvedBeat, resolvedBeat, resolvedBeat.body, insertion, next);
+        evalNodeBody(resolvedBeat, resolvedBeat, resolvedBeat.body, insertion, argValues, resolvedRef.stack.length > 0 ? resolvedRef.stack : null, next);
+
+    }
+
+    /**
+     * Evaluates a dynamic beat call statement: beat(expr, args...).
+     * Runs the resolved beat as a stack-preserving call, carrying the
+     * captured scope chain when the target is a beat reference.
+     *
+     * @param call The beat call node to evaluate
+     * @param next Callback to call when evaluation completes
+     */
+    function evalBeatCall(call:NBeatCall, next:()->Void) {
+
+        final value:Any = evaluateExpression(call.targetExpr);
+        final resolvedRef = resolveDynamicBeatTarget(value, call);
+
+        // Evaluate arguments in the caller scope
+        final argValues = evaluateBeatArgs(resolvedRef.beat, call.args, call.pos);
+
+        evalBeatRun(resolvedRef.beat, next, argValues, resolvedRef.stack.length > 0 ? resolvedRef.stack : null);
 
     }
 
@@ -3394,7 +3671,7 @@ typedef InterpreterOptions = {
     function isBeatCall(node:AstNode, scopeLevel:Int = -1):Bool {
 
         if (node is NCall) {
-            return resolveBeatFromCall(cast node, scopeLevel) != null;
+            return resolveBeatRefFromCall(cast node) != null;
         }
 
         return false;
@@ -3402,37 +3679,233 @@ typedef InterpreterOptions = {
     }
 
     /**
-     * Resolves a call node to a beat declaration if the call references a beat.
-     * This allows handling beat calls differently from regular function calls.
-     *
-     * @param call The call node to resolve
-     * @param scopeLevel Optional scope level to search in (defaults to current scope)
-     * @return The beat declaration if found, null otherwise
+     * Returns true if the call is the dynamic `call(target, args...)` special
+     * form: a bare `call` identifier that isn't shadowed by any script binding.
      */
+    function isDynamicCallForm(call:NCall):Bool {
+
+        if (call.target is NAccess) {
+            final access:NAccess = cast call.target;
+            if (access.target == null && access.name == "call") {
+                return !resolvesExistingBinding("call");
+            }
+        }
+
+        return false;
+
+    }
+
     /**
-     * Resolves a beat by name, searching nested scopes first then top-level beats.
+     * Resolves a beat by name against the RUNTIME scope walk (registered
+     * nested beats first, then top-level beats). Only used as fallback for
+     * node-less contexts (function code, engine helpers); node-anchored
+     * resolution goes through resolveBeatRefFromNode (lexical).
      */
     public function resolveBeatByName(name:String, scopeLevel:Int = -1):Null<NBeatDecl> {
-        var i = scopeLevel == -1 ? stack.length - 1 : scopeLevel;
-        while (i >= 0) {
-            final b = stack[i].beatByName(name);
-            if (b != null) return b;
-            i--;
-        }
+        var result:NBeatDecl = null;
+        eachResolutionScope(scopeLevel, scope -> {
+            final b = scope.beatByName(name);
+            if (b != null) {
+                result = b;
+                return true;
+            }
+            return false;
+        });
+        if (result != null) return result;
         return topLevelBeats.get(name);
     }
 
-    function resolveBeatFromCall(call:NCall, scopeLevel:Int = -1):NBeatDecl {
+    /**
+     * Resolves a beat by name like resolveBeatByName, but also builds the
+     * scope chain to capture for a beat reference: the resolution path from
+     * the root up to and including the declaring scope (empty for top-level
+     * beats). Used to create RuntimeBeatRef values.
+     */
+    public function resolveBeatRefByName(name:String):Null<RuntimeBeatRef> {
+
+        var result:RuntimeBeatRef = null;
+
+        function walk(scopes:Array<RuntimeScope>, startIndex:Int):Void {
+            var i = startIndex;
+            while (i >= 0) {
+                final scope = scopes[i];
+                final b = scope.beatByName(name);
+                if (b != null) {
+                    result = new RuntimeBeatRef(b, scopes.slice(0, i + 1));
+                    return;
+                }
+                if (scope.captured != null) {
+                    // Closure boundary: continue into the captured chain, then stop
+                    walk(scope.captured, scope.captured.length - 1);
+                    return;
+                }
+                i--;
+            }
+        }
+
+        walk(stack, stack.length - 1);
+        if (result != null) return result;
+
+        final topLevel = topLevelBeats.get(name);
+        if (topLevel != null) {
+            return new RuntimeBeatRef(topLevel, []);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Resolves a beat by name from the given node's LEXICAL position, using
+     * the same resolution as the editor (Lens): innermost enclosing beat
+     * outward, order-independent, nested beats shadowing outer and top-level
+     * ones. When the resolved beat's declaring scope is live on the stack,
+     * the returned reference captures that scope chain (like beat references
+     * do), so the beat keeps its lexical context when invoked.
+     *
+     * Falls back to the runtime scope walk only when no node is available
+     * (function code and engine helpers).
+     *
+     * @param name The beat name to resolve
+     * @param node The node used as lexical anchor (null in node-less contexts)
+     */
+    public function resolveBeatRefFromNode(name:String, node:Node):Null<RuntimeBeatRef> {
+
+        if (node == null) {
+            // Node-less contexts (function code, helpers): runtime walk
+            return resolveBeatRefByName(name);
+        }
+
+        final lexical = lens.findBeatByNameFromNode(name, node);
+        if (lexical == null) {
+            return null;
+        }
+
+        return new RuntimeBeatRef(lexical, captureChainForBeat(lexical));
+
+    }
+
+    /**
+     * Builds the scope chain to capture for a lexically resolved beat: the
+     * live scopes from root up to and including the beat's declaring scope,
+     * honoring closure boundaries. Returns an empty array when the beat is
+     * top-level or its declaring scope is not live (chainless).
+     */
+    function captureChainForBeat(beat:NBeatDecl):Array<RuntimeScope> {
+
+        final parentBeat = lens.getFirstParentOfType(beat, NBeatDecl);
+        if (parentBeat == null) {
+            // Top-level beat, nothing to capture
+            return [];
+        }
+
+        var result:Array<RuntimeScope> = null;
+
+        function walk(scopes:Array<RuntimeScope>, startIndex:Int):Void {
+            var i = startIndex;
+            var parentMatch = -1;
+            while (i >= 0) {
+                final scope = scopes[i];
+                // Prefer the scope where the beat is registered
+                if (scope.beats != null && scope.beats.indexOf(beat) != -1) {
+                    result = scopes.slice(0, i + 1);
+                    return;
+                }
+                // Remember the innermost scope of the lexical parent beat,
+                // in case the declaration line has not registered yet
+                if (parentMatch == -1 && scope.beat == parentBeat) {
+                    parentMatch = i;
+                }
+                if (scope.captured != null) {
+                    // Closure boundary: continue into the captured chain, then stop
+                    walk(scope.captured, scope.captured.length - 1);
+                    if (result == null && parentMatch != -1) {
+                        result = scopes.slice(0, parentMatch + 1);
+                    }
+                    return;
+                }
+                i--;
+            }
+            if (result == null && parentMatch != -1) {
+                result = scopes.slice(0, parentMatch + 1);
+            }
+        }
+
+        walk(stack, stack.length - 1);
+
+        return result != null ? result : [];
+
+    }
+
+    /**
+     * Resolves a runtime value to a beat reference, for dynamic targets like
+     * `beat(expr)`, `-> beat(expr)` and `+ beat(expr)`.
+     * Accepts a beat reference (keeps its captured chain), a beat value
+     * (wrapped without capture), or a string resolved lexically from the
+     * node's position (capturing the declaring chain when it is live,
+     * exactly like static name resolution).
+     *
+     * @param value The evaluated target value
+     * @param node Node used as lexical anchor and to report errors
+     */
+    function resolveDynamicBeatTarget(value:Any, node:AstNode):RuntimeBeatRef {
+
+        if (value is RuntimeBeatRef) {
+            return cast value;
+        }
+
+        if (value is NBeatDecl) {
+            return new RuntimeBeatRef(cast value, []);
+        }
+
+        if (value is String) {
+            final name:String = value;
+            final resolved = resolveBeatRefFromNode(name, node);
+            if (resolved == null) {
+                throw beatNotFoundError(name, node);
+            }
+            return resolved;
+        }
+
+        throw new RuntimeError('Invalid dynamic beat target: ${valueToString(value)}', node.pos);
+
+    }
+
+    /**
+     * Builds the error for an unresolved beat name. When the name exists
+     * somewhere else in the script (another scope), the error teaches the
+     * beat-reference workflow instead of just failing.
+     */
+    function beatNotFoundError(name:String, node:AstNode):RuntimeError {
+
+        final pos = node != null ? node.pos : script.pos;
+
+        for (decl in lens.getNodesOfType(NBeatDecl, true)) {
+            if (decl.name == name) {
+                return new RuntimeError('Beat $name is not visible from this scope. Store a reference (ref = $name) while it is in scope to use it from elsewhere.', pos);
+            }
+        }
+
+        return new RuntimeError('Beat $name not found', pos);
+
+    }
+
+    /**
+     * Resolves a call node to a beat reference if the call's target is a
+     * bare identifier naming a beat (lexical resolution from the call's
+     * position). This allows handling beat calls differently from regular
+     * function calls.
+     *
+     * @param call The call node to resolve
+     * @return The beat reference if found, null otherwise
+     */
+    function resolveBeatRefFromCall(call:NCall):Null<RuntimeBeatRef> {
 
         // If target is a simple identifier, it might be a nested beat call
         if (call.target is NAccess) {
             final access:NAccess = cast call.target;
             if (access.target == null) {
-                // If beat found, evaluate it
-                final resolvedBeat = resolveBeatByName(access.name, scopeLevel);
-                if (resolvedBeat != null) {
-                    return resolvedBeat;
-                }
+                return resolveBeatRefFromNode(access.name, access);
             }
         }
 
@@ -3450,11 +3923,14 @@ typedef InterpreterOptions = {
      */
     function evalCall(call:NCall, next:()->Void) {
 
-        final resolvedBeat = resolveBeatFromCall(call);
+        final resolvedRef = resolveBeatRefFromCall(call);
 
         // If beat found, evaluate it
-        if (resolvedBeat != null) {
-            evalBeatRun(resolvedBeat, next);
+        if (resolvedRef != null) {
+            // Evaluate call arguments in the caller scope and pass them
+            // as beat parameters
+            final argValues = evaluateBeatArgs(resolvedRef.beat, call.args, call.pos);
+            evalBeatRun(resolvedRef.beat, next, argValues, resolvedRef.stack.length > 0 ? resolvedRef.stack : null);
             return;
         }
 
@@ -3472,40 +3948,42 @@ typedef InterpreterOptions = {
      */
     function evalTransition(transition:NTransition) {
 
-        final beatName = transition.target;
-        if (beatName == ".") {
-            finish();
-            return;
-        }
+        var resolvedRef:RuntimeBeatRef = null;
 
-        var resolvedBeat:NBeatDecl = null;
-
-        // Look for matching beat in scopes recursively
-        var i = stack.length - 1;
-        while (i >= 0) {
-            final scope = stack[i];
-            final beatInScope = scope.beatByName(beatName);
-            if (beatInScope != null) {
-                resolvedBeat = beatInScope;
-                break;
+        if (transition.targetExpr != null) {
+            // Dynamic target: -> beat(expr, args...)
+            final value:Any = evaluateExpression(transition.targetExpr);
+            if (value is String && (value:String) == ".") {
+                // Dynamic end of stream, mirrors -> .
+                if (transition.args != null && transition.args.length > 0) {
+                    throw new RuntimeError('Cannot pass arguments when ending the script', transition.pos);
+                }
+                finish();
+                return;
             }
-            i--;
+            resolvedRef = resolveDynamicBeatTarget(value, transition);
         }
+        else {
+            final beatName = transition.target;
+            if (beatName == ".") {
+                finish();
+                return;
+            }
 
-        // If no beat was found, look at top level beats
-        if (resolvedBeat == null) {
-            if (topLevelBeats.exists(beatName)) {
-                resolvedBeat = topLevelBeats.get(beatName);
+            // Resolve lexically from the transition's position
+            resolvedRef = resolveBeatRefFromNode(beatName, transition);
+
+            // If still nothing found, not good...
+            if (resolvedRef == null) {
+                throw beatNotFoundError(beatName, transition);
             }
         }
 
-        // If still nothing found, not good...
-        if (resolvedBeat == null) {
-            throw new RuntimeError('Beat $beatName not found', script.pos);
-        }
+        // Evaluate arguments in the caller scope, before the stack is cleared
+        final argValues = evaluateBeatArgs(resolvedRef.beat, transition.args, transition.pos);
 
         // Beat found, let's go!
-        transitionToBeat(resolvedBeat);
+        transitionToBeat(resolvedRef.beat, argValues, resolvedRef.stack.length > 0 ? resolvedRef.stack : null);
 
     }
 
@@ -4011,6 +4489,133 @@ typedef InterpreterOptions = {
     }
 
     /**
+     * Invokes an already-resolved function value with evaluated arguments.
+     * Handles async results and wraps errors, exactly like standalone
+     * function calls always did.
+     *
+     * @param fn The function value to invoke
+     * @param args Evaluated argument values
+     * @param pos Position used to report errors
+     * @param next Optional callback for asynchronous execution
+     * @return The result of the function call
+     */
+    function callFunctionValue(fn:Any, args:Array<Any>, pos:Position, next:()->Void):Any {
+        try {
+            final result:Any = Reflect.callMethod(null, fn, args);
+            if (result != null && result is Async) {
+                if (next == null) {
+                    throw new RuntimeError(
+                        'Cannot call async function in expression',
+                        pos
+                    );
+                }
+                else {
+                    final asyncResult:Async = cast result;
+                    asyncResult.func(next);
+                }
+            }
+            else if (next != null) {
+                next();
+            }
+            return result;
+        }
+        catch (e:Dynamic) {
+            if (e is loreline.lorscript.Expr.Error) {
+                final lorscriptErr:loreline.lorscript.Expr.Error = cast e;
+                throw new RuntimeError(
+                    'Error when evaluating function (${lorscriptErr.pmin}-${lorscriptErr.pmax}): ' + lorscriptErr.e,
+                    pos
+                );
+            }
+            throw new RuntimeError(
+                'Error when calling function: ' + e,
+                pos
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Returns true if the given bare identifier resolves to any existing
+     * binding: scope temporary state, node state, top level state field,
+     * character, function or beat. Unlike resolveAccess(), this never
+     * auto-creates anything and never throws.
+     */
+    function resolvesExistingBinding(name:String):Bool {
+
+        var found = false;
+        eachResolutionScope(-1, scope -> {
+            if (scope.state != null && Objects.fieldExists(this, scope.state.fields, name)) {
+                found = true;
+                return true;
+            }
+            if (scope.node != null) {
+                final stateInNode = nodeStates.get(scope.node.id);
+                if (stateInNode != null && Objects.fieldExists(this, stateInNode.fields, name)) {
+                    found = true;
+                    return true;
+                }
+            }
+            return false;
+        });
+        if (found) return true;
+
+        if (Objects.fieldExists(this, topLevelState.fields, name)) return true;
+        if (topLevelCharacters.exists(name)) return true;
+        if (topLevelFunctions.exists(name)) return true;
+        if (resolveBeatByName(name) != null) return true;
+
+        return false;
+
+    }
+
+    /**
+     * Evaluates the call(target, args...) special form: the first argument
+     * resolves to a FUNCTION (a function value, or a string naming one),
+     * called with the remaining arguments. Beats are rejected with a hint
+     * to use beat(...) instead.
+     *
+     * @param call The call node (target is the bare `call` identifier)
+     * @param next Optional callback for asynchronous execution
+     * @return The function result
+     */
+    function evaluateDynamicCall(call:NCall, next:()->Void):Any {
+
+        if (call.args.length == 0) {
+            throw new RuntimeError('call() requires a target argument', call.pos);
+        }
+
+        final targetValue:Any = evaluateExpression(call.args[0]);
+
+        if (RuntimeBeatRef.beatOf(targetValue) != null) {
+            throw new RuntimeError('call() can only call functions. Use beat(...) to call a beat.', call.pos);
+        }
+
+        var fn:Any = null;
+
+        if (Reflect.isFunction(targetValue)) {
+            fn = targetValue;
+        }
+        else if (targetValue is String) {
+            final name:String = targetValue;
+            if (resolveBeatByName(name) != null) {
+                throw new RuntimeError('call() can only call functions. Use beat(...) to call a beat.', call.pos);
+            }
+            if (topLevelFunctions.exists(name)) {
+                fn = topLevelFunctions.get(name);
+            }
+        }
+
+        if (fn != null) {
+            final values = [for (i in 1...call.args.length) (evaluateExpression(call.args[i]):Any)];
+            return callFunctionValue(fn, values, call.pos, next);
+        }
+
+        throw new RuntimeError('call() target is not a function: ${valueToString(targetValue)}', call.pos);
+
+    }
+
+    /**
      * Evaluates a function call in an expression context.
      * If next is provided, the function may execute asynchronously.
      * If next is null, the function must execute synchronously.
@@ -4026,44 +4631,18 @@ typedef InterpreterOptions = {
         if (call.target is NAccess) {
             final access:NAccess = cast call.target;
             if (access.target == null) {
+                // Dynamic call special form: call(target, args...), only when
+                // the script doesn't define its own binding named `call`
+                if (access.name == "call" && !resolvesExistingBinding("call")) {
+                    return evaluateDynamicCall(call, next);
+                }
+
                 // Handle standalone function calls
                 final target = evaluateExpression(call.target);
                 if (target != null) {
                     if (Reflect.isFunction(target)) {
                         final args = [for (arg in call.args) evaluateExpression(arg)];
-                        try {
-                            final result:Any = Reflect.callMethod(null, target, args);
-                            if (result != null && result is Async) {
-                                if (next == null) {
-                                    throw new RuntimeError(
-                                        'Cannot call async function in expression',
-                                        call.pos
-                                    );
-                                }
-                                else {
-                                    final asyncResult:Async = cast result;
-                                    asyncResult.func(next);
-                                }
-                            }
-                            else if (next != null) {
-                                next();
-                            }
-                            return result;
-                        }
-                        catch (e:Dynamic) {
-                            if (e is loreline.lorscript.Expr.Error) {
-                                final lorscriptErr:loreline.lorscript.Expr.Error = cast e;
-                                throw new RuntimeError(
-                                    'Error when evaluating function (${lorscriptErr.pmin}-${lorscriptErr.pmax}): ' + lorscriptErr.e,
-                                    call.pos
-                                );
-                            }
-                            throw new RuntimeError(
-                                'Error when calling function: ' + e,
-                                call.pos
-                            );
-                            return null;
-                        }
+                        return callFunctionValue(target, args, call.pos, next);
                     }
                 }
 
@@ -4073,11 +4652,12 @@ typedef InterpreterOptions = {
                 final obj = evaluateExpression(access.target);
                 var helper:Any = null;
 
+                final objBeat = RuntimeBeatRef.beatOf(obj);
                 if (obj is String) {
                     helper = Objects.getStringHelper(this, access.name);
                 } else if (Arrays.isArray(obj)) {
                     helper = Objects.getArrayHelper(this, access.name);
-                } else if (obj is NBeatDecl) {
+                } else if (objBeat != null) {
                     helper = Objects.getBeatHelper(this, access.name);
                 } else if (Objects.isFields(obj)) {
                     helper = Objects.getMapHelper(this, access.name);
@@ -4085,7 +4665,8 @@ typedef InterpreterOptions = {
 
                 if (helper != null && Reflect.isFunction(helper)) {
                     final args = [for (arg in call.args) evaluateExpression(arg)];
-                    args.insert(0, obj);
+                    // Beat helpers receive the plain beat, even when called on a reference
+                    args.insert(0, objBeat != null ? (objBeat : Any) : obj);
                     final result:Any = Reflect.callMethod(null, helper, args);
                     if (result != null && result is Async) {
                         if (next == null) {
@@ -4366,8 +4947,8 @@ typedef InterpreterOptions = {
                     throw new RuntimeError('Function not found: $name', pos);
                 }
 
-            case BeatAccess(pos, beat):
-                beat;
+            case BeatAccess(pos, ref):
+                ref;
 
         }
 
@@ -4400,8 +4981,8 @@ typedef InterpreterOptions = {
             case FunctionAccess(pos, name):
                 throw new RuntimeError('Cannot overwrite function: $name', pos);
 
-            case BeatAccess(pos, beat):
-                throw new RuntimeError('Cannot overwrite beat: ${beat.name}', pos);
+            case BeatAccess(pos, ref):
+                throw new RuntimeError('Cannot overwrite beat: ${ref.beat.name}', pos);
 
         }
 
@@ -4475,18 +5056,18 @@ typedef InterpreterOptions = {
         }
 
         // Iterate through scopes to identify a matching state field or character name
-        var i = stack.length - 1;
-        while (i >= 0) {
-            final scope = stack[i];
+        var scopeAccess:RuntimeAccess = null;
+        eachResolutionScope(-1, scope -> {
 
             // Check temporary state
             if (scope.state != null) {
                 if (Objects.fieldExists(this, scope.state.fields, name)) {
-                    return FieldAccess(
+                    scopeAccess = FieldAccess(
                         access?.pos ?? currentScope?.node?.pos ?? script.pos,
                         scope.state.fields,
                         name
                     );
+                    return true;
                 }
             }
 
@@ -4496,17 +5077,19 @@ typedef InterpreterOptions = {
                 final stateInNode = nodeStates.get(scope.node.id);
                 if (stateInNode != null) {
                     if (Objects.fieldExists(this, stateInNode.fields, name)) {
-                        return FieldAccess(
+                        scopeAccess = FieldAccess(
                             access?.pos ?? currentScope?.node?.pos ?? script.pos,
                             stateInNode.fields,
                             name
                         );
+                        return true;
                     }
                 }
             }
 
-            i--;
-        }
+            return false;
+        });
+        if (scopeAccess != null) return scopeAccess;
 
         // Look for state fields
         if (Objects.fieldExists(this, topLevelState.fields, name)) {
@@ -4533,12 +5116,13 @@ typedef InterpreterOptions = {
             );
         }
 
-        // Beat name fallback: identifier resolves to NBeatDecl if it names a reachable beat
-        final beat = resolveBeatByName(name);
-        if (beat != null) {
+        // Beat name fallback: identifier resolves to a beat reference (with
+        // its captured scope chain) if it names a lexically reachable beat
+        final beatRef = resolveBeatRefFromNode(name, access);
+        if (beatRef != null) {
             return BeatAccess(
                 access?.pos ?? currentScope?.node?.pos ?? script.pos,
-                beat
+                beatRef
             );
         }
 
@@ -4633,13 +5217,15 @@ typedef InterpreterOptions = {
 
             case OpEquals | OpNotEquals:
                 // Allow comparison between any types
-                // Special case: NBeatDecl compared with String uses beat name
-                final result = if (left is NBeatDecl && right is String) {
-                    (cast left : NBeatDecl).name == (right : String);
-                } else if (left is String && right is NBeatDecl) {
-                    (left : String) == (cast right : NBeatDecl).name;
-                } else if (left is NBeatDecl && right is NBeatDecl) {
-                    (cast left : NBeatDecl).name == (cast right : NBeatDecl).name;
+                // Special case: beat values/references compared with String use the beat name
+                final leftBeat = RuntimeBeatRef.beatOf(left);
+                final rightBeat = RuntimeBeatRef.beatOf(right);
+                final result = if (leftBeat != null && right is String) {
+                    leftBeat.name == (right : String);
+                } else if (left is String && rightBeat != null) {
+                    (left : String) == rightBeat.name;
+                } else if (leftBeat != null && rightBeat != null) {
+                    leftBeat.name == rightBeat.name;
                 } else {
                     left == right;
                 };
@@ -4725,9 +5311,10 @@ typedef InterpreterOptions = {
             return buf.toString();
         }
 
-        if (value is NBeatDecl) {
+        final asBeat = RuntimeBeatRef.beatOf(value);
+        if (asBeat != null) {
             seen.pop();
-            return (cast value : NBeatDecl).name;
+            return asBeat.name;
         }
 
         if (Objects.isFields(value)) {
