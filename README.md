@@ -66,6 +66,14 @@ java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
 node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + JVM)
 ```
 
+### How Loreline is authored
+
+Loreline's runtime is essentially handwritten, so the code you embed when depending on it can be considered almost entirely free of AI-generated code.
+
+That said, I used coding assistants for peripheral work: unit-tests, scaffolding, debugging, documenting the code, continuous integration, and help in making surgical changes to the runtime. These improve the overall reliability and quality of Loreline, make sure that anything tested won't break in the future, and give me more bandwidth for the more creative, interesting and trickier parts of Loreline itself. I weighed that this targeted use would benefit the users of the project, and I take entire responsibility for all the code and design choices in this repository.
+
+For some context on where I stand, I don't endorse the use of generative AI as a general rule: I do care a lot about writing code myself and human authorship in general, and I also don't use any AI-generated assets or content for the games I make.
+
 ## License
 
 MIT License
