@@ -57,11 +57,15 @@ class XliffTranslation {
         }
 
         // Find the <xliff> element (may be wrapped by the document node).
+        // Nested checks: nodeName throws on non-element nodes, and some
+        // targets evaluate hoisted operands before the whole condition.
         var xliff:Xml = null;
         for (child in root) {
-            if (child.nodeType == Element && child.nodeName == "xliff") {
-                xliff = child;
-                break;
+            if (child.nodeType == Element) {
+                if (child.nodeName == "xliff") {
+                    xliff = child;
+                    break;
+                }
             }
         }
         if (xliff == null) throw new loreline.Error("Invalid XLIFF: missing <xliff> root element");
@@ -152,7 +156,11 @@ class XliffTranslation {
 
     static function firstChildElement(parent:Xml, name:String):Xml {
         for (c in parent) {
-            if (c.nodeType == Element && c.nodeName == name) return c;
+            // Nested checks: nodeName throws on non-element nodes, and some
+            // targets evaluate hoisted operands before the whole condition.
+            if (c.nodeType == Element) {
+                if (c.nodeName == name) return c;
+            }
         }
         return null;
     }

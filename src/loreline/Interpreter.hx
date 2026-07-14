@@ -387,7 +387,7 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -630,7 +630,7 @@ typedef InterpreterOptions = {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -659,7 +659,7 @@ typedef InterpreterOptions = {
         this.strictAccess = options?.strictAccess ?? false;
         this.translations = options?.translations;
 
-        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api) && !macro)
+        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
         this.wrapper = options?.wrapper;
         #end
 
@@ -4187,6 +4187,14 @@ typedef InterpreterOptions = {
             cs.Syntax.code('result[{0}] = {1}', field.name, val);
         }
         return cs.Syntax.code('result');
+        #elseif (loreline_gdscript_api && loreline_use_gd_types && !macro)
+        // Native Godot Dictionary, consistent with Objects.createFields.
+        final obj:Dynamic = untyped __gdscript__("{}");
+        for (field in expr) {
+            final val = evaluateExpression(field.value);
+            untyped __gdscript__("{0}[{1}] = {2}", obj, field.name, val);
+        }
+        return obj;
         #else
         final obj = new Map<String, Any>();
         for (field in expr) {

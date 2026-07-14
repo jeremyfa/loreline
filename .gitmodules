@@ -13,3 +13,10 @@
 [submodule "godot/extern/godot-cpp"]
 	path = godot/extern/godot-cpp
 	url = https://github.com/godotengine/godot-cpp.git
+[submodule "git/reflaxe"]
+	path = git/reflaxe
+	url = https://github.com/SomeRanDev/reflaxe.git
+[submodule "git/reflaxe.GDScript"]
+	path = git/reflaxe.GDScript
+	url = https://github.com/jeremyfa/reflaxe.GDScript.git
+	branch = loreline
