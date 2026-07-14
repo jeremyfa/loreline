@@ -1,0 +1,5 @@
+[application]
+config/name="loreline-gdscript-test"
+
+[debug]
+gdscript/warnings/enable=false

@@ -792,6 +792,86 @@ jobs:
           compression-level: 0
 
 
+  loreline-gdscript:
+
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Setup haxelib
+        run: |
+          mkdir -p .haxelib
+
+      - name: Install Godot 4.6.1 stable
+        run: |
+          curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          sudo mv /tmp/godot-bin/Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Build GDScript runtime
+        run: node ./setup --gdscript
+
+      - name: Run test suite and API parity checks (headless Godot)
+        run: node ./setup --gdscript-test
+        env:
+          GODOT_BIN: godot
+
+      - name: Create zip archive
+        run: |
+          mkdir -p loreline-godot-gdscript-pkg
+          cp -r godot-gdscript/addons loreline-godot-gdscript-pkg/addons
+          cp godot-gdscript/README.md loreline-godot-gdscript-pkg/
+          cd loreline-godot-gdscript-pkg
+          zip -r ../loreline-godot-gdscript.zip .
+
+      - name: Upload loreline-godot-gdscript.zip
+        uses: actions/upload-artifact@v6
+        with:
+          retention-days: 1
+          name: loreline-godot-gdscript.zip
+          path: loreline-godot-gdscript.zip
+          compression-level: 0
+
+
   loreline-jvm:
 
     runs-on: "ubuntu-22.04"
@@ -1772,7 +1852,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web, loreline-gdscript]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
@@ -1879,6 +1959,12 @@ jobs:
           name: loreline-wasm.zip
           path: .
 
+      - name: Download loreline-godot-gdscript.zip
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-godot-gdscript.zip
+          path: .
+
       - name: Download loreline-godot.zip
         uses: actions/download-artifact@v7
         with:
@@ -1918,3 +2004,4 @@ jobs:
             loreline-cpp.zip
             loreline-wasm.zip
             loreline-godot.zip
+            loreline-godot-gdscript.zip

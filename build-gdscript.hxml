@@ -1,0 +1,13 @@
+--class-path src
+--main loreline.lib.Library
+-lib gdscript
+--class-path git/reflaxe.GDScript/std
+--class-path git/reflaxe.GDScript/std/gdscript/_std
+-D gdscript-output=godot-gdscript/addons/loreline_gd/core
+-D loreline_typedef_options
+-D loreline_functions_map_dynamic_access
+-D loreline_node_id_class
+-D loreline_auto_wrap_functions
+-D loreline_gdscript_api
+-D reflaxe.disallow_build_cache_check
+-D loreline_use_gd_types

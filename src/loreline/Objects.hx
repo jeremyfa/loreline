@@ -215,6 +215,12 @@ class Objects {
         return new java.util.LinkedHashMap();
         #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
         return cs.Syntax.code('new System.Collections.Generic.Dictionary<string,object>()');
+        #elseif (loreline_gdscript_api && loreline_use_gd_types && !macro)
+        // Native Godot Dictionary: idiomatic for GDScript hosts. Reads and
+        // writes go through the Reflect fallbacks in this class, which
+        // dispatch on the runtime type.
+        final fields:Dynamic = untyped __gdscript__("{}");
+        return fields;
         #else
         return new Map<String,Any>();
         #end
