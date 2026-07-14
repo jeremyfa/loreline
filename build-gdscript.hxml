@@ -3,7 +3,7 @@
 -lib gdscript
 --class-path git/reflaxe.GDScript/std
 --class-path git/reflaxe.GDScript/std/gdscript/_std
--D gdscript-output=godot-gdscript/addons/loreline_gd/core
+-D gdscript-output=godot/gdscript/internal
 -D loreline_typedef_options
 -D loreline_functions_map_dynamic_access
 -D loreline_node_id_class
@@ -11,3 +11,6 @@
 -D loreline_gdscript_api
 -D reflaxe.disallow_build_cache_check
 -D loreline_use_gd_types
+-D gdscript_class_prefix=_Loreline_
+-D gdscript_internal_note
+-D gdscript_no_generated_files_list

@@ -857,18 +857,17 @@ jobs:
 
       - name: Create zip archive
         run: |
-          mkdir -p loreline-godot-gdscript-pkg
-          cp -r godot-gdscript/addons loreline-godot-gdscript-pkg/addons
-          cp godot-gdscript/README.md loreline-godot-gdscript-pkg/
-          cd loreline-godot-gdscript-pkg
-          zip -r ../loreline-godot-gdscript.zip .
+          mkdir -p loreline-gdscript-pkg/addons/loreline
+          cp -r godot/gdscript/. loreline-gdscript-pkg/addons/loreline/
+          cd loreline-gdscript-pkg
+          zip -r ../loreline-gdscript.zip .
 
-      - name: Upload loreline-godot-gdscript.zip
+      - name: Upload loreline-gdscript.zip
         uses: actions/upload-artifact@v6
         with:
           retention-days: 1
-          name: loreline-godot-gdscript.zip
-          path: loreline-godot-gdscript.zip
+          name: loreline-gdscript.zip
+          path: loreline-gdscript.zip
           compression-level: 0
 
 
@@ -1962,10 +1961,10 @@ jobs:
           name: loreline-wasm.zip
           path: .
 
-      - name: Download loreline-godot-gdscript.zip
+      - name: Download loreline-gdscript.zip
         uses: actions/download-artifact@v7
         with:
-          name: loreline-godot-gdscript.zip
+          name: loreline-gdscript.zip
           path: .
 
       - name: Download loreline-godot.zip
@@ -2007,4 +2006,4 @@ jobs:
             loreline-cpp.zip
             loreline-wasm.zip
             loreline-godot.zip
-            loreline-godot-gdscript.zip
+            loreline-gdscript.zip

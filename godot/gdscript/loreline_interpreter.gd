@@ -20,7 +20,7 @@ var _pending_select: Callable = Callable()
 static func _play(script_core, beat_name: String, options: LorelineOptions):
 	var wrapper := LorelineInterpreter.new()
 	var core_options = options._build_core_options() if options != null else null
-	wrapper._interp = loreline_Interpreter.new(
+	wrapper._interp = _Loreline_Interpreter.new(
 		script_core,
 		wrapper._on_core_dialogue,
 		wrapper._on_core_choice,
@@ -39,8 +39,8 @@ static func _play(script_core, beat_name: String, options: LorelineOptions):
 static func _resume(script_core, save_data: String, beat_name: String, options: LorelineOptions):
 	var wrapper := LorelineInterpreter.new()
 	var core_options = options._build_core_options() if options != null else null
-	var parsed_save = loreline_Json.parse(save_data) if save_data != "" else null
-	wrapper._interp = loreline_Interpreter.new(
+	var parsed_save = _Loreline_loreline_Json.parse(save_data) if save_data != "" else null
+	wrapper._interp = _Loreline_Interpreter.new(
 		script_core,
 		wrapper._on_core_dialogue,
 		wrapper._on_core_choice,
@@ -138,13 +138,13 @@ func start(beat_name: String = "") -> void:
 func save_state() -> String:
 	if _interp == null:
 		return ""
-	return loreline_Json.stringify(_interp.save(), false)
+	return _Loreline_loreline_Json.stringify(_interp.save(), false)
 
 
 ## Restores interpreter state from a save_state() JSON string.
 func restore_state(data: String) -> void:
 	if _interp != null and data != "":
-		_interp.restore(loreline_Json.parse(data))
+		_interp.restore(_Loreline_loreline_Json.parse(data))
 
 
 func get_character_field(character: String, field: String):

@@ -4,7 +4,7 @@ extends SceneTree
 # runtime, following the same protocol as the other target runners.
 #
 # Usage (after an --import pass):
-#   godot --headless --path godot-gdscript/test --script res://run_tests.gd -- <test-dir> [file-filter]
+#   godot --headless --path godot/gdscript-test --script res://run_tests.gd -- <test-dir> [file-filter]
 #
 # <test-dir> is resolved against the project directory; defaults to ../../test.
 
@@ -23,7 +23,7 @@ func _initialize() -> void:
 		quit(2)
 		return
 
-	var suite = loreline_test_PortableTestSuite.new(_read_file, _print_line)
+	var suite = _Loreline_PortableTestSuite.new(_read_file, _print_line)
 
 	var locale_regex := RegEx.new()
 	locale_regex.compile("\\.\\w{2}\\.lor$")
