@@ -5,9 +5,9 @@ extends SceneTree
 #   godot --headless --path . --script res://load_all.gd
 
 func _initialize() -> void:
-	var dir := DirAccess.open("res://core")
+	var dir := DirAccess.open("res://internal")
 	if dir == null:
-		print("LOAD_ALL_FAILED: cannot open res://core")
+		print("LOAD_ALL_FAILED: cannot open res://internal")
 		quit(1)
 		return
 	var failures := 0
@@ -17,7 +17,7 @@ func _initialize() -> void:
 	while file != "":
 		if file.ends_with(".gd"):
 			count += 1
-			var script = load("res://core/" + file)
+			var script = load("res://internal/" + file)
 			if script == null or not script.can_instantiate():
 				failures += 1
 				print("SCRIPT_ERROR: ", file)

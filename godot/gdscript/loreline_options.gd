@@ -61,7 +61,7 @@ func _build_core_options() -> Dictionary:
 	for name in _async_functions:
 		var user_fn: Callable = _async_functions[name]
 		functions[name] = func(core_interp, args):
-			return loreline_Async.new(func(done: Callable):
+			return _Loreline_Async.new(func(done: Callable):
 				var used := [false]
 				var resolve := func():
 					if used[0]:

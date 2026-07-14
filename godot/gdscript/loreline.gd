@@ -35,7 +35,7 @@ var _pending_actions: Array = []
 
 func _process(delta: float) -> void:
 	# Pump the runtime (timers used by wait() and similar built-ins).
-	loreline_Loreline.update(delta)
+	_Loreline_Loreline.update(delta)
 	if _pending_emits.size() > 0:
 		var emits: Array = _pending_emits
 		_pending_emits = []
@@ -66,7 +66,7 @@ func parse(source: String, file_path: String = "", file_handler: Callable = Call
 		actual_source = FileAccess.get_file_as_string(source)
 
 	var handle = _make_file_handler(file_handler)
-	var script_core = loreline_Loreline.parse(
+	var script_core = _Loreline_Loreline.parse(
 		actual_source,
 		actual_path if actual_path != "" else null,
 		handle,
@@ -82,7 +82,7 @@ func parse(source: String, file_path: String = "", file_handler: Callable = Call
 func load_locale(locale: String, script: LorelineScript, file_path: String = "", file_handler: Callable = Callable()) -> Signal:
 	var result := LorelineLoadLocaleResult.new()
 	var handle = _make_file_handler(file_handler)
-	var translations = loreline_Loreline.loadLocale(
+	var translations = _Loreline_Loreline.loadLocale(
 		locale,
 		script._script if script != null else null,
 		file_path if file_path != "" else null,
@@ -97,7 +97,7 @@ func load_locale(locale: String, script: LorelineScript, file_path: String = "",
 ## Enables or disables a runtime translation file format
 ## ("po", "xliff", "csv").
 func translation_format(name: String, enabled: bool) -> void:
-	loreline_Loreline.translationFormat(name, enabled)
+	_Loreline_Loreline.translationFormat(name, enabled)
 
 
 ## Runs a script, connecting the provided Callables to the interpreter's

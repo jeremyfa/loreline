@@ -1418,13 +1418,23 @@ async function main() {
     if (buildGdscript) {
         console.log('Export loreline for GDScript (Godot)');
 
+        // Stale-output deletion is disabled (no _GeneratedFiles.json in the
+        // export), so clean the output directories before building
+        fs.rmSync(path.join(__dirname, 'godot', 'gdscript', 'internal'), { recursive: true, force: true });
+        fs.rmSync(path.join(__dirname, 'godot', 'gdscript-test', 'internal'), { recursive: true, force: true });
+
         // Runtime for the addon
         await command(haxe, ['build-gdscript.hxml'].concat(haxeBuildArgs));
 
         // Runtime + portable test suite for the headless test project
-        await command(haxe, ['build-gdscript-test.hxml'].concat(haxeBuildArgs));
+        // (same build with the test package included, redirected output)
+        await command(haxe, [
+            'build-gdscript.hxml',
+            '--macro', "include('loreline.test')",
+            '-D', 'gdscript-output=godot/gdscript-test/internal'
+        ].concat(haxeBuildArgs));
 
-        console.log('Generated: godot-gdscript/addons/loreline_gd/core');
+        console.log('Generated: godot/gdscript/internal');
     }
 
     if (testGdscript) {
@@ -1435,16 +1445,16 @@ async function main() {
                 ? '/Applications/Godot.app/Contents/MacOS/Godot'
                 : 'godot');
 
-        const testProject = path.join(__dirname, 'godot-gdscript', 'test');
+        const testProject = path.join(__dirname, 'godot', 'gdscript-test');
 
         // Refresh the addon copy used by the API parity check
-        fs.rmSync(path.join(testProject, 'addons', 'loreline_gd'), { recursive: true, force: true });
+        fs.rmSync(path.join(testProject, 'addons', 'loreline'), { recursive: true, force: true });
         fs.cpSync(
-            path.join(__dirname, 'godot-gdscript', 'addons', 'loreline_gd'),
-            path.join(testProject, 'addons', 'loreline_gd'),
+            path.join(__dirname, 'godot', 'gdscript'),
+            path.join(testProject, 'addons', 'loreline'),
             { recursive: true }
         );
-        fs.rmSync(path.join(testProject, 'addons', 'loreline_gd', 'core'), { recursive: true, force: true });
+        fs.rmSync(path.join(testProject, 'addons', 'loreline', 'internal'), { recursive: true, force: true });
 
         // Import pass registers global script classes
         await command(godotBin, ['--headless', '--path', testProject, '--import']);

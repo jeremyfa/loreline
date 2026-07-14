@@ -1,8 +1,0 @@
-# Generated runtime (built by: node ./setup --gdscript)
-/addons/loreline_gd/core/
-
-# Test project artifacts
-/test/.godot/
-/test/core/
-/test/addons/
-*.uid

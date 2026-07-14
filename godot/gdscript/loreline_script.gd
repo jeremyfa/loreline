@@ -22,19 +22,19 @@ func resume(save_data: String, beat_name: String = "", options: LorelineOptions 
 
 ## Extracts translations from a parsed translation script.
 func extract_translations() -> LorelineTranslations:
-	return LorelineTranslations.new(loreline_Loreline.extractTranslations(_script))
+	return LorelineTranslations.new(_Loreline_Loreline.extractTranslations(_script))
 
 
 ## Prints the script back to Loreline source form.
 func print_script() -> String:
-	return loreline_Loreline._print(_script, null, null)
+	return _Loreline_Loreline._print(_script, null, null)
 
 
 ## Serializes the script AST to JSON.
 func to_json(pretty: bool = false) -> String:
-	return loreline_Json.stringify(_script.toJson(), pretty)
+	return _Loreline_loreline_Json.stringify(_script.toJson(), pretty)
 
 
 ## Recreates a script from to_json() output.
 static func from_json(json: String) -> LorelineScript:
-	return LorelineScript.new(loreline_Script.fromJson(loreline_Json.parse(json)))
+	return LorelineScript.new(_Loreline_Script.fromJson(_Loreline_loreline_Json.parse(json)))
