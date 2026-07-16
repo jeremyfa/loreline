@@ -705,12 +705,106 @@ class Lens {
     }
 
     /**
+     * Finds the beat parameter referenced by the given bare access, if any.
+     * Walks the enclosing beats from innermost to outermost (matching the
+     * runtime scope precedence) and returns the first parameter whose name
+     * matches the access.
+     * @param access The access to resolve
+     * @return The matching parameter and its owning beat, or null
+     */
+    public function findBeatParamFromAccess(access:NAccess):Null<{param:NBeatParam, beat:NBeatDecl}> {
+
+        if (access.target != null || access.name == null) return null;
+
+        var parentBeat = getFirstParentOfType(access, NBeatDecl);
+        while (parentBeat != null) {
+            if (parentBeat.params != null) {
+                for (param in parentBeat.params) {
+                    if (param.name == access.name) {
+                        return {param: param, beat: parentBeat};
+                    }
+                }
+            }
+            parentBeat = getFirstParentOfType(parentBeat, NBeatDecl);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * When the given node is (part of) an argument of a call, beat call,
+     * transition or insertion, returns the owner node and the argument index.
+     * Only expression chains that terminate directly in an args array count;
+     * the call target itself is not an argument.
+     * @param node The node to check (typically the hovered node)
+     * @return The owner node and argument index, or null
+     */
+    public function findCallArgument(node:Node):Null<{owner:Node, index:Int}> {
+
+        var child:Node = node;
+        var parent:Node = getParentNode(child);
+
+        while (parent != null) {
+
+            switch Type.getClass(parent) {
+
+                case NCall:
+                    final call:NCall = cast parent;
+                    if (call.args != null) {
+                        final index = call.args.indexOf(cast child);
+                        if (index != -1) return {owner: parent, index: index};
+                    }
+                    return null;
+
+                case NBeatCall:
+                    final beatCall:NBeatCall = cast parent;
+                    if (beatCall.args != null) {
+                        final index = beatCall.args.indexOf(cast child);
+                        if (index != -1) return {owner: parent, index: index};
+                    }
+                    return null;
+
+                case NTransition:
+                    final transition:NTransition = cast parent;
+                    if (transition.args != null) {
+                        final index = transition.args.indexOf(cast child);
+                        if (index != -1) return {owner: parent, index: index};
+                    }
+                    return null;
+
+                case NInsertion:
+                    final insertion:NInsertion = cast parent;
+                    if (insertion.args != null) {
+                        final index = insertion.args.indexOf(cast child);
+                        if (index != -1) return {owner: parent, index: index};
+                    }
+                    return null;
+
+                case _:
+                    // Keep climbing only through expressions (an argument can
+                    // be a nested expression); stop at statement boundaries
+                    if (!(parent is NExpr)) return null;
+            }
+
+            child = parent;
+            parent = getParentNode(child);
+        }
+
+        return null;
+
+    }
+
+    /**
      * Finds and returns the beat declaration referenced by the given transition.
      * This method searches through the beat declarations to find a match based on the transition's fields.
      * @param transition The transition object containing the reference to search for
      * @return The referenced beat declaration if found, null otherwise
      */
     public function findBeatFromTransition(transition:NTransition):Null<NBeatDecl> {
+
+        // Dynamic targets cannot be resolved statically
+        if (transition.targetExpr != null) return null;
 
         return findBeatByNameFromNode(transition.target, transition);
 
@@ -723,6 +817,9 @@ class Lens {
      * @return The referenced beat declaration if found, null otherwise
      */
     public function findBeatFromInsertion(insertion:NInsertion):Null<NBeatDecl> {
+
+        // Dynamic targets cannot be resolved statically
+        if (insertion.targetExpr != null) return null;
 
         return findBeatByNameFromNode(insertion.target, insertion);
 
@@ -1081,16 +1178,20 @@ class Lens {
             switch Type.getClass(node) {
                 case NTransition:
                     final transition:NTransition = cast node;
-                    final targetBeat = findBeatByNameFromNode(transition.target, transition);
-                    if (targetBeat != null) {
-                        targetBeats.set(targetBeat.id, new Reference(targetBeat, transition));
+                    if (transition.targetExpr == null) {
+                        final targetBeat = findBeatByNameFromNode(transition.target, transition);
+                        if (targetBeat != null) {
+                            targetBeats.set(targetBeat.id, new Reference(targetBeat, transition));
+                        }
                     }
 
                 case NInsertion:
                     final insertion:NInsertion = cast node;
-                    final targetBeat = findBeatByNameFromNode(insertion.target, insertion);
-                    if (targetBeat != null) {
-                        targetBeats.set(targetBeat.id, new Reference(targetBeat, insertion));
+                    if (insertion.targetExpr == null) {
+                        final targetBeat = findBeatByNameFromNode(insertion.target, insertion);
+                        if (targetBeat != null) {
+                            targetBeats.set(targetBeat.id, new Reference(targetBeat, insertion));
+                        }
                     }
 
                 case NCall:
