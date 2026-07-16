@@ -61,6 +61,7 @@ class JsonToAst {
             case "Call": callFromJson(json);
             case "Transition": transitionFromJson(json);
             case "Insertion": insertionFromJson(json);
+            case "BeatCall": beatCallFromJson(json);
             case "Function": functionDeclFromJson(json);
             case "Literal": literalFromJson(json);
             case "Access": accessFromJson(json);
@@ -121,6 +122,14 @@ class JsonToAst {
         final comments = extractComments(json);
         final node = new NBeatDecl(id, pos, json.name, body, comments.leading, comments.trailing);
         node.style = blockStyleFromString(json.style);
+        if (json.params != null) {
+            final paramsArr:Array<Dynamic> = json.params;
+            node.params = [for (p in paramsArr) new NBeatParam(
+                p.name,
+                positionFromJson(p.namePos),
+                p.defaultValue != null ? cast nodeFromJson(p.defaultValue) : null
+            )];
+        }
         return node;
     }
 
@@ -296,7 +305,29 @@ class JsonToAst {
         final pos = positionFromJson(json.pos);
         final targetPos = positionFromJson(json.targetPos);
         final comments = extractComments(json);
-        return new NTransition(id, pos, json.target, targetPos, comments.leading, comments.trailing);
+        final node = new NTransition(id, pos, json.target, targetPos, comments.leading, comments.trailing);
+        if (json.targetExpr != null) {
+            node.targetExpr = cast nodeFromJson(json.targetExpr);
+        }
+        if (json.args != null) {
+            final argsArr:Array<Dynamic> = json.args;
+            node.args = [for (a in argsArr) cast nodeFromJson(a)];
+        }
+        return node;
+    }
+
+    static function beatCallFromJson(json:Dynamic):NBeatCall {
+        final id = idFromJson(json);
+        final pos = positionFromJson(json.pos);
+        final targetPos = positionFromJson(json.targetPos);
+        final targetExpr:NExpr = cast nodeFromJson(json.targetExpr);
+        final comments = extractComments(json);
+        final node = new NBeatCall(id, pos, targetExpr, targetPos, comments.leading, comments.trailing);
+        if (json.args != null) {
+            final argsArr:Array<Dynamic> = json.args;
+            node.args = [for (a in argsArr) cast nodeFromJson(a)];
+        }
+        return node;
     }
 
     static function insertionFromJson(json:Dynamic):NInsertion {
@@ -304,7 +335,15 @@ class JsonToAst {
         final pos = positionFromJson(json.pos);
         final targetPos = positionFromJson(json.targetPos);
         final comments = extractComments(json);
-        return new NInsertion(id, pos, json.target, targetPos, comments.leading, comments.trailing);
+        final node = new NInsertion(id, pos, json.target, targetPos, comments.leading, comments.trailing);
+        if (json.targetExpr != null) {
+            node.targetExpr = cast nodeFromJson(json.targetExpr);
+        }
+        if (json.args != null) {
+            final argsArr:Array<Dynamic> = json.args;
+            node.args = [for (a in argsArr) cast nodeFromJson(a)];
+        }
+        return node;
     }
 
     static function functionDeclFromJson(json:Dynamic):NFunctionDecl {

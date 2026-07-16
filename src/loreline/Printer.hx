@@ -316,6 +316,8 @@ class Printer {
                 printTransition(cast node, sameLine);
             case NInsertion:
                 printInsertion(cast node);
+            case NBeatCall:
+                printBeatCall(cast node);
             case NStringLiteral:
                 printStringLiteral(cast node);
             case NLiteral:
@@ -482,7 +484,24 @@ class Printer {
         writeln();
         writeln();
         printLeadingComments(beat);
-        write('beat ${beat.name} ');
+        write('beat ${beat.name}');
+        if (beat.params != null) {
+            final savedComments = enableComments;
+            enableComments = false;
+            write('(');
+            for (i in 0...beat.params.length) {
+                if (i > 0) write(', ');
+                final param = beat.params[i];
+                write(param.name);
+                if (param.defaultValue != null) {
+                    write(' = ');
+                    printNode(param.defaultValue);
+                }
+            }
+            write(')');
+            enableComments = savedComments;
+        }
+        write(' ');
         printTrailingComments(beat);
         if (beat.style == Braces) writeln('{');
         writeln();
@@ -754,7 +773,19 @@ class Printer {
             writeln();
         }
         printLeadingComments(trans);
-        write('-> ${trans.target}');
+        if (trans.targetExpr != null) {
+            write('-> beat(');
+            printTargetExprAndArgs(trans.targetExpr, trans.args);
+            write(')');
+        }
+        else {
+            write('-> ${trans.target}');
+            if (trans.args != null) {
+                write('(');
+                printTargetExprAndArgs(null, trans.args);
+                write(')');
+            }
+        }
         printTrailingComments(trans);
     }
 
@@ -767,8 +798,58 @@ class Printer {
             writeln();
         }
         printLeadingComments(insert);
-        write('+ ${insert.target}');
+        if (insert.targetExpr != null) {
+            write('+ beat(');
+            printTargetExprAndArgs(insert.targetExpr, insert.args);
+            write(')');
+        }
+        else {
+            write('+ ${insert.target}');
+            if (insert.args != null) {
+                write('(');
+                printTargetExprAndArgs(null, insert.args);
+                write(')');
+            }
+        }
         printTrailingComments(insert);
+    }
+
+    /**
+     * Prints a dynamic beat call statement node.
+     * @param call Beat call to print
+     */
+    function printBeatCall(call:NBeatCall) {
+        if (_prevLevel == _level) {
+            writeln();
+        }
+        printLeadingComments(call);
+        write('beat(');
+        printTargetExprAndArgs(call.targetExpr, call.args);
+        write(')');
+        printTrailingComments(call);
+    }
+
+    /**
+     * Prints the dynamic target expression and/or argument list of a
+     * transition or insertion, comma separated, with comments suppressed
+     * (they should be attached to the parent node).
+     */
+    function printTargetExprAndArgs(targetExpr:Null<NExpr>, args:Null<Array<NExpr>>) {
+        final savedComments = enableComments;
+        enableComments = false;
+        var first = true;
+        if (targetExpr != null) {
+            printNode(targetExpr);
+            first = false;
+        }
+        if (args != null) {
+            for (arg in args) {
+                if (!first) write(', ');
+                first = false;
+                printNode(arg);
+            }
+        }
+        enableComments = savedComments;
     }
 
     /**

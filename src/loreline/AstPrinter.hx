@@ -102,6 +102,32 @@ class AstPrinter {
     }
 
     /**
+     * Print the optional argument list of a transition or insertion target.
+     */
+    private function printTargetArgs(args:Null<Array<NExpr>>):Void {
+        if (args == null) return;
+        if (args.length > 0) {
+            add(" args=[");
+            addLineBreak();
+            indentLevel++;
+            for (i in 0...args.length) {
+                indent();
+                add('[${i}]: ');
+                addLineBreak();
+                indentLevel++;
+                printNode(args[i]);
+                indentLevel--;
+                addLineBreak();
+            }
+            indentLevel--;
+            indent();
+            addChar("]".code);
+        } else {
+            add(" args=[]");
+        }
+    }
+
+    /**
      * Print a node with its type, ID, position, and properties
      */
     private function printNode(node:Node):Void {
@@ -200,6 +226,27 @@ class AstPrinter {
                 add(beat.name);
                 add('"');
                 printBlockStyle(beat.style);
+                if (beat.params != null) {
+                    add(" params=[");
+                    addLineBreak();
+                    indentLevel++;
+                    for (i in 0...beat.params.length) {
+                        final param = beat.params[i];
+                        indent();
+                        add('[${i}]: ${param.name}');
+                        if (param.defaultValue != null) {
+                            add(' default=');
+                            addLineBreak();
+                            indentLevel++;
+                            printNode(param.defaultValue);
+                            indentLevel--;
+                        }
+                        addLineBreak();
+                    }
+                    indentLevel--;
+                    indent();
+                    addChar("]".code);
+                }
                 addLineBreak();
                 indentLevel++;
                 for (item in beat.body) {
@@ -684,9 +731,18 @@ class AstPrinter {
 
             case NTransition:
                 final transition:NTransition = cast node;
-                add(' target="');
-                add(transition.target);
-                add('"');
+                if (transition.targetExpr != null) {
+                    add(" targetExpr=");
+                    addLineBreak();
+                    indentLevel++;
+                    printNode(transition.targetExpr);
+                    indentLevel--;
+                }
+                else {
+                    add(' target="');
+                    add(transition.target);
+                    add('"');
+                }
 
                 if (transition.targetPos != null) {
                     add(" targetPos=[");
@@ -700,11 +756,44 @@ class AstPrinter {
                     addChar("]".code);
                 }
 
+                printTargetArgs(transition.args);
+
+            case NBeatCall:
+                final beatCall:NBeatCall = cast node;
+                add(" targetExpr=");
+                addLineBreak();
+                indentLevel++;
+                printNode(beatCall.targetExpr);
+                indentLevel--;
+
+                if (beatCall.targetPos != null) {
+                    add(" targetPos=[");
+                    add(beatCall.targetPos.line);
+                    addChar(":".code);
+                    add(beatCall.targetPos.column);
+                    addChar(":".code);
+                    add(beatCall.targetPos.offset);
+                    addChar(":".code);
+                    add(beatCall.targetPos.length);
+                    addChar("]".code);
+                }
+
+                printTargetArgs(beatCall.args);
+
             case NInsertion:
                 final insertion:NInsertion = cast node;
-                add(' target="');
-                add(insertion.target);
-                add('"');
+                if (insertion.targetExpr != null) {
+                    add(" targetExpr=");
+                    addLineBreak();
+                    indentLevel++;
+                    printNode(insertion.targetExpr);
+                    indentLevel--;
+                }
+                else {
+                    add(' target="');
+                    add(insertion.target);
+                    add('"');
+                }
 
                 if (insertion.targetPos != null) {
                     add(" targetPos=[");
@@ -717,6 +806,8 @@ class AstPrinter {
                     add(insertion.targetPos.length);
                     addChar("]".code);
                 }
+
+                printTargetArgs(insertion.args);
 
             case NImportStatement:
                 final imp:NImportStatement = cast node;
