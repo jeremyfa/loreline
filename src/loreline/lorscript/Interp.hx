@@ -367,9 +367,10 @@ class Interp {
                 return interpreter.topLevelFunctions.get(id);
             }
 
-            // Beat name fallback: identifier resolves to NBeatDecl if it names a reachable beat
-            final beat = interpreter.resolveBeatByName(id);
-            if (beat != null) return beat;
+            // Beat name fallback: identifier resolves to a beat reference
+            // (with its captured scope chain) if it names a reachable beat
+            final beatRef = interpreter.resolveBeatRefByName(id);
+            if (beatRef != null) return beatRef;
 
             error(EUnknownVariable(id));
         }
@@ -435,6 +436,9 @@ class Interp {
                 var obj = expr(e);
                 if( obj == null ) error(EInvalidAccess(f));
                 return fcall(obj,f,args);
+            case EIdent(id) if (id == "call" && !callIsShadowed()):
+                // Dynamic call special form: call(target, args...)
+                return dynamicCall(args);
             default:
                 return call(null,expr(e),args);
             }
@@ -779,17 +783,19 @@ class Interp {
         // Try helper functions for built-in types first (string, array, map),
         // before calling get(o, f) which may fail on some targets for these types.
         var helper:Dynamic = null;
+        final oBeat = RuntimeBeatRef.beatOf(o);
         if (o is String) {
             helper = Objects.getStringHelper(interpreter, f);
         } else if (Arrays.isArray(o)) {
             helper = Objects.getArrayHelper(interpreter, f);
-        } else if (o is NBeatDecl) {
+        } else if (oBeat != null) {
             helper = Objects.getBeatHelper(interpreter, f);
         } else if (Objects.isFields(o)) {
             helper = Objects.getMapHelper(interpreter, f);
         }
         if (helper != null && Reflect.isFunction(helper)) {
-            args.insert(0, o);
+            // Beat helpers receive the plain beat, even when called on a reference
+            args.insert(0, oBeat != null ? oBeat : o);
             return call(null, helper, args);
         }
         return call(o, get(o, f), args);
@@ -797,6 +803,56 @@ class Interp {
 
     function call( o : Dynamic, f : Dynamic, args : Array<Dynamic> ) : Dynamic {
         return Reflect.callMethod(o,f,args);
+    }
+
+    /**
+     * Returns true when the identifier `call` resolves to an existing binding
+     * (local, script variable, state field, character, function or beat), in
+     * which case that binding wins over the dynamic call() special form.
+     */
+    function callIsShadowed() : Bool {
+        if( locals.exists("call") ) return true;
+        if( variables.exists("call") ) return true;
+        if( Objects.fieldExists(interpreter, interpreter.topLevelState.fields, "call") ) return true;
+        if( interpreter.topLevelCharacters.exists("call") ) return true;
+        if( interpreter.topLevelFunctions.exists("call") ) return true;
+        if( interpreter.resolveBeatByName("call") != null ) return true;
+        return false;
+    }
+
+    /**
+     * Evaluates the call(target, args...) special form inside function code.
+     * Only functions can be called here: a beat target is an error because
+     * beats need the Loreline interpreter's async evaluation loop.
+     */
+    function dynamicCall( args : Array<Dynamic> ) : Dynamic {
+        if( args.length == 0 ) error(ECustom("call() requires a target argument"));
+
+        var target : Dynamic = args[0];
+        var rest = args.slice(1);
+
+        if( RuntimeBeatRef.beatOf(target) != null ) {
+            error(ECustom("call() can only call functions. Beats cannot run inside function code."));
+        }
+
+        if( target is String ) {
+            var name : String = target;
+            if( interpreter.resolveBeatByName(name) != null ) {
+                error(ECustom("call() can only call functions. Beats cannot run inside function code."));
+            }
+            if( interpreter.topLevelFunctions.exists(name) ) {
+                target = interpreter.topLevelFunctions.get(name);
+            }
+            else {
+                error(ECustom("call() target not found: " + name));
+            }
+        }
+
+        if( !Reflect.isFunction(target) ) {
+            error(ECustom("call() target is not a function"));
+        }
+
+        return call(null, target, rest);
     }
 
     function cnew( cl : String, args : Array<Dynamic> ) : Dynamic {
