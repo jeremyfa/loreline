@@ -1,0 +1,17 @@
+
+state
+  stop: true
+
+beat Main
+  Before the end.
+  -> beat(stop ? "." : "Never")
+
+beat Never
+  Should not print.
+
+/*
+<test>
+- expected: |
+    ~ Before the end.
+</test>
+*/

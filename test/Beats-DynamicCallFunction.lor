@@ -1,0 +1,17 @@
+
+function add(a, b)
+  return a + b
+
+function announce(text)
+  return "[" + text + "]"
+
+beat Main
+  call("announce", "silent")
+  The result is $call("add", 1, 2)
+
+/*
+<test>
+- expected: |
+    ~ The result is 3
+</test>
+*/

@@ -1,0 +1,32 @@
+
+state
+  name: "Outer"
+
+beat Main
+  Greet("Ana", "curious")
+  Greet("Bo")
+  Greet()
+  Name is still $name.
+  -> Farewell("Ana")
+
+beat Greet(name, mood = "happy")
+  $name looks $mood.
+
+beat Farewell(name)
+  if true
+    Goodbye $name.
+
+/*
+<test>
+- expected: |
+    ~ Ana looks curious.
+
+    ~ Bo looks happy.
+
+    ~ null looks happy.
+
+    ~ Name is still Outer.
+
+    ~ Goodbye Ana.
+</test>
+*/

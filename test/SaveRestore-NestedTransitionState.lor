@@ -1,0 +1,34 @@
+
+beat Main
+  new state
+    tone: "warm"
+
+  beat Ending
+    A $tone ending.
+    choice
+      Continue
+        Still $tone at the end.
+
+  -> Ending
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ A warm ending.
+
+    + Continue
+
+    ~ Still warm at the end.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ A warm ending.
+
+    + Continue
+
+    + Continue
+
+    ~ Still warm at the end.
+</test>
+*/

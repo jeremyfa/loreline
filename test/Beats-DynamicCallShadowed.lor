@@ -1,0 +1,15 @@
+
+// A user-defined function named `call` shadows the dynamic call() special form
+
+function call(x)
+  return "user-" + x
+
+beat Main
+  The value is $call("abc")
+
+/*
+<test>
+- expected: |
+    ~ The value is user-abc
+</test>
+*/

@@ -1,0 +1,17 @@
+
+beat Main
+  target = Destination
+  Starting here.
+  -> beat(target)
+
+beat Destination
+  Arrived at destination.
+
+/*
+<test>
+- expected: |
+    ~ Starting here.
+
+    ~ Arrived at destination.
+</test>
+*/

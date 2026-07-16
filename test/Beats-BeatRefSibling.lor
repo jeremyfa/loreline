@@ -1,0 +1,37 @@
+
+// Beat names resolve lexically, so a nested sibling is reachable by
+// NAME from anywhere in its scope. Scope context flows through captured
+// chains: entering Other (a nested beat) captures Main's live scope, so
+// resolving Helper from inside Other finds that context again, whether
+// through a reference or by name.
+
+beat Main
+  new state
+    origin: "main"
+
+  beat Helper
+    Nested helper from $origin.
+
+  beat Other(target)
+    Other starts.
+    beat(target)
+    beat("Helper")
+    Other ends.
+
+  -> Other(Helper)
+
+beat Helper
+  Top level helper.
+
+/*
+<test>
+- expected: |
+    ~ Other starts.
+
+    ~ Nested helper from main.
+
+    ~ Nested helper from main.
+
+    ~ Other ends.
+</test>
+*/

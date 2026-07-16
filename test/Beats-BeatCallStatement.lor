@@ -1,0 +1,28 @@
+
+state
+  suffix: "Part"
+
+beat Main
+  Before all.
+  beat("SubOne")
+  beat("Sub" + suffix, "gold")
+  After all.
+
+beat SubOne
+  Inside sub one.
+
+beat SubPart(metal)
+  Inside sub part with $metal.
+
+/*
+<test>
+- expected: |
+    ~ Before all.
+
+    ~ Inside sub one.
+
+    ~ Inside sub part with gold.
+
+    ~ After all.
+</test>
+*/

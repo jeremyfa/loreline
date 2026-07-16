@@ -1,0 +1,35 @@
+
+beat Main
+  new state
+    flavor: "mint"
+
+  beat ExtraChoices
+    choice
+      Take the $flavor tea
+        You took the $flavor tea.
+
+  ref = ExtraChoices
+  -> Bar
+
+beat Bar
+  choice
+    Water
+      Plain water.
+    + beat(ref)
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Water
+    + Take the mint tea
+
+    ~ Plain water.
+- choices: [1]
+  expected: |
+    + Water
+    + Take the mint tea
+
+    ~ You took the mint tea.
+</test>
+*/
