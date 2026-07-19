@@ -246,10 +246,10 @@ class TranslationFormats {
  * Class fields don't get that treatment.
  */
 class WrappedFileHandler {
-    public final handler:loreline.ImportsFileHandler;
+    public final handler:loreline.Imports.ImportsFileHandler;
     public final lastError:()->Null<loreline.Error>;
 
-    public function new(handler:loreline.ImportsFileHandler, lastError:()->Null<loreline.Error>) {
+    public function new(handler:loreline.Imports.ImportsFileHandler, lastError:()->Null<loreline.Error>) {
         this.handler = handler;
         this.lastError = lastError;
     }

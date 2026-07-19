@@ -5186,6 +5186,10 @@ typedef InterpreterOptions = {
             case TClass(c): Type.getClassName(c);
             case TEnum(e): Type.getEnumName(e);
             case TUnknown: "Unknown";
+
+            #if haxe5
+            case TInt64: "Int64";
+            #end
         }
     }
 
