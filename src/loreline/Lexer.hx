@@ -1281,29 +1281,27 @@ class Token {
 
             var c = input.uCharCodeAt(pos);
 
-            // Handle dot access
-            if (c == ".".code) {
-                pos++;
-                pos = skipWhitespaceAndComments(pos);
-                if (!readIdent()) {
-                    return true;
-                }
-                pos = skipWhitespaceAndComments(pos);
-                if (pos >= this.length) {
-                    return true;
-                }
-                c = input.uCharCodeAt(pos);
-            }
-
-            // Handle bracket access
-            if (c == "[".code) {
-                pos++;
-                var bracketLevel = 1;
-                while (pos < this.length && bracketLevel > 0) {
-                    c = input.uCharCodeAt(pos);
-                    if (c == "[".code) bracketLevel++;
-                    if (c == "]".code) bracketLevel--;
+            // Handle chained dot and bracket accesses
+            // (e.g. a.b.c, a.b.has("x"), items[0].ready, grid[0][1])
+            while (c == ".".code || c == "[".code) {
+                if (c == ".".code) {
+                    // Dot access
                     pos++;
+                    pos = skipWhitespaceAndComments(pos);
+                    if (!readIdent()) {
+                        return true;
+                    }
+                }
+                else {
+                    // Bracket access
+                    pos++;
+                    var bracketLevel = 1;
+                    while (pos < this.length && bracketLevel > 0) {
+                        c = input.uCharCodeAt(pos);
+                        if (c == "[".code) bracketLevel++;
+                        if (c == "]".code) bracketLevel--;
+                        pos++;
+                    }
                 }
                 pos = skipWhitespaceAndComments(pos);
                 if (pos >= this.length) {

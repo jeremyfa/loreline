@@ -1,0 +1,53 @@
+// Trailing if conditions on choice options must be detected when the
+// expression uses chained dot/bracket accesses (a.b.c, a.b.has("x"),
+// items[0].ready), not just a single dot. Prose containing "if" followed
+// by dotted sentences must still stay literal option text.
+
+state
+  job: { status: { open: true }, available: ["shop_assistant"] }
+  slots: [{ filled: true }]
+
+beat Start
+  choice
+    Shop Assistant <money>\$50</money> if job.available.has("shop_assistant")
+      Took the job.
+    Manager if job.available.has("manager")
+      Became manager.
+    Office if job.status.open
+      Entered office.
+    First slot if slots[0].filled
+      Slot one.
+    Run if scared. Otherwise stay.
+      Ran away.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Shop Assistant <<money>>$50<</money>>
+    - Manager
+    + Office
+    + First slot
+    + Run if scared. Otherwise stay.
+
+    ~ Took the job.
+- choices: [3]
+  expected: |
+    + Shop Assistant <<money>>$50<</money>>
+    - Manager
+    + Office
+    + First slot
+    + Run if scared. Otherwise stay.
+
+    ~ Slot one.
+- choices: [4]
+  expected: |
+    + Shop Assistant <<money>>$50<</money>>
+    - Manager
+    + Office
+    + First slot
+    + Run if scared. Otherwise stay.
+
+    ~ Ran away.
+</test>
+*/
