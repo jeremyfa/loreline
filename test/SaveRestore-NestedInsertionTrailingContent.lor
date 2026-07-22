@@ -1,0 +1,129 @@
+// When resuming from a save taken during a doubly-nested insertion body,
+// resumeNodeBody must watch the insertion enclosing the body it resumes (the
+// one at or below its scope level), not the deepest insertion on the restored
+// stack. Otherwise trailing content after an inserted choice leaks into
+// Phase 1 collection (scenario A, leaf without a choice) or content after the
+// root choice gets silently skipped (scenario B, leaf with a choice).
+
+beat StartA
+  choice
+    Base 1
+    +InsertA
+    Base 2
+  Back at root A.
+
+beat InsertA
+  "Before A."
+  choice
+    Ins A
+    +LeafA
+  "After A."
+
+beat LeafA
+  "Leaf A dialogue."
+
+beat StartB
+  choice
+    Base 1
+    +InsertB
+  Back at root B.
+
+beat InsertB
+  choice
+    Ins B
+    +LeafB
+
+beat LeafB
+  "Leaf B dialogue."
+  choice
+    Deep B
+      "Picked deep B."
+
+/*
+<test>
+- beat: StartA
+  choices: [1]
+  expected: |
+    ~ Before A.
+
+    ~ Leaf A dialogue.
+
+    + Base 1
+    + Ins A
+    + Base 2
+
+    ~ After A.
+
+    ~ Back at root A.
+- beat: StartA
+  choices: [1]
+  saveAtDialogue: 1
+  expected: |
+    ~ Before A.
+
+    ~ Leaf A dialogue.
+
+    ~ Leaf A dialogue.
+
+    + Base 1
+    + Ins A
+    + Base 2
+
+    ~ After A.
+
+    ~ Back at root A.
+- beat: StartA
+  choices: [2]
+  saveAtDialogue: 1
+  expected: |
+    ~ Before A.
+
+    ~ Leaf A dialogue.
+
+    ~ Leaf A dialogue.
+
+    + Base 1
+    + Ins A
+    + Base 2
+
+    ~ Back at root A.
+- beat: StartB
+  choices: [0]
+  expected: |
+    ~ Leaf B dialogue.
+
+    + Base 1
+    + Ins B
+    + Deep B
+
+    ~ Back at root B.
+- beat: StartB
+  choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ Leaf B dialogue.
+
+    ~ Leaf B dialogue.
+
+    + Base 1
+    + Ins B
+    + Deep B
+
+    ~ Back at root B.
+- beat: StartB
+  choices: [2]
+  saveAtDialogue: 0
+  expected: |
+    ~ Leaf B dialogue.
+
+    ~ Leaf B dialogue.
+
+    + Base 1
+    + Ins B
+    + Deep B
+
+    ~ Picked deep B.
+
+    ~ Back at root B.
+</test>
+*/

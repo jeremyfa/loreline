@@ -608,7 +608,14 @@ typedef InterpreterOptions = {
      */
     var currentInsertion(get,never):RuntimeInsertion;
     function get_currentInsertion():RuntimeInsertion {
-        var i = stack.length - 1;
+        return insertionAtOrBelow(stack.length - 1);
+    }
+
+    /**
+     * Nearest insertion carried by a scope at or below the given stack level.
+     */
+    function insertionAtOrBelow(scopeLevel:Int):RuntimeInsertion {
+        var i = scopeLevel;
         while (i >= 0) {
             final scope = stack[i];
             if (scope.insertion != null) {
@@ -1708,11 +1715,14 @@ typedef InterpreterOptions = {
             }
         }
 
-        // Capture the current insertion context for the early-exit check below.
+        // Capture the insertion context for the early-exit check below.
         // This mirrors the same check in evalNodeBody: if we are inside an
         // insertion body and its choice has already collected options, stop
-        // evaluating further body nodes.
-        final currentInsertion = this.currentInsertion;
+        // evaluating further body nodes. Unlike evalNodeBody (whose own scope
+        // is the stack top at capture time), we are resuming at scopeLevel
+        // while the restored stack still holds deeper scopes above it, so we
+        // must ignore those and capture the insertion enclosing THIS body.
+        final currentInsertion = insertionAtOrBelow(scopeLevel);
 
         // Then iterate through each child node in the body
         var moveNext:()->Void = null;
