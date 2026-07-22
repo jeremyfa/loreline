@@ -1820,6 +1820,19 @@ typedef InterpreterOptions = {
 
             if (insertionNode is NBeatDecl) {
                 final beat:NBeatDecl = cast insertionNode;
+
+                // This choice's Phase 1 is only the root one if no enclosing
+                // scope carries an insertion (the scope AT scopeLevel holds
+                // this choice's own insertion and doesn't count). Compute it
+                // now: the stack unwinds by the time the callback below runs.
+                var isRootPhase1 = true;
+                for (i in 0...scopeLevel) {
+                    if (stack[i].insertion != null) {
+                        isRootPhase1 = false;
+                        break;
+                    }
+                }
+
                 resumeNodeBody(beat, scopeLevel, beat.body, () -> {
                     // After insertion body completes:
                     // 1. Start with partial options from before this insertion
@@ -1836,8 +1849,8 @@ typedef InterpreterOptions = {
                     final parentBeat = currentScope.beat;
 
                     final optionsDone = wrapNext(() -> presentChoice(choice, options, next));
-                    // Resuming the root choice's Phase 1 with a pre-filled result.
-                    evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex, true);
+                    // Resuming this choice's Phase 1 with a pre-filled result.
+                    evalChoiceOptionsAndInsertions(parentBeat, choice, options, optionsDone.cb, nextIndex, isRootPhase1);
                     optionsDone.sync = false;
                 });
             } else {
@@ -3132,7 +3145,8 @@ typedef InterpreterOptions = {
         });
 
         // Nested insertion runs (reached via evalInsertion) have an insertion
-        // scope on the stack; only the real top-level choice owns the buffers.
+        // scope on the stack; only the real top-level choice resets the
+        // _choiceEval* buffers, while every run pushes its own options.
         evalChoiceOptionsAndInsertions(currentScope.beat, choice, options, optionsDone.cb, null, currentInsertion == null);
         optionsDone.sync = false;
 
@@ -3244,10 +3258,13 @@ typedef InterpreterOptions = {
         // Get options
         final options = choice.options;
 
-        // Only the root choice evaluation owns the _choiceEval* introspection
-        // buffers that choices()/choices_all()/choices_disabled() read. Nested
-        // insertion runs must leave them alone: the root's merge loop below
-        // appends each insertion's options once, in order. Seed from options
+        // The _choiceEval* introspection buffers that choices()/choices_all()/
+        // choices_disabled() read follow one invariant: every plain-text option
+        // is pushed exactly once, at the moment it is evaluated, at any nesting
+        // level; merge loops never push. Phase 1 evaluation is depth-first in
+        // exact display order, so buffer order matches display order and reads
+        // from within a nested insertion see the full prefix collected so far.
+        // Only the root resets the buffers at Phase 1 start. Seed from options
         // collected so far (empty on a fresh choice, pre-filled on a restore).
         if (isChoiceRoot) {
             _choiceEvalTexts.resize(0);
@@ -3268,11 +3285,9 @@ typedef InterpreterOptions = {
             if (insertion != null && insertion.options != null) {
                 for (i in 0...insertion.options.length) {
                     final opt = insertion.options[i];
+                    // No _choiceEval* push here: these options were already
+                    // pushed when they were evaluated inside the nested run.
                     result.push(opt);
-                    if (isChoiceRoot) {
-                        _choiceEvalTexts.push(opt.text);
-                        _choiceEvalEnabled.push(opt.enabled);
-                    }
                 }
                 insertion = null;
             }
@@ -3300,10 +3315,8 @@ typedef InterpreterOptions = {
                         node: option,
                         insertion: currentInsertion
                     });
-                    if (isChoiceRoot) {
-                        _choiceEvalTexts.push(content.text);
-                        _choiceEvalEnabled.push(enabled);
-                    }
+                    _choiceEvalTexts.push(content.text);
+                    _choiceEvalEnabled.push(enabled);
                     done.cb();
                     done.sync = false;
                 }

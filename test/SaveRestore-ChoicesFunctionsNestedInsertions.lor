@@ -1,0 +1,86 @@
+// choices()/choices_all()/choices_disabled() must stay correct across a
+// save/restore when an insertion sits inside a nested insertion's own choice
+// (issue #28), on both restore paths: saving at the presented choice
+// (saveAtChoice) and saving at a dialogue emitted from the doubly-nested
+// insertion body while options are still being collected (saveAtDialogue).
+
+beat Start
+  choice
+    Base 1
+    +InnerOptions
+    Base 2
+      "Enabled: $choices()"
+      "All: $choices_all()"
+      "Disabled: $choices_disabled()"
+
+beat InnerOptions
+  choice
+    Ins 1
+    Ins 2 if false
+    +Summarize
+
+beat Summarize
+  "So far: $choices()"
+  "So far all: $choices_all()"
+
+/*
+<test>
+- choices: [3]
+  expected: |
+    ~ So far: [Base 1, Ins 1]
+
+    ~ So far all: [Base 1, Ins 1, Ins 2]
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+- choices: [3]
+  saveAtChoice: 0
+  expected: |
+    ~ So far: [Base 1, Ins 1]
+
+    ~ So far all: [Base 1, Ins 1, Ins 2]
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+- choices: [3]
+  saveAtDialogue: 0
+  expected: |
+    ~ So far: [Base 1, Ins 1]
+
+    ~ So far: [Base 1, Ins 1]
+
+    ~ So far all: [Base 1, Ins 1, Ins 2]
+
+    + Base 1
+    + Ins 1
+    - Ins 2
+    + Base 2
+
+    ~ Enabled: [Base 1, Ins 1, Base 2]
+
+    ~ All: [Base 1, Ins 1, Ins 2, Base 2]
+
+    ~ Disabled: [Ins 2]
+</test>
+*/

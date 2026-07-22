@@ -1,0 +1,112 @@
+// The choices()/choices_all()/choices_disabled() introspection helpers must
+// see the cumulative option list across every nesting level while options are
+// still being collected: an insertion evaluated inside a nested insertion's
+// own choice sees the options that precede it at all levels. See issue #28.
+
+beat NestedSummary
+  choice
+    Option A
+    Option B
+    +InnerOptions
+    +Summarize
+
+beat InnerOptions
+  choice
+    Option C
+    Option D
+    +Summarize
+
+beat Summarize
+  "Choices so far: $choices()"
+
+beat MidNested
+  choice
+    Option A
+    Option B
+    +InnerMid
+
+beat InnerMid
+  choice
+    Option C
+    +Summarize
+    Option D
+
+beat DisabledNested
+  choice
+    Alpha
+    +MixedInner
+    Delta
+
+beat MixedInner
+  choice
+    G1
+    G2 if false
+    +SummarizeAll
+
+beat SummarizeAll
+  "All: $choices_all()"
+  "Enabled: $choices()"
+  "Disabled: $choices_disabled()"
+
+beat TripleNested
+  choice
+    Level 1 A
+    +LevelTwo
+    Level 1 B
+
+beat LevelTwo
+  choice
+    Level 2 A
+    +LevelThree
+
+beat LevelThree
+  choice
+    Level 3 A
+    +Summarize
+
+/*
+<test>
+- beat: NestedSummary
+  choices: [0]
+  expected: |
+    ~ Choices so far: [Option A, Option B, Option C, Option D]
+
+    ~ Choices so far: [Option A, Option B, Option C, Option D]
+
+    + Option A
+    + Option B
+    + Option C
+    + Option D
+- beat: MidNested
+  choices: [0]
+  expected: |
+    ~ Choices so far: [Option A, Option B, Option C]
+
+    + Option A
+    + Option B
+    + Option C
+    + Option D
+- beat: DisabledNested
+  choices: [0]
+  expected: |
+    ~ All: [Alpha, G1, G2]
+
+    ~ Enabled: [Alpha, G1]
+
+    ~ Disabled: [G2]
+
+    + Alpha
+    + G1
+    - G2
+    + Delta
+- beat: TripleNested
+  choices: [0]
+  expected: |
+    ~ Choices so far: [Level 1 A, Level 2 A, Level 3 A]
+
+    + Level 1 A
+    + Level 2 A
+    + Level 3 A
+    + Level 1 B
+</test>
+*/
