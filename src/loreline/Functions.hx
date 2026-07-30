@@ -345,8 +345,14 @@ class Functions {
         if (value is Bool) return (value : Bool);
         if (value is String) return (value : String).length > 0;
         if (Arrays.isArray(value)) return Arrays.arrayLength(value) > 0;
+        #if php
+        // On PHP, isOfType(Int) also matches integral floats while the typed
+        // Int comparison compiles to a strict check. Keep the check loose.
+        if (value is Int || value is Float) return (value : Float) != 0;
+        #else
         if (value is Int) return (value : Int) != 0;
         if (value is Float) return (value : Float) != 0;
+        #end
         return value != null;
     }
 

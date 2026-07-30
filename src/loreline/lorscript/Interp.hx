@@ -85,7 +85,18 @@ class Interp {
     function initOps() {
         var me = this;
         binops = new Map();
+        #if php
+        // On PHP, dynamic string concatenation relies on native casts where
+        // booleans become "1" or "". Stringify operands explicitly instead.
+        binops.set("+",function(e1,e2) {
+            var v1:Dynamic = me.expr(e1);
+            var v2:Dynamic = me.expr(e2);
+            if (v1 is String || v2 is String) return (Std.string(v1):Dynamic) + Std.string(v2);
+            return v1 + v2;
+        });
+        #else
         binops.set("+",function(e1,e2) return me.expr(e1) + me.expr(e2));
+        #end
         binops.set("-",function(e1,e2) return me.expr(e1) - me.expr(e2));
         binops.set("*",function(e1,e2) return me.expr(e1) * me.expr(e2));
         binops.set("/",function(e1,e2) return me.expr(e1) / me.expr(e2));

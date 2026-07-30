@@ -448,7 +448,7 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -698,7 +698,7 @@ typedef InterpreterOptions = {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -727,7 +727,7 @@ typedef InterpreterOptions = {
         this.strictAccess = options?.strictAccess ?? false;
         this.translations = options?.translations;
 
-        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_gdscript_api) && !macro)
+        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
         this.wrapper = options?.wrapper;
         #end
 
@@ -4522,12 +4522,21 @@ typedef InterpreterOptions = {
         else if (Arrays.isArray(value)) {
             Arrays.arrayLength(value) > 0;
         }
+        #if php
+        // On PHP, isOfType(Int) also matches integral floats while the typed
+        // Int comparison compiles to a strict check, so 0.0 would slip
+        // through as truthy. Use a single loose numeric branch instead.
+        else if (value is Int || value is Float) {
+            (value:Float) != 0;
+        }
+        #else
         else if (value is Int) {
             (value:Int) != 0;
         }
         else if (value is Float) {
             (value:Float) != 0;
         }
+        #end
         else {
             value != null;
         }
@@ -4935,6 +4944,14 @@ typedef InterpreterOptions = {
                     case OpNot if (Arrays.isArray(operand)): {
                         Arrays.arrayLength(operand) == 0;
                     }
+                    #if php
+                    // Same as evaluateCondition: on PHP integral floats match
+                    // the Int check, so keep the numeric comparison loose.
+                    case OpNot if (operand is Int || operand is Float): {
+                        final v:Float = operand;
+                        (v == 0);
+                    }
+                    #else
                     case OpNot if (operand is Int): {
                         final v:Int = operand;
                         (v == 0);
@@ -4943,6 +4960,7 @@ typedef InterpreterOptions = {
                         final v:Float = operand;
                         (v == 0);
                     }
+                    #end
                     case OpNot: {
                         (operand == null);
                     }

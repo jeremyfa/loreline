@@ -791,6 +791,85 @@ jobs:
           path: loreline-lua.zip
           compression-level: 0
 
+  loreline-php:
+
+    runs-on: "ubuntu-22.04"
+    steps:
+
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring
+
+      - name: Setup Haxe
+        working-directory: .
+        run: |
+          export NEKOPATH=$PWD'/git/haxe-binary/linux-x86_64/neko'
+          export HAXEPATH=$PWD'/git/haxe-binary/linux-x86_64/haxe'
+          sudo mkdir -p /usr/local/bin
+          sudo mkdir -p /usr/local/lib
+          sudo mkdir -p /usr/local/share/haxe
+          sudo ln -s $HAXEPATH/haxe                 /usr/local/bin/haxe
+          sudo ln -s $HAXEPATH/haxelib              /usr/local/bin/haxelib
+          sudo ln -s $HAXEPATH/haxe-bin             /usr/local/bin/haxe-bin
+          sudo ln -s $HAXEPATH/haxelib-bin          /usr/local/bin/haxelib-bin
+          sudo ln -s $HAXEPATH/std                  /usr/local/share/haxe/std
+          sudo ln -s $NEKOPATH/neko                 /usr/local/bin/neko
+          sudo ln -s $NEKOPATH/nekoc                /usr/local/bin/nekoc
+          sudo ln -s $NEKOPATH/nekoml               /usr/local/bin/nekoml
+          sudo ln -s $NEKOPATH/nekotools            /usr/local/bin/nekotools
+          sudo ln -s $NEKOPATH                      /usr/local/lib/neko
+          sudo ln -s $NEKOPATH/libneko.so           /usr/local/lib/libneko.so
+          sudo ln -s $NEKOPATH/libneko.so.2.4.0     /usr/local/lib/libneko.so.2.4.0
+          sudo ln -s $NEKOPATH/libneko.so.2         /usr/local/lib/libneko.so.2
+          sudo ldconfig
+          sudo ldconfig /usr/local/lib
+          echo 'neko: '$(neko -version)
+          echo 'haxe: '$(haxe --version)
+
+      - name: Setup haxelib
+        run: |
+          mkdir -p .haxelib
+      - name: Build PHP
+        run: node ./setup --php
+
+      - name: Run PHP tests
+        run: php php/test-runner.php ./test
+
+      - name: Build PHP CLI
+        run: node ./setup --php-cli
+
+      - name: Run PHP CLI tests
+        run: php build/php-cli/index.php test ./test
+
+      - name: Create zip archive
+        run: |
+          mkdir loreline-php-pkg
+          cp -r php/composer.json php/src php/lib loreline-php-pkg/
+          cd loreline-php-pkg
+          zip -r ../loreline-php.zip .
+
+      - name: Upload loreline-php.zip
+        uses: actions/upload-artifact@v6
+        with:
+          retention-days: 1
+          name: loreline-php.zip
+          path: loreline-php.zip
+          compression-level: 0
+
 
   loreline-gdscript:
 
@@ -1854,7 +1933,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web, loreline-gdscript]
+    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-php, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-verify, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web, loreline-gdscript]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
@@ -1923,6 +2002,12 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: loreline-lua.zip
+          path: .
+
+      - name: Download loreline-php.zip
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-php.zip
           path: .
 
       - name: Download loreline-cpp.zip
@@ -2002,6 +2087,7 @@ jobs:
             loreline-web.zip
             loreline-python.zip
             loreline-lua.zip
+            loreline-php.zip
             loreline-jvm.zip
             loreline-cpp.zip
             loreline-wasm.zip

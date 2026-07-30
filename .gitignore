@@ -25,6 +25,7 @@ merged-context.txt
 /py/loreline/_core.py
 /py/loreline/__pycache__
 /lua/loreline/core.lua
+/php/lib
 /jvm/loreline.jar
 /godot/bin
 /godot/build

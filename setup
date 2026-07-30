@@ -159,6 +159,8 @@ async function main() {
     let buildJs = rawArgs.indexOf('--js') != -1;
     let buildPython = rawArgs.indexOf('--python') != -1 || rawArgs.indexOf('--py') != -1;
     let buildLua = rawArgs.indexOf('--lua') != -1;
+    let buildPhp = rawArgs.indexOf('--php') != -1;
+    let buildPhpCli = rawArgs.indexOf('--php-cli') != -1;
     let buildJvm = rawArgs.indexOf('--jvm') != -1;
     let buildIos = rawArgs.indexOf('--ios') != -1;
     let buildAndroid = rawArgs.indexOf('--android') != -1;
@@ -1415,6 +1417,20 @@ async function main() {
         fs.writeFileSync('py/loreline/_core.py', py);
     }
 
+    if (buildPhp) {
+        console.log('Export loreline for PHP');
+
+        fs.mkdirSync('php/lib', { recursive: true });
+
+        await command(haxe, ['build-php.hxml'].concat(haxeBuildArgs));
+    }
+
+    if (buildPhpCli) {
+        console.log('Export loreline PHP CLI');
+
+        await command(haxe, ['build-cli.hxml', '--php', 'build/php-cli'].concat(haxeBuildArgs));
+    }
+
     if (buildGdscript) {
         console.log('Export loreline for GDScript (Godot)');
 
@@ -2158,7 +2174,17 @@ async function main() {
         await command('node', ['./setup', '--lua']);
         await command('lua', ['lua/test-runner.lua', './test']);
 
-        // 10. JVM build + tests
+        // 10. PHP build + tests
+        console.log('\n=== PHP build + tests ===');
+        await command('node', ['./setup', '--php']);
+        await command('php', ['php/test-runner.php', './test']);
+
+        // 11. PHP CLI build + tests
+        console.log('\n=== PHP CLI build + tests ===');
+        await command('node', ['./setup', '--php-cli']);
+        await command('php', ['build/php-cli/index.php', 'test', './test']);
+
+        // 12. JVM build + tests
         console.log('\n=== JVM build + tests ===');
         await command('node', ['./setup', '--jvm']);
         const jvmCpSep = process.platform == 'win32' ? ';' : ':';

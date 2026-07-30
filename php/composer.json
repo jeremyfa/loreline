@@ -1,0 +1,15 @@
+{
+    "name": "loreline/loreline",
+    "description": "Loreline is an open-source scripting language for writing interactive fiction.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/jeremyfa/loreline",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "files": [
+            "src/autoload.php"
+        ]
+    }
+}

@@ -46,12 +46,32 @@ class Int64Map<V> {
         }
     }
 
+    #if php
+    // On PHP, ints are native 64-bit values and multiplication overflow
+    // produces floats, which breaks the bitwise mixing below. Emulate a
+    // 32-bit wrapping multiplication and keep the hash within 31 bits.
+    inline function hashCoords(high:Int, low:Int):Int {
+        var h = (high + (low << 16)) & 0x7FFFFFFF;
+        h = mul32(h ^ (h >>> 16), 0x85ebca6b);
+        h = mul32(h ^ (h >>> 13), 0xc2b2ae35);
+        return (h ^ (h >>> 16)) & 0x7FFFFFFF;
+    }
+
+    static inline function mul32(a:Int, b:Int):Int {
+        final aLo = a & 0xFFFF;
+        final aHi = (a >>> 16) & 0xFFFF;
+        final bLo = b & 0xFFFF;
+        final bHi = (b >>> 16) & 0xFFFF;
+        return (aLo * bLo + (((aLo * bHi + aHi * bLo) & 0xFFFF) << 16)) & 0x7FFFFFFF;
+    }
+    #else
     inline function hashCoords(high:Int, low:Int):Int {
         var h = high + (low << 16);
         h = (h ^ (h >>> 16)) * 0x85ebca6b;
         h = (h ^ (h >>> 13)) * 0xc2b2ae35;
         return h ^ (h >>> 16);
     }
+    #end
 
     public function clear() {
         _keys1 = null;

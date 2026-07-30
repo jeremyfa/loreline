@@ -32,6 +32,8 @@ node ./setup --cs --cs-dll # Export C# + build Loreline.dll
 node ./setup --cs-generics # Export C# test runner without erase-generics
 node ./setup --py          # Build Python package (py/loreline/)
 node ./setup --lua         # Build Lua module (lua/loreline/)
+node ./setup --php         # Build PHP package (php/)
+node ./setup --php-cli     # Build PHP CLI (build/php-cli/)
 node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
 node ./setup --cpp-lib     # Build C++ shared library
 node ./setup --jvm         # Build JVM jar (jvm/loreline.jar)
@@ -56,16 +58,18 @@ For loreline-lua, run `--lua` first.
 
 ### Testing
 
-Python, Lua, JS, JVM and GDScript tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests). GDScript tests also need a Godot 4 binary on the PATH (or pointed to by the `GODOT_BIN` environment variable).
+Python, Lua, PHP, JS, JVM and GDScript tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests). GDScript tests also need a Godot 4 binary on the PATH (or pointed to by the `GODOT_BIN` environment variable).
 
 ```sh
 node run test ./test                    # Run Neko tests only
 python3 py/test-runner.py ./test        # Run Python tests only
 lua5.4 lua/test-runner.lua ./test       # Run Lua tests only
+php php/test-runner.php ./test          # Run PHP tests only
+php build/php-cli/index.php test ./test # Run PHP CLI tests only
 npx tsx js/test-runner.ts ./test        # Run JS tests only
 java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
 node ./setup --gdscript-test            # Run GDScript tests only (headless Godot)
-node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + JVM)
+node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
 ```
 
 ### How Loreline is authored

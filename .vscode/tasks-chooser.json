@@ -44,6 +44,13 @@
             "args": ["lua/test-runner.lua", "./test"]
         },
         {
+            "displayName": "✓ PHP tests",
+            "type": "shell",
+            "description": "php php/test-runner.php ./test",
+            "command": "php",
+            "args": ["php/test-runner.php", "./test"]
+        },
+        {
             "displayName": "✓ JVM tests",
             "type": "shell",
             "description": "javac + java TestRunner ./test",
@@ -98,6 +105,13 @@
             "description": "node ./setup --lua",
             "command": "node",
             "args": ["setup", "--lua"]
+        },
+        {
+            "displayName": "⚙ Build PHP",
+            "type": "shell",
+            "description": "node ./setup --php",
+            "command": "node",
+            "args": ["setup", "--php"]
         },
         {
             "displayName": "⚙ Build C++",
