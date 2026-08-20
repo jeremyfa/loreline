@@ -5,6 +5,7 @@ import loreline.Node;
 import loreline.Printer;
 
 using loreline.Utf8;
+using loreline.Utf8Vector;
 
 /**
  * Converts CSV/TSV file content into a Loreline translation file body.
@@ -202,13 +203,18 @@ class CsvTranslation {
         var field = new Utf8Buf();
         var inQuotes = false;
         var i = 0;
-        final len = content.uLength();
+        #if loreline_utf8_vector
+        final chars = Utf8.toCodes(content);
+        #else
+        final chars = content;
+        #end
+        final len = chars.uLength();
 
         while (i < len) {
-            final c = content.uCharCodeAt(i);
+            final c = chars.uCharCodeAt(i);
             if (inQuotes) {
                 if (c == "\"".code) {
-                    if (i + 1 < len && content.uCharCodeAt(i + 1) == "\"".code) {
+                    if (i + 1 < len && chars.uCharCodeAt(i + 1) == "\"".code) {
                         // Escaped quote
                         field.addChar("\"".code);
                         i += 2;
@@ -237,7 +243,7 @@ class CsvTranslation {
                     }
                     row = [];
                     // Handle CRLF as a single line ending
-                    if (c == "\r".code && i + 1 < len && content.uCharCodeAt(i + 1) == "\n".code) {
+                    if (c == "\r".code && i + 1 < len && chars.uCharCodeAt(i + 1) == "\n".code) {
                         i += 2;
                     } else {
                         i++;

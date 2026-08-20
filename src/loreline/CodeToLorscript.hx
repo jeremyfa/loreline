@@ -2,6 +2,7 @@ package loreline;
 
 using StringTools;
 using loreline.Utf8;
+using loreline.Utf8Vector;
 
 enum abstract CodeToLorscriptStackType(Int) {
 
@@ -57,7 +58,14 @@ class CodeToLorscript {
     /**
      * The input Loreline script code
      */
-    public var input(default, null):String = null;
+    #if loreline_utf8_vector
+    var input:haxe.ds.Vector<Int> = null;
+    #else
+    var input:String = null;
+    #end
+
+    /** The processed source as a String, for external position/error use. */
+    public var inputText(default, null):String = null;
 
     /**
      * Buffer for the processed output
@@ -139,7 +147,8 @@ class CodeToLorscript {
 
         input = input.rtrim() + "\n//<END>"; // Small hack to make sure last dedent is processed
 
-        this.input = input;
+        this.inputText = input;
+        this.input = #if loreline_utf8_vector Utf8.toCodes(input) #else input #end;
         this.index = 0;
         this.output = new Utf8Buf();
         this.lineOutput = new Utf8Buf();
@@ -166,7 +175,7 @@ class CodeToLorscript {
         final min = inputPosFromProcessedPos(pmin);
         final max = inputPosFromProcessedPos(pmax);
         final len = max + 1 - min;
-        return funcPos.withOffset(input, min, len, funcPos.offset);
+        return funcPos.withOffset(inputText, min, len, funcPos.offset);
 
     }
 
@@ -1196,7 +1205,7 @@ class CodeToLorscript {
     }
 
     function error(message:String) {
-        throw new Error(message, Position.fromContentAndIndex(input, index));
+        throw new Error(message, Position.fromContentAndIndex(inputText, index));
     }
 
 }

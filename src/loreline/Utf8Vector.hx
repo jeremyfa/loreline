@@ -36,6 +36,21 @@ class Utf8Vector {
         return (pos < 0 || pos >= v.length) ? "" : slice(v, pos, pos + 1);
     }
 
+    public static function uIndexOf(v:Vector<Int>, substr:String, ?startIndex:Int):Int {
+        final needle = Utf8.toCodes(substr);
+        final nlen = needle.length;
+        if (nlen == 0) return startIndex != null ? startIndex : 0;
+        var i = (startIndex != null && startIndex > 0) ? startIndex : 0;
+        final last = v.length - nlen;
+        while (i <= last) {
+            var k = 0;
+            while (k < nlen && v[i + k] == needle[k]) k++;
+            if (k == nlen) return i;
+            i++;
+        }
+        return -1;
+    }
+
     static function slice(v:Vector<Int>, start:Int, end:Int):String {
         if (start < 0) start = 0;
         if (end > v.length) end = v.length;

@@ -12,6 +12,7 @@ import loreline.SaveData;
 
 using StringTools;
 using loreline.Utf8;
+using loreline.Utf8Vector;
 
 
 /**
@@ -4119,13 +4120,18 @@ typedef InterpreterOptions = {
                     if (!keepIndents) {
                         text = stripStringIndent(text);
                     }
-                    final len = text.uLength();
+                    #if loreline_utf8_vector
+                    final chars = Utf8.toCodes(text);
+                    #else
+                    final chars = text;
+                    #end
+                    final len = chars.uLength();
                     if (len > 0) keepWhitespace = true;
                     var prevIsDollar:Bool = false;
                     var prevIsHash:Bool = false;
                     var escaped:Bool = false;
                     for (i in 0...len) {
-                        final c = text.uCharCodeAt(i);
+                        final c = chars.uCharCodeAt(i);
                         if (escaped) {
                             if (c == "n".code) {
                                 buf.addChar("\n".code);
@@ -4443,32 +4449,37 @@ typedef InterpreterOptions = {
 
     function stripStringComments(content:String):String {
 
+        #if loreline_utf8_vector
+        final chars = Utf8.toCodes(content);
+        #else
+        final chars = content;
+        #end
         final result = new Utf8Buf();
-        final len:Int = content.uLength();
+        final len:Int = chars.uLength();
         var i:Int = 0;
 
         while (i < len) {
-            final c = content.uCharCodeAt(i);
+            final c = chars.uCharCodeAt(i);
 
             // Check for line comment
-            if (c == "/".code && i + 1 < len && content.uCharCodeAt(i + 1) == "/".code) {
+            if (c == "/".code && i + 1 < len && chars.uCharCodeAt(i + 1) == "/".code) {
                 // Skip to the end of line or end of string
-                while (i < len && content.uCharCodeAt(i) != "\n".code) {
+                while (i < len && chars.uCharCodeAt(i) != "\n".code) {
                     i++;
                 }
                 continue;
             }
 
             // Check for multiline comment
-            if (c == "/".code && i + 1 < len && content.uCharCodeAt(i + 1) == "*".code) {
+            if (c == "/".code && i + 1 < len && chars.uCharCodeAt(i + 1) == "*".code) {
                 // Remember if we had a space before the comment
-                final hadSpaceBefore = (i > 0 && content.uCharCodeAt(i - 1) == " ".code);
+                final hadSpaceBefore = (i > 0 && chars.uCharCodeAt(i - 1) == " ".code);
 
                 // Skip the opening /*
                 i += 2;
 
                 // Find the end of multiline comment
-                while (i + 1 < len && !(content.uCharCodeAt(i) == "*".code && content.uCharCodeAt(i + 1) == "/".code)) {
+                while (i + 1 < len && !(chars.uCharCodeAt(i) == "*".code && chars.uCharCodeAt(i + 1) == "/".code)) {
                     i++;
                 }
 
@@ -4476,7 +4487,7 @@ typedef InterpreterOptions = {
                 i += 2;
 
                 // Check if there's a space after the comment
-                final hasSpaceAfter = (i < len && content.uCharCodeAt(i) == " ".code);
+                final hasSpaceAfter = (i < len && chars.uCharCodeAt(i) == " ".code);
 
                 // If we had a space before and there's a space after, skip the space after
                 // to avoid having double spaces

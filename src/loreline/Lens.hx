@@ -47,7 +47,7 @@ class FuncLorscript {
             if (e is Error) {
                 this.error = e;
                 this.error.pos = func.pos.withOffset(
-                    codeToLorscript.input,
+                    codeToLorscript.inputText,
                     this.error.pos.offset,
                     this.error.pos.length,
                     func.pos.offset
@@ -87,7 +87,7 @@ class FuncLorscript {
                 else if (e is Error) {
                     this.error = cast e;
                     this.error.pos = func.pos.withOffset(
-                        codeToLorscript.input,
+                        codeToLorscript.inputText,
                         this.error.pos.offset,
                         this.error.pos.length,
                         func.pos.offset
