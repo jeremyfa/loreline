@@ -2,6 +2,7 @@ package loreline;
 
 using StringTools;
 using loreline.Utf8;
+using loreline.Utf8Vector;
 
 /**
  * Represents an error that occurred during lexical analysis.
@@ -482,7 +483,11 @@ class Token {
     /**
      * The input source code being lexed.
      */
+    #if loreline_utf8_vector
+    final input:haxe.ds.Vector<Int>;
+    #else
     final input:String;
+    #end
 
     /**
      * Current position in the input.
@@ -575,8 +580,13 @@ class Token {
      * @param input The source code to lex
      */
     public function new(input:String) {
+        #if loreline_utf8_vector
+        this.input = Utf8.toCodes(input);
+        this.length = this.input.length;
+        #else
         this.input = input;
         this.length = input.uLength();
+        #end
         reset();
     }
 

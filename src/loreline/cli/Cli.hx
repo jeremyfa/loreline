@@ -140,6 +140,12 @@ class Cli {
                     else
                         fail('Missing file argument');
 
+                case 'benchmark':
+                    if (args.length >= 2)
+                        benchmark(args[1], args.length >= 3 ? (Std.parseInt(args[2]) ?? 1000) : 1000);
+                    else
+                        fail('Missing file argument');
+
                 case _:
                     help();
             }
@@ -159,7 +165,9 @@ class Cli {
         print(" |_|\\___/|_|  \\___|_|_|_| |_|\\___|".green());
         print("");
         print(" " + "USAGE".bold());
-        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "]".gray() + " " + "story.lor".underline());
+        print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "|".gray() + "benchmark" + "]".gray() + " " + "story.lor".underline());
+        print("");
+        print(" " + "benchmark".bold() + " " + "story.lor".underline() + " " + "[iterations]".gray() + "  compare source parsing vs fromJson (AST cache) speed");
         print("");
 
     }
@@ -212,6 +220,89 @@ class Cli {
             final content = File.getContent(file);
             final script = Loreline.parse(content, file, handleFile);
             print(new AstPrinter().print(script));
+        }
+        catch (e:Any) {
+            #if debug
+            if (e is Error) {
+                printStackTrace(false, (e:Error).stack);
+                error((e:Error).toString());
+            }
+            else {
+                printStackTrace(false, CallStack.exceptionStack());
+            }
+            #end
+            fail(e, file);
+        }
+
+    }
+
+    function benchmark(file:String, iterations:Int) {
+
+        if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
+            fail('Invalid file: $file');
+        }
+
+        try {
+            final content = File.getContent(file);
+
+            // Warm up once and capture the JSON form of the parsed AST.
+            final warmScript = Loreline.parse(content, file, handleFile);
+            final jsonStr = Json.stringify(warmScript.toJson());
+
+            // Settle caches before timing.
+            for (_ in 0...3) {
+                Loreline.parse(content, file, handleFile);
+                Script.fromJson(Json.parse(jsonStr));
+            }
+
+            // Source parsing: the cold-load path (lexer + parser).
+            var t = haxe.Timer.stamp();
+            for (_ in 0...iterations) {
+                Loreline.parse(content, file, handleFile);
+            }
+            final parseTime = haxe.Timer.stamp() - t;
+
+            // JSON text decoding alone (string to Dynamic).
+            t = haxe.Timer.stamp();
+            for (_ in 0...iterations) {
+                Json.parse(jsonStr);
+            }
+            final jsonParseTime = haxe.Timer.stamp() - t;
+
+            // Full warm-load path (string to Dynamic to AST).
+            t = haxe.Timer.stamp();
+            for (_ in 0...iterations) {
+                Script.fromJson(Json.parse(jsonStr));
+            }
+            final fromJsonTime = haxe.Timer.stamp() - t;
+
+            // AST reconstruction alone (Dynamic to AST), pre-decoded object.
+            final decoded = Json.parse(jsonStr);
+            t = haxe.Timer.stamp();
+            for (_ in 0...iterations) {
+                Script.fromJson(decoded);
+            }
+            final reconstructTime = haxe.Timer.stamp() - t;
+
+            function fmt(v:Float):String {
+                return Std.string(Math.round(v * 10000) / 10000);
+            }
+            function perIter(total:Float):Float {
+                return total / iterations * 1000.0;
+            }
+
+            print('Benchmark: $file');
+            print('  source size:  ${content.length} bytes');
+            print('  JSON size:    ${jsonStr.length} bytes');
+            print('  iterations:   $iterations');
+            print('');
+            print('  parse (source)         total ${fmt(parseTime * 1000)} ms   per-iter ${fmt(perIter(parseTime))} ms');
+            print('  fromJson (full)        total ${fmt(fromJsonTime * 1000)} ms   per-iter ${fmt(perIter(fromJsonTime))} ms');
+            print('    Json.parse only      total ${fmt(jsonParseTime * 1000)} ms   per-iter ${fmt(perIter(jsonParseTime))} ms');
+            print('    fromJson (decode-off) total ${fmt(reconstructTime * 1000)} ms   per-iter ${fmt(perIter(reconstructTime))} ms');
+            print('');
+            final ratio = fromJsonTime > 0 ? parseTime / fromJsonTime : 0.0;
+            print('  speedup (parse / fromJson): ${fmt(ratio)}x');
         }
         catch (e:Any) {
             #if debug

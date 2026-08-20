@@ -24,7 +24,7 @@ async function main() {
     process.chdir(__dirname);
     let rawArgs = process.argv.slice(2);
 
-    let haxeBuildArgs = ['build-cli.hxml'];
+    let haxeBuildArgs = ['build-cli.hxml', '-D', 'loreline_utf8_vector'];
     let lorelineArgs = [];
 
     let i = 0;

@@ -3,6 +3,7 @@ package loreline;
 #if neko
 import neko.Utf8;
 #end
+import haxe.ds.Vector;
 
 /**
  * UTF-8 aware string operations that can be used as extension methods.
@@ -122,6 +123,37 @@ class Utf8 {
         return neko.Utf8.sub(str, pos, 1);
         #else
         return str.charAt(pos);
+        #end
+    }
+
+    /**
+     * Decode a string into a fixed-size Vector of code points in a single
+     * forward pass (O(n) on every target). This is the linear decode that
+     * lets scanners index characters in O(1); a naive uCharCodeAt/uToChars
+     * loop would itself be O(n^2) on neko/php.
+     */
+    public static function toCodes(str:String):Vector<Int> {
+        #if neko
+        final len = neko.Utf8.length(str);
+        final v = new Vector<Int>(len);
+        var i = 0;
+        neko.Utf8.iter(str, function(c:Int) { v[i++] = c; });
+        return v;
+        #elseif php
+        final chars:php.NativeIndexedArray<String> = php.Syntax.code("mb_str_split({0})", str);
+        final len = php.Global.count(chars);
+        final v = new Vector<Int>(len);
+        for (i in 0...len) {
+            v[i] = chars[i].charCodeAt(0);
+        }
+        return v;
+        #else
+        final len = str.length;
+        final v = new Vector<Int>(len);
+        for (i in 0...len) {
+            v[i] = StringTools.fastCodeAt(str, i);
+        }
+        return v;
         #end
     }
 

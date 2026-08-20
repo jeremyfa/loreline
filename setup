@@ -1428,7 +1428,7 @@ async function main() {
     if (buildPhpCli) {
         console.log('Export loreline PHP CLI');
 
-        await command(haxe, ['build-cli.hxml', '--php', 'build/php-cli'].concat(haxeBuildArgs));
+        await command(haxe, ['build-cli.hxml', '--php', 'build/php-cli', '-D', 'loreline_utf8_vector'].concat(haxeBuildArgs));
     }
 
     if (buildGdscript) {
