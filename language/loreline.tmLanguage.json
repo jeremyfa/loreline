@@ -440,6 +440,17 @@
                     "include": "#constants"
                 },
                 {
+                    "match": "(\\b[a-zA-Z_][a-zA-Z0-9_]*\\b)\\s*(:)",
+                    "captures": {
+                        "1": {
+                            "name": "variable.other.loreline"
+                        },
+                        "2": {
+                            "name": "keyword.operator.type.annotation.loreline"
+                        }
+                    }
+                },
+                {
                     "include": "#operators"
                 },
                 {
