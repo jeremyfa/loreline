@@ -1,0 +1,66 @@
+// Field values in state and character blocks are unquoted text by design, so
+// expression-looking values stay raw. Only literals, arrays, objects and calls
+// become real values. Computed values go through ${...} interpolation instead.
+
+function double(n)
+  return n * 2
+
+state
+  hour: 9
+  menu: { espresso: 3 }
+  ternary: hour < 12 ? "Good morning" : "Good afternoon"
+  compare: hour < 12
+  math: 1 + 2
+  ref: hour
+  access: menu.espresso
+  computed: ${hour < 12 ? "Good morning" : "Good afternoon"}
+  called: double(4)
+  quoted: "plain text"
+  number: 42
+  flag: true
+
+beat Start
+  ternary is $ternary
+
+  compare is $compare
+
+  math is $math
+
+  ref is $ref
+
+  access is $access
+
+  computed is $computed
+
+  called is $called
+
+  quoted is $quoted
+
+  number is $number
+
+  flag is $flag
+
+/*
+<test>
+- expected: |
+    ~ ternary is hour < 12 ? "Good morning" : "Good afternoon"
+
+    ~ compare is hour < 12
+
+    ~ math is 1 + 2
+
+    ~ ref is hour
+
+    ~ access is menu.espresso
+
+    ~ computed is Good morning
+
+    ~ called is 8
+
+    ~ quoted is plain text
+
+    ~ number is 42
+
+    ~ flag is true
+</test>
+*/
