@@ -185,6 +185,21 @@ async function main() {
         }
     }
 
+    // --archs <arch>[,<arch>...]: restrict Android builds to the given
+    // architectures. Accepts either Godot arch names (arm64, arm32, x86_64,
+    // x86_32) or Android ABI names (arm64-v8a, armeabi-v7a, x86_64, x86).
+    // Defaults to all of them.
+    let archFilter = null;
+    if (rawArgs.indexOf('--archs') != -1) {
+        const idx = rawArgs.indexOf('--archs');
+        if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
+            archFilter = rawArgs[idx + 1].split(',');
+        }
+    }
+    const archMatches = (c) => archFilter == null
+        || archFilter.indexOf(c.abi) != -1
+        || archFilter.indexOf(c.arch) != -1;
+
     let i = 0;
     while (i < rawArgs.length) {
         if (rawArgs[i].startsWith('-D')) {
@@ -769,11 +784,11 @@ async function main() {
 
         // Step 2: Compile and link for each ABI
         const abiConfigs = [
-            { abi: 'arm64-v8a', hxcppFlags: ['-DHXCPP_ARM64'], suffix: '-64', target: 'aarch64-linux-android21' },
-            { abi: 'armeabi-v7a', hxcppFlags: ['-DHXCPP_ARMV7'], suffix: '-v7', target: 'armv7a-linux-androideabi21' },
-            { abi: 'x86_64', hxcppFlags: ['-DHXCPP_M64', '-DHXCPP_X86_64'], suffix: '-x86_64', target: 'x86_64-linux-android21' },
-            { abi: 'x86', hxcppFlags: ['-DHXCPP_M32', '-DHXCPP_X86'], suffix: '-x86', target: 'i686-linux-android21' }
-        ];
+            { abi: 'arm64-v8a', arch: 'arm64', hxcppFlags: ['-DHXCPP_ARM64'], suffix: '-64', target: 'aarch64-linux-android21' },
+            { abi: 'armeabi-v7a', arch: 'arm32', hxcppFlags: ['-DHXCPP_ARMV7'], suffix: '-v7', target: 'armv7a-linux-androideabi21' },
+            { abi: 'x86_64', arch: 'x86_64', hxcppFlags: ['-DHXCPP_M64', '-DHXCPP_X86_64'], suffix: '-x86_64', target: 'x86_64-linux-android21' },
+            { abi: 'x86', arch: 'x86_32', hxcppFlags: ['-DHXCPP_M32', '-DHXCPP_X86'], suffix: '-x86', target: 'i686-linux-android21' }
+        ].filter(archMatches);
 
         for (const abi of abiConfigs) {
             console.log('  Compiling for ' + abi.abi + '...');
@@ -1144,7 +1159,7 @@ async function main() {
                 { arch: 'arm32', abi: 'armeabi-v7a' },
                 { arch: 'x86_64', abi: 'x86_64' },
                 { arch: 'x86_32', abi: 'x86' }
-            ];
+            ].filter(archMatches);
 
             // Detect installed NDK version from ANDROID_NDK_ROOT path
             const ndkVersion = path.basename(process.env.ANDROID_NDK_ROOT);
