@@ -736,9 +736,10 @@ void LorelineInterpreter::advance() {
 		auto fn = _pending_advance;
 		_pending_advance = nullptr;
 		fn();
-		// No inline flush: interpreter-level retain/release on each DISPATCH_OUT
-		// site keeps the interpreter alive until the frame-level Loreline_update
-		// drains the queue.
+		// No inline flush: the linc wrapper arms an inflight retainer
+		// synchronously inside fn() (while this object is still referenced),
+		// keeping the interpreter alive until the next callback delivery even
+		// if the host drops every reference right after this call.
 	}
 #endif
 }

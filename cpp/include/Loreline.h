@@ -259,14 +259,21 @@ typedef void (*Loreline_AsyncCustomFunction)(
  * Loreline wrapper only passes it between retain and release calls. */
 typedef struct Loreline_Retainer Loreline_Retainer;
 
-/* Called BEFORE a custom-function invocation is queued onto the dispatch
- * queue. Host implementations typically bump a refcount on whatever object
- * backs `userData` and return a handle encoding how to release it. Return
- * NULL if no retention is needed; release will then also be called with NULL. */
+/* Called whenever the wrapper needs to keep the interpreter's `userData`
+ * alive: once when the host hands control back to Loreline (play/resume/
+ * start/advance/select/resolveAsync), covering the run up to the next
+ * callback delivery, and once per queued callback dispatch, covering the
+ * handler invocation itself. Host implementations typically bump a refcount
+ * on whatever object backs `userData` and return a handle encoding how to
+ * release it. Return NULL if no retention is needed; release will then also
+ * be called with NULL. With these hooks provided, an interpreter stays alive
+ * exactly as long as the host keeps a reference to it or a callback is owed
+ * to the host, and is released naturally once neither is true. */
 typedef Loreline_Retainer *(*Loreline_UserDataRetain)(void *userData);
 
-/* Called AFTER a custom-function invocation has run (or after an exception
- * escapes it). Host decrements whatever retain bumped. Safe with NULL. */
+/* Called when the corresponding retain window closes (after a handler has
+ * run, after an exception escapes it, or when a run is delivered/aborted).
+ * Host decrements whatever retain bumped. Safe with NULL. */
 typedef void (*Loreline_UserDataRelease)(Loreline_Retainer *retainer);
 
 

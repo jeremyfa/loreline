@@ -423,10 +423,21 @@ struct Loreline_Interpreter {
     void* userData;
     Loreline_UserDataRetain retain;   /* may be NULL */
     Loreline_UserDataRelease release; /* may be NULL */
+    /* Retainer held while playback is running toward the next host callback.
+     * Taken synchronously on the host thread whenever the host hands control
+     * back to Loreline (play/resume/start/advance/select/resolveAsync), while
+     * the host's own reference is still known-alive. Released on the host
+     * thread at the start of the next callback delivery, where the dispatch
+     * site's own retainer takes over for the duration of the handler. This
+     * closes the window where a callback has been queued (or is about to be
+     * produced) but not delivered yet: without it, a host that drops its last
+     * reference right after advance()/select() frees userData while the Haxe
+     * side still owes it a callback. */
+    Loreline_Retainer* inflight;
 
     Loreline_Interpreter() : obj(nullptr), pendingCb(nullptr), dialogueHandler(nullptr),
         choiceHandler(nullptr), finishHandler(nullptr), userData(nullptr),
-        retain(nullptr), release(nullptr) {}
+        retain(nullptr), release(nullptr), inflight(nullptr) {}
 
     void set(hx::Object* o) {
         obj = o;
@@ -473,8 +484,13 @@ private:
 
 struct Loreline_AsyncResolve {
     hx::Object* doneObj;
+    /* Owning interpreter handle, so Loreline_resolveAsync can re-arm the
+     * inflight retainer when the host resumes playback through this token.
+     * Valid as long as the host follows the contract of not resolving after
+     * releasing the interpreter. */
+    Loreline_Interpreter* interp;
 
-    Loreline_AsyncResolve() : doneObj(nullptr) {}
+    Loreline_AsyncResolve() : doneObj(nullptr), interp(nullptr) {}
 
     void setDone(hx::Object* d) {
         doneObj = d;
@@ -1007,13 +1023,38 @@ static void linc_freeChoiceOptions(Loreline_ChoiceOption* options, int count) {
 
 static Loreline_Interpreter* s_dispatchInterp = nullptr;
 
-static LORELINE_NOINLINE void linc_advance_hx(::Dynamic cb) {
+/* Arm the inflight retainer. Host thread only, and only from call sites where
+ * the host demonstrably holds a live reference (we are inside a method call
+ * on its object). No-op if already armed: an armed retainer already covers
+ * the run up to the next delivery. */
+static void linc_retainInflight(Loreline_Interpreter* h) {
+    if (h && h->retain && !h->inflight) {
+        h->inflight = h->retain(h->userData);
+    }
+}
+
+/* Disarm and release the inflight retainer. Host thread only. Called at the
+ * start of each callback delivery (the dispatch site's own retainer keeps
+ * userData alive through the handler), and when the interpreter is
+ * explicitly released mid-run. */
+static void linc_releaseInflight(Loreline_Interpreter* h) {
+    if (h && h->inflight) {
+        Loreline_Retainer* r = h->inflight;
+        h->inflight = nullptr;
+        if (h->release) h->release(r);
+    }
+}
+
+static LORELINE_NOINLINE void linc_advance_hx(Loreline_Interpreter* h, ::Dynamic cb) {
     LORELINE_HX_BEGIN
     try {
         cb->__run();
     } catch (::Dynamic e) {
         ::String msg = (::String)e;
         fprintf(stderr, "Loreline advance error: %s\n", msg.c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
     }
     LORELINE_HX_END
 }
@@ -1023,18 +1064,24 @@ static void linc_advance() {
     if (!h || !h->pendingCb) return;
     ::Dynamic cb = ::Dynamic(h->pendingCb);
     h->setPendingCallback(nullptr);
+    /* The host hands control back: keep userData alive until the next
+     * callback delivery, even if the host drops its references now. */
+    linc_retainInflight(h);
     LORELINE_BEGIN_CALL
-    linc_advance_hx(cb);
+    linc_advance_hx(h, cb);
     LORELINE_END_CALL
 }
 
-static LORELINE_NOINLINE void linc_select_hx(::Dynamic cb, int index) {
+static LORELINE_NOINLINE void linc_select_hx(Loreline_Interpreter* h, ::Dynamic cb, int index) {
     LORELINE_HX_BEGIN
     try {
         cb->__run(index);
     } catch (::Dynamic e) {
         ::String msg = (::String)e;
         fprintf(stderr, "Loreline select error: %s\n", msg.c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
     }
     LORELINE_HX_END
 }
@@ -1044,8 +1091,11 @@ static void linc_select(int index) {
     if (!h || !h->pendingCb) return;
     ::Dynamic cb = ::Dynamic(h->pendingCb);
     h->setPendingCallback(nullptr);
+    /* The host hands control back: keep userData alive until the next
+     * callback delivery, even if the host drops its references now. */
+    linc_retainInflight(h);
     LORELINE_BEGIN_CALL
-    linc_select_hx(cb, index);
+    linc_select_hx(h, cb, index);
     LORELINE_END_CALL
 }
 
@@ -1123,11 +1173,19 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxChar, ::Dynamic hxText,
     h->setPendingCallback(hxCallback.GetPtr());
 
     // Retain the host's userData before queueing so the queued lambda can't
-    // fire into a freed interpreter.
+    // fire into a freed interpreter. This retainer is taken while the inflight
+    // retainer (armed when the host resumed playback) still guarantees
+    // userData is alive.
     Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
     s_dispatchInterp = h;
+    // Delivery reached the host thread: disarm the inflight retainer. `r`
+    // keeps userData alive through the handler, and the handler hands out
+    // its own references (advance callable) before returning. Disarming
+    // before the handler also lets a handler that re-enters synchronously
+    // (advance/resolve from inside the callback) re-arm a fresh inflight.
+    linc_releaseInflight(h);
     try {
         if (h->dialogueHandler) {
             h->dialogueHandler(h, character, text, tags, tagCount, linc_advance, h->userData);
@@ -1157,6 +1215,9 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxOptions, ::Dynamic hxCallback) {
 
     LORELINE_BEGIN_DISPATCH_OUT
     s_dispatchInterp = h;
+    // Delivery reached the host thread: disarm the inflight retainer (see
+    // dialogue dispatch above). `r` covers the handler.
+    linc_releaseInflight(h);
     try {
         if (h->choiceHandler) {
             h->choiceHandler(h, options, optionCount, linc_select, h->userData);
@@ -1181,6 +1242,9 @@ void _hx_run(::Dynamic hxInterp) {
     Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
+    // Final delivery: disarm the inflight retainer so an interpreter the
+    // host no longer references is freed naturally after this callback.
+    linc_releaseInflight(h);
     try {
         if (h->finishHandler) {
             h->finishHandler(h, h->userData);
@@ -1243,6 +1307,7 @@ HX_BEGIN_LOCAL_FUNC_S4(::hx::LocalFunc, _hx_Closure_asyncFuncBody,
 void _hx_run(::Dynamic hxDone) {
     auto resolve = new Loreline_AsyncResolve();
     resolve->setDone(hxDone.GetPtr());
+    resolve->interp = h;
 
     auto args = capturedArgs;
     auto cFn = fn;
@@ -1255,6 +1320,10 @@ void _hx_run(::Dynamic hxDone) {
     Loreline_Retainer *retainer = cRetain ? cRetain(cInterpUserData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
+    // Delivery of the function call to the host: disarm the inflight
+    // retainer. From here the host owns the resolve token; resolving it
+    // re-arms the inflight retainer, dropping it releases the interpreter.
+    linc_releaseInflight(cH);
     try {
         cFn(cH, args->data(), (int)args->size(), resolve, cUserData);
     } catch (...) {
@@ -1644,6 +1713,9 @@ static LORELINE_NOINLINE void Loreline_play_hx(
         h->set(hxInterp.GetPtr());
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_play error: %s\n", ((::String)e).c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
     }
 
     LORELINE_HX_END
@@ -1672,6 +1744,10 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
+
+    /* Playback starts running toward the first callback: keep userData alive
+     * until that delivery, even if the host drops its references before it. */
+    linc_retainInflight(handle);
 
     LORELINE_BEGIN_CALL
     Loreline_play_hx(h, hxScript, beatName, options);
@@ -1743,6 +1819,9 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
         h->set(hxInterp.GetPtr());
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_resume error: %s\n", ((::String)e).c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
     }
 
     LORELINE_HX_END
@@ -1773,6 +1852,10 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
 
+    /* Playback starts running toward the first callback: keep userData alive
+     * until that delivery, even if the host drops its references before it. */
+    linc_retainInflight(handle);
+
     LORELINE_BEGIN_CALL
     Loreline_resume_hx(h, hxScript, saveData, beatName, options);
     LORELINE_END_CALL
@@ -1785,13 +1868,25 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
 static LORELINE_NOINLINE void Loreline_start_hx(Loreline_Interpreter* interp, Loreline_String beatName) {
     LORELINE_HX_BEGIN
     ::String hxBeatName = linc_toHxString(beatName);
-    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
-    hxInterp->start(hxBeatName);
+    try {
+        ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+        hxInterp->start(hxBeatName);
+    } catch (::Dynamic e) {
+        fprintf(stderr, "Loreline_start error: %s\n", ((::String)e).c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        Loreline_Interpreter* h = interp;
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
+    }
     LORELINE_HX_END
 }
 
 LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, Loreline_String beatName) {
     if (!interp) return;
+
+    /* The host hands control back: keep userData alive until the next
+     * callback delivery, even if the host drops its references now. */
+    linc_retainInflight(interp);
 
     LORELINE_BEGIN_CALL
     Loreline_start_hx(interp, beatName);
@@ -2161,6 +2256,11 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
     // GC then walks freed memory on the next collect.
     hx::Object* doneObj = resolve->doneObj;
 
+    /* The host hands control back through this token: keep the interpreter's
+     * userData alive until the next callback delivery, even if the host
+     * drops the token and all other references now. */
+    linc_retainInflight(resolve->interp);
+
     LORELINE_BEGIN_CALL
     LORELINE_HX_BEGIN
     ::Dynamic(doneObj)->__run();
@@ -2211,6 +2311,10 @@ static LORELINE_NOINLINE void Loreline_releaseInterpreter_hx(Loreline_Interprete
 
 LORELINE_PUBLIC void Loreline_releaseInterpreter(Loreline_Interpreter* interp) {
     if (!interp) return;
+    /* Explicit release while a run may be in flight: disarm the inflight
+     * retainer. No-op on the natural-destruction path, where the retainer is
+     * necessarily already disarmed (it held a host reference). */
+    linc_releaseInflight(interp);
     LORELINE_BEGIN_CALL
     Loreline_releaseInterpreter_hx(interp);
     LORELINE_END_CALL
