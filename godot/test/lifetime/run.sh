@@ -6,26 +6,36 @@ set -u
 # swapped between runs because the two backends register the same class names
 # and cannot coexist.
 #
-# Usage: run.sh [gdscript|native|both]   (default: both)
+# Usage: run.sh [gdscript|native|web|all]   (default: all)
+#
+# The `web` backend is the GDExtension's web build: a wasm wrapper around the
+# JavaScript Loreline, driven through Godot's JavaScriptBridge. It has its own
+# callback path, so it gets the same lifetime tests as the other two. It cannot
+# run headless: the project is exported, served, and driven in headless
+# Chromium via Playwright, asserting the same marker.
 #
 # Requirements:
 #   - Godot 4 ($GODOT_BIN, `godot` on PATH, or the Mac app bundle).
 #   - For the gdscript backend: node ./setup --gdscript
 #   - For the native backend:    node ./setup --cpp-lib && node ./setup --godot
+#   - For the web backend:       node ./setup --js && node ./setup --godot-wasm,
+#     Godot web export templates, python3 and node (Playwright is installed on
+#     demand into this directory)
 #
 # CI can skip those builds by pointing at already-assembled addon directories:
 #   LORELINE_GDSCRIPT_ADDON=/path/to/addons/loreline
 #   LORELINE_NATIVE_ADDON=/path/to/addons/loreline
+#   LORELINE_WEB_ADDON=/path/to/addons/loreline   (defaults to the native one)
 # Each is used as-is, so the same test runs against exactly what ships. A path
 # that is set but missing is a hard failure, never a skip.
 #
-# Set LORELINE_LIFETIME_REQUIRE_BOTH=1 (CI does) to also fail when a backend is
+# Set LORELINE_LIFETIME_REQUIRE_ALL=1 (CI does) to also fail when a backend is
 # skipped for want of binaries, so a misconfigured job cannot pass by testing
 # nothing.
 
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../../.." && pwd)"
-which_backend="${1:-both}"
+which_backend="${1:-all}"
 
 if [ -n "${GODOT_BIN:-}" ]; then
     godot="$GODOT_BIN"
@@ -60,11 +70,13 @@ install_backend() {
 
     # A prebuilt addon (CI artifact) wins over the local build outputs.
     local prebuilt=""
-    if [ "$backend" = "gdscript" ]; then
-        prebuilt="${LORELINE_GDSCRIPT_ADDON:-}"
-    else
-        prebuilt="${LORELINE_NATIVE_ADDON:-}"
-    fi
+    case "$backend" in
+        gdscript) prebuilt="${LORELINE_GDSCRIPT_ADDON:-}" ;;
+        # The shipped native package carries bin/web/*.wasm and a .gdextension
+        # listing every platform, so it serves the web backend as-is.
+        web)      prebuilt="${LORELINE_WEB_ADDON:-${LORELINE_NATIVE_ADDON:-}}" ;;
+        *)        prebuilt="${LORELINE_NATIVE_ADDON:-}" ;;
+    esac
     if [ -n "$prebuilt" ]; then
         if [ ! -d "$prebuilt" ]; then
             echo "prebuilt addon not found at $prebuilt"
@@ -81,6 +93,30 @@ install_backend() {
             return 1
         fi
         cp -R "$repo/godot/gdscript/." "$addon/"
+        return 0
+    fi
+
+    if [ "$backend" = "web" ]; then
+        local wasm="$repo/godot/bin/libloreline_godot.nothreads.wasm"
+        local wasm_threads="$repo/godot/bin/libloreline_godot.wasm"
+        if [ ! -f "$wasm" ]; then
+            echo "not built (run: node ./setup --js && node ./setup --godot-wasm)"
+            return 1
+        fi
+        mkdir -p "$addon/bin/web"
+        cp "$wasm" "$addon/bin/web/"
+        [ -f "$wasm_threads" ] && cp "$wasm_threads" "$addon/bin/web/"
+        cat > "$addon/loreline.gdextension" <<EOF
+[configuration]
+entry_symbol = "loreline_library_init"
+compatibility_minimum = "4.2"
+
+[libraries]
+web.debug.threads.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.wasm"
+web.release.threads.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.wasm"
+web.debug.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.nothreads.wasm"
+web.release.wasm32 = "res://addons/loreline/bin/web/libloreline_godot.nothreads.wasm"
+EOF
         return 0
     fi
 
@@ -137,6 +173,76 @@ EOF
     return 0
 }
 
+# Exports the project for web, serves it, and drives it in headless Chromium.
+# The browser console is echoed so a failure reads like the other backends.
+run_web() {
+    local out_dir="$here/.web-out"
+    rm -rf "$out_dir"; mkdir -p "$out_dir"
+    if ! "$godot" --headless --path "$here" --export-debug Web "$out_dir/index.html" > "$here/.web-export.log" 2>&1; then
+        echo "ERROR: web export failed" >&2
+        tail -20 "$here/.web-export.log" >&2
+        return 1
+    fi
+
+    # Playwright, installed on demand next to this script. The marker
+    # package.json keeps npm from walking up and installing into the repo root
+    # (which would edit the repo's own package.json).
+    if [ ! -d "$here/node_modules/playwright" ]; then
+        [ -f "$here/package.json" ] || echo '{"name":"loreline-lifetime-web","private":true}' > "$here/package.json"
+        ( cd "$here" && npm install playwright --no-fund --no-audit >/dev/null 2>&1 \
+          && npx playwright install chromium >/dev/null 2>&1 ) || {
+            echo "ERROR: could not install Playwright" >&2; return 1; }
+    fi
+
+    # .cjs, not .js: the repo's package.json declares "type": "module".
+    cat > "$here/.web-driver.cjs" <<'JSEOF'
+const { chromium } = require('playwright');
+const url = process.argv[2];
+(async () => {
+    const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader'] });
+    const page = await browser.newPage();
+    let done = false, code = 1;
+    page.on('console', (m) => {
+        const t = m.text();
+        console.log(t);
+        if (t.includes('ALL_LIFETIME_TESTS_PASSED')) { done = true; code = 0; }
+        else if (t.includes('LIFETIME_TESTS_FAILED')) { done = true; code = 1; }
+    });
+    page.on('pageerror', (e) => console.log('[pageerror] ' + e.message));
+    await page.goto(url, { waitUntil: 'load' });
+    const deadline = Date.now() + 240000;
+    while (!done && Date.now() < deadline) await page.waitForTimeout(500);
+    await browser.close();
+    if (!done) console.log('LIFETIME_TESTS_FAILED: timed out waiting for the browser');
+    process.exit(done ? code : 1);
+})();
+JSEOF
+
+    cat > "$here/.web-server.py" <<'PYEOF2'
+import http.server, socketserver, sys, os
+os.chdir(sys.argv[1])
+class H(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Cross-Origin-Opener-Policy','same-origin')
+        self.send_header('Cross-Origin-Embedder-Policy','require-corp')
+        super().end_headers()
+    def log_message(self,*a): pass
+socketserver.TCPServer.allow_reuse_address=True
+socketserver.TCPServer(('127.0.0.1',8794),H).serve_forever()
+PYEOF2
+
+    python3 "$here/.web-server.py" "$out_dir" &
+    local server_pid=$!
+    sleep 2
+
+    local rc=0
+    ( cd "$here" && node .web-driver.cjs "http://127.0.0.1:8794/index.html" ) || rc=$?
+    kill "$server_pid" 2>/dev/null
+    wait "$server_pid" 2>/dev/null
+    rm -rf "$out_dir" "$here/.web-driver.cjs" "$here/.web-server.py" "$here/.web-export.log"
+    return $rc
+}
+
 run_backend() {
     local backend="$1"
     echo ""
@@ -153,6 +259,13 @@ run_backend() {
     fi
 
     rm -rf "$here/.godot"
+    if [ "$backend" = "web" ]; then
+        # The export needs an imported project. No web binary loads on the
+        # host, so this import carries no GDExtension and stays clean.
+        "$godot" --headless --path "$here" --import >/dev/null 2>&1 || true
+        run_web
+        return $?
+    fi
     if [ "$backend" = "gdscript" ]; then
         # The GDScript backend needs the editor import: it is what fills
         # .godot/global_script_class_cache.cfg, and the runtime resolves
@@ -174,7 +287,7 @@ run_backend() {
         echo "res://addons/loreline/loreline.gdextension" > "$here/.godot/extension_list.cfg"
     fi
     local out
-    out="$("$godot" --headless --path "$here" --script res://lifetime_tests.gd 2>&1)"
+    out="$("$godot" --headless --path "$here" res://lifetime_scene.tscn 2>&1)"
     echo "$out"
     if echo "$out" | grep -q "ALL_LIFETIME_TESTS_PASSED"; then
         return 0
@@ -184,9 +297,9 @@ run_backend() {
 
 status=0
 skipped=""
-for backend in gdscript native; do
+for backend in gdscript native web; do
     case "$which_backend" in
-        both) ;;
+        all|both) ;;
         "$backend") ;;
         *) continue ;;
     esac
@@ -194,8 +307,8 @@ for backend in gdscript native; do
     rc=$?
     if [ $rc -eq 3 ]; then
         skipped="$skipped $backend"
-        if [ "${LORELINE_LIFETIME_REQUIRE_BOTH:-}" = "1" ]; then
-            echo "ERROR: $backend was skipped but both backends are required" >&2
+        if [ "${LORELINE_LIFETIME_REQUIRE_ALL:-}" = "1" ]; then
+            echo "ERROR: $backend was skipped but every backend is required" >&2
             status=1
         fi
     elif [ $rc -ne 0 ]; then

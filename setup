@@ -1499,12 +1499,12 @@ async function main() {
     }
 
     if (testGodotLifetime) {
-        console.log('Run loreline Godot lifetime tests (native + GDScript backends)');
+        console.log('Run loreline Godot lifetime tests (GDScript + native + web backends)');
 
         // run.sh assembles addons/loreline for each backend in turn and asserts
         // both reach the same verdict. It skips a backend whose binaries are
         // not built, so run the relevant setup steps first.
-        await command('bash', [path.join(__dirname, 'godot', 'test', 'lifetime', 'run.sh'), 'both']);
+        await command('bash', [path.join(__dirname, 'godot', 'test', 'lifetime', 'run.sh'), 'all']);
     }
 
     if (buildLua) {

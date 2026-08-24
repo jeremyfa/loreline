@@ -9,7 +9,15 @@ build/
 /test/gdscript/.godot/
 /test/gdscript/internal/
 /test/gdscript/addons/
-# Lifetime test project (addons are assembled by run.sh)
+# Lifetime test project (addons are assembled by run.sh; the web run exports
+# into .web-out and installs Playwright locally)
 /test/lifetime/.godot/
 /test/lifetime/addons/
+/test/lifetime/.web-out/
+/test/lifetime/.web-driver.cjs
+/test/lifetime/.web-server.py
+/test/lifetime/.web-export.log
+/test/lifetime/node_modules/
+/test/lifetime/package.json
+/test/lifetime/package-lock.json
 *.uid

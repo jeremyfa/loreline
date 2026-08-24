@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 ## Backend-agnostic lifetime tests for the Loreline Godot integration.
 ##
@@ -12,6 +12,9 @@ extends SceneTree
 ##
 ## Everything is asserted through weakref(), which is deterministic: no object
 ## counting, no reliance on when the engine happens to sweep.
+##
+## Runs as a scene rather than a SceneTree script so the very same file works in
+## an exported build, which is the only way to reach the web backend.
 
 var failures: Array = []
 var checks: int = 0
@@ -122,7 +125,7 @@ func _check(ok: bool, what: String) -> void:
 ## _process, so tests have to let real frames go by rather than awaiting idle.
 func _pump(frames: int = 4) -> void:
 	for i in range(frames):
-		await process_frame
+		await get_tree().process_frame
 
 
 func _parse(loreline) -> Object:
@@ -130,7 +133,7 @@ func _parse(loreline) -> Object:
 	return script
 
 
-func _init() -> void:
+func _ready() -> void:
 	_run.call_deferred()
 
 
@@ -140,7 +143,7 @@ func _run() -> void:
 	var script = await _parse(loreline)
 	if script == null:
 		print("FATAL: could not parse the test story")
-		quit(2)
+		get_tree().quit(2)
 		return
 
 	await _test_released_after_finish(loreline, script)
@@ -159,16 +162,16 @@ func _run() -> void:
 	print("")
 	if checks != EXPECTED_CHECKS:
 		print("LIFETIME_TESTS_FAILED: ran %d checks, expected %d (a test aborted, or the count needs updating)" % [checks, EXPECTED_CHECKS])
-		quit(1)
+		get_tree().quit(1)
 		return
 	if failures.is_empty():
 		print("ALL_LIFETIME_TESTS_PASSED (%d checks)" % checks)
-		quit(0)
+		get_tree().quit(0)
 	else:
 		print("LIFETIME_TESTS_FAILED: %d of %d" % [failures.size(), checks])
 		for f in failures:
 			print("  - ", f)
-		quit(1)
+		get_tree().quit(1)
 
 
 ## A run played to its end must be collected once the host lets go, with no
