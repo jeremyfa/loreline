@@ -471,7 +471,11 @@ struct Element {
     bool choiceMade;
     int selectedIndex;
     double selectionTime;
-    void (*selectCallback)(int);
+    /* Continuation to answer once the selection animation is done. Bound to the
+     * interpreter that offered the choice, so storing it here is safe even with
+     * several stories running. `interpreter` is NULL when this element is not
+     * awaiting a choice. */
+    Loreline_Select selectChoice;
 
     /* PLAY_AGAIN data */
     bool visible;
@@ -495,11 +499,13 @@ struct PendingAction {
         ACTION_SHOW_PLAY_AGAIN,
         ACTION_RESTART
     } type;
-    /* For ACTION_ADVANCE: the advance() function pointer from Loreline */
-    void (*advanceFn)(void);
+    /* Continuations, each bound to the interpreter that handed it over.
+     * ACTION_ADVANCE uses `advance`, ACTION_SHOW_CHOICES uses `select`; the
+     * `interpreter` field is NULL for actions that need neither. */
+    Loreline_Advance advance;
+    Loreline_Select select;
     /* For ACTION_SHOW_CHOICES: stored choice data */
     std::vector<ChoiceButton> choiceButtons;
-    void (*selectFn)(int);
 };
 
 
@@ -660,7 +666,7 @@ static void appendNarrative(AppState* app, const char* text) {
     el.choiceMade = false;
     el.selectedIndex = -1;
     el.selectionTime = 0;
-    el.selectCallback = NULL;
+    el.selectChoice.interpreter = NULL;
     el.visible = true;
 
     el.wrappedLines = wrapText(&app->narrativeFont, text, (int)strlen(text), contentW);
@@ -679,7 +685,7 @@ static void appendDialogue(AppState* app, const char* charName, const char* text
     el.choiceMade = false;
     el.selectedIndex = -1;
     el.selectionTime = 0;
-    el.selectCallback = NULL;
+    el.selectChoice.interpreter = NULL;
     el.visible = true;
 
     /* Measure the name prefix width: "CharName: " */
@@ -709,7 +715,7 @@ static void appendDialogue(AppState* app, const char* charName, const char* text
 }
 
 static void showChoices(AppState* app, std::vector<ChoiceButton>& buttons,
-                        void (*selectFn)(int))
+                        Loreline_Select select)
 {
     float contentW = computeContentWidth(app);
     Element el;
@@ -720,7 +726,7 @@ static void showChoices(AppState* app, std::vector<ChoiceButton>& buttons,
     el.choiceMade = false;
     el.selectedIndex = -1;
     el.selectionTime = 0;
-    el.selectCallback = selectFn;
+    el.selectChoice = select;
     el.visible = true;
 
     float y = CHOICE_MARGIN_TOP * app->scale;
@@ -763,7 +769,7 @@ static void showPlayAgain(AppState* app) {
     el.choiceMade = false;
     el.selectedIndex = -1;
     el.selectionTime = 0;
-    el.selectCallback = NULL;
+    el.selectChoice.interpreter = NULL;
     el.visible = false; /* shown after delay */
 
     float padY = 6.0f * app->scale;
@@ -848,10 +854,10 @@ static void updateAnimations(AppState* app) {
             }
 
             /* Phase 3: call Loreline callback */
-            if (elapsed >= ANIM_CHOICE_P3 && el.selectCallback) {
-                void (*fn)(int) = el.selectCallback;
+            if (elapsed >= ANIM_CHOICE_P3 && el.selectChoice.interpreter) {
+                Loreline_Select answer = el.selectChoice;
                 int idx = el.buttons[el.selectedIndex].originalIndex;
-                el.selectCallback = NULL; /* prevent double-call */
+                el.selectChoice.interpreter = NULL; /* prevent double-call */
 
                 /* Recalculate element height (only selected button visible) */
                 ChoiceButton& selBtn = el.buttons[el.selectedIndex];
@@ -863,7 +869,7 @@ static void updateAnimations(AppState* app) {
                 }
                 updateContentHeight(app);
 
-                fn(idx);
+                answer(idx);
             }
         }
     }
@@ -1080,7 +1086,7 @@ static void onDialogue(Loreline_Interpreter* interp,
                        Loreline_String text,
                        const Loreline_TextTag* /* tags */,
                        int /* tagCount */,
-                       void (*advance)(void),
+                       Loreline_Advance advance,
                        void* /* userData */)
 {
     AppState* app = g_app;
@@ -1101,15 +1107,15 @@ static void onDialogue(Loreline_Interpreter* interp,
     PendingAction action;
     action.fireTime = app->currentTime + DELAY_DIALOGUE;
     action.type = PendingAction::ACTION_ADVANCE;
-    action.advanceFn = advance;
-    action.selectFn = NULL;
+    action.advance = advance;
+    action.select.interpreter = NULL;
     app->pending.push_back(action);
 }
 
 static void onChoice(Loreline_Interpreter* /* interp */,
                      const Loreline_ChoiceOption* options,
                      int optionCount,
-                     void (*select)(int index),
+                     Loreline_Select select,
                      void* /* userData */)
 {
     AppState* app = g_app;
@@ -1135,9 +1141,9 @@ static void onChoice(Loreline_Interpreter* /* interp */,
     PendingAction action;
     action.fireTime = app->currentTime + DELAY_CHOICES;
     action.type = PendingAction::ACTION_SHOW_CHOICES;
-    action.advanceFn = NULL;
+    action.advance.interpreter = NULL;
+    action.select = select;
     action.choiceButtons = buttons;
-    action.selectFn = select;
     app->pending.push_back(action);
 }
 
@@ -1151,8 +1157,8 @@ static void onFinish(Loreline_Interpreter* /* interp */,
     PendingAction action;
     action.fireTime = app->currentTime + DELAY_PLAY_AGAIN;
     action.type = PendingAction::ACTION_SHOW_PLAY_AGAIN;
-    action.advanceFn = NULL;
-    action.selectFn = NULL;
+    action.advance.interpreter = NULL;
+    action.select.interpreter = NULL;
     app->pending.push_back(action);
 }
 
@@ -1167,10 +1173,10 @@ static void processPendingActions(AppState* app) {
 
             switch (action.type) {
             case PendingAction::ACTION_ADVANCE:
-                if (action.advanceFn) action.advanceFn();
+                if (action.advance.interpreter) action.advance();
                 break;
             case PendingAction::ACTION_SHOW_CHOICES:
-                showChoices(app, action.choiceButtons, action.selectFn);
+                showChoices(app, action.choiceButtons, action.select);
                 break;
             case PendingAction::ACTION_SHOW_PLAY_AGAIN:
                 showPlayAgain(app);

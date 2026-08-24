@@ -905,9 +905,22 @@ LORELINE_PUBLIC void Loreline_gc(void) {
     LORELINE_END_CALL
 }
 
+/* Defined with the rest of the inflight retainer handling, below. */
+static void linc_releaseAllInflight();
+
 static LORELINE_NOINLINE void Loreline_update_hx(double delta) {
     LORELINE_HX_BEGIN
-    ::loreline::Timer_obj::update(delta);
+    try {
+        ::loreline::Timer_obj::update(delta);
+    } catch (::Dynamic e) {
+        /* A story error inside a timer continuation (a wait() that resumes into
+         * a bad call, say). Without this it escapes the pump as an uncaught
+         * Haxe exception and terminates the process. The run it came from is
+         * dead and owes the host nothing, so drop the inflight retainers from
+         * the host thread. */
+        fprintf(stderr, "Loreline update error: %s\n", ((::String)e).c_str());
+        linc_Loreline_dispatchOut([]() { linc_releaseAllInflight(); });
+    }
     linc_Loreline_gcAccum += delta;
     if (linc_Loreline_gcAccum >= 15.0) {
         linc_Loreline_gcAccum = 0.0;
@@ -1021,7 +1034,11 @@ static void linc_freeChoiceOptions(Loreline_ChoiceOption* options, int count) {
 
 /* -- Callback dispatch helpers ------------------------------------------- */
 
-static Loreline_Interpreter* s_dispatchInterp = nullptr;
+/* Handles with an armed inflight retainer. Host thread only, like the retainer
+ * itself. Kept so an error that escapes the runtime pump, which carries nothing
+ * identifying the run it came from, can still drop the retainers of runs that
+ * will never deliver again. */
+static std::vector<Loreline_Interpreter*> s_inflightHandles;
 
 /* Arm the inflight retainer. Host thread only, and only from call sites where
  * the host demonstrably holds a live reference (we are inside a method call
@@ -1030,6 +1047,7 @@ static Loreline_Interpreter* s_dispatchInterp = nullptr;
 static void linc_retainInflight(Loreline_Interpreter* h) {
     if (h && h->retain && !h->inflight) {
         h->inflight = h->retain(h->userData);
+        s_inflightHandles.push_back(h);
     }
 }
 
@@ -1041,7 +1059,24 @@ static void linc_releaseInflight(Loreline_Interpreter* h) {
     if (h && h->inflight) {
         Loreline_Retainer* r = h->inflight;
         h->inflight = nullptr;
+        for (size_t i = 0; i < s_inflightHandles.size(); i++) {
+            if (s_inflightHandles[i] == h) {
+                s_inflightHandles.erase(s_inflightHandles.begin() + i);
+                break;
+            }
+        }
         if (h->release) h->release(r);
+    }
+}
+
+/* Drops every armed retainer. Host thread only. Used when an error escapes the
+ * runtime pump: a story error inside a wait() continuation surfaces from
+ * Timer::update with nothing tying it to an interpreter. Safe because a healthy
+ * run is only armed across a pump tick while waiting for its first callback or
+ * for an async resolve, and those paths report and release themselves. */
+static void linc_releaseAllInflight() {
+    while (!s_inflightHandles.empty()) {
+        linc_releaseInflight(s_inflightHandles.back());
     }
 }
 
@@ -1059,8 +1094,11 @@ static LORELINE_NOINLINE void linc_advance_hx(Loreline_Interpreter* h, ::Dynamic
     LORELINE_HX_END
 }
 
-static void linc_advance() {
-    Loreline_Interpreter* h = s_dispatchInterp;
+/* Hands control back to `h`'s pending continuation. The interpreter is always
+ * explicit: resolving it from "the dispatch in progress" would be wrong the
+ * moment a host answers after its handler returned, or runs more than one
+ * interpreter. */
+static void linc_advanceInterp(Loreline_Interpreter* h) {
     if (!h || !h->pendingCb) return;
     ::Dynamic cb = ::Dynamic(h->pendingCb);
     h->setPendingCallback(nullptr);
@@ -1086,8 +1124,8 @@ static LORELINE_NOINLINE void linc_select_hx(Loreline_Interpreter* h, ::Dynamic 
     LORELINE_HX_END
 }
 
-static void linc_select(int index) {
-    Loreline_Interpreter* h = s_dispatchInterp;
+/* See linc_advanceInterp. */
+static void linc_selectInterp(Loreline_Interpreter* h, int index) {
     if (!h || !h->pendingCb) return;
     ::Dynamic cb = ::Dynamic(h->pendingCb);
     h->setPendingCallback(nullptr);
@@ -1179,7 +1217,6 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxChar, ::Dynamic hxText,
     Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
-    s_dispatchInterp = h;
     // Delivery reached the host thread: disarm the inflight retainer. `r`
     // keeps userData alive through the handler, and the handler hands out
     // its own references (advance callable) before returning. Disarming
@@ -1188,7 +1225,10 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxChar, ::Dynamic hxText,
     linc_releaseInflight(h);
     try {
         if (h->dialogueHandler) {
-            h->dialogueHandler(h, character, text, tags, tagCount, linc_advance, h->userData);
+            /* The continuation carries this interpreter, so the host may keep
+             * it and answer later without any ambiguity about which run it
+             * belongs to. */
+            h->dialogueHandler(h, character, text, tags, tagCount, Loreline_Advance{h}, h->userData);
         }
     } catch (...) {
         delete[] tags;
@@ -1214,13 +1254,12 @@ void _hx_run(::Dynamic hxInterp, ::Dynamic hxOptions, ::Dynamic hxCallback) {
     Loreline_Retainer *r = h->retain ? h->retain(h->userData) : nullptr;
 
     LORELINE_BEGIN_DISPATCH_OUT
-    s_dispatchInterp = h;
     // Delivery reached the host thread: disarm the inflight retainer (see
     // dialogue dispatch above). `r` covers the handler.
     linc_releaseInflight(h);
     try {
         if (h->choiceHandler) {
-            h->choiceHandler(h, options, optionCount, linc_select, h->userData);
+            h->choiceHandler(h, options, optionCount, Loreline_Select{h}, h->userData);
         }
     } catch (...) {
         linc_freeChoiceOptions(options, optionCount);
@@ -1879,6 +1918,16 @@ static LORELINE_NOINLINE void Loreline_start_hx(Loreline_Interpreter* interp, Lo
         linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
     }
     LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_advance(Loreline_Interpreter* interp) {
+    if (!interp) return;
+    linc_advanceInterp(interp);
+}
+
+LORELINE_PUBLIC void Loreline_select(Loreline_Interpreter* interp, int index) {
+    if (!interp) return;
+    linc_selectInterp(interp, index);
 }
 
 LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, Loreline_String beatName) {

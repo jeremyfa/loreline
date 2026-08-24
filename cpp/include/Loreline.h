@@ -83,6 +83,40 @@ typedef struct Loreline_AsyncResolve Loreline_AsyncResolve;
  * by Loreline_provideFile, which must be called exactly once per request. */
 typedef struct Loreline_FileRequest Loreline_FileRequest;
 
+/* -- Continuations -------------------------------------------------------- */
+
+/* Hands control back to an interpreter's pending dialogue or choice. May be
+ * called at any point while the interpreter is alive, from a UI event or after
+ * an arbitrary delay. Calling with nothing pending is a no-op. */
+LORELINE_PUBLIC void Loreline_advance(Loreline_Interpreter* interp);
+LORELINE_PUBLIC void Loreline_select(Loreline_Interpreter* interp, int index);
+
+/* The `advance` and `select` continuations handed to the dialogue and choice
+ * handlers. Each one is bound to the interpreter that produced it, so a host
+ * may store it and answer whenever it wants, and several interpreters can run
+ * side by side without their continuations getting mixed up. Copyable and
+ * cheap: it is just the handle.
+ *
+ *   void onDialogue(..., Loreline_Advance advance, void* userData) {
+ *       advance();               // now
+ *       // or keep `advance` around and call it from a button handler
+ *   }
+ *
+ * Holding one does NOT keep its interpreter alive: it carries the handle, not
+ * ownership. Do not call it after Loreline_releaseInterpreter. Bindings that
+ * wrap it in a reference-counted callable (the Godot addon, for one) do give it
+ * ownership, so there holding the callable is enough to keep the run alive, and
+ * dropping it without calling lets the run be collected. */
+struct Loreline_Advance {
+    Loreline_Interpreter* interpreter;
+    void operator()() const { Loreline_advance(interpreter); }
+};
+
+struct Loreline_Select {
+    Loreline_Interpreter* interpreter;
+    void operator()(int index) const { Loreline_select(interpreter, index); }
+};
+
 /* -- Value type (tagged union for state and character fields) ------------- */
 
 enum Loreline_ValueType {
@@ -210,7 +244,7 @@ typedef void (*Loreline_DialogueHandler)(
     Loreline_String text,
     const Loreline_TextTag* tags,
     int tagCount,
-    void (*advance)(void),
+    Loreline_Advance advance,
     void* userData
 );
 
@@ -218,7 +252,7 @@ typedef void (*Loreline_ChoiceHandler)(
     Loreline_Interpreter* interpreter,
     const Loreline_ChoiceOption* options,
     int optionCount,
-    void (*select)(int index),
+    Loreline_Select select,
     void* userData
 );
 

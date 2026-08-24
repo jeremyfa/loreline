@@ -429,7 +429,7 @@ static void testChoice(
     Loreline_Interpreter* interp,
     const Loreline_ChoiceOption* options,
     int optionCount,
-    void (*select)(int index),
+    Loreline_Select select,
     void* userData
 );
 
@@ -444,7 +444,7 @@ static void testDialogue(
     Loreline_String text,
     const Loreline_TextTag* tags,
     int tagCount,
-    void (*advance)(void),
+    Loreline_Advance advance,
     void* userData
 ) {
     TestContext* ctx = (TestContext*)userData;
@@ -512,7 +512,7 @@ static void testChoice(
     Loreline_Interpreter* interp,
     const Loreline_ChoiceOption* options,
     int optionCount,
-    void (*select)(int index),
+    Loreline_Select select,
     void* userData
 ) {
     TestContext* ctx = (TestContext*)userData;
@@ -812,7 +812,7 @@ static void containerTestDialogue(
     Loreline_String text,
     const Loreline_TextTag* tags,
     int tagCount,
-    void (*advance)(void),
+    Loreline_Advance advance,
     void* userData
 ) {
     ContainerTestContext* ctx = (ContainerTestContext*)userData;
@@ -824,7 +824,7 @@ static void containerTestChoice(
     Loreline_Interpreter* interp,
     const Loreline_ChoiceOption* options,
     int optionCount,
-    void (*select)(int index),
+    Loreline_Select select,
     void* userData
 ) {
     select(0);

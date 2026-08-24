@@ -1165,6 +1165,24 @@ jobs:
           cp artifacts/linux-x86_64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-x86_64/
           cp artifacts/linux-arm64-tmp/cpp/lib/libLoreline.so $PKG/loreline/linux-arm64/
 
+      # Builds the sample exactly as a user would, with the build script and the
+      # libraries that ship in the package. Worth doing: the sample had been
+      # broken for a while (a stale file-handler signature) because packaging it
+      # never compiled it.
+      - name: Build and run the sample
+        run: |
+          # Build in a copy so the package that gets zipped stays pristine.
+          cp -r loreline-cpp-pkg sample-build-check
+          cd sample-build-check
+          ./build-linux.sh
+          test -x build/linux/loreline-sample
+          cd build/linux
+          # Feed a few choices so the story actually advances, and check it
+          # reached the runtime rather than just linking.
+          printf '1\n1\n1\n1\n1\n1\n1\n1\n' | ./loreline-sample > run.log 2>&1
+          cat run.log
+          grep -q "freshly ground coffee beans" run.log
+
       - name: Create zip archive
         run: cd loreline-cpp-pkg && zip -9 ../loreline-cpp.zip -r .
 
@@ -1653,6 +1671,64 @@ jobs:
       - name: Run GC regression scene (must survive 35s of post-FINISHED idle, 2+ forced collects)
         run: |
           RUN_TIMEOUT=60 bash godot-pkg/sample/run-headless-test.sh scenes/test_gc_crash_repro.tscn "GC_REGRESSION_OK"
+
+
+  loreline-godot-test-lifetime:
+
+    needs: [loreline-godot, loreline-gdscript]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: "ubuntu-22.04"
+            godot_asset: "Godot_v4.6.1-stable_linux.x86_64.zip"
+            godot_bin: "Godot_v4.6.1-stable_linux.x86_64"
+          - os: "macos-14"
+            godot_asset: "Godot_v4.6.1-stable_macos.universal.zip"
+            godot_bin: "Godot.app/Contents/MacOS/Godot"
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - name: Download native Godot package
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-godot.zip
+          path: .
+
+      - name: Download GDScript package
+        uses: actions/download-artifact@v7
+        with:
+          name: loreline-gdscript.zip
+          path: .
+
+      - name: Extract packages
+        run: |
+          mkdir -p native-pkg gdscript-pkg
+          unzip -qo loreline-godot.zip -d native-pkg
+          unzip -qo loreline-gdscript.zip -d gdscript-pkg
+
+      - name: Install Godot 4.6.1 stable
+        run: |
+          curl -fsSL -o /tmp/godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.6.1-stable/${{ matrix.godot_asset }}
+          unzip -q /tmp/godot.zip -d /tmp/godot-bin
+          echo "GODOT_BIN=/tmp/godot-bin/${{ matrix.godot_bin }}" >> "$GITHUB_ENV"
+          chmod +x "/tmp/godot-bin/${{ matrix.godot_bin }}"
+          "/tmp/godot-bin/${{ matrix.godot_bin }}" --version
+
+      # Runs the very same lifetime_tests.gd against both shipped addons, one
+      # after the other. They must agree: the memory contract is part of the
+      # public API, not an implementation detail of either backend. run.sh
+      # fails the job if either backend fails or is missing its binaries.
+      - name: Run lifetime tests (native + GDScript backends)
+        run: bash godot/test/lifetime/run.sh both
+        env:
+          LORELINE_NATIVE_ADDON: ${{ github.workspace }}/native-pkg/addons/loreline
+          LORELINE_GDSCRIPT_ADDON: ${{ github.workspace }}/gdscript-pkg/addons/loreline
+          # Never let a misconfigured job pass by silently skipping a backend.
+          LORELINE_LIFETIME_REQUIRE_BOTH: "1"
 
 
   loreline-godot-test-web:

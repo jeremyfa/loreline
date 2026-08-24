@@ -31,16 +31,18 @@ static std::string readFile(const std::string& path) {
 
 static void onFileRequest(
     Loreline_String path,
-    void (*provide)(Loreline_String content),
+    Loreline_FileRequest* request,
     void* /* userData */
 ) {
     // Loreline resolves import paths relative to the source file's filePath,
     // so the path is already correct (e.g., "story/characters.lor").
+    // The request token must be answered exactly once; it may also be kept and
+    // answered later, from any thread, to load files asynchronously.
     std::string content = readFile(path.c_str());
     if (content.empty()) {
-        provide(Loreline_String());
+        Loreline_provideFile(request, Loreline_String());
     } else {
-        provide(Loreline_String(content.c_str()));
+        Loreline_provideFile(request, Loreline_String(content.c_str()));
     }
 }
 
@@ -52,7 +54,7 @@ static void onDialogue(
     Loreline_String text,
     const Loreline_TextTag* /* tags */,
     int /* tagCount */,
-    void (*advance)(void),
+    Loreline_Advance advance,
     void* /* userData */
 ) {
     const char* t = text.c_str();
@@ -92,10 +94,10 @@ static void onDialogue(
 /* -- Choice handler ------------------------------------------------------ */
 
 static void onChoice(
-    Loreline_Interpreter* /* interp */,
+    Loreline_Interpreter* interp,
     const Loreline_ChoiceOption* options,
     int optionCount,
-    void (*select)(int index),
+    Loreline_Select select,
     void* /* userData */
 ) {
     // Display enabled options with 1-based numbering

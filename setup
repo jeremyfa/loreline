@@ -168,6 +168,7 @@ async function main() {
     let buildGodot = rawArgs.indexOf('--godot') != -1;
     let buildGdscript = rawArgs.indexOf('--gdscript') != -1;
     let testGdscript = rawArgs.indexOf('--gdscript-test') != -1;
+    let testGodotLifetime = rawArgs.indexOf('--godot-lifetime-test') != -1;
     let buildGodotIos = rawArgs.indexOf('--godot-ios') != -1;
     let buildGodotAndroid = rawArgs.indexOf('--godot-android') != -1;
     let buildGodotWasm = rawArgs.indexOf('--godot-wasm') != -1;
@@ -1452,7 +1453,7 @@ async function main() {
         // Stale-output deletion is disabled (no _GeneratedFiles.json in the
         // export), so clean the output directories before building
         fs.rmSync(path.join(__dirname, 'godot', 'gdscript', 'internal'), { recursive: true, force: true });
-        fs.rmSync(path.join(__dirname, 'godot', 'gdscript-test', 'internal'), { recursive: true, force: true });
+        fs.rmSync(path.join(__dirname, 'godot', 'test', 'gdscript', 'internal'), { recursive: true, force: true });
 
         // Runtime for the addon
         await command(haxe, ['build-gdscript.hxml'].concat(haxeBuildArgs));
@@ -1462,7 +1463,7 @@ async function main() {
         await command(haxe, [
             'build-gdscript.hxml',
             '--macro', "include('loreline.test')",
-            '-D', 'gdscript-output=godot/gdscript-test/internal'
+            '-D', 'gdscript-output=godot/test/gdscript/internal'
         ].concat(haxeBuildArgs));
 
         console.log('Generated: godot/gdscript/internal');
@@ -1476,7 +1477,7 @@ async function main() {
                 ? '/Applications/Godot.app/Contents/MacOS/Godot'
                 : 'godot');
 
-        const testProject = path.join(__dirname, 'godot', 'gdscript-test');
+        const testProject = path.join(__dirname, 'godot', 'test', 'gdscript');
 
         // Refresh the addon copy used by the API parity check
         fs.rmSync(path.join(testProject, 'addons', 'loreline'), { recursive: true, force: true });
@@ -1495,6 +1496,15 @@ async function main() {
 
         // Public API parity check
         await command(godotBin, ['--headless', '--path', testProject, '--script', 'res://api_parity.gd']);
+    }
+
+    if (testGodotLifetime) {
+        console.log('Run loreline Godot lifetime tests (native + GDScript backends)');
+
+        // run.sh assembles addons/loreline for each backend in turn and asserts
+        // both reach the same verdict. It skips a backend whose binaries are
+        // not built, so run the relevant setup steps first.
+        await command('bash', [path.join(__dirname, 'godot', 'test', 'lifetime', 'run.sh'), 'both']);
     }
 
     if (buildLua) {

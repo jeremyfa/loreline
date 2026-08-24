@@ -250,7 +250,7 @@ LorelineInterpreter::LorelineInterpreter()
 #ifdef LORELINE_USE_JS
 		: _js_id(0)
 #else
-		: _interp(nullptr), _pending_advance(nullptr), _pending_select(nullptr)
+		: _interp(nullptr), _pending_advance{nullptr}, _pending_select{nullptr}
 #endif
 {
 }
@@ -527,7 +527,7 @@ void LorelineInterpreter::_on_dialogue(
 		Loreline_String text,
 		const Loreline_TextTag *tags,
 		int tagCount,
-		void (*advance)(void),
+		Loreline_Advance advance,
 		void *userData) {
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);
 	// Construct the Ref FIRST, before releasing the active-list Ref, so the
@@ -535,7 +535,7 @@ void LorelineInterpreter::_on_dialogue(
 	Ref<LorelineInterpreter> self_ref(self);
 
 	self->_pending_advance = advance;
-	self->_pending_select = nullptr;
+	self->_pending_select.interpreter = nullptr;
 
 	String godot_character = character.isNull() ? String() : String::utf8(character.c_str());
 	String godot_text = text.isNull() ? String() : String::utf8(text.c_str());
@@ -552,14 +552,14 @@ void LorelineInterpreter::_on_choice(
 		Loreline_Interpreter *interpreter,
 		const Loreline_ChoiceOption *options,
 		int optionCount,
-		void (*select)(int index),
+		Loreline_Select select,
 		void *userData) {
 	LorelineInterpreter *self = static_cast<LorelineInterpreter *>(userData);
 	// Construct the Ref FIRST (strict overlap, see _on_dialogue).
 	Ref<LorelineInterpreter> self_ref(self);
 
 	self->_pending_select = select;
-	self->_pending_advance = nullptr;
+	self->_pending_advance.interpreter = nullptr;
 
 	Array godot_options = _convert_options(options, optionCount);
 
@@ -595,8 +595,8 @@ void LorelineInterpreter::_on_finish(
 	// this function returns, the interpreter is released here.
 	Ref<LorelineInterpreter> guard(self);
 
-	self->_pending_advance = nullptr;
-	self->_pending_select = nullptr;
+	self->_pending_advance.interpreter = nullptr;
+	self->_pending_select.interpreter = nullptr;
 
 	Loreline::_release_active_interpreter(self);
 
@@ -732,14 +732,14 @@ void LorelineInterpreter::advance() {
 		_poll_js_events();
 	}
 #else
-	if (_pending_advance) {
-		auto fn = _pending_advance;
-		_pending_advance = nullptr;
-		fn();
+	if (_pending_advance.interpreter) {
+		Loreline_Advance advance = _pending_advance;
+		_pending_advance.interpreter = nullptr;
 		// No inline flush: the linc wrapper arms an inflight retainer
-		// synchronously inside fn() (while this object is still referenced),
-		// keeping the interpreter alive until the next callback delivery even
-		// if the host drops every reference right after this call.
+		// synchronously inside the call (while this object is still
+		// referenced), keeping the interpreter alive until the next callback
+		// delivery even if the host drops every reference right after.
+		advance();
 	}
 #endif
 }
@@ -753,10 +753,10 @@ void LorelineInterpreter::select(int index) {
 		_poll_js_events();
 	}
 #else
-	if (_pending_select) {
-		auto fn = _pending_select;
-		_pending_select = nullptr;
-		fn(index);
+	if (_pending_select.interpreter) {
+		Loreline_Select select = _pending_select;
+		_pending_select.interpreter = nullptr;
+		select(index);
 	}
 #endif
 }

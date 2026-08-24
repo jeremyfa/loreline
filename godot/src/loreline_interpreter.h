@@ -51,8 +51,11 @@ private:
 	Loreline_Interpreter *_interp;
 	Variant _options_ref; // Retained so LorelineFunctionCallContext->options stays valid
 	std::vector<LorelineFunctionCallContext *> _fn_contexts; // owned, freed in destructor
-	void (*_pending_advance)(void);
-	void (*_pending_select)(int);
+	// The continuation the runtime is waiting on, if any. Each is bound to the
+	// interpreter that produced it, so storing it here across frames is safe.
+	// A null `interpreter` field means nothing is pending.
+	Loreline_Advance _pending_advance;
+	Loreline_Select _pending_select;
 
 	static void _on_dialogue(
 			Loreline_Interpreter *interpreter,
@@ -60,14 +63,14 @@ private:
 			Loreline_String text,
 			const Loreline_TextTag *tags,
 			int tagCount,
-			void (*advance)(void),
+			Loreline_Advance advance,
 			void *userData);
 
 	static void _on_choice(
 			Loreline_Interpreter *interpreter,
 			const Loreline_ChoiceOption *options,
 			int optionCount,
-			void (*select)(int index),
+			Loreline_Select select,
 			void *userData);
 
 	static void _on_finish(

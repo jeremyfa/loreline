@@ -5,8 +5,11 @@ build/
 # Generated GDScript runtime (built by: node ./setup --gdscript)
 /gdscript/internal/
 
-# GDScript test project artifacts
-/gdscript-test/.godot/
-/gdscript-test/internal/
-/gdscript-test/addons/
+# Godot test project artifacts
+/test/gdscript/.godot/
+/test/gdscript/internal/
+/test/gdscript/addons/
+# Lifetime test project (addons are assembled by run.sh)
+/test/lifetime/.godot/
+/test/lifetime/addons/
 *.uid

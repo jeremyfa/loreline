@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Rebuild the GDScript runtime and run the load-all parse check headlessly.
-# Prints categorized parse errors. Usage: bash godot/gdscript-test/check.sh
+# Prints categorized parse errors. Usage: bash godot/test/gdscript/check.sh
 set -u
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
-proj="$root/godot/gdscript-test"
+proj="$root/godot/test/gdscript"
 godot="${GODOT_BIN:-/Applications/Godot.app/Contents/MacOS/Godot}"
 log="$root/.tmp/loadall.log"
 

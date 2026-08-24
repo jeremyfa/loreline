@@ -57,19 +57,33 @@ func _build_core_options() -> Dictionary:
 	for name in _functions:
 		var user_fn: Callable = _functions[name]
 		functions[name] = func(core_interp, args):
-			return user_fn.call(core_interp.wrapper, args)
+			# Sync call: control returns to the core immediately, so the
+			# inflight retainer is left exactly as it was.
+			return user_fn.call(Loreline._wrapper_of(core_interp), args)
 	for name in _async_functions:
 		var user_fn: Callable = _async_functions[name]
 		functions[name] = func(core_interp, args):
 			return _Loreline_Async.new(func(done: Callable):
+				var interp = Loreline._wrapper_of(core_interp)
+				# An unresolved async call is a callback still owed to the
+				# host, and `resolve` below captures `interp` strongly, so
+				# holding that Callable keeps the run alive for the whole
+				# pause. That mirrors the native backend, where the resolve
+				# CallableCustom holds a Ref<LorelineInterpreter>. Hand the
+				# retention over to it, exactly as the dialogue and choice
+				# deliveries hand over to their advance/select Callables.
+				Loreline.shared()._release_inflight(interp)
 				var used := [false]
 				var resolve := func():
 					if used[0]:
 						push_warning("Loreline: resolve called more than once, ignoring.")
 						return
 					used[0] = true
+					# Control comes back to the runtime: retain across the gap
+					# to the next delivery, which is where it is released.
+					Loreline.shared()._retain_inflight(interp)
 					done.call()
-				user_fn.call(core_interp.wrapper, args, resolve))
+				user_fn.call(interp, args, resolve))
 	if functions.size() > 0:
 		options["functions"] = functions
 	return options
