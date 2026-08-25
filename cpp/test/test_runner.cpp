@@ -875,7 +875,187 @@ static void runContainerFieldTest() {
     fflush(stdout);
 }
 
+
+/* -- Parallel interpreters test -------------------------------------------- */
+
+/* Mirrors the Godot lifetime suite's parallel test at the C API level: several
+ * interpreters run side by side, driven round-robin through PARKED
+ * continuations (the host answers long after the handler returned, which is
+ * exactly what Loreline_Advance / Loreline_Select carrying their interpreter
+ * make safe). Each run must receive only its own callbacks and keep its own
+ * state. */
+
+struct ParallelRunCtx {
+    std::vector<std::string> texts;
+    Loreline_Advance advance { nullptr };
+    Loreline_Select select { nullptr };
+    bool hasAdvance = false;
+    bool hasSelect = false;
+    bool finished = false;
+};
+
+static void parallelTestDialogue(
+    Loreline_Interpreter* /* interp */,
+    Loreline_String /* character */,
+    Loreline_String text,
+    const Loreline_TextTag* /* tags */,
+    int /* tagCount */,
+    Loreline_Advance advance,
+    void* userData
+) {
+    ParallelRunCtx* ctx = (ParallelRunCtx*)userData;
+    ctx->texts.push_back(text.c_str() ? text.c_str() : "");
+    /* Park the continuation: the driver answers on its own schedule. */
+    ctx->advance = advance;
+    ctx->hasAdvance = true;
+}
+
+static void parallelTestChoice(
+    Loreline_Interpreter* /* interp */,
+    const Loreline_ChoiceOption* /* options */,
+    int /* optionCount */,
+    Loreline_Select select,
+    void* userData
+) {
+    ParallelRunCtx* ctx = (ParallelRunCtx*)userData;
+    ctx->select = select;
+    ctx->hasSelect = true;
+}
+
+static void parallelTestFinish(Loreline_Interpreter* /* interp */, void* userData) {
+    ((ParallelRunCtx*)userData)->finished = true;
+}
+
+static std::string parallelPicked(Loreline_Interpreter* interp) {
+    Loreline_Value v = Loreline_getStateField(interp, Loreline_String("picked"));
+    if (v.type == Loreline_StringValue && !v.stringValue.isNull()) {
+        return v.stringValue.c_str();
+    }
+    return "<not a string>";
+}
+
+static void runParallelInterpretersTest() {
+    const char* source =
+        "state\n"
+        "  picked: \"none\"\n"
+        "\n"
+        "beat Start\n"
+        "  Narrator: begin\n"
+        "\n"
+        "  choice\n"
+        "    take alpha\n"
+        "      picked = \"alpha\"\n"
+        "\n"
+        "      -> Show\n"
+        "    take beta\n"
+        "      picked = \"beta\"\n"
+        "\n"
+        "      -> Show\n"
+        "\n"
+        "beat Show\n"
+        "  Narrator: chose $picked\n";
+
+    bool ok = true;
+    std::string error;
+    auto fail = [&](const std::string& msg) {
+        if (ok) { ok = false; error = msg; }
+    };
+
+    Loreline_Script* script = Loreline_parse(source, "parallel.lor", nullptr, nullptr);
+    if (!script) {
+        fail("Error parsing parallel test script");
+    } else {
+        const int RUNS = 3;
+        ParallelRunCtx ctx[RUNS];
+        Loreline_Interpreter* interps[RUNS] = { nullptr, nullptr, nullptr };
+        for (int i = 0; i < RUNS; i++) {
+            interps[i] = Loreline_play(
+                script, parallelTestDialogue, parallelTestChoice, parallelTestFinish,
+                Loreline_String(), nullptr, &ctx[i]);
+            if (!interps[i]) fail("play() returned null");
+        }
+
+        /* Drive every run to its first choice (answering only dialogues). */
+        for (int round = 0; round < 50 && ok; round++) {
+            bool allAtChoice = true;
+            for (int i = 0; i < RUNS; i++) {
+                if (ctx[i].hasAdvance) {
+                    ctx[i].hasAdvance = false;
+                    ctx[i].advance();
+                }
+                if (!ctx[i].hasSelect) allAtChoice = false;
+            }
+            Loreline_update(0.016);
+            if (allAtChoice) break;
+        }
+        for (int i = 0; i < RUNS && ok; i++) {
+            if (!ctx[i].hasSelect) fail("a run never reached its choice");
+        }
+
+        /* Answer run 0 only, and check run 1 saw nothing of it: neither its
+         * state nor its callbacks may move. */
+        if (ok) {
+            size_t run1TextsBefore = ctx[1].texts.size();
+            ctx[0].hasSelect = false;
+            ctx[0].select(0); /* alpha */
+            for (int round = 0; round < 50 && !ctx[0].finished; round++) {
+                if (ctx[0].hasAdvance) { ctx[0].hasAdvance = false; ctx[0].advance(); }
+                Loreline_update(0.016);
+            }
+            if (!ctx[0].finished) fail("run 0 did not finish");
+            if (parallelPicked(interps[1]) != "none") fail("run 1 state moved while only run 0 was driven");
+            if (ctx[1].texts.size() != run1TextsBefore) fail("run 1 received callbacks meant for run 0");
+        }
+
+        /* Now finish runs 1 (beta) and 2 (alpha), interleaved. */
+        if (ok) {
+            ctx[1].hasSelect = false;
+            ctx[1].select(1); /* beta */
+            ctx[2].hasSelect = false;
+            ctx[2].select(0); /* alpha */
+            for (int round = 0; round < 50 && !(ctx[1].finished && ctx[2].finished); round++) {
+                for (int i = 1; i < RUNS; i++) {
+                    if (ctx[i].hasAdvance) { ctx[i].hasAdvance = false; ctx[i].advance(); }
+                }
+                Loreline_update(0.016);
+            }
+            if (!ctx[1].finished || !ctx[2].finished) fail("runs 1 and 2 did not both finish");
+        }
+
+        /* Per-run transcript and state stayed isolated. */
+        if (ok) {
+            const char* expected[RUNS] = { "chose alpha", "chose beta", "chose alpha" };
+            const char* picked[RUNS] = { "alpha", "beta", "alpha" };
+            for (int i = 0; i < RUNS; i++) {
+                if (ctx[i].texts.size() != 2 || ctx[i].texts[0] != "begin" || ctx[i].texts[1] != expected[i]) {
+                    fail("run transcript is wrong or polluted by another run");
+                }
+                if (parallelPicked(interps[i]) != picked[i]) {
+                    fail("run state does not match the option it picked");
+                }
+            }
+        }
+
+        for (int i = 0; i < RUNS; i++) {
+            if (interps[i]) Loreline_releaseInterpreter(interps[i]);
+        }
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "capi ~ parallel interpreters stay independent" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "capi ~ parallel interpreters stay independent" CLR_RESET "\n");
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
 /* -- Main ----------------------------------------------------------------- */
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -1107,6 +1287,8 @@ int main(int argc, char* argv[]) {
     /* Programmatic C API checks (not driven by .lor test blocks) */
     fileCount++;
     runContainerFieldTest();
+    fileCount++;
+    runParallelInterpretersTest();
 
     int total = passCount + failCount;
     printf("\n");
