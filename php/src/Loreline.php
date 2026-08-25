@@ -3,6 +3,7 @@
 namespace Loreline;
 
 use Loreline\Internal\loreline\Arrays as HxArrays;
+use Loreline\Internal\loreline\Json as HxJson;
 use Loreline\Internal\loreline\Loreline as HxLoreline;
 use Loreline\Internal\loreline\Timer as HxTimer;
 use Loreline\Internal\php\_Boot\HxAnon;
@@ -77,7 +78,7 @@ final class Loreline
     /**
      * Resume a script from saved state.
      *
-     * $saveData is the opaque value returned by Interpreter::save().
+     * $saveData is the JSON string returned by Interpreter::save().
      * $options has the same shape as in play().
      */
     public static function resume(
@@ -85,7 +86,7 @@ final class Loreline
         callable $handleDialogue,
         callable $handleChoice,
         callable $handleFinish,
-        mixed $saveData,
+        string $saveData,
         ?string $beatName = null,
         ?array $options = null
     ): Interpreter {
@@ -94,7 +95,7 @@ final class Loreline
             self::makeDialogueBridge($handleDialogue),
             self::makeChoiceBridge($handleChoice),
             self::makeFinishBridge($handleFinish),
-            $saveData,
+            HxJson::parse($saveData),
             $beatName,
             self::makeOptions($options)
         );

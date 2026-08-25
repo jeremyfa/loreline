@@ -2,6 +2,8 @@
 
 namespace Loreline;
 
+use Loreline\Internal\loreline\Json as HxJson;
+
 /**
  * A running Loreline script interpreter.
  *
@@ -50,20 +52,23 @@ class Interpreter
     /**
      * Save the current interpreter state.
      *
-     * Returns an opaque save data value that can be passed to
-     * Loreline::resume() or Interpreter::restore() later.
+     * Returns the full state serialized as a JSON string, ready to store in a
+     * session, a file or a database, and accepted back by Loreline::resume()
+     * or Interpreter::restore(). The format is the same across every Loreline
+     * target, so a save made here can be resumed by another integration.
      */
-    public function save(): mixed
+    public function save(): string
     {
-        return $this->internal->save();
+        return HxJson::stringify($this->internal->save(), false);
     }
 
     /**
-     * Restore the interpreter to a previously saved state.
+     * Restore the interpreter to a previously saved state
+     * (a JSON string returned by save()).
      */
-    public function restore(mixed $saveData): void
+    public function restore(string $saveData): void
     {
-        $this->internal->restore($saveData);
+        $this->internal->restore(HxJson::parse($saveData));
     }
 
     /**
