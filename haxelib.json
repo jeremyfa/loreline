@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing", "interactive"],
     "description": "Open-source scripting language for writing interactive fiction",
-    "version": "0.9.1",
+    "version": "0.10.0",
     "classPath": "src/",
-    "releasenote": "Fix custom function arguments (JS, Lua, Python) and working brace-less nested objects in state.",
+    "releasenote": "Beat parameters and dynamic beat calls, PHP support, pure GDScript runtime for Godot, interpreter lifetime fixes.",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
