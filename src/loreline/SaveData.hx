@@ -110,6 +110,18 @@ typedef SaveDataBeatRef = {
 }
 
 /**
+ * Represents a character reference stored as a state field value.
+ * Discriminated from plain field objects by `type == "$characterRef"`.
+ * Only the name is stored: character fields are saved separately.
+ */
+typedef SaveDataCharacterRef = {
+    /** Marker, always "$characterRef" */
+    var type:String;
+    /** The referenced character's declared name */
+    var name:String;
+}
+
+/**
  * Values that can be serialized in fields
  */
 typedef SaveDataFields = {

@@ -1,0 +1,96 @@
+// A character passed as a beat argument must keep its character identity
+// inside the beat: interpolating the param prints the character's name,
+// using the param as a dialogue speaker resolves to the character, field
+// access and mutation reach the actual character, and equality holds.
+
+character sarah
+  name: Sarah
+  mood: cheerful
+
+character silent
+  quiet: true
+
+beat Main
+  Show(sarah)
+  beat("Dynamic", sarah)
+  Forward(sarah)
+  Check(sarah)
+  Fallback(silent)
+  x = sarah
+  Assigned to $x.
+  Mutate(sarah)
+  Mood of sarah is now $sarah.mood.
+  choice
+    Go
+      Picked go.
+    + Inserted(sarah)
+  -> Last(sarah)
+
+beat Show(who)
+  The name is $who.
+
+  The mood is $who.mood.
+
+  who: Hello from a param.
+
+beat Dynamic(who)
+  Dynamic shows $who.
+
+beat Forward(who)
+  Nested(who)
+
+beat Nested(deep)
+  Forwarded twice, still $deep.
+
+beat Check(who)
+  if who == sarah
+    Same character.
+
+beat Fallback(who)
+  Falls back to $who.
+
+  who: no name here.
+
+beat Mutate(who)
+  who.mood = "sad"
+
+beat Inserted(who)
+  choice
+    Greet $who
+      Inserted greeted $who.name.
+
+beat Last(who)
+  Last stop with $who.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    ~ The name is Sarah.
+
+    ~ The mood is cheerful.
+
+    Sarah: Hello from a param.
+
+    ~ Dynamic shows Sarah.
+
+    ~ Forwarded twice, still Sarah.
+
+    ~ Same character.
+
+    ~ Falls back to silent.
+
+    silent: no name here.
+
+    ~ Assigned to Sarah.
+
+    ~ Mood of sarah is now sad.
+
+    + Go
+    + Greet Sarah
+
+    ~ Inserted greeted Sarah.
+
+    ~ Last stop with Sarah.
+</test>
+*/

@@ -21,6 +21,7 @@
 #include <loreline/Arrays.h>
 #include <loreline/Objects.h>
 #include <loreline/RuntimeBeatRef.h>
+#include <loreline/RuntimeCharacterRef.h>
 #include <loreline/NBeatDecl.h>
 #include <haxe/ds/StringMap.h>
 #include <Reflect.h>
@@ -597,6 +598,20 @@ static Loreline_Value linc_hxToValueDepth(::Dynamic val, int depth) {
         }
     }
 
+    /* Character references cross the boundary as marker dicts, the same
+     * shape used in save data, so hosts can recognize them and hand them
+     * back. Must be checked before isFields, whose unknown-object default
+     * is true. */
+    {
+        ::String characterName = ::loreline::RuntimeCharacterRef_obj::characterNameOf(val);
+        if (hx::IsNotNull(characterName)) {
+            Loreline_Object obj = Loreline_Object::create();
+            obj.set("type", Loreline_Value::from_string(Loreline_String("$characterRef")));
+            obj.set("name", Loreline_Value::from_string(Loreline_String(characterName.c_str())));
+            return Loreline_Value::from_object(obj);
+        }
+    }
+
     if (::loreline::Arrays_obj::isArray(val)) {
         Loreline_Array arr = Loreline_Array::create();
         int len = ::loreline::Arrays_obj::arrayLength(val);
@@ -842,6 +857,14 @@ static void linc_Loreline_dispatchOutSync(std::function<void()> task) {
     #define LORELINE_NOINLINE __attribute__((noinline))
 #endif
 
+/* Nested LORELINE_HX_BEGIN/END pairs are safe: hxcpp supports nested
+ * SetTopOfStack calls natively (see StackContext::SetTopOfStack in
+ * hxcpp/src/hx/gc/Immix.cpp). With inPush=true it keeps a lock counter
+ * (mStackLocks) and only releases the thread when it drops to zero, and
+ * it never shrinks the scanned stack range: an inner registration deeper
+ * in the stack leaves mTopOfStack untouched. So a re-entrant C API call
+ * made from within a custom function callback needs no special handling
+ * at this level. */
 #define LORELINE_HX_BEGIN \
     linc_Loreline_ensureHaxeThread(); \
     int haxe_stack_ = 99; \
@@ -1746,10 +1769,16 @@ static LORELINE_NOINLINE void Loreline_play_hx(
     }
 
     try {
-        ::Dynamic hxInterp = ::loreline::Loreline_obj::play(
-            hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler, hxBeatName, hxOptions
+        /* Construct first and set the handle BEFORE starting: in non-threaded
+         * mode start() runs the story synchronously, and a custom function
+         * calling back into the C API (e.g. Loreline_setStateField) needs
+         * h->obj to already point at the interpreter. Mirrors Loreline.play. */
+        ::loreline::Interpreter hxInterp = ::loreline::Interpreter_obj::__new(
+            (::loreline::Script)hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
+            (::loreline::InterpreterOptions)hxOptions
         );
         h->set(hxInterp.GetPtr());
+        hxInterp->start(hxBeatName);
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_play error: %s\n", ((::String)e).c_str());
         /* The run aborted: no delivery will come to disarm the inflight
@@ -1851,11 +1880,21 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
     }
 
     try {
-        ::Dynamic hxInterp = ::loreline::Loreline_obj::resume(
-            hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
-            hxSaveData, hxBeatName, hxOptions
+        /* Same as play: set the handle before any synchronous execution so
+         * re-entrant C API calls from custom functions see a live handle.
+         * Mirrors Loreline.resume. */
+        ::loreline::Interpreter hxInterp = ::loreline::Interpreter_obj::__new(
+            (::loreline::Script)hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
+            (::loreline::InterpreterOptions)hxOptions
         );
         h->set(hxInterp.GetPtr());
+        hxInterp->restore(hxSaveData);
+        if (hxBeatName != null()) {
+            hxInterp->start(hxBeatName);
+        }
+        else {
+            hxInterp->resume();
+        }
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_resume error: %s\n", ((::String)e).c_str());
         /* The run aborted: no delivery will come to disarm the inflight

@@ -1,0 +1,80 @@
+// Character and beat references crossing to a host (custom function
+// arguments, state getters) must arrive as recognizable references, and
+// handing them back to the runtime must restore the live reference. This
+// exercises every target through each runner's custom_set_state and
+// custom_get_state functions.
+
+// Bodyless declarations: these functions are provided by the host,
+// declaring them here makes them known to the language tooling
+function custom_set_state(key, value)
+function custom_get_state(key)
+
+character sarah
+  name: Sarah
+  mood: cheerful
+
+beat Main
+  custom_set_state("storedChar", sarah)
+  Stored char is $storedChar.
+
+  Stored mood is $storedChar.mood.
+
+  storedChar.mood = "curious"
+  Mood of sarah is now $sarah.mood.
+
+  back = custom_get_state("storedChar")
+  Back is $back.
+
+  custom_set_state("box", [sarah, 42])
+  Boxed char is $box[0].
+
+  if box[0] == sarah
+    Boxed identity kept.
+
+  box[0].mood = "playful"
+  Mood via box is now $sarah.mood.
+
+  custom_set_state("bag", { npc: sarah })
+  Bag char is $bag.npc.
+
+  if bag.npc == sarah
+    Bag identity kept.
+
+  custom_set_state("beatBox", [Inner])
+  beat(beatBox[0])
+
+  custom_set_state("storedBeat", Inner)
+  beat(storedBeat)
+  Done.
+
+beat Inner
+  Inner beat reached.
+
+/*
+<test>
+- expected: |
+    ~ Stored char is Sarah.
+
+    ~ Stored mood is cheerful.
+
+    ~ Mood of sarah is now curious.
+
+    ~ Back is Sarah.
+
+    ~ Boxed char is Sarah.
+
+    ~ Boxed identity kept.
+
+    ~ Mood via box is now playful.
+
+    ~ Bag char is Sarah.
+
+    ~ Bag identity kept.
+
+    ~ Inner beat reached.
+
+    ~ Inner beat reached.
+
+    ~ Done.
+</test>
+*/

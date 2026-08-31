@@ -789,11 +789,26 @@ static void containerTestCheck(Loreline_Interpreter* interp, bool* okOut, std::s
         }
     }
 
-    /* 6. Beat references cross as their beat name string */
+    /* 6. Beat references cross as marker objects (the save data shape),
+     * recognizable and accepted back by the runtime */
     if (ok) {
         Loreline_Value ref = Loreline_getStateField(interp, Loreline_String("ref"));
-        if (ref.type != Loreline_StringValue || strcmp(ref.stringValue.c_str(), "Main") != 0) {
-            ok = false; error = "beat reference did not read as its name string";
+        if (ref.type != Loreline_ObjectValue) {
+            ok = false; error = "beat reference did not read as a marker object";
+        }
+        else {
+            Loreline_Value markerType = ref.objectValue.get("type");
+            if (markerType.type != Loreline_StringValue || strcmp(markerType.stringValue.c_str(), "$beatRef") != 0) {
+                ok = false; error = "beat reference marker has wrong type field";
+            }
+            else {
+                /* Hand the marker back: the runtime must restore a live reference */
+                Loreline_setStateField(interp, Loreline_String("refBack"), ref);
+                Loreline_Value back = Loreline_getStateField(interp, Loreline_String("refBack"));
+                if (back.type != Loreline_ObjectValue) {
+                    ok = false; error = "beat reference marker did not round-trip";
+                }
+            }
         }
     }
 

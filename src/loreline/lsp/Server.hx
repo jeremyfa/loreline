@@ -489,6 +489,22 @@ class Server {
                         if (parentBeat != null && parentBeat.name != "_") {
                             final characterDecl = lens.findCharacterFromDialogue(dialogue);
                             if (characterDecl == null) {
+                                // A speaker matching an enclosing beat param may hold a
+                                // character passed as argument, resolved at runtime
+                                var isBeatParam = false;
+                                var enclosingBeat = parentBeat;
+                                while (enclosingBeat != null && !isBeatParam) {
+                                    if (enclosingBeat.params != null) {
+                                        for (param in enclosingBeat.params) {
+                                            if (param.name == dialogue.character) {
+                                                isBeatParam = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    enclosingBeat = lens.getFirstParentOfType(enclosingBeat, NBeatDecl);
+                                }
+                                if (isBeatParam) continue;
                                 addDiagnostic(
                                     uri,
                                     dialogue.characterPos,

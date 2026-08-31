@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.Interpreter;
+
 import haxe.ds.IntMap;
 import haxe.ds.StringMap;
 
@@ -40,6 +42,20 @@ class Equal {
                 return intMapEqual(interpreter, a, b);
             }
             return false;
+        }
+        else if (RuntimeBeatRef.beatOf(a) != null || RuntimeBeatRef.beatOf(b) != null) {
+            // Beat refs compare by referenced beat declaration identity
+            // (names can repeat across nested beats, the decl cannot)
+            final aBeat = RuntimeBeatRef.beatOf(a);
+            final bBeat = RuntimeBeatRef.beatOf(b);
+            return aBeat != null && bBeat != null && aBeat == bBeat;
+        }
+        else if (RuntimeCharacterRef.characterOf(a) != null || RuntimeCharacterRef.characterOf(b) != null) {
+            // Character refs compare by underlying fields identity, so a
+            // ref also equals the raw character fields bag
+            final aValue:Any = RuntimeCharacterRef.fieldsOf(a);
+            final bValue:Any = RuntimeCharacterRef.fieldsOf(b);
+            return aValue == bValue;
         }
         else if (Objects.isFields(a)) {
             if (Objects.isFields(b)) {

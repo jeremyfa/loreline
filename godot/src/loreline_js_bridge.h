@@ -51,6 +51,12 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 var beatName = loreline.RuntimeBeatRef.beatNameOf(v);
                 if (beatName != null) return beatName;
             }
+            if (v != null && typeof v === "object" && loreline.RuntimeCharacterRef) {
+                // Character references cross as marker objects, the same
+                // shape used in save data, so they can be handed back
+                var characterName = loreline.RuntimeCharacterRef.characterNameOf(v);
+                if (characterName != null) return { type: "$characterRef", name: characterName };
+            }
             return v;
         });
     }

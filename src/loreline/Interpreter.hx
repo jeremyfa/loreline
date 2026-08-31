@@ -86,6 +86,11 @@ class RuntimeState {
 class RuntimeCharacter extends RuntimeState {
 
     /**
+     * Lazily created reference identifying this character as a value.
+     */
+    public var characterRef:RuntimeCharacterRef = null;
+
+    /**
      * Creates a new character runtime state with optional initial field values.
      */
     public function new(interpreter:Interpreter, node:AstNode, fields:Any, originalFields:Any) {
@@ -266,6 +271,72 @@ class RuntimeBeatRef {
     public static function beatNameOf(value:Any):Null<String> {
         final beat = beatOf(value);
         return beat != null ? beat.name : null;
+    }
+
+}
+
+/**
+ * A character used as a runtime value: keeps the character identity
+ * (its declared name) attached to its fields, so that a character passed
+ * around (beat arguments, assignments) still behaves like the character
+ * itself. Mirrors how beats are passed around as RuntimeBeatRef values.
+ */
+#if js
+@:expose
+#end
+class RuntimeCharacterRef {
+
+    /**
+     * The character's declared identifier (e.g. "sarah").
+     */
+    public var name(default, null):String;
+
+    /**
+     * The character runtime state this reference points to.
+     */
+    final character:RuntimeCharacter;
+
+    /**
+     * The character's fields, always read live from the character state
+     * so the reference survives save/restore field replacement.
+     */
+    public var fields(get, never):Any;
+    function get_fields():Any {
+        return character.fields;
+    }
+
+    public function new(name:String, character:RuntimeCharacter) {
+        this.name = name;
+        this.character = character;
+    }
+
+    /**
+     * Returns the character reference if the given runtime value is one,
+     * null otherwise.
+     */
+    public static function characterOf(value:Any):Null<RuntimeCharacterRef> {
+        if (value is RuntimeCharacterRef) {
+            return cast value;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the character's declared name if the given runtime value is a
+     * character reference, null otherwise. Used by host bindings.
+     */
+    public static function characterNameOf(value:Any):Null<String> {
+        final ref = characterOf(value);
+        return ref != null ? ref.name : null;
+    }
+
+    /**
+     * Unwraps a character reference to its fields; any other value is
+     * returned unchanged. Used wherever field data is expected.
+     */
+    public static function fieldsOf(value:Any):Any {
+        final ref = characterOf(value);
+        return ref != null ? ref.fields : value;
     }
 
 }
@@ -1053,7 +1124,7 @@ typedef InterpreterOptions = {
 
         final fields = topLevelCharacters.get(character)?.fields;
         if (fields != null) {
-            return Objects.getField(this, fields, name);
+            return hostValueOf(Objects.getField(this, fields, name));
         }
         return null;
 
@@ -1069,7 +1140,7 @@ typedef InterpreterOptions = {
     public function setCharacterField(character:String, name:String, value:Any):Void {
 
         final fields = topLevelCharacters.get(character).fields;
-        Objects.setField(this, fields, name, value);
+        Objects.setField(this, fields, name, hostValueToRuntime(value));
 
     }
 
@@ -1112,7 +1183,140 @@ typedef InterpreterOptions = {
 
     }
 
+    /**
+     * Converts a runtime value to its host-facing form: character and beat
+     * references cross the boundary as plain marker objects (the same shape
+     * used in save data), so hosts can recognize them and hand them back.
+     */
+    function hostValueOf(value:Any):Any {
+
+        final asCharacter = RuntimeCharacterRef.characterOf(value);
+        if (asCharacter != null) {
+            final marker:SaveDataCharacterRef = {
+                type: "$characterRef",
+                name: asCharacter.name
+            };
+            return (marker:Any);
+        }
+
+        final asBeat = RuntimeBeatRef.beatOf(value);
+        if (asBeat != null) {
+            // Chainless: a captured scope chain is not representable host-side
+            final marker:SaveDataBeatRef = {
+                type: "$beatRef",
+                beat: serializeBeatReference(asBeat)
+            };
+            return (marker:Any);
+        }
+
+        return value;
+
+    }
+
+    /**
+     * Maximum container nesting walked when converting host values, so a
+     * cyclic structure handed by a host cannot recurse forever. Matches
+     * LINC_VALUE_MAX_DEPTH used by the C API converters.
+     */
+    static final HOST_VALUE_MAX_DEPTH:Int = 64;
+
+    /**
+     * Converts a host-provided value back to its runtime form: marker
+     * objects produced by hostValueOf() (or equivalent host-side data)
+     * are resolved back to live character and beat references, including
+     * markers nested inside arrays and fields objects (converted in place,
+     * preserving container aliasing). Values that are not markers are
+     * returned unchanged, and a marker that cannot be resolved stays
+     * plain data.
+     */
+    function hostValueToRuntime(value:Any):Any {
+
+        return hostValueToRuntimeDepth(value, 0);
+
+    }
+
+    function hostValueToRuntimeDepth(value:Any, depth:Int):Any {
+
+        if (value == null || value is String || value is Int || value is Float || value is Bool) return value;
+        if (depth >= HOST_VALUE_MAX_DEPTH) return value;
+
+        // Already-live references are in runtime form: never walk their
+        // internals (that would Reflect into character bags and AST nodes)
+        if (RuntimeCharacterRef.characterOf(value) != null) return value;
+        if (RuntimeBeatRef.beatOf(value) != null) return value;
+
+        if (Arrays.isArray(value)) {
+            final len = Arrays.arrayLength(value);
+            for (i in 0...len) {
+                final item:Any = Arrays.arrayGet(value, i);
+                final converted:Any = hostValueToRuntimeDepth(item, depth + 1);
+                if (converted != item) {
+                    Arrays.arraySet(value, i, converted);
+                }
+            }
+            return value;
+        }
+
+        if (Objects.isFields(value)) {
+            final markerTypeValue:Any = Objects.getField(this, value, "type");
+            if (markerTypeValue != null && (markerTypeValue is String)) {
+                final markerType:String = markerTypeValue;
+                if (markerType == "$characterRef") {
+                    final name:Any = Objects.getField(this, value, "name");
+                    if (name != null && (name is String) && topLevelCharacters.exists(name)) {
+                        final character = topLevelCharacters.get(name);
+                        if (character.characterRef == null) {
+                            character.characterRef = new RuntimeCharacterRef(name, character);
+                        }
+                        return character.characterRef;
+                    }
+                }
+                else if (markerType == "$beatRef") {
+                    var path:Any = null;
+                    final beatData:Any = Objects.getField(this, value, "beat");
+                    if (beatData != null && Objects.isFields(beatData)) {
+                        path = Objects.getField(this, beatData, "path");
+                    }
+                    if (path == null) {
+                        // Also accept a name-only beat marker from simpler hosts
+                        path = Objects.getField(this, value, "name");
+                    }
+                    if (path != null && (path is String)) {
+                        final beat = lens.findBeatByPathFromNode(path, script);
+                        if (beat != null) {
+                            return new RuntimeBeatRef(beat, []);
+                        }
+                    }
+                }
+            }
+
+            // Not a resolvable marker: walk fields so nested markers are
+            // resolved too. Only write back entries that actually changed.
+            final keys = Objects.getFields(this, value);
+            for (key in keys) {
+                final item:Any = Objects.getField(this, value, key);
+                final converted:Any = hostValueToRuntimeDepth(item, depth + 1);
+                if (converted != item) {
+                    Objects.setField(this, value, key, converted);
+                }
+            }
+        }
+
+        return value;
+
+    }
+
     public function getStateField(name:String):Any {
+
+        // Character and beat references cross to hosts as marker objects
+        return hostValueOf(getStateFieldRaw(name));
+
+    }
+
+    /**
+     * Same as getStateField() but without unwrapping character references.
+     */
+    function getStateFieldRaw(name:String):Any {
 
         var found = false;
         var result:Any = null;
@@ -1162,6 +1366,8 @@ typedef InterpreterOptions = {
      */
     public function setStateField(name:String, value:Any):Void {
 
+        value = hostValueToRuntime(value);
+
         var done = false;
         eachResolutionScope(-1, scope -> {
 
@@ -1203,7 +1409,7 @@ typedef InterpreterOptions = {
      */
     public function getTopLevelStateField(name:String):Any {
 
-        return Objects.getField(this, topLevelState.fields, name);
+        return hostValueOf(Objects.getField(this, topLevelState.fields, name));
 
     }
 
@@ -1215,7 +1421,7 @@ typedef InterpreterOptions = {
      */
     public function setTopLevelStateField(name:String, value:Any):Void {
 
-        Objects.setField(this, topLevelState.fields, name, value);
+        Objects.setField(this, topLevelState.fields, name, hostValueToRuntime(value));
 
     }
 
@@ -1616,6 +1822,17 @@ typedef InterpreterOptions = {
                 }
             }
             return (serializedRef:Any);
+        }
+
+        // Handle character references: serialize as a marked name-only
+        // reference; character fields are already saved separately by name
+        final asCharacter = RuntimeCharacterRef.characterOf(value);
+        if (asCharacter != null) {
+            final serializedCharacterRef:SaveDataCharacterRef = {
+                type: "$characterRef",
+                name: asCharacter.name
+            };
+            return (serializedCharacterRef:Any);
         }
 
         // Handle objects/maps recursively
@@ -2459,6 +2676,17 @@ typedef InterpreterOptions = {
             return new RuntimeBeatRef(beat, chain);
         }
 
+        // Handle character references (marked with type == "$characterRef")
+        if (Reflect.field(value, "type") == "$characterRef") {
+            final savedCharacterRef:SaveDataCharacterRef = cast value;
+            final character = topLevelCharacters.get(savedCharacterRef.name);
+            if (character == null) return null;
+            if (character.characterRef == null) {
+                character.characterRef = new RuntimeCharacterRef(savedCharacterRef.name, character);
+            }
+            return character.characterRef;
+        }
+
         return restoreFields(null, value);
     }
 
@@ -2510,7 +2738,11 @@ typedef InterpreterOptions = {
     function registerTopLevelFunction(key:String, func:Any) {
         #if loreline_auto_wrap_functions
         final userFunc = func;
-        topLevelFunctions.set(key, Reflect.makeVarArgs(args -> Reflect.callMethod(null, userFunc, [this, args])));
+        topLevelFunctions.set(key, Reflect.makeVarArgs(args -> {
+            // Character and beat references cross to hosts as marker objects
+            final hostArgs = [for (arg in args) hostValueOf(arg)];
+            return Reflect.callMethod(null, userFunc, [this, hostArgs]);
+        }));
         #else
         topLevelFunctions.set(key, func);
         #end
@@ -3115,10 +3347,20 @@ typedef InterpreterOptions = {
         // Evaluate the content
         final content = evaluateString(str);
 
+        // Resolve the speaker: when the identifier is a scope value holding
+        // a character reference (e.g. a beat param), use that character's
+        // declared name; otherwise keep the raw identifier as before.
+        var speaker = dialogue.character;
+        final speakerValue = getStateFieldRaw(speaker);
+        final speakerRef = RuntimeCharacterRef.characterOf(speakerValue);
+        if (speakerRef != null) {
+            speaker = speakerRef.name;
+        }
+
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleDialogue(this, dialogue.character, content.text, content.tags, next);
+        handleDialogue(this, speaker, content.text, content.tags, next);
 
     }
 
@@ -4191,32 +4433,12 @@ typedef InterpreterOptions = {
 
                 case Expr(expr):
                     keepWhitespace = true;
-                    if (expr is NAccess) {
-                        // When providing a character object,
-                        // implicitly read the character's `name` field
-                        final access:NAccess = cast expr;
-                        final resolved = resolveAccess(access, access.target, access.name);
-                        switch resolved {
-                            case CharacterAccess(_, name):
-                                final characterFields = evaluateExpression(expr);
-                                final value = Objects.getField(this, characterFields, 'name') ?? name;
-                                final text = valueToString(value);
-                                offset += text.uLength();
-                                buf.add(text);
-
-                            case _:
-                                final value = evaluateExpression(expr);
-                                final text = valueToString(value);
-                                offset += text.uLength();
-                                buf.add(text);
-                        }
-                    }
-                    else {
-                        final value = evaluateExpression(expr);
-                        final text = valueToString(value);
-                        offset += text.uLength();
-                        buf.add(text);
-                    }
+                    // Character values print their name via valueToString,
+                    // whether referenced directly or through a variable/param
+                    final value = evaluateExpression(expr);
+                    final text = valueToString(value);
+                    offset += text.uLength();
+                    buf.add(text);
 
                 case Tag(closing, expr):
                     final tagValue = evaluateString(expr).text;
@@ -4567,7 +4789,11 @@ typedef InterpreterOptions = {
      */
     function callFunctionValue(fn:Any, args:Array<Any>, pos:Position, next:()->Void):Any {
         try {
-            final result:Any = Reflect.callMethod(null, fn, args);
+            var result:Any = Reflect.callMethod(null, fn, args);
+            if (result != null && !(result is Async)) {
+                // Hosts may return reference markers; resolve them back
+                result = hostValueToRuntime(result);
+            }
             if (result != null && result is Async) {
                 if (next == null) {
                     throw new RuntimeError(
@@ -4715,7 +4941,7 @@ typedef InterpreterOptions = {
             }
             else {
                 // Handle method calls (obj.method())
-                final obj = evaluateExpression(access.target);
+                final obj = RuntimeCharacterRef.fieldsOf(evaluateExpression(access.target));
                 var helper:Any = null;
 
                 final objBeat = RuntimeBeatRef.beatOf(obj);
@@ -5015,7 +5241,11 @@ typedef InterpreterOptions = {
 
             case CharacterAccess(pos, name):
                 if (topLevelCharacters.exists(name)) {
-                    topLevelCharacters.get(name).fields;
+                    final character = topLevelCharacters.get(name);
+                    if (character.characterRef == null) {
+                        character.characterRef = new RuntimeCharacterRef(name, character);
+                    }
+                    character.characterRef;
                 }
                 else {
                     throw new RuntimeError('Character not found: $name', pos);
@@ -5134,7 +5364,7 @@ typedef InterpreterOptions = {
                     target.pos
                 );
             }
-            return FieldAccess(target.pos, evaluated, name);
+            return FieldAccess(target.pos, RuntimeCharacterRef.fieldsOf(evaluated), name);
         }
 
         // Iterate through scopes to identify a matching state field or character name
@@ -5306,12 +5536,24 @@ typedef InterpreterOptions = {
                 // Special case: beat values/references compared with String use the beat name
                 final leftBeat = RuntimeBeatRef.beatOf(left);
                 final rightBeat = RuntimeBeatRef.beatOf(right);
+                final leftCharacter = RuntimeCharacterRef.characterOf(left);
+                final rightCharacter = RuntimeCharacterRef.characterOf(right);
                 final result = if (leftBeat != null && right is String) {
                     leftBeat.name == (right : String);
                 } else if (left is String && rightBeat != null) {
                     (left : String) == rightBeat.name;
                 } else if (leftBeat != null && rightBeat != null) {
                     leftBeat.name == rightBeat.name;
+                } else if (leftCharacter != null && right is String) {
+                    leftCharacter.name == (right : String);
+                } else if (left is String && rightCharacter != null) {
+                    (left : String) == rightCharacter.name;
+                } else if (leftCharacter != null || rightCharacter != null) {
+                    // Character refs compare by underlying fields identity,
+                    // so a ref also equals the raw character fields bag
+                    final l:Any = leftCharacter != null ? leftCharacter.fields : left;
+                    final r:Any = rightCharacter != null ? rightCharacter.fields : right;
+                    l == r;
                 } else {
                     left == right;
                 };
@@ -5401,6 +5643,13 @@ typedef InterpreterOptions = {
         if (asBeat != null) {
             seen.pop();
             return asBeat.name;
+        }
+
+        final asCharacter = RuntimeCharacterRef.characterOf(value);
+        if (asCharacter != null) {
+            final nameValue = Objects.getField(this, asCharacter.fields, 'name');
+            seen.pop();
+            return nameValue != null ? valueToStringImpl(nameValue, null) : asCharacter.name;
         }
 
         if (Objects.isFields(value)) {

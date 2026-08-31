@@ -1,0 +1,63 @@
+// A character reference stored in state or held by a beat param must survive
+// save/restore: it is serialized by name and restored as a live reference to
+// the character, keeping both the name display and the aliasing (mutations
+// through the restored reference still affect the character itself).
+
+character sarah
+  name: Sarah
+  mood: cheerful
+
+beat Main
+  x = sarah
+  -> Talk(sarah)
+
+beat Talk(who)
+  Meeting $who in a $who.mood mood.
+  choice
+    Chat
+      who: Nice chat!
+    Wave
+      who.mood = "amused"
+      Waved at $x.
+
+      Mood of sarah is $sarah.mood.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Meeting Sarah in a cheerful mood.
+
+    + Chat
+    + Wave
+
+    Sarah: Nice chat!
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ Meeting Sarah in a cheerful mood.
+
+    + Chat
+    + Wave
+
+    + Chat
+    + Wave
+
+    ~ Waved at Sarah.
+
+    ~ Mood of sarah is amused.
+- choices: [1]
+  saveAtDialogue: 0
+  expected: |
+    ~ Meeting Sarah in a cheerful mood.
+
+    ~ Meeting Sarah in a cheerful mood.
+
+    + Chat
+    + Wave
+
+    ~ Waved at Sarah.
+
+    ~ Mood of sarah is amused.
+</test>
+*/

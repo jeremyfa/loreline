@@ -4,6 +4,8 @@ namespace Loreline;
 
 use Loreline\Internal\loreline\Arrays as HxArrays;
 use Loreline\Internal\loreline\Objects as HxObjects;
+use Loreline\Internal\loreline\RuntimeCharacterRef as HxCharacterRef;
+use Loreline\Internal\loreline\RuntimeBeatRef as HxBeatRef;
 
 /**
  * Recursive conversion between the runtime's internal Haxe containers and
@@ -26,6 +28,15 @@ final class Marshal
     {
         if ($value === null || is_scalar($value)) {
             return $value;
+        }
+        if ($value instanceof HxCharacterRef) {
+            // Character references cross the boundary as marker arrays, the
+            // same shape used in save data, so they can be handed back
+            return ['type' => '$characterRef', 'name' => HxCharacterRef::characterNameOf($value)];
+        }
+        if (($name = HxBeatRef::beatNameOf($value)) !== null) {
+            // Beat references cross as name-only markers (chainless)
+            return ['type' => '$beatRef', 'name' => $name];
         }
         if (HxArrays::isArray($value)) {
             $result = [];

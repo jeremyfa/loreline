@@ -760,6 +760,8 @@ class Interp {
     function get( o : Dynamic, f : String ) : Dynamic {
         if ( o == null ) error(EInvalidAccess(f));
 
+        o = RuntimeCharacterRef.fieldsOf(o);
+
         if (Objects.isFields(o)) {
             return Objects.getField(interpreter, o, f);
         }
@@ -781,6 +783,8 @@ class Interp {
     function set( o : Dynamic, f : String, v : Dynamic ) : Dynamic {
         if( o == null ) error(EInvalidAccess(f));
 
+        o = RuntimeCharacterRef.fieldsOf(o);
+
         if (Objects.isFields(o)) {
             Objects.setField(interpreter, o, f, v);
             return v;
@@ -793,6 +797,7 @@ class Interp {
     function fcall( o : Dynamic, f : String, args : Array<Dynamic> ) : Dynamic {
         // Try helper functions for built-in types first (string, array, map),
         // before calling get(o, f) which may fail on some targets for these types.
+        o = RuntimeCharacterRef.fieldsOf(o);
         var helper:Dynamic = null;
         final oBeat = RuntimeBeatRef.beatOf(o);
         if (o is String) {
