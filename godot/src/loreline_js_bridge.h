@@ -41,15 +41,16 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
     // Event queue: C++ polls this after play/advance/select/start/restore calls
     var _eventQueue = [];
 
-    // Serializes runtime values to JSON for the eval boundary. Beat values
-    // and beat references cross as their beat name string, matching the
-    // native converter; stringifying them raw would recurse into
-    // interpreter internals (captured scopes, AST nodes).
+    // Serializes runtime values to JSON for the eval boundary. Beat and
+    // character references cross as marker objects, the same shape used in
+    // save data, so they can be handed back and restored to live references;
+    // stringifying them raw would recurse into interpreter internals
+    // (captured scopes, AST nodes).
     function _lorStringify(value) {
         return JSON.stringify(value === undefined ? null : value, function(key, v) {
             if (v != null && typeof v === "object" && loreline.RuntimeBeatRef) {
                 var beatName = loreline.RuntimeBeatRef.beatNameOf(v);
-                if (beatName != null) return beatName;
+                if (beatName != null) return { type: "$beatRef", name: beatName };
             }
             if (v != null && typeof v === "object" && loreline.RuntimeCharacterRef) {
                 // Character references cross as marker objects, the same

@@ -92,10 +92,17 @@ func _check_initial_state(interp: LorelineInterpreter) -> void:
 		_fail("character traits did not round-trip, got: " + str(traits))
 		return
 
-	# Beat references cross as their beat name string
+	# Beat references cross as marker dictionaries (the save data shape),
+	# recognizable and accepted back by the runtime
 	var beat_ref = interp.get_state_field("beatRef")
-	if typeof(beat_ref) != TYPE_STRING or beat_ref != "start":
-		_fail("beat reference did not read as its name string, got: " + str(beat_ref))
+	if typeof(beat_ref) != TYPE_DICTIONARY or beat_ref.get("type") != "$beatRef":
+		_fail("beat reference did not read as a marker dictionary, got: " + str(beat_ref))
+		return
+	# Hand the marker back: the runtime must restore a live reference
+	interp.set_state_field("beatRefBack", beat_ref)
+	var beat_back = interp.get_state_field("beatRefBack")
+	if typeof(beat_back) != TYPE_DICTIONARY or beat_back.get("type") != "$beatRef":
+		_fail("beat reference marker did not round-trip, got: " + str(beat_back))
 		return
 
 

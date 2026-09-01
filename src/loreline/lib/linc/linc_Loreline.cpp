@@ -585,16 +585,21 @@ static Loreline_Value linc_hxToValueDepth(::Dynamic val, int depth) {
         return Loreline_Value::null_val();
     }
 
-    /* Beat values and beat references cross the boundary as their beat
-     * name string: the captured scope chain is not representable host-side,
-     * but the name remains usable with the dynamic beat APIs. Must be
-     * checked before isFields, whose unknown-object default is true. */
+    /* Beat values and beat references cross the boundary as marker dicts,
+     * the same shape used in save data, so hosts can recognize them and
+     * hand them back to restore a live reference (the captured scope chain
+     * itself is not representable host-side, the marker is name-only).
+     * Must be checked before isFields, whose unknown-object default is
+     * true. */
     {
         ::loreline::NBeatDecl beat = ::loreline::RuntimeBeatRef_obj::beatOf(val);
         if (hx::IsNotNull(beat)) {
             ::String name = beat->name;
             if (hx::IsNull(name)) return Loreline_Value::null_val();
-            return Loreline_Value::from_string(Loreline_String(name.c_str()));
+            Loreline_Object obj = Loreline_Object::create();
+            obj.set("type", Loreline_Value::from_string(Loreline_String("$beatRef")));
+            obj.set("name", Loreline_Value::from_string(Loreline_String(name.c_str())));
+            return Loreline_Value::from_object(obj);
         }
     }
 
