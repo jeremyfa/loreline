@@ -1,0 +1,41 @@
+state
+  c: red
+
+character b
+  name: Bee
+
+// An interpolation on the first line used to shift the offsets of the tags
+// found on the next lines of the same paragraph, eating the text before them
+x $c y
+x <b>t</b> y
+
+// Interpolations inside the tags themselves, on both lines
+x <color $c>t</color> y
+x <color=${c}>t</color> y
+
+// Same, in a multiline dialogue
+b: line one $c
+  line two <i>t</i> here
+
+// Interpolation at the very start of a continuation line (indentation of that
+// line lives in the previous text part, and must still be stripped)
+first line here
+${c}, second line continues here
+
+/*
+<test>
+- expected: |
+    ~ x red y
+      x <<b>>t<</b>> y
+
+    ~ x <<color red>>t<</color>> y
+      x <<color=red>>t<</color>> y
+
+    Bee:
+      line one red
+      line two <<i>>t<</i>> here
+
+    ~ first line here
+      red, second line continues here
+</test>
+*/

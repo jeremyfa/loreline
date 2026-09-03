@@ -4625,21 +4625,10 @@ typedef InterpreterOptions = {
         final lines = content.split("\n");
         var minIndent:Int = -1;
 
-        // Compute the first line's indent (only counts if > 0, matching old behavior
-        // where ltrim() already stripped the first line's leading whitespace)
-        if (lines[0].uLength() > 0) {
-            var firstIndent = 0;
-            while (firstIndent < lines[0].uLength()) {
-                final c = lines[0].uCharCodeAt(firstIndent);
-                if (c != " ".code && c != "\t".code) break;
-                firstIndent++;
-            }
-            if (firstIndent > 0 && firstIndent < lines[0].uLength()) {
-                minIndent = firstIndent;
-            }
-        }
-
-        // Compute minimum indent across continuation lines
+        // Compute minimum indent across continuation lines. The first line never
+        // counts: it either had its leading whitespace stripped by ltrim() already,
+        // or the part starts mid-line (right after an interpolation or a tag), where
+        // leading spaces are text and not indentation at all.
         for (i in 1...lines.length) {
             final line = lines[i];
             if (line.uLength() == 0) continue;
@@ -4649,10 +4638,12 @@ typedef InterpreterOptions = {
                 if (c != " ".code && c != "\t".code) break;
                 indent++;
             }
-            if (indent > 0) {
-                if (minIndent == -1 || indent < minIndent) {
-                    minIndent = indent;
-                }
+            // Whitespace-only lines count as well: a line holding nothing but the
+            // indentation that precedes an interpolation is still real indentation
+            // (see test/Expressions-TernaryLineStart.lor). A line with content and
+            // no indentation gives minIndent = 0, which strips nothing.
+            if (minIndent == -1 || indent < minIndent) {
+                minIndent = indent;
             }
         }
 
