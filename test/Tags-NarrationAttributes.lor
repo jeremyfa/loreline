@@ -1,0 +1,68 @@
+state
+  c: red
+  a: 2
+  b: 1
+
+// Tag with an `=` attribute in unquoted narration
+x <color=red>t</color> y
+
+// Same, with the tag at the very beginning of the line
+<color=red>t</color> y
+
+// A `=` in the text surrounded by tags stays text too
+x <b>a=b</b> y
+
+// A comparison operator in tagged text
+x <b>a==b</b>
+
+// Other attribute separators
+x <color:red>t</color>
+
+x <color(red)>t</color>
+
+// Attribute value coming from an interpolation
+x <color $c>t</color> y
+
+x <color=${c}>t</color> y
+
+// A `>` inside an interpolation inside a tag
+x <size ${a > b}>t</size> y
+
+// A tagged line is text even when a `=` follows outside of the tag
+x <b>a</b> = y
+
+// Tag right after an identifier, without any surrounding space
+a<color=red>b
+
+// A `=` outside of any tag is still an assignment
+c = "blue"
+Color is now $c
+
+/*
+<test>
+- expected: |
+    ~ x <<color=red>>t<</color>> y
+
+    ~ <<color=red>>t<</color>> y
+
+    ~ x <<b>>a=b<</b>> y
+
+    ~ x <<b>>a==b<</b>>
+
+    ~ x <<color:red>>t<</color>>
+
+    ~ x <<color(red)>>t<</color>>
+
+    ~ x <<color red>>t<</color>> y
+
+    ~ x <<color=red>>t<</color>> y
+
+    ~ x <<size true>>t<</size>> y
+
+    ~ x <<b>>a<</b>> = y
+
+    ~ a<<color=red>>b
+
+    ~ Color is now blue
+</test>
+*/

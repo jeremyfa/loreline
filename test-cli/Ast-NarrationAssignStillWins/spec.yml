@@ -1,0 +1,2 @@
+args: [ast, sample.lor]
+stdoutContains: "NAssign"

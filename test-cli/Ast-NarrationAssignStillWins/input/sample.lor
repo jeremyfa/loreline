@@ -1,0 +1,3 @@
+// A `=` outside of any text tag still makes the line an assignment,
+// even when it reads like prose. Prose containing a `=` must be quoted.
+The price = 3 coins here

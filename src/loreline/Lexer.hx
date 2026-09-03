@@ -1895,8 +1895,17 @@ class Token {
                     if (!readIdent()) return false;
                 }
                 else {
+                    // A line that contains a text tag region is text, never an assignment:
+                    // no assignment target or value can hold a tag, while text tags such as
+                    // `<color=red>` (and the text around them) commonly hold a `=`. This
+                    // mirrors the tmLanguage `assigns` rule, which likewise refuses any line
+                    // where a `<` precedes the `=`. A `=` met before the tag has already
+                    // returned true above, so `a = b<c>d` still reads as an assignment.
+                    if (c == "<".code && scanTagEnd(pos) != -1) {
+                        return false;
+                    }
                     // Skip two-char comparison operators so their trailing = isn't matched as assignment
-                    if ((c == "=".code || c == "!".code || c == "<".code || c == ">".code) && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "=".code) {
+                    else if ((c == "=".code || c == "!".code || c == "<".code || c == ">".code) && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "=".code) {
                         pos += 2;
                     } else {
                         pos++;
@@ -2430,6 +2439,50 @@ class Token {
     }
 
     /**
+     * Returns whether a text tag starts at the given position: a `<` followed by an
+     * optional `/` and then a tag name start. Single source of truth for the tag
+     * detection performed by readString(), tryReadUnquotedString(), scanStringEnd()
+     * and scanTagEnd(), so that they cannot drift apart.
+     */
+    function isTagStart(pos:Int):Bool {
+        if (pos >= length || input.uCharCodeAt(pos) != "<".code) {
+            return false;
+        }
+        final isClosing = pos + 1 < length && input.uCharCodeAt(pos + 1) == "/".code;
+        final checkPos = pos + (isClosing ? 2 : 1);
+        if (checkPos >= length) {
+            return false;
+        }
+        final nameStart = input.uCharCodeAt(checkPos);
+        return isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code ||
+            (isClosing && nameStart == ">".code);
+    }
+
+    /**
+     * Stateless lookahead: when a text tag starts at `startPos`, finds the position
+     * immediately after its closing `>`. Returns -1 when there is no tag at that
+     * position, or when the tag isn't closed before the end of the line.
+     * Known limitation, shared with scanStringEnd()'s inTag mirror: a `>` inside a
+     * `${...}` interpolation ends the tag early. Harmless for the only caller,
+     * isAssignStart(), which just needs to know that a tag region is there.
+     */
+    function scanTagEnd(startPos:Int):Int {
+        if (!isTagStart(startPos)) {
+            return -1;
+        }
+        var p = startPos + 1;
+        while (p < length) {
+            final c = input.uCharCodeAt(p);
+            // Escape: \ + any char, same rule as readString()
+            if (c == "\\".code) { p += 2; continue; }
+            if (c == "\n".code || c == "\r".code) return -1;
+            if (c == ">".code) return p + 1;
+            p++;
+        }
+        return -1;
+    }
+
+    /**
      * Stateless lookahead: finds the position immediately after the closing `"` of a
      * double-quoted string starting at `startPos`. Follows identical character-handling
      * rules to readString() but is pure (no lexer state mutations).
@@ -2449,15 +2502,8 @@ class Token {
             // Closing quote: only when not inside a tag (mirrors tagStart == -1 check)
             if (c == '"'.code && !inTag) return p + 1;
             // Tag open: guarded by allowTags, exactly like readString()
-            if (allowTags && c == '<'.code && !inTag) {
-                final nc = p + 1 < length ? input.uCharCodeAt(p + 1) : 0;
-                final isClosing = nc == '/'.code;
-                final checkPos = p + (isClosing ? 2 : 1);
-                if (checkPos < length) {
-                    final ns = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(ns) || ns == '_'.code || ns == '$'.code ||
-                        (isClosing && ns == '>'.code)) inTag = true;
-                }
+            if (allowTags && c == '<'.code && !inTag && isTagStart(p)) {
+                inTag = true;
             }
             // Tag close: unconditional (mirrors readString()'s else-if c == '>');
             // inTag can only be true if allowTags was true when the < was seen
@@ -2951,12 +2997,8 @@ class Token {
                 }
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
-                final checkPos = pos + (tagIsClosing ? 2 : 1);
-                if (checkPos < length) {
-                    final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
-                        tagStart = buf.length;
-                    }
+                if (isTagStart(pos)) {
+                    tagStart = buf.length;
                 }
                 buf.addChar(c);
                 advance();
@@ -3188,12 +3230,8 @@ class Token {
                 }
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
-                final checkPos = pos + (tagIsClosing ? 2 : 1);
-                if (checkPos < length) {
-                    final nameStart = input.uCharCodeAt(checkPos);
-                    if (isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code || (tagIsClosing && nameStart == ">".code)) {
-                        tagStart = buf.length;
-                    }
+                if (isTagStart(pos)) {
+                    tagStart = buf.length;
                 }
                 buf.addChar(c);
                 advance();
