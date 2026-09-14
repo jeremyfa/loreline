@@ -342,6 +342,17 @@ namespace Loreline
         }
 
         /// <summary>
+        /// Sets a specific field of a character.
+        /// </summary>
+        /// <param name="character">The name of the character</param>
+        /// <param name="name">The name of the field to set</param>
+        /// <param name="value">The value to set</param>
+        public void SetCharacterField(string character, string name, object value)
+        {
+            RuntimeInterpreter.setCharacterField(character, name, value);
+        }
+
+        /// <summary>
         /// Gets a state field by name, resolving from the current scope outward.
         /// </summary>
         /// <param name="name">The name of the field to get</param>
