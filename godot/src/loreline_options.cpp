@@ -150,9 +150,14 @@ Loreline_Value LorelineOptions::_on_custom_function(
 	Callable fn = ctx->options->_functions.get(ctx->function_name, Callable());
 	if (!fn.is_valid()) return Loreline_Value::null_val();
 
+	// The calling interpreter may be a child spawned from ctx->wrapper: its handle
+	// carries its own wrapper as userData.
+	LorelineInterpreter *wrapper = interp ? static_cast<LorelineInterpreter *>(Loreline_interpreterUserData(interp)) : nullptr;
+	if (!wrapper) wrapper = ctx->wrapper;
+
 	// Build wrapper Ref FIRST (guard + source for the Variant we pass to GDScript).
-	Ref<LorelineInterpreter> wrapper_ref(ctx->wrapper);
-	Variant wrapper_variant = ctx->wrapper ? Variant(wrapper_ref) : Variant();
+	Ref<LorelineInterpreter> wrapper_ref(wrapper);
+	Variant wrapper_variant = wrapper ? Variant(wrapper_ref) : Variant();
 
 	Array gdArgs;
 	for (int i = 0; i < argCount; i++) {
@@ -181,9 +186,13 @@ void LorelineOptions::_on_async_custom_function(
 		return;
 	}
 
+	// Same as sync functions: the caller may be a child with its own wrapper
+	LorelineInterpreter *wrapper = interp ? static_cast<LorelineInterpreter *>(Loreline_interpreterUserData(interp)) : nullptr;
+	if (!wrapper) wrapper = ctx->wrapper;
+
 	// Build wrapper Ref FIRST (guard + source for the resolve Callable and the interp arg).
-	Ref<LorelineInterpreter> wrapper_ref(ctx->wrapper);
-	Variant wrapper_variant = ctx->wrapper ? Variant(wrapper_ref) : Variant();
+	Ref<LorelineInterpreter> wrapper_ref(wrapper);
+	Variant wrapper_variant = wrapper ? Variant(wrapper_ref) : Variant();
 
 	Array gdArgs;
 	for (int i = 0; i < argCount; i++) {

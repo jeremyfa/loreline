@@ -17,8 +17,6 @@ class Functions {
 
     final interpreter:Interpreter;
 
-    var _random:Random = null;
-
     public function new(interpreter:Interpreter) {
         this.interpreter = interpreter;
     }
@@ -99,10 +97,12 @@ class Functions {
     // -- Private helper ------------------------------------------------
 
     function rng():Float {
-        if (_random == null) {
-            _random = new Random();
+        // The generator lives in the context, shared by every interpreter spawned from the same root
+        @:privateAccess final context = interpreter.context;
+        if (context.random == null) {
+            context.random = new Random();
         }
-        return _random.next();
+        return context.random.next();
     }
 
     // -- Math ----------------------------------------------------------
@@ -256,7 +256,7 @@ class Functions {
      * ```
      */
     public function seed_random(seed:Float):Dynamic {
-        _random = new Random(seed);
+        @:privateAccess interpreter.context.random = new Random(seed);
         return null;
     }
 

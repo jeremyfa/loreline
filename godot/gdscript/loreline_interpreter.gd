@@ -196,6 +196,106 @@ func start(beat_name: String = "") -> void:
 		_settle("start")
 
 
+## Key given to spawn(), or an empty string for a root interpreter.
+func get_key() -> String:
+	if _interp == null or _interp.key == null:
+		return ""
+	return _interp.key
+
+
+## Whether this interpreter is a root interpreter (not spawned from another one).
+func is_root() -> bool:
+	return _interp != null and _interp.isRoot()
+
+
+## Spawns a child interpreter that shares everything with this one (script,
+## state, characters, functions) except the playhead. The child is not
+## started: call start() on it. Any live child using the same key is disposed
+## first, and a restored flow still pending for that key is discarded (use
+## resume_spawn() to continue it instead). save_state() on any interpreter of
+## the family saves the shared state and every playhead.
+## A Callable left empty reuses what is connected to the same signal of this
+## interpreter.
+func spawn(key: String, on_dialogue: Callable = Callable(), on_choice: Callable = Callable(), on_finished: Callable = Callable()) -> LorelineInterpreter:
+	if _interp == null:
+		return null
+	var child := LorelineInterpreter.new()
+	var cbs := _core_callbacks(child)
+	var core = _interp.spawn(key, cbs[0], cbs[1], cbs[2], null)
+	if Loreline._report_error("spawn") or core == null:
+		return null
+	child._interp = core
+	child._interp.wrapper = weakref(child)
+	_wire_child(child, on_dialogue, on_choice, on_finished)
+	return child
+
+
+## Rebuilds a child interpreter from the flow saved under the given key, after
+## the root interpreter was restored (see resumable_spawn_keys()). Like
+## Loreline.resume(), execution resumes on the next process frame, so signals
+## can be connected first. Returns null if no saved child is pending for that key.
+func resume_spawn(key: String, on_dialogue: Callable = Callable(), on_choice: Callable = Callable(), on_finished: Callable = Callable()) -> LorelineInterpreter:
+	if _interp == null:
+		return null
+	var child := LorelineInterpreter.new()
+	var cbs := _core_callbacks(child)
+	var core = _interp.resumeSpawn(key, cbs[0], cbs[1], cbs[2], null)
+	if Loreline._report_error("resume_spawn") or core == null:
+		return null
+	child._interp = core
+	child._interp.wrapper = weakref(child)
+	_wire_child(child, on_dialogue, on_choice, on_finished)
+	Loreline.shared()._retain_inflight(child)
+	Loreline.shared()._queue_action(func():
+		child._interp.resume()
+		child._settle("resume_spawn"))
+	return child
+
+
+## Keys of the saved children not resumed with resume_spawn() (nor replaced
+## with spawn()) yet.
+func resumable_spawn_keys() -> Array:
+	var result := []
+	if _interp == null:
+		return result
+	for key in _interp.resumableSpawnKeys():
+		result.append(key)
+	return result
+
+
+## Stops a child interpreter for good: its playhead is cleared, it is not part
+## of saves anymore, and pending advance/select Callables become no-ops.
+## Reports an error on a root interpreter.
+func dispose() -> void:
+	if _interp == null:
+		return
+	_interp.dispose()
+	if Loreline._report_error("dispose"):
+		return
+	_pending_advance = Callable()
+	_pending_select = Callable()
+	Loreline.shared()._release_inflight(self)
+
+
+## Connects the child signals: to the given Callables, or else to whatever
+## is connected to the same signal of this interpreter.
+func _wire_child(child: LorelineInterpreter, on_dialogue: Callable, on_choice: Callable, on_finished: Callable) -> void:
+	var wiring := [
+		[dialogue, child.dialogue, on_dialogue],
+		[choice, child.choice, on_choice],
+		[finished, child.finished, on_finished],
+	]
+	for entry in wiring:
+		var own: Signal = entry[0]
+		var target: Signal = entry[1]
+		var callable: Callable = entry[2]
+		if callable.is_valid():
+			target.connect(callable)
+		else:
+			for connection in own.get_connections():
+				target.connect(connection["callable"])
+
+
 ## Returns the full interpreter state serialized as a JSON string.
 func save_state() -> String:
 	if _interp == null:

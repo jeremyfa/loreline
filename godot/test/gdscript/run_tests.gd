@@ -41,6 +41,9 @@ func _initialize() -> void:
 		var content := FileAccess.get_file_as_string(path)
 		suite.runFile(path, content)
 
+	if file_filter == "":
+		suite.runSpawnTests()
+
 	var ok: bool = suite.printSummary()
 	quit(0 if ok else 1)
 

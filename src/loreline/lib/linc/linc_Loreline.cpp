@@ -415,6 +415,15 @@ private:
     Loreline_Script& operator=(const Loreline_Script&);
 };
 
+/* A custom function registered by the host, kept on each interpreter handle so that
+ * a spawned child can build its own closures (capturing the child handle). */
+struct Loreline_FunctionEntry {
+    std::string name;
+    Loreline_CustomFunction syncFn;
+    Loreline_AsyncCustomFunction asyncFn;
+    void* userData;
+};
+
 struct Loreline_Interpreter {
     hx::Object* obj;
     hx::Object* pendingCb; /* GC-rooted pending callback (advance/select) */
@@ -435,6 +444,9 @@ struct Loreline_Interpreter {
      * reference right after advance()/select() frees userData while the Haxe
      * side still owes it a callback. */
     Loreline_Retainer* inflight;
+    /* Custom functions of this interpreter (copied from the options at play/resume,
+     * inherited from the parent when spawning). */
+    std::vector<Loreline_FunctionEntry> functions;
 
     Loreline_Interpreter() : obj(nullptr), pendingCb(nullptr), dialogueHandler(nullptr),
         choiceHandler(nullptr), finishHandler(nullptr), userData(nullptr),
@@ -514,12 +526,7 @@ struct Loreline_InterpreterOptions {
     bool strictAccess;
     hx::Object* translationsObj; /* GC-rooted Haxe StringMap, or nullptr */
 
-    struct FunctionEntry {
-        std::string name;
-        Loreline_CustomFunction syncFn;
-        Loreline_AsyncCustomFunction asyncFn;
-        void* userData;
-    };
+    typedef Loreline_FunctionEntry FunctionEntry;
     std::vector<FunctionEntry> functions;
 
     Loreline_InterpreterOptions()
@@ -1424,16 +1431,36 @@ HX_END_LOCAL_FUNC1(return)
 
 /* -- Parse ---------------------------------------------------------------- */
 
-/* Parse completion closure: 2 captures (C completion fn, userData), 1 Haxe arg
- * (the resulting Script, may be null on parse failure). Wraps into Loreline_Script*
- * and dispatches the C completion via DISPATCH_OUT (host's update tick). */
-HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_parseCompletion,
-    Loreline_ParseCompletionCallback, completion, void*, completionData) HXARGC(1)
+/* Parse completion closure: 4 captures (C completion fn, userData, direct, fired),
+ * 1 Haxe arg (the resulting Script, may be null on parse failure). Wraps into
+ * Loreline_Script* and dispatches the C completion via DISPATCH_OUT (host's update tick).
+ *
+ * `direct` is set by the sync wrapper (Loreline_parse): its completion only fills a
+ * slot and wakes the waiting caller, so it runs inline instead of going through the
+ * dispatch queue, which nobody drains while the caller waits (deferred callbacks after
+ * Loreline_update, or the internal thread). A direct completion also runs at most once
+ * (`fired`): the slot lives on the caller stack and is gone as soon as the caller wakes
+ * up, while Loreline.parse can report an error more than once (one per failing import). */
+HX_BEGIN_LOCAL_FUNC_S4(::hx::LocalFunc, _hx_Closure_parseCompletion,
+    Loreline_ParseCompletionCallback, completion, void*, completionData,
+    bool, direct, bool, fired) HXARGC(1)
 void _hx_run(::Dynamic hxScript) {
+    if (direct) {
+        if (fired) return;
+        fired = true;
+    }
     Loreline_Script* script = nullptr;
     if (!hx::IsNull(hxScript)) {
         script = new Loreline_Script();
         script->set(hxScript.GetPtr());
+    }
+    if (direct) {
+        if (completion) {
+            completion(script, completionData);
+        } else if (script) {
+            delete script;
+        }
+        return;
     }
     LORELINE_BEGIN_DISPATCH_OUT
     if (completion) {
@@ -1449,7 +1476,8 @@ HX_END_LOCAL_FUNC1((void))
 static LORELINE_NOINLINE void Loreline_parseAsync_hx(
     Loreline_String input, Loreline_String filePath,
     Loreline_FileHandler fileHandler, void* fileHandlerData,
-    Loreline_ParseCompletionCallback completionHandler, void* completionHandlerData
+    Loreline_ParseCompletionCallback completionHandler, void* completionHandlerData,
+    bool direct
 ) {
     LORELINE_HX_BEGIN
 
@@ -1462,19 +1490,16 @@ static LORELINE_NOINLINE void Loreline_parseAsync_hx(
     }
 
     ::Dynamic hxCompletion = ::Dynamic(new _hx_Closure_parseCompletion(
-        completionHandler, completionHandlerData));
+        completionHandler, completionHandlerData, direct, false));
 
     try {
         ::loreline::Loreline_obj::parse(hxInput, hxFilePath, hxFileHandler, hxCompletion);
         /* Result delivered via hxCompletion, sync (fires inline) or async (fires later) */
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_parseAsync error: %s\n", ((::String)e).c_str());
-        /* Best-effort: notify completion with null on error */
-        if (completionHandler) {
-            LORELINE_BEGIN_DISPATCH_OUT
-            completionHandler(nullptr, completionHandlerData);
-            LORELINE_END_DISPATCH_OUT
-        }
+        /* Best-effort: notify completion with null on error. Goes through the same
+         * closure so a direct completion that already fired is not called again. */
+        hxCompletion->__run(null());
     }
 
     LORELINE_HX_END
@@ -1490,7 +1515,7 @@ LORELINE_PUBLIC void Loreline_parseAsync(
 ) {
     LORELINE_BEGIN_CALL
     Loreline_parseAsync_hx(input, filePath, fileHandler, fileHandlerData,
-                           completionHandler, completionHandlerData);
+                           completionHandler, completionHandlerData, false);
     LORELINE_END_CALL
 }
 
@@ -1517,8 +1542,12 @@ LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     void* fileHandlerData
 ) {
     Loreline_ParseSyncSlot slot;
-    Loreline_parseAsync(input, filePath, fileHandler, fileHandlerData,
-                        Loreline_parseSync_completion, &slot);
+    Loreline_ParseSyncSlot* slotPtr = &slot;
+    /* Direct completion: see _hx_Closure_parseCompletion */
+    LORELINE_BEGIN_CALL
+    Loreline_parseAsync_hx(input, filePath, fileHandler, fileHandlerData,
+                           Loreline_parseSync_completion, slotPtr, true);
+    LORELINE_END_CALL
     std::unique_lock<std::mutex> lock(slot.mtx);
     slot.cv.wait(lock, [&]() { return slot.done; });
     return slot.result;
@@ -1569,13 +1598,28 @@ LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* transla
 /* LoadLocale completion closure: 2 captures (C completion fn, userData), 1 Haxe arg
  * (the resulting StringMap, may be null). Wraps into Loreline_Translations* and
  * dispatches the C completion via DISPATCH_OUT. */
-HX_BEGIN_LOCAL_FUNC_S2(::hx::LocalFunc, _hx_Closure_loadLocaleCompletion,
-    Loreline_LoadLocaleCallback, completion, void*, completionData) HXARGC(1)
+/* Same `direct` and `fired` handling as _hx_Closure_parseCompletion, for the sync
+ * wrapper Loreline_loadLocale. */
+HX_BEGIN_LOCAL_FUNC_S4(::hx::LocalFunc, _hx_Closure_loadLocaleCompletion,
+    Loreline_LoadLocaleCallback, completion, void*, completionData,
+    bool, direct, bool, fired) HXARGC(1)
 void _hx_run(::Dynamic hxTranslations) {
+    if (direct) {
+        if (fired) return;
+        fired = true;
+    }
     Loreline_Translations* translations = nullptr;
     if (!hx::IsNull(hxTranslations)) {
         translations = new Loreline_Translations();
         translations->set(hxTranslations.GetPtr());
+    }
+    if (direct) {
+        if (completion) {
+            completion(translations, completionData);
+        } else if (translations) {
+            delete translations;
+        }
+        return;
     }
     LORELINE_BEGIN_DISPATCH_OUT
     if (completion) {
@@ -1591,7 +1635,8 @@ static LORELINE_NOINLINE void Loreline_loadLocaleAsync_hx(
     Loreline_String locale, Loreline_Script* script,
     Loreline_String filePath,
     Loreline_FileHandler fileHandler, void* fileHandlerData,
-    Loreline_LoadLocaleCallback completionHandler, void* completionHandlerData
+    Loreline_LoadLocaleCallback completionHandler, void* completionHandlerData,
+    bool direct
 ) {
     LORELINE_HX_BEGIN
 
@@ -1604,7 +1649,7 @@ static LORELINE_NOINLINE void Loreline_loadLocaleAsync_hx(
     }
 
     ::Dynamic hxCompletion = ::Dynamic(new _hx_Closure_loadLocaleCompletion(
-        completionHandler, completionHandlerData));
+        completionHandler, completionHandlerData, direct, false));
 
     try {
         ::loreline::Loreline_obj::loadLocale(
@@ -1616,11 +1661,8 @@ static LORELINE_NOINLINE void Loreline_loadLocaleAsync_hx(
         );
     } catch (::Dynamic e) {
         fprintf(stderr, "Loreline_loadLocaleAsync error: %s\n", ((::String)e).c_str());
-        if (completionHandler) {
-            LORELINE_BEGIN_DISPATCH_OUT
-            completionHandler(nullptr, completionHandlerData);
-            LORELINE_END_DISPATCH_OUT
-        }
+        /* Same closure, so a direct completion that already fired is not called again */
+        hxCompletion->__run(null());
     }
 
     LORELINE_HX_END
@@ -1641,7 +1683,7 @@ LORELINE_PUBLIC void Loreline_loadLocaleAsync(
     }
     LORELINE_BEGIN_CALL
     Loreline_loadLocaleAsync_hx(locale, script, filePath, fileHandler, fileHandlerData,
-                                completionHandler, completionHandlerData);
+                                completionHandler, completionHandlerData, false);
     LORELINE_END_CALL
 }
 
@@ -1670,8 +1712,12 @@ LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
 ) {
     if (!script) return nullptr;
     Loreline_LoadLocaleSyncSlot slot;
-    Loreline_loadLocaleAsync(locale, script, filePath, fileHandler, fileHandlerData,
-                             Loreline_loadLocaleSync_completion, &slot);
+    Loreline_LoadLocaleSyncSlot* slotPtr = &slot;
+    /* Direct completion: see _hx_Closure_parseCompletion */
+    LORELINE_BEGIN_CALL
+    Loreline_loadLocaleAsync_hx(locale, script, filePath, fileHandler, fileHandlerData,
+                                Loreline_loadLocaleSync_completion, slotPtr, true);
+    LORELINE_END_CALL
     std::unique_lock<std::mutex> lock(slot.mtx);
     slot.cv.wait(lock, [&]() { return slot.done; });
     return slot.result;
@@ -1717,6 +1763,33 @@ LORELINE_PUBLIC Loreline_String Loreline_lastError(void) {
     return out;
 }
 
+/* Builds the Haxe functions StringMap of an interpreter handle, with closures
+ * capturing that handle (so host functions receive the interpreter that calls them).
+ * Returns null when the handle has no custom function. */
+static ::Dynamic linc_buildFunctionsMap(Loreline_Interpreter* h) {
+    if (h->functions.empty()) return null();
+    ::haxe::ds::StringMap map = ::haxe::ds::StringMap_obj::__new();
+    for (size_t i = 0; i < h->functions.size(); i++) {
+        const Loreline_FunctionEntry& entry = h->functions[i];
+        ::Dynamic hxFunc;
+        if (entry.syncFn) {
+            hxFunc = ::Dynamic(
+                new _hx_Closure_customFunction(
+                    entry.syncFn, entry.userData, h));
+        } else {
+            hxFunc = ::Dynamic(
+                new _hx_Closure_asyncCustomFunction(
+                    entry.asyncFn, entry.userData, h));
+        }
+        // Wrap with Reflect.makeVarArgs so the Interpreter can invoke
+        // via positional Reflect.callMethod; our closures expect a single
+        // Array<Any> argument containing all script-level positional args.
+        hxFunc = ::Reflect_obj::makeVarArgs(hxFunc);
+        map->set(::String(entry.name.c_str()), hxFunc);
+    }
+    return map;
+}
+
 /* -- Play ----------------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_play_hx(
@@ -1732,30 +1805,8 @@ static LORELINE_NOINLINE void Loreline_play_hx(
 
     ::Dynamic hxOptions = null();
     if (opts) {
-        /* Build Haxe functions StringMap from C entries */
-        ::Dynamic hxFunctions = null();
-        if (!opts->functions.empty()) {
-            ::haxe::ds::StringMap map = ::haxe::ds::StringMap_obj::__new();
-            for (size_t i = 0; i < opts->functions.size(); i++) {
-                const auto& entry = opts->functions[i];
-                ::Dynamic hxFunc;
-                if (entry.syncFn) {
-                    hxFunc = ::Dynamic(
-                        new _hx_Closure_customFunction(
-                            entry.syncFn, entry.userData, h));
-                } else {
-                    hxFunc = ::Dynamic(
-                        new _hx_Closure_asyncCustomFunction(
-                            entry.asyncFn, entry.userData, h));
-                }
-                // Wrap with Reflect.makeVarArgs so the Interpreter can invoke
-                // via positional Reflect.callMethod; our closures expect a single
-                // Array<Any> argument containing all script-level positional args.
-                hxFunc = ::Reflect_obj::makeVarArgs(hxFunc);
-                map->set(::String(entry.name.c_str()), hxFunc);
-            }
-            hxFunctions = map;
-        }
+        /* Build Haxe functions StringMap from the C entries copied on the handle */
+        ::Dynamic hxFunctions = linc_buildFunctionsMap(h);
 
         ::Dynamic hxTranslations = opts->translationsObj
             ? ::Dynamic(opts->translationsObj) : null();
@@ -1780,7 +1831,8 @@ static LORELINE_NOINLINE void Loreline_play_hx(
          * h->obj to already point at the interpreter. Mirrors Loreline.play. */
         ::loreline::Interpreter hxInterp = ::loreline::Interpreter_obj::__new(
             (::loreline::Script)hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
-            (::loreline::InterpreterOptions)hxOptions
+            (::loreline::InterpreterOptions)hxOptions,
+            null() /* parentContext: a root interpreter */
         );
         h->set(hxInterp.GetPtr());
         hxInterp->start(hxBeatName);
@@ -1814,6 +1866,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     handle->userData = userData;
     handle->retain = retain;
     handle->release = release;
+    if (options) handle->functions = options->functions;
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
@@ -1848,29 +1901,7 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
 
     ::Dynamic hxOptions = null();
     if (opts) {
-        ::Dynamic hxFunctions = null();
-        if (!opts->functions.empty()) {
-            ::haxe::ds::StringMap map = ::haxe::ds::StringMap_obj::__new();
-            for (size_t i = 0; i < opts->functions.size(); i++) {
-                const auto& entry = opts->functions[i];
-                ::Dynamic hxFunc;
-                if (entry.syncFn) {
-                    hxFunc = ::Dynamic(
-                        new _hx_Closure_customFunction(
-                            entry.syncFn, entry.userData, h));
-                } else {
-                    hxFunc = ::Dynamic(
-                        new _hx_Closure_asyncCustomFunction(
-                            entry.asyncFn, entry.userData, h));
-                }
-                // Wrap with Reflect.makeVarArgs so the Interpreter can invoke
-                // via positional Reflect.callMethod; our closures expect a single
-                // Array<Any> argument containing all script-level positional args.
-                hxFunc = ::Reflect_obj::makeVarArgs(hxFunc);
-                map->set(::String(entry.name.c_str()), hxFunc);
-            }
-            hxFunctions = map;
-        }
+        ::Dynamic hxFunctions = linc_buildFunctionsMap(h);
 
         ::Dynamic hxTranslations = opts->translationsObj
             ? ::Dynamic(opts->translationsObj) : null();
@@ -1890,7 +1921,8 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
          * Mirrors Loreline.resume. */
         ::loreline::Interpreter hxInterp = ::loreline::Interpreter_obj::__new(
             (::loreline::Script)hxScript, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
-            (::loreline::InterpreterOptions)hxOptions
+            (::loreline::InterpreterOptions)hxOptions,
+            null() /* parentContext: a root interpreter */
         );
         h->set(hxInterp.GetPtr());
         hxInterp->restore(hxSaveData);
@@ -1931,6 +1963,7 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
     handle->userData = userData;
     handle->retain = retain;
     handle->release = release;
+    if (options) handle->functions = options->functions;
 
     Loreline_Interpreter* h = handle;
     ::Dynamic hxScript = ::Dynamic(script->obj);
@@ -2010,9 +2043,14 @@ static LORELINE_NOINLINE void Loreline_restore_hx(Loreline_Interpreter* interp, 
     LORELINE_HX_BEGIN
     ::String hxSaveStr = linc_toHxString(saveData);
     ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
-    ::Dynamic hxSaveData = ::loreline::Json_obj::parse(hxSaveStr);
-    hxInterp->restore(hxSaveData);
-    hxInterp->resume();
+    try {
+        ::Dynamic hxSaveData = ::loreline::Json_obj::parse(hxSaveStr);
+        hxInterp->restore(hxSaveData);
+        hxInterp->resume();
+    } catch (::Dynamic e) {
+        /* restore() throws on a child interpreter (only a root restores the shared state) */
+        fprintf(stderr, "Loreline_restore error: %s\n", ((::String)e).c_str());
+    }
     LORELINE_HX_END
 }
 
@@ -2022,6 +2060,204 @@ LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, Loreline_Str
     LORELINE_BEGIN_CALL
     Loreline_restore_hx(interp, saveData);
     LORELINE_END_CALL
+}
+
+/* -- Child interpreters --------------------------------------------------- */
+
+/* Creates the Haxe child interpreter of `child` from `parent`, either fresh (spawn)
+ * or rebuilt from a restored flow (resumeSpawn). On failure the child handle is
+ * deleted here, on the Haxe thread, and the caller gets child->obj == nullptr. */
+static LORELINE_NOINLINE void Loreline_spawn_hx(
+    Loreline_Interpreter* parent, Loreline_Interpreter* child,
+    Loreline_String key, bool resume, bool* outOk
+) {
+    LORELINE_HX_BEGIN
+    try {
+        ::loreline::Interpreter hxParent = (::loreline::Interpreter)::Dynamic(parent->obj);
+
+        ::Dynamic hxDialogueHandler = ::Dynamic(new _hx_Closure_dialogue(child));
+        ::Dynamic hxChoiceHandler = ::Dynamic(new _hx_Closure_choice(child));
+        ::Dynamic hxFinishHandler = ::Dynamic(new _hx_Closure_finish(child));
+
+        /* Only the functions matter for a child (state options live in the shared
+         * context). Without functions, the child can reuse the parent definitions,
+         * as there is no closure capturing a handle to rebind. */
+        ::Dynamic hxFunctions = linc_buildFunctionsMap(child);
+        ::Dynamic hxOptions = null();
+        if (!hx::IsNull(hxFunctions)) {
+            hxOptions = ::loreline::InterpreterOptions_obj::__new(
+                hxFunctions, false, null(), null(), null());
+        }
+
+        ::String hxKey = linc_toHxString(key);
+        ::loreline::Interpreter hxChild = resume
+            ? hxParent->resumeSpawn(hxKey, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
+                (::loreline::InterpreterOptions)hxOptions)
+            : hxParent->spawn(hxKey, hxDialogueHandler, hxChoiceHandler, hxFinishHandler,
+                (::loreline::InterpreterOptions)hxOptions);
+        child->set(hxChild.GetPtr());
+        *outOk = true;
+    } catch (::Dynamic e) {
+        fprintf(stderr, "%s error: %s\n", resume ? "Loreline_resumeSpawn" : "Loreline_spawn", ((::String)e).c_str());
+        delete child;
+        *outOk = false;
+    }
+    LORELINE_HX_END
+}
+
+static Loreline_Interpreter* linc_spawnChild(
+    Loreline_Interpreter* parent, Loreline_String key, bool resume,
+    Loreline_DialogueHandler onDialogue, Loreline_ChoiceHandler onChoice, Loreline_FinishHandler onFinish,
+    void* userData, Loreline_UserDataRetain retain, Loreline_UserDataRelease release
+) {
+    if (!parent || !parent->obj || key.isNull()) return nullptr;
+
+    Loreline_Interpreter* child = new Loreline_Interpreter();
+    child->dialogueHandler = onDialogue ? onDialogue : parent->dialogueHandler;
+    child->choiceHandler = onChoice ? onChoice : parent->choiceHandler;
+    child->finishHandler = onFinish ? onFinish : parent->finishHandler;
+    child->userData = userData;
+    child->retain = retain;
+    child->release = release;
+    child->functions = parent->functions;
+
+    bool ok = false;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_spawn_hx(parent, child, key, resume, &ok);
+    LORELINE_END_CALL
+
+    return ok ? child : nullptr;
+}
+
+LORELINE_PUBLIC Loreline_Interpreter* Loreline_spawn(
+    Loreline_Interpreter* parent,
+    Loreline_String key,
+    Loreline_DialogueHandler onDialogue,
+    Loreline_ChoiceHandler onChoice,
+    Loreline_FinishHandler onFinish,
+    void* userData,
+    Loreline_UserDataRetain retain,
+    Loreline_UserDataRelease release
+) {
+    return linc_spawnChild(parent, key, false, onDialogue, onChoice, onFinish, userData, retain, release);
+}
+
+static LORELINE_NOINLINE void Loreline_resumeChild_hx(Loreline_Interpreter* interp) {
+    LORELINE_HX_BEGIN
+    try {
+        ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+        hxInterp->resume();
+    } catch (::Dynamic e) {
+        fprintf(stderr, "Loreline_resumeSpawn error: %s\n", ((::String)e).c_str());
+        /* The run aborted: no delivery will come to disarm the inflight
+         * retainer, so release it from the host thread. */
+        Loreline_Interpreter* h = interp;
+        linc_Loreline_dispatchOut([h]() { linc_releaseInflight(h); });
+    }
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC Loreline_Interpreter* Loreline_resumeSpawn(
+    Loreline_Interpreter* parent,
+    Loreline_String key,
+    Loreline_DialogueHandler onDialogue,
+    Loreline_ChoiceHandler onChoice,
+    Loreline_FinishHandler onFinish,
+    void* userData,
+    Loreline_UserDataRetain retain,
+    Loreline_UserDataRelease release
+) {
+    Loreline_Interpreter* child = linc_spawnChild(parent, key, true, onDialogue, onChoice, onFinish, userData, retain, release);
+    if (!child) return nullptr;
+
+    /* Like Loreline_resume: playback continues right away, toward the next callback */
+    linc_retainInflight(child);
+
+    LORELINE_BEGIN_CALL
+    Loreline_resumeChild_hx(child);
+    LORELINE_END_CALL
+
+    return child;
+}
+
+LORELINE_PUBLIC void* Loreline_interpreterUserData(Loreline_Interpreter* interp) {
+    return interp ? interp->userData : nullptr;
+}
+
+static LORELINE_NOINLINE void Loreline_resumableSpawnKeys_hx(Loreline_Interpreter* interp, std::vector<Loreline_String>* out) {
+    LORELINE_HX_BEGIN
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    ::Array< ::String > keys = hxInterp->resumableSpawnKeys();
+    for (int i = 0; i < keys->length; i++) {
+        out->push_back(linc_hxToString(keys[i]));
+    }
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC int Loreline_resumableSpawnKeyCount(Loreline_Interpreter* interp) {
+    if (!interp || !interp->obj) return 0;
+    std::vector<Loreline_String> keys;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_resumableSpawnKeys_hx(interp, &keys);
+    LORELINE_END_CALL
+    return (int)keys.size();
+}
+
+LORELINE_PUBLIC Loreline_String Loreline_resumableSpawnKey(Loreline_Interpreter* interp, int index) {
+    if (!interp || !interp->obj || index < 0) return Loreline_String();
+    std::vector<Loreline_String> keys;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_resumableSpawnKeys_hx(interp, &keys);
+    LORELINE_END_CALL
+    return index < (int)keys.size() ? keys[index] : Loreline_String();
+}
+
+static LORELINE_NOINLINE void Loreline_interpreterKey_hx(Loreline_Interpreter* interp, Loreline_String* out, bool* outRoot) {
+    LORELINE_HX_BEGIN
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    *out = linc_hxToString(hxInterp->key);
+    *outRoot = hxInterp->isRoot();
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC Loreline_String Loreline_interpreterKey(Loreline_Interpreter* interp) {
+    if (!interp || !interp->obj) return Loreline_String();
+    Loreline_String key;
+    bool root = false;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_interpreterKey_hx(interp, &key, &root);
+    LORELINE_END_CALL
+    return key;
+}
+
+LORELINE_PUBLIC bool Loreline_isRoot(Loreline_Interpreter* interp) {
+    if (!interp || !interp->obj) return false;
+    Loreline_String key;
+    bool root = false;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_interpreterKey_hx(interp, &key, &root);
+    LORELINE_END_CALL
+    return root;
+}
+
+static LORELINE_NOINLINE void Loreline_disposeInterpreter_hx(Loreline_Interpreter* interp) {
+    LORELINE_HX_BEGIN
+    try {
+        ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+        hxInterp->dispose();
+    } catch (::Dynamic e) {
+        fprintf(stderr, "Loreline_disposeInterpreter error: %s\n", ((::String)e).c_str());
+    }
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_disposeInterpreter(Loreline_Interpreter* interp) {
+    if (!interp || !interp->obj) return;
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_disposeInterpreter_hx(interp);
+    LORELINE_END_CALL
+    /* No callback will come anymore to disarm a pending inflight retainer */
+    linc_releaseInflight(interp);
 }
 
 /* -- Character access ----------------------------------------------------- */

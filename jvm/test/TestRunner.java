@@ -430,6 +430,147 @@ public class TestRunner {
 
     // -- Main ------------------------------------------------------------
 
+    // Child interpreters: same scenario in every binding runner. A child spawned from the
+    // root shares its state, gets host functions bound to itself, and both playheads are
+    // saved from any interpreter then continued after a restore with resumeSpawn().
+    static final String SPAWN_SCRIPT = String.join("\n",
+        "state",
+        "  gold: 0",
+        "",
+        "beat Main",
+        "  gold = gold + 1",
+        "",
+        "  Main gold $gold",
+        "",
+        "  Main where $current_beat() host $who()",
+        "",
+        "beat Side",
+        "  new state",
+        "    local: 5",
+        "",
+        "  gold = gold + 10",
+        "",
+        "  Side gold $gold local $local",
+        "",
+        "  Side where $current_beat() host $who()",
+        ""
+    );
+
+    static final List<String> SPAWN_EXPECTED = Arrays.asList(
+        "root: Main gold 1",
+        "npc: Side gold 11 local 5",
+        "root: Main where Main host root",
+        "root: Main where Main host root",
+        "npc: Side gold 11 local 5",
+        "npc: Side where Side host npc"
+    );
+
+    static String spawnNameOf(Interpreter interp) {
+        return interp.getKey() != null ? interp.getKey() : "root";
+    }
+
+    static void runSpawnTest() {
+        final String label = "spawn: shared state, bound functions, save and resumeSpawn";
+        try {
+            final List<String> log = new ArrayList<>();
+            final Map<String, Runnable> pending = new HashMap<>();
+            DialogueHandler dialogue = (interp, character, text, tags, advance) -> {
+                log.add(spawnNameOf(interp) + ": " + (character != null ? character + ": " : "") + text);
+                pending.put(spawnNameOf(interp), advance);
+            };
+            ChoiceHandler choice = (interp, options, select) -> {};
+            FinishHandler finish = interp -> {};
+
+            InterpreterOptions options = new InterpreterOptions();
+            options.functions = new HashMap<>();
+            options.functions.put("who", (interp, args) -> spawnNameOf(interp));
+
+            Script script = Loreline.parse(SPAWN_SCRIPT);
+            Interpreter root = Loreline.play(script, dialogue, choice, finish, null, options);
+            Interpreter npc = root.spawn("npc", dialogue, choice, finish);
+            npc.start("Side");
+            spawnNext(pending, "root");
+
+            List<String> checks = new ArrayList<>();
+            if (!"npc".equals(npc.getKey())) checks.add("child key: " + npc.getKey());
+            if (root.getKey() != null) checks.add("root key: " + root.getKey());
+            if (npc.isRoot() || !root.isRoot()) checks.add("isRoot");
+            String saveData = npc.save();
+            if (!saveData.equals(root.save())) checks.add("save from child differs from save from root");
+
+            pending.clear();
+            Interpreter restored = Loreline.resume(script, dialogue, choice, finish, saveData, null, options);
+            List<String> keys = restored.resumableSpawnKeys();
+            if (!keys.equals(Arrays.asList("npc"))) checks.add("resumableSpawnKeys: " + keys);
+            restored.resumeSpawn("npc", dialogue, choice, finish).resume();
+            spawnNext(pending, "npc");
+
+            if (!log.equals(SPAWN_EXPECTED)) {
+                checks.add("log:\n    " + String.join("\n    ", log));
+            }
+            if (!checks.isEmpty()) throw new RuntimeException(String.join("; ", checks));
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
+    // Fields object handed out by the custom factory of runCustomFieldsTest
+    static class TestFieldsMap extends LinkedHashMap<String, Object> {}
+
+    // The customCreateFields option: every fields object comes from the host factory,
+    // which receives the interpreter asking for it.
+    static void runCustomFieldsTest() {
+        final String label = "custom fields: factory used for state and characters";
+        try {
+            final List<Interpreter> created = new ArrayList<>();
+            InterpreterOptions options = new InterpreterOptions();
+            options.customCreateFields = (interp, type) -> {
+                created.add(interp);
+                return new TestFieldsMap();
+            };
+
+            Script script = Loreline.parse(String.join("\n",
+                "character bob",
+                "  name: Bob",
+                "",
+                "beat Main",
+                "  bob.mood = \"happy\"",
+                "",
+                "  Hello",
+                ""
+            ));
+            Interpreter root = Loreline.play(script,
+                (interp, character, text, tags, advance) -> advance.run(),
+                (interp, opts, select) -> {},
+                interp -> {},
+                null, options);
+
+            List<String> checks = new ArrayList<>();
+            if (!(root.getCharacter("bob") instanceof TestFieldsMap)) checks.add("character bob not created by the factory");
+            if (!"happy".equals(root.getCharacterField("bob", "mood"))) checks.add("bob.mood not written through the factory object");
+            if (!created.contains(root)) checks.add("factory not called with the interpreter");
+            if (!checks.isEmpty()) throw new RuntimeException(String.join("; ", checks));
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
+    static void spawnNext(Map<String, Runnable> pending, String name) {
+        Runnable cb = pending.remove(name);
+        if (cb == null) throw new RuntimeException("No pending dialogue for " + name);
+        cb.run();
+    }
+
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: java TestRunner <test-directory>");
@@ -651,6 +792,9 @@ public class TestRunner {
 
             if (failCount > failBefore) fileFailCount++;
         }
+
+        runSpawnTest();
+        runCustomFieldsTest();
 
         int total = passCount + failCount;
         System.out.println();

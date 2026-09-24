@@ -1,5 +1,6 @@
 #pragma once
 
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/callable.hpp>
@@ -49,6 +50,9 @@ public:
 private:
 #else
 	Loreline_Interpreter *_interp;
+	// Set on a child interpreter: keeps the parent (and the function contexts it owns,
+	// shared by the child's custom functions) alive as long as the child
+	Ref<LorelineInterpreter> _parent_ref;
 	Variant _options_ref; // Retained so LorelineFunctionCallContext->options stays valid
 	std::vector<LorelineFunctionCallContext *> _fn_contexts; // owned, freed in destructor
 	// The continuation the runtime is waiting on, if any. Each is bound to the
@@ -91,6 +95,9 @@ private:
 	static Loreline_Value _variant_to_value(const Variant &variant);
 #endif
 
+	Ref<LorelineInterpreter> _spawn_child(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, bool resume);
+	void _wire_child(const Ref<LorelineInterpreter> &child, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished);
+
 protected:
 	static void _bind_methods();
 
@@ -113,6 +120,13 @@ public:
 	Variant get_top_level_state_field(const String &field);
 	void set_top_level_state_field(const String &field, const Variant &value);
 	Dictionary current_node();
+
+	String get_key();
+	bool is_root();
+	Ref<LorelineInterpreter> spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished);
+	Ref<LorelineInterpreter> resume_spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished);
+	Array resumable_spawn_keys();
+	void dispose();
 };
 
 // Builds the `resolve` Callable passed as the third argument to a user's

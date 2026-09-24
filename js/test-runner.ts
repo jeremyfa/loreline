@@ -496,6 +496,9 @@ async function main(): Promise<void> {
         if (failCount > failBefore) fileFailCount++;
     }
 
+    runSpawnTest();
+    runCustomFieldsTest();
+
     const total: number = passCount + failCount;
     console.log('');
     if (failCount === 0) {
@@ -503,6 +506,137 @@ async function main(): Promise<void> {
     } else {
         console.log(`\x1b[1m\x1b[31m  ${failCount} of ${total} tests failed (${fileFailCount} of ${fileCount} files)\x1b[0m`);
         process.exit(1);
+    }
+}
+
+// Child interpreters: same scenario in every binding runner. A child spawned from the
+// root shares its state, gets host functions bound to itself, and both playheads are
+// saved from any interpreter then continued after a restore with resumeSpawn().
+const SPAWN_SCRIPT = [
+    'state',
+    '  gold: 0',
+    '',
+    'beat Main',
+    '  gold = gold + 1',
+    '',
+    '  Main gold $gold',
+    '',
+    '  Main where $current_beat() host $who()',
+    '',
+    'beat Side',
+    '  new state',
+    '    local: 5',
+    '',
+    '  gold = gold + 10',
+    '',
+    '  Side gold $gold local $local',
+    '',
+    '  Side where $current_beat() host $who()',
+    ''
+].join('\n');
+
+const SPAWN_EXPECTED = [
+    'root: Main gold 1',
+    'npc: Side gold 11 local 5',
+    'root: Main where Main host root',
+    'root: Main where Main host root',
+    'npc: Side gold 11 local 5',
+    'npc: Side where Side host npc'
+];
+
+function runSpawnTest(): void {
+    const label = 'spawn: shared state, bound functions, save and resumeSpawn';
+    try {
+        const log: string[] = [];
+        const pending = new Map<string, () => void>();
+        const nameOf = (interp: Interpreter): string => interp.key ?? 'root';
+        const dialogue: DialogueHandler = (interp, character, text, _tags, callback) => {
+            log.push(`${nameOf(interp)}: ${character != null ? character + ': ' : ''}${text}`);
+            pending.set(nameOf(interp), callback);
+        };
+        const choice: ChoiceHandler = () => {};
+        const finish: FinishHandler = () => {};
+        const next = (name: string): void => {
+            const cb = pending.get(name);
+            if (!cb) throw new Error(`No pending dialogue for ${name}`);
+            pending.delete(name);
+            cb();
+        };
+        const options: InterpreterOptions = {
+            functions: { who: (interp: Interpreter, _args: any[]) => nameOf(interp) }
+        };
+
+        const script: Script = Loreline.parse(SPAWN_SCRIPT);
+        const root: Interpreter = Loreline.play(script, dialogue, choice, finish, null, options);
+        const npc = root.spawn('npc', dialogue, choice, finish);
+        npc.start('Side');
+        next('root');
+
+        const checks: string[] = [];
+        if (npc.key !== 'npc') checks.push(`child key: ${npc.key}`);
+        if (root.key != null) checks.push(`root key: ${root.key}`);
+        if (npc.isRoot() || !root.isRoot()) checks.push('isRoot');
+        const fromChild = JSON.stringify(npc.save());
+        if (fromChild !== JSON.stringify(root.save())) checks.push('save from child differs from save from root');
+
+        pending.clear();
+        const restored: Interpreter = Loreline.resume(script, dialogue, choice, finish, JSON.parse(fromChild), null, options);
+        const keys = restored.resumableSpawnKeys();
+        if (keys.join(',') !== 'npc') checks.push(`resumableSpawnKeys: ${keys.join(',')}`);
+        restored.resumeSpawn('npc', dialogue, choice, finish).resume();
+        next('npc');
+
+        if (log.join('\n') !== SPAWN_EXPECTED.join('\n')) {
+            checks.push('log:\n    ' + log.join('\n    '));
+        }
+        if (checks.length > 0) throw new Error(checks.join('; '));
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
+    }
+}
+
+// The customCreateFields option: every fields object comes from the host factory,
+// which receives the interpreter asking for it.
+function runCustomFieldsTest(): void {
+    const label = 'custom fields: factory used for state and characters';
+    try {
+        const script: Script = Loreline.parse([
+            'character bob',
+            '  name: Bob',
+            '',
+            'beat Main',
+            '  bob.mood = "happy"',
+            '',
+            '  Hello',
+            ''
+        ].join('\n'));
+        const created: any[] = [];
+        const options: InterpreterOptions = {
+            customCreateFields: (interp: Interpreter, type: string, node: Node) => {
+                const fields = { __custom: true };
+                created.push(interp);
+                return fields;
+            }
+        };
+        const root: Interpreter = Loreline.play(script, (_i, _c, _t, _tags, cb) => cb(), () => {}, () => {}, null, options);
+        const bob = root.getCharacter('bob');
+        const checks: string[] = [];
+        if (!bob || bob.__custom !== true) checks.push('character bob not created by the factory');
+        if (root.getCharacterField('bob', 'mood') !== 'happy') checks.push('bob.mood not written through the factory object');
+        if (created.length === 0 || created.indexOf(root) === -1) checks.push('factory not called with the interpreter');
+        if (checks.length > 0) throw new Error(checks.join('; '));
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
     }
 }
 

@@ -257,6 +257,9 @@ class Program
             if (failCount > failBefore) fileFailCount++;
         }
 
+        RunSpawnTest();
+        RunCustomFieldsTest();
+
         int total = passCount + failCount;
         Console.WriteLine();
         if (failCount == 0)
@@ -267,6 +270,166 @@ class Program
         {
             Console.WriteLine($"\x1b[1m\x1b[31m  {failCount} of {total} tests failed ({fileFailCount} of {fileCount} files)\x1b[0m");
             Environment.Exit(1);
+        }
+    }
+
+    // Child interpreters: same scenario in every binding runner. A child spawned from the
+    // root shares its state, gets host functions bound to itself, and both playheads are
+    // saved from any interpreter then continued after a restore with ResumeSpawn().
+    static readonly string SpawnScript = string.Join("\n", new[] {
+        "state",
+        "  gold: 0",
+        "",
+        "beat Main",
+        "  gold = gold + 1",
+        "",
+        "  Main gold $gold",
+        "",
+        "  Main where $current_beat() host $who()",
+        "",
+        "beat Side",
+        "  new state",
+        "    local: 5",
+        "",
+        "  gold = gold + 10",
+        "",
+        "  Side gold $gold local $local",
+        "",
+        "  Side where $current_beat() host $who()",
+        ""
+    });
+
+    static readonly string[] SpawnExpected = {
+        "root: Main gold 1",
+        "npc: Side gold 11 local 5",
+        "root: Main where Main host root",
+        "root: Main where Main host root",
+        "npc: Side gold 11 local 5",
+        "npc: Side where Side host npc"
+    };
+
+    static void RunSpawnTest()
+    {
+        const string label = "spawn: shared state, bound functions, save and resumeSpawn";
+        try
+        {
+            var log = new List<string>();
+            var pending = new Dictionary<string, Interpreter.DialogueCallback>();
+            string NameOf(Interpreter interp) => interp.Key ?? "root";
+
+            void Dialogue(Interpreter.Dialogue dialogue)
+            {
+                string name = NameOf(dialogue.Interpreter);
+                log.Add(name + ": " + (dialogue.Character != null ? dialogue.Character + ": " : "") + dialogue.Text);
+                pending[name] = dialogue.Callback;
+            }
+            void Choice(Interpreter.Choice choice) { }
+            void Finish(Interpreter.Finish finish) { }
+            void Next(string name)
+            {
+                if (!pending.TryGetValue(name, out Interpreter.DialogueCallback cb)) throw new Exception("No pending dialogue for " + name);
+                pending.Remove(name);
+                cb();
+            }
+
+            var options = Interpreter.InterpreterOptions.Default();
+            options.Functions = new Dictionary<string, Interpreter.Function>
+            {
+                ["who"] = (interp, args) => NameOf(interp)
+            };
+
+            Script script = Engine.Parse(SpawnScript);
+            Interpreter root = Engine.Play(script, Dialogue, Choice, Finish, null, options);
+            Interpreter npc = root.Spawn("npc", Dialogue, Choice, Finish);
+            npc.Start("Side");
+            Next("root");
+
+            var checks = new List<string>();
+            if (npc.Key != "npc") checks.Add("child key: " + npc.Key);
+            if (root.Key != null) checks.Add("root key: " + root.Key);
+            if (npc.IsRoot() || !root.IsRoot()) checks.Add("IsRoot");
+            string saveData = npc.Save();
+            if (saveData != root.Save()) checks.Add("save from child differs from save from root");
+
+            pending.Clear();
+            Interpreter restored = Engine.Resume(script, Dialogue, Choice, Finish, saveData, null, options);
+            string[] keys = restored.ResumableSpawnKeys();
+            if (string.Join(",", keys) != "npc") checks.Add("ResumableSpawnKeys: " + string.Join(",", keys));
+            restored.ResumeSpawn("npc", Dialogue, Choice, Finish).Resume();
+            Next("npc");
+
+            if (string.Join("\n", log) != string.Join("\n", SpawnExpected))
+            {
+                checks.Add("log:\n    " + string.Join("\n    ", log));
+            }
+            if (checks.Count > 0) throw new Exception(string.Join("; ", checks));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
+        }
+    }
+
+    // Fields object handed out by the custom factory of RunCustomFieldsTest
+    class TestFields : IFields
+    {
+        public Interpreter CreatedBy;
+        readonly Dictionary<string, object> values = new Dictionary<string, object>();
+
+        public void LorelineCreate(Interpreter interpreter) { }
+        public object LorelineGet(Interpreter interpreter, string key) => values.TryGetValue(key, out object value) ? value : null;
+        public void LorelineSet(Interpreter interpreter, string key, object value) { values[key] = value; }
+        public bool LorelineRemove(Interpreter interpreter, string key) => values.Remove(key);
+        public bool LorelineExists(Interpreter interpreter, string key) => values.ContainsKey(key);
+        public string[] LorelineFields(Interpreter interpreter) => values.Keys.ToArray();
+    }
+
+    // The CustomCreateFields option: every fields object comes from the host factory,
+    // which receives the interpreter asking for it.
+    static void RunCustomFieldsTest()
+    {
+        const string label = "custom fields: factory used for state and characters";
+        try
+        {
+            var created = new List<Interpreter>();
+            var options = Interpreter.InterpreterOptions.Default();
+            options.CustomCreateFields = (interp, type, node) =>
+            {
+                created.Add(interp);
+                return new TestFields { CreatedBy = interp };
+            };
+
+            Script script = Engine.Parse(string.Join("\n", new[] {
+                "character bob",
+                "  name: Bob",
+                "",
+                "beat Main",
+                "  bob.mood = \"happy\"",
+                "",
+                "  Hello",
+                ""
+            }));
+            Interpreter root = Engine.Play(script, dialogue => dialogue.Callback(), choice => { }, finish => { }, null, options);
+
+            var checks = new List<string>();
+            if (!(root.GetCharacter("bob") is TestFields)) checks.Add("character bob not created by the factory");
+            if ((string)root.GetCharacterField("bob", "mood") != "happy") checks.Add("bob.mood not written through the factory object");
+            if (!created.Contains(root)) checks.Add("factory not called with the interpreter");
+            if (checks.Count > 0) throw new Exception(string.Join("; ", checks));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
         }
     }
 

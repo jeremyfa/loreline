@@ -460,6 +460,98 @@ function printDiff(string $expected, string $actual): void
 
 // -- Main ---------------------------------------------------------------------
 
+// Child interpreters: same scenario in every binding runner. A child spawned from the
+// root shares its state, gets host functions bound to itself, and both playheads are
+// saved from any interpreter then continued after a restore with resumeSpawn().
+const SPAWN_SCRIPT = "state\n"
+    . "  gold: 0\n"
+    . "\n"
+    . "beat Main\n"
+    . "  gold = gold + 1\n"
+    . "\n"
+    . "  Main gold \$gold\n"
+    . "\n"
+    . "  Main where \$current_beat() host \$who()\n"
+    . "\n"
+    . "beat Side\n"
+    . "  new state\n"
+    . "    local: 5\n"
+    . "\n"
+    . "  gold = gold + 10\n"
+    . "\n"
+    . "  Side gold \$gold local \$local\n"
+    . "\n"
+    . "  Side where \$current_beat() host \$who()\n";
+
+const SPAWN_EXPECTED = [
+    'root: Main gold 1',
+    'npc: Side gold 11 local 5',
+    'root: Main where Main host root',
+    'root: Main where Main host root',
+    'npc: Side gold 11 local 5',
+    'npc: Side where Side host npc',
+];
+
+function runSpawnTest(): void
+{
+    global $passCount, $failCount;
+    $label = 'spawn: shared state, bound functions, save and resumeSpawn';
+    try {
+        $log = [];
+        $pending = [];
+        $nameOf = fn ($interp) => $interp->key() ?? 'root';
+        $dialogue = function ($interp, $character, $text, $tags, $advance) use (&$log, &$pending, $nameOf): void {
+            $log[] = $nameOf($interp) . ': ' . ($character !== null ? $character . ': ' : '') . $text;
+            $pending[$nameOf($interp)] = $advance;
+        };
+        $choice = function ($interp, $options, $select): void {};
+        $finish = function ($interp): void {};
+        $next = function (string $name) use (&$pending): void {
+            if (!isset($pending[$name])) {
+                throw new \Exception("No pending dialogue for $name");
+            }
+            $cb = $pending[$name];
+            unset($pending[$name]);
+            $cb();
+        };
+        $options = ['functions' => ['who' => fn ($interp, $args) => $nameOf($interp)]];
+
+        $script = Loreline::parse(SPAWN_SCRIPT);
+        $root = Loreline::play($script, $dialogue, $choice, $finish, null, $options);
+        $npc = $root->spawn('npc', $dialogue, $choice, $finish);
+        $npc->start('Side');
+        $next('root');
+
+        $checks = [];
+        if ($npc->key() !== 'npc') $checks[] = 'child key: ' . var_export($npc->key(), true);
+        if ($root->key() !== null) $checks[] = 'root key: ' . var_export($root->key(), true);
+        if ($npc->isRoot() || !$root->isRoot()) $checks[] = 'isRoot';
+        $saveData = $npc->save();
+        if ($saveData !== $root->save()) $checks[] = 'save from child differs from save from root';
+
+        $pending = [];
+        $restored = Loreline::resume($script, $dialogue, $choice, $finish, $saveData, null, $options);
+        $keys = $restored->resumableSpawnKeys();
+        if ($keys !== ['npc']) $checks[] = 'resumableSpawnKeys: ' . implode(',', $keys);
+        $restored->resumeSpawn('npc', $dialogue, $choice, $finish)->resume();
+        $next('npc');
+
+        if ($log !== SPAWN_EXPECTED) {
+            $checks[] = "log:\n    " . implode("\n    ", $log);
+        }
+        if (count($checks) > 0) {
+            throw new \Exception(implode('; ', $checks));
+        }
+
+        $passCount++;
+        echo "\033[1m\033[32mPASS\033[0m - \033[90m$label\033[0m\n";
+    } catch (\Throwable $e) {
+        $failCount++;
+        echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
+        echo "  Error: " . $e->getMessage() . "\n";
+    }
+}
+
 function main(): void
 {
     global $argv, $passCount, $failCount, $fileCount, $fileFailCount, $handleFile;
@@ -647,6 +739,8 @@ function main(): void
             $fileFailCount++;
         }
     }
+
+    runSpawnTest();
 
     $total = $passCount + $failCount;
     echo "\n";

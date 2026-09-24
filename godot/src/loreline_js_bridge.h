@@ -41,6 +41,76 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
     // Event queue: C++ polls this after play/advance/select/start/restore calls
     var _eventQueue = [];
 
+    // Handlers of the interpreter stored under interpId: events are queued
+    // for C++ to poll, continuations kept until advance()/select()
+    function _makeHandlers(interpId) {
+        return {
+            dialogue: function(interpreter, character, text, tags, advance) {
+                _pendingAdvance[interpId] = advance;
+                _pendingSelect[interpId] = null;
+                var tagsArr = [];
+                if (tags) {
+                    for (var i = 0; i < tags.length; i++) {
+                        tagsArr.push({
+                            value: tags[i].value || "",
+                            offset: tags[i].offset || 0,
+                            closing: !!tags[i].closing
+                        });
+                    }
+                }
+                _eventQueue.push({
+                    type: "dialogue",
+                    interpId: interpId,
+                    character: character || "",
+                    text: text || "",
+                    tags: tagsArr
+                });
+            },
+            choice: function(interpreter, options, select) {
+                _pendingSelect[interpId] = select;
+                _pendingAdvance[interpId] = null;
+                var optsArr = [];
+                for (var i = 0; i < options.length; i++) {
+                    var opt = options[i];
+                    var optTags = [];
+                    if (opt.tags) {
+                        for (var j = 0; j < opt.tags.length; j++) {
+                            optTags.push({
+                                value: opt.tags[j].value || "",
+                                offset: opt.tags[j].offset || 0,
+                                closing: !!opt.tags[j].closing
+                            });
+                        }
+                    }
+                    optsArr.push({
+                        text: opt.text || "",
+                        enabled: opt.enabled !== false,
+                        tags: optTags
+                    });
+                }
+                _eventQueue.push({
+                    type: "choice",
+                    interpId: interpId,
+                    options: optsArr
+                });
+            },
+            finish: function(interpreter) {
+                _pendingAdvance[interpId] = null;
+                _pendingSelect[interpId] = null;
+                _eventQueue.push({
+                    type: "finished",
+                    interpId: interpId
+                });
+            }
+        };
+    }
+
+    // The interpreter id of a runtime interpreter: a spawned child calling a custom
+    // function registered by its parent must reach its own host-side wrapper
+    function _interpIdOf(interpreter, fallbackId) {
+        return (interpreter && interpreter.__lorelineId) || fallbackId;
+    }
+
     // Serializes runtime values to JSON for the eval boundary. Beat and
     // character references cross as marker objects, the same shape used in
     // save data, so they can be handed back and restored to live references;
@@ -251,7 +321,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                     // this global-context script.
                                     var callHost = window._lorelineCallHost;
                                     var resultJson = callHost
-                                        ? callHost(iid, n, _lorStringify(argsArr))
+                                        ? callHost(_interpIdOf(interpreter, iid), n, _lorStringify(argsArr))
                                         : "null";
                                     return JSON.parse(resultJson);
                                 };
@@ -268,7 +338,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                         var callId = _nextFileRequestId++;
                                         // Tag the done closure with the interpId so releaseInterpreter
                                         // can sweep any entries left dangling when the wrapper dies.
-                                        _pendingFunctionDone[callId] = { done: done, interpId: iid };
+                                        _pendingFunctionDone[callId] = { done: done, interpId: _interpIdOf(interpreter, iid) };
                                         var argsArr = [];
                                         if (args) {
                                             for (var ai = 0; ai < args.length; ai++) {
@@ -277,7 +347,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                         }
                                         _eventQueue.push({
                                             type: "async_function_call",
-                                            interpId: iid,
+                                            interpId: _interpIdOf(interpreter, iid),
                                             callId: callId,
                                             name: n,
                                             args: argsArr
@@ -290,65 +360,12 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 } catch(e) {}
             }
 
+            var handlers = _makeHandlers(interpId);
             var interp = Loreline.play(
                 script,
-                function(interpreter, character, text, tags, advance) {
-                    _pendingAdvance[interpId] = advance;
-                    _pendingSelect[interpId] = null;
-                    var tagsArr = [];
-                    if (tags) {
-                        for (var i = 0; i < tags.length; i++) {
-                            tagsArr.push({
-                                value: tags[i].value || "",
-                                offset: tags[i].offset || 0,
-                                closing: !!tags[i].closing
-                            });
-                        }
-                    }
-                    _eventQueue.push({
-                        type: "dialogue",
-                        interpId: interpId,
-                        character: character || "",
-                        text: text || "",
-                        tags: tagsArr
-                    });
-                },
-                function(interpreter, options, select) {
-                    _pendingSelect[interpId] = select;
-                    _pendingAdvance[interpId] = null;
-                    var optsArr = [];
-                    for (var i = 0; i < options.length; i++) {
-                        var opt = options[i];
-                        var optTags = [];
-                        if (opt.tags) {
-                            for (var j = 0; j < opt.tags.length; j++) {
-                                optTags.push({
-                                    value: opt.tags[j].value || "",
-                                    offset: opt.tags[j].offset || 0,
-                                    closing: !!opt.tags[j].closing
-                                });
-                            }
-                        }
-                        optsArr.push({
-                            text: opt.text || "",
-                            enabled: opt.enabled !== false,
-                            tags: optTags
-                        });
-                    }
-                    _eventQueue.push({
-                        type: "choice",
-                        interpId: interpId,
-                        options: optsArr
-                    });
-                },
-                function(interpreter) {
-                    _pendingAdvance[interpId] = null;
-                    _pendingSelect[interpId] = null;
-                    _eventQueue.push({
-                        type: "finished",
-                        interpId: interpId
-                    });
-                },
+                handlers.dialogue,
+                handlers.choice,
+                handlers.finish,
                 beatName || null,
                 playOptions
             );
@@ -358,6 +375,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 delete _store[interpId];
                 return 0;
             }
+            interp.__lorelineId = interpId;
             _store[interpId] = interp;
             return interpId;
         },
@@ -403,7 +421,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                     // the C++ runtime's module-scope install.
                                     var callHost = window._lorelineCallHost;
                                     var resultJson = callHost
-                                        ? callHost(iid, n, _lorStringify(argsArr))
+                                        ? callHost(_interpIdOf(interpreter, iid), n, _lorStringify(argsArr))
                                         : "null";
                                     return JSON.parse(resultJson);
                                 };
@@ -419,7 +437,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                     return new loreline.Async(function(done) {
                                         var callId = _nextFileRequestId++;
                                         // Tag with interpId; see note in play:.
-                                        _pendingFunctionDone[callId] = { done: done, interpId: iid };
+                                        _pendingFunctionDone[callId] = { done: done, interpId: _interpIdOf(interpreter, iid) };
                                         var argsArr = [];
                                         if (args) {
                                             for (var ai = 0; ai < args.length; ai++) {
@@ -428,7 +446,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                                         }
                                         _eventQueue.push({
                                             type: "async_function_call",
-                                            interpId: iid,
+                                            interpId: _interpIdOf(interpreter, iid),
                                             callId: callId,
                                             name: n,
                                             args: argsArr
@@ -441,65 +459,12 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 } catch(e) {}
             }
 
+            var handlers = _makeHandlers(interpId);
             var interp = Loreline.resume(
                 script,
-                function(interpreter, character, text, tags, advance) {
-                    _pendingAdvance[interpId] = advance;
-                    _pendingSelect[interpId] = null;
-                    var tagsArr = [];
-                    if (tags) {
-                        for (var i = 0; i < tags.length; i++) {
-                            tagsArr.push({
-                                value: tags[i].value || "",
-                                offset: tags[i].offset || 0,
-                                closing: !!tags[i].closing
-                            });
-                        }
-                    }
-                    _eventQueue.push({
-                        type: "dialogue",
-                        interpId: interpId,
-                        character: character || "",
-                        text: text || "",
-                        tags: tagsArr
-                    });
-                },
-                function(interpreter, options, select) {
-                    _pendingSelect[interpId] = select;
-                    _pendingAdvance[interpId] = null;
-                    var optsArr = [];
-                    for (var i = 0; i < options.length; i++) {
-                        var opt = options[i];
-                        var optTags = [];
-                        if (opt.tags) {
-                            for (var j = 0; j < opt.tags.length; j++) {
-                                optTags.push({
-                                    value: opt.tags[j].value || "",
-                                    offset: opt.tags[j].offset || 0,
-                                    closing: !!opt.tags[j].closing
-                                });
-                            }
-                        }
-                        optsArr.push({
-                            text: opt.text || "",
-                            enabled: opt.enabled !== false,
-                            tags: optTags
-                        });
-                    }
-                    _eventQueue.push({
-                        type: "choice",
-                        interpId: interpId,
-                        options: optsArr
-                    });
-                },
-                function(interpreter) {
-                    _pendingAdvance[interpId] = null;
-                    _pendingSelect[interpId] = null;
-                    _eventQueue.push({
-                        type: "finished",
-                        interpId: interpId
-                    });
-                },
+                handlers.dialogue,
+                handlers.choice,
+                handlers.finish,
                 parsedSaveData,
                 beatName || null,
                 resumeOptions
@@ -509,6 +474,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 delete _store[interpId];
                 return 0;
             }
+            interp.__lorelineId = interpId;
             _store[interpId] = interp;
             return interpId;
         },
@@ -551,6 +517,63 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 }
             }
             _releaseObj(interpId);
+        },
+
+        // Spawns (or, with resume, rebuilds from the last restore) a child of the
+        // interpreter parentId. Returns the child id, or 0 on error.
+        spawn: function(parentId, key, resume) {
+            var parent = _getObj(parentId);
+            if (!parent) return 0;
+            var interpId = _nextId++;
+            var handlers = _makeHandlers(interpId);
+            var child;
+            try {
+                child = resume
+                    ? parent.resumeSpawn(key, handlers.dialogue, handlers.choice, handlers.finish)
+                    : parent.spawn(key, handlers.dialogue, handlers.choice, handlers.finish);
+            } catch (e) {
+                console.error("Loreline " + (resume ? "resumeSpawn" : "spawn") + " error:", e);
+                return 0;
+            }
+            if (!child) return 0;
+            child.__lorelineId = interpId;
+            _store[interpId] = child;
+            if (resume) {
+                try {
+                    child.resume();
+                } catch (e) {
+                    console.error("Loreline resumeSpawn error:", e);
+                }
+            }
+            return interpId;
+        },
+
+        resumableSpawnKeys: function(interpId) {
+            var interp = _getObj(interpId);
+            if (!interp) return "[]";
+            return JSON.stringify(interp.resumableSpawnKeys());
+        },
+
+        interpreterKey: function(interpId) {
+            var interp = _getObj(interpId);
+            return (interp && interp.key) || "";
+        },
+
+        isRoot: function(interpId) {
+            var interp = _getObj(interpId);
+            return !!(interp && interp.isRoot());
+        },
+
+        disposeInterpreter: function(interpId) {
+            var interp = _getObj(interpId);
+            if (!interp) return;
+            try {
+                interp.dispose();
+            } catch (e) {
+                console.error("Loreline dispose error:", e);
+            }
+            _pendingAdvance[interpId] = null;
+            _pendingSelect[interpId] = null;
         },
 
         advance: function(interpId) {

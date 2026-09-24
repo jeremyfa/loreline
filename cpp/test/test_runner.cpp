@@ -1069,6 +1069,237 @@ static void runParallelInterpretersTest() {
     fflush(stdout);
 }
 
+/* -- Child interpreters test ---------------------------------------------- */
+
+/* Same scenario in every binding runner. A child spawned from the root shares its
+ * state, gets host functions bound to itself (the custom function receives the
+ * child handle), and both playheads are saved from any interpreter then continued
+ * after a restore with Loreline_resumeSpawn(). Each interpreter gets its own
+ * userData, used here to name it in the log. */
+
+struct SpawnTestLog {
+    std::vector<std::string> lines;
+    std::vector<std::pair<std::string, Loreline_Advance>> pending;
+};
+
+struct SpawnTestFlow {
+    SpawnTestLog* log;
+    std::string name;
+};
+
+static void spawnTestDialogue(
+    Loreline_Interpreter* /* interp */,
+    Loreline_String character,
+    Loreline_String text,
+    const Loreline_TextTag* /* tags */,
+    int /* tagCount */,
+    Loreline_Advance advance,
+    void* userData
+) {
+    SpawnTestFlow* flow = (SpawnTestFlow*)userData;
+    std::string line = flow->name + ": ";
+    if (!character.isNull()) line += std::string(character.c_str()) + ": ";
+    line += text.c_str() ? text.c_str() : "";
+    flow->log->lines.push_back(line);
+    flow->log->pending.push_back(std::make_pair(flow->name, advance));
+}
+
+static void spawnTestChoice(Loreline_Interpreter*, const Loreline_ChoiceOption*, int, Loreline_Select, void*) {}
+
+static void spawnTestFinish(Loreline_Interpreter*, void*) {}
+
+static Loreline_Value spawnTestWho(Loreline_Interpreter* interp, const Loreline_Value*, int, void*) {
+    Loreline_String key = Loreline_interpreterKey(interp);
+    return Loreline_Value::from_string(key.isNull() ? Loreline_String("root") : key);
+}
+
+static void spawnTestPump() {
+    for (int i = 0; i < 5; i++) Loreline_update(0.016);
+}
+
+static bool spawnTestNext(SpawnTestLog& log, const std::string& name) {
+    for (size_t i = 0; i < log.pending.size(); i++) {
+        if (log.pending[i].first == name) {
+            Loreline_Advance advance = log.pending[i].second;
+            log.pending.erase(log.pending.begin() + i);
+            advance();
+            spawnTestPump();
+            return true;
+        }
+    }
+    return false;
+}
+
+static void runSpawnTest() {
+    const char* source =
+        "state\n"
+        "  gold: 0\n"
+        "\n"
+        "beat Main\n"
+        "  gold = gold + 1\n"
+        "\n"
+        "  Main gold $gold\n"
+        "\n"
+        "  Main where $current_beat() host $who()\n"
+        "\n"
+        "beat Side\n"
+        "  new state\n"
+        "    local: 5\n"
+        "\n"
+        "  gold = gold + 10\n"
+        "\n"
+        "  Side gold $gold local $local\n"
+        "\n"
+        "  Side where $current_beat() host $who()\n";
+
+    const char* expected[] = {
+        "root: Main gold 1",
+        "npc: Side gold 11 local 5",
+        "root: Main where Main host root",
+        "root: Main where Main host root",
+        "npc: Side gold 11 local 5",
+        "npc: Side where Side host npc"
+    };
+    const size_t expectedCount = sizeof(expected) / sizeof(expected[0]);
+
+    bool ok = true;
+    std::string error;
+    auto fail = [&](const std::string& msg) {
+        if (ok) { ok = false; error = msg; }
+    };
+
+    SpawnTestLog log;
+    SpawnTestFlow rootFlow { &log, "root" };
+    SpawnTestFlow npcFlow { &log, "npc" };
+
+    Loreline_Script* script = Loreline_parse(source, "spawn.lor", nullptr, nullptr);
+    if (!script) {
+        fail("Error parsing spawn test script");
+    } else {
+        Loreline_InterpreterOptions* options = Loreline_createOptions();
+        Loreline_optionsAddFunction(options, Loreline_String("who"), spawnTestWho, nullptr);
+
+        Loreline_Interpreter* root = Loreline_play(
+            script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+            Loreline_String("Main"), options, &rootFlow);
+        spawnTestPump();
+        Loreline_Interpreter* npc = root ? Loreline_spawn(root, Loreline_String("npc"),
+            spawnTestDialogue, spawnTestChoice, spawnTestFinish, &npcFlow) : nullptr;
+        if (!npc) fail("spawn returned null");
+
+        Loreline_Interpreter* restored = nullptr;
+        Loreline_Interpreter* restoredNpc = nullptr;
+        if (ok) {
+            Loreline_start(npc, Loreline_String("Side"));
+            spawnTestPump();
+            if (!spawnTestNext(log, "root")) fail("no pending dialogue for root");
+        }
+        if (ok) {
+            Loreline_String key = Loreline_interpreterKey(npc);
+            if (key.isNull() || std::string(key.c_str()) != "npc") fail("child key is not npc");
+            if (!Loreline_interpreterKey(root).isNull()) fail("root key is not null");
+            if (Loreline_isRoot(npc) || !Loreline_isRoot(root)) fail("isRoot");
+        }
+        std::string saveData;
+        if (ok) {
+            saveData = Loreline_save(npc).c_str();
+            if (saveData != std::string(Loreline_save(root).c_str())) fail("save from child differs from save from root");
+        }
+        if (ok) {
+            log.pending.clear();
+            restored = Loreline_resume(script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+                Loreline_String(saveData.c_str()), Loreline_String(), options, &rootFlow);
+            spawnTestPump();
+            if (!restored) fail("resume returned null");
+        }
+        if (ok) {
+            if (Loreline_resumableSpawnKeyCount(restored) != 1
+                || std::string(Loreline_resumableSpawnKey(restored, 0).c_str()) != "npc") {
+                fail("restored child keys are not [npc]");
+            }
+        }
+        if (ok) {
+            restoredNpc = Loreline_resumeSpawn(restored, Loreline_String("npc"),
+                spawnTestDialogue, spawnTestChoice, spawnTestFinish, &npcFlow);
+            spawnTestPump();
+            if (!restoredNpc) fail("resumeSpawn returned null");
+            else if (!spawnTestNext(log, "npc")) fail("no pending dialogue for npc after resumeSpawn");
+        }
+        if (ok) {
+            bool same = log.lines.size() == expectedCount;
+            for (size_t i = 0; same && i < expectedCount; i++) {
+                if (log.lines[i] != expected[i]) same = false;
+            }
+            if (!same) {
+                std::string got;
+                for (const auto& line : log.lines) got += "\n    " + line;
+                fail("unexpected log:" + got);
+            }
+        }
+
+        if (restoredNpc) Loreline_releaseInterpreter(restoredNpc);
+        if (restored) Loreline_releaseInterpreter(restored);
+        if (npc) Loreline_releaseInterpreter(npc);
+        if (root) Loreline_releaseInterpreter(root);
+        Loreline_releaseOptions(options);
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "spawn: shared state, bound functions, save and resumeSpawn" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "spawn: shared state, bound functions, save and resumeSpawn" CLR_RESET "\n");
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
+/* -- Sync calls after Loreline_update() ------------------------------------ */
+
+/* Once Loreline_update() has been called, callbacks are deferred to the dispatch
+ * queue. The sync wrappers must still complete: their own completion does not go
+ * through that queue. */
+
+static void syncAfterUpdateFileHandler(Loreline_String path, Loreline_FileRequest* request, void* userData) {
+    /* No translation file: answered right away */
+    Loreline_provideFile(request, Loreline_String());
+}
+
+static void runSyncAfterUpdateTest() {
+    bool ok = true;
+    std::string error;
+
+    Loreline_update(0.016);
+
+    Loreline_Script* script = Loreline_parse(
+        "beat Main\n  Hello\n", "sync-after-update.lor", nullptr, nullptr);
+    if (!script) {
+        ok = false;
+        error = "Loreline_parse returned null after Loreline_update";
+    } else {
+        /* Returns (null or empty translations are fine): what matters is that it returns */
+        Loreline_Translations* translations = Loreline_loadLocale(
+            Loreline_String("fr"), script, Loreline_String("sync-after-update.lor"),
+            syncAfterUpdateFileHandler, nullptr);
+        if (translations) Loreline_releaseTranslations(translations);
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "capi ~ sync parse/loadLocale after update" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "capi ~ sync parse/loadLocale after update" CLR_RESET "\n");
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
 /* -- Main ----------------------------------------------------------------- */
 
 
@@ -1304,6 +1535,10 @@ int main(int argc, char* argv[]) {
     runContainerFieldTest();
     fileCount++;
     runParallelInterpretersTest();
+    fileCount++;
+    runSpawnTest();
+    fileCount++;
+    runSyncAfterUpdateTest();
 
     int total = passCount + failCount;
     printf("\n");

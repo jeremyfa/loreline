@@ -158,6 +158,16 @@ def _make_finish_bridge(handle_finish: FinishHandler) -> Callable:
     return bridge
 
 
+def _child_bridges(handle_dialogue, handle_choice, handle_finish):
+    """Bridges for a spawned child. A missing handler stays None so the core
+    reuses the (already bridged) handler of the parent interpreter."""
+    return (
+        _make_dialogue_bridge(handle_dialogue) if handle_dialogue is not None else None,
+        _make_choice_bridge(handle_choice) if handle_choice is not None else None,
+        _make_finish_bridge(handle_finish) if handle_finish is not None else None,
+    )
+
+
 # -- Node -----------------------------------------------------------------
 
 class Node:
@@ -281,6 +291,77 @@ class Interpreter:
     def resume(self) -> None:
         """Resume execution after restoring state."""
         self._internal.resume()
+
+    @property
+    def key(self) -> Optional[str]:
+        """Key of this interpreter when it was spawned from another one, None for a root interpreter."""
+        return self._internal.key
+
+    def is_root(self) -> bool:
+        """Whether this interpreter is a root interpreter (not spawned from another one)."""
+        return self._internal.isRoot()
+
+    def spawn(
+        self,
+        key: str,
+        handle_dialogue: Optional[DialogueHandler] = None,
+        handle_choice: Optional[ChoiceHandler] = None,
+        handle_finish: Optional[FinishHandler] = None,
+    ) -> "Interpreter":
+        """Spawn a child interpreter sharing everything with this one except the playhead.
+
+        The child shares the script, state, characters and custom functions, and
+        is not started: call ``start()`` on it. Any live child using the same key
+        is disposed first, and a restored flow still pending for that key is
+        discarded (use ``resume_spawn()`` to continue it instead). Calling
+        ``save()`` on any interpreter of the family saves the shared state and
+        every playhead.
+
+        Args:
+            key: Identifies the child, notably to resume it after a restore.
+            handle_dialogue: Dialogue handler of the child (default: the one of this interpreter).
+            handle_choice: Choice handler of the child (default: the one of this interpreter).
+            handle_finish: Finish handler of the child (default: the one of this interpreter).
+
+        Returns:
+            The child Interpreter.
+        """
+        return _wrapper_for(self._internal.spawn(key, *_child_bridges(handle_dialogue, handle_choice, handle_finish)))
+
+    def resume_spawn(
+        self,
+        key: str,
+        handle_dialogue: Optional[DialogueHandler] = None,
+        handle_choice: Optional[ChoiceHandler] = None,
+        handle_finish: Optional[FinishHandler] = None,
+    ) -> "Interpreter":
+        """Rebuild a child interpreter from the flow saved under ``key``.
+
+        Use it after ``restore()`` on the root interpreter (or ``Loreline.resume()``).
+        The child is not resumed yet: call ``resume()`` on it.
+
+        Args:
+            key: The key the child had when it was saved (see ``resumable_spawn_keys()``).
+            handle_dialogue: Dialogue handler of the child (default: the one of this interpreter).
+            handle_choice: Choice handler of the child (default: the one of this interpreter).
+            handle_finish: Finish handler of the child (default: the one of this interpreter).
+
+        Returns:
+            The restored child Interpreter.
+        """
+        return _wrapper_for(self._internal.resumeSpawn(key, *_child_bridges(handle_dialogue, handle_choice, handle_finish)))
+
+    def resumable_spawn_keys(self) -> List[str]:
+        """Keys of the saved children not resumed with ``resume_spawn()`` (nor replaced with ``spawn()``) yet."""
+        return list(self._internal.resumableSpawnKeys())
+
+    def dispose(self) -> None:
+        """Stop a child interpreter for good.
+
+        Its playhead is cleared, it is not part of saves anymore, and callbacks
+        it handed out become no-ops. Raises an error on a root interpreter.
+        """
+        self._internal.dispose()
 
     def start(self, beat_name: Optional[str] = None) -> None:
         """Start or restart execution from a specific beat.

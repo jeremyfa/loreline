@@ -50,6 +50,26 @@ class PortableTestSuite {
         cb(readFile(path));
     }
 
+    /**
+     * Runs the programmatic interpreter tests: child interpreters (spawn, shared
+     * state, multi-playhead save/restore) and the customCreateFields option.
+     */
+    public function runSpawnTests():Void {
+        fileCount++;
+        final failBefore = failCount;
+        final onPass = (name:String) -> {
+            passCount++;
+            printLine('PASS - ' + name);
+        };
+        final onFail = (name:String, error:String) -> {
+            failCount++;
+            printLine('FAIL - ' + name + ' ' + error);
+        };
+        SpawnTests.run(onPass, onFail);
+        CustomFieldsTests.run(onPass, onFail);
+        if (failCount > failBefore) fileFailCount++;
+    }
+
     static function customTestFunctions():loreline.Interpreter.FunctionsMap {
         // FunctionsMap is a DynamicAccess under loreline_functions_map_dynamic_access
         // (js/lua/python/gdscript builds) and a StringMap otherwise; set() exists

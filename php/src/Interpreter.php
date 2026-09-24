@@ -2,6 +2,7 @@
 
 namespace Loreline;
 
+use Loreline\Internal\loreline\Arrays as HxArrays;
 use Loreline\Internal\loreline\Json as HxJson;
 
 /**
@@ -77,6 +78,88 @@ class Interpreter
     public function resume(): void
     {
         $this->internal->resume();
+    }
+
+    /**
+     * Key of this interpreter when it was spawned from another one,
+     * null for a root interpreter.
+     */
+    public function key(): ?string
+    {
+        return $this->internal->key;
+    }
+
+    /**
+     * Whether this interpreter is a root interpreter (not spawned from another one).
+     */
+    public function isRoot(): bool
+    {
+        return $this->internal->isRoot();
+    }
+
+    /**
+     * Spawn a child interpreter sharing everything with this one except the playhead.
+     *
+     * The child shares the script, state, characters and custom functions, and
+     * is not started: call start() on it. Any live child using the same key is
+     * disposed first, and a restored flow still pending for that key is
+     * discarded (use resumeSpawn() to continue it instead). Calling save() on
+     * any interpreter of the family saves the shared state and every playhead.
+     *
+     * A null handler reuses the one of this interpreter.
+     */
+    public function spawn(
+        string $key,
+        ?callable $handleDialogue = null,
+        ?callable $handleChoice = null,
+        ?callable $handleFinish = null
+    ): Interpreter {
+        [$dialogue, $choice, $finish] = Loreline::childBridges($handleDialogue, $handleChoice, $handleFinish);
+        return Interpreter::of($this->internal->spawn($key, $dialogue, $choice, $finish));
+    }
+
+    /**
+     * Rebuild a child interpreter from the flow saved under the given key,
+     * after restore() on the root interpreter (or Loreline::resume()).
+     * The child is not resumed yet: call resume() on it.
+     *
+     * A null handler reuses the one of this interpreter.
+     */
+    public function resumeSpawn(
+        string $key,
+        ?callable $handleDialogue = null,
+        ?callable $handleChoice = null,
+        ?callable $handleFinish = null
+    ): Interpreter {
+        [$dialogue, $choice, $finish] = Loreline::childBridges($handleDialogue, $handleChoice, $handleFinish);
+        return Interpreter::of($this->internal->resumeSpawn($key, $dialogue, $choice, $finish));
+    }
+
+    /**
+     * Keys of the saved children not resumed with resumeSpawn()
+     * (nor replaced with spawn()) yet.
+     *
+     * @return string[]
+     */
+    public function resumableSpawnKeys(): array
+    {
+        $keys = $this->internal->resumableSpawnKeys();
+        $result = [];
+        $length = HxArrays::arrayLength($keys);
+        for ($i = 0; $i < $length; $i++) {
+            $result[] = HxArrays::arrayGet($keys, $i);
+        }
+        return $result;
+    }
+
+    /**
+     * Stop a child interpreter for good: its playhead is cleared, it is not
+     * part of saves anymore, and callbacks it handed out become no-ops.
+     * Throws on a root interpreter.
+     */
+    public function dispose(): void
+    {
+        $this->internal->dispose();
     }
 
     /**

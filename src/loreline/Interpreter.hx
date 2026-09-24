@@ -565,6 +565,178 @@ typedef InterpreterOptions = {
 }
 
 /**
+ * A lorscript function declared in the script, parsed once and kept so that
+ * every interpreter sharing the context can bind its own closure from it.
+ */
+private typedef ScriptFunction = {
+    var name:String;
+    var ast:loreline.lorscript.Expr;
+}
+
+/**
+ * Everything a root interpreter shares with the child interpreters spawned from it:
+ * the script, the persistent state, the characters and the function definitions.
+ * Only the playhead (execution stack, pending callbacks and choice context) is
+ * owned by each interpreter.
+ *
+ * Function tables are not shared as is: each interpreter binds its own closures
+ * from the definitions kept here, so that built-ins and host functions always
+ * receive the interpreter that is actually running.
+ */
+@:allow(loreline.Interpreter)
+@:allow(loreline.Functions)
+@:allow(loreline.lorscript.Interp)
+class InterpreterContext {
+
+    /**
+     * The script being executed.
+     */
+    final script:Script;
+
+    /**
+     * The lens instance allowing to get more information about the AST.
+     */
+    final lens:Lens;
+
+    /**
+     * Optional translations map (localization key -> translated string literal).
+     */
+    var translations:Null<Map<String, NStringLiteral>>;
+
+    /**
+     * Processors that transform string literals before evaluation.
+     */
+    var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> = [];
+
+    /**
+     * Tells whether access is strict or not.
+     */
+    final strictAccess:Bool;
+
+    /**
+     * The custom instanciator of fields objects given in the root interpreter options.
+     * Default value for spawned children that don't bring their own.
+     */
+    final customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
+
+    /**
+     * The top level state. Created by the root interpreter once the context exists,
+     * because creating fields may need an interpreter (custom fields, host wrapper).
+     */
+    var topLevelState:RuntimeState = null;
+
+    /**
+     * Top level characters, by name.
+     */
+    final topLevelCharacters:Map<String, RuntimeCharacter> = new Map();
+
+    /**
+     * Top level beats, by name.
+     */
+    final topLevelBeats:Map<String, NBeatDecl> = new Map();
+
+    /**
+     * Persistent states associated to a specific node id (beat states, visit counts...).
+     */
+    final nodeStates:NodeIdMap<RuntimeState> = new NodeIdMap();
+
+    /**
+     * Random generator used by built-ins and alternatives. Shared so that
+     * `seed_random` affects every interpreter of the context.
+     */
+    var random:Random = null;
+
+    /**
+     * Functions provided by the host, as given in the interpreter options.
+     */
+    final hostFunctions:Null<FunctionsMap>;
+
+    /**
+     * Functions declared in the script, in declaration order, already parsed.
+     */
+    final scriptFunctions:Array<ScriptFunction> = [];
+
+    /**
+     * The next insertion id to assign when creating a new insertion.
+     * Shared by all interpreters so that ids stay unique in save data.
+     */
+    var nextInsertionId:Int = 1;
+
+    /**
+     * The interpreter that created this context.
+     */
+    var root:Interpreter = null;
+
+    /**
+     * Live child interpreters spawned from this context, in spawn order.
+     * A child leaves this list when it finishes or is disposed.
+     */
+    final children:Array<Interpreter> = [];
+
+    /**
+     * Child flows read from save data and not resumed yet, by key.
+     */
+    var pendingRestoredFlows:Map<String, SaveDataFlow> = null;
+
+    /**
+     * Keys of pending restored flows, in saved order.
+     */
+    var pendingRestoredKeys:Array<String> = null;
+
+    /**
+     * Saved insertions and restore cache kept while some restored flows are still pending,
+     * so that their choice options and insertions can be rebuilt when they are resumed.
+     */
+    var pendingSavedInsertions:Dynamic<SaveDataInsertion> = null;
+    var pendingInsertionsCache:Map<Int, RuntimeInsertion> = null;
+
+    function childByKey(key:String):Null<Interpreter> {
+
+        for (child in children) {
+            if (child.key == key) return child;
+        }
+        return null;
+
+    }
+
+    function removePendingFlow(key:String):Null<SaveDataFlow> {
+
+        if (pendingRestoredFlows == null) return null;
+        final flow = pendingRestoredFlows.get(key);
+        if (flow == null) return null;
+
+        pendingRestoredFlows.remove(key);
+        pendingRestoredKeys.remove(key);
+        if (pendingRestoredKeys.length == 0) {
+            clearPendingFlows();
+        }
+        return flow;
+
+    }
+
+    function clearPendingFlows():Void {
+
+        pendingRestoredFlows = null;
+        pendingRestoredKeys = null;
+        pendingSavedInsertions = null;
+        pendingInsertionsCache = null;
+
+    }
+
+    function new(script:Script, options:Null<InterpreterOptions>) {
+
+        this.script = script;
+        this.lens = new Lens(script);
+        this.strictAccess = options?.strictAccess ?? false;
+        this.translations = options?.translations;
+        this.hostFunctions = options?.functions;
+        this.customCreateFields = options?.customCreateFields;
+
+    }
+
+}
+
+/**
  * Main interpreter class for Loreline scripts.
  * This class is responsible for executing a parsed Loreline script,
  * managing the runtime state, and interacting with the host application
@@ -577,15 +749,49 @@ typedef InterpreterOptions = {
 @:keep class Interpreter {
 
     /**
+     * Data shared with every interpreter spawned from the same root:
+     * script, persistent state, characters and function definitions.
+     */
+    final context:InterpreterContext;
+
+    /**
+     * Key of this interpreter when it was spawned from another one, null for a root interpreter.
+     */
+    public var key(default,null):String = null;
+
+    /**
+     * Whether this interpreter is the root of its context (not spawned from another interpreter).
+     */
+    public function isRoot():Bool {
+        return context.root == this;
+    }
+
+    /**
+     * Set once a child interpreter has been disposed (explicitly, by a restore,
+     * or by spawning another child with the same key). It can't run anymore.
+     */
+    var disposed:Bool = false;
+
+    /**
+     * Set when the root interpreter reached the end of its execution, so that a save taken
+     * while children are still running doesn't restart the root on resume.
+     */
+    var finished:Bool = false;
+
+    /**
      * The script being executed.
      */
-    final script:Script;
+    var script(get,never):Script;
+    inline function get_script():Script return context.script;
 
     /**
      * Optional translations map (localization key -> translated string literal).
      * When set, evaluateString() substitutes tagged text with translated versions.
+     * Shared by all interpreters of the same context.
      */
-    public var translations:Null<Map<String, NStringLiteral>>;
+    public var translations(get,set):Null<Map<String, NStringLiteral>>;
+    inline function get_translations():Null<Map<String, NStringLiteral>> return context.translations;
+    inline function set_translations(translations:Null<Map<String, NStringLiteral>>):Null<Map<String, NStringLiteral>> return context.translations = translations;
 
     /**
      * User-defined dialogue handler,
@@ -609,28 +815,32 @@ typedef InterpreterOptions = {
     /**
      * The top level state, which is shared across the whole script execution.
      */
-    final topLevelState:RuntimeState;
+    var topLevelState(get,never):RuntimeState;
+    inline function get_topLevelState():RuntimeState return context.topLevelState;
 
     /**
      * Top level characters can be referenced and their state
      * can also be modified from anywhere in the script.
      */
-    final topLevelCharacters:Map<String, RuntimeCharacter> = new Map();
+    var topLevelCharacters(get,never):Map<String, RuntimeCharacter>;
+    inline function get_topLevelCharacters():Map<String, RuntimeCharacter> return context.topLevelCharacters;
 
     /**
      * All the top level beats available, by beat name (their identifier in the script).
      */
-    final topLevelBeats:Map<String, NBeatDecl> = new Map();
+    var topLevelBeats(get,never):Map<String, NBeatDecl>;
+    inline function get_topLevelBeats():Map<String, NBeatDecl> return context.topLevelBeats;
 
     /**
      * States associated to a specific node id. These are persistent, like the top level state,
      * but are only available from where they have been declared and the sub-scopes.
      * If some state fields already existed in a parent scope, the parent ones will be shadowed by the child ones.
      */
-    final nodeStates:NodeIdMap<RuntimeState> = new NodeIdMap();
+    var nodeStates(get,never):NodeIdMap<RuntimeState>;
+    inline function get_nodeStates():NodeIdMap<RuntimeState> return context.nodeStates;
 
     /**
-     * Top level functions available by default in this script.
+     * Top level functions available by default in this script, bound to this interpreter.
      */
     final topLevelFunctions:Map<String, Any> = new Map();
 
@@ -647,8 +857,11 @@ typedef InterpreterOptions = {
     /**
      * Pluggable processors that transform string literals before evaluation.
      * Each processor receives an NStringLiteral and returns a (possibly transformed) NStringLiteral.
+     * Shared by all interpreters of the same context.
      */
-    public var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> = [];
+    public var stringLiteralProcessors(get,set):Array<(str:NStringLiteral) -> NStringLiteral>;
+    inline function get_stringLiteralProcessors():Array<(str:NStringLiteral) -> NStringLiteral> return context.stringLiteralProcessors;
+    inline function set_stringLiteralProcessors(processors:Array<(str:NStringLiteral) -> NStringLiteral>):Array<(str:NStringLiteral) -> NStringLiteral> return context.stringLiteralProcessors = processors;
 
     /**
      * The current execution stack, which consists of scopes added on top of one another.
@@ -659,13 +872,15 @@ typedef InterpreterOptions = {
     /**
      * The lens instance allowing to get more information about the AST.
      */
-    final lens:Lens;
+    var lens(get,never):Lens;
+    inline function get_lens():Lens return context.lens;
 
     /**
      * Tells whether access is strict or not. If set to true,
      * trying to read or write an undefined variable will throw an error.
      */
-    final strictAccess:Bool;
+    var strictAccess(get,never):Bool;
+    inline function get_strictAccess():Bool return context.strictAccess;
 
     /**
      * Current scope associated with current execution state.
@@ -718,9 +933,11 @@ typedef InterpreterOptions = {
 
     /**
      * The next insertion id to assign when creating a new insertion.
-     * Every time we reset the stack, this counter is also reset.
+     * Lives in the context so that ids stay unique across interpreters.
      */
-    var nextInsertionId:Int = 1;
+    var nextInsertionId(get,set):Int;
+    inline function get_nextInsertionId():Int return context.nextInsertionId;
+    inline function set_nextInsertionId(nextInsertionId:Int):Int return context.nextInsertionId = nextInsertionId;
 
     /**
      * List of pending callbacks that should be run synchronously.
@@ -766,7 +983,8 @@ typedef InterpreterOptions = {
     var _choiceEvalEnabled:Array<Bool> = [];
 
     /**
-     * A custom instanciator to create fields objects.
+     * A custom instanciator to create fields objects. Bound per interpreter like the
+     * function tables: binding adapters capture the wrapper of their interpreter.
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
@@ -786,27 +1004,36 @@ typedef InterpreterOptions = {
      * @param handleChoice Function to call when presenting choices
      * @param handleFinish Function to call when execution finishes
      * @param options Additional options
+     * @param parentContext Internal: context of an existing interpreter to share, when spawning a child
      */
-    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, ?options:InterpreterOptions) {
+    public function new(script:Script, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, ?options:InterpreterOptions, ?parentContext:InterpreterContext) {
 
-        this.script = script;
         this.handleDialogue = handleDialogue;
         this.handleChoice = handleChoice;
         this.handleFinish = handleFinish;
-
-        this.lens = new Lens(script);
-
-        this.strictAccess = options?.strictAccess ?? false;
-        this.translations = options?.translations;
 
         #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
         this.wrapper = options?.wrapper;
         #end
 
-        this.topLevelState = new RuntimeState(this, script, null, null);
+        if (parentContext != null) {
+            // Child interpreter: everything is already initialized in the shared context,
+            // only bind this interpreter's own function tables. A binding may pass its own
+            // function adapters (bound to the child wrapper) in the options.
+            this.context = parentContext;
+            this.customCreateFields = options?.customCreateFields ?? context.customCreateFields;
+            bindFunctions(options?.functions ?? context.hostFunctions);
+            return;
+        }
+
+        this.context = new InterpreterContext(script, options);
+        context.root = this;
+        this.customCreateFields = context.customCreateFields;
+
+        context.topLevelState = new RuntimeState(this, script, null, null);
 
         // Build default function
-        initializeTopLevelFunctions(options?.functions);
+        bindFunctions(context.hostFunctions);
         initializeStringLiteralProcessors(options?.stringLiteralProcessors);
 
         // Init top level declarations
@@ -873,6 +1100,8 @@ typedef InterpreterOptions = {
      * @throws RuntimeError If the specified beat doesn't exist or if no beats are found in the script
      */
     public function start(?beatName:String) {
+
+        attachBeforeRun();
 
         // Start execution
         var resolvedBeat:NBeatDecl = null;
@@ -952,6 +1181,12 @@ typedef InterpreterOptions = {
 
     public function save():SaveData {
 
+        // Saving is a property of the whole context: from any interpreter,
+        // the result contains the shared state and every playhead
+        if (!isRoot()) {
+            return context.root.save();
+        }
+
         final insertions:Dynamic<SaveDataInsertion> = {};
         _saveInsertions = insertions;
 
@@ -968,21 +1203,44 @@ typedef InterpreterOptions = {
         // Save pending choice options (from choices with insertions awaiting user input).
         // Must be serialized before the insertions length check, since serializing
         // options may populate the insertions map.
-        if (pendingChoiceOptions != null) {
-            result.pendingChoiceOptions = [
-                for (opt in pendingChoiceOptions) serializeChoiceOption(opt, insertions)
-            ];
+        final pendingOptions = serializePendingChoiceOptions(this, insertions);
+        if (pendingOptions != null) {
+            result.pendingChoiceOptions = pendingOptions;
         }
 
         // Save choice evaluation context if inside a choice option body
-        if (_choiceEvalTexts.length > 0) {
-            result.choiceEvalContext = [
-                for (i in 0..._choiceEvalTexts.length) {
-                    final entry:SaveDataChoiceOption = { text: _choiceEvalTexts[i] };
-                    if (!_choiceEvalEnabled[i]) entry.disabled = true;
-                    entry;
-                }
-            ];
+        final choiceEvalContext = serializeChoiceEvalContext(this);
+        if (choiceEvalContext != null) {
+            result.choiceEvalContext = choiceEvalContext;
+        }
+
+        // Save the playhead of every live child (a child that was spawned
+        // but not started yet has nothing to resume)
+        final children:Array<SaveDataFlow> = [];
+        for (child in context.children) {
+            if (child.stack.length == 0) continue;
+            final flow:SaveDataFlow = {
+                key: child.key,
+                stack: [
+                    for (scope in child.stack) serializeScope(scope, insertions)
+                ]
+            };
+            final childPendingOptions = serializePendingChoiceOptions(child, insertions);
+            if (childPendingOptions != null) {
+                flow.pendingChoiceOptions = childPendingOptions;
+            }
+            final childChoiceEvalContext = serializeChoiceEvalContext(child);
+            if (childChoiceEvalContext != null) {
+                flow.choiceEvalContext = childChoiceEvalContext;
+            }
+            children.push(flow);
+        }
+        if (children.length > 0) {
+            result.children = children;
+            // Without children, a finished root restarts on resume like it always did
+            if (finished && stack.length == 0) {
+                result.finished = true;
+            }
         }
 
         if (Reflect.fields(insertions).length > 0) {
@@ -995,28 +1253,70 @@ typedef InterpreterOptions = {
 
     }
 
+    function serializePendingChoiceOptions(flow:Interpreter, insertions:Dynamic<SaveDataInsertion>):Null<Array<SaveDataChoiceOption>> {
+
+        if (flow.pendingChoiceOptions == null) return null;
+        return [
+            for (opt in flow.pendingChoiceOptions) serializeChoiceOption(opt, insertions)
+        ];
+
+    }
+
+    function serializeChoiceEvalContext(flow:Interpreter):Null<Array<SaveDataChoiceOption>> {
+
+        if (flow._choiceEvalTexts.length == 0) return null;
+        return [
+            for (i in 0...flow._choiceEvalTexts.length) {
+                final entry:SaveDataChoiceOption = { text: flow._choiceEvalTexts[i] };
+                if (!flow._choiceEvalEnabled[i]) entry.disabled = true;
+                entry;
+            }
+        ];
+
+    }
+
     /**
      * Restores the interpreter state from a SaveData object.
      * This allows resuming execution from a previously saved state.
+     * Live child interpreters are disposed. Children found in the save data
+     * can then be continued with `resumeSpawn()` (see `resumableSpawnKeys()`).
      *
      * @param saveData The SaveData object containing the serialized state
-     * @throws RuntimeError If the save data version is incompatible
+     * @throws RuntimeError If the save data version is incompatible, or if called on a child interpreter
      */
     public function restore(saveData:SaveData):Void {
+
+        // Restoring rewrites the shared state, which only makes sense for the whole context
+        if (!isRoot()) {
+            throw new RuntimeError("restore() can only be called on a root interpreter", script.pos);
+        }
 
         // Verify version compatibility
         if (saveData.version != 1) {
             throw new RuntimeError("Unsupported save version: " + saveData.version, script.pos);
         }
 
+        // Current children belong to the state being replaced
+        for (child in context.children.copy()) {
+            child.dispose();
+        }
+        context.clearPendingFlows();
+
         // Clear current state
-        stack.resize(0);
         nodeStates.clear();
-        nextScopeId = 1;
+        finished = (saveData.finished == true);
+
+        // New insertions must not reuse the id of a saved one: a child restored
+        // later would bring it back, and both would collide in the next save
         nextInsertionId = 1;
-        pendingChoiceOptions = null;
-        _choiceEvalTexts.resize(0);
-        _choiceEvalEnabled.resize(0);
+        if (saveData.insertions != null) {
+            for (idStr in Reflect.fields(saveData.insertions)) {
+                final id = Std.parseInt(idStr);
+                if (id != null && id >= nextInsertionId) {
+                    nextInsertionId = id + 1;
+                }
+            }
+        }
 
         // Restore context for beat reference values (captured scope chains)
         final restoredInsertions = new Map<Int, RuntimeInsertion>();
@@ -1032,33 +1332,76 @@ typedef InterpreterOptions = {
         // Restore node states
         restoreNodeStates(saveData.nodeStates);
 
+        // Restore the playhead of this interpreter
+        restoreFlow(saveData.stack, saveData.pendingChoiceOptions, saveData.choiceEvalContext, saveData.insertions, restoredInsertions);
+
+        // Keep children flows until the host resumes them with resumeSpawn(). They share
+        // the insertions cache so that insertions referenced from several places stay one object.
+        if (saveData.children != null && saveData.children.length > 0) {
+            context.pendingRestoredFlows = new Map();
+            context.pendingRestoredKeys = [];
+            for (flow in saveData.children) {
+                if (flow.key == null || context.pendingRestoredFlows.exists(flow.key)) continue;
+                context.pendingRestoredFlows.set(flow.key, flow);
+                context.pendingRestoredKeys.push(flow.key);
+            }
+            context.pendingSavedInsertions = saveData.insertions;
+            context.pendingInsertionsCache = restoredInsertions;
+        }
+
+        _restoreSavedInsertions = null;
+        _restoreInsertionsCache = null;
+
+    }
+
+    /**
+     * Restores the playhead of this interpreter (stack, pending choice options and
+     * choice evaluation context) from saved data. The shared state is not touched.
+     */
+    function restoreFlow(
+        savedStack:Array<SaveDataScope>,
+        savedPendingChoiceOptions:Null<Array<SaveDataChoiceOption>>,
+        savedChoiceEvalContext:Null<Array<SaveDataChoiceOption>>,
+        savedInsertions:Dynamic<SaveDataInsertion>,
+        restoredInsertions:Map<Int, RuntimeInsertion>
+    ):Void {
+
+        stack.resize(0);
+        nextScopeId = 1;
+        pendingChoiceOptions = null;
+        _choiceEvalTexts.resize(0);
+        _choiceEvalEnabled.resize(0);
+
+        final prevSavedInsertions = _restoreSavedInsertions;
+        final prevInsertionsCache = _restoreInsertionsCache;
+        _restoreSavedInsertions = savedInsertions;
+        _restoreInsertionsCache = restoredInsertions;
+
         // Restore scope stack (share restoredInsertions map for pending options)
-        if (!restoreStack(saveData.stack, saveData.insertions, restoredInsertions)) {
+        if (!restoreStack(savedStack, savedInsertions, restoredInsertions)) {
             // If failed to restore stack, simply resolve last known top level beat as fallback
-            beatToResume = restoreBeatToResume(saveData.stack);
+            beatToResume = restoreBeatToResume(savedStack);
         }
 
         // Restore pending choice options (from choices with insertions awaiting user input)
-        if (saveData.pendingChoiceOptions != null) {
+        if (savedPendingChoiceOptions != null) {
             pendingChoiceOptions = [];
-            for (savedOpt in saveData.pendingChoiceOptions) {
-                final opt = restoreChoiceOption(savedOpt, saveData.insertions, restoredInsertions);
+            for (savedOpt in savedPendingChoiceOptions) {
+                final opt = restoreChoiceOption(savedOpt, savedInsertions, restoredInsertions);
                 if (opt != null) pendingChoiceOptions.push(opt);
             }
         }
 
         // Restore choice evaluation context (from save inside a choice option body)
-        if (saveData.choiceEvalContext != null) {
-            _choiceEvalTexts.resize(0);
-            _choiceEvalEnabled.resize(0);
-            for (entry in saveData.choiceEvalContext) {
+        if (savedChoiceEvalContext != null) {
+            for (entry in savedChoiceEvalContext) {
                 _choiceEvalTexts.push(entry.text);
                 _choiceEvalEnabled.push(entry.disabled != true);
             }
         }
 
-        _restoreSavedInsertions = null;
-        _restoreInsertionsCache = null;
+        _restoreSavedInsertions = prevSavedInsertions;
+        _restoreInsertionsCache = prevInsertionsCache;
 
     }
 
@@ -1068,11 +1411,20 @@ typedef InterpreterOptions = {
      */
     public function resume() {
 
+        // A root interpreter saved after it finished (while children were still running)
+        // stays finished instead of starting over
+        if (stack.length == 0 && finished && isRoot()) {
+            finish();
+            return;
+        }
+
         // If there is no stack, simply start
         if (stack.length == 0) {
             start();
             return;
         }
+
+        attachBeforeRun();
 
         // Prepare to continue execution
         final done = wrapNext(finish);
@@ -1098,6 +1450,156 @@ typedef InterpreterOptions = {
         // Resume from the specified scope level
         resumeNode(stack[scopeLevel].node, scopeLevel, done.cb);
         done.sync = false;
+
+    }
+
+    /**
+     * Spawns a new child interpreter that shares everything with this one (script, state,
+     * characters, functions) except the playhead. The child is not started: call `start()`
+     * on it. Any live child using the same key is disposed first, and a restored flow still
+     * pending for that key is discarded (use `resumeSpawn()` to continue it instead).
+     *
+     * A function stored as a value in shared state stays bound to the interpreter that
+     * read it: calling it from another interpreter reads the playhead of the first one.
+     * Call functions by name instead of storing them in shared state.
+     *
+     * @param key Identifies the child, notably to resume it after a restore
+     * @param handleDialogue Dialogue handler of the child, or null to reuse the one of this interpreter
+     * @param handleChoice Choice handler of the child, or null to reuse the one of this interpreter
+     * @param handleFinish Finish handler of the child, or null to reuse the one of this interpreter
+     * @param options Only used by bindings, to pass a wrapper and function adapters bound to the child
+     * @return The child interpreter
+     */
+    public function spawn(key:String, ?handleDialogue:DialogueHandler, ?handleChoice:ChoiceHandler, ?handleFinish:FinishHandler, ?options:InterpreterOptions):Interpreter {
+
+        checkSpawnKey(key);
+
+        final existing = context.childByKey(key);
+        if (existing != null) {
+            existing.dispose();
+        }
+        context.removePendingFlow(key);
+
+        return createChild(key, handleDialogue, handleChoice, handleFinish, options);
+
+    }
+
+    /**
+     * Rebuilds a child interpreter from the flow saved under the given key, after
+     * `restore()` was called on the root interpreter. The child is not resumed yet:
+     * call `resume()` on it.
+     *
+     * @param key The key the child had when it was saved (see `resumableSpawnKeys()`)
+     * @param handleDialogue Dialogue handler of the child, or null to reuse the one of this interpreter
+     * @param handleChoice Choice handler of the child, or null to reuse the one of this interpreter
+     * @param handleFinish Finish handler of the child, or null to reuse the one of this interpreter
+     * @param options Only used by bindings, to pass a wrapper and function adapters bound to the child
+     * @return The restored child interpreter
+     * @throws RuntimeError If no restored flow is pending for this key
+     */
+    public function resumeSpawn(key:String, ?handleDialogue:DialogueHandler, ?handleChoice:ChoiceHandler, ?handleFinish:FinishHandler, ?options:InterpreterOptions):Interpreter {
+
+        checkSpawnKey(key);
+
+        // Grab these before removing the flow, as removing the last one clears them
+        final savedInsertions = context.pendingSavedInsertions;
+        final insertionsCache = context.pendingInsertionsCache;
+
+        final flow = context.removePendingFlow(key);
+        if (flow == null) {
+            throw new RuntimeError('No saved interpreter to resume with key: $key', script.pos);
+        }
+
+        final existing = context.childByKey(key);
+        if (existing != null) {
+            existing.dispose();
+        }
+
+        final child = createChild(key, handleDialogue, handleChoice, handleFinish, options);
+        child.restoreFlow(flow.stack, flow.pendingChoiceOptions, flow.choiceEvalContext, savedInsertions, insertionsCache);
+        return child;
+
+    }
+
+    /**
+     * Keys of the child interpreters read by the last `restore()` that were not
+     * resumed with `resumeSpawn()` (nor replaced with `spawn()`) yet.
+     */
+    public function resumableSpawnKeys():Array<String> {
+
+        return context.pendingRestoredKeys != null ? context.pendingRestoredKeys.copy() : [];
+
+    }
+
+    /**
+     * Stops a child interpreter for good: its playhead is cleared, it is not part of
+     * saves anymore, and callbacks it handed to the host become no-ops.
+     *
+     * @throws RuntimeError If called on a root interpreter
+     */
+    public function dispose():Void {
+
+        if (isRoot()) {
+            throw new RuntimeError('Cannot dispose a root interpreter', script.pos);
+        }
+        if (disposed) return;
+
+        disposed = true;
+        stack.resize(0);
+        syncCallbacks = [];
+        finishTrigger = null;
+        beatToResume = null;
+        pendingChoiceOptions = null;
+        _choiceEvalTexts.resize(0);
+        _choiceEvalEnabled.resize(0);
+        context.children.remove(this);
+
+    }
+
+    function checkSpawnKey(key:String):Void {
+
+        if (key == null || key.length == 0) {
+            throw new RuntimeError('A key is required to spawn an interpreter', script.pos);
+        }
+
+    }
+
+    function createChild(key:String, handleDialogue:DialogueHandler, handleChoice:ChoiceHandler, handleFinish:FinishHandler, options:InterpreterOptions):Interpreter {
+
+        final child = new Interpreter(
+            script,
+            handleDialogue ?? this.handleDialogue,
+            handleChoice ?? this.handleChoice,
+            handleFinish ?? this.handleFinish,
+            options,
+            context
+        );
+        child.key = key;
+        context.children.push(child);
+        return child;
+
+    }
+
+    /**
+     * Called before a child interpreter runs again (start or resume): puts it back in
+     * the live children if it had finished. A disposed interpreter can't run anymore.
+     */
+    function attachBeforeRun():Void {
+
+        if (disposed) {
+            throw new RuntimeError('Cannot run a disposed interpreter (key: $key)', script.pos);
+        }
+        if (isRoot()) {
+            finished = false;
+            return;
+        }
+        if (context.children.indexOf(this) == -1) {
+            final other = context.childByKey(key);
+            if (other != null) {
+                throw new RuntimeError('Another interpreter is already running with key: $key', script.pos);
+            }
+            context.children.push(this);
+        }
 
     }
 
@@ -2696,7 +3198,7 @@ typedef InterpreterOptions = {
      *
      * @param functions Optional map of additional functions to make available
      */
-    function initializeTopLevelFunctions(functions:FunctionsMap) {
+    function bindFunctions(functions:FunctionsMap) {
 
         this.builtins = new Functions(this);
         builtins.bindAll(topLevelFunctions);
@@ -2712,6 +3214,23 @@ typedef InterpreterOptions = {
             }
         }
 
+        // Helpers only come from built-ins and host functions: on the root interpreter,
+        // script functions are declared after this point, so they never become helpers
+        refreshFunctionHelpers();
+
+        // Functions declared in the script that were already parsed by the root
+        // interpreter (a child gets its own closures, bound to itself)
+        for (func in context.scriptFunctions) {
+            bindScriptFunction(func);
+        }
+
+    }
+
+    /**
+     * Rebuilds the string/array/map/beat helper tables from the top level functions.
+     */
+    function refreshFunctionHelpers() {
+
         for (key => func in topLevelFunctions) {
             if (StringTools.startsWith(key, "string_"))
                 stringHelpers.set(key.substr(7), func);
@@ -2722,6 +3241,18 @@ typedef InterpreterOptions = {
             else if (StringTools.startsWith(key, "beat_"))
                 beatHelpers.set(key.substr(5), func);
         }
+
+    }
+
+    /**
+     * Executes a parsed script function declaration with a lorscript interpreter
+     * bound to this interpreter, and registers the resulting closure.
+     */
+    function bindScriptFunction(func:ScriptFunction) {
+
+        final interp = new loreline.lorscript.Interp(this);
+        final value:Dynamic = interp.execute(func.ast);
+        topLevelFunctions.set(func.name, value);
 
     }
 
@@ -2784,10 +3315,12 @@ typedef InterpreterOptions = {
                     final parser = new loreline.lorscript.Parser();
                     parser.allowJSON = true;
                     parser.allowTypes = true;
-                    final ast = parser.parseString(expr);
-                    final interp = new loreline.lorscript.Interp(this);
-                    final value:Dynamic = interp.execute(ast);
-                    topLevelFunctions.set(func.name, value);
+                    final scriptFunction:ScriptFunction = {
+                        name: func.name,
+                        ast: parser.parseString(expr)
+                    };
+                    context.scriptFunctions.push(scriptFunction);
+                    bindScriptFunction(scriptFunction);
                 }
                 catch (e:Any) {
                     #if loreline_debug_functions
@@ -2817,6 +3350,8 @@ typedef InterpreterOptions = {
         wrapped.sync = true;
 
         wrapped.cb = () -> {
+            // Callbacks handed out before a dispose must not move the playhead anymore
+            if (disposed) return;
             if (wrapped.sync) {
                 if (syncCallbacks == null) {
                     syncCallbacks = [];
@@ -3080,6 +3615,14 @@ typedef InterpreterOptions = {
 
         finishTrigger = null;
 
+        if (isRoot()) {
+            finished = true;
+        }
+        else {
+            // A finished child is not part of saves anymore
+            context.children.remove(this);
+        }
+
         if (handleFinish != null) {
             handleFinish(this);
         }
@@ -3097,11 +3640,9 @@ typedef InterpreterOptions = {
         // (arguments, if any, were evaluated by the caller before this)
         while (pop()) {};
 
-        // Reset scope id
+        // Reset scope id (the insertion id is not reset: it is shared
+        // with the other interpreters of the context, which may still use theirs)
         nextScopeId = 1;
-
-        // Reset insertion id
-        nextInsertionId = 1;
 
         // Clear pending choice options
         pendingChoiceOptions = null;

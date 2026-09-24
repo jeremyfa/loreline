@@ -376,9 +376,11 @@ export class Interpreter {
     /**
      * Restores the interpreter state from a SaveData object.
      * This allows resuming execution from a previously saved state.
+     * Live child interpreters are disposed, and saved children can then be
+     * continued with `resumeSpawn()`.
      *
      * @param saveData The SaveData object containing the serialized state
-     * @throws RuntimeError If the save data version is incompatible
+     * @throws RuntimeError If the save data version is incompatible, or if called on a child interpreter
      */
     restore(saveData: SaveData): void;
 
@@ -387,6 +389,64 @@ export class Interpreter {
      * This should be called after restore() to continue execution.
      */
     resume(): void;
+
+    /**
+     * Key of this interpreter when it was spawned from another one, null for a root interpreter.
+     */
+    readonly key: string | null;
+
+    /**
+     * Whether this interpreter is a root interpreter (not spawned from another one).
+     */
+    isRoot(): boolean;
+
+    /**
+     * Spawns a new child interpreter that shares everything with this one (script, state,
+     * characters, functions) except the playhead. The child is not started: call `start()`
+     * on it. Any live child using the same key is disposed first, and a restored flow still
+     * pending for that key is discarded (use `resumeSpawn()` to continue it instead).
+     *
+     * Calling `save()` on any interpreter of the family saves the shared state and every playhead.
+     *
+     * A function stored as a value in shared state stays bound to the interpreter that
+     * read it: calling it from another interpreter reads the playhead of the first one.
+     * Call functions by name instead of storing them in shared state.
+     *
+     * @param key Identifies the child, notably to resume it after a restore
+     * @param handleDialogue Dialogue handler of the child (defaults to the one of this interpreter)
+     * @param handleChoice Choice handler of the child (defaults to the one of this interpreter)
+     * @param handleFinish Finish handler of the child (defaults to the one of this interpreter)
+     * @returns The child interpreter
+     */
+    spawn(key: string, handleDialogue?: DialogueHandler | null, handleChoice?: ChoiceHandler | null, handleFinish?: FinishHandler | null): Interpreter;
+
+    /**
+     * Rebuilds a child interpreter from the flow saved under the given key, after `restore()`
+     * was called on the root interpreter (or after `Loreline.resume()`). The child is not
+     * resumed yet: call `resume()` on it.
+     *
+     * @param key The key the child had when it was saved (see `resumableSpawnKeys()`)
+     * @param handleDialogue Dialogue handler of the child (defaults to the one of this interpreter)
+     * @param handleChoice Choice handler of the child (defaults to the one of this interpreter)
+     * @param handleFinish Finish handler of the child (defaults to the one of this interpreter)
+     * @returns The restored child interpreter
+     * @throws RuntimeError If no restored flow is pending for this key
+     */
+    resumeSpawn(key: string, handleDialogue?: DialogueHandler | null, handleChoice?: ChoiceHandler | null, handleFinish?: FinishHandler | null): Interpreter;
+
+    /**
+     * Keys of the child interpreters read by the last restore that were not
+     * resumed with `resumeSpawn()` (nor replaced with `spawn()`) yet.
+     */
+    resumableSpawnKeys(): Array<string>;
+
+    /**
+     * Stops a child interpreter for good: its playhead is cleared, it is not part of
+     * saves anymore, and callbacks it handed out become no-ops.
+     *
+     * @throws RuntimeError If called on a root interpreter
+     */
+    dispose(): void;
 
     /**
      * Gets a character by name.

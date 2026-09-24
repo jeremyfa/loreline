@@ -335,7 +335,9 @@ LORELINE_PUBLIC void Loreline_provideFile(
 );
 
 /* Synchronous parsing: blocks until parsing + all imports complete.
- * Returns NULL on parse error. */
+ * Returns NULL on parse error. Works before or after Loreline_update() has been called.
+ * The file handler must call Loreline_provideFile() before returning (or from another
+ * thread): a handler that waits for the host loop to answer later would block forever. */
 LORELINE_PUBLIC Loreline_Script* Loreline_parse(
     Loreline_String input,
     Loreline_String filePath,
@@ -374,7 +376,8 @@ LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* transla
  * `filePath` may be NULL: it defaults to the path the `script` was parsed from.
  * Can also be a directory path to look up translation files in another folder.
  *
- * Synchronous: blocks until all translation files have been loaded. */
+ * Synchronous: blocks until all translation files have been loaded. Same file handler
+ * rule as Loreline_parse(). */
 LORELINE_PUBLIC Loreline_Translations* Loreline_loadLocale(
     Loreline_String locale,
     Loreline_Script* script,
@@ -488,6 +491,56 @@ LORELINE_PUBLIC Loreline_Interpreter* Loreline_resume(
 LORELINE_PUBLIC void Loreline_start(Loreline_Interpreter* interp, Loreline_String beatName);
 LORELINE_PUBLIC Loreline_String Loreline_save(Loreline_Interpreter* interp);
 LORELINE_PUBLIC void Loreline_restore(Loreline_Interpreter* interp, Loreline_String saveData);
+
+/* Child interpreters.
+ *
+ * Loreline_spawn creates a child interpreter that shares everything with `parent`
+ * (script, state, characters, custom functions) except the playhead. The child is not
+ * started: call Loreline_start() on it. Any live child using the same key is disposed
+ * first, and a restored flow still pending for that key is discarded. NULL handlers
+ * reuse the ones of the parent. userData, retain and release belong to the child only.
+ * The returned handle must be released with Loreline_releaseInterpreter() like any other.
+ * Returns NULL on error (no key, or parent not ready).
+ *
+ * Loreline_save() on any interpreter of the family saves the shared state and every
+ * playhead. After Loreline_restore() on the root interpreter (or Loreline_resume()),
+ * Loreline_resumableSpawnKeyCount()/Loreline_resumableSpawnKey() list the saved children,
+ * and Loreline_resumeSpawn() rebuilds one of them and resumes it right away (like
+ * Loreline_resume()). Returns NULL if no saved child is pending for that key.
+ *
+ * Loreline_disposeInterpreter() stops a child for good: its playhead is cleared, it is not part of
+ * saves anymore, and its pending advance/select become no-ops. It does not free the
+ * handle (still call Loreline_releaseInterpreter()). It has no effect on a root. */
+LORELINE_PUBLIC Loreline_Interpreter* Loreline_spawn(
+    Loreline_Interpreter* parent,
+    Loreline_String key,
+    Loreline_DialogueHandler onDialogue = NULL,
+    Loreline_ChoiceHandler onChoice = NULL,
+    Loreline_FinishHandler onFinish = NULL,
+    void* userData = NULL,
+    Loreline_UserDataRetain retain = NULL,
+    Loreline_UserDataRelease release = NULL
+);
+LORELINE_PUBLIC Loreline_Interpreter* Loreline_resumeSpawn(
+    Loreline_Interpreter* parent,
+    Loreline_String key,
+    Loreline_DialogueHandler onDialogue = NULL,
+    Loreline_ChoiceHandler onChoice = NULL,
+    Loreline_FinishHandler onFinish = NULL,
+    void* userData = NULL,
+    Loreline_UserDataRetain retain = NULL,
+    Loreline_UserDataRelease release = NULL
+);
+/* userData given to Loreline_play/resume/spawn/resumeSpawn for this interpreter. A custom
+ * function called from a child receives the child handle (with the userData registered
+ * with the function), so this lets the host find its own object for that interpreter. */
+LORELINE_PUBLIC void* Loreline_interpreterUserData(Loreline_Interpreter* interp);
+LORELINE_PUBLIC int Loreline_resumableSpawnKeyCount(Loreline_Interpreter* interp);
+LORELINE_PUBLIC Loreline_String Loreline_resumableSpawnKey(Loreline_Interpreter* interp, int index);
+/* Key given to Loreline_spawn(), or a null string for a root interpreter */
+LORELINE_PUBLIC Loreline_String Loreline_interpreterKey(Loreline_Interpreter* interp);
+LORELINE_PUBLIC bool Loreline_isRoot(Loreline_Interpreter* interp);
+LORELINE_PUBLIC void Loreline_disposeInterpreter(Loreline_Interpreter* interp);
 
 /* Character access */
 LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(

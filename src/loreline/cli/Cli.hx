@@ -352,6 +352,20 @@ class Cli {
             if (failCount > failBefore) fileFailCount++;
         }
 
+        // Programmatic interpreter tests: child interpreters (spawn, shared state,
+        // multi-playhead save/restore) and the customCreateFields option
+        final onPass = (name:String) -> {
+            passCount++;
+            print('PASS'.green().bold() + ' - ' + name.gray());
+        };
+        final onFail = (name:String, error:String) -> {
+            failCount++;
+            hasFailedTest = true;
+            print('FAIL'.red().bold() + ' - ' + name.gray() + ' ' + error);
+        };
+        loreline.test.SpawnTests.run(onPass, onFail);
+        loreline.test.CustomFieldsTests.run(onPass, onFail);
+
         print('');
         if (failCount > 0) {
             final total = passCount + failCount;

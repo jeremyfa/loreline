@@ -485,6 +485,107 @@ end
 
 -- -- Main -----------------------------------------------------------------
 
+-- Child interpreters: same scenario in every binding runner. A child spawned from the
+-- root shares its state, gets host functions bound to itself, and both playheads are
+-- saved from any interpreter then continued after a restore with resume_spawn().
+local SPAWN_SCRIPT = table.concat({
+    "state",
+    "  gold: 0",
+    "",
+    "beat Main",
+    "  gold = gold + 1",
+    "",
+    "  Main gold $gold",
+    "",
+    "  Main where $current_beat() host $who()",
+    "",
+    "beat Side",
+    "  new state",
+    "    local: 5",
+    "",
+    "  gold = gold + 10",
+    "",
+    "  Side gold $gold local $local",
+    "",
+    "  Side where $current_beat() host $who()",
+    "",
+}, "\n")
+
+local SPAWN_EXPECTED = {
+    "root: Main gold 1",
+    "npc: Side gold 11 local 5",
+    "root: Main where Main host root",
+    "root: Main where Main host root",
+    "npc: Side gold 11 local 5",
+    "npc: Side where Side host npc",
+}
+
+local function run_spawn_test()
+    local label = "spawn: shared state, bound functions, save and resumeSpawn"
+    local ok, err = pcall(function()
+        local log = {}
+        local pending = {}
+
+        local function name_of(interp)
+            return interp:key() or "root"
+        end
+
+        local function dialogue(interp, character, text, tags, advance)
+            local prefix = character ~= nil and (character .. ": ") or ""
+            log[#log + 1] = name_of(interp) .. ": " .. prefix .. text
+            pending[name_of(interp)] = advance
+        end
+        local function choice(interp, options, select) end
+        local function finish(interp) end
+
+        local function next_dialogue(name)
+            local cb = pending[name]
+            if cb == nil then error("No pending dialogue for " .. name) end
+            pending[name] = nil
+            cb()
+        end
+
+        local options = {functions = {who = function(interp, args) return name_of(interp) end}}
+
+        local script = loreline.parse(SPAWN_SCRIPT)
+        local root = loreline.play(script, dialogue, choice, finish, nil, options)
+        local npc = root:spawn("npc", dialogue, choice, finish)
+        npc:start("Side")
+        next_dialogue("root")
+
+        local checks = {}
+        if npc:key() ~= "npc" then checks[#checks + 1] = "child key: " .. tostring(npc:key()) end
+        if root:key() ~= nil then checks[#checks + 1] = "root key: " .. tostring(root:key()) end
+        if npc:is_root() or not root:is_root() then checks[#checks + 1] = "is_root" end
+        local save_data = npc:save()
+        if save_data.children == nil or save_data.children.length ~= 1 then
+            checks[#checks + 1] = "save from child does not include both playheads"
+        end
+
+        pending = {}
+        local restored = loreline.resume(script, dialogue, choice, finish, save_data, nil, options)
+        local keys = restored:resumable_spawn_keys()
+        if #keys ~= 1 or keys[1] ~= "npc" then
+            checks[#checks + 1] = "resumable_spawn_keys: " .. table.concat(keys, ",")
+        end
+        restored:resume_spawn("npc", dialogue, choice, finish):resume()
+        next_dialogue("npc")
+
+        if table.concat(log, "\n") ~= table.concat(SPAWN_EXPECTED, "\n") then
+            checks[#checks + 1] = "log:\n    " .. table.concat(log, "\n    ")
+        end
+        if #checks > 0 then error(table.concat(checks, "; ")) end
+    end)
+    if ok then
+        pass_count = pass_count + 1
+        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. label .. "\027[0m\n")
+    else
+        fail_count = fail_count + 1
+        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. label .. "\027[0m\n")
+        io.write("  Error: " .. tostring(err) .. "\n")
+    end
+end
+
 local function main()
     if #arg < 1 then
         io.stderr:write("Usage: lua lua/test-runner.lua <test-directory>\n")
@@ -712,6 +813,8 @@ local function main()
         ::next_file::
     end
 
+    run_spawn_test()
+
     local total = pass_count + fail_count
     io.write("\n")
     if fail_count == 0 then
@@ -721,5 +824,6 @@ local function main()
         os.exit(1)
     end
 end
+
 
 main()

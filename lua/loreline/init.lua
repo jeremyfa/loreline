@@ -286,6 +286,69 @@ local function make_finish_bridge(handle_finish)
     end
 end
 
+-- -- Child interpreters --------------------------------------------------
+
+-- Bridges for a spawned child. A missing handler stays nil so the core reuses
+-- the (already bridged) handler of the parent interpreter.
+local function child_bridges(handle_dialogue, handle_choice, handle_finish)
+    return
+        handle_dialogue ~= nil and make_dialogue_bridge(handle_dialogue) or nil,
+        handle_choice ~= nil and make_choice_bridge(handle_choice) or nil,
+        handle_finish ~= nil and make_finish_bridge(handle_finish) or nil
+end
+
+--- Key of this interpreter when it was spawned from another one.
+-- @return string|nil The key, or nil for a root interpreter.
+function Interpreter:key()
+    return self._internal.key
+end
+
+--- Whether this interpreter is a root interpreter (not spawned from another one).
+-- @return boolean
+function Interpreter:is_root()
+    return self._internal:isRoot()
+end
+
+--- Spawn a child interpreter sharing everything with this one except the playhead.
+-- The child shares the script, state, characters and custom functions, and is
+-- not started: call `start()` on it. Any live child using the same key is
+-- disposed first, and a restored flow still pending for that key is discarded
+-- (use `resume_spawn()` to continue it instead). Calling `save()` on any
+-- interpreter of the family saves the shared state and every playhead.
+-- @param key string Identifies the child, notably to resume it after a restore.
+-- @param handle_dialogue function|nil Dialogue handler of the child (default: the one of this interpreter).
+-- @param handle_choice function|nil Choice handler of the child (default: the one of this interpreter).
+-- @param handle_finish function|nil Finish handler of the child (default: the one of this interpreter).
+-- @return Interpreter The child interpreter.
+function Interpreter:spawn(key, handle_dialogue, handle_choice, handle_finish)
+    return Interpreter._of(self._internal:spawn(key, child_bridges(handle_dialogue, handle_choice, handle_finish)))
+end
+
+--- Rebuild a child interpreter from the flow saved under `key`.
+-- Use it after `restore()` on the root interpreter (or `loreline.resume()`).
+-- The child is not resumed yet: call `resume()` on it.
+-- @param key string The key the child had when it was saved (see `resumable_spawn_keys()`).
+-- @param handle_dialogue function|nil Dialogue handler of the child (default: the one of this interpreter).
+-- @param handle_choice function|nil Choice handler of the child (default: the one of this interpreter).
+-- @param handle_finish function|nil Finish handler of the child (default: the one of this interpreter).
+-- @return Interpreter The restored child interpreter.
+function Interpreter:resume_spawn(key, handle_dialogue, handle_choice, handle_finish)
+    return Interpreter._of(self._internal:resumeSpawn(key, child_bridges(handle_dialogue, handle_choice, handle_finish)))
+end
+
+--- Keys of the saved children not resumed with `resume_spawn()` (nor replaced with `spawn()`) yet.
+-- @return table A Lua array of keys.
+function Interpreter:resumable_spawn_keys()
+    return hx_array_to_lua(self._internal:resumableSpawnKeys())
+end
+
+--- Stop a child interpreter for good.
+-- Its playhead is cleared, it is not part of saves anymore, and callbacks it
+-- handed out become no-ops. Raises an error on a root interpreter.
+function Interpreter:dispose()
+    self._internal:dispose()
+end
+
 -- -- Public API ----------------------------------------------------------
 
 --- Parse a Loreline script string into a Script AST.

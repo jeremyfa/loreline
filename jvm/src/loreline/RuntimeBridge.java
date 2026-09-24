@@ -14,6 +14,9 @@ final class RuntimeBridge {
     private static final MethodHandle RESTORE;
     private static final MethodHandle PARSE;
     private static final MethodHandle LOAD_LOCALE;
+    private static final MethodHandle SPAWN;
+    private static final MethodHandle RESUME_SPAWN;
+    private static final MethodHandle DISPOSE;
 
     static {
         try {
@@ -40,8 +43,50 @@ final class RuntimeBridge {
                     String.class, loreline.runtime.Script.class, String.class,
                     loreline.internal.jvm.Function.class,
                     loreline.internal.jvm.Function.class));
+
+            MethodType spawnType = MethodType.methodType(loreline.runtime.Interpreter.class,
+                String.class,
+                loreline.internal.jvm.Function.class,
+                loreline.internal.jvm.Function.class,
+                loreline.internal.jvm.Function.class,
+                Object.class);
+
+            SPAWN = lookup.findVirtual(
+                loreline.runtime.Interpreter.class, "spawn", spawnType);
+
+            RESUME_SPAWN = lookup.findVirtual(
+                loreline.runtime.Interpreter.class, "resumeSpawn", spawnType);
+
+            DISPOSE = lookup.findVirtual(
+                loreline.runtime.Interpreter.class, "dispose",
+                MethodType.methodType(void.class));
         } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    static loreline.runtime.Interpreter spawn(loreline.runtime.Interpreter parent, boolean resume, String key,
+                                              loreline.internal.jvm.Function handleDialogue,
+                                              loreline.internal.jvm.Function handleChoice,
+                                              loreline.internal.jvm.Function handleFinish,
+                                              loreline.runtime.InterpreterOptions options) {
+        try {
+            return (loreline.runtime.Interpreter) (resume ? RESUME_SPAWN : SPAWN).invoke(
+                parent, key, handleDialogue, handleChoice, handleFinish, options);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void dispose(loreline.runtime.Interpreter interp) {
+        try {
+            DISPOSE.invoke(interp);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
 

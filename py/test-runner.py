@@ -582,6 +582,8 @@ def main():
         if fail_count > fail_before:
             file_fail_count += 1
 
+    run_spawn_test()
+
     total = pass_count + fail_count
     print()
     if fail_count == 0:
@@ -589,6 +591,108 @@ def main():
     else:
         print(f"\033[1m\033[31m  {fail_count} of {total} tests failed ({file_fail_count} of {file_count} files)\033[0m")
         sys.exit(1)
+
+
+# Child interpreters: same scenario in every binding runner. A child spawned from the
+# root shares its state, gets host functions bound to itself, and both playheads are
+# saved from any interpreter then continued after a restore with resume_spawn().
+SPAWN_SCRIPT = "\n".join([
+    "state",
+    "  gold: 0",
+    "",
+    "beat Main",
+    "  gold = gold + 1",
+    "",
+    "  Main gold $gold",
+    "",
+    "  Main where $current_beat() host $who()",
+    "",
+    "beat Side",
+    "  new state",
+    "    local: 5",
+    "",
+    "  gold = gold + 10",
+    "",
+    "  Side gold $gold local $local",
+    "",
+    "  Side where $current_beat() host $who()",
+    "",
+])
+
+SPAWN_EXPECTED = [
+    "root: Main gold 1",
+    "npc: Side gold 11 local 5",
+    "root: Main where Main host root",
+    "root: Main where Main host root",
+    "npc: Side gold 11 local 5",
+    "npc: Side where Side host npc",
+]
+
+
+def run_spawn_test():
+    global pass_count, fail_count
+    label = "spawn: shared state, bound functions, save and resumeSpawn"
+    try:
+        log = []
+        pending = {}
+
+        def name_of(interp):
+            return interp.key if interp.key is not None else "root"
+
+        def dialogue(interp, character, text, tags, advance):
+            log.append(f"{name_of(interp)}: {character + ': ' if character is not None else ''}{text}")
+            pending[name_of(interp)] = advance
+
+        def choice(interp, options, select):
+            pass
+
+        def finish(interp):
+            pass
+
+        def next_dialogue(name):
+            cb = pending.pop(name, None)
+            if cb is None:
+                raise Exception(f"No pending dialogue for {name}")
+            cb()
+
+        functions = {"who": lambda interp, args: name_of(interp)}
+
+        script = Loreline.parse(SPAWN_SCRIPT)
+        root = Loreline.play(script, dialogue, choice, finish, functions=functions)
+        npc = root.spawn("npc", dialogue, choice, finish)
+        npc.start("Side")
+        next_dialogue("root")
+
+        checks = []
+        if npc.key != "npc":
+            checks.append(f"child key: {npc.key}")
+        if root.key is not None:
+            checks.append(f"root key: {root.key}")
+        if npc.is_root() or not root.is_root():
+            checks.append("is_root")
+        save_data = npc.save()
+        if len(save_data.children) != 1 or len(root.save().children) != 1:
+            checks.append("save from child does not include both playheads")
+
+        pending.clear()
+        restored = Loreline.resume(script, dialogue, choice, finish, save_data, functions=functions)
+        keys = restored.resumable_spawn_keys()
+        if keys != ["npc"]:
+            checks.append(f"resumable_spawn_keys: {keys}")
+        restored.resume_spawn("npc", dialogue, choice, finish).resume()
+        next_dialogue("npc")
+
+        if log != SPAWN_EXPECTED:
+            checks.append("log:\n    " + "\n    ".join(log))
+        if checks:
+            raise Exception("; ".join(checks))
+
+        pass_count += 1
+        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")
+    except Exception as e:
+        fail_count += 1
+        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+        print(f"  Error: {e}")
 
 
 if __name__ == "__main__":

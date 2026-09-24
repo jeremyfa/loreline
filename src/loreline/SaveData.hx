@@ -132,6 +132,20 @@ typedef SaveDataFields = {
 }
 
 /**
+ * The playhead of a child interpreter, spawned from the root interpreter
+ */
+typedef SaveDataFlow = {
+    /** The key given when the child was spawned */
+    var key:String;
+    /** Execution stack of the child */
+    var stack:Array<SaveDataScope>;
+    /** Pending choice options when save happened at a choice with insertions */
+    var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
+    /** Choice evaluation context when save happened inside a choice option body */
+    var ?choiceEvalContext:Array<SaveDataChoiceOption>;
+}
+
+/**
  * Top-level save data structure
  */
 typedef SaveData = {
@@ -151,4 +165,8 @@ typedef SaveData = {
     var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
     /** Choice evaluation context when save happened inside a choice option body */
     var ?choiceEvalContext:Array<SaveDataChoiceOption>;
+    /** Playheads of the child interpreters that were running */
+    var ?children:Array<SaveDataFlow>;
+    /** Set when the root interpreter had finished while children were still running */
+    var ?finished:Bool;
 }

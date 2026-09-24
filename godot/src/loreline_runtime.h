@@ -135,4 +135,5 @@ public:
 	void _retain_interpreter(const Ref<LorelineInterpreter> &interp);
 	void _release_interpreter(LorelineInterpreter *interp);
 	static void _release_active_interpreter(LorelineInterpreter *interp);
+	static void _retain_active_interpreter(const Ref<LorelineInterpreter> &interp);
 };

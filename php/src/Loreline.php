@@ -166,6 +166,21 @@ final class Loreline
         HxTimer::update($delta);
     }
 
+    /**
+     * Bridges for a spawned child interpreter. A missing handler stays null so
+     * the core reuses the (already bridged) handler of the parent interpreter.
+     *
+     * @internal Used by Interpreter::spawn() and Interpreter::resumeSpawn().
+     */
+    public static function childBridges(?callable $handleDialogue, ?callable $handleChoice, ?callable $handleFinish): array
+    {
+        return [
+            $handleDialogue !== null ? self::makeDialogueBridge($handleDialogue) : null,
+            $handleChoice !== null ? self::makeChoiceBridge($handleChoice) : null,
+            $handleFinish !== null ? self::makeFinishBridge($handleFinish) : null,
+        ];
+    }
+
     private static function makeOptions(?array $options): HxAnon
     {
         $options ??= [];

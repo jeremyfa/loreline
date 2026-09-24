@@ -210,6 +210,15 @@ namespace Loreline
         /// </summary>
         public readonly Runtime.Interpreter RuntimeInterpreter;
 
+        // Kept so that a spawned child can wrap the same handlers and functions,
+        // bound to its own wrapper
+        private readonly DialogueHandler handleDialogue;
+        private readonly ChoiceHandler handleChoice;
+        private readonly FinishHandler handleFinish;
+        private readonly Dictionary<string, Function> functions;
+        private readonly CreateFields customCreateFields;
+        private readonly bool strictAccess;
+
         /// <summary>
         /// Creates a new Loreline script interpreter.
         /// </summary>
@@ -231,6 +240,13 @@ namespace Loreline
                 CustomCreateFields = null
             };
 
+            this.handleDialogue = handleDialogue;
+            this.handleChoice = handleChoice;
+            this.handleFinish = handleFinish;
+            this.functions = options.Functions;
+            this.customCreateFields = options.CustomCreateFields;
+            this.strictAccess = options.StrictAccess;
+
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
@@ -242,7 +258,8 @@ namespace Loreline
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, null, null)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, null, null),
+                null
             );
         }
 
@@ -262,6 +279,13 @@ namespace Loreline
             InterpreterOptions options
         )
         {
+            this.handleDialogue = handleDialogue;
+            this.handleChoice = handleChoice;
+            this.handleFinish = handleFinish;
+            this.functions = options.Functions;
+            this.customCreateFields = options.CustomCreateFields;
+            this.strictAccess = options.StrictAccess;
+
             DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, handleDialogue);
             ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, handleChoice);
             FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, handleFinish);
@@ -274,8 +298,117 @@ namespace Loreline
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, translationsWrap, null)
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, translationsWrap, null),
+                null
             );
+        }
+
+        /// <summary>
+        /// Creates the wrapper of a child interpreter, spawned from (or resumed through) a parent.
+        /// Handlers left null reuse the ones of the parent, wrapped again so that they receive the child.
+        /// </summary>
+        private Interpreter(
+            Interpreter parent,
+            string key,
+            DialogueHandler handleDialogue,
+            ChoiceHandler handleChoice,
+            FinishHandler handleFinish,
+            bool resume
+        )
+        {
+            this.handleDialogue = handleDialogue ?? parent.handleDialogue;
+            this.handleChoice = handleChoice ?? parent.handleChoice;
+            this.handleFinish = handleFinish ?? parent.handleFinish;
+            this.functions = parent.functions;
+            this.customCreateFields = parent.customCreateFields;
+            this.strictAccess = parent.strictAccess;
+
+            DialogueHandlerWrap handleDialogueWrap = new DialogueHandlerWrap(this, this.handleDialogue);
+            ChoiceHandlerWrap handleChoiceWrap = new ChoiceHandlerWrap(this, this.handleChoice);
+            FinishHandlerWrap handleFinishWrap = new FinishHandlerWrap(this, this.handleFinish);
+
+            // Function adapters bound to this wrapper, so that host functions receive the child
+            Runtime.InterpreterOptions childOptions = new Runtime.InterpreterOptions(
+                this,
+                WrapFunctions(this, functions),
+                strictAccess,
+                WrapCreateFields(this, customCreateFields),
+                null,
+                null
+            );
+
+            RuntimeInterpreter = resume
+                ? parent.RuntimeInterpreter.resumeSpawn(key, handleDialogueWrap, handleChoiceWrap, handleFinishWrap, childOptions)
+                : parent.RuntimeInterpreter.spawn(key, handleDialogueWrap, handleChoiceWrap, handleFinishWrap, childOptions);
+        }
+
+        /// <summary>
+        /// Key of this interpreter when it was spawned from another one, null for a root interpreter.
+        /// </summary>
+        public string Key => RuntimeInterpreter.key;
+
+        /// <summary>
+        /// Whether this interpreter is a root interpreter (not spawned from another one).
+        /// </summary>
+        public bool IsRoot()
+        {
+            return RuntimeInterpreter.isRoot();
+        }
+
+        /// <summary>
+        /// Spawns a child interpreter that shares everything with this one (script, state,
+        /// characters, functions) except the playhead. The child is not started: call Start()
+        /// on it. Any live child using the same key is disposed first, and a restored flow still
+        /// pending for that key is discarded (use ResumeSpawn() to continue it instead).
+        /// Calling Save() on any interpreter of the family saves the shared state and every playhead.
+        /// </summary>
+        /// <param name="key">Identifies the child, notably to resume it after a restore</param>
+        /// <param name="handleDialogue">Dialogue handler of the child, or null to reuse the one of this interpreter</param>
+        /// <param name="handleChoice">Choice handler of the child, or null to reuse the one of this interpreter</param>
+        /// <param name="handleFinish">Finish handler of the child, or null to reuse the one of this interpreter</param>
+        /// <returns>The child interpreter</returns>
+        public Interpreter Spawn(string key, DialogueHandler handleDialogue = null, ChoiceHandler handleChoice = null, FinishHandler handleFinish = null)
+        {
+            return new Interpreter(this, key, handleDialogue, handleChoice, handleFinish, false);
+        }
+
+        /// <summary>
+        /// Rebuilds a child interpreter from the flow saved under the given key, after Restore()
+        /// on the root interpreter (or Engine.Resume()). The child is not resumed yet: call Resume() on it.
+        /// </summary>
+        /// <param name="key">The key the child had when it was saved (see ResumableSpawnKeys())</param>
+        /// <param name="handleDialogue">Dialogue handler of the child, or null to reuse the one of this interpreter</param>
+        /// <param name="handleChoice">Choice handler of the child, or null to reuse the one of this interpreter</param>
+        /// <param name="handleFinish">Finish handler of the child, or null to reuse the one of this interpreter</param>
+        /// <returns>The restored child interpreter</returns>
+        /// <exception cref="Runtime.RuntimeError">Thrown if no restored flow is pending for this key</exception>
+        public Interpreter ResumeSpawn(string key, DialogueHandler handleDialogue = null, ChoiceHandler handleChoice = null, FinishHandler handleFinish = null)
+        {
+            return new Interpreter(this, key, handleDialogue, handleChoice, handleFinish, true);
+        }
+
+        /// <summary>
+        /// Keys of the saved children not resumed with ResumeSpawn() (nor replaced with Spawn()) yet.
+        /// </summary>
+        public string[] ResumableSpawnKeys()
+        {
+            Internal.Root.Array rawKeys = (Internal.Root.Array)RuntimeInterpreter.resumableSpawnKeys();
+            string[] keys = new string[rawKeys.length];
+            for (int i = 0; i < rawKeys.length; i++)
+            {
+                keys[i] = (string)rawKeys.__a[i];
+            }
+            return keys;
+        }
+
+        /// <summary>
+        /// Stops a child interpreter for good: its playhead is cleared, it is not part of
+        /// saves anymore, and callbacks it handed out become no-ops.
+        /// </summary>
+        /// <exception cref="Runtime.RuntimeError">Thrown if called on a root interpreter</exception>
+        public void Dispose()
+        {
+            RuntimeInterpreter.dispose();
         }
 
         /// <summary>

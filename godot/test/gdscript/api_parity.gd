@@ -81,7 +81,121 @@ beat start
 	if _events != expected:
 		_fail("unexpected event sequence: " + str(_events))
 
+	# 7. Child interpreters
+	await _run_spawn(loreline)
+
 	_finish()
+
+
+# Same scenario in every binding runner. A child spawned from the root shares
+# its state, gets host functions bound to itself, and both playheads are saved
+# from any interpreter then continued after a restore with resume_spawn().
+var _spawn_log: Array = []
+var _spawn_pending := {}
+
+
+func _spawn_name(interp: LorelineInterpreter) -> String:
+	var key := interp.get_key()
+	return key if key != "" else "root"
+
+
+func _on_spawn_dialogue(interp: LorelineInterpreter, character: String, text: String, _tags: Array, advance: Callable) -> void:
+	var name := _spawn_name(interp)
+	_spawn_log.append(name + ": " + (character + ": " if character != "" else "") + text)
+	_spawn_pending[name] = advance
+
+
+func _spawn_wait(count: int) -> void:
+	for i in 60:
+		if _spawn_log.size() >= count:
+			return
+		await process_frame
+	_fail("spawn: timed out waiting for " + str(count) + " lines, got " + str(_spawn_log))
+
+
+func _spawn_next(name: String) -> void:
+	if not _spawn_pending.has(name):
+		_fail("spawn: no pending dialogue for " + name)
+		return
+	var advance: Callable = _spawn_pending[name]
+	_spawn_pending.erase(name)
+	advance.call()
+
+
+func _run_spawn(loreline) -> void:
+	var source := """
+state
+  gold: 0
+
+beat Main
+  gold = gold + 1
+
+  Main gold $gold
+
+  Main where $current_beat() host $who()
+
+beat Side
+  new state
+    local: 5
+
+  gold = gold + 10
+
+  Side gold $gold local $local
+
+  Side where $current_beat() host $who()
+"""
+	var script = await loreline.parse(source, "spawn.lor")
+	if script == null:
+		_fail("spawn: parse returned null")
+		return
+
+	var noop_choice := func(_interp, _options, _select): pass
+	var noop_finished := func(_interp): pass
+	var options := LorelineOptions.new()
+	options.set_function("who", func(interp, _args): return _spawn_name(interp))
+
+	var root: LorelineInterpreter = loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Main", options)
+	await _spawn_wait(1)
+	var npc: LorelineInterpreter = root.spawn("npc", _on_spawn_dialogue, noop_choice, noop_finished)
+	if npc == null:
+		_fail("spawn: spawn returned null")
+		return
+	npc.start("Side")
+	await _spawn_wait(2)
+	_spawn_next("root")
+	await _spawn_wait(3)
+
+	if npc.get_key() != "npc" or root.get_key() != "":
+		_fail("spawn: unexpected keys " + npc.get_key() + " / " + root.get_key())
+	if npc.is_root() or not root.is_root():
+		_fail("spawn: is_root mismatch")
+	var saved: String = npc.save_state()
+	if saved != root.save_state():
+		_fail("spawn: save from child differs from save from root")
+
+	_spawn_pending.clear()
+	var restored: LorelineInterpreter = loreline.resume(script, _on_spawn_dialogue, noop_choice, noop_finished, saved, "", options)
+	await _spawn_wait(4)
+	if restored.resumable_spawn_keys() != ["npc"]:
+		_fail("spawn: resumable_spawn_keys " + str(restored.resumable_spawn_keys()))
+	var restored_npc: LorelineInterpreter = restored.resume_spawn("npc", _on_spawn_dialogue, noop_choice, noop_finished)
+	if restored_npc == null:
+		_fail("spawn: resume_spawn returned null")
+		return
+	await _spawn_wait(5)
+	_spawn_next("npc")
+	await _spawn_wait(6)
+
+	var expected := [
+		"root: Main gold 1",
+		"npc: Side gold 11 local 5",
+		"root: Main where Main host root",
+		"root: Main where Main host root",
+		"npc: Side gold 11 local 5",
+		"npc: Side where Side host npc"
+	]
+	if _spawn_log != expected:
+		_fail("spawn: unexpected log " + str(_spawn_log))
 
 
 func _on_dialogue(interp: LorelineInterpreter, character: String, text: String, _tags: Array, advance: Callable) -> void:

@@ -27,6 +27,7 @@ It takes a parsed AST (`Script` from `Node.hx`) and executes it interactively.
 14. [Resume Dispatch — Rebuilding the Call Stack](#14-resume-dispatch--rebuilding-the-call-stack)
 15. [Complex Scenarios: Insertions + Save/Restore](#15-complex-scenarios-insertions--saverestore)
 16. [Handler Callbacks and the Host Application](#16-handler-callbacks-and-the-host-application)
+17. [Child Interpreters](#17-child-interpreters)
 
 ---
 
@@ -998,3 +999,125 @@ The host typically saves when `handleChoice` is called and restores when the
 user wants to load a previous state. After `resume()`, the interpreter calls
 `handleChoice` again with the same options (re-collected), letting the user
 make a different selection.
+
+---
+
+## 17. Child Interpreters
+
+A host can run several playheads over the same story state: a background
+conversation while the main dialogue goes on, an NPC reacting on its own, and
+so on. Each playhead is an `Interpreter`, so every binding keeps the API it
+already has.
+
+```haxe
+final root = Loreline.play(script, handleDialogue, handleChoice, handleFinish);
+final npc = root.spawn("npc", npcDialogue, npcChoice, npcFinish);
+npc.start("Background");
+```
+
+### What is shared and what is not
+
+Everything that used to be a field of the interpreter and describes the story
+rather than the playhead moved to `InterpreterContext`:
+
+- the script, its `Lens`, translations and string literal processors
+- `topLevelState`, `topLevelCharacters`, `topLevelBeats`
+- `nodeStates`, so beat `state` blocks, visit counts and `once` options are shared
+- the random generator used by `random()`, `seed_random()` and shuffled alternatives
+- the function definitions: host functions as given in the options, and the
+  lorscript functions declared in the script, parsed once
+- `nextInsertionId`, so that insertion ids stay unique in a common save
+
+Each interpreter keeps its own playhead: the stack (and with it the `new state`
+blocks and beat parameters), pending callbacks, `finishTrigger`,
+`pendingChoiceOptions` and the choice evaluation context.
+
+The shared fields are still read through inline properties on `Interpreter`
+(`topLevelState`, `nodeStates`...), so most of the interpreter code does not
+know about the context.
+
+### Function tables are bound per interpreter
+
+Built-ins such as `current_beat()`, `beat_visits()` or `choices()` read the
+stack of the interpreter they belong to, lorscript closures keep the
+interpreter that executed them, and host functions receive the interpreter as
+their first argument. A single table bound to the root would make a child read
+the root playhead without any error.
+
+So each interpreter builds its own table in `bindFunctions()`: a new
+`Functions` instance, the host functions registered again (auto-wrapped with
+the child as `this`), and the cached lorscript ASTs executed again with a
+`lorscript.Interp` bound to the child. Nothing is parsed again and no state
+declaration is evaluated again, so a spawn costs a few hundred allocations.
+
+Bindings that build their own function adapters (C#, JVM, C API) pass adapters
+bound to the child wrapper through the options of `spawn()`. The core only
+reads `wrapper` and `functions` from those options: everything else lives in
+the context.
+
+### Known limitation: function values in shared state
+
+A function read as a value (`f = where`) is the closure of the interpreter that
+read it. Once stored in shared state, it keeps pointing to that interpreter:
+
+```lor
+state
+  f: null
+
+function where()
+  return current_beat()
+
+beat Main
+  f = where
+
+beat Side
+  // Run by a child while the root is in Main: prints "Main", not "Side"
+  $f()
+```
+
+Built-ins and host functions reached this way read the playhead of the
+interpreter that stored the function, not the one calling it. Call functions by
+name from each playhead instead of storing them in shared state. Save data is
+not affected: function values are not serialized.
+
+### Lifecycle
+
+- `spawn(key, ...)` always creates a fresh playhead, not started yet. A live
+  child that already uses `key` is disposed first, and a restored flow still
+  pending for `key` is discarded.
+- `dispose()` clears a child playhead for good. Callbacks it already handed to
+  the host do nothing afterwards (`wrapNext` checks `disposed`).
+- A child that finishes leaves the list of live children. Calling `start()` on
+  it again puts it back.
+- The root can finish while children are still running.
+
+### Save and restore
+
+`save()` on any interpreter of the family returns the same data: the shared
+state, the root playhead in the usual fields, and every live child that has a
+stack in `children`:
+
+```
+SaveData {
+    ...
+    children: Array<SaveDataFlow>   (only when children are running)
+    finished: Bool                  (root finished while children were running)
+}
+
+SaveDataFlow {
+    key: String
+    stack: Array<SaveDataScope>
+    pendingChoiceOptions, choiceEvalContext   (same meaning as in SaveData)
+}
+```
+
+All playheads share one `insertions` map. Without children, the data is the
+same as before contexts existed.
+
+`restore()` is only allowed on the root, since it rewrites the shared state. It
+disposes the live children, restores the shared state and the root playhead,
+and keeps the saved children aside with the insertions they need. The host then
+lists them with `resumableSpawnKeys()` and continues each one with
+`resumeSpawn(key, ...)` followed by `resume()`. Children that are never resumed
+simply stay out of the next save.
+

@@ -6,6 +6,7 @@
 
 #include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/callable_custom.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 // --- Custom Callables that hold a Ref<LorelineInterpreter> ---
@@ -297,6 +298,12 @@ void LorelineInterpreter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_top_level_state_field", "field"), &LorelineInterpreter::get_top_level_state_field);
 	ClassDB::bind_method(D_METHOD("set_top_level_state_field", "field", "value"), &LorelineInterpreter::set_top_level_state_field);
 	ClassDB::bind_method(D_METHOD("current_node"), &LorelineInterpreter::current_node);
+	ClassDB::bind_method(D_METHOD("get_key"), &LorelineInterpreter::get_key);
+	ClassDB::bind_method(D_METHOD("is_root"), &LorelineInterpreter::is_root);
+	ClassDB::bind_method(D_METHOD("spawn", "key", "on_dialogue", "on_choice", "on_finished"), &LorelineInterpreter::spawn, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("resume_spawn", "key", "on_dialogue", "on_choice", "on_finished"), &LorelineInterpreter::resume_spawn, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("resumable_spawn_keys"), &LorelineInterpreter::resumable_spawn_keys);
+	ClassDB::bind_method(D_METHOD("dispose"), &LorelineInterpreter::dispose);
 
 	ADD_SIGNAL(MethodInfo("dialogue",
 			PropertyInfo(Variant::OBJECT, "interpreter"),
@@ -976,4 +983,157 @@ Dictionary LorelineInterpreter::current_node() {
 	result["length"] = node.length;
 	return result;
 #endif
+}
+
+// --- Child interpreters ---
+
+String LorelineInterpreter::get_key() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return String();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return String();
+	Variant result = js->eval("_lorelineBridge.interpreterKey(" + String::num_int64(_js_id) + ")", true);
+	return result.get_type() == Variant::STRING ? String(result) : String();
+#else
+	if (!_interp) return String();
+	Loreline_String key = Loreline_interpreterKey(_interp);
+	return key.isNull() ? String() : String::utf8(key.c_str());
+#endif
+}
+
+bool LorelineInterpreter::is_root() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return false;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return false;
+	Variant result = js->eval("_lorelineBridge.isRoot(" + String::num_int64(_js_id) + ")", true);
+	return result.get_type() == Variant::BOOL && bool(result);
+#else
+	return _interp && Loreline_isRoot(_interp);
+#endif
+}
+
+Ref<LorelineInterpreter> LorelineInterpreter::spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished) {
+	return _spawn_child(key, on_dialogue, on_choice, on_finished, false);
+}
+
+Ref<LorelineInterpreter> LorelineInterpreter::resume_spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished) {
+	return _spawn_child(key, on_dialogue, on_choice, on_finished, true);
+}
+
+// Creates the wrapper of a child interpreter. A spawned child is not started (the host
+// calls start()), a resumed one continues right away: like Loreline.resume(), its
+// callbacks are delivered from the next frame, once the host connected its signals.
+Ref<LorelineInterpreter> LorelineInterpreter::_spawn_child(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished, bool resume) {
+	Ref<LorelineInterpreter> child;
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return child;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return child;
+	Variant result = js->eval("_lorelineBridge.spawn(" + String::num_int64(_js_id) + ",'" +
+			loreline_escape_js(key) + "'," + (resume ? "true" : "false") + ")", true);
+	int child_id = result;
+	if (child_id == 0) return child;
+
+	child.instantiate();
+	child->_js_id = child_id;
+	_js_registry[child_id] = child.ptr();
+
+	// Custom functions called from the child are looked up with its own id
+	Dictionary *funcs = LorelineOptions::_js_function_registry.getptr(_js_id);
+	Dictionary *async_funcs = LorelineOptions::_js_async_function_registry.getptr(_js_id);
+	if (funcs || async_funcs) {
+		LorelineOptions::register_js_functions(child_id,
+				funcs ? *funcs : Dictionary(),
+				async_funcs ? *async_funcs : Dictionary());
+	}
+#else
+	if (!_interp) return child;
+	child.instantiate();
+
+	CharString key_utf8 = key.utf8();
+	Loreline_String loreline_key(key_utf8.get_data());
+	if (resume) {
+		child->_interp = Loreline_resumeSpawn(_interp, loreline_key,
+				_on_dialogue, _on_choice, _on_finish,
+				static_cast<void *>(child.ptr()),
+				&LorelineInterpreter::_retain_interpreter,
+				&LorelineInterpreter::_release_interpreter);
+	} else {
+		child->_interp = Loreline_spawn(_interp, loreline_key,
+				_on_dialogue, _on_choice, _on_finish,
+				static_cast<void *>(child.ptr()),
+				&LorelineInterpreter::_retain_interpreter,
+				&LorelineInterpreter::_release_interpreter);
+	}
+	if (!child->_interp) return Ref<LorelineInterpreter>();
+
+	child->_parent_ref = Ref<LorelineInterpreter>(this);
+	child->_options_ref = _options_ref;
+#endif
+
+	if (resume) {
+		// Kept alive until its first callback, like a resumed root interpreter
+		Loreline::_retain_active_interpreter(child);
+	}
+	_wire_child(child, on_dialogue, on_choice, on_finished);
+	return child;
+}
+
+// Connects the child signals to the given Callables, or else to whatever is
+// connected to the same signal of this interpreter.
+void LorelineInterpreter::_wire_child(const Ref<LorelineInterpreter> &child, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished) {
+	const char *signals[3] = { "dialogue", "choice", "finished" };
+	const Callable *callables[3] = { &on_dialogue, &on_choice, &on_finished };
+	for (int i = 0; i < 3; i++) {
+		if (callables[i]->is_valid()) {
+			child->connect(signals[i], *callables[i]);
+			continue;
+		}
+		TypedArray<Dictionary> connections = get_signal_connection_list(signals[i]);
+		for (int j = 0; j < connections.size(); j++) {
+			Dictionary connection = connections[j];
+			Callable callable = connection.get("callable", Callable());
+			if (callable.is_valid()) {
+				child->connect(signals[i], callable);
+			}
+		}
+	}
+}
+
+Array LorelineInterpreter::resumable_spawn_keys() {
+	Array result;
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return result;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return result;
+	Variant keys = loreline_json_to_variant(js->eval("_lorelineBridge.resumableSpawnKeys(" + String::num_int64(_js_id) + ")", true));
+	if (keys.get_type() == Variant::ARRAY) {
+		result = keys;
+	}
+#else
+	if (!_interp) return result;
+	int count = Loreline_resumableSpawnKeyCount(_interp);
+	for (int i = 0; i < count; i++) {
+		Loreline_String key = Loreline_resumableSpawnKey(_interp, i);
+		if (!key.isNull()) result.append(String::utf8(key.c_str()));
+	}
+#endif
+	return result;
+}
+
+void LorelineInterpreter::dispose() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (js) {
+		js->eval("_lorelineBridge.disposeInterpreter(" + String::num_int64(_js_id) + ")", true);
+	}
+#else
+	if (!_interp) return;
+	_pending_advance.interpreter = nullptr;
+	_pending_select.interpreter = nullptr;
+	Loreline_disposeInterpreter(_interp);
+#endif
+	Loreline::_release_active_interpreter(this);
 }

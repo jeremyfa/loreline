@@ -645,6 +645,12 @@ void Loreline::_release_interpreter(LorelineInterpreter *interp) {
 	}
 }
 
+void Loreline::_retain_active_interpreter(const Ref<LorelineInterpreter> &interp) {
+	if (_singleton) {
+		_singleton->_retain_interpreter(interp);
+	}
+}
+
 void Loreline::_release_active_interpreter(LorelineInterpreter *interp) {
 	if (_singleton) {
 		_singleton->_release_interpreter(interp);
