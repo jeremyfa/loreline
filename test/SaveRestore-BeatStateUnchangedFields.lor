@@ -1,0 +1,51 @@
+// The persistent state of a beat must survive save and restore even when some of
+// its fields still have their declared value: they are not written in save data,
+// but they must still exist after the restore.
+
+state
+  counter: 100
+
+beat Start
+  state
+    counter: 0
+    label: "kept"
+
+  First visit, counter $counter, label $label.
+
+  choice
+    Increment
+      counter += 1
+
+  Now counter $counter, label $label.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ First visit, counter 0, label kept.
+
+    + Increment
+
+    ~ Now counter 1, label kept.
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ First visit, counter 0, label kept.
+
+    ~ First visit, counter 0, label kept.
+
+    + Increment
+
+    ~ Now counter 1, label kept.
+- choices: [0]
+  saveAtChoice: 0
+  expected: |
+    ~ First visit, counter 0, label kept.
+
+    + Increment
+
+    + Increment
+
+    ~ Now counter 1, label kept.
+</test>
+*/

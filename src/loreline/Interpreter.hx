@@ -2119,7 +2119,11 @@ class InterpreterContext {
         final result:Dynamic<SaveDataState> = {};
         for (id => state in nodeStates) {
             final serialized = serializeState(state);
-            if (Reflect.fields(serialized.fields).length > 0) {
+            // A state declared in the script is kept even when nothing changed: the
+            // restore rebuilds it from its declaration (see restoreNodeStates), and
+            // without the entry the state would not exist at all after the restore
+            final declared = Objects.getFields(this, state.originalFields).length > 0;
+            if (declared || Reflect.fields(serialized.fields).length > 0) {
                 Reflect.setField(result, id.toString(), serialized);
             }
         }
@@ -3078,11 +3082,43 @@ class InterpreterContext {
      */
     function restoreNodeStates(data:Dynamic<SaveDataState>):Void {
 
+        // Only changed fields are saved (like the top level state). The top level state is
+        // initialized before the restore applies its changes, a node state is not: rebuild
+        // it from the persistent state declarations of its node first, then apply changes.
+        final declarationsByNode:Map<String, Array<NStateDecl>> = new Map();
+        for (decl in lens.getNodesOfType(NStateDecl, true)) {
+            if (decl.temporary) continue;
+            final parent = lens.getParentNode(decl);
+            if (parent == null || !(parent is AstNode)) continue;
+            final key = (cast parent:AstNode).id.toString();
+            if (!declarationsByNode.exists(key)) declarationsByNode.set(key, []);
+            declarationsByNode.get(key).push(decl);
+        }
+
         for (idStr in Reflect.fields(data)) {
             final id = NodeId.fromString(idStr);
             final stateData:SaveDataState = Reflect.field(data, idStr);
 
-            final nodeState = restoreState(null, stateData);
+            final declarations = declarationsByNode.get(idStr);
+            var nodeState:RuntimeState = null;
+            if (declarations != null) {
+                // Same fields type as the saved one (custom fields objects keep their type)
+                final fields:Any = stateData?.type != null ? Objects.createFields(this, stateData.type, declarations[0]) : null;
+                nodeState = new RuntimeState(this, declarations[0], fields, null);
+                for (decl in declarations) {
+                    for (field in decl.fields) {
+                        if (isOriginalScriptExpression(field.value)) {
+                            final value = evaluateExpression(field.value);
+                            Objects.setField(this, nodeState.fields, field.name, value);
+                            Objects.setField(this, nodeState.originalFields, field.name, snapshotOriginalValue(value));
+                        }
+                    }
+                }
+                restoreState(nodeState, stateData);
+            }
+            else {
+                nodeState = restoreState(null, stateData);
+            }
             nodeStates.set(id, nodeState);
         }
 
@@ -3476,7 +3512,7 @@ class InterpreterContext {
             final evaluated = evaluateExpression(field.value);
             Objects.setField(this, topLevelState.fields, field.name, evaluated);
             if (isOriginalScriptExpression(field.value)) {
-                Objects.setField(this, topLevelState.originalFields, field.name, evaluated);
+                Objects.setField(this, topLevelState.originalFields, field.name, snapshotOriginalValue(evaluated));
             }
         }
 
@@ -3524,7 +3560,7 @@ class InterpreterContext {
             final evaluated = evaluateExpression(field.value);
             Objects.setField(this, characterState.fields, field.name, evaluated);
             if (isOriginalScriptExpression(field.value)) {
-                Objects.setField(this, characterState.originalFields, field.name, evaluated);
+                Objects.setField(this, characterState.originalFields, field.name, snapshotOriginalValue(evaluated));
             }
         }
 
@@ -3560,7 +3596,7 @@ class InterpreterContext {
                 final evaluated = evaluateExpression(field.value);
                 Objects.setField(this, runtimeState.fields, field.name, evaluated);
                 if (!state.temporary && isOriginalScriptExpression(field.value)) {
-                    Objects.setField(this, runtimeState.originalFields, field.name, evaluated);
+                    Objects.setField(this, runtimeState.originalFields, field.name, snapshotOriginalValue(evaluated));
                 }
             }
         }
@@ -4430,6 +4466,38 @@ class InterpreterContext {
      * @param expr The expression to check
      * @return True if the expression only depends on literal values in the script
      */
+    /**
+     * Deep copy of a declared value, kept in `originalFields` to find what changed at
+     * save time. It must not be the value itself: containers (arrays, objects) are
+     * changed in place by `items[0] = x` or `menu.price = y`, and an aliased original
+     * would change along, making the change look like the declared value.
+     * Uses default containers: this copy is only compared, never exposed.
+     */
+    function snapshotOriginalValue(value:Any):Any {
+
+        if (value == null || value is String || value is Int || value is Float || value is Bool) return value;
+        if (RuntimeCharacterRef.characterOf(value) != null || RuntimeBeatRef.beatOf(value) != null) return value;
+
+        if (Arrays.isArray(value)) {
+            final copy:Any = Arrays.createArray();
+            for (i in 0...Arrays.arrayLength(value)) {
+                Arrays.arrayPush(copy, snapshotOriginalValue(Arrays.arrayGet(value, i)));
+            }
+            return copy;
+        }
+
+        if (Objects.isFields(value)) {
+            final copy:Any = Objects.createFields();
+            for (key in Objects.getFields(this, value)) {
+                Objects.setField(this, copy, key, snapshotOriginalValue(Objects.getField(this, value, key)));
+            }
+            return copy;
+        }
+
+        return value;
+
+    }
+
     function isOriginalScriptExpression(expr:NExpr):Bool {
 
         // Check expression type

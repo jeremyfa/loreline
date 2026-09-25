@@ -625,7 +625,16 @@ AST node reference, and its own insertion ID (for nested insertions).
 
 `serializeFields` compares current field values against `originalFields` (the
 initial script-declared values). Only changed fields are included in save data.
-This keeps save files compact when most state hasn't changed.
+This keeps save files compact when most state hasn't changed, and lets a script
+update change the default of a field that a player never touched.
+
+`originalFields` holds a deep copy of each declared value
+(`snapshotOriginalValue`), never the value itself: arrays and objects are changed
+in place (`items[0] = x`, `menu.price = y`), and an aliased original would change
+along with them, hiding the change from the comparison.
+
+A node state declared in the script is always written, even when no field changed,
+so that it exists after the restore.
 
 ---
 
@@ -640,7 +649,10 @@ This keeps save files compact when most state hasn't changed.
 3. **Restore character states**: applies saved field deltas onto existing
    characters (or creates new ones if a character was added to save data that
    no longer exists in the script).
-4. **Restore node states**: rebuilds `nodeStates` map from saved data.
+4. **Restore node states**: rebuilds `nodeStates` map from saved data. A node state
+   that comes from a `state` declaration is first filled with the declared values
+   (the unchanged fields are not in save data), then the saved changes are applied,
+   the same way the top-level state is initialized before its changes are applied.
 5. **Restore stack**: deserializes each scope, resolving AST node references.
 
 ### Node Resolution

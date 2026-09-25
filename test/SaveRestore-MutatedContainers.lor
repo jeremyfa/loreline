@@ -1,0 +1,40 @@
+// Containers declared in state (objects, arrays) and changed in place must keep
+// their changes through save and restore: `menu.espresso = 4` or `items[0] = "Axe"`
+// modifies the declared value itself.
+
+state
+  menu:
+    espresso: 3
+    latte: 5
+  items: ["Sword", "Shield"]
+  data: {}
+
+character hero
+  name: Robin
+  bag: ["Rope"]
+
+beat Start
+  menu.espresso = 4
+  items[0] = "Axe"
+  data["key"] = "value"
+  hero.bag[0] = "Lamp"
+
+  Changed.
+
+  Espresso $menu.espresso, latte $menu.latte, item ${items[0]}, data ${data["key"]}, bag ${hero.bag[0]}.
+
+/*
+<test>
+- expected: |
+    ~ Changed.
+
+    ~ Espresso 4, latte 5, item Axe, data value, bag Lamp.
+- saveAtDialogue: 0
+  expected: |
+    ~ Changed.
+
+    ~ Changed.
+
+    ~ Espresso 4, latte 5, item Axe, data value, bag Lamp.
+</test>
+*/
