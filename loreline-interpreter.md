@@ -419,8 +419,16 @@ For insertion-sourced options, the interpreter:
 1. Replaces the current stack with the insertion's captured stack.
 2. Clears **all** insertion markers from every scope (important for nested
    insertions — see Section 15).
-3. Pushes a scope for the selected option.
+3. Pushes a scope for the selected option, whose `head` is the option. It is the
+   only kind of scope with an option as `head`, and `resumeChoice` (case 2) pops it
+   once the option body is done, so that each epilogue then runs with its own beat
+   scope on top of the stack.
 4. Calls `resumeFromLevel` to rebuild the execution context.
+
+Parent frames that are still running (the `resumeNodeBody` of the beat that
+holds the root choice, after a restore) keep tracking their position through
+`stack[scopeLevel]`, not through the scope they captured when they started: after
+a restore, the insertion stack holds distinct scope objects for the same levels.
 
 ---
 
@@ -835,10 +843,13 @@ never stopped.
 `resumeChoice` handles several situations depending on the scope state:
 
 1. **`head == null`**: The choice hasn't been evaluated yet → `evalChoice`.
-2. **`head` is `NChoiceOption`**: A choice was already made; resume the option's
-   body evaluation.
+2. **`head` is `NChoiceOption`**: An option coming from an insertion was picked
+   (the scope pushed by `choiceCallback`). Run or resume the option body, then pop
+   that scope.
 3. **`insertion != null`**: Save happened during Phase 1 (option collection
-   during insertion). Pop insertion scopes and re-evaluate the whole choice.
+   during insertion). Resume the inserted beat body where it stopped, then
+   continue collecting the parent options from `parentPartialOptions` and
+   `parentNextOptionIndex`, so that side effects already run are not run again.
 4. **`node` is `NChoiceOption`**: The choice is nested inside another choice
    option's body → `resumeNodeBody` on that option.
 5. **`node` is `NBeatDecl`**: The choice is inside a beat body reached through
@@ -933,10 +944,12 @@ If the user picks "Level2 option":
 1. Stack is restored from Level2's insertion
 2. "Level2 done." is output
 3. `evalNodeBody` for Level2 continues → "Back at level2." is output
-4. Level2's evalNodeBody completes → pops scope
+4. The scope pushed for the selected option is popped, then Level2's body
+   completes → pops Level2's scope
 5. Back in Level1's body → "Back at level1." is output
-6. Level1's evalNodeBody completes → pops scope
-7. Back in Start's body → "Back at start." is output
+6. Level1's body completes → pops Level1's scope
+7. Back in Start's body → "Back at start." is output, with Start's scope on top
+   (its temporary state, `current_beat()` is Start)
 
 This works because `resumeFromLevel` creates actual method call frames for each
 level. When each level's `evalNodeBody` completes, its `next` callback fires,

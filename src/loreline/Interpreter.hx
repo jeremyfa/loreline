@@ -2468,9 +2468,14 @@ class InterpreterContext {
             // Or check if we still have a node to evaluate
             else if (index < body.length) {
 
-                // Yes, do it
+                // Yes, do it. The head goes to the scope currently at this level, not
+                // to currentScope: picking an option that comes from an insertion
+                // replaces the stack with the insertion stack, whose scopes are
+                // distinct objects after a restore (same levels, restored separately).
+                // Writing to the captured scope would leave the stack with a stale
+                // head, and a save taken here would resume at the wrong place.
                 final childNode = body[index];
-                currentScope.head = childNode;
+                stack[scopeLevel].head = childNode;
                 index++;
                 final done = wrapNext(moveNext);
                 evalNode(childNode, done.cb);
@@ -2530,15 +2535,23 @@ class InterpreterContext {
             evalChoice(choice, next);
         }
         else if (currentScope.head is NChoiceOption) {
+            // Only the scope pushed by choiceCallback when picking an option that
+            // comes from an insertion has an option as head. Nothing else pops it:
+            // pop it once the option body is done, so that the epilogues run with
+            // their own beat scope on top of the stack.
             final option:NChoiceOption = cast currentScope.head;
+            final popThenNext = () -> {
+                pop();
+                next();
+            };
             if (scopeLevel + 1 < stack.length) {
                 // Deeper scopes exist from restore, resume into them.
                 // This skips already-executed nodes in the option body.
-                resumeNodeBody(option, scopeLevel + 1, option.body, next);
+                resumeNodeBody(option, scopeLevel + 1, option.body, popThenNext);
             } else {
                 // No deeper scopes, fresh entry into option body
                 // (normal insertion pick, not a save/restore scenario)
-                evalNodeBody(currentScope.beat, option, option.body, next);
+                evalNodeBody(currentScope.beat, option, option.body, popThenNext);
             }
         }
         else if (currentScope.insertion != null) {

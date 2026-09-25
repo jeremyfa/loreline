@@ -1,0 +1,67 @@
+// After picking an option that comes from an insertion, each beat epilogue
+// must run in its own scope: its own temporary state and its own current beat,
+// not the ones of the inserted beat that provided the option.
+
+beat Start
+  new state
+    label: "start"
+  choice
+    Start option
+      Picked at start with $label.
+    + Level1
+  Back at start with $label, beat $current_beat().
+
+beat Level1
+  new state
+    label: "level1"
+  choice
+    Level1 option
+      Picked at level1 with $label.
+    + Level2
+  Back at level1 with $label, beat $current_beat().
+
+beat Level2
+  new state
+    label: "level2"
+  choice
+    Level2 option
+      Picked at level2 with $label.
+  Back at level2 with $label, beat $current_beat().
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Start option
+    + Level1 option
+    + Level2 option
+
+    ~ Picked at start with start.
+
+    ~ Back at start with start, beat Start.
+- choices: [1]
+  expected: |
+    + Start option
+    + Level1 option
+    + Level2 option
+
+    ~ Picked at level1 with level1.
+
+    ~ Back at level1 with level1, beat Level1.
+
+    ~ Back at start with start, beat Start.
+- choices: [2]
+  expected: |
+    + Start option
+    + Level1 option
+    + Level2 option
+
+    ~ Picked at level2 with level2.
+
+    ~ Back at level2 with level2, beat Level2.
+
+    ~ Back at level1 with level1, beat Level1.
+
+    ~ Back at start with start, beat Start.
+</test>
+*/
