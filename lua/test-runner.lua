@@ -187,6 +187,26 @@ end
 
 -- -- Minimal YAML parser -------------------------------------------------
 
+-- A saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
+local function save_indices(raw)
+    if raw == nil then return {} end
+    if type(raw) == "number" then return {raw} end
+    if type(raw) == "table" then
+        for _, v in ipairs(raw) do
+            if type(v) ~= "number" then error("Invalid save index: " .. tostring(v)) end
+        end
+        return raw
+    end
+    error("Invalid save indices: " .. tostring(raw))
+end
+
+local function contains(list, value)
+    for _, v in ipairs(list) do
+        if v == value then return true end
+    end
+    return false
+end
+
 local function parse_yaml_value(s)
     s = s:match("^%s*(.-)%s*$") or ""
     if s == "" then return nil end
@@ -330,12 +350,16 @@ local function run_test(file_path, content, test_item, crlf)
         end
     end
     local beat_name = test_item.beat or nil
-    local save_at_choice = test_item.saveAtChoice or -1
-    local save_at_dialogue = test_item.saveAtDialogue or -1
+    local save_at_choice = save_indices(test_item.saveAtChoice)
+    local save_at_dialogue = save_indices(test_item.saveAtDialogue)
     local expected = test_item.expected
     local output = {""}
     local choice_count = {0}
     local dialogue_count = {0}
+    -- Set after a save: the event re-presented by the restore is not counted,
+    -- so that save indices refer to the events of an uninterrupted run
+    local replaying_dialogue = {false}
+    local replaying_choice = {false}
     local parsed_script = {nil}
     local result = {nil}
 
@@ -392,10 +416,15 @@ local function run_test(file_path, content, test_item, crlf)
         end
         output[1] = output[1] .. "\n"
 
-        -- Save/restore test
-        if save_at_choice >= 0 and choice_count[1] == save_at_choice then
+        -- Save/restore test (the re-presented choice is not counted)
+        local replayed = replaying_choice[1]
+        if replaying_choice[1] then
+            replaying_choice[1] = false
+        elseif contains(save_at_choice, choice_count[1]) then
             choice_count[1] = choice_count[1] + 1
-            local save_data = interp:save()
+            replaying_choice[1] = true
+            -- Through JSON, like a host storing the save
+            local save_data = __loreline_Json.parse(__loreline_Json.stringify(interp:save(), false))
 
             if restore_input then
                 local restore_script = loreline.parse(restore_input, file_path, handle_file)
@@ -410,7 +439,9 @@ local function run_test(file_path, content, test_item, crlf)
             return
         end
 
-        choice_count[1] = choice_count[1] + 1
+        if not replayed then
+            choice_count[1] = choice_count[1] + 1
+        end
 
         if #choices == 0 then
             on_finish(interp)
@@ -438,10 +469,18 @@ local function run_test(file_path, content, test_item, crlf)
             local tagged_text = insert_tags_in_text(text, lua_tags, multiline)
             output[1] = output[1] .. "~ " .. tagged_text .. "\n\n"
         end
+        if replaying_dialogue[1] then
+            replaying_dialogue[1] = false
+            advance()
+            return
+        end
+
         -- Save/restore test at dialogue
-        if save_at_dialogue >= 0 and dialogue_count[1] == save_at_dialogue then
+        if contains(save_at_dialogue, dialogue_count[1]) then
             dialogue_count[1] = dialogue_count[1] + 1
-            local save_data = interp:save()
+            replaying_dialogue[1] = true
+            -- Through JSON, like a host storing the save
+            local save_data = __loreline_Json.parse(__loreline_Json.stringify(interp:save(), false))
 
             if restore_input then
                 local restore_script = loreline.parse(restore_input, file_path, handle_file)

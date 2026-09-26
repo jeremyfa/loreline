@@ -108,8 +108,8 @@ struct TestItem {
     std::vector<int> choices;
     bool hasChoices = false;
     std::string expected;
-    int saveAtChoice = -1;
-    int saveAtDialogue = -1;
+    std::vector<int> saveAtChoice;
+    std::vector<int> saveAtDialogue;
     std::string restoreFile;
     std::string translation;
 };
@@ -157,6 +157,23 @@ static std::vector<std::string> collectTestFiles(const std::string& dir) {
 }
 
 /* -- Parse [1, 2, 3] int list --------------------------------------------- */
+
+static std::vector<int> parseIntList(const std::string& value);
+
+/* A saveAtChoice / saveAtDialogue value: one index, or a list of indices */
+static std::vector<int> parseSaveIndices(const std::string& value) {
+    std::string v = value;
+    while (!v.empty() && v[0] == ' ') v.erase(0, 1);
+    if (!v.empty() && v[0] == '[') return parseIntList(v);
+    return std::vector<int>{ std::stoi(v) };
+}
+
+static bool containsIndex(const std::vector<int>& list, int value) {
+    for (int v : list) {
+        if (v == value) return true;
+    }
+    return false;
+}
 
 static std::vector<int> parseIntList(const std::string& value) {
     std::vector<int> result;
@@ -272,9 +289,9 @@ static std::vector<TestItem> parseTestItems(const std::string& yaml) {
                 current->expected = value;
             }
         } else if (key == "saveAtChoice") {
-            current->saveAtChoice = std::stoi(value);
+            current->saveAtChoice = parseSaveIndices(value);
         } else if (key == "saveAtDialogue") {
-            current->saveAtDialogue = std::stoi(value);
+            current->saveAtDialogue = parseSaveIndices(value);
         } else if (key == "restoreFile") {
             current->restoreFile = value;
         } else if (key == "translation") {
@@ -411,10 +428,14 @@ struct TestContext {
     std::string* output;
     std::vector<int> choices;
     std::string expected;
-    int saveAtChoice;
-    int saveAtDialogue;
+    std::vector<int> saveAtChoice;
+    std::vector<int> saveAtDialogue;
     int choiceCount;
     int dialogueCount;
+    /* Set after a save: the event re-presented by the restore is not counted,
+     * so that save indices refer to the events of an uninterrupted run */
+    bool replayingDialogue;
+    bool replayingChoice;
     TestResult* result;
     Loreline_Script* parsedScript;
 
@@ -466,9 +487,16 @@ static void testDialogue(
         *ctx->output += "~ " + taggedText + "\n\n";
     }
 
+    if (ctx->replayingDialogue) {
+        ctx->replayingDialogue = false;
+        advance();
+        return;
+    }
+
     /* Save/restore test at dialogue */
-    if (ctx->saveAtDialogue >= 0 && ctx->dialogueCount == ctx->saveAtDialogue) {
+    if (containsIndex(ctx->saveAtDialogue, ctx->dialogueCount)) {
         ctx->dialogueCount++;
+        ctx->replayingDialogue = true;
         Loreline_String saveData = Loreline_save(interp);
 
         if (!ctx->restoreInput.empty()) {
@@ -526,9 +554,13 @@ static void testChoice(
     }
     *ctx->output += "\n";
 
-    /* Save/restore test */
-    if (ctx->saveAtChoice >= 0 && ctx->choiceCount == ctx->saveAtChoice) {
+    /* Save/restore test (the re-presented choice is not counted) */
+    bool replayed = ctx->replayingChoice;
+    if (ctx->replayingChoice) {
+        ctx->replayingChoice = false;
+    } else if (containsIndex(ctx->saveAtChoice, ctx->choiceCount)) {
         ctx->choiceCount++;
+        ctx->replayingChoice = true;
         Loreline_String saveData = Loreline_save(interp);
 
         if (!ctx->restoreInput.empty()) {
@@ -554,7 +586,9 @@ static void testChoice(
         return;
     }
 
-    ctx->choiceCount++;
+    if (!replayed) {
+        ctx->choiceCount++;
+    }
 
     if (ctx->choices.empty()) {
         /* No more choices: treat as finish */
@@ -654,6 +688,8 @@ static TestResult runTest(const std::string& filePath, const std::string& rawCon
     ctx.saveAtDialogue = item.saveAtDialogue;
     ctx.choiceCount = 0;
     ctx.dialogueCount = 0;
+    ctx.replayingDialogue = false;
+    ctx.replayingChoice = false;
     ctx.result = &result;
     ctx.parsedScript = nullptr;
     ctx.restoreInput = restoreInput;

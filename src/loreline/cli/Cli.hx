@@ -365,6 +365,10 @@ class Cli {
         };
         loreline.test.SpawnTests.run(onPass, onFail);
         loreline.test.CustomFieldsTests.run(onPass, onFail);
+        loreline.test.InsertionScopeTests.run(onPass, onFail);
+
+        print('');
+        print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked, ${loreline.test.SaveSweep.skippedFiles.length} files skipped (randomness)'.gray());
 
         print('');
         if (failCount > 0) {
@@ -745,10 +749,8 @@ class Cli {
             for (idx in 0...testItems.length) {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
-                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
-                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
-                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
-                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
+                final saveAtChoice = InterpreterTestCase.saveIndices(item.saveAtChoice);
+                final saveAtDialogue = InterpreterTestCase.saveIndices(item.saveAtDialogue);
                 var options:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;
@@ -829,6 +831,34 @@ class Cli {
                 });
             }
 
+            // Save sweep: save and restore at every event of every test case (LF only)
+            if (!crlf && testItems.length > 0) {
+                loreline.test.SaveSweep.sweepFile(
+                    file, content, script, testItems, restoreInputs,
+                    item -> {
+                        if (item.translation != null) {
+                            final translations = Loreline.loadLocale(item.translation, script, file, handleFile);
+                            if (translations != null) {
+                                return ({functions: customTestFunctions(), translations: translations} : InterpreterOptions);
+                            }
+                        }
+                        return ({functions: customTestFunctions()} : InterpreterOptions);
+                    },
+                    handleFile,
+                    (label, error) -> {
+                        if (error == null) {
+                            passCount++;
+                            print('PASS'.green().bold() + ' - ' + label.gray());
+                        }
+                        else {
+                            failCount++;
+                            hasFailedTest = true;
+                            print('FAIL'.red().bold() + ' - ' + label.gray() + '\n' + error);
+                        }
+                    }
+                );
+            }
+
             // Combined round-trip test: structural idempotency + behavioral equivalence
             if (testItems.length > 0) {
                 testRoundTrip(script, file, crlf, testItems, restoreInputs);
@@ -890,10 +920,8 @@ class Cli {
             for (idx in 0...testItems.length) {
                 final item = testItems[idx];
                 final restoreInput = restoreInputs[idx];
-                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
-                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
-                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
-                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
+                final saveAtChoice = InterpreterTestCase.saveIndices(item.saveAtChoice);
+                final saveAtDialogue = InterpreterTestCase.saveIndices(item.saveAtDialogue);
                 var rtOptions:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;

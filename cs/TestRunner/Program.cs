@@ -603,12 +603,16 @@ class Program
 
         var choices = item.Choices != null ? new List<int>(item.Choices) : null;
         string beatName = item.Beat;
-        int saveAtChoice = item.SaveAtChoice ?? -1;
-        int saveAtDialogue = item.SaveAtDialogue ?? -1;
+        var saveAtChoice = item.SaveAtChoice ?? new List<int>();
+        var saveAtDialogue = item.SaveAtDialogue ?? new List<int>();
         string expected = item.Expected;
         var output = new StringBuilder();
         int choiceCount = 0;
         int dialogueCount = 0;
+        // Set after a save: the event re-presented by the restore is not counted,
+        // so that save indices refer to the events of an uninterrupted run
+        bool replayingDialogue = false;
+        bool replayingChoice = false;
         Script parsedScript = null;
         TestResult testResult = new TestResult { Expected = expected };
 
@@ -674,10 +678,18 @@ class Program
                 output.Append("~ " + taggedText + "\n\n");
             }
 
+            if (replayingDialogue)
+            {
+                replayingDialogue = false;
+                dialogue.Callback();
+                return;
+            }
+
             // Save/restore test at dialogue
-            if (saveAtDialogue >= 0 && dialogueCount == saveAtDialogue)
+            if (saveAtDialogue.Contains(dialogueCount))
             {
                 dialogueCount++;
+                replayingDialogue = true;
                 string saveData = dialogue.Interpreter.Save();
 
                 if (restoreInput != null)
@@ -716,10 +728,16 @@ class Program
             }
             output.Append("\n");
 
-            // Save/restore test
-            if (saveAtChoice >= 0 && choiceCount == saveAtChoice)
+            // Save/restore test (the re-presented choice is not counted)
+            bool replayed = replayingChoice;
+            if (replayingChoice)
+            {
+                replayingChoice = false;
+            }
+            else if (saveAtChoice.Contains(choiceCount))
             {
                 choiceCount++;
+                replayingChoice = true;
                 string saveData = choice.Interpreter.Save();
 
                 if (restoreInput != null)
@@ -743,7 +761,10 @@ class Program
                 return;
             }
 
-            choiceCount++;
+            if (!replayed)
+            {
+                choiceCount++;
+            }
 
             if (choices == null || choices.Count == 0)
             {
@@ -787,8 +808,8 @@ class Program
         public string Beat { get; set; }
         public List<int> Choices { get; set; }
         public string Expected { get; set; }
-        public int? SaveAtChoice { get; set; }
-        public int? SaveAtDialogue { get; set; }
+        public List<int> SaveAtChoice { get; set; }
+        public List<int> SaveAtDialogue { get; set; }
         public string RestoreFile { get; set; }
         public string Translation { get; set; }
     }
@@ -899,12 +920,10 @@ class Program
                     }
                     break;
                 case "saveAtChoice":
-                    if (int.TryParse(value, out int sac))
-                        current.SaveAtChoice = sac;
+                    current.SaveAtChoice = ParseSaveIndices(value);
                     break;
                 case "saveAtDialogue":
-                    if (int.TryParse(value, out int sad))
-                        current.SaveAtDialogue = sad;
+                    current.SaveAtDialogue = ParseSaveIndices(value);
                     break;
                 case "restoreFile":
                     current.RestoreFile = value;
@@ -922,6 +941,15 @@ class Program
         }
 
         return items;
+    }
+
+    // A saveAtChoice / saveAtDialogue value: one index, or a list of indices
+    static List<int> ParseSaveIndices(string value)
+    {
+        value = value.Trim();
+        if (value.StartsWith("[")) return ParseIntList(value);
+        if (int.TryParse(value, out int index)) return new List<int> { index };
+        throw new Exception("Invalid save indices: " + value);
     }
 
     static List<int> ParseIntList(string value)

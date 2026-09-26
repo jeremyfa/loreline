@@ -280,13 +280,17 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
         $choices = [];
     }
     $beatName = $testItem['beat'] ?? null;
-    $saveAtChoice = $testItem['saveAtChoice'] ?? -1;
-    $saveAtDialogue = $testItem['saveAtDialogue'] ?? -1;
+    $saveAtChoice = saveIndices($testItem['saveAtChoice'] ?? null);
+    $saveAtDialogue = saveIndices($testItem['saveAtDialogue'] ?? null);
     $expected = $testItem['expected'];
 
     $output = '';
     $choiceCount = 0;
     $dialogueCount = 0;
+    // Set after a save: the event re-presented by the restore is not counted,
+    // so that save indices refer to the events of an uninterrupted run
+    $replayingDialogue = false;
+    $replayingChoice = false;
     $parsedScript = null;
     $result = null;
 
@@ -332,7 +336,7 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
     };
 
     $onDialogue = function ($interp, $character, $text, $tags, $advance) use (
-        &$output, &$dialogueCount, &$result, &$parsedScript, &$resume,
+        &$output, &$dialogueCount, &$replayingDialogue, &$result, &$parsedScript, &$resume,
         $saveAtDialogue, $restoreInput, $filePath, $expected, $handleFile
     ): void {
         $multiline = str_contains($text, "\n");
@@ -353,8 +357,15 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
             $output .= '~ ' . $taggedText . "\n\n";
         }
 
-        if ($saveAtDialogue >= 0 && $dialogueCount === $saveAtDialogue) {
+        if ($replayingDialogue) {
+            $replayingDialogue = false;
+            $advance();
+            return;
+        }
+
+        if (in_array($dialogueCount, $saveAtDialogue, true)) {
             $dialogueCount++;
+            $replayingDialogue = true;
             $saveData = $interp->save();
 
             if ($restoreInput !== null) {
@@ -375,7 +386,7 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
     };
 
     $onChoice = function ($interp, $choiceOptions, $select) use (
-        &$output, &$choiceCount, &$choices, &$result, &$parsedScript, &$resume, &$onFinish,
+        &$output, &$choiceCount, &$replayingChoice, &$choices, &$result, &$parsedScript, &$resume, &$onFinish,
         $saveAtChoice, $restoreInput, $filePath, $expected, $handleFile
     ): void {
         foreach ($choiceOptions as $opt) {
@@ -386,8 +397,13 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
         }
         $output .= "\n";
 
-        if ($saveAtChoice >= 0 && $choiceCount === $saveAtChoice) {
+        // The re-presented choice is not counted
+        $replayed = $replayingChoice;
+        if ($replayingChoice) {
+            $replayingChoice = false;
+        } elseif (in_array($choiceCount, $saveAtChoice, true)) {
             $choiceCount++;
+            $replayingChoice = true;
             $saveData = $interp->save();
 
             if ($restoreInput !== null) {
@@ -403,7 +419,9 @@ function runTest(string $filePath, string $content, array $testItem, bool $crlf)
             return;
         }
 
-        $choiceCount++;
+        if (!$replayed) {
+            $choiceCount++;
+        }
 
         if (count($choices) === 0) {
             $onFinish($interp);
@@ -550,6 +568,21 @@ function runSpawnTest(): void
         echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
         echo "  Error: " . $e->getMessage() . "\n";
     }
+}
+
+// A saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
+function saveIndices(mixed $raw): array
+{
+    if ($raw === null) {
+        return [];
+    }
+    if (is_int($raw)) {
+        return [$raw];
+    }
+    if (is_array($raw) && count(array_filter($raw, 'is_int')) === count($raw)) {
+        return array_values($raw);
+    }
+    throw new \Exception('Invalid save indices: ' . var_export($raw, true));
 }
 
 function main(): void

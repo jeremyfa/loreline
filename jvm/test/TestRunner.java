@@ -196,6 +196,25 @@ public class TestRunner {
         }
     }
 
+    // A saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
+    @SuppressWarnings("unchecked")
+    static List<Integer> saveIndices(Object raw) {
+        List<Integer> result = new ArrayList<>();
+        if (raw == null) return result;
+        if (raw instanceof Number) {
+            result.add(((Number) raw).intValue());
+            return result;
+        }
+        if (raw instanceof List) {
+            for (Object item : (List<Object>) raw) {
+                if (!(item instanceof Number)) throw new RuntimeException("Invalid save index: " + item);
+                result.add(((Number) item).intValue());
+            }
+            return result;
+        }
+        throw new RuntimeException("Invalid save indices: " + raw);
+    }
+
     @SuppressWarnings("unchecked")
     static Object parseYamlValue(String s) {
         s = s.trim();
@@ -271,24 +290,22 @@ public class TestRunner {
 
         String beatName = testItem.get("beat") != null ? testItem.get("beat").toString() : null;
 
-        int saveAtChoice = -1;
-        if (testItem.get("saveAtChoice") instanceof Number) {
-            saveAtChoice = ((Number) testItem.get("saveAtChoice")).intValue();
-        }
-        int saveAtDialogue = -1;
-        if (testItem.get("saveAtDialogue") instanceof Number) {
-            saveAtDialogue = ((Number) testItem.get("saveAtDialogue")).intValue();
-        }
+        List<Integer> saveAtChoice = saveIndices(testItem.get("saveAtChoice"));
+        List<Integer> saveAtDialogue = saveIndices(testItem.get("saveAtDialogue"));
 
         String expected = (String) testItem.get("expected");
         StringBuilder output = new StringBuilder();
         int[] choiceCount = {0};
         int[] dialogueCount = {0};
+        // Set after a save: the event re-presented by the restore is not counted,
+        // so that save indices refer to the events of an uninterrupted run
+        boolean[] replayingDialogue = {false};
+        boolean[] replayingChoice = {false};
         Script[] parsedScript = {null};
         Object[][] result = {null};
 
-        final int fSaveAtChoice = saveAtChoice;
-        final int fSaveAtDialogue = saveAtDialogue;
+        final List<Integer> fSaveAtChoice = saveAtChoice;
+        final List<Integer> fSaveAtDialogue = saveAtDialogue;
         final String fContent = content;
 
         // Parse the script up-front so we can resolve translations across imports
@@ -351,8 +368,15 @@ public class TestRunner {
                     output.append("~ ").append(taggedText).append("\n\n");
                 }
 
-                if (fSaveAtDialogue >= 0 && dialogueCount[0] == fSaveAtDialogue) {
+                if (replayingDialogue[0]) {
+                    replayingDialogue[0] = false;
+                    advance.run();
+                    return;
+                }
+
+                if (fSaveAtDialogue.contains(dialogueCount[0])) {
                     dialogueCount[0]++;
+                    replayingDialogue[0] = true;
                     String saveData = interp.save();
                     if (fRestoreInput != null) {
                         Script restoreScript = Loreline.parse(fRestoreInput, filePath, TestRunner::handleFile);
@@ -382,8 +406,13 @@ public class TestRunner {
                 }
                 output.append("\n");
 
-                if (fSaveAtChoice >= 0 && choiceCount[0] == fSaveAtChoice) {
+                // The re-presented choice is not counted
+                boolean replayed = replayingChoice[0];
+                if (replayingChoice[0]) {
+                    replayingChoice[0] = false;
+                } else if (fSaveAtChoice.contains(choiceCount[0])) {
                     choiceCount[0]++;
+                    replayingChoice[0] = true;
                     String saveData = interp.save();
                     if (fRestoreInput != null) {
                         Script restoreScript = Loreline.parse(fRestoreInput, filePath, TestRunner::handleFile);
@@ -397,7 +426,9 @@ public class TestRunner {
                     }
                     return;
                 }
-                choiceCount[0]++;
+                if (!replayed) {
+                    choiceCount[0]++;
+                }
 
                 if (choices.isEmpty()) {
                     onFinish.handle(interp);

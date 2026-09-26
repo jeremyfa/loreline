@@ -67,6 +67,7 @@ class PortableTestSuite {
         };
         SpawnTests.run(onPass, onFail);
         CustomFieldsTests.run(onPass, onFail);
+        InsertionScopeTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 
@@ -99,6 +100,9 @@ class PortableTestSuite {
             runInterpreterTests(filePath, rawContent, crlf);
         }
 
+        // Save sweep: save and restore at every event of every test case (LF only)
+        runSaveSweep(filePath, rawContent);
+
         // Printer roundtrip
         for (crlf in [false, true]) {
             runRoundtrip(filePath, rawContent, crlf);
@@ -111,6 +115,42 @@ class PortableTestSuite {
 
         if (failCount > failBefore) fileFailCount++;
 
+    }
+
+    function runSaveSweep(filePath:String, rawContent:String):Void {
+        try {
+            final content = normalize(rawContent, false);
+            final script = Loreline.parse(content, filePath, handleFile);
+            final collected = collectTestItems(script, filePath, false);
+            SaveSweep.sweepFile(
+                filePath, content, script, collected.items, collected.restoreInputs,
+                item -> {
+                    if (item.translation != null) {
+                        final lang:String = item.translation;
+                        final translations = Loreline.loadLocale(lang, script, filePath, handleFile);
+                        if (translations != null) {
+                            return ({functions: customTestFunctions(), translations: translations} : InterpreterOptions);
+                        }
+                    }
+                    return ({functions: customTestFunctions()} : InterpreterOptions);
+                },
+                handleFile,
+                (label, error) -> {
+                    if (error == null) {
+                        passCount++;
+                        printLine('PASS - ' + label);
+                    }
+                    else {
+                        failCount++;
+                        printLine('FAIL - ' + label + '\n' + error);
+                    }
+                }
+            );
+        }
+        catch (e:Any) {
+            failCount++;
+            printLine('FAIL - ' + filePath + ' ~ save sweep - ' + Std.string(e));
+        }
     }
 
     function normalize(content:String, crlf:Bool):String {
@@ -166,10 +206,8 @@ class PortableTestSuite {
             for (idx in 0...collected.items.length) {
                 final item = collected.items[idx];
                 final restoreInput = collected.restoreInputs[idx];
-                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
-                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
-                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
-                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
+                final saveAtChoice = InterpreterTestCase.saveIndices(item.saveAtChoice);
+                final saveAtDialogue = InterpreterTestCase.saveIndices(item.saveAtDialogue);
                 var options:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;
@@ -288,10 +326,8 @@ class PortableTestSuite {
             for (idx in 0...collected.items.length) {
                 final item = collected.items[idx];
                 final restoreInput = collected.restoreInputs[idx];
-                final rawSaveAtChoice:Null<Int> = item.saveAtChoice;
-                final rawSaveAtDialogue:Null<Int> = item.saveAtDialogue;
-                final saveAtChoice:Int = rawSaveAtChoice != null ? rawSaveAtChoice : -1;
-                final saveAtDialogue:Int = rawSaveAtDialogue != null ? rawSaveAtDialogue : -1;
+                final saveAtChoice = InterpreterTestCase.saveIndices(item.saveAtChoice);
+                final saveAtDialogue = InterpreterTestCase.saveIndices(item.saveAtDialogue);
                 var options:InterpreterOptions = ({functions: customTestFunctions()} : InterpreterOptions);
                 if (item.translation != null) {
                     final lang:String = item.translation;

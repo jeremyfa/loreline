@@ -50,18 +50,17 @@ class InterpreterTestCase extends TestCase {
     public final options:InterpreterOptions;
 
     /**
-     * If set (>= 0), save and restore at the Nth choice point (0-indexed).
-     * The test will save the interpreter state at that choice, create a new interpreter,
-     * restore the state, and resume execution.
+     * Choice points (0-indexed) where to save and restore. At each of them, the test
+     * saves the interpreter state, creates a new interpreter, restores the state and
+     * resumes execution. Indices count the choices of an uninterrupted run.
      */
-    public final saveAtChoice:Int;
+    public final saveAtChoice:Array<Int>;
 
     /**
-     * If set (>= 0), save and restore at the Nth dialogue event (0-indexed).
-     * The test will save the interpreter state at that dialogue, create a new interpreter,
-     * restore the state, and resume execution. The dialogue is re-presented on restore.
+     * Dialogue events (0-indexed) where to save and restore, same as saveAtChoice.
+     * The dialogue is re-presented on restore.
      */
-    public final saveAtDialogue:Int;
+    public final saveAtDialogue:Array<Int>;
 
     /**
      * If set, contains the content of a modified script to use when restoring
@@ -70,15 +69,34 @@ class InterpreterTestCase extends TestCase {
      */
     public final restoreInput:String;
 
-    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Int, saveAtDialogue:Int, restoreInput:String, expectedOutput:String) {
+    public function new(name:String, input:String, filePath:String, beatName:String, choices:Array<Int>, options:InterpreterOptions, saveAtChoice:Array<Int>, saveAtDialogue:Array<Int>, restoreInput:String, expectedOutput:String) {
         super(name, input, expectedOutput);
         this.filePath = filePath;
         this.beatName = beatName;
         this.choices = choices != null ? [].concat(choices) : null;
         this.options = options;
-        this.saveAtChoice = saveAtChoice;
-        this.saveAtDialogue = saveAtDialogue;
+        this.saveAtChoice = saveAtChoice != null ? saveAtChoice : [];
+        this.saveAtDialogue = saveAtDialogue != null ? saveAtDialogue : [];
         this.restoreInput = restoreInput;
+    }
+
+    /**
+     * Reads a `saveAtChoice` / `saveAtDialogue` value from the test YAML: absent,
+     * a single index, or a list of indices.
+     */
+    public static function saveIndices(raw:Any):Array<Int> {
+        if (raw == null) return [];
+        if (raw is Int) return [raw];
+        if (raw is Array) {
+            final list:Array<Any> = raw;
+            final result:Array<Int> = [];
+            for (item in list) {
+                if (!(item is Int)) throw 'Invalid save index: ' + Std.string(item);
+                result.push(item);
+            }
+            return result;
+        }
+        throw 'Invalid save indices: ' + Std.string(raw);
     }
 
 }

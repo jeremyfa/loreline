@@ -72,6 +72,10 @@ node ./setup --gdscript-test            # Run GDScript tests only (headless Godo
 node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
 ```
 
+Each `test/*.lor` file ends with a `<test>` YAML block describing its test cases (`choices`, `beat`, `expected`, ...). `saveAtDialogue` and `saveAtChoice` take one index or a list of indices (`saveAtDialogue: [2, 5]`), counted over an uninterrupted run: at each one, the runner saves, restores in a new interpreter and continues, so the saved event shows twice in `expected`.
+
+On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
+
 ### How Loreline is authored
 
 Loreline's runtime is essentially handwritten, so the code you embed when depending on it can be considered almost entirely free of AI-generated code.

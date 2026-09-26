@@ -1,6 +1,7 @@
 package loreline.test;
 
 import loreline.Imports;
+import loreline.Json;
 import loreline.Interpreter;
 import loreline.Loreline;
 import loreline.SaveData;
@@ -130,6 +131,10 @@ class TestRunner {
         final choices = testCase.choices != null ? [].concat(testCase.choices) : null;
         var choiceCount:Int = 0;
         var dialogueCount:Int = 0;
+        // Set after a save: the event re-presented by the restore is not counted,
+        // so that save indices refer to the events of an uninterrupted run
+        var replayingDialogue:Bool = false;
+        var replayingChoice:Bool = false;
         var parsedScript:Script = null;
 
         // Pre-declare handleChoice so handleDialogue can reference it
@@ -178,17 +183,25 @@ class TestRunner {
             output.addChar("\n".code);
             output.addChar("\n".code);
 
+            if (replayingDialogue) {
+                replayingDialogue = false;
+                callback();
+                return;
+            }
+
             // Save/restore test: save at the specified dialogue event,
             // then resume on a new interpreter
-            if (testCase.saveAtDialogue >= 0 && dialogueCount == testCase.saveAtDialogue) {
+            if (testCase.saveAtDialogue.indexOf(dialogueCount) != -1) {
                 dialogueCount++;
-                final saveData:SaveData = interpreter.save();
+                replayingDialogue = true;
+                // Through JSON, like a host storing the save
+                final saveData:SaveData = Json.parse(Json.stringify(interpreter.save()));
 
                 if (testCase.restoreInput != null) {
                     // Parse the modified script and resume with it
                     Loreline.parse(testCase.restoreInput, testCase.filePath, handleFile, restoreScript -> {
                         if (restoreScript != null) {
-                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData);
+                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData, null, testCase.options);
                         } else {
                             done(new TestResult(testCase, false, output.toString(), new Error('Error parsing restoreInput script')));
                         }
@@ -200,7 +213,9 @@ class TestRunner {
                         handleDialogue,
                         handleChoice,
                         handleFinish,
-                        saveData
+                        saveData,
+                        null,
+                        testCase.options
                     );
                 }
                 return;
@@ -234,16 +249,22 @@ class TestRunner {
             output.addChar("\n".code);
 
             // Save/restore test: save at the specified choice point,
-            // then resume on a new interpreter
-            if (testCase.saveAtChoice >= 0 && choiceCount == testCase.saveAtChoice) {
+            // then resume on a new interpreter (the re-presented choice is not counted)
+            final replayed = replayingChoice;
+            if (replayingChoice) {
+                replayingChoice = false;
+            }
+            else if (testCase.saveAtChoice.indexOf(choiceCount) != -1) {
                 choiceCount++;
-                final saveData:SaveData = interpreter.save();
+                replayingChoice = true;
+                // Through JSON, like a host storing the save
+                final saveData:SaveData = Json.parse(Json.stringify(interpreter.save()));
 
                 if (testCase.restoreInput != null) {
                     // Parse the modified script and resume with it
                     Loreline.parse(testCase.restoreInput, testCase.filePath, handleFile, restoreScript -> {
                         if (restoreScript != null) {
-                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData);
+                            Loreline.resume(restoreScript, handleDialogue, handleChoice, handleFinish, saveData, null, testCase.options);
                         } else {
                             done(new TestResult(testCase, false, output.toString(), new Error('Error parsing restoreInput script')));
                         }
@@ -255,13 +276,17 @@ class TestRunner {
                         handleDialogue,
                         handleChoice,
                         handleFinish,
-                        saveData
+                        saveData,
+                        null,
+                        testCase.options
                     );
                 }
                 return;
             }
 
-            choiceCount++;
+            if (!replayed) {
+                choiceCount++;
+            }
 
             if (choices == null || choices.length == 0) {
                 // Early finish when no choices

@@ -26,6 +26,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from loreline import Loreline, Script  # noqa: E402
+from loreline import _core  # noqa: E402
 
 pass_count = 0
 fail_count = 0
@@ -246,6 +247,22 @@ def extract_tests(content):
 
 # -- Test runner ----------------------------------------------------------
 
+def save_indices(raw):
+    """Read a saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices."""
+    if raw is None:
+        return []
+    if isinstance(raw, int) and not isinstance(raw, bool):
+        return [raw]
+    if isinstance(raw, list) and all(isinstance(v, int) and not isinstance(v, bool) for v in raw):
+        return list(raw)
+    raise ValueError("Invalid save indices: " + repr(raw))
+
+
+def json_round_trip(save_data):
+    """Pass save data through JSON, like a host storing it."""
+    return _core.loreline_Json.parse(_core.loreline_Json.stringify(save_data, False))
+
+
 def run_test(file_path, content, test_item, crlf):
     """Run a single test case. Returns (passed, actual, expected, error)."""
     # Normalize line endings
@@ -256,16 +273,16 @@ def run_test(file_path, content, test_item, crlf):
 
     choices = list(test_item.get("choices", []) or [])
     beat_name = test_item.get("beat") or None
-    save_at_choice = test_item.get("saveAtChoice", -1)
-    if save_at_choice is None:
-        save_at_choice = -1
-    save_at_dialogue = test_item.get("saveAtDialogue", -1)
-    if save_at_dialogue is None:
-        save_at_dialogue = -1
+    save_at_choice = save_indices(test_item.get("saveAtChoice"))
+    save_at_dialogue = save_indices(test_item.get("saveAtDialogue"))
     expected = test_item["expected"]
     output = [""]  # Use list for mutability in closures
     choice_count = [0]
     dialogue_count = [0]
+    # Set after a save: the event re-presented by the restore is not counted,
+    # so that save indices refer to the events of an uninterrupted run
+    replaying_dialogue = [False]
+    replaying_choice = [False]
     parsed_script = [None]
     result = [None]  # (passed, actual, expected, error)
 
@@ -318,10 +335,16 @@ def run_test(file_path, content, test_item, crlf):
             tagged_text = insert_tags_in_text(text, tags, multiline)
             output[0] += "~ " + tagged_text + "\n\n"
 
+        if replaying_dialogue[0]:
+            replaying_dialogue[0] = False
+            advance()
+            return
+
         # Save/restore test at dialogue
-        if save_at_dialogue >= 0 and dialogue_count[0] == save_at_dialogue:
+        if dialogue_count[0] in save_at_dialogue:
             dialogue_count[0] += 1
-            save_data = interp.save()
+            replaying_dialogue[0] = True
+            save_data = json_round_trip(interp.save())
 
             if restore_input is not None:
                 restore_script = Loreline.parse(restore_input, file_path, handle_file)
@@ -345,10 +368,14 @@ def run_test(file_path, content, test_item, crlf):
             output[0] += prefix + " " + tagged_text + "\n"
         output[0] += "\n"
 
-        # Save/restore test
-        if save_at_choice >= 0 and choice_count[0] == save_at_choice:
+        # Save/restore test (the re-presented choice is not counted)
+        replayed = replaying_choice[0]
+        if replaying_choice[0]:
+            replaying_choice[0] = False
+        elif choice_count[0] in save_at_choice:
             choice_count[0] += 1
-            save_data = interp.save()
+            replaying_choice[0] = True
+            save_data = json_round_trip(interp.save())
 
             if restore_input is not None:
                 restore_script = Loreline.parse(restore_input, file_path, handle_file)
@@ -360,7 +387,8 @@ def run_test(file_path, content, test_item, crlf):
                 resume(parsed_script[0], save_data)
             return
 
-        choice_count[0] += 1
+        if not replayed:
+            choice_count[0] += 1
 
         if not choices:
             on_finish(interp)

@@ -29,8 +29,8 @@ let fileFailCount: number = 0;
 interface TestItem {
     choices?: number[];
     beat?: string;
-    saveAtChoice?: number;
-    saveAtDialogue?: number;
+    saveAtChoice?: number | number[];
+    saveAtDialogue?: number | number[];
     expected: string;
     translation?: string;
     restoreFile?: string;
@@ -148,12 +148,16 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
 
         const choices: number[] | null = testItem.choices ? [...testItem.choices] : null;
         const beatName: string | undefined = testItem.beat || undefined;
-        const saveAtChoice: number = testItem.saveAtChoice != null ? testItem.saveAtChoice : -1;
-        const saveAtDialogue: number = testItem.saveAtDialogue != null ? testItem.saveAtDialogue : -1;
+        const saveAtChoice: number[] = saveIndices(testItem.saveAtChoice);
+        const saveAtDialogue: number[] = saveIndices(testItem.saveAtDialogue);
         const expected: string = testItem.expected;
         let output: string = '';
         let choiceCount: number = 0;
         let dialogueCount: number = 0;
+        // Set after a save: the event re-presented by the restore is not counted,
+        // so that save indices refer to the events of an uninterrupted run
+        let replayingDialogue: boolean = false;
+        let replayingChoice: boolean = false;
         let parsedScript: Script | null = null;
 
         // Translations are built after parsing the main script so that
@@ -193,10 +197,18 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
                 output += '~ ' + taggedText + '\n\n';
             }
 
+            if (replayingDialogue) {
+                replayingDialogue = false;
+                callback();
+                return;
+            }
+
             // Save/restore test at dialogue
-            if (saveAtDialogue >= 0 && dialogueCount === saveAtDialogue) {
+            if (saveAtDialogue.includes(dialogueCount)) {
                 dialogueCount++;
-                const saveData = _interpreter.save();
+                replayingDialogue = true;
+                // Through JSON, like a host storing the save
+                const saveData = JSON.parse(JSON.stringify(_interpreter.save()));
 
                 if (restoreInput != null) {
                     const restoreScript: Script | null = Loreline.parse(restoreInput, filePath, handleFile);
@@ -224,10 +236,14 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
             }
             output += '\n';
 
-            // Save/restore test
-            if (saveAtChoice >= 0 && choiceCount === saveAtChoice) {
+            // Save/restore test (the re-presented choice is not counted)
+            const replayed: boolean = replayingChoice;
+            if (replayingChoice) {
+                replayingChoice = false;
+            } else if (saveAtChoice.includes(choiceCount)) {
                 choiceCount++;
-                const saveData = _interpreter.save();
+                replayingChoice = true;
+                const saveData = JSON.parse(JSON.stringify(_interpreter.save()));
 
                 if (restoreInput != null) {
                     const restoreScript: Script | null = Loreline.parse(restoreInput, filePath, handleFile);
@@ -242,7 +258,9 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
                 return;
             }
 
-            choiceCount++;
+            if (!replayed) {
+                choiceCount++;
+            }
 
             if (!choices || choices.length === 0) {
                 handleFinish(_interpreter);
@@ -273,6 +291,14 @@ function runTest(filePath: string, content: string, testItem: TestItem, crlf: bo
             resolve({ passed: false, actual: output, expected, error: (e as Error).toString() });
         }
     });
+}
+
+// Reads a saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
+function saveIndices(raw: unknown): number[] {
+    if (raw == null) return [];
+    if (typeof raw === 'number') return [raw];
+    if (Array.isArray(raw) && raw.every(v => typeof v === 'number')) return raw as number[];
+    throw new Error('Invalid save indices: ' + JSON.stringify(raw));
 }
 
 // Extract test items from a .lor file

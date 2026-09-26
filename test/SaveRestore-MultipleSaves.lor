@@ -1,0 +1,120 @@
+// Several saves in one run: `saveAtDialogue` and `saveAtChoice` accept a list of
+// indices (counted over an uninterrupted run). At each one the runner saves,
+// restores in a new interpreter and continues, so the saved event shows twice.
+
+state
+  count: 0
+
+beat Start
+  count = count + 1
+
+  First line $count.
+
+  choice
+    Go on
+      count = count + 1
+
+      Second line $count.
+    Stop
+      Stopped.
+
+  Third line $count.
+
+  choice
+    Again
+      Fourth line $count.
+
+  Done $count.
+
+/*
+<test>
+- choices: [0, 0]
+  saveAtDialogue: [1, 3]
+  expected: |
+    ~ First line 1.
+
+    + Go on
+    + Stop
+
+    ~ Second line 2.
+
+    ~ Second line 2.
+
+    ~ Third line 2.
+
+    + Again
+
+    ~ Fourth line 2.
+
+    ~ Fourth line 2.
+
+    ~ Done 2.
+- choices: [0, 0]
+  saveAtDialogue: [0, 2, 4]
+  expected: |
+    ~ First line 1.
+
+    ~ First line 1.
+
+    + Go on
+    + Stop
+
+    ~ Second line 2.
+
+    ~ Third line 2.
+
+    ~ Third line 2.
+
+    + Again
+
+    ~ Fourth line 2.
+
+    ~ Done 2.
+
+    ~ Done 2.
+- choices: [0, 0]
+  saveAtChoice: [0, 1]
+  expected: |
+    ~ First line 1.
+
+    + Go on
+    + Stop
+
+    + Go on
+    + Stop
+
+    ~ Second line 2.
+
+    ~ Third line 2.
+
+    + Again
+
+    + Again
+
+    ~ Fourth line 2.
+
+    ~ Done 2.
+- choices: [0, 0]
+  saveAtChoice: 1
+  saveAtDialogue: [1]
+  expected: |
+    ~ First line 1.
+
+    + Go on
+    + Stop
+
+    ~ Second line 2.
+
+    ~ Second line 2.
+
+    ~ Third line 2.
+
+    + Again
+
+    + Again
+
+    ~ Fourth line 2.
+
+    ~ Done 2.
+</test>
+*/

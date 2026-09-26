@@ -203,6 +203,35 @@ class SpawnTests {
         '  Draw $$b'
     ], '\n');
 
+    static final INSERTION_SCRIPT = joinParts([
+        'state',
+        '  n: 0',
+        '',
+        'function bump()',
+        '  n = n + 1',
+        '  return n',
+        '',
+        'beat Main',
+        '  Main line $$bump().',
+        '',
+        '  Main end with n $$n.',
+        '',
+        'beat Shop',
+        '  choice',
+        '    Local',
+        '      Local picked.',
+        '    + Extra',
+        '  Shop epilogue.',
+        '',
+        'beat Extra',
+        '  Extra intro.',
+        '',
+        '  choice',
+        '    Extra option',
+        '      Extra picked.',
+        '  Extra epilogue.'
+    ], '\n');
+
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
 
         final tests:Array<{name:String, fn:()->Void}> = [
@@ -218,7 +247,9 @@ class SpawnTests {
             {name: 'spawn replaces a live child', fn: () -> testSpawnReplacesLiveChild()},
             {name: 'finished child is not saved', fn: () -> testFinishedChildNotSaved()},
             {name: 'finished root with running children', fn: () -> testFinishedRootWithChildren()},
-            {name: 'restore on a child throws', fn: () -> testRestoreOnChildThrows()}
+            {name: 'restore on a child throws', fn: () -> testRestoreOnChildThrows()},
+            {name: 'child saved while collecting insertion options', fn: () -> testChildSavedDuringCollection()},
+            {name: 'child saved in the parent epilogue after an inserted option', fn: () -> testChildSavedInEpilogue()}
         ];
 
         for (test in tests) {
@@ -576,6 +607,68 @@ class SpawnTests {
             'root: <end>',
             'npc: Idle',
             'npc: Idle again'
+        ], restoredHost.log);
+
+    }
+
+    /**
+     * The root waits on a dialogue whose interpolation has a side effect, while the
+     * child waits on a dialogue shown during the collection of an insertion. After
+     * a restore, both pending lines are re-presented as displayed (the side effect
+     * doesn't run again) and the child goes on with its choice and epilogues.
+     */
+    static function testChildSavedDuringCollection():Void {
+
+        final script = parse(INSERTION_SCRIPT);
+        final host = new FlowHost();
+        final root = host.play(script, 'Main');
+        host.spawn(root, 'shop').start('Shop');
+        final saveData:SaveData = haxe.Json.parse(haxe.Json.stringify(root.save()));
+
+        final restoredHost = new FlowHost();
+        final restoredRoot = restoredHost.resume(script, saveData);
+        restoredRoot.resumeSpawn('shop').resume();
+        restoredHost.next('shop');
+        restoredHost.choose('shop', 1);
+        while (restoredHost.hasPendingDialogue('shop')) restoredHost.next('shop');
+        restoredHost.next('root');
+
+        expectLines([
+            'root: Main line 1.',
+            'shop: Extra intro.',
+            'shop? Local | Extra option',
+            'shop: Extra picked.',
+            'shop: Extra epilogue.',
+            'shop: Shop epilogue.',
+            'shop: <end>',
+            'root: Main end with n 1.'
+        ], restoredHost.log);
+
+    }
+
+    static function testChildSavedInEpilogue():Void {
+
+        final script = parse(INSERTION_SCRIPT);
+        final host = new FlowHost();
+        final root = host.play(script, 'Main');
+        host.spawn(root, 'shop').start('Shop');
+        host.next('shop');
+        host.choose('shop', 1);
+        host.next('shop');
+        host.next('shop');
+        // The child now waits on its parent epilogue line
+        if (host.log[host.log.length - 1] != 'shop: Shop epilogue.') throw 'unexpected log: ' + host.log;
+        final saveData:SaveData = haxe.Json.parse(haxe.Json.stringify(root.save()));
+
+        final restoredHost = new FlowHost();
+        final restoredRoot = restoredHost.resume(script, saveData);
+        restoredRoot.resumeSpawn('shop').resume();
+        restoredHost.next('shop');
+
+        expectLines([
+            'root: Main line 1.',
+            'shop: Shop epilogue.',
+            'shop: <end>'
         ], restoredHost.log);
 
     }
