@@ -565,6 +565,16 @@ typedef InterpreterOptions = {
 }
 
 /**
+ * A dialogue as it was displayed to the host, kept until the host advances.
+ */
+private typedef PendingDialogue = {
+    var node:AstNode;
+    var character:Null<String>;
+    var text:String;
+    var tags:Array<TextTag>;
+}
+
+/**
  * A lorscript function declared in the script, parsed once and kept so that
  * every interpreter sharing the context can bind its own closure from it.
  */
@@ -971,6 +981,13 @@ class InterpreterContext {
     var pendingChoiceOptions:Array<ChoiceOption> = null;
 
     /**
+     * The dialogue waiting for the host to advance, as it was displayed. Persisted in
+     * save data so that a restore re-presents exactly that dialogue, without evaluating
+     * it again (its interpolations may have side effects).
+     */
+    var pendingDialogue:PendingDialogue = null;
+
+    /**
      * During choice option evaluation and within the chosen option's body,
      * tracks the evaluated option texts in original order.
      */
@@ -1207,6 +1224,10 @@ class InterpreterContext {
         if (pendingOptions != null) {
             result.pendingChoiceOptions = pendingOptions;
         }
+        final pendingDialogueData = serializePendingDialogue(this);
+        if (pendingDialogueData != null) {
+            result.pendingDialogue = pendingDialogueData;
+        }
 
         // Save choice evaluation context if inside a choice option body
         final choiceEvalContext = serializeChoiceEvalContext(this);
@@ -1228,6 +1249,10 @@ class InterpreterContext {
             final childPendingOptions = serializePendingChoiceOptions(child, insertions);
             if (childPendingOptions != null) {
                 flow.pendingChoiceOptions = childPendingOptions;
+            }
+            final childPendingDialogue = serializePendingDialogue(child);
+            if (childPendingDialogue != null) {
+                flow.pendingDialogue = childPendingDialogue;
             }
             final childChoiceEvalContext = serializeChoiceEvalContext(child);
             if (childChoiceEvalContext != null) {
@@ -1259,6 +1284,24 @@ class InterpreterContext {
         return [
             for (opt in flow.pendingChoiceOptions) serializeChoiceOption(opt, insertions)
         ];
+
+    }
+
+    function serializePendingDialogue(flow:Interpreter):Null<SaveDataDialogue> {
+
+        final pending = flow.pendingDialogue;
+        if (pending == null) return null;
+        final result:SaveDataDialogue = {
+            node: serializeNodeReference(pending.node),
+            text: pending.text
+        };
+        if (pending.character != null) {
+            result.character = pending.character;
+        }
+        if (pending.tags != null && pending.tags.length > 0) {
+            result.tags = [for (tag in pending.tags) serializeTextTag(tag)];
+        }
+        return result;
 
     }
 
@@ -1333,7 +1376,7 @@ class InterpreterContext {
         restoreNodeStates(saveData.nodeStates);
 
         // Restore the playhead of this interpreter
-        restoreFlow(saveData.stack, saveData.pendingChoiceOptions, saveData.choiceEvalContext, saveData.insertions, restoredInsertions);
+        restoreFlow(saveData.stack, saveData.pendingChoiceOptions, saveData.pendingDialogue, saveData.choiceEvalContext, saveData.insertions, restoredInsertions);
 
         // Keep children flows until the host resumes them with resumeSpawn(). They share
         // the insertions cache so that insertions referenced from several places stay one object.
@@ -1361,6 +1404,7 @@ class InterpreterContext {
     function restoreFlow(
         savedStack:Array<SaveDataScope>,
         savedPendingChoiceOptions:Null<Array<SaveDataChoiceOption>>,
+        savedPendingDialogue:Null<SaveDataDialogue>,
         savedChoiceEvalContext:Null<Array<SaveDataChoiceOption>>,
         savedInsertions:Dynamic<SaveDataInsertion>,
         restoredInsertions:Map<Int, RuntimeInsertion>
@@ -1369,6 +1413,7 @@ class InterpreterContext {
         stack.resize(0);
         nextScopeId = 1;
         pendingChoiceOptions = null;
+        pendingDialogue = null;
         _choiceEvalTexts.resize(0);
         _choiceEvalEnabled.resize(0);
 
@@ -1389,6 +1434,24 @@ class InterpreterContext {
             for (savedOpt in savedPendingChoiceOptions) {
                 final opt = restoreChoiceOption(savedOpt, savedInsertions, restoredInsertions);
                 if (opt != null) pendingChoiceOptions.push(opt);
+            }
+        }
+
+        // Restore the pending dialogue, as it was displayed. Dropped if its node doesn't
+        // resolve anymore (the script changed): the node is then evaluated again.
+        if (savedPendingDialogue != null && savedPendingDialogue.node != null) {
+            final node = lens.getNodeById(NodeId.fromString(savedPendingDialogue.node.id));
+            if (node != null && node.type() == savedPendingDialogue.node.type) {
+                pendingDialogue = {
+                    node: cast node,
+                    character: savedPendingDialogue.character,
+                    text: savedPendingDialogue.text,
+                    tags: savedPendingDialogue.tags != null ? [for (t in savedPendingDialogue.tags) ({
+                        closing: t.closing == true,
+                        value: t.value,
+                        offset: t.offset
+                    } : TextTag)] : []
+                };
             }
         }
 
@@ -1516,7 +1579,7 @@ class InterpreterContext {
         }
 
         final child = createChild(key, handleDialogue, handleChoice, handleFinish, options);
-        child.restoreFlow(flow.stack, flow.pendingChoiceOptions, flow.choiceEvalContext, savedInsertions, insertionsCache);
+        child.restoreFlow(flow.stack, flow.pendingChoiceOptions, flow.pendingDialogue, flow.choiceEvalContext, savedInsertions, insertionsCache);
         return child;
 
     }
@@ -1550,6 +1613,7 @@ class InterpreterContext {
         finishTrigger = null;
         beatToResume = null;
         pendingChoiceOptions = null;
+        pendingDialogue = null;
         _choiceEvalTexts.resize(0);
         _choiceEvalEnabled.resize(0);
         context.children.remove(this);
@@ -3693,8 +3757,9 @@ class InterpreterContext {
         // with the other interpreters of the context, which may still use theirs)
         nextScopeId = 1;
 
-        // Clear pending choice options
+        // Clear pending choice options and dialogue
         pendingChoiceOptions = null;
+        pendingDialogue = null;
         _choiceEvalTexts.resize(0);
         _choiceEvalEnabled.resize(0);
 
@@ -3898,6 +3963,9 @@ class InterpreterContext {
      */
     function evalText(text:NTextStatement, next:()->Void) {
 
+        // Restored at this text: re-present it as it was displayed
+        if (presentRestoredDialogue(text, next)) return;
+
         // Check trailing condition
         if (text.condition != null && !evaluateCondition(text.condition)) {
             next();
@@ -3913,7 +3981,7 @@ class InterpreterContext {
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleDialogue(this, null, content.text, content.tags, next);
+        presentDialogue(text, null, content.text, content.tags, next);
 
     }
 
@@ -3924,6 +3992,9 @@ class InterpreterContext {
      * @param next Callback to call when evaluation completes
      */
     function evalDialogue(dialogue:NDialogueStatement, next:()->Void) {
+
+        // Restored at this dialogue: re-present it as it was displayed
+        if (presentRestoredDialogue(dialogue, next)) return;
 
         // Check trailing condition
         if (dialogue.condition != null && !evaluateCondition(dialogue.condition)) {
@@ -3950,7 +4021,45 @@ class InterpreterContext {
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
         // is called, either synchronously or asynchronously
-        handleDialogue(this, speaker, content.text, content.tags, next);
+        presentDialogue(dialogue, speaker, content.text, content.tags, next);
+
+    }
+
+    /**
+     * Hands a rendered dialogue to the host, and keeps it as the pending dialogue
+     * until the host advances, so that a save taken meanwhile stores it as displayed.
+     */
+    function presentDialogue(node:AstNode, character:Null<String>, text:String, tags:Array<TextTag>, next:()->Void) {
+
+        final pending:PendingDialogue = {
+            node: node,
+            character: character,
+            text: text,
+            tags: tags
+        };
+        pendingDialogue = pending;
+        handleDialogue(this, character, text, tags, () -> {
+            if (pendingDialogue == pending) {
+                pendingDialogue = null;
+            }
+            next();
+        });
+
+    }
+
+    /**
+     * When the restore resumes at the node of the saved pending dialogue, re-presents
+     * that dialogue as it was displayed instead of evaluating the node again (same text,
+     * no side effect run twice, no condition checked again).
+     *
+     * @return true if the restored dialogue was presented
+     */
+    function presentRestoredDialogue(node:AstNode, next:()->Void):Bool {
+
+        final restored = pendingDialogue;
+        if (restored == null || restored.node != node) return false;
+        presentDialogue(node, restored.character, restored.text, restored.tags, next);
+        return true;
 
     }
 
@@ -3967,7 +4076,7 @@ class InterpreterContext {
         // This avoids re-executing insertion bodies whose side effects are
         // already reflected in the restored state.
         final restoredOptions = this.pendingChoiceOptions;
-        if (restoredOptions != null) {
+        if (restoredOptions != null && restoredOptionsMatch(choice, restoredOptions)) {
             this.pendingChoiceOptions = null;
             // Populate choice eval context from restored options
             _choiceEvalTexts.resize(0);
@@ -3979,6 +4088,10 @@ class InterpreterContext {
             presentChoice(choice, restoredOptions, next);
             return;
         }
+
+        // Restored options that don't belong to this choice (the script changed since
+        // the save) are dropped: the choice is evaluated again instead
+        this.pendingChoiceOptions = null;
 
         // Phase 1: collect options from direct text and insertions
         final options:Array<ChoiceOption> = [];
@@ -4003,6 +4116,21 @@ class InterpreterContext {
      * @param options The collected choice options
      * @param next Callback to call when evaluation completes
      */
+    /**
+     * Whether restored pending options can be presented for this choice: every option
+     * must still resolve to its node, and options of this choice (not coming from an
+     * insertion) must be options of this very choice.
+     */
+    function restoredOptionsMatch(choice:NChoiceStatement, options:Array<ChoiceOption>):Bool {
+
+        for (option in options) {
+            if (option.node == null) return false;
+            if (option.insertion == null && choice.options.indexOf(option.node) == -1) return false;
+        }
+        return true;
+
+    }
+
     function presentChoice(choice:NChoiceStatement, options:Array<ChoiceOption>, next:()->Void) {
 
         // If we are within an insertion waiting for a choice block,
@@ -4021,14 +4149,9 @@ class InterpreterContext {
             return;
         }
 
-        // Store pending options for save/restore if the choice has any insertion entries.
-        // This allows restoring without re-evaluating insertion bodies.
-        for (astOption in choice.options) {
-            if (astOption.insertion != null) {
-                this.pendingChoiceOptions = options;
-                break;
-            }
-        }
+        // Store the options as displayed, for save/restore: a restore re-presents them
+        // as they were, without evaluating conditions, texts or insertion bodies again
+        this.pendingChoiceOptions = options;
 
         // Then call the user-defined choice handler.
         // The execution will be "paused" until the callback

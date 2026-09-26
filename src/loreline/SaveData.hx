@@ -132,6 +132,20 @@ typedef SaveDataFields = {
 }
 
 /**
+ * A dialogue (or narrative text) waiting for the host to advance, as it was displayed
+ */
+typedef SaveDataDialogue = {
+    /** The text or dialogue statement that produced it */
+    var node:SaveDataNode;
+    /** The speaker given to the dialogue handler, if any */
+    var ?character:String;
+    /** The rendered text */
+    var text:String;
+    /** The rendered text tags, if any */
+    var ?tags:Array<SaveDataTextTag>;
+}
+
+/**
  * The playhead of a child interpreter, spawned from the root interpreter
  */
 typedef SaveDataFlow = {
@@ -139,8 +153,10 @@ typedef SaveDataFlow = {
     var key:String;
     /** Execution stack of the child */
     var stack:Array<SaveDataScope>;
-    /** Pending choice options when save happened at a choice with insertions */
+    /** Pending choice options when save happened at a choice, as they were displayed */
     var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
+    /** Pending dialogue when save happened at a dialogue, as it was displayed */
+    var ?pendingDialogue:SaveDataDialogue;
     /** Choice evaluation context when save happened inside a choice option body */
     var ?choiceEvalContext:Array<SaveDataChoiceOption>;
 }
@@ -161,8 +177,10 @@ typedef SaveData = {
     var nodeStates:Dynamic<SaveDataFields>;
     /** Insertions keyed by ID */
     var ?insertions:Dynamic<SaveDataInsertion>;
-    /** Pending choice options when save happened at a choice with insertions */
+    /** Pending choice options when save happened at a choice, as they were displayed */
     var ?pendingChoiceOptions:Array<SaveDataChoiceOption>;
+    /** Pending dialogue when save happened at a dialogue, as it was displayed */
+    var ?pendingDialogue:SaveDataDialogue;
     /** Choice evaluation context when save happened inside a choice option body */
     var ?choiceEvalContext:Array<SaveDataChoiceOption>;
     /** Playheads of the child interpreters that were running */

@@ -582,8 +582,32 @@ SaveData {
     characters: { name: SaveDataCharacter }  — character fields (delta)
     nodeStates: { id: SaveDataState }        — per-node persistent data
     insertions: { id: SaveDataInsertion }    — insertion data (if any)
+    pendingChoiceOptions                     - the choice waiting for the host, as displayed
+    pendingDialogue                          - the dialogue waiting for the host, as displayed
+    choiceEvalContext                        - texts seen by choices() inside an option body
 }
 ```
+
+### The Pending Event Is Saved As Displayed
+
+When the save happens while the host is presenting a dialogue or a choice, that
+event is stored in its rendered form: the speaker, text and tags of the dialogue
+(`pendingDialogue`), or the texts, tags and enabled flags of the options
+(`pendingChoiceOptions`). On restore, the resume reaches the same node and
+re-presents the stored rendering instead of evaluating the node again:
+
+- side effects in interpolations or trailing conditions don't run twice;
+- conditions of options are not evaluated again;
+- the inserted beats of a choice don't run their content again (this is why the
+  options of a choice with insertions were always stored).
+
+A consequence: if the host restores with another locale, only that pending line
+stays in the language it was displayed in. Everything after it is translated.
+
+The stored rendering is dropped, and the node evaluated again, when it no longer
+matches the script: the pending dialogue node can't be resolved by id and type, or
+the options of the choice are not options of that choice anymore (script changed
+between save and restore).
 
 ### Scope Serialization
 

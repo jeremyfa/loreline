@@ -1,0 +1,7 @@
+state
+  gold: 5
+
+beat Start
+  Your purse holds $gold coins.
+
+  The shop is closed today.

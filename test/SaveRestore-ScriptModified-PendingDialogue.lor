@@ -1,0 +1,24 @@
+// A save taken while a dialogue waits is restored on a script whose text changed at
+// that exact line: the restore re-presents the line as the player saw it (the saved
+// rendering), then continues with the new script.
+
+state
+  gold: 5
+
+beat Start
+  You have $gold gold.
+
+  The shop is open.
+
+/*
+<test>
+- saveAtDialogue: 0
+  restoreFile: modified/SaveRestore-ScriptModified-PendingDialogue.lor
+  expected: |
+    ~ You have 5 gold.
+
+    ~ You have 5 gold.
+
+    ~ The shop is closed today.
+</test>
+*/

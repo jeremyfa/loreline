@@ -1,0 +1,102 @@
+// A restore re-presents the pending event exactly as it was displayed, without
+// evaluating it again: interpolations and conditions with side effects must not
+// run twice. `bump()` increments `n` and returns it, so a second evaluation would
+// show up both in the replayed text and in the final value of `n`.
+
+state
+  n: 0
+
+character alex
+  name: Alex
+
+function bump()
+  n = n + 1
+  return n
+
+function check()
+  n = n + 1
+  return true
+
+beat Narration
+  Narration $bump(), <b>bold $n</b>.
+
+  After narration, n is $n.
+
+beat Dialogue
+  alex: Dialogue $bump().
+
+  After dialogue, n is $n.
+
+beat TrailingCondition
+  Shown with n $n if check()
+
+  After condition, n is $n.
+
+beat Choice
+  choice
+    Option $bump()
+      Picked, n is $n.
+    Other if check()
+      Other picked.
+
+beat ChoiceWithInsertion
+  choice
+    Option $bump()
+      Picked, n is $n.
+    + Extra
+
+beat Extra
+  choice
+    Extra $n
+      Extra picked.
+
+/*
+<test>
+- beat: Narration
+  saveAtDialogue: 0
+  expected: |
+    ~ Narration 1, <<b>>bold 1<</b>>.
+
+    ~ Narration 1, <<b>>bold 1<</b>>.
+
+    ~ After narration, n is 1.
+- beat: Dialogue
+  saveAtDialogue: 0
+  expected: |
+    Alex: Dialogue 1.
+
+    Alex: Dialogue 1.
+
+    ~ After dialogue, n is 1.
+- beat: TrailingCondition
+  saveAtDialogue: 0
+  expected: |
+    ~ Shown with n 1
+
+    ~ Shown with n 1
+
+    ~ After condition, n is 1.
+- beat: Choice
+  choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Option 1
+    + Other
+
+    + Option 1
+    + Other
+
+    ~ Picked, n is 2.
+- beat: ChoiceWithInsertion
+  choices: [0]
+  saveAtChoice: 0
+  expected: |
+    + Option 1
+    + Extra 1
+
+    + Option 1
+    + Extra 1
+
+    ~ Picked, n is 1.
+</test>
+*/
