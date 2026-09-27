@@ -1,0 +1,89 @@
+// A subroutine called from the body of an option that comes from an insertion
+// runs in its own scope, returns into the option body, then each epilogue runs
+// in its own beat scope.
+
+beat Start
+  new state
+    label: "start"
+  choice
+    Stay
+      Stayed.
+    + Side
+  Back at start with $label.
+
+beat Side
+  new state
+    label: "side"
+  choice
+    Call helper
+      Before helper with $label.
+
+      Helper()
+
+      After helper with $label, beat $current_beat().
+  Back at side with $label.
+
+beat Helper
+  new state
+    label: "helper"
+
+  In helper with $label.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    + Stay
+    + Call helper
+
+    ~ Before helper with side.
+
+    ~ In helper with helper.
+
+    ~ After helper with side, beat Side.
+
+    ~ Back at side with side.
+
+    ~ Back at start with start.
+- choices: [1]
+  saveAtDialogue: 1
+  expected: |
+    + Stay
+    + Call helper
+
+    ~ Before helper with side.
+
+    ~ In helper with helper.
+
+    ~ In helper with helper.
+
+    ~ After helper with side, beat Side.
+
+    ~ Back at side with side.
+
+    ~ Back at start with start.
+- choices: [1]
+  saveAtChoice: 0
+  saveAtDialogue: [2, 4]
+  expected: |
+    + Stay
+    + Call helper
+
+    + Stay
+    + Call helper
+
+    ~ Before helper with side.
+
+    ~ In helper with helper.
+
+    ~ After helper with side, beat Side.
+
+    ~ After helper with side, beat Side.
+
+    ~ Back at side with side.
+
+    ~ Back at start with start.
+
+    ~ Back at start with start.
+</test>
+*/

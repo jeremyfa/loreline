@@ -1,0 +1,92 @@
+// Names resolve in the right scope around an option that comes from an insertion:
+// a beat parameter of the inserted beat shadows a temporary state of the parent
+// with the same name, each beat keeps its own persistent state, and a local beat
+// of the inserted beat can be called from the option body.
+
+beat Start
+  new state
+    mood: "start-temp"
+  state
+    visits: 0
+  visits = visits + 1
+  choice
+    Stay
+      Stayed with mood $mood.
+    + Side("param")
+  Start epilogue: mood $mood, visits $visits.
+
+beat Side(mood)
+  state
+    visits: 10
+  visits = visits + 1
+
+  beat Local
+    Local beat sees $mood and visits $visits.
+
+  choice
+    Use local
+      Local()
+
+      Side option: mood $mood, visits $visits.
+  Side epilogue: mood $mood, visits $visits.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Stay
+    + Use local
+
+    ~ Stayed with mood start-temp.
+
+    ~ Start epilogue: mood start-temp, visits 1.
+- choices: [1]
+  expected: |
+    + Stay
+    + Use local
+
+    ~ Local beat sees param and visits 11.
+
+    ~ Side option: mood param, visits 11.
+
+    ~ Side epilogue: mood param, visits 11.
+
+    ~ Start epilogue: mood start-temp, visits 1.
+- choices: [1]
+  saveAtChoice: 0
+  saveAtDialogue: 0
+  expected: |
+    + Stay
+    + Use local
+
+    + Stay
+    + Use local
+
+    ~ Local beat sees param and visits 11.
+
+    ~ Local beat sees param and visits 11.
+
+    ~ Side option: mood param, visits 11.
+
+    ~ Side epilogue: mood param, visits 11.
+
+    ~ Start epilogue: mood start-temp, visits 1.
+- choices: [1]
+  saveAtDialogue: [2, 3]
+  expected: |
+    + Stay
+    + Use local
+
+    ~ Local beat sees param and visits 11.
+
+    ~ Side option: mood param, visits 11.
+
+    ~ Side epilogue: mood param, visits 11.
+
+    ~ Side epilogue: mood param, visits 11.
+
+    ~ Start epilogue: mood start-temp, visits 1.
+
+    ~ Start epilogue: mood start-temp, visits 1.
+</test>
+*/

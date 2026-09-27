@@ -1,0 +1,77 @@
+// A transition from the body of an option that comes from an insertion leaves
+// the whole insertion context: no epilogue of the inserted beat or of the parent
+// runs afterwards, and the new beat runs with a clean stack.
+
+beat Start
+  choice
+    Stay
+      Stayed.
+    + Side
+  Back at start.
+
+beat Side
+  choice
+    Leave for elsewhere
+      Leaving.
+
+      -> Elsewhere
+  Back at side.
+
+beat Elsewhere
+  new state
+    here: "elsewhere"
+
+  Arrived $here, beat $current_beat().
+
+  Elsewhere done.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Stay
+    + Leave for elsewhere
+
+    ~ Stayed.
+
+    ~ Back at start.
+- choices: [1]
+  expected: |
+    + Stay
+    + Leave for elsewhere
+
+    ~ Leaving.
+
+    ~ Arrived elsewhere, beat Elsewhere.
+
+    ~ Elsewhere done.
+- choices: [1]
+  saveAtDialogue: 0
+  expected: |
+    + Stay
+    + Leave for elsewhere
+
+    ~ Leaving.
+
+    ~ Leaving.
+
+    ~ Arrived elsewhere, beat Elsewhere.
+
+    ~ Elsewhere done.
+- choices: [1]
+  saveAtDialogue: [1, 2]
+  expected: |
+    + Stay
+    + Leave for elsewhere
+
+    ~ Leaving.
+
+    ~ Arrived elsewhere, beat Elsewhere.
+
+    ~ Arrived elsewhere, beat Elsewhere.
+
+    ~ Elsewhere done.
+
+    ~ Elsewhere done.
+</test>
+*/

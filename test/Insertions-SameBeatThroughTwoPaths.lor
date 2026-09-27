@@ -1,0 +1,74 @@
+// The same beat reached through two cascading insertion paths, with different
+// arguments: each option runs the epilogues of its own path only.
+
+beat Start
+  choice
+    + PathA
+    + PathB
+  End.
+
+beat PathA
+  choice
+    + Common("A")
+  After path A.
+
+beat PathB
+  choice
+    + Common("B")
+  After path B.
+
+beat Common(source)
+  choice
+    Common from $source
+      Picked common from $source.
+  After common from $source.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    + Common from A
+    + Common from B
+
+    ~ Picked common from A.
+
+    ~ After common from A.
+
+    ~ After path A.
+
+    ~ End.
+- choices: [1]
+  expected: |
+    + Common from A
+    + Common from B
+
+    ~ Picked common from B.
+
+    ~ After common from B.
+
+    ~ After path B.
+
+    ~ End.
+- choices: [1]
+  saveAtChoice: 0
+  saveAtDialogue: [1, 2]
+  expected: |
+    + Common from A
+    + Common from B
+
+    + Common from A
+    + Common from B
+
+    ~ Picked common from B.
+
+    ~ After common from B.
+
+    ~ After common from B.
+
+    ~ After path B.
+
+    ~ After path B.
+
+    ~ End.
+</test>
+*/

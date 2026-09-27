@@ -1,0 +1,121 @@
+// A choice inside the body of an option that comes from an insertion, itself with
+// an insertion: every epilogue must then run in order, innermost first.
+
+beat Start
+  choice
+    Stay
+      Stayed.
+    + Side
+  Back at start.
+
+beat Side
+  choice
+    Open inner
+      Inner begins.
+
+      choice
+        Inner local
+          Inner local picked.
+        + Deep
+
+      Inner done.
+  Back at side.
+
+beat Deep
+  choice
+    Deep option
+      Deep picked.
+  Back at deep.
+
+/*
+<test>
+- choices: [1, 0]
+  expected: |
+    + Stay
+    + Open inner
+
+    ~ Inner begins.
+
+    + Inner local
+    + Deep option
+
+    ~ Inner local picked.
+
+    ~ Inner done.
+
+    ~ Back at side.
+
+    ~ Back at start.
+- choices: [1, 1]
+  expected: |
+    + Stay
+    + Open inner
+
+    ~ Inner begins.
+
+    + Inner local
+    + Deep option
+
+    ~ Deep picked.
+
+    ~ Back at deep.
+
+    ~ Inner done.
+
+    ~ Back at side.
+
+    ~ Back at start.
+- choices: [1, 1]
+  saveAtChoice: 1
+  saveAtDialogue: 2
+  expected: |
+    + Stay
+    + Open inner
+
+    ~ Inner begins.
+
+    + Inner local
+    + Deep option
+
+    + Inner local
+    + Deep option
+
+    ~ Deep picked.
+
+    ~ Back at deep.
+
+    ~ Back at deep.
+
+    ~ Inner done.
+
+    ~ Back at side.
+
+    ~ Back at start.
+- choices: [1, 1]
+  saveAtDialogue: [3, 4, 5]
+  expected: |
+    + Stay
+    + Open inner
+
+    ~ Inner begins.
+
+    + Inner local
+    + Deep option
+
+    ~ Deep picked.
+
+    ~ Back at deep.
+
+    ~ Inner done.
+
+    ~ Inner done.
+
+    ~ Back at side.
+
+    ~ Back at side.
+
+    ~ Back at start.
+
+    ~ Back at start.
+</test>
+*/

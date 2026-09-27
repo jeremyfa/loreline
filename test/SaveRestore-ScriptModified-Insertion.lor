@@ -1,0 +1,62 @@
+// A save taken while an insertion is in progress (during option collection, or in
+// the body of an inserted option) is restored on a script whose later texts
+// changed: the pending line is re-presented as displayed, then execution goes on
+// with the new texts.
+
+beat Start
+  choice
+    Local
+      Local picked.
+    + Extra
+  Old start epilogue.
+
+beat Extra
+  Extra intro.
+
+  choice
+    Extra option
+      Extra picked.
+
+      Extra body continues.
+  Old extra epilogue.
+
+/*
+<test>
+- choices: [1]
+  saveAtDialogue: 1
+  restoreFile: modified/SaveRestore-ScriptModified-Insertion.lor
+  expected: |
+    ~ Extra intro.
+
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra picked.
+
+    ~ Extra body continues.
+
+    ~ New extra epilogue.
+
+    ~ New start epilogue.
+- choices: [1]
+  saveAtDialogue: 0
+  restoreFile: modified/SaveRestore-ScriptModified-Insertion.lor
+  expected: |
+    ~ Extra intro.
+
+    ~ Extra intro.
+
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra body continues.
+
+    ~ New extra epilogue.
+
+    ~ New start epilogue.
+</test>
+*/

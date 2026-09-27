@@ -1,0 +1,16 @@
+beat Start
+  choice
+    Local
+      Local picked.
+    + Extra
+  New start epilogue.
+
+beat Extra
+  Extra intro.
+
+  choice
+    Extra option
+      Extra picked.
+
+      Extra body continues.
+  New extra epilogue.

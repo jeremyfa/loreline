@@ -1,0 +1,83 @@
+// The same beat inserted several times in one choice, with different arguments:
+// default values, arguments reading the caller state, and a dynamic insertion
+// through a beat reference. Each option keeps the arguments of its own insertion,
+// also after a save and restore.
+
+state
+  price: 3
+
+beat Start
+  new state
+    discount: 1
+  target = Offer
+  choice
+    Nothing
+      Nothing picked.
+    + Offer("apple")
+    + Offer("pear", price - discount)
+    + beat(target, "plum", 7)
+  Done shopping.
+
+beat Offer(item, cost = 2)
+  choice
+    Buy $item for $cost
+      Bought $item for $cost.
+  Offer for $item closed.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    + Nothing
+    + Buy apple for 2
+    + Buy pear for 2
+    + Buy plum for 7
+
+    ~ Bought apple for 2.
+
+    ~ Offer for apple closed.
+
+    ~ Done shopping.
+- choices: [2]
+  saveAtChoice: 0
+  expected: |
+    + Nothing
+    + Buy apple for 2
+    + Buy pear for 2
+    + Buy plum for 7
+
+    + Nothing
+    + Buy apple for 2
+    + Buy pear for 2
+    + Buy plum for 7
+
+    ~ Bought pear for 2.
+
+    ~ Offer for pear closed.
+
+    ~ Done shopping.
+- choices: [3]
+  saveAtChoice: 0
+  saveAtDialogue: [0, 1]
+  expected: |
+    + Nothing
+    + Buy apple for 2
+    + Buy pear for 2
+    + Buy plum for 7
+
+    + Nothing
+    + Buy apple for 2
+    + Buy pear for 2
+    + Buy plum for 7
+
+    ~ Bought plum for 7.
+
+    ~ Bought plum for 7.
+
+    ~ Offer for plum closed.
+
+    ~ Offer for plum closed.
+
+    ~ Done shopping.
+</test>
+*/

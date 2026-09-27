@@ -1,0 +1,93 @@
+// A once-only option (`-`) that comes from an insertion: once picked, it stays
+// disabled the next times the choice is presented, also after a save and restore
+// (at the choice itself, or anywhere in between).
+
+beat Start
+  choice
+    Leave
+      Bye.
+
+      -> .
+    + Shop
+  -> Start
+
+beat Shop
+  choice
+    - Buy the sword
+      Sword bought.
+    Browse
+      Browsing.
+
+/*
+<test>
+- choices: [1, 2, 0]
+  expected: |
+    + Leave
+    + Buy the sword
+    + Browse
+
+    ~ Sword bought.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Browsing.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Bye.
+- choices: [1, 2, 0]
+  saveAtChoice: [1, 2]
+  expected: |
+    + Leave
+    + Buy the sword
+    + Browse
+
+    ~ Sword bought.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Browsing.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Bye.
+- choices: [1, 2, 0]
+  saveAtDialogue: 0
+  expected: |
+    + Leave
+    + Buy the sword
+    + Browse
+
+    ~ Sword bought.
+
+    ~ Sword bought.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Browsing.
+
+    + Leave
+    - Buy the sword
+    + Browse
+
+    ~ Bye.
+</test>
+*/

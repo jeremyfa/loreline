@@ -1,0 +1,103 @@
+// While options are collected, inserted beats run their content before their
+// choice: a beat without any choice runs entirely and adds no option, and state
+// changed there is seen by the conditions and texts of the options evaluated
+// after it. A restore (during collection or at the choice) must not run that
+// content again.
+
+state
+  coins: 0
+  visited: false
+
+beat Start
+  choice
+    Rich option if coins > 0
+      Rich picked with $coins.
+    + NoChoice
+    + Earn
+    Poor option if coins == 0
+      Poor picked.
+    Visited $visited
+      Visited picked with $coins.
+  End with $coins.
+
+beat NoChoice
+  visited = true
+
+  No choice here, this runs entirely.
+
+beat Earn
+  coins = coins + 5
+
+  You earn 5 coins.
+
+  choice
+    Spend
+      coins = coins - 1
+
+      Spent, $coins left.
+  After earning.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    ~ No choice here, this runs entirely.
+
+    ~ You earn 5 coins.
+
+    - Rich option
+    + Spend
+    - Poor option
+    + Visited true
+
+    ~ Spent, 4 left.
+
+    ~ After earning.
+
+    ~ End with 4.
+- choices: [3]
+  saveAtDialogue: 1
+  expected: |
+    ~ No choice here, this runs entirely.
+
+    ~ You earn 5 coins.
+
+    ~ You earn 5 coins.
+
+    - Rich option
+    + Spend
+    - Poor option
+    + Visited true
+
+    ~ Visited picked with 5.
+
+    ~ End with 5.
+- choices: [1]
+  saveAtDialogue: [0, 1]
+  saveAtChoice: 0
+  expected: |
+    ~ No choice here, this runs entirely.
+
+    ~ No choice here, this runs entirely.
+
+    ~ You earn 5 coins.
+
+    ~ You earn 5 coins.
+
+    - Rich option
+    + Spend
+    - Poor option
+    + Visited true
+
+    - Rich option
+    + Spend
+    - Poor option
+    + Visited true
+
+    ~ Spent, 4 left.
+
+    ~ After earning.
+
+    ~ End with 4.
+</test>
+*/

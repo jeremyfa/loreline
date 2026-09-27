@@ -1,0 +1,102 @@
+// A choice with an insertion inside a beat called as a subroutine, then inside
+// the same beat invoked through a beat reference: after an inserted option, the
+// epilogues run, then execution returns to the caller.
+
+beat Start
+  Menu()
+
+  ref = Menu
+  beat(ref)
+
+  End.
+
+beat Menu
+  choice
+    Local
+      Local picked.
+    + Extra
+  Menu done.
+
+beat Extra
+  choice
+    Extra option
+      Extra picked.
+  Extra epilogue.
+
+/*
+<test>
+- choices: [1, 0]
+  expected: |
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra epilogue.
+
+    ~ Menu done.
+
+    + Local
+    + Extra option
+
+    ~ Local picked.
+
+    ~ Menu done.
+
+    ~ End.
+- choices: [0, 1]
+  saveAtChoice: 1
+  saveAtDialogue: [4, 5]
+  expected: |
+    + Local
+    + Extra option
+
+    ~ Local picked.
+
+    ~ Menu done.
+
+    + Local
+    + Extra option
+
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra epilogue.
+
+    ~ Menu done.
+
+    ~ Menu done.
+
+    ~ End.
+
+    ~ End.
+- choices: [1, 1]
+  saveAtDialogue: [1, 2]
+  expected: |
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra epilogue.
+
+    ~ Extra epilogue.
+
+    ~ Menu done.
+
+    ~ Menu done.
+
+    + Local
+    + Extra option
+
+    ~ Extra picked.
+
+    ~ Extra epilogue.
+
+    ~ Menu done.
+
+    ~ End.
+</test>
+*/
