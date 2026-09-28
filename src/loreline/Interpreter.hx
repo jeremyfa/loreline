@@ -1196,6 +1196,20 @@ class InterpreterContext {
     var _restoreSavedInsertions:Dynamic<SaveDataInsertion> = null;
     var _restoreInsertionsCache:Map<Int, RuntimeInsertion> = null;
 
+    /**
+     * Reseeds the random generator of the whole context (this interpreter, its root
+     * and every child). The generator is saved with the rest of the state, so a
+     * restored game draws the same random values as it would have without the save.
+     * Call this after a restore to break that on purpose.
+     *
+     * @param seed The seed of the new sequence. Without one, a seed is taken from the clock.
+     */
+    public function seedRandom(?seed:Float):Void {
+
+        context.random = new Random(seed);
+
+    }
+
     public function save():SaveData {
 
         // Saving is a property of the whole context: from any interpreter,
@@ -1216,6 +1230,11 @@ class InterpreterContext {
             characters: serializeCharacters(),
             nodeStates: serializeNodeStates()
         };
+
+        // Random values continue the same sequence after a restore
+        if (context.random != null) {
+            result.random = context.random.seed;
+        }
 
         // Save pending choice options (from choices with insertions awaiting user input).
         // Must be serialized before the insertions length check, since serializing
@@ -1374,6 +1393,13 @@ class InterpreterContext {
 
         // Restore node states
         restoreNodeStates(saveData.nodeStates);
+
+        // Restore the random generator. Older saves don't have it: the current
+        // generator is kept, as it always was.
+        final savedRandom:Null<Float> = saveData.random;
+        if (savedRandom != null) {
+            context.random = new Random(savedRandom);
+        }
 
         // Restore the playhead of this interpreter
         restoreFlow(saveData.stack, saveData.pendingChoiceOptions, saveData.pendingDialogue, saveData.choiceEvalContext, saveData.insertions, restoredInsertions);

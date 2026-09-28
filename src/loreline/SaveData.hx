@@ -187,4 +187,6 @@ typedef SaveData = {
     var ?children:Array<SaveDataFlow>;
     /** Set when the root interpreter had finished while children were still running */
     var ?finished:Bool;
+    /** State of the random generator shared by every interpreter, if it was used */
+    var ?random:Float;
 }

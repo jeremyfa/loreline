@@ -1,0 +1,123 @@
+// Random results are part of save data: a restored game draws the same
+// values as an uninterrupted one, whatever the save point.
+
+state
+  roll: 0
+  lucky: false
+  fruits: ["apple", "pear", "plum", "fig", "kiwi"]
+  picked: ""
+  mixed: []
+
+beat Start
+  seed_random(12345)
+  roll = random(1, 1000)
+  First roll $roll.
+
+  lucky = chance(2)
+  roll = random(1, 1000)
+  Second roll $roll, lucky $lucky.
+
+  choice
+    Pick a fruit
+      picked = fruits.pick()
+      Picked $picked.
+    Shuffle the fruits
+      mixed = fruits.shuffle()
+      Mixed ${mixed.join(", ")}.
+
+  pick
+    Heads.
+  --
+    Tails.
+  --
+    Edge.
+
+  roll = random(1, 1000)
+  Last roll $roll.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ First roll 97.
+
+    ~ Second roll 948, lucky false.
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    ~ Picked apple.
+
+    ~ Heads.
+
+    ~ Last roll 52.
+- choices: [1]
+  expected: |
+    ~ First roll 97.
+
+    ~ Second roll 948, lucky false.
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    ~ Mixed plum, pear, fig, kiwi, apple.
+
+    ~ Tails.
+
+    ~ Last roll 915.
+- choices: [0]
+  saveAtDialogue: 0
+  expected: |
+    ~ First roll 97.
+
+    ~ First roll 97.
+
+    ~ Second roll 948, lucky false.
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    ~ Picked apple.
+
+    ~ Heads.
+
+    ~ Last roll 52.
+- choices: [1]
+  saveAtChoice: 0
+  expected: |
+    ~ First roll 97.
+
+    ~ Second roll 948, lucky false.
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    ~ Mixed plum, pear, fig, kiwi, apple.
+
+    ~ Tails.
+
+    ~ Last roll 915.
+- choices: [1]
+  saveAtDialogue: [1, 3]
+  expected: |
+    ~ First roll 97.
+
+    ~ Second roll 948, lucky false.
+
+    ~ Second roll 948, lucky false.
+
+    + Pick a fruit
+    + Shuffle the fruits
+
+    ~ Mixed plum, pear, fig, kiwi, apple.
+
+    ~ Tails.
+
+    ~ Tails.
+
+    ~ Last roll 915.
+</test>
+*/

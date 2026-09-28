@@ -1,0 +1,52 @@
+// seed_random(n) always starts the same sequence, seed_random() starts an
+// unpredictable one. Values are compared rather than printed, so that the
+// output stays the same on every run.
+
+state
+  first: 0
+  again: 0
+  fresh: 0
+  next: 0
+  floored: 0
+
+beat Start
+  seed_random(5)
+  first = random(1, 1000000000)
+  seed_random(5)
+  again = random(1, 1000000000)
+  if first == again
+    Same seed, same sequence.
+
+  seed_random(5)
+  seed_random()
+  fresh = random(1, 1000000000)
+  if fresh != first and fresh >= 1
+    No seed, new sequence.
+
+  // 0 would stall the generator: it behaves like another seed instead
+  seed_random(0)
+  first = random(1, 1000000000)
+  next = random(1, 1000000000)
+  if first != next
+    Seed 0 still moves.
+
+  // Seeds are whole numbers
+  seed_random(8)
+  first = random(1, 1000000000)
+  seed_random(8.6)
+  floored = random(1, 1000000000)
+  if first == floored
+    Decimals are dropped.
+
+/*
+<test>
+- expected: |
+    ~ Same seed, same sequence.
+
+    ~ No seed, new sequence.
+
+    ~ Seed 0 still moves.
+
+    ~ Decimals are dropped.
+</test>
+*/

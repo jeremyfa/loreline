@@ -254,9 +254,18 @@ class Functions {
      * seed_random(42)
      * // From here, the sequence of random values is always the same.
      * ```
+     *
+     * The sequence is part of save data: after a restore, random results continue
+     * exactly where they were. Calling `seed_random()` without a value starts a new,
+     * unpredictable sequence instead.
+     *
+     * ```lor
+     * seed_random()
+     * // From here, random results differ from one playthrough to another.
+     * ```
      */
-    public function seed_random(seed:Float):Dynamic {
-        @:privateAccess interpreter.context.random = new Random(seed);
+    public function seed_random(?seed:Float):Dynamic {
+        interpreter.seedRandom(seed);
         return null;
     }
 

@@ -33,13 +33,20 @@ package loreline;
  */
 class Random {
 
+    /**
+     * Current state of the generator. Always an integer in `[1, 0x7FFFFFFE]`, so it
+     * can be saved and restored exactly on every target.
+     */
     public var seed(default, null):Float;
 
     public var initialSeed(default, null):Float;
 
-    inline public function new(seed:Float = -1) {
+    /**
+     * @param seed The seed of the sequence. Without one, a seed is taken from the clock.
+     */
+    public function new(?seed:Float) {
 
-        if (seed < 0) {
+        if (seed == null) {
             var now = #if sys Sys.time() #else Date.now().getTime() / 1000.0 #end;
             seed = now * 1000000;
             seed += Math.random() * 100000;
@@ -47,13 +54,26 @@ class Random {
             // Add more entropy on sys targets
             seed += Sys.cpuTime() * 10000;
             #end
-            // Ensure the seed stays within safe bounds
-            seed = seed % 0x7FFFFFFF;
         }
 
-        this.seed = seed;
+        this.seed = normalizeSeed(seed);
         initialSeed = this.seed;
 
+    }
+
+    /**
+     * Brings any number to a valid state: an integer in `[1, 0x7FFFFFFE]`.
+     * The state must be an integer, otherwise its low bits get lost when saved
+     * as JSON on some targets and the sequence drifts after a restore. It must
+     * not be 0 either, which Park-Miller would keep returning forever.
+     */
+    static function normalizeSeed(seed:Float):Float {
+        if (Math.isNaN(seed) || !Math.isFinite(seed)) return 1.0;
+        // The modulo by a Float literal makes the result a real Float. On Neko, an Int
+        // literal given to seed_random() reaches this function as an Int, which abs()
+        // and ffloor() return unchanged: every draw then overflows Int arithmetic.
+        final result = Math.ffloor(Math.abs(seed) % 2147483647.0);
+        return result == 0 ? 1.0 : result;
     }
 
     // Public API
