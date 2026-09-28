@@ -49,6 +49,7 @@ else
 fi
 
 addon="$here/addons/loreline"
+import="$repo/sample/loreline-godot/godot-import.sh"
 
 # macOS refuses to dlopen a library whose signature no longer matches its path,
 # and copying one into place invalidates it. Re-sign ad-hoc whatever landed in
@@ -259,32 +260,17 @@ run_backend() {
     fi
 
     rm -rf "$here/.godot"
+    # The import fills .godot/global_script_class_cache.cfg, through which the
+    # GDScript backend resolves `Loreline` and friends, and the web export needs
+    # an imported project. godot-import.sh keeps the GDExtension out of that
+    # editor run, which would crash on shutdown otherwise (see the script).
+    if ! bash "$import" "$godot" "$here" >/dev/null 2>&1; then
+        echo "ERROR: project import failed for the $backend backend" >&2
+        return 1
+    fi
     if [ "$backend" = "web" ]; then
-        # The export needs an imported project. No web binary loads on the
-        # host, so this import carries no GDExtension and stays clean.
-        "$godot" --headless --path "$here" --import >/dev/null 2>&1 || true
         run_web
         return $?
-    fi
-    if [ "$backend" = "gdscript" ]; then
-        # The GDScript backend needs the editor import: it is what fills
-        # .godot/global_script_class_cache.cfg, and the runtime resolves
-        # `Loreline` and friends through that. No GDExtension is involved here,
-        # so this import is clean and its exit status is checked.
-        if ! "$godot" --headless --path "$here" --import >/dev/null 2>&1; then
-            echo "ERROR: project import failed for the $backend backend" >&2
-            return 1
-        fi
-    else
-        # Deliberately no editor import for the native backend. Godot 4.6
-        # crashes on headless shutdown of an editor run that has a GDExtension
-        # loaded: EditorHelp::_gen_extensions_docs is deferred onto the call
-        # queue and then runs from Main::cleanup, after the state it reads has
-        # been torn down. Nothing here needs the editor anyway, since the
-        # runtime loads extensions from this file, so write it directly and
-        # skip the editor entirely. Keeps CI free of native crashes.
-        mkdir -p "$here/.godot"
-        echo "res://addons/loreline/loreline.gdextension" > "$here/.godot/extension_list.cfg"
     fi
     local out
     out="$("$godot" --headless --path "$here" res://lifetime_scene.tscn 2>&1)"

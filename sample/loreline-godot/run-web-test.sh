@@ -90,9 +90,10 @@ fi
 # .gdignore is the Godot-native marker for "do not scan this directory".
 touch node_modules/.gdignore
 
-# 3. Import the project (needed before --export-release).
+# 3. Import the project (needed before --export-release), without loading the
+# GDExtension: see godot-import.sh for the crash this avoids.
 echo "==> importing project"
-"$godot" --headless --path "$project_dir" --import || true
+bash "$project_dir/godot-import.sh" "$godot" "$project_dir" || true
 
 # 4. Export the Web build.
 mkdir -p "$out_dir"

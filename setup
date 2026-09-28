@@ -1488,8 +1488,9 @@ async function main() {
         );
         fs.rmSync(path.join(testProject, 'addons', 'loreline', 'internal'), { recursive: true, force: true });
 
-        // Import pass registers global script classes
-        await command(godotBin, ['--headless', '--path', testProject, '--import']);
+        // Import pass registers global script classes. Always through godot-import.sh:
+        // a headless import with a GDExtension loaded crashes Godot on shutdown.
+        await command('bash', [path.join(__dirname, 'sample', 'loreline-godot', 'godot-import.sh'), godotBin, testProject]);
 
         // Full .lor suite through the compiled runtime
         await command(godotBin, ['--headless', '--path', testProject, '--script', 'res://run_tests.gd', '--', path.join(__dirname, 'test')]);

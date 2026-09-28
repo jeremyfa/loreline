@@ -12,7 +12,7 @@ cd "$root"
 rm -rf godot/gdscript/internal "$proj/internal" "$proj/.godot"
 ./haxe build-gdscript.hxml || exit 1
 cp -r godot/gdscript/internal "$proj/internal"
-perl -e 'alarm 240; exec @ARGV' "$godot" --headless --path "$proj" --import > /dev/null 2>&1
+perl -e 'alarm 240; exec @ARGV' bash "$root/sample/loreline-godot/godot-import.sh" "$godot" "$proj" > /dev/null 2>&1
 perl -e 'alarm 120; exec @ARGV' "$godot" --headless --path "$proj" --script res://load_all.gd > "$log" 2>&1
 
 grep -E 'LOAD_ALL' "$log"
