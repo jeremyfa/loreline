@@ -1,0 +1,34 @@
+// Dialogue lines: same trailing if rule as narration, and the condition is
+// colored as an expression.
+
+character bob
+  name: Bob
+
+beat Start
+  bob: I wonder if it is.
+//^^^ entity.name.class
+//     ^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  bob: Tell me if you and I agree.
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  bob: Hi there if ok
+//     ^^^^^^^^ string.unquoted.dialogue
+//              ^^ keyword.control
+//                 ^^ variable.other
+  bob: Hi there if ok and not missing
+//     ^^^^^^^^ string.unquoted.dialogue
+//              ^^ keyword.control
+//                 ^^ variable.other
+//                    ^^^ keyword.control
+//                        ^^^ keyword.control
+//                            ^^^^^^^ variable.other
+  bob: Hi there if mood is not "angry"
+//              ^^ keyword.control
+//                 ^^^^ variable.other
+//                      ^^ keyword.control
+//                         ^^^ keyword.control
+//                             ^^^^^^^ string.quoted.double
+  bob: Hi there if gold > 3 && ready
+//                      ^ keyword.operator
+//                        ^ constant.numeric
+//                          ^^ keyword.operator
+//                             ^^^^^ variable.other

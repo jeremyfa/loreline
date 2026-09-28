@@ -168,6 +168,7 @@ async function main() {
     let buildGodot = rawArgs.indexOf('--godot') != -1;
     let buildGdscript = rawArgs.indexOf('--gdscript') != -1;
     let testGdscript = rawArgs.indexOf('--gdscript-test') != -1;
+    let testSyntax = rawArgs.indexOf('--syntax-test') != -1;
     let testGodotLifetime = rawArgs.indexOf('--godot-lifetime-test') != -1;
     let buildGodotIos = rawArgs.indexOf('--godot-ios') != -1;
     let buildGodotAndroid = rawArgs.indexOf('--godot-android') != -1;
@@ -1469,6 +1470,13 @@ async function main() {
         console.log('Generated: godot/gdscript/internal');
     }
 
+    if (testSyntax) {
+        // Syntax coloring of language/loreline.tmLanguage.json, checked with Shiki.
+        // Writes a report to build/syntax-test/index.html for a manual check.
+        console.log('Run loreline syntax coloring tests');
+        await command('node', ['test-syntax/run.mjs']);
+    }
+
     if (testGdscript) {
         console.log('Run loreline GDScript tests (headless Godot)');
 
@@ -2148,6 +2156,10 @@ async function main() {
         // 1. Neko tests
         console.log('\n=== Neko tests ===');
         await command('node', ['run', 'test', './test']);
+
+        // Syntax coloring tests (grammar only, no build needed)
+        console.log('\n=== Syntax coloring tests ===');
+        await command('node', ['test-syntax/run.mjs']);
 
         // 2. C# build + tests
         console.log('\n=== C# build + tests ===');

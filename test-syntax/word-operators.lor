@@ -1,0 +1,51 @@
+// Word operators is, is not, not, and, or in statements and expressions.
+
+state
+  mood: "angry"
+  ready: false
+
+beat Start
+  if mood is "angry"
+//^^ keyword.control
+//   ^^^^ variable.other
+//        ^^ keyword.control
+//           ^^^^^^^ string.quoted.double
+//^^^^^^^^^^^^^^^^^^ - string.unquoted
+    Yes.
+  if not ready
+//^^ keyword.control
+//   ^^^ keyword.control
+//       ^^^^^ variable.other
+    Yes.
+  if mood is not "calm" and not ready
+//        ^^ keyword.control
+//           ^^^ keyword.control
+//                      ^^^ keyword.control
+//                          ^^^ keyword.control
+    Yes.
+  if (a or b) and c
+//^^ keyword.control
+//      ^^ keyword.control
+//            ^^^ keyword.control
+    Yes.
+  if a == !b && c != d
+//     ^^ keyword.operator
+//        ^ keyword.operator
+//           ^^ keyword.operator
+//                ^^ keyword.operator
+    Yes.
+  x = a is b
+//^ variable.other
+//  ^ keyword.operator.assignment
+//      ^^ keyword.control
+  x = not ready
+//    ^^^ keyword.control
+//        ^^^^^ variable.other
+  This is not a drill.
+//^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//  ^^ - keyword.control
+//        ^^^ - keyword.control
+  not now, please.
+//^^^^^^^^^^^^^^^^ string.unquoted
+  is it you?
+//^^^^^^^^^^ string.unquoted

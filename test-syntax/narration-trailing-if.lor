@@ -1,0 +1,55 @@
+// A trailing if is a condition only when a whole expression ends the line,
+// like the lexer reads it (Lexer.isConditionUntilLineEnd).
+
+beat Start
+  Tell me if it is true.
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//        ^^ - keyword.control
+  I would, if not now.
+//^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//            ^^^ - keyword.control
+  Tell me if you and I agree.
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//               ^^^ - keyword.control
+  Run if (really) you must.
+//^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Stop if you must. Now
+//^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Shown if ok
+//^^^^^ string.unquoted
+//      ^^ keyword.control
+//         ^^ variable.other
+  Hidden if not ok
+//^^^^^^ string.unquoted
+//       ^^ keyword.control
+//          ^^^ keyword.control
+//              ^^ variable.other
+  Also if mood is "angry"
+//^^^^ string.unquoted
+//        ^^^^ variable.other
+//             ^^ keyword.control
+//                ^^^^^^^ string.quoted.double
+  Also if mood is not "angry"
+//             ^^ keyword.control
+//                ^^^ keyword.control
+//                    ^^^^^^^ string.quoted.double
+  Both if ok and not missing
+//^^^^ string.unquoted
+//           ^^^ keyword.control
+//               ^^^ keyword.control
+//                   ^^^^^^^ variable.other
+  Count if items.length > 3 // comment
+//^^^^^ string.unquoted
+//         ^^^^^ variable.other
+//                      ^ keyword.operator
+//                        ^ constant.numeric
+//                          ^^^^^^^^^^ comment.line
+  Grouped if (a and b) or c
+//^^^^^^^ string.unquoted
+//        ^^ keyword.control
+//                     ^^ keyword.control
+//           ^^^^^^^^^^^^^^ - string.unquoted
+  Call if has("key")
+//^^^^ string.unquoted
+//     ^^ keyword.control
+//            ^^^^^ string.quoted.double

@@ -1,0 +1,47 @@
+// Declarations, comments, strings, tags and interpolation.
+
+state
+// <----- keyword.control.state
+  gold: 10
+//^^^^ variable.other
+//    ^ keyword.operator.type.annotation
+//      ^^ constant.numeric
+  mood: happy
+//      ^^^^^ string.unquoted.value
+
+character bob
+// <--------- keyword.control.character
+//        ^^^ entity.name.class
+  name: Bob
+//      ^^^ string.unquoted.value
+
+beat Start
+// <---- keyword.control.beat
+//   ^^^^^ entity.name.type.beat
+  // A comment
+//^^^^^^^^^^^^ comment.line
+  Hello <b>there</b> $gold and ${gold + 1}.
+//^^^^^ string.unquoted
+//      ^ punctuation.definition.tag
+//         ^^^^^ string.unquoted
+//                   ^ punctuation.definition.block.begin
+//                    ^^^^ variable.other
+//                         ^^^ string.unquoted
+//                         ^^^ - keyword.control
+//                                    ^ keyword.operator.arithmetic
+//                                      ^ constant.numeric
+  "Quoted text"
+//^^^^^^^^^^^^^ string.quoted.double
+  bob: "Quoted dialogue"
+//^^^ entity.name.class
+//     ^^^^^^^^^^^^^^^^^ string.quoted.double
+  gold = gold + 1
+//^^^^ variable.other
+//     ^ keyword.operator.assignment
+//            ^ keyword.operator.arithmetic
+  -> End
+//^^ keyword.control.flow
+//   ^^^ entity.name.type.beat
+
+beat End
+  Done.

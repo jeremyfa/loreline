@@ -16,11 +16,13 @@
   "main": "js/loreline.js",
   "types": "js/loreline.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:syntax": "node test-syntax/run.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "esbuild": "^0.27.3",
+    "shiki": "^3.23.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "yaml": "^2.8.2"

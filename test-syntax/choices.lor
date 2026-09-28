@@ -1,0 +1,30 @@
+// Choice options: text, trailing conditions, transitions and brace blocks.
+
+beat Start
+  choice
+    Take it if gold > 3
+//  ^^^^^^^ string.unquoted
+//          ^^ keyword.control
+//             ^^^^ variable.other
+//                  ^ keyword.operator
+      Taken.
+    Go if ok is true -> End
+//  ^^ string.unquoted
+//     ^^ keyword.control
+//           ^^ keyword.control
+//              ^^^^ constant.language
+//                   ^^ keyword.control.flow
+//                      ^^^ entity.name.type.beat
+    Show pass if hasPass {
+//  ^^^^^^^^^ string.unquoted
+//            ^^ keyword.control
+//               ^^^^^^^ variable.other
+//            ^^^^^^^^^^ - string.unquoted
+      Passed.
+    }
+    Run if scared. Otherwise stay.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+      Ran.
+
+beat End
+  Done.
