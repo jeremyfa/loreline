@@ -23,16 +23,18 @@
 // coloring they check. Other comments are part of the code.
 //
 // Usage: node test-syntax/run.mjs [--open] [name filter...]
-// Writes an HTML report to build/syntax-test/index.html: every file as Shiki
-// renders it with the Loreline themes (one-dark-jeremyfa and
-// github-light-custom), scopes on hover, failing lines marked.
+// Writes an HTML report to build/syntax-test/index.html: every file rendered like
+// with the Loreline themes, decorations and line wrapping, scopes on
+// hover, failing lines marked. The decorations come from haxe/SyntaxDecorations.hx,
+// built against the current sources with ./haxe.
 
 import { createHighlighter } from 'shiki';
 import oneDarkTheme from './themes/one-dark-theme.js';
 import githubLightTheme from './themes/github-light-theme.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -157,15 +159,123 @@ function escapeHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function renderReport(highlighter, results) {
+// Hanging indent for wrapped lines: each line's content after its indentation
+// goes in a `.lw` box, so a wrapped line continues under its own text instead
+// of the left edge.
+const INDENT_RE = /^ */;
+
+function hastText(node) {
+    if (node.type === 'text') return node.value;
+    return (node.children || []).map(hastText).join('');
+}
+
+function splitHastAt(nodes, offset) {
+    const before = [], after = [];
+    let remaining = offset;
+    for (const node of nodes) {
+        if (remaining <= 0) { after.push(node); continue; }
+        const len = hastText(node).length;
+        if (len <= remaining) { before.push(node); remaining -= len; continue; }
+        if (node.type === 'text') {
+            before.push({ ...node, value: node.value.slice(0, remaining) });
+            after.push({ ...node, value: node.value.slice(remaining) });
+        }
+        else {
+            const [b, a] = splitHastAt(node.children || [], remaining);
+            before.push({ ...node, children: b });
+            after.push({ ...node, children: a });
+        }
+        remaining = 0;
+    }
+    return [before, after];
+}
+
+function wrapLineIndent(node) {
+    const text = hastText(node);
+    const indent = text.match(INDENT_RE)[0].length;
+    if (indent === text.length) return;
+    const [before, after] = splitHastAt(node.children, indent);
+    node.children = [...before, {
+        type: 'element',
+        tagName: 'span',
+        properties: { class: 'lw', style: `--indent:${indent}` },
+        children: after
+    }];
+}
+
+function forEachLine(node, fn) {
+    for (const child of node.children || []) {
+        if (child.type !== 'element') continue;
+        const cls = child.properties?.class;
+        const names = Array.isArray(cls) ? cls : String(cls || '').split(/\s+/);
+        if (names.includes('line')) fn(child);
+        else forEachLine(child, fn);
+    }
+}
+
+// In `pre`, which runs after Shiki's decorations are placed: reshaping lines
+// earlier makes decorations fail to resolve their offsets.
+const wrapIndentTransformer = {
+    name: 'loreline-wrap-indent',
+    pre(node) {
+        node.properties.class = ((node.properties.class || '') + ' lor-wrap').trim();
+        forEachLine(node, wrapLineIndent);
+    }
+};
+
+/**
+ * Decorations drawn over the grammar (text, choices, plural pipes...), computed by
+ * haxe/SyntaxDecorations.hx built against the current sources. Null if it can't
+ * be built: the report then only shows the grammar coloring.
+ */
+function loadDecorations() {
+    const out = path.join(reportDir, 'syntax-decorations.cjs');
+    const haxe = path.join(root, process.platform === 'win32' ? 'haxe.cmd' : 'haxe');
+    try {
+        fs.mkdirSync(reportDir, { recursive: true });
+        execFileSync(haxe, [
+            '-cp', path.join(root, 'src'),
+            '-cp', path.join(here, 'haxe'),
+            '--main', 'SyntaxDecorations',
+            '--js', out,
+            '-D', 'js-es=6',
+            '-D', 'loreline_use_js_types',
+            '-D', 'loreline_node_id_class'
+        ], { cwd: root, stdio: 'pipe' });
+        return createRequire(import.meta.url)(out).SyntaxDecorations;
+    }
+    catch (e) {
+        console.log(`\x1b[33m  Decorations disabled, SyntaxDecorations could not be built: ${String(e.stderr ?? e.message).trim()}\x1b[0m`);
+        return null;
+    }
+}
+
+function decorationsOf(helper, code) {
+    if (helper == null) return [];
+    try {
+        return helper.getDecorations(code).map(d => ({
+            start: d.offset,
+            end: d.offset + d.length,
+            properties: { class: 'lor-' + d.kind }
+        }));
+    }
+    catch (e) {
+        return [];
+    }
+}
+
+function renderReport(highlighter, helper, results) {
     const passed = results.filter(r => r.failures.length === 0).length;
     const sections = results.map(result => {
         const name = path.basename(result.file);
         const failingLines = new Set(result.failures.map(f => f.assertion.codeIndex + 1));
-        const html = highlighter.codeToHtml(result.code.map(l => l.text).join('\n'), {
+        const code = result.code.map(l => l.text).join('\n');
+        const html = highlighter.codeToHtml(code, {
             lang: 'loreline',
-            themes: { light: LIGHT, dark: DARK },
+            themes: { dark: DARK, light: LIGHT },
+            defaultColor: 'dark',
             includeExplanation: true,
+            decorations: decorationsOf(helper, code),
             transformers: [{
                 line(node, line) {
                     node.properties['data-line'] = String(result.code[line - 1]?.sourceLine ?? line);
@@ -176,7 +286,7 @@ function renderReport(highlighter, results) {
                         .map(e => JSON.stringify(e.content) + '  ' + e.scopes.map(s => s.scopeName).filter(s => s !== 'source.loreline').join(' '))
                         .join('\n');
                 }
-            }]
+            }, wrapIndentTransformer]
         });
         const failures = result.failures.map(f =>
             `<li><b>${escapeHtml(name)}:${f.assertion.sourceLine}</b>, column ${f.column}: ${escapeHtml(f.problem)}` +
@@ -191,36 +301,83 @@ ${html}
     }).join('\n');
 
     return `<!doctype html>
-<html>
+<html data-theme="dark">
 <head>
 <meta charset="utf-8">
 <title>Loreline syntax tests</title>
+<script>
+  // Theme of the system, unless one was picked with the buttons
+  let theme = null;
+  try { theme = localStorage.getItem('syntax-test-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  function setTheme(value) {
+    document.documentElement.dataset.theme = value;
+    try { localStorage.setItem('syntax-test-theme', value); } catch (e) {}
+  }
+</script>
 <style>
-  :root { color-scheme: light dark; }
-  body { font-family: -apple-system, system-ui, sans-serif; margin: 24px; background: #fff; color: #24292e; }
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 24px; background: #181818; color: #dddddd; }
+  [data-theme="light"] body { background: #ffffff; color: #24292e; }
+  html[data-theme="dark"] { color-scheme: dark; }
+  html[data-theme="light"] { color-scheme: light; }
   h1 { font-size: 20px; }
   h2 { font-size: 15px; margin: 28px 0 8px; }
   h2 small { font-weight: normal; opacity: .6; }
-  section.fail h2 { color: #cf222e; }
-  section.pass h2 { color: #1a7f37; }
+  section.fail h2 { color: #ff7b72; }
+  section.pass h2 { color: #3fb950; }
+  [data-theme="light"] section.fail h2 { color: #cf222e; }
+  [data-theme="light"] section.pass h2 { color: #1a7f37; }
+  .themes { float: right; }
+  .themes button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 4px; border: 1px solid rgba(127, 127, 127, .4); background: transparent; color: inherit; cursor: pointer; }
+  [data-theme="dark"] .themes .dark, [data-theme="light"] .themes .light { background: rgba(127, 127, 127, .25); }
   ul { font-size: 13px; }
   ul pre { margin: 4px 0; }
-  pre.shiki { padding: 12px 0; border: 1px solid rgba(127, 127, 127, .25); border-radius: 6px; font-size: 13px; line-height: 1.5; overflow-x: auto; }
-  pre.shiki .line { display: inline-block; min-width: 100%; }
-  pre.shiki .line::before { content: attr(data-line); display: inline-block; width: 3.5em; padding-right: 1em; text-align: right; opacity: .35; }
-  pre.shiki .line.failing { background: rgba(207, 34, 46, .15); }
+
+  /* Code blocks */
+  pre.shiki { padding: 12px 0; border: 1px solid rgba(127, 127, 127, .25); border-radius: 6px; font-size: 13px; line-height: 1.5; font-variant-ligatures: none; }
+  /* Line numbers stay plain even when a decoration covers the whole line */
+  pre.shiki .line::before { content: attr(data-line); display: inline-block; width: 3.5em; padding-right: 1em; text-align: right; font-style: normal; color: #6e7681 !important; background: none !important; }
+  pre.shiki .line.failing { background: rgba(207, 34, 46, .2); }
   pre.shiki span[title]:hover { outline: 1px solid rgba(127, 127, 127, .6); }
-  @media (prefers-color-scheme: dark) {
-    body { background: #181818; color: #dddddd; }
-    .shiki, .shiki span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
-    section.fail h2 { color: #ff7b72; }
-    section.pass h2 { color: #3fb950; }
+  [data-theme="light"] .shiki { color: var(--shiki-light) !important; background-color: #ffffff !important; }
+  [data-theme="light"] .shiki span { color: var(--shiki-light) !important; }
+
+  /* Wrapped lines */
+  :root { --lor-wrap-indent: 1ch; }
+  .shiki.lor-wrap code { white-space: pre-wrap; }
+  .shiki.lor-wrap .lw {
+    display: inline-block;
+    vertical-align: top;
+    white-space: pre-wrap;
+    box-sizing: border-box;
+    max-width: calc(100% - 4.5em - var(--indent, 0) * 1ch);
+    padding-left: var(--lor-wrap-indent, 0);
+    text-indent: calc(var(--lor-wrap-indent, 0) * -1);
   }
+
+  /* Loreline code decorations */
+  .lor-choice-option { background: rgba(255, 255, 255, 0.06); border-radius: 4px; padding: 1px 0; }
+  [data-theme="light"] .shiki .lor-choice-option { background-color: rgba(0, 0, 0, 0.03) !important; }
+  .lor-choice-text, .lor-choice-text span { color: rgba(255, 255, 255, 0.84) !important; }
+  [data-theme="light"] .shiki .lor-choice-text, [data-theme="light"] .shiki .lor-choice-text span { color: rgba(0, 0, 0, 0.84) !important; }
+  .lor-text-statement { font-style: italic; }
+  .lor-text-content, .lor-text-content span { color: #59bec3 !important; }
+  [data-theme="light"] .shiki .lor-text-content, [data-theme="light"] .shiki .lor-text-content span { color: #0b7285 !important; }
+  .lor-plural-pipe, .lor-plural-pipe span { color: #dcdcaa !important; }
+  [data-theme="light"] .shiki .lor-plural-pipe, [data-theme="light"] .shiki .lor-plural-pipe span { color: #986801 !important; }
+  .lor-text-content .lor-plural-pipe, .lor-text-content .lor-plural-pipe span,
+  .lor-choice-text .lor-plural-pipe, .lor-choice-text .lor-plural-pipe span { color: #dcdcaa !important; }
+  [data-theme="light"] .shiki .lor-text-content .lor-plural-pipe, [data-theme="light"] .shiki .lor-text-content .lor-plural-pipe span,
+  [data-theme="light"] .shiki .lor-choice-text .lor-plural-pipe, [data-theme="light"] .shiki .lor-choice-text .lor-plural-pipe span { color: #986801 !important; }
+  .shiki .lor-choice-once-style { font-style: italic; }
+  .shiki .lor-choice-once-prefix { color: rgba(255, 255, 255, 0.4) !important; }
+  [data-theme="light"] .shiki .lor-choice-once-prefix { color: rgba(0, 0, 0, 0.4) !important; }
 </style>
 </head>
 <body>
+<div class="themes"><button class="dark" onclick="setTheme('dark')">Dark</button> <button class="light" onclick="setTheme('light')">Light</button></div>
 <h1>Loreline syntax tests: ${passed} of ${results.length} files pass</h1>
-<p>Hover a token to see its scopes. Line numbers are those of the test file.</p>
 ${sections}
 </body>
 </html>
@@ -271,7 +428,7 @@ for (const file of files) {
 
 fs.mkdirSync(reportDir, { recursive: true });
 const reportPath = path.join(reportDir, 'index.html');
-fs.writeFileSync(reportPath, renderReport(highlighter, results.filter(r => !r.error)));
+fs.writeFileSync(reportPath, renderReport(highlighter, loadDecorations(), results.filter(r => !r.error)));
 
 console.log('');
 console.log(`\x1b[90m  Report: ${path.relative(process.cwd(), reportPath)}\x1b[0m`);

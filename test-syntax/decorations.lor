@@ -1,0 +1,30 @@
+// Constructs that get decorations on top of the grammar: text,
+// plural pipes, choice options and once-only options. The report shows them
+// with those decorations, the assertions check the grammar underneath.
+
+state
+  count: 3
+
+beat Start
+  $count drink|drinks
+//^ punctuation.definition.block.begin
+// ^^^^^ variable.other
+//       ^^^^^^^^^^^^ string.unquoted
+
+  $count (cold drink|cold drinks) left
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+
+  "Quoted narration, with $count items."
+//^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
+//                         ^^^^^ variable.other
+
+  A long line of narration that goes on and on, long enough to wrap in the report, so that its continuation lines show the hanging indent.
+//^^^^^^^^^^^ string.unquoted
+  choice
+    - Ask once
+//  ^^^^^^^^^^ string.unquoted
+      Asked.
+    Leave if count > 1
+//  ^^^^^ string.unquoted
+//        ^^ keyword.control
+      Left.
