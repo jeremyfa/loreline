@@ -1008,7 +1008,10 @@ bool LorelineInterpreter::is_root() {
 	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
 	if (!js) return false;
 	Variant result = js->eval("_lorelineBridge.isRoot(" + String::num_int64(_js_id) + ")", true);
-	return result.get_type() == Variant::BOOL && bool(result);
+	// A JS boolean comes back as an INT, not a BOOL: JavaScriptBridge::eval returns
+	// the `uint32_t b` member of its js_eval_ret union (platform/web/
+	// javascript_bridge_singleton.cpp in Godot 4.6). Read the value, not the type.
+	return bool(result);
 #else
 	return _interp && Loreline_isRoot(_interp);
 #endif
