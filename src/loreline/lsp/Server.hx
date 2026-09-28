@@ -1076,6 +1076,22 @@ class Server {
                 }
             }
 
+            // Add word operators inside expressions and conditions (not in text)
+            if ((node is NExpr && !(node is NStringLiteral) && !(node is NStringPart)) || node is NIfStatement) {
+                for (op in WORD_OPERATORS) {
+                    items.push({
+                        label: op.word,
+                        kind: CompletionItemKind.Keyword,
+                        detail: 'Operator, like ${op.symbol}',
+                        insertText: op.word,
+                        insertTextMode: AsIs,
+                        insertTextFormat: PlainText,
+                        documentation: op.doc,
+                        textEdit: makeTextEdit(replacementRange, op.word)
+                    });
+                }
+            }
+
             // Add beat completions
             if (!(node is NFunctionDecl)) {
                 for (beat in lens.getVisibleBeats(node)) {
@@ -1637,7 +1653,14 @@ class Server {
                     case Object(style):
                         return makeHover(hoverTitle('Object'), hoverDescriptionForNode(literal), content, literal);
                 }
-            case NExpr | NAssign | NUnary | NBinary:
+            case NUnary | NBinary:
+                // Hovering a word operator (the operands have their own nodes)
+                final op = wordOperatorOf(cast node);
+                if (op != null) {
+                    return makeHover(hoverTitle('Operator', op.word), [op.doc], content, node);
+                }
+                return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
+            case NExpr | NAssign:
                 return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
             case NIfStatement:
                 return makeHover("**Condition**", null, content, node);
@@ -1770,6 +1793,37 @@ class Server {
         }
         return null;
 
+    }
+
+    /**
+     * Word operators, for completion and hover.
+     */
+    static final WORD_OPERATORS:Array<{word:String, symbol:String, doc:String}> = [
+        {word: 'and', symbol: '&&', doc: '`a and b` is true when both `a` and `b` are true, like `a && b`.'},
+        {word: 'or', symbol: '||', doc: '`a or b` is true when `a` or `b` is true, like `a || b`.'},
+        {word: 'is', symbol: '==', doc: '`a is b` is true when `a` equals `b`, like `a == b`.'},
+        {word: 'is not', symbol: '!=', doc: '`a is not b` is true when `a` differs from `b`, like `a != b`. It is always a single operator: to compare with a negation, write `a is (not b)`.'},
+        {word: 'not', symbol: '!', doc: '`not a` is true when `a` is false, like `!a`. It applies to what follows it directly: `not a is b` reads `(not a) is b`, so write `not (a is b)` to negate a comparison.'}
+    ];
+
+    /**
+     * The word operator of an expression, if it is written with one.
+     */
+    static function wordOperatorOf(node:NExpr):Null<{word:String, symbol:String, doc:String}> {
+        final op:Null<loreline.Lexer.TokenType> = if (node is NBinary) (cast node:NBinary).op else if (node is NUnary) (cast node:NUnary).op else null;
+        final word = switch op {
+            case OpAnd(true): 'and';
+            case OpOr(true): 'or';
+            case OpEquals(true): 'is';
+            case OpNotEquals(true): 'is not';
+            case OpNot(true): 'not';
+            case _: null;
+        }
+        if (word == null) return null;
+        for (item in WORD_OPERATORS) {
+            if (item.word == word) return item;
+        }
+        return null;
     }
 
     function hoverTitle(kind:String, ?name:String, ?origin:String):String {

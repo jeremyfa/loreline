@@ -101,28 +101,32 @@ class AstUtils {
         });
     }
 
-    /** Convert &&/|| operators to and/or word form. */
+    /** Convert &&/||/==/!=/! operators to and/or/is/is not/not word form. */
     public static function useWordOperators(node:AstNode):Void {
+        setWordOperators(node, true);
+    }
+
+    /** Convert and/or/is/is not/not operators to &&/||/==/!=/! symbol form. */
+    public static function useSymbolOperators(node:AstNode):Void {
+        setWordOperators(node, false);
+    }
+
+    static function setWordOperators(node:AstNode, word:Bool):Void {
         node.each((child, _) -> {
             if (Std.isOfType(child, NBinary)) {
                 final bin:NBinary = cast child;
                 switch (bin.op) {
-                    case OpAnd(_): bin.op = OpAnd(true);
-                    case OpOr(_): bin.op = OpOr(true);
+                    case OpAnd(_): bin.op = OpAnd(word);
+                    case OpOr(_): bin.op = OpOr(word);
+                    case OpEquals(_): bin.op = OpEquals(word);
+                    case OpNotEquals(_): bin.op = OpNotEquals(word);
                     case _:
                 }
             }
-        });
-    }
-
-    /** Convert and/or operators to &&/|| symbol form. */
-    public static function useSymbolOperators(node:AstNode):Void {
-        node.each((child, _) -> {
-            if (Std.isOfType(child, NBinary)) {
-                final bin:NBinary = cast child;
-                switch (bin.op) {
-                    case OpAnd(_): bin.op = OpAnd(false);
-                    case OpOr(_): bin.op = OpOr(false);
+            else if (Std.isOfType(child, NUnary)) {
+                final unary:NUnary = cast child;
+                switch (unary.op) {
+                    case OpNot(_): unary.op = OpNot(word);
                     case _:
                 }
             }

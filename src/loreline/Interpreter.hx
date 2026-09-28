@@ -5983,35 +5983,35 @@ class InterpreterContext {
                         final v:Float = operand;
                         -v;
                     }
-                    case OpNot if (operand is Bool): {
+                    case OpNot(_) if (operand is Bool): {
                         final v:Bool = operand;
                         !v;
                     }
-                    case OpNot if (operand is String): {
+                    case OpNot(_) if (operand is String): {
                         final v:String = operand;
                         (v == null || v.length == 0);
                     }
-                    case OpNot if (Arrays.isArray(operand)): {
+                    case OpNot(_) if (Arrays.isArray(operand)): {
                         Arrays.arrayLength(operand) == 0;
                     }
                     #if php
                     // Same as evaluateCondition: on PHP integral floats match
                     // the Int check, so keep the numeric comparison loose.
-                    case OpNot if (operand is Int || operand is Float): {
+                    case OpNot(_) if (operand is Int || operand is Float): {
                         final v:Float = operand;
                         (v == 0);
                     }
                     #else
-                    case OpNot if (operand is Int): {
+                    case OpNot(_) if (operand is Int): {
                         final v:Int = operand;
                         (v == 0);
                     }
-                    case OpNot if (operand is Float): {
+                    case OpNot(_) if (operand is Float): {
                         final v:Float = operand;
                         (v == 0);
                     }
                     #end
-                    case OpNot: {
+                    case OpNot(_): {
                         (operand == null);
                     }
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
@@ -6344,7 +6344,7 @@ class InterpreterContext {
                         throw new RuntimeError('Cannot ${opName} ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
                 }
 
-            case OpEquals | OpNotEquals:
+            case OpEquals(_) | OpNotEquals(_):
                 // Allow comparison between any types
                 // Special case: beat values/references compared with String use the beat name
                 final leftBeat = RuntimeBeatRef.beatOf(left);
@@ -6371,8 +6371,8 @@ class InterpreterContext {
                     left == right;
                 };
                 switch op {
-                    case OpEquals: result;
-                    case OpNotEquals: !result;
+                    case OpEquals(_): result;
+                    case OpNotEquals(_): !result;
                     case _: throw "Unreachable";
                 }
 

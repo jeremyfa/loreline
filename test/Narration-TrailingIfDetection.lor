@@ -1,0 +1,85 @@
+// A trailing `if` is a condition only when the rest of the line is a whole
+// expression, up to the end of the line, a comment, `->`, `{` or `#`.
+// Otherwise the line stays narration, whatever words follow the `if`.
+
+state
+  ok: true
+  missing: false
+
+character bob
+  name: Bob
+
+beat Start
+  Tell me if it is true.
+
+  I would, if not now.
+
+  Tell me if you and I agree.
+
+  This is not a drill.
+
+  not now, please.
+
+  is it you?
+
+  Ask if the door is open.
+
+  Run if (really) you must.
+
+  bob: I wonder if it is.
+
+  Shown if ok
+
+  Hidden if not ok
+
+  Shown too if ok and not missing // comment after the condition
+
+  bob: Also shown if ok is true
+
+  if ok and not missing
+    Statement shown.
+
+  choice
+    Go if ok and not missing -> End
+    Stay if (ok) or missing
+      Stayed.
+
+beat End
+  Arrived.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ Tell me if it is true.
+
+    ~ I would, if not now.
+
+    ~ Tell me if you and I agree.
+
+    ~ This is not a drill.
+
+    ~ not now, please.
+
+    ~ is it you?
+
+    ~ Ask if the door is open.
+
+    ~ Run if (really) you must.
+
+    Bob: I wonder if it is.
+
+    ~ Shown
+
+    ~ Shown too
+
+    Bob: Also shown
+
+    ~ Statement shown.
+
+    + Go
+    + Stay
+
+    ~ Arrived.
+</test>
+*/

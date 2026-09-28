@@ -357,7 +357,7 @@ class Printer {
             return switch (cast expr:NBinary).op {
                 case OpOr(_): 3;
                 case OpAnd(_): 4;
-                case OpEquals | OpNotEquals: 5;
+                case OpEquals(_) | OpNotEquals(_): 5;
                 case OpGreater | OpGreaterEq | OpLess | OpLessEq: 6;
                 case OpPlus | OpMinus: 7;
                 case OpMultiply | OpDivide | OpModulo: 8;
@@ -1143,8 +1143,33 @@ class Printer {
         final level = precedence(binary);
         printOperand(binary.left, level);
         write(' ${getOperator(binary.op)} ');
-        printOperand(binary.right, level + 1);
+        if (isWordNotAfterIs(binary)) {
+            // `is` then `not` reads back as the single operator `is not` (!=)
+            write('(');
+            printNode(binary.right);
+            write(')');
+        }
+        else {
+            printOperand(binary.right, level + 1);
+        }
         printTrailingComments(binary);
+    }
+
+    /**
+     * Whether a binary `is` is directly followed by a word `not`, without
+     * parentheses in between: `a is (not b)` would print as `a is not b`.
+     */
+    static function isWordNotAfterIs(binary:NBinary):Bool {
+        switch binary.op {
+            case OpEquals(true):
+            case _: return false;
+        }
+        final right = binary.right;
+        if (right == null || right.parens > 0 || !(right is NUnary)) return false;
+        return switch (cast right:NUnary).op {
+            case OpNot(true): true;
+            case _: false;
+        }
     }
 
     /**
@@ -1154,6 +1179,11 @@ class Printer {
     function printUnary(unary:NUnary) {
         printLeadingComments(unary);
         write(getOperator(unary.op));
+        // `not` is a word: it needs a space before its operand
+        switch unary.op {
+            case OpNot(true): write(' ');
+            case _:
+        }
         printTrailingComments(unary);
         printOperand(unary.operand, 9);
     }
@@ -1257,8 +1287,8 @@ class Printer {
             case OpMultiply: "*";
             case OpDivide: "/";
             case OpModulo: "%";
-            case OpEquals: "==";
-            case OpNotEquals: "!=";
+            case OpEquals(word): word ? "is" : "==";
+            case OpNotEquals(word): word ? "is not" : "!=";
             case OpGreater: ">";
             case OpLess: "<";
             case OpGreaterEq: ">=";
@@ -1267,7 +1297,7 @@ class Printer {
             case OpOr(false): "||";
             case OpAnd(true): "and";
             case OpOr(true): "or";
-            case OpNot: "!";
+            case OpNot(word): word ? "not" : "!";
             case _: throw 'Unsupported operator: $op';
         }
     }

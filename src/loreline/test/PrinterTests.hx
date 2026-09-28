@@ -1,5 +1,6 @@
 package loreline.test;
 
+import loreline.AstUtils;
 import loreline.Lens;
 import loreline.Loreline;
 import loreline.Node;
@@ -39,7 +40,16 @@ class PrinterTests {
         'Some text. if (a and b) or c',
         'Other text. if (a) and b',
         'bob: Hello. if (a or b) and c',
-        "Total ${(n + 1) * 2}."
+        "Total ${(n + 1) * 2}.",
+        'if mood is "angry"',
+        'if mood is not "angry"',
+        'if not ready',
+        'if not (a or b)',
+        'if a is (not b)',
+        'if a == not b',
+        'if not a and b is c',
+        'Shown if a is not b',
+        'bob: Hi. if not a'
     ];
 
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
@@ -48,7 +58,8 @@ class PrinterTests {
             {name: 'parentheses print back as written', fn: () -> testLines(false)},
             {name: 'parentheses print back as written after JSON', fn: () -> testLines(true)},
             {name: 'option condition prints back as written', fn: () -> testOptionCondition()},
-            {name: 'needed parentheses are added to a tree built without them', fn: () -> testTreeWithoutParens()}
+            {name: 'needed parentheses are added to a tree built without them', fn: () -> testTreeWithoutParens()},
+            {name: 'word and symbol operators convert both ways', fn: () -> testWordOperatorConversion()}
         ];
 
         for (test in tests) {
@@ -124,6 +135,34 @@ class PrinterTests {
             expectLine(printed, 'First if (a and b) and c', json ? 'after JSON' : 'printed');
             expectLine(printed, 'Second if (a) or b', json ? 'after JSON' : 'printed');
         }
+    }
+
+    /**
+     * useWordOperators / useSymbolOperators keep the meaning: `a == !b` in words
+     * must not print as `a is not b`, which reads back as `a != b`.
+     */
+    static function testWordOperatorConversion():Void {
+        final cases = [
+            {source: 'if a == !b and c != d', words: 'if a is (not b) and c is not d', symbols: 'if a == (!b) && c != d'},
+            {source: 'if not a or b is c', words: 'if not a or b is c', symbols: 'if !a || b == c'}
+        ];
+        final errors:Array<String> = [];
+        for (item in cases) {
+            try {
+                final script = parse(wrap(item.source));
+                AstUtils.useWordOperators(script);
+                final words = new Printer().print(script);
+                expectLine(words, item.words, 'in words');
+                // Read back in words, then converted to symbols
+                final reparsed = parse(words);
+                AstUtils.useSymbolOperators(reparsed);
+                expectLine(new Printer().print(reparsed), item.symbols, 'in symbols');
+            }
+            catch (e:Any) {
+                errors.push(Std.string(e));
+            }
+        }
+        if (errors.length > 0) throw errors.join('\n');
     }
 
     /**

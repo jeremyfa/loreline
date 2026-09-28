@@ -168,10 +168,10 @@ enum TokenType {
     OpDivide;
     /** Modulo operator (%) */
     OpModulo;
-    /** Equality operator (==) */
-    OpEquals;
-    /** Inequality operator (!=) */
-    OpNotEquals;
+    /** Equality operator (== / is) */
+    OpEquals(word:Bool);
+    /** Inequality operator (!= / is not) */
+    OpNotEquals(word:Bool);
     /** Greater than operator (>) */
     OpGreater;
     /** Less than operator (<) */
@@ -184,8 +184,8 @@ enum TokenType {
     OpAnd(word:Bool);
     /** Logical OR operator (|| / or) */
     OpOr(word:Bool);
-    /** Logical NOT operator (!) */
-    OpNot;
+    /** Logical NOT operator (! / not) */
+    OpNot(word:Bool);
 
     /** Transition arrow (->) */
     Arrow;
@@ -280,15 +280,15 @@ class TokenTypeHelpers {
             case [OpMultiply, OpMultiply]: true;
             case [OpDivide, OpDivide]: true;
             case [OpModulo, OpModulo]: true;
-            case [OpEquals, OpEquals]: true;
-            case [OpNotEquals, OpNotEquals]: true;
+            case [OpEquals(_), OpEquals(_)]: true;
+            case [OpNotEquals(_), OpNotEquals(_)]: true;
             case [OpGreater, OpGreater]: true;
             case [OpLess, OpLess]: true;
             case [OpGreaterEq, OpGreaterEq]: true;
             case [OpLessEq, OpLessEq]: true;
             case [OpAnd(_), OpAnd(_)]: true;
             case [OpOr(_), OpOr(_)]: true;
-            case [OpNot, OpNot]: true;
+            case [OpNot(_), OpNot(_)]: true;
             case [LNull, LNull]: true;
             case [Identifier(n1), Identifier(n2)]: n1 == n2;
             case [LString(s1, _), LString(s2, _)]: s1 == s2;
@@ -379,15 +379,15 @@ class TokenTypeHelpers {
             case OpMultiply: '*';
             case OpDivide: '/';
             case OpModulo: '%';
-            case OpEquals: '==';
-            case OpNotEquals: '!=';
+            case OpEquals(word): word ? 'is' : '==';
+            case OpNotEquals(word): word ? 'is not' : '!=';
             case OpGreater: '>';
             case OpLess: '<';
             case OpGreaterEq: '>=';
             case OpLessEq: '<=';
             case OpAnd(word): word ? 'and' : '&&';
             case OpOr(word): word ? 'or' : '||';
-            case OpNot: '!';
+            case OpNot(word): word ? 'not' : '!';
             case Arrow: '->';
             case Colon: ':';
             case Question: '?';
@@ -477,7 +477,9 @@ class Token {
         "false" => TokenType.LBoolean(false),
         "null" => TokenType.LNull,
         "and" => TokenType.OpAnd(true),
-        "or" => TokenType.OpOr(true)
+        "or" => TokenType.OpOr(true),
+        "is" => TokenType.OpEquals(true),
+        "not" => TokenType.OpNot(true)
     ];
 
     /**
@@ -867,17 +869,17 @@ class Token {
                     case "!".code:
                         if (peek() == "=".code) {
                             advance(2);
-                            makeToken(OpNotEquals, startPos);
+                            makeToken(OpNotEquals(false), startPos);
                         }
                         else {
                             advance();
-                            makeToken(OpNot, startPos);
+                            makeToken(OpNot(false), startPos);
                         }
 
                     case "=".code:
                         if (peek() == "=".code) {
                             advance(2);
-                            makeToken(OpEquals, startPos);
+                            makeToken(OpEquals(false), startPos);
                         }
                         else {
                             advance();
@@ -1193,7 +1195,11 @@ class Token {
     }
 
     /**
-     * Returns whether the input at the given position is the start of an if condition.
+     * Returns whether the input at the given position is the start of an if condition:
+     * `if` followed by a whole expression that ends the line. The expression may be
+     * followed by a comment, `->`, `{` or `#`, and nothing else. Anything else keeps
+     * the line as text, so that prose such as `Tell me if it is true.` or
+     * `Tell me if you and I agree.` is not mistaken for a condition.
      * @param pos Position to check from
      * @return True if an if condition starts at the position, false otherwise
      */
@@ -1207,155 +1213,209 @@ class Token {
         if (input.uCharCodeAt(pos) != "f".code) return false;
         pos++;
 
-        // Save initial position to restore it later
-        var startPos = pos;
+        // If "if" is directly followed by an identifier or digit (without space), that's part of a word, not an if
+        if (pos < this.length && (isIdentifierStart(input.uCharCodeAt(pos)) || isDigit(input.uCharCodeAt(pos)))) {
+            return false;
+        }
 
-        // Helper function to read identifier
-        inline function readIdent():Bool {
-            var result = true;
-            final len = this.length;
+        return isConditionUntilLineEnd(pos);
+    }
 
-            if (pos >= len) {
-                result = false;
-            }
-            else if (pos + 1 < len && input.uCharCodeAt(pos) == "o".code && input.uCharCodeAt(pos + 1) == "r".code && (pos + 2 >= len || !isIdentifierStart(input.uCharCodeAt(pos + 2)))) {
-                result = false;
-            }
-            else if (pos + 2 < len && input.uCharCodeAt(pos) == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && (pos + 3 >= len || !isIdentifierStart(input.uCharCodeAt(pos + 3)))) {
-                result = false;
+    /**
+     * Returns whether the input at the given position is a whole expression that
+     * ends the line: operands separated by binary operators, each operand optionally
+     * preceded by `!`, `not` or `-`. This only looks at the shape of the line, the
+     * parser checks the expression itself.
+     * @param pos Position to check from
+     * @return True if a whole expression follows until the end of the line
+     */
+    function isConditionUntilLineEnd(pos:Int):Bool {
+        var expectOperand = true;
+        while (true) {
+            pos = skipInlineSpacesAndComments(pos);
+            if (expectOperand) {
+                if (pos >= this.length) return false;
+                final c = input.uCharCodeAt(pos);
+                final next = pos + 1 < this.length ? input.uCharCodeAt(pos + 1) : 0;
+                // Prefix operators
+                if (c == "!".code && next != "=".code) {
+                    pos++;
+                    continue;
+                }
+                if (c == "-".code && next != ">".code) {
+                    pos++;
+                    continue;
+                }
+                final notEnd = wordEnd(pos, 'not');
+                if (notEnd != -1) {
+                    pos = notEnd;
+                    continue;
+                }
+                pos = conditionOperandEnd(pos);
+                if (pos == -1) return false;
+                expectOperand = false;
             }
             else {
-                var c = input.uCharCodeAt(pos);
-
-                // First char must be letter or underscore
-                if (!isIdentifierStart(c)) {
-                    result = false;
-                }
-                else {
-                    pos++;
-
-                    // Continue reading identifier chars
-                    while (pos < this.length) {
-                        c = input.uCharCodeAt(pos);
-                        if (!isIdentifierPart(c)) break;
-                        pos++;
-                    }
-                }
+                if (isConditionEnd(pos)) return true;
+                pos = conditionOperatorEnd(pos);
+                if (pos == -1) return false;
+                expectOperand = true;
             }
-
-            return result;
         }
+    }
 
-        pos = skipWhitespaceAndComments(pos);
+    /**
+     * Whether a condition can end at the given position: end of line or input,
+     * a line comment, a transition `->`, a brace block `{` or a hash comment `#`.
+     */
+    function isConditionEnd(pos:Int):Bool {
+        if (pos >= this.length) return true;
+        final c = input.uCharCodeAt(pos);
+        final next = pos + 1 < this.length ? input.uCharCodeAt(pos + 1) : 0;
+        return c == "\n".code || c == "\r".code || c == "{".code || c == "#".code
+            || (c == "/".code && next == "/".code)
+            || (c == "-".code && next == ">".code);
+    }
 
-        // Handle optional ! for negation
-        if (pos < this.length && input.uCharCodeAt(pos) == "!".code) {
-            pos++;
-            pos = skipWhitespaceAndComments(pos);
-        }
-
-        // If directly followed with (, that's a valid if
-        if (input.uCharCodeAt(pos) == "(".code) {
-            return true;
-        }
-
-        // If "if" is directly followed by an identifier or digit (without space), that's part of a word, not an if
-        if (pos == startPos && startPos < this.length && (isIdentifierStart(input.uCharCodeAt(startPos)) || isDigit(input.uCharCodeAt(startPos)))) {
-            return false;
-        }
-
-        // Must start with identifier, number, or opening parenthesis
-        if (pos >= this.length || (!isIdentifierStart(input.uCharCodeAt(pos)) && !isDigit(input.uCharCodeAt(pos)))) {
-            return false;
-        }
-
+    /**
+     * Skips spaces, tabs and multiline comments that stay on the current line.
+     */
+    function skipInlineSpacesAndComments(pos:Int):Int {
         while (pos < this.length) {
-            if (input.uCharCodeAt(pos) == "(".code) {
-                // Function call
-                return true;
-            } else if (isDigit(input.uCharCodeAt(pos))) {
-                // Number literal operand
-                while (pos < this.length && (isDigit(input.uCharCodeAt(pos)) || input.uCharCodeAt(pos) == ".".code)) {
-                    pos++;
+            final c = input.uCharCodeAt(pos);
+            if (c == " ".code || c == "\t".code) {
+                pos++;
+            }
+            else if (c == "/".code && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "*".code) {
+                var p = pos + 2;
+                while (p + 1 < this.length && !(input.uCharCodeAt(p) == "*".code && input.uCharCodeAt(p + 1) == "/".code)) {
+                    if (input.uCharCodeAt(p) == "\n".code) return pos;
+                    p++;
                 }
-            } else {
-                if (!readIdent()) {
-                    return false;
-                }
+                if (p + 1 >= this.length) return pos;
+                pos = p + 2;
             }
-
-            pos = skipWhitespaceAndComments(pos);
-            if (pos >= this.length) {
-                return true;
+            else {
+                break;
             }
-
-            var c = input.uCharCodeAt(pos);
-
-            // Handle chained dot and bracket accesses
-            // (e.g. a.b.c, a.b.has("x"), items[0].ready, grid[0][1])
-            while (c == ".".code || c == "[".code) {
-                if (c == ".".code) {
-                    // Dot access
-                    pos++;
-                    pos = skipWhitespaceAndComments(pos);
-                    if (!readIdent()) {
-                        return true;
-                    }
-                }
-                else {
-                    // Bracket access
-                    pos++;
-                    var bracketLevel = 1;
-                    while (pos < this.length && bracketLevel > 0) {
-                        c = input.uCharCodeAt(pos);
-                        if (c == "[".code) bracketLevel++;
-                        if (c == "]".code) bracketLevel--;
-                        pos++;
-                    }
-                }
-                pos = skipWhitespaceAndComments(pos);
-                if (pos >= this.length) {
-                    return true;
-                }
-                c = input.uCharCodeAt(pos);
-            }
-
-            // Check for and delimiter
-            if (c == "a".code && input.uCharCodeAt(pos + 1) == "n".code && input.uCharCodeAt(pos + 2) == "d".code && (pos + 3 >= this.length || !isIdentifierStart(input.uCharCodeAt(pos + 3)))) {
-                return true;
-            }
-
-            // Check for or delimiter
-            if (c == "o".code && input.uCharCodeAt(pos + 1) == "r".code && (pos + 2 >= this.length || !isIdentifierStart(input.uCharCodeAt(pos + 2)))) {
-                return true;
-            }
-
-            // Check for various delimiters typical from if condition
-            if (c == "(".code || c == "&".code || c == "|".code || ((input.uCharCodeAt(pos + 1) == "=".code) && c == "=".code) || c == ">".code || c == "<".code || (c == "!".code && input.uCharCodeAt(pos + 1) == "=".code) || (input.uCharCodeAt(pos + 1) != "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == "{".code))) {
-                return true;
-            }
-
-            // If we're at end or newline, it's valid
-            if (c == "\n".code || c == "\r".code || pos >= this.length) {
-                pos = startPos;
-                return true;
-            }
-
-            // If we're at whitespace before a // comment, treat as end of line
-            if (isWhitespace(c)) {
-                var p = pos;
-                while (p < this.length && isWhitespace(input.uCharCodeAt(p))) p++;
-                if (p + 1 < this.length && input.uCharCodeAt(p) == "/".code && input.uCharCodeAt(p + 1) == "/".code) {
-                    return true;
-                }
-            }
-
-            // Any other character invalidates it
-            return false;
         }
+        return pos;
+    }
 
-        // If we get here, we're at end of input
-        return true;
+    /**
+     * Reads a condition operand: a number, a string, a group in parentheses or
+     * brackets, or an identifier, each followed by any `.field`, `[index]` and
+     * `(arguments)`.
+     * @return The position after the operand, or -1 if there is none
+     */
+    function conditionOperandEnd(pos:Int):Int {
+        final c = input.uCharCodeAt(pos);
+        if (isDigit(c)) {
+            while (pos < this.length && isDigit(input.uCharCodeAt(pos))) pos++;
+            if (pos + 1 < this.length && input.uCharCodeAt(pos) == ".".code && isDigit(input.uCharCodeAt(pos + 1))) {
+                pos++;
+                while (pos < this.length && isDigit(input.uCharCodeAt(pos))) pos++;
+            }
+            return pos;
+        }
+        if (c == '"'.code) {
+            return conditionGroupEnd(pos);
+        }
+        if (c == "(".code || c == "[".code) {
+            pos = conditionGroupEnd(pos);
+        }
+        else if (isIdentifierStart(c)) {
+            final start = pos;
+            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) pos++;
+            // Operator words are not operands
+            switch input.uSubstr(start, pos - start) {
+                case 'and' | 'or' | 'is' | 'not': return -1;
+                case _:
+            }
+        }
+        else {
+            return -1;
+        }
+        // Field access, index and call
+        while (pos != -1 && pos < this.length) {
+            final p = input.uCharCodeAt(pos);
+            if (p == ".".code) {
+                // No space after the dot: `tired. Now` is prose, not a field access
+                pos++;
+                if (pos >= this.length || !isIdentifierStart(input.uCharCodeAt(pos))) return -1;
+                while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) pos++;
+            }
+            else if (p == "(".code || p == "[".code) {
+                pos = conditionGroupEnd(pos);
+            }
+            else {
+                break;
+            }
+        }
+        return pos;
+    }
+
+    /**
+     * Skips a string, or a group in parentheses or brackets with everything it
+     * contains, on the current line.
+     * @return The position after the closing character, or -1 if it is not closed on this line
+     */
+    function conditionGroupEnd(pos:Int):Int {
+        final closers:Array<Int> = [];
+        while (pos < this.length) {
+            final c = input.uCharCodeAt(pos);
+            if (c == "\n".code || c == "\r".code) return -1;
+            if (c == '"'.code) {
+                // String: up to the closing quote, skipping escaped characters
+                pos++;
+                while (pos < this.length && input.uCharCodeAt(pos) != '"'.code) {
+                    final sc = input.uCharCodeAt(pos);
+                    if (sc == "\n".code || sc == "\r".code) return -1;
+                    if (sc == "\\".code) pos++;
+                    pos++;
+                }
+                if (pos >= this.length) return -1;
+                pos++;
+                if (closers.length == 0) return pos;
+                continue;
+            }
+            if (c == "(".code) closers.push(")".code);
+            else if (c == "[".code) closers.push("]".code);
+            else if (c == ")".code || c == "]".code) {
+                if (closers.length == 0 || closers.pop() != c) return -1;
+                if (closers.length == 0) return pos + 1;
+            }
+            pos++;
+        }
+        return -1;
+    }
+
+    /**
+     * Reads a binary operator of a condition: `and`, `or`, `is`, `is not`,
+     * `&&`, `||`, comparisons and arithmetic operators.
+     * @return The position after the operator, or -1 if there is none
+     */
+    function conditionOperatorEnd(pos:Int):Int {
+        for (word in ['and', 'or', 'is']) {
+            final end = wordEnd(pos, word);
+            if (end != -1) return end;
+        }
+        final c = input.uCharCodeAt(pos);
+        final next = pos + 1 < this.length ? input.uCharCodeAt(pos + 1) : 0;
+        if ((c == "&".code && next == "&".code) || (c == "|".code && next == "|".code)
+            || ((c == "=".code || c == "!".code || c == "<".code || c == ">".code) && next == "=".code)) {
+            return pos + 2;
+        }
+        if (c == "<".code || c == ">".code || c == "+".code || c == "*".code || c == "%".code) {
+            return pos + 1;
+        }
+        if (c == "/".code && next != "/".code && next != "*".code) {
+            return pos + 1;
+        }
+        if (c == "-".code && next != ">".code) {
+            return pos + 1;
+        }
+        return -1;
     }
 
     /**
@@ -2770,7 +2830,7 @@ class Token {
             }
             if (!isValue) {
                 // Skip if starting with some keywords
-                if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && identifier != 'and' && identifier != 'or' && KEYWORDS.exists(identifier)) return null;
+                if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && identifier != 'and' && identifier != 'or' && identifier != 'is' && identifier != 'not' && KEYWORDS.exists(identifier)) return null;
 
                 // Skip if starting with a label
                 if (isColon(pos + identifier.length)) {
@@ -2874,7 +2934,8 @@ class Token {
                     var wordEnd = nextLinePos;
                     while (wordEnd < length && isIdentifierPart(input.uCharCodeAt(wordEnd))) wordEnd++;
                     final kw = input.uSubstr(nextLinePos, wordEnd - nextLinePos);
-                    if (kw != 'null' && kw != 'true' && kw != 'false' && KEYWORDS.exists(kw)) return null;
+                    // `is` and `not` also start prose ("not now", "is it?"), as they did before being keywords
+                    if (kw != 'null' && kw != 'true' && kw != 'false' && kw != 'is' && kw != 'not' && KEYWORDS.exists(kw)) return null;
                 }
                 // Same column, looks like narrative text -> paragraph combining will merge -> proceed as unquoted
             } else if (!hasSameLineContent) {
@@ -3563,7 +3624,7 @@ class Token {
         }
 
         final name = input.uSubstr(startOffset, pos - startOffset);
-        final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
+        final tokenType = mergeIsNot(KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name));
         return new Token(
             tokenType,
             startPos
@@ -3690,6 +3751,45 @@ class Token {
     }
 
     /**
+     * `is` followed by `not` (spaces or tabs in between) is a single operator,
+     * `!=`, as in Python: reads the `not` too and returns `OpNotEquals`. To compare
+     * with a negation, a script writes `a is (not b)` or `a == not b`.
+     * @param tokenType Token type of the word just read
+     * @return The token type to use
+     */
+    function mergeIsNot(tokenType:TokenType):TokenType {
+        switch tokenType {
+            case OpEquals(true):
+                final end = wordEnd(skipSpacesAndTabs(pos), 'not');
+                if (end != -1) {
+                    while (pos < end) advance();
+                    return OpNotEquals(true);
+                }
+            case _:
+        }
+        return tokenType;
+    }
+
+    /**
+     * @return The position after `word` if the input has that whole word at `p`
+     * (not followed by an identifier character), or -1
+     */
+    function wordEnd(p:Int, word:String):Int {
+        final end = p + word.length;
+        if (end > length) return -1;
+        for (i in 0...word.length) {
+            if (input.uCharCodeAt(p + i) != word.charCodeAt(i)) return -1;
+        }
+        if (end < length && isIdentifierPart(input.uCharCodeAt(end))) return -1;
+        return end;
+    }
+
+    function skipSpacesAndTabs(p:Int):Int {
+        while (p < length && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p++;
+        return p;
+    }
+
+    /**
      * Reads an identifier or keyword.
      * @return Identifier or keyword token
      */
@@ -3711,15 +3811,18 @@ class Token {
 
         var tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
 
-        // Alternative keywords (sequence, cycle, once, pick, shuffle) are context-sensitive:
-        // after a dot they become identifiers (e.g. items.pick(), items.shuffle())
+        // Alternative keywords (sequence, cycle, once, pick, shuffle) and the word
+        // operators is / not are context-sensitive: after a dot they become
+        // identifiers (e.g. items.pick(), items.shuffle(), result.is)
         if (previous != null && previous.type == Dot) {
             switch tokenType {
-                case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle:
+                case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | OpEquals(true) | OpNot(true):
                     tokenType = Identifier(word);
                 case _:
             }
         }
+
+        tokenType = mergeIsNot(tokenType);
 
         return makeToken(
             tokenType,

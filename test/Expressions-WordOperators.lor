@@ -1,0 +1,101 @@
+// Word operators: `is` is `==`, `is not` is `!=`, `not` is `!`. The sequence
+// `is not` is always one operator: to compare with a negation, write
+// `a is (not b)` or `a == not b`. Each line reads "right" only when the
+// operators mean what they should.
+
+state
+  mood: "angry"
+  count: 3
+  ready: false
+  items: ["a"]
+
+character bob
+  name: Bob
+
+function describe(n, flag)
+  if n is not 3 and not flag
+    return "other"
+  if n is 3 and flag is true
+    return "three"
+  return "none"
+
+beat Start
+  if mood is "angry"
+    One right.
+
+  if mood is not "happy"
+    Two right.
+
+  if not ready
+    Three right.
+
+  if not (ready or count is 2)
+    Four right.
+
+  if count is 3 and mood is not "calm"
+    Five right.
+
+  if ready is (not true)
+    Six right.
+
+  if ready == not true
+    Seven right.
+
+  if not ready is false
+    Eight wrong.
+  else
+    Eight right.
+
+  if mood is not "angry"
+    Nine wrong.
+  else
+    Nine right.
+
+  Ten right. if mood is "angry"
+
+  Ten wrong. if mood is not "angry"
+
+  bob: Eleven right. if not ready and count is 3
+
+  Function says $describe(3, true), $describe(4, false), $describe(3, false).
+
+  choice
+    Twelve if items.length is 1
+      Picked twelve.
+    Hidden if mood is not "angry"
+      Picked hidden.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ One right.
+
+    ~ Two right.
+
+    ~ Three right.
+
+    ~ Four right.
+
+    ~ Five right.
+
+    ~ Six right.
+
+    ~ Seven right.
+
+    ~ Eight right.
+
+    ~ Nine right.
+
+    ~ Ten right.
+
+    Bob: Eleven right.
+
+    ~ Function says three, other, none.
+
+    + Twelve
+    - Hidden
+
+    ~ Picked twelve.
+</test>
+*/

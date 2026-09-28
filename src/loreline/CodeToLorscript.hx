@@ -302,6 +302,28 @@ class CodeToLorscript {
                             add(c);
                         }
                     }
+                    else if (c == "i".code && input.uCharCodeAt(index + 1) == "s".code && !isAlphaNumeric(input.uCharCodeAt(index + 2)) && !isAfterDot()) {
+                        // Convert `is` to ==, and `is not` to !=. Both keep their
+                        // length (spaces fill the rest), so positions don't move.
+                        var p = index + 2;
+                        while (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code) p++;
+                        final isNot = input.uCharCodeAt(p) == "n".code && input.uCharCodeAt(p + 1) == "o".code && input.uCharCodeAt(p + 2) == "t".code && !isAlphaNumeric(input.uCharCodeAt(p + 3));
+                        if (isNot) {
+                            add("!".code);
+                            add("=".code);
+                            while (index < p + 3) add(" ".code);
+                        }
+                        else {
+                            add("=".code);
+                            add("=".code);
+                        }
+                    }
+                    else if (c == "n".code && input.uCharCodeAt(index + 1) == "o".code && input.uCharCodeAt(index + 2) == "t".code && !isAlphaNumeric(input.uCharCodeAt(index + 3)) && !isAfterDot()) {
+                        // Convert not to !
+                        add("!".code);
+                        add(" ".code);
+                        add(" ".code);
+                    }
                     else {
                         add(c);
                     }
@@ -864,6 +886,16 @@ class CodeToLorscript {
      * @param c The character code to check
      * @return True if the character is alphanumeric or underscore, false otherwise
      */
+    /**
+     * Whether the word at the current index follows a dot (a field such as
+     * `result.is`), in which case it is a name, not an operator.
+     */
+    function isAfterDot():Bool {
+        var p = index - 1;
+        while (p >= 0 && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p--;
+        return p >= 0 && input.uCharCodeAt(p) == ".".code;
+    }
+
     function isAlphaNumeric(c:Int):Bool {
         return (c >= "a".code && c <= "z".code)
             || (c >= "A".code && c <= "Z".code)

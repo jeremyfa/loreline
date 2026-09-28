@@ -896,15 +896,15 @@ class AstPrinter {
             case OpMultiplyAssign: "OpMultiplyAssign";
             case OpDivideAssign: "OpDivideAssign";
             case OpUnquotedAssign: "OpUnquotedAssign";
-            case OpEquals: "OpEquals";
-            case OpNotEquals: "OpNotEquals";
+            case OpEquals(word): word ? "OpEquals(is)" : "OpEquals(==)";
+            case OpNotEquals(word): word ? "OpNotEquals(is not)" : "OpNotEquals(!=)";
             case OpGreater: "OpGreater";
             case OpGreaterEq: "OpGreaterEq";
             case OpLess: "OpLess";
             case OpLessEq: "OpLessEq";
             case OpAnd(word): word ? "OpAnd(and)" : "OpAnd(&&)";
             case OpOr(word): word ? "OpOr(or)" : "OpOr(||)";
-            case OpNot: "OpNot";
+            case OpNot(word): word ? "OpNot(not)" : "OpNot(!)";
             case _: Std.string(op);
         }
     }

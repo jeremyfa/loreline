@@ -560,13 +560,16 @@ class JsonToAst {
             case "OpMultiply": OpMultiply;
             case "OpDivide": OpDivide;
             case "OpModulo": OpModulo;
-            case "OpEquals": OpEquals;
-            case "OpNotEquals": OpNotEquals;
+
             case "OpGreater": OpGreater;
             case "OpLess": OpLess;
             case "OpGreaterEq": OpGreaterEq;
             case "OpLessEq": OpLessEq;
-            case "OpNot": OpNot;
+            // The word flag is in the parameter: OpEquals(true) is `is`. Older JSON has no parameter.
+            // OpNotEquals is tested before OpNot, which is a prefix of it.
+            case _ if (StringTools.startsWith(s, "OpNotEquals")): OpNotEquals(s.indexOf("true") != -1);
+            case _ if (StringTools.startsWith(s, "OpEquals")): OpEquals(s.indexOf("true") != -1);
+            case _ if (StringTools.startsWith(s, "OpNot")): OpNot(s.indexOf("true") != -1);
             case _ if (StringTools.startsWith(s, "OpAnd")): OpAnd(s.indexOf("true") != -1);
             case _ if (StringTools.startsWith(s, "OpOr")): OpOr(s.indexOf("true") != -1);
             case _: throw 'Unknown operator: $s';

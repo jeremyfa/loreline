@@ -415,7 +415,7 @@ class ParserContext {
             case LString(_, _, _): ensureInBeat(parseTextStatement());
             case Identifier(_) if (peek().type == Colon): ensureInBeat(parseDialogueStatement());
             case Identifier(_) | LNumber(_) | LBoolean(_) |
-                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot: ensureInBeat(parseExpressionStatement());
+                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot(_): ensureInBeat(parseExpressionStatement());
             case KwChoice: ensureInBeat(parseChoiceStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle: ensureInBeat(parseAlternative());
@@ -990,7 +990,7 @@ class ParserContext {
         return switch (tokens[current].type) {
             case Identifier(_) if (peek().type == Colon): false;
             case Identifier(_) | LString(_, _) | LNumber(_) | LBoolean(_) |
-                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot: true;
+                 LNull | LParen | LBracket | LBrace | OpMinus | OpNot(_): true;
             case _: false;
         }
     }
@@ -1345,7 +1345,7 @@ class ParserContext {
     function parseEquality():NExpr {
         var expr = parseComparison();
 
-        while (match(OpEquals) || match(OpNotEquals)) {
+        while (match(OpEquals(false)) || match(OpNotEquals(false))) {
             final op = previous().type;
             final binary = attachComments(new NBinary(nextNodeId(NODE), expr.pos, expr, op, null));
             binary.right = parseComparison();
@@ -1415,7 +1415,7 @@ class ParserContext {
      * @return Expression node
      */
     function parseUnary():NExpr {
-        if (match(OpNot) || match(OpMinus)) {
+        if (match(OpNot(false)) || match(OpMinus)) {
             final op = previous().type;
             final unary = attachComments(new NUnary(nextNodeId(NODE), previous().pos, op, null));
             unary.operand = parseUnary();
