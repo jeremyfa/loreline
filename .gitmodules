@@ -16,6 +16,7 @@
 [submodule "git/reflaxe"]
 	path = git/reflaxe
 	url = https://github.com/jeremyfa/reflaxe.git
+	branch = loreline
 [submodule "git/reflaxe.GDScript"]
 	path = git/reflaxe.GDScript
 	url = https://github.com/jeremyfa/reflaxe.GDScript.git
