@@ -1,0 +1,46 @@
+// A rule marked `- ` plays once: after that it is never eligible again, and
+// the block falls back to the other rules, or plays nothing.
+
+state
+  met: false
+
+beat Start
+  Meet()
+  Meet()
+  Meet()
+  Intro()
+  Intro()
+  Intro()
+  After all.
+
+beat Meet
+  when
+    - not met
+      Nice to meet you.
+      met = true
+    always
+      Hello again.
+
+beat Intro
+  when
+    - always
+      A first line, once.
+    - always
+      A second line, once.
+
+/*
+<test>
+- expected: |
+    ~ Nice to meet you.
+
+    ~ Hello again.
+
+    ~ Hello again.
+
+    ~ A first line, once.
+
+    ~ A second line, once.
+
+    ~ After all.
+</test>
+*/

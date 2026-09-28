@@ -1,0 +1,73 @@
+// Default strategy of a when block: the rule with the highest score wins (clauses
+// joined by a top-level `and`), then the one played least recently, then the
+// first one written. `always` scores 0. With nothing eligible, nothing plays.
+
+state
+  mood: "angry"
+  gold: 5
+  ready: true
+
+beat Start
+  Talk()
+  Talk()
+  mood = "calm"
+  Talk()
+  gold = 0
+  Talk()
+  Greet()
+  Greet()
+  Greet()
+  Greet()
+  Greet()
+  Maybe()
+
+beat Talk
+  when
+    mood is "angry" and gold > 3
+      Get out, and take your money!
+    mood is "angry"
+      Leave me alone.
+    gold > 3
+      Nice purse.
+    always
+      Hello.
+
+beat Greet
+  when
+    ready
+      First greeting.
+    ready
+      Second greeting.
+    ready
+      Third greeting.
+
+beat Maybe
+  when
+    not ready
+      Not shown.
+  After maybe.
+
+/*
+<test>
+- expected: |
+    ~ Get out, and take your money!
+
+    ~ Get out, and take your money!
+
+    ~ Nice purse.
+
+    ~ Hello.
+
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    ~ Third greeting.
+
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    ~ After maybe.
+</test>
+*/

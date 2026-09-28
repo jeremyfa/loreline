@@ -2478,6 +2478,8 @@ class InterpreterContext {
                     resumeIf(cast node, scopeLevel, next);
                 case NAlternative:
                     resumeAlternative(cast node, scopeLevel, next);
+                case NWhenStatement:
+                    resumeWhen(cast node, scopeLevel, next);
                 case NCall if (isBeatCall(node, scopeLevel)):
                     resumeCall(cast node, scopeLevel, next);
                 case NBeatCall:
@@ -2753,6 +2755,33 @@ class InterpreterContext {
         else {
             throw new RuntimeError('Failed to resume condition: invalid scope', ifStmt.pos);
         }
+
+    }
+
+    /**
+     * Resumes execution of a when block, inside the rule that was playing. The
+     * history was recorded when the rule started, so nothing is selected again.
+     *
+     * @param when The when statement to resume
+     * @param scopeLevel The scope level to resume at
+     * @param next Callback to call when execution completes
+     */
+    function resumeWhen(when:NWhenStatement, scopeLevel:Int, next:()->Void) {
+
+        final currentScope = stack[scopeLevel];
+
+        if (currentScope.head == null) {
+            throw new RuntimeError('Failed to resolve head when resuming when block', when.pos);
+        }
+
+        for (rule in when.rules) {
+            if (rule.body.indexOf(currentScope.head) != -1) {
+                resumeNodeBody(rule, scopeLevel, rule.body, next);
+                return;
+            }
+        }
+
+        throw new RuntimeError('Failed to resume when block: head not found in any rule', when.pos);
 
     }
 
@@ -3856,7 +3885,7 @@ class InterpreterContext {
             case NChoiceOption:
                 evalChoiceOption(cast node, next);
             case NWhenStatement:
-                throw new RuntimeError('when blocks are not implemented yet', node.pos);
+                evalWhen(cast node, next);
             case NIfStatement:
                 evalIf(cast node, next);
             case NAlternative:
@@ -4582,6 +4611,132 @@ class InterpreterContext {
         }
         final count:Int = cast(Objects.getField(this, state.fields, "_visitCount") ?? 0);
         Objects.setField(this, state.fields, "_visitCount", count + 1);
+    }
+
+    /**
+     * Evaluates a when block: selects one of its eligible rules with the strategy of
+     * the block, then plays it. If no rule is eligible, nothing is played.
+     *
+     * A rule is eligible when its condition is true (`always` always is), and, for a
+     * rule played once (`- `), when it was not played yet. The conditions of all the
+     * rules still in play are evaluated, in order, whatever rule wins, so that their
+     * side effects don't depend on the selection. `when first` stops at the first
+     * true one.
+     *
+     * @param when The when statement to evaluate
+     * @param next Callback to call when execution completes
+     */
+    function evalWhen(when:NWhenStatement, next:()->Void) {
+
+        final strategy = when.strategy;
+        if (strategy != null && strategy != 'first' && strategy != 'pick') {
+            throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
+        }
+
+        final eligible:Array<NWhenRule> = [];
+        for (rule in when.rules) {
+            if (rule.insertion != null) {
+                throw new RuntimeError('Insertions in when blocks are not implemented yet', rule.pos);
+            }
+            if (rule.once && isWhenRuleConsumed(rule)) continue;
+            if (rule.condition == null || evaluateCondition(rule.condition)) {
+                eligible.push(rule);
+                if (strategy == 'first') break;
+            }
+        }
+
+        if (eligible.length == 0) {
+            next();
+            return;
+        }
+
+        final chosen = switch strategy {
+            case 'first': eligible[0];
+            case 'pick': eligible[builtins.random(0, eligible.length - 1)];
+            case _: mostSalientRule(when, eligible);
+        }
+
+        playWhenRule(when, chosen, next);
+
+    }
+
+    /**
+     * The default strategy: the rule with the highest score (clauses joined by a
+     * top-level `and`), then the one played least recently (never played first),
+     * then the first one written.
+     */
+    function mostSalientRule(when:NWhenStatement, eligible:Array<NWhenRule>):NWhenRule {
+        var best:NWhenRule = null;
+        var bestScore = 0;
+        var bestLastPlayed = 0;
+        for (rule in eligible) {
+            final score = AstUtils.whenRuleScore(rule);
+            final lastPlayed = getWhenRuleLastPlayed(rule);
+            if (best == null || score > bestScore || (score == bestScore && lastPlayed < bestLastPlayed)) {
+                best = rule;
+                bestScore = score;
+                bestLastPlayed = lastPlayed;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Plays a rule of a when block: records it in the history, then runs its body.
+     */
+    function playWhenRule(when:NWhenStatement, rule:NWhenRule, next:()->Void) {
+        final tick = getNodeStateInt(when, "_tick") + 1;
+        setNodeStateField(when, "_tick", tick);
+        setNodeStateField(rule, "_played", getNodeStateInt(rule, "_played") + 1);
+        setNodeStateField(rule, "_lastPlayed", tick);
+        if (rule.once) {
+            setNodeStateField(rule, "_chosen", true);
+        }
+        evalNodeBody(currentScope.beat, rule, rule.body, next);
+    }
+
+    /**
+     * Whether a rule played once was already played.
+     */
+    function isWhenRuleConsumed(rule:NWhenRule):Bool {
+        final state = nodeStates.get(rule.id);
+        if (state == null) return false;
+        final chosen:Any = Objects.getField(this, state.fields, "_chosen");
+        return chosen == true;
+    }
+
+    /**
+     * When a rule was last played, as the `_tick` of its when block, or -1 if never.
+     */
+    function getWhenRuleLastPlayed(rule:NWhenRule):Int {
+        final state = nodeStates.get(rule.id);
+        if (state == null) return -1;
+        final value:Any = Objects.getField(this, state.fields, "_lastPlayed");
+        if (value == null) return -1;
+        return Std.int((value:Float));
+    }
+
+    /**
+     * An integer field of the persistent state of a node, 0 if it isn't set.
+     */
+    function getNodeStateInt(node:AstNode, field:String):Int {
+        final state = nodeStates.get(node.id);
+        if (state == null) return 0;
+        final value:Any = Objects.getField(this, state.fields, field);
+        if (value == null) return 0;
+        return Std.int((value:Float));
+    }
+
+    /**
+     * Sets a field of the persistent state of a node, creating the state if needed.
+     */
+    function setNodeStateField(node:AstNode, field:String, value:Any) {
+        var state = nodeStates.get(node.id);
+        if (state == null) {
+            state = new RuntimeState(this, node, null, null);
+            nodeStates.set(node.id, state);
+        }
+        Objects.setField(this, state.fields, field, value);
     }
 
     /**

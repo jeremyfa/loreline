@@ -1,0 +1,45 @@
+// When blocks nested in a rule, written with braces, and inside a choice option.
+
+state
+  hungry: true
+  thirsty: false
+
+beat Start
+  when
+    hungry
+      You are hungry.
+      when {
+        thirsty {
+          And thirsty.
+        }
+        always {
+          But not thirsty.
+        }
+      }
+    always
+      You are fine.
+
+  choice
+    Eat
+      when first
+        hungry
+          You eat.
+        always
+          You are not hungry.
+    Leave
+      Bye.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ You are hungry.
+
+    ~ But not thirsty.
+
+    + Eat
+    + Leave
+
+    ~ You eat.
+</test>
+*/

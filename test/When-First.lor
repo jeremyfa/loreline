@@ -1,0 +1,35 @@
+// `when first` plays the first rule whose condition is true, in written order:
+// the way to write thresholds.
+
+state
+  gold: 500
+
+beat Start
+  Wealth()
+  Wealth()
+  gold = 50
+  Wealth()
+  gold = 5
+  Wealth()
+
+beat Wealth
+  when first
+    gold > 100
+      You are rich.
+    gold > 10
+      You are doing fine.
+    always
+      You are broke.
+
+/*
+<test>
+- expected: |
+    ~ You are rich.
+
+    ~ You are rich.
+
+    ~ You are doing fine.
+
+    ~ You are broke.
+</test>
+*/

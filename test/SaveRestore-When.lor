@@ -1,0 +1,78 @@
+// The history of a when block is part of save data: after a restore, ties go
+// on to the rule played least recently, and rules played once stay consumed.
+
+state
+  ready: true
+
+beat Start
+  Greet()
+  Greet()
+  Greet()
+  Greet()
+  Meet()
+  Meet()
+
+beat Greet
+  when
+    ready
+      First greeting.
+    ready
+      Second greeting.
+    ready
+      Third greeting.
+
+beat Meet
+  when
+    - always
+      Nice to meet you.
+    always
+      Hello again.
+
+/*
+<test>
+- expected: |
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    ~ Third greeting.
+
+    ~ First greeting.
+
+    ~ Nice to meet you.
+
+    ~ Hello again.
+- saveAtDialogue: 1
+  expected: |
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    ~ Second greeting.
+
+    ~ Third greeting.
+
+    ~ First greeting.
+
+    ~ Nice to meet you.
+
+    ~ Hello again.
+- saveAtDialogue: [2, 4]
+  expected: |
+    ~ First greeting.
+
+    ~ Second greeting.
+
+    ~ Third greeting.
+
+    ~ Third greeting.
+
+    ~ First greeting.
+
+    ~ Nice to meet you.
+
+    ~ Nice to meet you.
+
+    ~ Hello again.
+</test>
+*/

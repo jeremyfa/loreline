@@ -1,0 +1,43 @@
+// All the conditions of a when block are evaluated, in order, whatever rule wins,
+// so their side effects don't depend on the selection. `when first` stops at the
+// first true one.
+
+state
+  count: 0
+
+function probe(value)
+  count = count + 1
+  return value
+
+beat Start
+  when
+    probe(false)
+      A.
+    probe(true)
+      B.
+    probe(true)
+      C.
+  Probed $count times.
+
+  count = 0
+  when first
+    probe(false)
+      A.
+    probe(true)
+      B.
+    probe(true)
+      C.
+  Probed $count times.
+
+/*
+<test>
+- expected: |
+    ~ B.
+
+    ~ Probed 3 times.
+
+    ~ B.
+
+    ~ Probed 2 times.
+</test>
+*/

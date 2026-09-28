@@ -6,12 +6,13 @@ import loreline.Loreline;
 import loreline.Node;
 import loreline.Printer;
 import loreline.Script;
+import loreline.test.SpawnTests.FlowHost;
 
 using StringTools;
 
 /**
- * Tests of the syntax of when blocks (parsing, printing, JSON), before they run:
- * the interpreter only reports that they are not implemented yet.
+ * Tests of the syntax of when blocks (parsing, printing, JSON). Their behavior is
+ * tested by the test/When-*.lor files.
  * Tests are referenced through lambdas, see SpawnTests.
  */
 @:keep
@@ -90,7 +91,8 @@ class WhenSyntaxTests {
             {name: 'when blocks print back as written', fn: () -> testPrint(false)},
             {name: 'when blocks print back as written after JSON', fn: () -> testPrint(true)},
             {name: 'narration starting with when stays text', fn: () -> testNarration()},
-            {name: 'running a when block reports it is not implemented', fn: () -> testNotImplemented()}
+            {name: 'an unknown strategy is an error', fn: () -> testUnknownStrategy()},
+            {name: 'the history is shared with child interpreters', fn: () -> testSharedHistory()}
         ];
 
         for (test in tests) {
@@ -230,8 +232,8 @@ class WhenSyntaxTests {
         if (errors.length > 0) throw errors.join('\n');
     }
 
-    static function testNotImplemented():Void {
-        final script = parse(['beat Start', '  Before.', '', '  when', '    always', '      Inside.'].join('\n'));
+    static function testUnknownStrategy():Void {
+        final script = parse(['beat Start', '  Before.', '', '  when no_such_strategy', '    always', '      Inside.'].join('\n'));
         final seen:Array<String> = [];
         var error:String = null;
         try {
@@ -244,8 +246,41 @@ class WhenSyntaxTests {
             // The message, not Std.string(e): on GDScript that prints the object reference
             error = (e is loreline.Error) ? (cast e:loreline.Error).message : Std.string(e);
         }
-        if (error == null || error.indexOf('not implemented') == -1) {
-            throw 'expected a not implemented error, got ' + (error ?? 'none') + ' after ' + seen;
+        if (error == null || error.indexOf('no_such_strategy') == -1) {
+            throw 'expected an error naming the strategy, got ' + (error ?? 'none') + ' after ' + seen;
+        }
+        if (seen.join(',') != 'Before.') throw 'the rule should not play: ' + seen;
+    }
+
+
+    /**
+     * A child shares the node states of its root, so a when block played by both
+     * goes on with the same rotation.
+     */
+    static function testSharedHistory():Void {
+        final script = parse([
+            'state',
+            '  ready: true',
+            '',
+            'beat Greet',
+            '  when',
+            '    ready',
+            '      First.',
+            '    ready',
+            '      Second.',
+            '    ready',
+            '      Third.'
+        ].join('\n'));
+        final host = new FlowHost();
+        final root = host.play(script, 'Greet');
+        final npc = host.spawn(root, 'npc');
+        npc.start('Greet');
+        host.next('root');
+        final again = host.spawn(root, 'again');
+        again.start('Greet');
+        final expected = ['root: First.', 'npc: Second.', 'root: <end>', 'again: Third.'];
+        if (host.log.join(' | ') != expected.join(' | ')) {
+            throw 'expected ' + expected.join(' | ') + ', got ' + host.log.join(' | ');
         }
     }
 

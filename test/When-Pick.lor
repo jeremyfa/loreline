@@ -1,0 +1,43 @@
+// `when pick` plays one of the eligible rules at random: a rule whose condition
+// is false is never picked.
+
+state
+  sunny: true
+  raining: false
+
+beat Start
+  seed_random(5)
+  Weather()
+  Weather()
+  Weather()
+  Weather()
+  Weather()
+  Weather()
+
+beat Weather
+  when pick
+    sunny
+      Clear sky.
+    sunny
+      Warm breeze.
+    raining
+      Grey rain.
+    always
+      A quiet day.
+
+/*
+<test>
+- expected: |
+    ~ Clear sky.
+
+    ~ Warm breeze.
+
+    ~ A quiet day.
+
+    ~ Clear sky.
+
+    ~ Warm breeze.
+
+    ~ Clear sky.
+</test>
+*/
