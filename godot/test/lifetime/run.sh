@@ -51,6 +51,10 @@ fi
 addon="$here/addons/loreline"
 import="$repo/sample/loreline-godot/godot-import.sh"
 
+# The API checks shared with godot/test/gdscript/api_parity.gd, run by the
+# lifetime tests on every backend
+cp "$repo/godot/test/gdscript/api_parity_checks.gd" "$here/api_parity_checks.gd"
+
 # macOS refuses to dlopen a library whose signature no longer matches its path,
 # and copying one into place invalidates it. Re-sign ad-hoc whatever landed in
 # the addon, whether it came from a local build or from a CI artifact.
@@ -174,11 +178,24 @@ EOF
     return 0
 }
 
+# Keeps Godot out of the folders this script creates in the project: Playwright's
+# node_modules ships fonts, and importing them crashes the editor (a race in its
+# threaded font import), and .web-out holds the export itself.
+ignore_generated_dirs() {
+    local dir
+    for dir in node_modules .web-out; do
+        if [ -d "$here/$dir" ]; then
+            touch "$here/$dir/.gdignore"
+        fi
+    done
+}
+
 # Exports the project for web, serves it, and drives it in headless Chromium.
 # The browser console is echoed so a failure reads like the other backends.
 run_web() {
     local out_dir="$here/.web-out"
     rm -rf "$out_dir"; mkdir -p "$out_dir"
+    ignore_generated_dirs
     if ! "$godot" --headless --path "$here" --export-debug Web "$out_dir/index.html" > "$here/.web-export.log" 2>&1; then
         echo "ERROR: web export failed" >&2
         tail -20 "$here/.web-export.log" >&2
@@ -193,6 +210,7 @@ run_web() {
         ( cd "$here" && npm install playwright --no-fund --no-audit >/dev/null 2>&1 \
           && npx playwright install chromium >/dev/null 2>&1 ) || {
             echo "ERROR: could not install Playwright" >&2; return 1; }
+        ignore_generated_dirs
     fi
 
     # .cjs, not .js: the repo's package.json declares "type": "module".
@@ -260,6 +278,7 @@ run_backend() {
     fi
 
     rm -rf "$here/.godot"
+    ignore_generated_dirs
     # The import fills .godot/global_script_class_cache.cfg, through which the
     # GDScript backend resolves `Loreline` and friends, and the web export needs
     # an imported project. godot-import.sh keeps the GDExtension out of that
@@ -303,7 +322,7 @@ for backend in gdscript native web; do
     fi
 done
 
-rm -rf "$addon" "$here/.godot"
+rm -rf "$addon" "$here/.godot" "$here/api_parity_checks.gd"
 
 echo ""
 if [ -n "$skipped" ]; then

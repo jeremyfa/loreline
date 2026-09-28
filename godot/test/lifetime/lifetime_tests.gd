@@ -23,7 +23,7 @@ var checks: int = 0
 ## coroutine on a runtime error, the remaining checks simply never run, and the
 ## suite would otherwise report a smaller total and still call it a pass. Bump
 ## this when adding or removing checks.
-const EXPECTED_CHECKS := 42
+const EXPECTED_CHECKS := 43
 
 ## Blank lines matter: consecutive text lines form a single multiline block, so
 ## a `choice` right under a dialogue line would be swallowed into its text.
@@ -158,6 +158,7 @@ func _run() -> void:
 	await _test_parallel_interpreters(loreline)
 	await _test_dropping_one_run_spares_the_others(loreline)
 	await _test_continuation_is_the_only_thing_holding(loreline)
+	await _test_api_parity()
 
 	print("")
 	if checks != EXPECTED_CHECKS:
@@ -172,6 +173,18 @@ func _run() -> void:
 		for f in failures:
 			print("  - ", f)
 		get_tree().quit(1)
+
+
+## The API checks of api_parity.gd, run on this backend too, so that the web
+## build is covered. run.sh copies api_parity_checks.gd next to this file.
+func _test_api_parity() -> void:
+	print("- api parity")
+	var checks_script = load("res://api_parity_checks.gd")
+	if checks_script == null:
+		_check(false, "api parity: api_parity_checks.gd is missing (run through run.sh)")
+		return
+	var reason: String = await checks_script.new().run(get_tree())
+	_check(reason == "", "api parity" + ("" if reason == "" else ": " + reason))
 
 
 ## A run played to its end must be collected once the host lets go, with no

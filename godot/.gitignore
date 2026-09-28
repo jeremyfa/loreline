@@ -20,4 +20,5 @@ build/
 /test/lifetime/node_modules/
 /test/lifetime/package.json
 /test/lifetime/package-lock.json
+/test/lifetime/api_parity_checks.gd
 *.uid
