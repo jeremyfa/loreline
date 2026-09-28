@@ -19,7 +19,7 @@ using StringTools;
 @:keep
 class InsertionScopeTests {
 
-    static final SCRIPT = SpawnTests.joinParts([
+    static final SCRIPT = [
         'beat Start',
         '  new state',
         '    label: "start"',
@@ -48,7 +48,7 @@ class InsertionScopeTests {
         '    Level2 option',
         '      Picked at level2.',
         '  Back at level2 with $$label.'
-    ], '\n');
+    ].join('\n');
 
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
 
@@ -87,7 +87,7 @@ class InsertionScopeTests {
 
     static function describeStack(interpreter:Interpreter):String {
         final stack = @:privateAccess interpreter.stack;
-        return '[' + SpawnTests.joinParts([for (scope in stack) describeScope(scope)], ', ') + ']';
+        return '[' + [for (scope in stack) describeScope(scope)].join(', ') + ']';
     }
 
     /**
@@ -146,7 +146,7 @@ class InsertionScopeTests {
         drive(host);
 
         if (seen.indexOf('Start') == -1) throw 'Start epilogue not reached: ' + host.log;
-        if (errors.length > 0) throw SpawnTests.joinParts(errors, ' | ');
+        if (errors.length > 0) throw errors.join(' | ');
 
     }
 
@@ -193,8 +193,8 @@ class InsertionScopeTests {
             'root: Start done with start+.',
             'root: <end>'
         ];
-        if (SpawnTests.joinParts(finalHost.log, '\n') != SpawnTests.joinParts(expected, '\n')) {
-            throw '\n  expected:\n    ' + SpawnTests.joinParts(expected, '\n    ') + '\n  got:\n    ' + SpawnTests.joinParts(finalHost.log, '\n    ');
+        if (finalHost.log.join('\n') != expected.join('\n')) {
+            throw '\n  expected:\n    ' + expected.join('\n    ') + '\n  got:\n    ' + finalHost.log.join('\n    ');
         }
 
     }

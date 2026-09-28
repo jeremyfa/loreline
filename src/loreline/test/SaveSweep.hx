@@ -75,7 +75,7 @@ class SaveSweep {
             if (item.saveSweep == false) continue;
 
             final choices:Array<Int> = item.choices;
-            final label = filePath + ' ~ save sweep' + (choices != null && choices.length > 0 ? ' ~ [' + SpawnTests.joinParts([for (c in choices) Std.string(c)], ',') + ']' : '');
+            final label = filePath + ' ~ save sweep' + (choices != null && choices.length > 0 ? ' ~ [' + [for (c in choices) Std.string(c)].join(',') + ']' : '');
             final options = makeOptions(item);
 
             // Uninterrupted reference run
@@ -103,7 +103,7 @@ class SaveSweep {
                 }
             }
 
-            report(label, failures.length > 0 ? SpawnTests.joinParts(failures, '\n') : null);
+            report(label, failures.length > 0 ? failures.join('\n') : null);
         }
 
     }
@@ -129,13 +129,13 @@ class SaveSweep {
             expectedParts.push(chunks[i]);
             if (duplicated.indexOf(i) != -1) expectedParts.push(chunks[i]);
         }
-        final expected = SpawnTests.joinParts(expectedParts, '\n\n');
+        final expected = expectedParts.join('\n\n');
 
         final result = runCase(filePath, content, item, options, saveAtChoice, saveAtDialogue, expected, handleFile);
         checkedRuns++;
 
         if (result.error != null || !result.passed) {
-            final where = SpawnTests.joinParts([for (save in saves) save.kind + ' #' + save.kindIndex], ' then ');
+            final where = [for (save in saves) save.kind + ' #' + save.kindIndex].join(' then ');
             final line = TestRunner.compareOutput(expected, result.actual);
             final expectedLines = expected.trim().split('\n');
             final actualLines = result.actual.replace('\r\n', '\n').trim().split('\n');
@@ -187,7 +187,7 @@ class SaveSweep {
         for (line in output.replace('\r\n', '\n').split('\n')) {
             if (line.trim().length == 0) {
                 if (current.length > 0) {
-                    chunks.push(SpawnTests.joinParts(current, '\n'));
+                    chunks.push(current.join('\n'));
                     current.resize(0);
                 }
             }
@@ -195,7 +195,7 @@ class SaveSweep {
                 current.push(line);
             }
         }
-        if (current.length > 0) chunks.push(SpawnTests.joinParts(current, '\n'));
+        if (current.length > 0) chunks.push(current.join('\n'));
         return chunks;
     }
 
@@ -205,20 +205,10 @@ class SaveSweep {
         var choices = 0;
         for (i in 0...chunks.length) {
             // Choice options are rendered "+ text" or "- text", dialogues "~ text" or "Name: text"
-            // (no increment inside an expression: the GDScript generator rejects it)
             final isChoice = chunks[i].startsWith('+ ') || chunks[i].startsWith('- ');
-            var kindIndex = 0;
-            if (isChoice) {
-                kindIndex = choices;
-                choices++;
-            }
-            else {
-                kindIndex = dialogues;
-                dialogues++;
-            }
             events.push({
                 kind: isChoice ? 'choice' : 'dialogue',
-                kindIndex: kindIndex,
+                kindIndex: isChoice ? choices++ : dialogues++,
                 chunkIndex: i
             });
         }

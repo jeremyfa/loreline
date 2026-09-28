@@ -54,7 +54,7 @@ class TestFields implements Fields {
 @:keep
 class CustomFieldsTests {
 
-    static final SCRIPT = SpawnTests.joinParts([
+    static final SCRIPT = [
         'state',
         '  gold: 1',
         '',
@@ -77,7 +77,7 @@ class CustomFieldsTests {
         '    local: 5',
         '',
         '  Side $$local'
-    ], '\n');
+    ].join('\n');
 
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
 

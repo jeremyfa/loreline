@@ -40,7 +40,7 @@ class FlowHost {
 
     public function choice(interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void):Void {
         final name = nameOf(interpreter);
-        log.push('$name? ' + SpawnTests.joinParts([for (o in options) (o.enabled ? '' : '-') + o.text], ' | '));
+        log.push('$name? ' + [for (o in options) (o.enabled ? '' : '-') + o.text].join(' | '));
         choiceCallbacks.set(name, callback);
     }
 
@@ -103,7 +103,7 @@ class FlowHost {
 @:keep
 class SpawnTests {
 
-    static final SHARED_SCRIPT = joinParts([
+    static final SHARED_SCRIPT = [
         'state',
         '  gold: 0',
         '',
@@ -132,9 +132,9 @@ class SpawnTests {
         '  Side where $$where() host $$who() local $$local',
         '',
         '  Side end'
-    ], '\n');
+    ].join('\n');
 
-    static final COUNTER_SCRIPT = joinParts([
+    static final COUNTER_SCRIPT = [
         'beat Counter',
         '  new state',
         '    n: 0',
@@ -152,9 +152,9 @@ class SpawnTests {
         '  Idle',
         '',
         '  Idle again'
-    ], '\n');
+    ].join('\n');
 
-    static final CHOICE_SCRIPT = joinParts([
+    static final CHOICE_SCRIPT = [
         'state',
         '  picked: ""',
         '',
@@ -189,9 +189,9 @@ class SpawnTests {
         '      picked = "once"',
         '    Leave',
         '  Once end'
-    ], '\n');
+    ].join('\n');
 
-    static final RANDOM_SCRIPT = joinParts([
+    static final RANDOM_SCRIPT = [
         'beat Seed',
         '  seed_random(7)',
         '  a = random(1, 1000000)',
@@ -201,9 +201,9 @@ class SpawnTests {
         'beat Draw',
         '  b = random(1, 1000000)',
         '  Draw $$b'
-    ], '\n');
+    ].join('\n');
 
-    static final INSERTION_SCRIPT = joinParts([
+    static final INSERTION_SCRIPT = [
         'state',
         '  n: 0',
         '',
@@ -230,7 +230,7 @@ class SpawnTests {
         '    Extra option',
         '      Extra picked.',
         '  Extra epilogue.'
-    ], '\n');
+    ].join('\n');
 
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
 
@@ -264,19 +264,6 @@ class SpawnTests {
 
     }
 
-    /**
-     * Same as Array.join(), written as a plain loop: the GDScript generator
-     * produces invalid code for an inlined join.
-     */
-    public static function joinParts(parts:Array<String>, separator:String):String {
-        var result = '';
-        for (i in 0...parts.length) {
-            if (i > 0) result += separator;
-            result += parts[i];
-        }
-        return result;
-    }
-
     static function parse(content:String):Script {
         final script = Loreline.parse(content);
         if (script == null) throw 'Failed to parse script: ' + Loreline.lastError();
@@ -284,8 +271,8 @@ class SpawnTests {
     }
 
     static function expectLines(expected:Array<String>, actual:Array<String>):Void {
-        if (joinParts(expected, '\n') != joinParts(actual, '\n')) {
-            throw '\n  expected:\n    ' + joinParts(expected, '\n    ') + '\n  got:\n    ' + joinParts(actual, '\n    ');
+        if (expected.join('\n') != actual.join('\n')) {
+            throw '\n  expected:\n    ' + expected.join('\n    ') + '\n  got:\n    ' + actual.join('\n    ');
         }
     }
 
