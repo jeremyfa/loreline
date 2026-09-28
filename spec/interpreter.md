@@ -587,8 +587,29 @@ SaveData {
     pendingChoiceOptions                     // the choice waiting for the host, as displayed
     pendingDialogue                          // the dialogue waiting for the host, as displayed
     choiceEvalContext                        // texts seen by choices() inside an option body
+    random                                   // state of the random generator, if it was used
 }
 ```
+
+### The Random Generator Is Saved
+
+`random` holds the current state of the Park-Miller generator shared by the
+context. After a restore, `random()`, `chance()`, `pick`, `shuffle` and the
+other random built-ins continue the exact sequence they would have drawn
+without the save. A save that has no `random` field (made before it existed,
+or before anything was drawn) leaves the current generator as is.
+
+The state is always an integer in `[1, 0x7FFFFFFE]`: `Random` floors every
+seed, including the clock-based one, and maps 0 to 1 (0 is a fixed point of
+Park-Miller). An integer below 2^31 multiplied by 16807 stays exact in a
+double, so the state survives JSON on every target, where a fractional seed
+would lose low bits and drift after a few draws.
+
+To break the sequence on purpose, the host calls `seedRandom()` after the
+restore (no argument means a seed from the clock), and a script calls
+`seed_random()` without argument. The pending event is re-presented as
+displayed, so nothing is drawn between the restore and the host getting
+control back.
 
 ### The Pending Event Is Saved As Displayed
 
@@ -624,8 +645,14 @@ SaveDataScope {
     state: SaveDataState     // temporary state, if any
     beats: Array             // nested beat references
     insertion: Int           // insertion ID reference
+    shuffle: Array<Int>      // item order of a running shuffle alternative
 }
 ```
+
+A scope that plays an item of a `shuffle` alternative carries the order of
+all its items (`shuffle`). When the restore resumes that item, the items
+after it in this order play too. The order is dropped if it no longer fits
+the alternative (script changed): only the current item then finishes.
 
 **Beat references** use a dotted path (`"Main"` or `"Parent.Child"`) for
 resilience against script modifications. **Node references** use the node ID
