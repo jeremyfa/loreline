@@ -311,6 +311,10 @@ class Printer {
                 printImportStatement(cast node);
             case NChoiceOption:
                 printChoiceOption(cast node);
+            case NWhenStatement:
+                printWhenStatement(cast node);
+            case NWhenRule:
+                printWhenRule(cast node);
             case NIfStatement:
                 printIfStatement(cast node);
             case NAlternative:
@@ -638,6 +642,81 @@ class Printer {
         }
         unindent();
         if (choice.style == Braces) writeln('}');
+    }
+
+    /**
+     * Prints a when block and its rules.
+     * @param when When statement to print
+     */
+    function printWhenStatement(when:NWhenStatement) {
+        writeln();
+        writeln();
+        printLeadingComments(when);
+        write('when');
+        if (when.strategy != null) {
+            write(' ' + when.strategy);
+        }
+        printTrailingComments(when);
+        if (when.style == Braces) writeln(' {');
+        else if (_beginLine == 0) writeln();
+        indent();
+        if (when.rules.length > 0) {
+            _noLn++;
+            for (rule in when.rules) {
+                printNode(rule);
+                writeln();
+            }
+        }
+        unindent();
+        if (when.style == Braces) writeln('}');
+    }
+
+    /**
+     * Prints a rule of a when block: its header (condition, `always` or insertion) and body.
+     * @param rule When rule to print
+     */
+    function printWhenRule(rule:NWhenRule) {
+        writeln();
+        writeln();
+        _noLn = 0;
+        printLeadingComments(rule);
+        if (rule.insertion != null) {
+            printNode(rule.insertion);
+            if (rule.insertionCondition != null) {
+                write(' if ');
+                printInLineExpression(rule.insertionCondition, rule.insertionConditionStyle == Parens);
+            }
+            printTrailingComments(rule);
+            writeln();
+            return;
+        }
+        if (rule.once) {
+            write('- ');
+        }
+        if (rule.condition == null) {
+            write('always');
+        }
+        else {
+            printInLineExpression(rule.condition, false);
+        }
+        printTrailingComments(rule);
+        if (rule.style == Braces)
+            writeln(' {');
+        else if (_beginLine == 0)
+            writeln();
+        _prevLevel = _level;
+        indent();
+        for (node in rule.body) {
+            printNode(node);
+            if (_beginLine == 0 && node != rule.body[rule.body.length - 1]) {
+                writeln();
+            }
+            _prevLevel = _level;
+        }
+        unindent();
+        writeln();
+        if (rule.style == Braces)
+            writeln('}');
     }
 
     /**

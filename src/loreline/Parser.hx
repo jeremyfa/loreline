@@ -417,6 +417,7 @@ class ParserContext {
             case Identifier(_) | LNumber(_) | LBoolean(_) |
                  LNull | LParen | LBracket | LBrace | OpMinus | OpNot(_): ensureInBeat(parseExpressionStatement());
             case KwChoice: ensureInBeat(parseChoiceStatement());
+            case KwWhen: ensureInBeat(parseWhenStatement());
             case KwIf: ensureInBeat(parseIfStatement());
             case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle: ensureInBeat(parseAlternative());
             case Arrow: ensureInBeat(parseTransition());
@@ -983,6 +984,122 @@ class ParserContext {
     }
 
     /**
+     * Parses a when block: `when`, an optional strategy name, then its rules.
+     * @return When statement node
+     */
+    function parseWhenStatement():NWhenStatement {
+        final startPos = currentPos();
+        final whenNode = new NWhenStatement(nextNodeId(BRANCH), startPos, null, []);
+
+        final whenToken = tokens[current];
+        expect(KwWhen);
+
+        // Optional strategy name, on the same line (the lexer made sure of it)
+        switch tokens[current].type {
+            case Identifier(name) if (tokens[current].pos.line == whenToken.pos.line):
+                whenNode.strategy = name;
+                whenNode.strategyPos = tokens[current].pos;
+                advance();
+            case _:
+        }
+
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        whenNode.style = (blockEnd == RBrace) ? Braces : Plain;
+
+        attachComments(whenNode);
+
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+            if (check(blockEnd) || isAtEnd()) break;
+            whenNode.rules.push(parseWhenRule());
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        }
+
+        expect(blockEnd);
+
+        whenNode.pos = whenNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
+        return whenNode;
+    }
+
+    /**
+     * Parses a rule of a when block: `- ` for a rule played once, then a condition or
+     * `always`, then its body. Or an insertion `+ Beat if cond`, which has no body.
+     * @return When rule node
+     */
+    function parseWhenRule():NWhenRule {
+        final startPos = currentPos();
+        final rule = attachComments(new NWhenRule(nextNodeId(BLOCK), startPos, null, []));
+
+        var errorPos = null;
+
+        try {
+            if (check(OpPlus)) {
+                rule.insertion = parseInsertion();
+                if (match(KwIf)) {
+                    rule.insertionCondition = parseConditionExpression();
+                    rule.insertionConditionStyle = takeConditionParens(rule.insertionCondition);
+                }
+            }
+            else {
+                // `- ` marks a rule played once. A `-` glued to what follows is a
+                // unary minus that belongs to the condition (`-x > 0`).
+                final minus = tokens[current];
+                if (minus.type == OpMinus && current + 1 < tokens.length
+                    && tokens[current + 1].pos.offset > minus.pos.offset + minus.pos.length) {
+                    advance();
+                    rule.once = true;
+                }
+
+                if (isAlwaysHeader()) {
+                    advance();
+                }
+                else {
+                    rule.condition = parseConditionExpression();
+                }
+
+                rule.style = parseStatementBlock(rule.body);
+            }
+        }
+        catch (e:ParseError) {
+            addError(e);
+            errorPos = currentPos();
+            if (currentPos().offset == startPos.offset) advance();
+        }
+
+        rule.pos = rule.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
+        if (errorPos != null) {
+            while (!isAtEnd() && currentPos().line <= errorPos.line + 1) advance();
+        }
+
+        return rule;
+    }
+
+    /**
+     * Whether the current token is the `always` header of a when rule: the word
+     * `always` alone before the rule body.
+     */
+    function isAlwaysHeader():Bool {
+        switch tokens[current].type {
+            case Identifier('always'):
+            case _: return false;
+        }
+        var i = current + 1;
+        while (i < tokens.length) {
+            switch tokens[i].type {
+                case CommentLine(_) | CommentMultiLine(_):
+                    i++;
+                case LineBreak | Indent | LBrace | Eof:
+                    return true;
+                case _:
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Checks if the current token can start an expression.
      * @return True if current token can begin an expression
      */
@@ -1020,7 +1137,7 @@ class ParserContext {
      */
     function isKnownNodeStart():Bool {
         return switch (tokens[current].type) {
-            case KwState | KwBeat | KwCharacter | KwChoice | KwIf | Arrow | LString(_): true;
+            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | Arrow | LString(_): true;
             case Identifier(_) if (peek().type == Colon): true; // Dialogue
             case Identifier(_) if (peek().type == Arrow): true; // Transition
             case _: false;
@@ -2336,7 +2453,7 @@ class ParserContext {
 
         while (!isAtEnd()) {
             switch (tokens[current].type) {
-                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwIf | Indent:
+                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | Indent:
                     return;
                 case Arrow:
                     advance();

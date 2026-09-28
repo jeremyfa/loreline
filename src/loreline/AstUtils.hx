@@ -133,6 +133,28 @@ class AstUtils {
         });
     }
 
+    /**
+     * Score of a rule of a when block: the number of clauses joined by an `and`
+     * at the top level of its condition. The more precise a rule, the higher it
+     * ranks. `or`, `not x` and a group in parentheses count as a single clause,
+     * `always` counts 0.
+     */
+    public static function whenRuleScore(rule:NWhenRule):Int {
+        return rule.condition == null ? 0 : andClauseCount(rule.condition);
+    }
+
+    static function andClauseCount(expr:NExpr):Int {
+        if (expr.parens == 0 && expr is NBinary) {
+            final binary:NBinary = cast expr;
+            switch binary.op {
+                case OpAnd(_):
+                    return andClauseCount(binary.left) + andClauseCount(binary.right);
+                case _:
+            }
+        }
+        return 1;
+    }
+
     /** Convert all if conditions to use parentheses. */
     public static function useParenConditions(node:AstNode):Void {
         node.each((child, _) -> {

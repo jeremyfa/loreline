@@ -3855,6 +3855,8 @@ class InterpreterContext {
                 evalChoice(cast node, next);
             case NChoiceOption:
                 evalChoiceOption(cast node, next);
+            case NWhenStatement:
+                throw new RuntimeError('when blocks are not implemented yet', node.pos);
             case NIfStatement:
                 evalIf(cast node, next);
             case NAlternative:

@@ -1,0 +1,54 @@
+// `when` opens a block only at the start of a line, alone or followed by a
+// single strategy name, before an indented block. Anywhere else it is text.
+
+state
+  ready: true
+
+character bob
+  name: Bob
+
+beat Start
+  when you are ready, come back.
+
+  when she arrives, it rains.
+
+  when
+
+  when first light comes
+
+  Say when.
+
+  bob: Tell me when you are ready.
+
+  "when" in quotes.
+
+  choice
+    when the time comes
+      Waited.
+    Now
+      Now then.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ when you are ready, come back.
+
+    ~ when she arrives, it rains.
+
+    ~ when
+
+    ~ when first light comes
+
+    ~ Say when.
+
+    Bob: Tell me when you are ready.
+
+    ~ "when" in quotes.
+
+    + when the time comes
+    + Now
+
+    ~ Waited.
+</test>
+*/

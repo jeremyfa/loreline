@@ -64,6 +64,8 @@ class JsonToAst {
             case "Dialogue": dialogueStatementFromJson(json);
             case "Choice": choiceStatementFromJson(json);
             case "Option": choiceOptionFromJson(json);
+            case "When": whenStatementFromJson(json);
+            case "WhenRule": whenRuleFromJson(json);
             case "Block": blockFromJson(json);
             case "If": ifStatementFromJson(json);
             case "Alternative": alternativeFromJson(json);
@@ -220,6 +222,36 @@ class JsonToAst {
         node.style = blockStyleFromString(json.style);
         if (json.once != null && (json.once : Bool)) node.once = true;
         if (json.conditionPos != null) node.conditionPos = positionFromJson(json.conditionPos);
+        return node;
+    }
+
+    static function whenStatementFromJson(json:Dynamic):NWhenStatement {
+        final id = idFromJson(json);
+        final pos = positionFromJson(json.pos);
+        final rulesArr:Array<Dynamic> = json.rules;
+        final rules:Array<NWhenRule> = [for (r in rulesArr) cast nodeFromJson(r)];
+        final comments = extractComments(json);
+        final node = new NWhenStatement(id, pos, json.strategy, rules, comments.leading, comments.trailing);
+        if (json.strategyPos != null) node.strategyPos = positionFromJson(json.strategyPos);
+        node.style = blockStyleFromString(json.style);
+        return node;
+    }
+
+    static function whenRuleFromJson(json:Dynamic):NWhenRule {
+        final id = idFromJson(json);
+        final pos = positionFromJson(json.pos);
+        final condition:NExpr = json.condition != null ? cast nodeFromJson(json.condition) : null;
+        final bodyArr:Array<Dynamic> = json.body;
+        final body:Array<AstNode> = [for (item in bodyArr) cast nodeFromJson(item)];
+        final comments = extractComments(json);
+        final node = new NWhenRule(id, pos, condition, body, comments.leading, comments.trailing);
+        if (json.insertion != null) node.insertion = cast nodeFromJson(json.insertion);
+        if (json.insertionCondition != null) {
+            node.insertionCondition = cast nodeFromJson(json.insertionCondition);
+            node.insertionConditionStyle = json.insertionConditionStyle != null ? conditionStyleFromString(json.insertionConditionStyle) : ConditionStyle.Plain;
+        }
+        node.style = blockStyleFromString(json.style);
+        if (json.once != null && (json.once : Bool)) node.once = true;
         return node;
     }
 

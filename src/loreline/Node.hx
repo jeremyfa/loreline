@@ -1449,6 +1449,199 @@ class NChoiceOption extends AstNode {
 }
 
 /**
+ * Represents a when block: a selection by saliency among rules. The rule to play
+ * is chosen by a strategy, the default one when `strategy` is null.
+ *
+ * ```lor
+ * when first
+ *   gold > 100
+ *     You're rich.
+ *   always
+ *     You're broke.
+ * ```
+ */
+class NWhenStatement extends AstNode {
+
+    /**
+     * Name of the strategy (`first`, `pick` or a function name), or null for the default one.
+     */
+    public var strategy:Null<String>;
+
+    /**
+     * Position of the strategy name, if any.
+     */
+    public var strategyPos:Null<Position>;
+
+    /**
+     * The rules of this block, in the order they are written.
+     */
+    public var rules:Array<NWhenRule>;
+
+    /**
+     * The block style of the when statement.
+     */
+    public var style:BlockStyle;
+
+    /**
+     * Creates a new when statement node.
+     * @param pos Position in source where this block appears
+     * @param strategy Strategy name, or null for the default strategy
+     * @param rules Rules of the block
+     * @param leadingComments Optional comments before the block
+     * @param trailingComments Optional comments after the block
+     */
+    public function new(id:NodeId, pos:Position, strategy:Null<String>, rules:Array<NWhenRule>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.strategy = strategy;
+        this.rules = rules;
+        this.style = Plain;
+    }
+
+    override function type():String {
+        return "When";
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (rules != null) {
+            for (i in 0...rules.length) {
+                final child = rules[i];
+                handleNode(child, this);
+                child.each(handleNode);
+            }
+        }
+    }
+
+    /**
+     * Converts the when statement to a JSON representation.
+     * @return Dynamic object containing when data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        if (strategy != null) {
+            json.strategy = strategy;
+            if (strategyPos != null) json.strategyPos = strategyPos.toJson();
+        }
+        json.rules = [for (rule in rules) rule.toJson()];
+        json.style = style.toString();
+        return json;
+    }
+}
+
+/**
+ * Represents a rule of a when block: a condition (or `always`) and the body played
+ * when the rule is selected. A rule can also be an insertion (`+ Beat if cond`),
+ * which brings the rules of the first when block of that beat.
+ */
+class NWhenRule extends AstNode {
+
+    /**
+     * The condition of the rule, null for `always` and for insertions.
+     */
+    public var condition:Null<NExpr>;
+
+    /**
+     * Instead of a condition and a body, this rule can be an insertion.
+     */
+    public var insertion:Null<NInsertion>;
+
+    /**
+     * Optional condition of an insertion (`+ Beat if cond`): whether its rules are brought in.
+     */
+    public var insertionCondition:Null<NExpr>;
+
+    /**
+     * The style of the insertion condition (plain or parentheses).
+     */
+    public var insertionConditionStyle:ConditionStyle;
+
+    /**
+     * Array of nodes to execute when this rule is played.
+     */
+    public var body:Array<AstNode>;
+
+    /**
+     * The block style of the body.
+     */
+    public var style:BlockStyle;
+
+    /**
+     * Whether this rule can only be played once (`- ` prefix).
+     */
+    public var once:Bool;
+
+    /**
+     * Creates a new when rule node.
+     * @param pos Position in source where this rule appears
+     * @param condition Condition of the rule, null for `always`
+     * @param body Array of nodes to execute when the rule is played
+     * @param leadingComments Optional comments before the rule
+     * @param trailingComments Optional comments after the rule
+     */
+    public function new(id:NodeId, pos:Position, condition:Null<NExpr>, body:Array<AstNode>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.condition = condition;
+        this.insertion = null;
+        this.insertionCondition = null;
+        this.insertionConditionStyle = Plain;
+        this.body = body;
+        this.style = Plain;
+        this.once = false;
+    }
+
+    override function type():String {
+        return "WhenRule";
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (condition != null) {
+            handleNode(condition, this);
+            condition.each(handleNode);
+        }
+        if (insertion != null) {
+            handleNode(insertion, this);
+            insertion.each(handleNode);
+        }
+        if (insertionCondition != null) {
+            handleNode(insertionCondition, this);
+            insertionCondition.each(handleNode);
+        }
+        if (body != null) {
+            for (i in 0...body.length) {
+                final child = body[i];
+                handleNode(child, this);
+                child.each(handleNode);
+            }
+        }
+    }
+
+    /**
+     * Converts the when rule to a JSON representation.
+     * @return Dynamic object containing rule data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        if (condition != null) {
+            json.condition = condition.toJson();
+        }
+        if (insertion != null) {
+            json.insertion = insertion.toJson();
+            if (insertionCondition != null) {
+                json.insertionCondition = insertionCondition.toJson();
+                json.insertionConditionStyle = insertionConditionStyle.toString();
+            }
+        }
+        json.body = [for (node in body) node.toJson()];
+        json.style = style.toString();
+        if (once) json.once = true;
+        return json;
+    }
+}
+
+/**
  * Represents a block with a sequence multiple nodes
  */
 class NBlock extends AstNode {

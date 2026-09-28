@@ -368,6 +368,7 @@ class Cli {
         loreline.test.InsertionScopeTests.run(onPass, onFail);
         loreline.test.RandomTests.run(onPass, onFail);
         loreline.test.PrinterTests.run(onPass, onFail);
+        loreline.test.WhenSyntaxTests.run(onPass, onFail);
 
         print('');
         print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked'.gray());

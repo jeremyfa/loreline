@@ -52,6 +52,10 @@ enum abstract TokenStackType(Int) {
 
     var ChoiceIndent;
 
+    var WhenBrace;
+
+    var WhenIndent;
+
     var StateBrace;
 
     var StateIndent;
@@ -79,6 +83,8 @@ enum abstract TokenStackType(Int) {
         return switch abstract {
             case ChoiceBrace: 'ChoiceBrace';
             case ChoiceIndent: 'ChoiceIndent';
+            case WhenBrace: 'WhenBrace';
+            case WhenIndent: 'WhenIndent';
             case StateBrace: 'StateBrace';
             case StateIndent: 'StateIndent';
             case CharacterBrace: 'CharacterBrace';
@@ -112,6 +118,8 @@ enum TokenType {
     KwCharacter;
     /** Choice block keyword */
     KwChoice;
+    /** Saliency block keyword, only at the start of a statement that opens a block (see Lexer.isWhenStart) */
+    KwWhen;
     /** If statement keyword */
     KwIf;
     /** Else statement keyword */
@@ -260,6 +268,7 @@ class TokenTypeHelpers {
             case [KwBeat, KwBeat]: true;
             case [KwCharacter, KwCharacter]: true;
             case [KwChoice, KwChoice]: true;
+            case [KwWhen, KwWhen]: true;
             case [KwIf, KwIf]: true;
             case [KwElse, KwElse]: true;
             case [KwNew, KwNew]: true;
@@ -340,7 +349,7 @@ class TokenTypeHelpers {
      */
     public static function isBlockStart(a:TokenType):Bool {
         return switch a {
-            case KwState | KwBeat | KwCharacter | KwChoice | KwIf: true;
+            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf: true;
             case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator: true;
             case _: false;
         }
@@ -353,6 +362,7 @@ class TokenTypeHelpers {
             case KwBeat: 'beat';
             case KwCharacter: 'character';
             case KwChoice: 'choice';
+            case KwWhen: 'when';
             case KwIf: 'if';
             case KwElse: 'else';
             case KwNew: 'new';
@@ -676,11 +686,14 @@ class Token {
                     }
                 case KwChoice:
                     nextBlock = ChoiceIndent;
+                case KwWhen:
+                    nextBlock = WhenIndent;
                 case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator:
                     nextBlock = AlternativeIndent;
                 case LBrace:
                     stack.push(switch nextBlock {
                         case ChoiceBrace | ChoiceIndent: ChoiceBrace;
+                        case WhenBrace | WhenIndent: WhenBrace;
                         case StateBrace | StateIndent: StateBrace;
                         case CharacterBrace | CharacterIndent: CharacterBrace;
                         case BeatBrace | BeatIndent: BeatIndent;
@@ -691,6 +704,7 @@ class Token {
                 case Indent:
                     stack.push(switch nextBlock {
                         case ChoiceBrace | ChoiceIndent: ChoiceIndent;
+                        case WhenBrace | WhenIndent: WhenIndent;
                         case StateBrace | StateIndent: StateIndent;
                         case CharacterBrace | CharacterIndent: CharacterIndent;
                         case BeatBrace | BeatIndent: BeatIndent;
@@ -965,6 +979,7 @@ class Token {
             if (stack[i] != Brace && stack[i] != Indent && stack[i] != Bracket) {
                 return switch stack[i] {
                     case ChoiceBrace | ChoiceIndent: KwBeat;
+                    case WhenBrace | WhenIndent: KwBeat;
                     case StateBrace | StateIndent: KwState;
                     case CharacterBrace | CharacterIndent: KwCharacter;
                     case BeatBrace | BeatIndent: KwBeat;
@@ -997,6 +1012,77 @@ class Token {
     function inChoiceRoot():Bool {
         return stack.length > 0
             && (stack[stack.length - 1] == ChoiceIndent || stack[stack.length - 1] == ChoiceBrace);
+    }
+
+    /**
+     * Checks if currently at the root level of a when block (not inside a rule body),
+     * where lines are rule headers: expressions, never text.
+     * @return True if the top of the stack is a when entry, false otherwise
+     */
+    function inWhenRoot():Bool {
+        if (stack.length == 0) return false;
+        final top = stack[stack.length - 1];
+        if (top == WhenIndent || top == WhenBrace) return true;
+        // Inside `when {`, the indentation of the rule lines pushes an Indent of its own
+        return top == Indent && stack.length > 1 && stack[stack.length - 2] == WhenBrace;
+    }
+
+    /**
+     * Returns whether a `when` block starts at the given position: `when` first on its
+     * line, optionally followed by a single strategy name (`when first`, `when pick`,
+     * `when my_strategy`), then the end of the line (or `{`), and a block. Anything
+     * else keeps the line as text, such as "when she arrives, it rains."
+     * Only in beat content, not directly inside a choice or at the root of a when.
+     * @param pos Position of the `when` word
+     * @return True if a when block starts there
+     */
+    function isWhenStart(pos:Int):Bool {
+        var end = wordEnd(pos, 'when');
+        if (end == -1) return false;
+        if (parentBlockType() != KwBeat || inChoiceRoot() || inWhenRoot()) return false;
+
+        // First on its line
+        var lineStart = pos;
+        while (lineStart > 0 && (input.uCharCodeAt(lineStart - 1) == " ".code || input.uCharCodeAt(lineStart - 1) == "\t".code)) lineStart--;
+        if (lineStart > 0 && input.uCharCodeAt(lineStart - 1) != "\n".code && input.uCharCodeAt(lineStart - 1) != "\r".code) return false;
+        final indent = pos - lineStart;
+
+        // Optional strategy name
+        var p = skipInlineSpacesAndComments(end);
+        if (p < this.length && isIdentifierStart(input.uCharCodeAt(p))) {
+            while (p < this.length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+            p = skipInlineSpacesAndComments(p);
+        }
+
+        // Brace block on the same line
+        if (p < this.length && input.uCharCodeAt(p) == "{".code) return true;
+
+        // Otherwise the line must end here, and a block must follow
+        if (p < this.length && input.uCharCodeAt(p) == "/".code && p + 1 < this.length && input.uCharCodeAt(p + 1) == "/".code) {
+            while (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) p++;
+        }
+        if (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) return false;
+        return nextLineOpensBlock(p, indent);
+    }
+
+    /**
+     * Whether the first non blank line after the given line end is more indented
+     * than `indent`, or starts a brace block at any indentation.
+     */
+    function nextLineOpensBlock(p:Int, indent:Int):Bool {
+        while (p < this.length) {
+            // Go to the start of the next line
+            while (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) p++;
+            while (p < this.length && (input.uCharCodeAt(p) == "\n".code || input.uCharCodeAt(p) == "\r".code)) p++;
+            final lineStart = p;
+            while (p < this.length && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p++;
+            if (p >= this.length) return false;
+            final c = input.uCharCodeAt(p);
+            if (c == "\n".code || c == "\r".code) continue;
+            if (c == "{".code) return true;
+            return p - lineStart > indent;
+        }
+        return false;
     }
 
     /**
@@ -2725,6 +2811,9 @@ class Token {
         // Skip in strict expression area
         if (isStrict()) return null;
 
+        // Rule headers at the root of a when block are expressions, never text
+        if (inWhenRoot()) return null;
+
         // Look ahead to validate if this could be an unquoted string start
         final c = input.uCharCodeAt(pos);
         final cc = peek();
@@ -2815,6 +2904,10 @@ class Token {
         // Skip if this is a beat insertion
         if (!isValue && !isAfterLabel) {
             if (isInsertionStart(pos)) {
+                return null;
+            }
+            // Skip if this is a when block
+            if (isWhenStart(pos)) {
                 return null;
             }
             // Skip if this is a once-only choice option prefix
@@ -2928,6 +3021,7 @@ class Token {
                 if (isCallStart(nextLinePos)) return null;
                 if (isLabelStart(nextLinePos)) return null;
                 if (isIfStart(nextLinePos)) return null;
+                if (isWhenStart(nextLinePos)) return null;
                 if (isIdentifierExpressionStart(nextLinePos, true)) return null;
                 // Check for keywords (beat, state, character, choice, function, etc.)
                 if (isIdentifierStart(nextChar)) {
@@ -3811,6 +3905,11 @@ class Token {
 
         var tokenType = KEYWORDS.exists(word) ? KEYWORDS.get(word) : Identifier(word);
 
+        // `when` is a keyword only where it opens a block
+        if (word == 'when' && isWhenStart(startPos)) {
+            tokenType = KwWhen;
+        }
+
         // Alternative keywords (sequence, cycle, once, pick, shuffle) and the word
         // operators is / not are context-sensitive: after a dot they become
         // identifiers (e.g. items.pick(), items.shuffle(), result.is)
@@ -3820,6 +3919,11 @@ class Token {
                     tokenType = Identifier(word);
                 case _:
             }
+        }
+
+        // After `when`, a word is the name of a strategy: `when pick` is not a pick alternative
+        if (previous != null && previous.type == KwWhen && previous.pos.line == start.line) {
+            tokenType = Identifier(word);
         }
 
         tokenType = mergeIsNot(tokenType);

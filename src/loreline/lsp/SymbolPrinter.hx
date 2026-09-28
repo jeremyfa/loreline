@@ -58,6 +58,8 @@ class SymbolPrinter {
                     }
                 case NAlternative:
                     symbols.push(printAlternative(cast decl));
+                case NWhenStatement:
+                    symbols.push(printWhen(cast decl));
                 case NStateDecl:
                     symbols.push(printStateDecl(cast decl));
                 case NBeatDecl:
@@ -90,6 +92,8 @@ class SymbolPrinter {
                     }
                 case NAlternative:
                     children.push(printAlternative(cast node));
+                case NWhenStatement:
+                    children.push(printWhen(cast node));
                 case NStateDecl:
                     children.push(printStateDecl(cast node));
                 case NBeatDecl:
@@ -205,6 +209,8 @@ class SymbolPrinter {
                         }
                     case NAlternative:
                         optionSymbol.children.push(printAlternative(cast node));
+                    case NWhenStatement:
+                        optionSymbol.children.push(printWhen(cast node));
                     case NStateDecl:
                         optionSymbol.children.push(printStateDecl(cast node));
                     case _:
@@ -222,6 +228,68 @@ class SymbolPrinter {
             deprecated: false,
             range: rangeFromPosition(choice.pos),
             selectionRange: rangeFromPosition(choice.pos),
+            children: children
+        };
+    }
+
+    /**
+     * Process a when block: one symbol per rule, named after its header.
+     * @param when When node to process
+     * @return Document symbol for the when block
+     */
+    function printWhen(when:NWhenStatement):DocumentSymbol {
+        final children:Array<DocumentSymbol> = [];
+
+        for (rule in when.rules) {
+            final label = if (rule.insertion != null) {
+                printValue(rule.insertion);
+            }
+            else if (rule.condition == null) {
+                "always";
+            }
+            else {
+                printValue(rule.condition);
+            }
+
+            final ruleSymbol:DocumentSymbol = {
+                name: (rule.once ? "- " : "") + label,
+                detail: rule.insertionCondition != null ? 'if ${printValue(rule.insertionCondition)}' : "",
+                kind: SymbolKind.EnumMember,
+                deprecated: false,
+                range: rangeFromPosition(rule.pos),
+                selectionRange: rangeFromPosition(rule.pos),
+                children: []
+            };
+
+            for (node in rule.body) {
+                switch HxType.getClass(node) {
+                    case NChoiceStatement:
+                        ruleSymbol.children.push(printChoice(cast node));
+                    case NWhenStatement:
+                        ruleSymbol.children.push(printWhen(cast node));
+                    case NIfStatement:
+                        for (symbol in printIf(cast node)) {
+                            ruleSymbol.children.push(symbol);
+                        }
+                    case NAlternative:
+                        ruleSymbol.children.push(printAlternative(cast node));
+                    case NStateDecl:
+                        ruleSymbol.children.push(printStateDecl(cast node));
+                    case _:
+                        // Skip other node types
+                }
+            }
+
+            children.push(ruleSymbol);
+        }
+
+        return {
+            name: when.strategy != null ? "when " + when.strategy : "when",
+            detail: when.rules.length + " rules",
+            kind: SymbolKind.Enum,
+            deprecated: false,
+            range: rangeFromPosition(when.pos),
+            selectionRange: rangeFromPosition(when.pos),
             children: children
         };
     }
@@ -303,6 +371,8 @@ class SymbolPrinter {
                     }
                 case NAlternative:
                     children.push(printAlternative(cast node));
+                case NWhenStatement:
+                    children.push(printWhen(cast node));
                 case NStateDecl:
                     children.push(printStateDecl(cast node));
                 case _:

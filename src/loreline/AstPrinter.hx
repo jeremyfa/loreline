@@ -729,6 +729,62 @@ class AstPrinter {
                 }
                 indentLevel--;
 
+            case NWhenStatement:
+                final when:NWhenStatement = cast node;
+                printBlockStyle(when.style);
+                if (when.strategy != null) {
+                    add(' strategy="');
+                    add(when.strategy);
+                    add('"');
+                }
+                if (when.rules.length > 0) {
+                    addLineBreak();
+                    indentLevel++;
+                    for (rule in when.rules) {
+                        printNode(rule);
+                        addLineBreak();
+                    }
+                    indentLevel--;
+                }
+
+            case NWhenRule:
+                final rule:NWhenRule = cast node;
+                printBlockStyle(rule.style);
+                if (rule.once) add(' once');
+                if (rule.insertion == null && rule.condition == null) add(' always');
+                if (rule.insertionCondition != null) {
+                    printConditionStyle(rule.insertionConditionStyle, ' conditionStyle=');
+                }
+                indentLevel++;
+                for (part in [
+                    {label: "condition:", node: (rule.condition:Node)},
+                    {label: "insertion:", node: (rule.insertion:Node)},
+                    {label: "insertionCondition:", node: (rule.insertionCondition:Node)}
+                ]) {
+                    if (part.node != null) {
+                        addLineBreak();
+                        indent();
+                        add(part.label);
+                        addLineBreak();
+                        indentLevel++;
+                        printNode(part.node);
+                        indentLevel--;
+                    }
+                }
+                if (rule.body != null && rule.body.length > 0) {
+                    addLineBreak();
+                    indent();
+                    add("body:");
+                    addLineBreak();
+                    indentLevel++;
+                    for (item in rule.body) {
+                        printNode(item);
+                        addLineBreak();
+                    }
+                    indentLevel--;
+                }
+                indentLevel--;
+
             case NTransition:
                 final transition:NTransition = cast node;
                 if (transition.targetExpr != null) {

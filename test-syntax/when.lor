@@ -1,0 +1,16 @@
+// Narration that starts with "when" stays text.
+
+character bob
+  name: Bob
+
+beat Start
+  when you are ready, come back.
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  when she arrives, it rains.
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  when first light comes
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Say when.
+//^^^^^^^^^ string.unquoted
+  bob: Tell me when you are ready.
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
