@@ -369,7 +369,7 @@ class Cli {
         loreline.test.RandomTests.run(onPass, onFail);
 
         print('');
-        print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked, ${loreline.test.SaveSweep.skippedFiles.length} files skipped (randomness)'.gray());
+        print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked'.gray());
 
         print('');
         if (failCount > 0) {

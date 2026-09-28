@@ -204,6 +204,13 @@ class RuntimeScope {
     public var captured:Array<RuntimeScope> = null;
 
     /**
+     * If this scope runs an item of a shuffle alternative, the order in which the
+     * items of that alternative are played (item indexes). Kept on the scope so
+     * that a restore can play the remaining items in the same order.
+     */
+    public var shuffle:Array<Int> = null;
+
+    /**
      * Finds a nested beat declaration with the given name in this scope, if any.
      *
      * @param name The name of the beat to find
@@ -2087,6 +2094,10 @@ class InterpreterContext {
             result.captured = [for (captured in scope.captured) serializeScope(captured, insertions)];
         }
 
+        if (scope.shuffle != null) {
+            result.shuffle = scope.shuffle.copy();
+        }
+
         _serializingScopes.pop();
 
         return result;
@@ -2761,9 +2772,20 @@ class InterpreterContext {
         }
 
         // Find which item block contains the head
-        for (item in alt.items) {
+        for (i in 0...alt.items.length) {
+            final item = alt.items[i];
             if (item.body.indexOf(currentScope.head) != -1) {
-                resumeNodeBody(item, scopeLevel, item.body, next);
+                // A shuffle continues with the items not played yet, in the saved order
+                final order = currentScope.shuffle;
+                final position = order != null ? order.indexOf(i) : -1;
+                if (alt.mode == Shuffle && position != -1) {
+                    resumeNodeBody(item, scopeLevel, item.body, () -> {
+                        evalShuffledItems(alt, order, position + 1, next);
+                    });
+                }
+                else {
+                    resumeNodeBody(item, scopeLevel, item.body, next);
+                }
                 return;
             }
         }
@@ -2910,6 +2932,14 @@ class InterpreterContext {
             }
         }
 
+        // Restore the order of a running shuffle alternative. It is dropped if it
+        // doesn't match the alternative anymore (script changed since the save):
+        // only the current item then finishes, like with saves made before it was stored.
+        var shuffle:Array<Int> = null;
+        if (savedScope.shuffle != null && node is NBlock) {
+            shuffle = restoreShuffleOrder(savedScope.shuffle, cast node);
+        }
+
         return ({
             beat: beat,
             node: node,
@@ -2917,7 +2947,8 @@ class InterpreterContext {
             beats: beats,
             head: head,
             insertion: insertion,
-            captured: captured
+            captured: captured,
+            shuffle: shuffle
         } : RuntimeScope);
 
     }
@@ -3883,13 +3914,14 @@ class InterpreterContext {
      * @param insertion If any, the insertion related to this evaluation
      * @param next Callback to call when execution completes
      */
-    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:RuntimeInsertion, ?argValues:Array<Any>, ?capturedChain:Array<RuntimeScope>, next:()->Void) {
+    function evalNodeBody(beat:NBeatDecl, node:AstNode, body:Array<AstNode>, ?insertion:RuntimeInsertion, ?argValues:Array<Any>, ?capturedChain:Array<RuntimeScope>, ?shuffle:Array<Int>, next:()->Void) {
 
         // Push new scope
         push({
             beat: beat,
             node: node,
-            insertion: insertion
+            insertion: insertion,
+            shuffle: shuffle
         });
 
         // When entering a beat body (node == beat), seed its declared
@@ -4495,6 +4527,7 @@ class InterpreterContext {
 
     /**
      * Executes alternative items in shuffled order, one at a time.
+     * Each item scope carries the order, see `RuntimeScope.shuffle`.
      */
     function evalShuffledItems(alt:NAlternative, indices:Array<Int>, idx:Int, next:()->Void) {
         if (idx >= indices.length) {
@@ -4502,9 +4535,27 @@ class InterpreterContext {
             return;
         }
         final item = alt.items[indices[idx]];
-        evalNodeBody(currentScope.beat, item, item.body, () -> {
+        evalNodeBody(currentScope.beat, item, item.body, null, null, null, indices, () -> {
             evalShuffledItems(alt, indices, idx + 1, next);
         });
+    }
+
+    /**
+     * Checks a saved shuffle order against the alternative the item belongs to:
+     * it must hold each item index exactly once.
+     *
+     * @return The order, or null if it doesn't fit the alternative
+     */
+    function restoreShuffleOrder(saved:Array<Int>, item:NBlock):Null<Array<Int>> {
+        final alt = Std.downcast(lens.getParentNode(item), NAlternative);
+        if (alt == null || alt.mode != Shuffle || saved.length != alt.items.length) return null;
+        final order:Array<Int> = [];
+        for (i in 0...saved.length) {
+            final index:Int = saved[i];
+            if (index < 0 || index >= saved.length || order.indexOf(index) != -1) return null;
+            order.push(index);
+        }
+        return order;
     }
 
     /**

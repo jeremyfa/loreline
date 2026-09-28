@@ -94,6 +94,8 @@ typedef SaveDataScope = {
     var ?insertion:Int;
     /** Captured scope chain, when this scope runs a beat invoked through a beat reference */
     var ?captured:Array<SaveDataScope>;
+    /** Order of the items of the shuffle alternative this scope plays an item of (item indexes) */
+    var ?shuffle:Array<Int>;
 }
 
 /**

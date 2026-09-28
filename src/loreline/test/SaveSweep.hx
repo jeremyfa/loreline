@@ -33,17 +33,13 @@ private typedef SweepEvent = {
  * save/restore path under test.
  *
  * Not swept: cases that already save (saveAt*), restore on a modified script
- * (restoreFile), opt out with `saveSweep: false`, or use randomness (the random
- * generator is not part of save data, so a restored run can't match).
+ * (restoreFile), or opt out with `saveSweep: false`.
  */
 @:keep
 class SaveSweep {
 
     /** Total number of save/restore runs checked, across all files */
     public static var checkedRuns(default, null):Int = 0;
-
-    /** Files skipped because they use randomness */
-    public static final skippedFiles:Array<String> = [];
 
     /**
      * Sweeps every test case of a file.
@@ -60,11 +56,6 @@ class SaveSweep {
         handleFile:ImportsFileHandler,
         report:(label:String, error:Null<String>)->Void
     ):Void {
-
-        if (usesRandomness(script)) {
-            skippedFiles.push(filePath);
-            return;
-        }
 
         final withPairs = hasInsertions(script);
 
@@ -217,30 +208,6 @@ class SaveSweep {
 
     static function hasInsertions(script:Script):Bool {
         return new Lens(script).getNodesOfType(NInsertion, true).length > 0;
-    }
-
-    /**
-     * Whether the script relies on the random generator, which is not saved:
-     * pick/shuffle alternatives, random built-ins, or random calls in functions.
-     */
-    static function usesRandomness(script:Script):Bool {
-        final lens = new Lens(script);
-        for (alt in lens.getNodesOfType(NAlternative, true)) {
-            if (alt.mode == Pick || alt.mode == Shuffle) return true;
-        }
-        final randomNames = ['random', 'chance', 'random_float', 'seed_random', 'array_pick', 'array_shuffle'];
-        for (access in lens.getNodesOfType(NAccess, true)) {
-            if (randomNames.indexOf(access.name) != -1) return true;
-            // `items.pick()` / `items.shuffle()` helpers
-            if (access.target != null && (access.name == 'pick' || access.name == 'shuffle')) return true;
-        }
-        for (func in lens.getNodesOfType(NFunctionDecl, true)) {
-            if (func.code == null) continue;
-            for (name in randomNames.concat(['.pick(', '.shuffle('])) {
-                if (func.code.indexOf(name) != -1) return true;
-            }
-        }
-        return false;
     }
 
 }

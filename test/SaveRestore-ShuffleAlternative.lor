@@ -1,0 +1,125 @@
+// A save made while a shuffle alternative plays one of its items: after the
+// restore, the remaining items play too, in the same order.
+
+beat Start
+  seed_random(7)
+  Before.
+
+  shuffle
+    Red.
+  --
+    Green.
+  --
+    Blue.
+
+    Still blue.
+  --
+    Yellow.
+
+  After.
+
+/*
+<test>
+- expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ After.
+- saveAtDialogue: 1
+  expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ After.
+- saveAtDialogue: 3
+  expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ After.
+- saveAtDialogue: 4
+  expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ After.
+- saveAtDialogue: 5
+  expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ Red.
+
+    ~ After.
+- saveAtDialogue: [1, 4]
+  expected: |
+    ~ Before.
+
+    ~ Green.
+
+    ~ Green.
+
+    ~ Yellow.
+
+    ~ Blue.
+
+    ~ Still blue.
+
+    ~ Still blue.
+
+    ~ Red.
+
+    ~ After.
+</test>
+*/
