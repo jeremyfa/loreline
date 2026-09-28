@@ -24,9 +24,12 @@
 //
 // Usage: node test-syntax/run.mjs [--open] [name filter...]
 // Writes an HTML report to build/syntax-test/index.html: every file as Shiki
-// renders it (light and dark), scopes on hover, failing lines marked.
+// renders it with the Loreline themes (one-dark-jeremyfa and
+// github-light-custom), scopes on hover, failing lines marked.
 
 import { createHighlighter } from 'shiki';
+import oneDarkTheme from './themes/one-dark-theme.js';
+import githubLightTheme from './themes/github-light-theme.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
@@ -42,6 +45,9 @@ const openReport = args.includes('--open');
 const filters = args.filter(a => !a.startsWith('--'));
 
 const ASSERTION = /^\/\/\s*(\^|<-)/;
+
+const DARK = oneDarkTheme.name;
+const LIGHT = githubLightTheme.name;
 
 /**
  * Splits a test file into the code to tokenize and its assertions.
@@ -91,7 +97,7 @@ function parseTestFile(source) {
 function scopesByColumn(highlighter, code) {
     const lines = highlighter.codeToTokensBase(code.map(l => l.text).join('\n'), {
         lang: 'loreline',
-        theme: 'github-light',
+        theme: DARK,
         includeExplanation: true
     });
     return lines.map(tokens => {
@@ -158,7 +164,7 @@ function renderReport(highlighter, results) {
         const failingLines = new Set(result.failures.map(f => f.assertion.codeIndex + 1));
         const html = highlighter.codeToHtml(result.code.map(l => l.text).join('\n'), {
             lang: 'loreline',
-            themes: { light: 'github-light', dark: 'github-dark' },
+            themes: { light: LIGHT, dark: DARK },
             includeExplanation: true,
             transformers: [{
                 line(node, line) {
@@ -205,7 +211,7 @@ ${html}
   pre.shiki .line.failing { background: rgba(207, 34, 46, .15); }
   pre.shiki span[title]:hover { outline: 1px solid rgba(127, 127, 127, .6); }
   @media (prefers-color-scheme: dark) {
-    body { background: #0d1117; color: #e6edf3; }
+    body { background: #181818; color: #dddddd; }
     .shiki, .shiki span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
     section.fail h2 { color: #ff7b72; }
     section.pass h2 { color: #3fb950; }
@@ -223,7 +229,7 @@ ${sections}
 
 const grammar = JSON.parse(fs.readFileSync(grammarPath, 'utf8'));
 const highlighter = await createHighlighter({
-    themes: ['github-light', 'github-dark'],
+    themes: [oneDarkTheme, githubLightTheme],
     langs: [{ ...grammar, name: 'loreline' }]
 });
 
