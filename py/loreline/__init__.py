@@ -355,6 +355,18 @@ class Interpreter:
         """Keys of the saved children not resumed with ``resume_spawn()`` (nor replaced with ``spawn()``) yet."""
         return list(self._internal.resumableSpawnKeys())
 
+    def seed_random(self, seed: Optional[float] = None) -> None:
+        """Reseed the random generator shared by this interpreter, its root and every child.
+
+        The generator is part of save data, so a restored game draws the same random
+        values as it would have without the save. Call this after a restore to break
+        that on purpose.
+
+        Args:
+            seed: The seed of the new sequence. If None, a seed is taken from the clock.
+        """
+        self._internal.seedRandom(seed)
+
     def dispose(self) -> None:
         """Stop a child interpreter for good.
 

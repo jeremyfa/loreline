@@ -570,6 +570,55 @@ function runSpawnTest(): void
     }
 }
 
+// The random generator is saved, and seedRandom() reseeds it from the host: same
+// scenario in every binding runner. After a restore at the first line, reseeding with
+// the seed of the script makes the second line draw what the first one drew.
+const RANDOM_SCRIPT = [
+    'beat Main',
+    '  seed_random(7)',
+    '  First $random(1, 1000000000)',
+    '',
+    '  Second $random(1, 1000000000)',
+    '',
+];
+
+function runSeedRandomTest(): void
+{
+    global $passCount, $failCount;
+    $label = 'random: seedRandom after restore';
+    try {
+        $log = [];
+        $pending = null;
+        $dialogue = function ($interp, $character, $text, $tags, $advance) use (&$log, &$pending): void {
+            $log[] = $text;
+            $pending = $advance;
+        };
+        $choice = function ($interp, $options, $select): void {};
+        $finish = function ($interp): void {};
+
+        $script = Loreline::parse(implode("\n", RANDOM_SCRIPT));
+        $root = Loreline::play($script, $dialogue, $choice, $finish);
+        $saveData = $root->save();
+
+        $restored = Loreline::resume($script, $dialogue, $choice, $finish, $saveData);
+        $restored->seedRandom(7);
+        $pending();
+
+        $first = explode(' ', $log[0])[1];
+        $second = isset($log[2]) ? explode(' ', $log[2])[1] : '';
+        if ($second !== $first) {
+            throw new \Exception("expected $first after reseeding, got " . implode(' / ', $log));
+        }
+
+        $passCount++;
+        echo "\033[1m\033[32mPASS\033[0m - \033[90m$label\033[0m\n";
+    } catch (\Throwable $e) {
+        $failCount++;
+        echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
+        echo "  Error: " . $e->getMessage() . "\n";
+    }
+}
+
 // A saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
 function saveIndices(mixed $raw): array
 {
@@ -774,6 +823,7 @@ function main(): void
     }
 
     runSpawnTest();
+    runSeedRandomTest();
 
     $total = $passCount + $failCount;
     echo "\n";

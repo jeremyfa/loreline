@@ -555,6 +555,47 @@ public class TestRunner {
 
     // The customCreateFields option: every fields object comes from the host factory,
     // which receives the interpreter asking for it.
+    // The random generator is saved, and seedRandom() reseeds it from the host: same
+    // scenario in every binding runner. After a restore at the first line, reseeding with
+    // the seed of the script makes the second line draw what the first one drew.
+    static void runSeedRandomTest() {
+        final String label = "random: seedRandom after restore";
+        try {
+            final List<String> log = new ArrayList<>();
+            final Runnable[] pending = new Runnable[1];
+            DialogueHandler dialogue = (interp, character, text, tags, advance) -> {
+                log.add(text);
+                pending[0] = advance;
+            };
+
+            Script script = Loreline.parse(String.join("\n",
+                "beat Main",
+                "  seed_random(7)",
+                "  First $random(1, 1000000000)",
+                "",
+                "  Second $random(1, 1000000000)",
+                ""
+            ));
+            Interpreter root = Loreline.play(script, dialogue, (interp, opts, select) -> {}, interp -> {});
+            String saveData = root.save();
+
+            Interpreter restored = Loreline.resume(script, dialogue, (interp, opts, select) -> {}, interp -> {}, saveData);
+            restored.seedRandom(7);
+            pending[0].run();
+
+            String first = log.get(0).split(" ")[1];
+            String second = log.size() > 2 ? log.get(2).split(" ")[1] : "";
+            if (!second.equals(first)) throw new RuntimeException("expected " + first + " after reseeding, got " + String.join(" / ", log));
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
     static void runCustomFieldsTest() {
         final String label = "custom fields: factory used for state and characters";
         try {
@@ -826,6 +867,7 @@ public class TestRunner {
 
         runSpawnTest();
         runCustomFieldsTest();
+        runSeedRandomTest();
 
         int total = passCount + failCount;
         System.out.println();

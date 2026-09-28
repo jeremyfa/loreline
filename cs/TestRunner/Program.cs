@@ -259,6 +259,7 @@ class Program
 
         RunSpawnTest();
         RunCustomFieldsTest();
+        RunSeedRandomTest();
 
         int total = passCount + failCount;
         Console.WriteLine();
@@ -421,6 +422,52 @@ class Program
             if ((string)root.GetCharacterField("bob", "mood") != "happy") checks.Add("bob.mood not written through the factory object");
             if (!created.Contains(root)) checks.Add("factory not called with the interpreter");
             if (checks.Count > 0) throw new Exception(string.Join("; ", checks));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
+        }
+    }
+
+    // The random generator is saved, and SeedRandom() reseeds it from the host: same
+    // scenario in every binding runner. After a restore at the first line, reseeding with
+    // the seed of the script makes the second line draw what the first one drew.
+    static void RunSeedRandomTest()
+    {
+        const string label = "random: seedRandom after restore";
+        try
+        {
+            var log = new List<string>();
+            Interpreter.DialogueCallback pending = null;
+            void Dialogue(Interpreter.Dialogue dialogue)
+            {
+                log.Add(dialogue.Text);
+                pending = dialogue.Callback;
+            }
+
+            Script script = Engine.Parse(string.Join("\n", new[] {
+                "beat Main",
+                "  seed_random(7)",
+                "  First $random(1, 1000000000)",
+                "",
+                "  Second $random(1, 1000000000)",
+                ""
+            }));
+            Interpreter root = Engine.Play(script, Dialogue, choice => { }, finish => { });
+            string saveData = root.Save();
+
+            Interpreter restored = Engine.Resume(script, Dialogue, choice => { }, finish => { }, saveData);
+            restored.SeedRandom(7);
+            pending();
+
+            string first = log[0].Split(' ')[1];
+            string second = log.Count > 2 ? log[2].Split(' ')[1] : "";
+            if (second != first) throw new Exception("expected " + first + " after reseeding, got " + string.Join(" / ", log));
 
             passCount++;
             Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");

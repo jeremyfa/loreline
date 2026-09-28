@@ -126,6 +126,7 @@ public:
 	Ref<LorelineInterpreter> spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished);
 	Ref<LorelineInterpreter> resume_spawn(const String &key, const Callable &on_dialogue, const Callable &on_choice, const Callable &on_finished);
 	Array resumable_spawn_keys();
+	void seed_random(const Variant &seed);
 	void dispose();
 };
 

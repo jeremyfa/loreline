@@ -524,6 +524,7 @@ async function main(): Promise<void> {
 
     runSpawnTest();
     runCustomFieldsTest();
+    runSeedRandomTest();
 
     const total: number = passCount + failCount;
     console.log('');
@@ -616,6 +617,48 @@ function runSpawnTest(): void {
             checks.push('log:\n    ' + log.join('\n    '));
         }
         if (checks.length > 0) throw new Error(checks.join('; '));
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
+    }
+}
+
+// The random generator is saved, and seedRandom() reseeds it from the host: same
+// scenario in every binding runner. After a restore at the first line, reseeding with
+// the seed of the script makes the second line draw what the first one drew.
+const RANDOM_SCRIPT = [
+    'beat Main',
+    '  seed_random(7)',
+    '  First $random(1, 1000000000)',
+    '',
+    '  Second $random(1, 1000000000)',
+    ''
+].join('\n');
+
+function runSeedRandomTest(): void {
+    const label = 'random: seedRandom after restore';
+    try {
+        const log: string[] = [];
+        let pending: (() => void) | null = null;
+        const dialogue: DialogueHandler = (_interp, _character, text, _tags, callback) => {
+            log.push(text);
+            pending = callback;
+        };
+        const script: Script = Loreline.parse(RANDOM_SCRIPT);
+        const root: Interpreter = Loreline.play(script, dialogue, () => {}, () => {});
+        const saved = JSON.stringify(root.save());
+
+        const restored: Interpreter = Loreline.resume(script, dialogue, () => {}, () => {}, JSON.parse(saved));
+        restored.seedRandom(7);
+        pending!();
+
+        const first = log[0].split(' ')[1];
+        const second = log.length > 2 ? log[2].split(' ')[1] : '';
+        if (second !== first) throw new Error(`expected ${first} after reseeding, got ${log.join(' / ')}`);
 
         passCount++;
         console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);

@@ -227,6 +227,26 @@ public class Interpreter {
     }
 
     /**
+     * Reseeds the random generator shared by this interpreter, its root and every child,
+     * with a seed taken from the clock. The generator is part of save data, so a restored
+     * game draws the same random values as it would have without the save. Call this after
+     * a restore to break that on purpose.
+     */
+    public void seedRandom() {
+        runtimeInterpreter.seedRandom(null);
+    }
+
+    /**
+     * Reseeds the random generator shared by this interpreter, its root and every child.
+     * The same seed always gives the same sequence.
+     *
+     * @param seed the seed of the new sequence
+     */
+    public void seedRandom(double seed) {
+        runtimeInterpreter.seedRandom(Double.valueOf(seed));
+    }
+
+    /**
      * Stops a child interpreter for good: its playhead is cleared, it is not part of
      * saves anymore, and callbacks it handed out become no-ops. Throws on a root interpreter.
      */

@@ -342,6 +342,15 @@ function Interpreter:resumable_spawn_keys()
     return hx_array_to_lua(self._internal:resumableSpawnKeys())
 end
 
+--- Reseed the random generator shared by this interpreter, its root and every child.
+-- The generator is part of save data, so a restored game draws the same random
+-- values as it would have without the save. Call this after a restore to break
+-- that on purpose.
+-- @param seed number|nil The seed of the new sequence (default: a seed taken from the clock).
+function Interpreter:seed_random(seed)
+    self._internal:seedRandom(seed)
+end
+
 --- Stop a child interpreter for good.
 -- Its playhead is cleared, it is not part of saves anymore, and callbacks it
 -- handed out become no-ops. Raises an error on a root interpreter.

@@ -153,6 +153,19 @@ class Interpreter
     }
 
     /**
+     * Reseed the random generator shared by this interpreter, its root and
+     * every child. The generator is part of save data, so a restored game draws
+     * the same random values as it would have without the save. Call this after
+     * a restore to break that on purpose.
+     *
+     * @param float|null $seed The seed of the new sequence, or null for a seed taken from the clock
+     */
+    public function seedRandom(?float $seed = null): void
+    {
+        $this->internal->seedRandom($seed);
+    }
+
+    /**
      * Stop a child interpreter for good: its playhead is cleared, it is not
      * part of saves anymore, and callbacks it handed out become no-ops.
      * Throws on a root interpreter.

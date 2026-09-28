@@ -2396,6 +2396,23 @@ LORELINE_PUBLIC void Loreline_setTopLevelStateField(
     LORELINE_END_CALL
 }
 
+/* -- Random generator ---------------------------------------------------- */
+
+static LORELINE_NOINLINE void Loreline_seedRandom_hx(Loreline_Interpreter* interp, bool hasSeed, double seed) {
+    LORELINE_HX_BEGIN
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    hxInterp->seedRandom(hasSeed ? ::Dynamic(seed) : ::Dynamic(null()));
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_seedRandom(Loreline_Interpreter* interp, bool hasSeed, double seed) {
+    if (!interp) return;
+
+    LORELINE_BEGIN_CALL
+    Loreline_seedRandom_hx(interp, hasSeed, seed);
+    LORELINE_END_CALL
+}
+
 /* -- Current node -------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_currentNode_hx(

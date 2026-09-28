@@ -625,6 +625,54 @@ local function run_spawn_test()
     end
 end
 
+-- The random generator is saved, and seed_random() reseeds it from the host: same
+-- scenario in every binding runner. After a restore at the first line, reseeding with
+-- the seed of the script makes the second line draw what the first one drew.
+local RANDOM_SCRIPT = table.concat({
+    "beat Main",
+    "  seed_random(7)",
+    "  First $random(1, 1000000000)",
+    "",
+    "  Second $random(1, 1000000000)",
+    "",
+}, "\n")
+
+local function run_seed_random_test()
+    local label = "random: seedRandom after restore"
+    local ok, err = pcall(function()
+        local log = {}
+        local pending = nil
+        local function dialogue(interp, character, text, tags, advance)
+            log[#log + 1] = text
+            pending = advance
+        end
+        local function choice(interp, options, select) end
+        local function finish(interp) end
+
+        local script = loreline.parse(RANDOM_SCRIPT)
+        local root = loreline.play(script, dialogue, choice, finish)
+        local save_data = root:save()
+
+        local restored = loreline.resume(script, dialogue, choice, finish, save_data)
+        restored:seed_random(7)
+        pending()
+
+        local first = log[1]:match("%S+$")
+        local second = log[3] and log[3]:match("%S+$") or ""
+        if second ~= first then
+            error("expected " .. tostring(first) .. " after reseeding, got " .. table.concat(log, " / "))
+        end
+    end)
+    if ok then
+        pass_count = pass_count + 1
+        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. label .. "\027[0m\n")
+    else
+        fail_count = fail_count + 1
+        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. label .. "\027[0m\n")
+        io.write("  Error: " .. tostring(err) .. "\n")
+    end
+end
+
 local function main()
     if #arg < 1 then
         io.stderr:write("Usage: lua lua/test-runner.lua <test-directory>\n")
@@ -853,6 +901,7 @@ local function main()
     end
 
     run_spawn_test()
+    run_seed_random_test()
 
     local total = pass_count + fail_count
     io.write("\n")

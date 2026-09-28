@@ -649,6 +649,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             return _lorStringify(value);
         },
 
+        seedRandom: function(interpId, seed) {
+            var interp = _getObj(interpId);
+            if (interp) {
+                interp.seedRandom(seed);
+            }
+        },
+
         setTopLevelStateField: function(interpId, field, value) {
             var interp = _getObj(interpId);
             if (interp) {

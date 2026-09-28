@@ -263,6 +263,15 @@ func resumable_spawn_keys() -> Array:
 	return result
 
 
+## Reseeds the random generator shared by this interpreter, its root and every
+## child. Without a seed (null), one is taken from the clock. The generator is
+## part of save data, so a restored game draws the same random values as it
+## would have without the save: call this after a restore to break that on purpose.
+func seed_random(seed = null) -> void:
+	if _interp != null:
+		_interp.seedRandom(seed)
+
+
 ## Stops a child interpreter for good: its playhead is cleared, it is not part
 ## of saves anymore, and pending advance/select Callables become no-ops.
 ## Reports an error on a root interpreter.

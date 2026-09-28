@@ -84,6 +84,9 @@ beat start
 	# 7. Child interpreters
 	await _run_spawn(loreline)
 
+	# 8. Random generator in save data, reseeded from the host
+	await _run_seed_random(loreline)
+
 	_finish()
 
 
@@ -196,6 +199,44 @@ beat Side
 	]
 	if _spawn_log != expected:
 		_fail("spawn: unexpected log " + str(_spawn_log))
+
+
+# Same scenario in every binding runner. The random generator is saved, and
+# seed_random() reseeds it from the host: after a restore at the first line,
+# reseeding with the seed of the script makes the second line draw what the
+# first one drew.
+func _run_seed_random(loreline) -> void:
+	var source := """
+beat Main
+  seed_random(7)
+  First $random(1, 1000000000)
+
+  Second $random(1, 1000000000)
+"""
+	var script = await loreline.parse(source, "random.lor")
+	if script == null:
+		_fail("random: parse returned null")
+		return
+
+	_spawn_log.clear()
+	_spawn_pending.clear()
+	var noop_choice := func(_interp, _options, _select): pass
+	var noop_finished := func(_interp): pass
+	var root: LorelineInterpreter = loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Main")
+	await _spawn_wait(1)
+	var saved: String = root.save_state()
+
+	_spawn_pending.clear()
+	var restored: LorelineInterpreter = loreline.resume(script, _on_spawn_dialogue, noop_choice, noop_finished, saved)
+	await _spawn_wait(2)
+	restored.seed_random(7)
+	_spawn_next("root")
+	await _spawn_wait(3)
+
+	var first: String = _spawn_log[0].get_slice(" ", 2) if _spawn_log.size() > 0 else ""
+	var second: String = _spawn_log[2].get_slice(" ", 2) if _spawn_log.size() > 2 else ""
+	if first == "" or second != first:
+		_fail("random: expected " + first + " after reseeding, got " + str(_spawn_log))
 
 
 func _on_dialogue(interp: LorelineInterpreter, character: String, text: String, _tags: Array, advance: Callable) -> void:

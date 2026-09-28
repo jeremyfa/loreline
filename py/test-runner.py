@@ -611,6 +611,7 @@ def main():
             file_fail_count += 1
 
     run_spawn_test()
+    run_seed_random_test()
 
     total = pass_count + fail_count
     print()
@@ -655,6 +656,51 @@ SPAWN_EXPECTED = [
     "npc: Side gold 11 local 5",
     "npc: Side where Side host npc",
 ]
+
+
+# The random generator is saved, and seed_random() reseeds it from the host: same
+# scenario in every binding runner. After a restore at the first line, reseeding with
+# the seed of the script makes the second line draw what the first one drew.
+RANDOM_SCRIPT = "\n".join([
+    "beat Main",
+    "  seed_random(7)",
+    "  First $random(1, 1000000000)",
+    "",
+    "  Second $random(1, 1000000000)",
+    "",
+])
+
+
+def run_seed_random_test():
+    global pass_count, fail_count
+    label = "random: seedRandom after restore"
+    try:
+        log = []
+        pending = []
+
+        def dialogue(interp, character, text, tags, advance):
+            log.append(text)
+            pending.append(advance)
+
+        script = Loreline.parse(RANDOM_SCRIPT)
+        root = Loreline.play(script, dialogue, lambda i, o, s: None, lambda i: None)
+        save_data = root.save()
+
+        restored = Loreline.resume(script, dialogue, lambda i, o, s: None, lambda i: None, save_data)
+        restored.seed_random(7)
+        pending[-1]()
+
+        first = log[0].split(" ")[1]
+        second = log[2].split(" ")[1] if len(log) > 2 else ""
+        if second != first:
+            raise Exception(f"expected {first} after reseeding, got {' / '.join(log)}")
+
+        pass_count += 1
+        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")
+    except Exception as e:
+        fail_count += 1
+        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+        print(f"  Error: {e}")
 
 
 def run_spawn_test():

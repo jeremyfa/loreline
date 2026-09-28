@@ -1293,6 +1293,83 @@ static void runSpawnTest() {
     fflush(stdout);
 }
 
+/* -- Random generator ------------------------------------------------------ */
+
+/* The random generator is saved, and Loreline_seedRandom() reseeds it from the host:
+ * same scenario in every binding runner. After a restore at the first line, reseeding
+ * with the seed of the script makes the second line draw what the first one drew. */
+static void runSeedRandomTest() {
+    const char* source =
+        "beat Main\n"
+        "  seed_random(7)\n"
+        "  First $random(1, 1000000000)\n"
+        "\n"
+        "  Second $random(1, 1000000000)\n";
+    const char* label = "random: seedRandom after restore";
+
+    bool ok = true;
+    std::string error;
+    auto fail = [&](const std::string& msg) {
+        if (ok) { ok = false; error = msg; }
+    };
+    auto valueOf = [](const std::string& line) {
+        size_t space = line.rfind(' ');
+        return space == std::string::npos ? std::string() : line.substr(space + 1);
+    };
+
+    SpawnTestLog log;
+    SpawnTestFlow rootFlow { &log, "root" };
+
+    Loreline_Script* script = Loreline_parse(source, "random.lor", nullptr, nullptr);
+    if (!script) {
+        fail("Error parsing random test script");
+    } else {
+        Loreline_Interpreter* root = Loreline_play(
+            script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+            Loreline_String("Main"), nullptr, &rootFlow);
+        spawnTestPump();
+        if (!root || log.lines.size() != 1) fail("first line not shown");
+
+        Loreline_Interpreter* restored = nullptr;
+        if (ok) {
+            std::string saveData = Loreline_save(root).c_str();
+            log.pending.clear();
+            restored = Loreline_resume(script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+                Loreline_String(saveData.c_str()), Loreline_String(), nullptr, &rootFlow);
+            spawnTestPump();
+            if (!restored) fail("resume returned null");
+        }
+        if (ok) {
+            Loreline_seedRandom(restored, true, 7);
+            if (!spawnTestNext(log, "root")) fail("no pending dialogue after resume");
+        }
+        if (ok) {
+            std::string first = valueOf(log.lines[0]);
+            std::string second = log.lines.size() > 2 ? valueOf(log.lines[2]) : std::string();
+            if (second != first) {
+                std::string got;
+                for (const auto& line : log.lines) got += "\n    " + line;
+                fail("expected " + first + " after reseeding, got:" + got);
+            }
+        }
+
+        if (restored) Loreline_releaseInterpreter(restored);
+        if (root) Loreline_releaseInterpreter(root);
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
 /* -- Sync calls after Loreline_update() ------------------------------------ */
 
 /* Once Loreline_update() has been called, callbacks are deferred to the dispatch
@@ -1573,6 +1650,7 @@ int main(int argc, char* argv[]) {
     runParallelInterpretersTest();
     fileCount++;
     runSpawnTest();
+    runSeedRandomTest();
     fileCount++;
     runSyncAfterUpdateTest();
 

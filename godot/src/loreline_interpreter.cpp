@@ -303,6 +303,7 @@ void LorelineInterpreter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("spawn", "key", "on_dialogue", "on_choice", "on_finished"), &LorelineInterpreter::spawn, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("resume_spawn", "key", "on_dialogue", "on_choice", "on_finished"), &LorelineInterpreter::resume_spawn, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("resumable_spawn_keys"), &LorelineInterpreter::resumable_spawn_keys);
+	ClassDB::bind_method(D_METHOD("seed_random", "seed"), &LorelineInterpreter::seed_random, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("dispose"), &LorelineInterpreter::dispose);
 
 	ADD_SIGNAL(MethodInfo("dialogue",
@@ -1120,6 +1121,23 @@ Array LorelineInterpreter::resumable_spawn_keys() {
 	}
 #endif
 	return result;
+}
+
+// Reseeds the random generator of the whole context. A null seed (the default)
+// takes one from the clock, any number starts that number's sequence.
+void LorelineInterpreter::seed_random(const Variant &seed) {
+	const bool has_seed = seed.get_type() == Variant::INT || seed.get_type() == Variant::FLOAT;
+	const double value = has_seed ? (double)seed : 0.0;
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	js->eval("_lorelineBridge.seedRandom(" + String::num_int64(_js_id) + "," +
+		(has_seed ? String::num(value, 17) : String("null")) + ")", true);
+#else
+	if (!_interp) return;
+	Loreline_seedRandom(_interp, has_seed, value);
+#endif
 }
 
 void LorelineInterpreter::dispose() {

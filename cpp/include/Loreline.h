@@ -542,6 +542,12 @@ LORELINE_PUBLIC Loreline_String Loreline_interpreterKey(Loreline_Interpreter* in
 LORELINE_PUBLIC bool Loreline_isRoot(Loreline_Interpreter* interp);
 LORELINE_PUBLIC void Loreline_disposeInterpreter(Loreline_Interpreter* interp);
 
+/* Reseeds the random generator shared by this interpreter, its root and every child.
+ * With hasSeed false, the seed is taken from the clock. The generator is part of save
+ * data, so a restored game draws the same random values as it would have without the
+ * save: call this after Loreline_restore() or Loreline_resume() to break that on purpose. */
+LORELINE_PUBLIC void Loreline_seedRandom(Loreline_Interpreter* interp, bool hasSeed, double seed);
+
 /* Character access */
 LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(
     Loreline_Interpreter* interp, Loreline_String character, Loreline_String field);
