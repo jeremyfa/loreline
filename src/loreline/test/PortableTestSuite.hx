@@ -69,6 +69,7 @@ class PortableTestSuite {
         CustomFieldsTests.run(onPass, onFail);
         InsertionScopeTests.run(onPass, onFail);
         RandomTests.run(onPass, onFail);
+        PrinterTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 

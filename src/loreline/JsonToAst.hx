@@ -40,6 +40,15 @@ class JsonToAst {
      */
     public static function nodeFromJson(json:Dynamic):Node {
         if (json == null) return null;
+        final node = nodeFromJsonOfType(json);
+        // Parentheses written around an expression, whatever its type
+        if (json.parens != null && node is NExpr) {
+            (cast node:NExpr).parens = Std.int(json.parens);
+        }
+        return node;
+    }
+
+    static function nodeFromJsonOfType(json:Dynamic):Node {
         final nodeType:String = json.type;
 
         return switch nodeType {

@@ -555,11 +555,22 @@ class AstNode extends Node {
 class NExpr extends AstNode {
 
     /**
+     * Number of pairs of parentheses written around this expression in the
+     * script, `((a))` has 2. Only used to print the script back as it was
+     * written: the tree already holds the precedence they gave.
+     */
+    public var parens:Int = 0;
+
+    /**
      * Converts the expression node to a JSON representation.
      * @return Dynamic object containing expression data
      */
     public override function toJson():Dynamic {
-        return super.toJson();
+        final json:Dynamic = super.toJson();
+        if (parens > 0) {
+            json.parens = parens;
+        }
+        return json;
     }
 
     override function type():String {

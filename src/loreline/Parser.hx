@@ -566,10 +566,8 @@ class ParserContext {
         // Parse optional trailing condition (must be on the same line)
         if (!lineBreakAfterToken && match(KwIf)) {
             final ifPos = previous().pos;
-            if (check(LParen)) {
-                dialogue.conditionStyle = Parens;
-            }
             dialogue.condition = parseConditionExpression();
+            dialogue.conditionStyle = takeConditionParens(dialogue.condition);
             dialogue.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
         }
 
@@ -853,10 +851,8 @@ class ParserContext {
         // Parse optional trailing condition (must be on the same line)
         if (!lineBreakAfterToken && match(KwIf)) {
             final ifPos = previous().pos;
-            if (check(LParen)) {
-                statement.conditionStyle = Parens;
-            }
             statement.condition = parseConditionExpression();
+            statement.conditionStyle = takeConditionParens(statement.condition);
             statement.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
         }
         statement.pos = statement.pos.extendedTo(prevNonWhitespaceOrComment().pos);
@@ -930,10 +926,8 @@ class ParserContext {
             final ifPos = previous().pos;
             final offset = currentPos().offset;
             try {
-                if (check(LParen)) {
-                    choiceOption.conditionStyle = Parens;
-                }
                 choiceOption.condition = parseConditionExpression();
+                choiceOption.conditionStyle = takeConditionParens(choiceOption.condition);
                 choiceOption.conditionPos = ifPos.extendedTo(prevNonWhitespaceOrComment().pos);
             }
             catch (e:ParseError) {
@@ -1042,10 +1036,8 @@ class ParserContext {
         final ifNode = new NIfStatement(nextNodeId(NODE), startPos, null, Plain, null, null);
 
         expect(KwIf);
-        if (check(LParen)) {
-            ifNode.conditionStyle = Parens;
-        }
         ifNode.condition = parseConditionExpression();
+        ifNode.conditionStyle = takeConditionParens(ifNode.condition);
 
         while (match(LineBreak)) {}
         attachComments(ifNode);
@@ -1477,6 +1469,8 @@ class ParserContext {
                 advance();
                 final expr = parseExpression();
                 expect(RParen);
+                // Kept so that the script prints back with its parentheses
+                expr.parens++;
                 parsePostfix(startPos, expr);
 
             case _:
@@ -2150,7 +2144,6 @@ class ParserContext {
     function parseConditionExpression():NExpr {
         final prevParsingCondition = parsingCondition;
         parsingCondition = true;
-        final hasParen = match(LParen);
         var expr:NExpr = null;
         try {
             expr = parseExpression();
@@ -2167,8 +2160,22 @@ class ParserContext {
             expr = new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
         parsingCondition = prevParsingCondition;
-        if (hasParen) expect(RParen);
         return expr;
+    }
+
+    /**
+     * Style of a condition that was just parsed: `Parens` when parentheses wrap
+     * the whole condition, as in `if (a and b)`. That outer pair then belongs to
+     * the statement and is taken off the expression, so it prints once.
+     * A condition that only starts with a parenthesis, like `(a and b) and c`,
+     * stays `Plain`.
+     */
+    function takeConditionParens(condition:NExpr):ConditionStyle {
+        if (condition != null && condition.parens > 0) {
+            condition.parens--;
+            return Parens;
+        }
+        return Plain;
     }
 
     /**

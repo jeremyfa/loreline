@@ -287,6 +287,9 @@ class Printer {
      */
     function printNode(node:Node, sameLine:Bool = false) {
         if (node == null) return;
+        // Parentheses written around an expression in the script
+        final parens = node is NExpr ? (cast node:NExpr).parens : 0;
+        for (_ in 0...parens) write('(');
         switch (Type.getClass(node)) {
             case Script:
                 printScript(cast node);
@@ -339,6 +342,42 @@ class Printer {
             case _:
                 throw 'Unsupported node type: ${Type.getClassName(Type.getClass(node))}';
         }
+        for (_ in 0...parens) write(')');
+    }
+
+    /**
+     * Binding strength of an expression, following the levels of the parser
+     * (Parser.parseExpression down to parsePrimary): the higher, the tighter.
+     */
+    static function precedence(expr:NExpr):Int {
+        if (expr is NAssign) return 1;
+        if (expr is NTernary) return 2;
+        if (expr is NUnary) return 9;
+        if (expr is NBinary) {
+            return switch (cast expr:NBinary).op {
+                case OpOr(_): 3;
+                case OpAnd(_): 4;
+                case OpEquals | OpNotEquals: 5;
+                case OpGreater | OpGreaterEq | OpLess | OpLessEq: 6;
+                case OpPlus | OpMinus: 7;
+                case OpMultiply | OpDivide | OpModulo: 8;
+                case _: 8;
+            }
+        }
+        return 10;
+    }
+
+    /**
+     * Prints a sub-expression that must bind at least as tightly as `minPrecedence`.
+     * A tree parsed from a script already has the parentheses it needs (kept in
+     * `parens`), so this only adds a pair to trees built another way, where the
+     * printed script would otherwise mean something else.
+     */
+    function printOperand(expr:NExpr, minPrecedence:Int) {
+        final extra = expr != null && expr.parens == 0 && precedence(expr) < minPrecedence;
+        if (extra) write('(');
+        printNode(expr);
+        if (extra) write(')');
     }
 
     /**
@@ -1055,7 +1094,7 @@ class Printer {
     function printAccess(access:NAccess) {
         printLeadingComments(access);
         if (access.target != null) {
-            printNode(access.target);
+            printOperand(access.target, 10);
             write('.');
         }
         write(access.name);
@@ -1068,7 +1107,7 @@ class Printer {
      */
     function printArrayAccess(access:NArrayAccess) {
         printLeadingComments(access);
-        printNode(access.target);
+        printOperand(access.target, 10);
         write('[');
         printNode(access.index);
         write(']');
@@ -1081,7 +1120,7 @@ class Printer {
      */
     function printCall(call:NCall) {
         printLeadingComments(call);
-        printNode(call.target);
+        printOperand(call.target, 10);
         write('(');
         var first = true;
         for (arg in call.args) {
@@ -1095,20 +1134,16 @@ class Printer {
 
     /**
      * Prints a binary operation expression (a + b, a && b, etc).
-     * Handles operator precedence with parentheses when needed.
+     * Operators are left associative, so a right operand of the same level
+     * needs parentheses too: `a - (b - c)`.
      * @param binary Binary operation node to print
      */
-    function printBinary(binary:NBinary, skipParen:Bool = false) {
+    function printBinary(binary:NBinary) {
         printLeadingComments(binary);
-        final needsParens = !skipParen && switch binary.op {
-            case OpAnd(word) | OpOr(word): true;
-            case _: false;
-        };
-        if (needsParens) write('(');
-        printNode(binary.left);
+        final level = precedence(binary);
+        printOperand(binary.left, level);
         write(' ${getOperator(binary.op)} ');
-        printNode(binary.right);
-        if (needsParens) write(')');
+        printOperand(binary.right, level + 1);
         printTrailingComments(binary);
     }
 
@@ -1120,7 +1155,7 @@ class Printer {
         printLeadingComments(unary);
         write(getOperator(unary.op));
         printTrailingComments(unary);
-        printNode(unary.operand);
+        printOperand(unary.operand, 9);
     }
 
     /**
@@ -1129,11 +1164,11 @@ class Printer {
      */
     function printTernary(ternary:NTernary) {
         printLeadingComments(ternary);
-        printNode(ternary.condition);
+        printOperand(ternary.condition, 3);
         write(' ? ');
-        printNode(ternary.trueExpr);
+        printOperand(ternary.trueExpr, 2);
         write(' : ');
-        printNode(ternary.falseExpr);
+        printOperand(ternary.falseExpr, 2);
         printTrailingComments(ternary);
     }
 
@@ -1158,12 +1193,7 @@ class Printer {
         final savedComments = enableComments;
         enableComments = false;
         if (parens) write('(');
-        if (expr is NBinary) {
-            printBinary(cast expr, true);
-        }
-        else {
-            printNode(expr);
-        }
+        printNode(expr);
         if (parens) write(')');
         enableComments = savedComments;
     }

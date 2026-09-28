@@ -1,0 +1,95 @@
+// Parentheses written in the script must be kept: they change the result, and
+// the formatted script must behave the same. Each line reads "right" only when
+// the parentheses are respected.
+
+state
+  a: true
+  b: false
+  c: true
+  n: 0
+
+character bob
+  name: Bob
+
+beat Start
+  if (a and b) and c
+    One wrong.
+  else
+    One right.
+
+  if (a) or b
+    Two right.
+
+  if a and (b or c)
+    Three right.
+
+  if ((b))
+    Four wrong.
+  else
+    Four right.
+
+  n = (1 + 2) * 3
+  Five $n.
+
+  n = 1 + 2 * 3
+  Six $n.
+
+  n = -(2 + 3)
+  Seven $n.
+
+  if !(n == 5)
+    Eight right.
+
+  if (a or b) and !c
+    Nine wrong.
+  else
+    Nine right.
+
+  Ten right. if (a and c) or b
+
+  Ten wrong. if (b and c) or b
+
+  bob: Eleven right. if (a) and c
+
+  Twelve ${(n + 1) * 2}.
+
+  choice
+    Thirteen if (a and c) and a
+      Picked thirteen.
+    Hidden if (b) or b
+      Picked hidden.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ One right.
+
+    ~ Two right.
+
+    ~ Three right.
+
+    ~ Four right.
+
+    ~ Five 9.
+
+    ~ Six 7.
+
+    ~ Seven -5.
+
+    ~ Eight right.
+
+    ~ Nine right.
+
+    ~ Ten right.
+
+    Bob: Eleven right.
+
+    ~ Twelve -8.
+
+    + Thirteen
+    - Hidden
+
+    ~ Picked thirteen.
+</test>
+*/
