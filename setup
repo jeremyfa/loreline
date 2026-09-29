@@ -169,6 +169,7 @@ async function main() {
     let buildGdscript = rawArgs.indexOf('--gdscript') != -1;
     let testGdscript = rawArgs.indexOf('--gdscript-test') != -1;
     let testSyntax = rawArgs.indexOf('--syntax-test') != -1;
+    let testLsp = rawArgs.indexOf('--lsp-test') != -1;
     let testGodotLifetime = rawArgs.indexOf('--godot-lifetime-test') != -1;
     let buildGodotIos = rawArgs.indexOf('--godot-ios') != -1;
     let buildGodotAndroid = rawArgs.indexOf('--godot-android') != -1;
@@ -1470,6 +1471,32 @@ async function main() {
         console.log('Generated: godot/gdscript/internal');
     }
 
+    if (testLsp) {
+        // Language server tests on the targets the server ships on, where the
+        // CLI does not run: JS with node (VS Code extension), plain JS (web
+        // worker of the web editor) and C++. The CLI runs them on its own targets
+        // (Neko, C# with generics, PHP CLI). Built on their own
+        // (build-lsp-test.hxml), so that the server stays out of the runtime exports.
+        const lspDir = path.join(__dirname, 'build', 'lsp-test');
+        fs.mkdirSync(lspDir, { recursive: true });
+
+        // .cjs: package.json declares ES modules, and the Haxe output is a script
+        console.log('Run language server tests (JS with node)');
+        await command(haxe, ['build-lsp-test.hxml', '--library', 'hxnodejs', '--js', 'build/lsp-test/lsp-test-node.cjs'].concat(haxeBuildArgs));
+        await command('node', ['build/lsp-test/lsp-test-node.cjs']);
+
+        console.log('Run language server tests (JS)');
+        await command(haxe, ['build-lsp-test.hxml', '--js', 'build/lsp-test/lsp-test.cjs'].concat(haxeBuildArgs));
+        await command('node', ['build/lsp-test/lsp-test.cjs']);
+
+        console.log('Run language server tests (C++)');
+        const lspCppDir = path.join(lspDir, 'cpp');
+        await command(haxe, ['build-lsp-test.hxml', '--library', 'hxcpp', '--cpp', 'build/lsp-test/cpp', '-D', 'no-compilation'].concat(haxeBuildArgs));
+        const lspArchArgs = process.arch == 'arm64' ? ['-DHXCPP_ARM64'] : ['-DHXCPP_M64'];
+        await command(process.platform == 'win32' ? path.join(__dirname, 'haxelib.cmd') : path.join(__dirname, 'haxelib'), ['run', 'hxcpp', 'Build.xml'].concat(lspArchArgs), { cwd: lspCppDir });
+        await command(path.join(lspCppDir, process.platform == 'win32' ? 'LspTestMain.exe' : 'LspTestMain'), []);
+    }
+
     if (testSyntax) {
         // Syntax coloring of language/loreline.tmLanguage.json, checked with Shiki.
         // Writes a report to build/syntax-test/index.html for a manual check.
@@ -2160,6 +2187,10 @@ async function main() {
         // Syntax coloring tests (grammar only, no build needed)
         console.log('\n=== Syntax coloring tests ===');
         await command('node', ['test-syntax/run.mjs']);
+
+        // Language server tests (Neko, JS, C++)
+        console.log('\n=== Language server tests ===');
+        await command('node', ['./setup', '--lsp-test']);
 
         // 2. C# build + tests
         console.log('\n=== C# build + tests ===');

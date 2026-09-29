@@ -1,0 +1,3 @@
+--class-path src
+--main loreline.test.LspTestMain
+--macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
