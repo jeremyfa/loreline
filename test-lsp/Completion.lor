@@ -1,0 +1,28 @@
+state
+  gold: 3
+
+character bob
+  name: Bob
+
+beat Start
+  -> Sh
+  x = gol
+  when
+    always
+      Hi.
+
+beat Shop
+  Buy.
+
+/*
+<test>
+- request: completion
+  at: "-> Sh|"
+  includes: [Start, Shop]
+- request: completion
+  at: "x = gol|"
+  includes: [gold, and, or, not]
+- request: symbols
+  includes: [gold, bob, name, Start, Shop]
+</test>
+*/

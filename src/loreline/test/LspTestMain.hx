@@ -5,8 +5,10 @@ package loreline.test;
 #if !gdscript
 
 /**
- * Runs the language server tests. Built on its own (build-lsp-test.hxml), so
- * that the language server stays out of the runtime exports and of the CLI.
+ * Runs the language server tests on the targets the CLI does not run on (JS,
+ * C++): the protocol tests of LspTests, and the files of `test-lsp/`, embedded at
+ * compile time. Built on its own (build-lsp-test.hxml), so that the language
+ * server stays out of the runtime exports.
  */
 class LspTestMain {
 
@@ -15,16 +17,25 @@ class LspTestMain {
         var passCount = 0;
         var failCount = 0;
 
-        LspTests.run(
-            name -> {
-                passCount++;
-                println('PASS - ' + name);
-            },
-            (name, error) -> {
-                failCount++;
-                println('FAIL - ' + name + ' ' + error);
-            }
-        );
+        final pass = name -> {
+            passCount++;
+            println('PASS - ' + name);
+        };
+        final fail = (name, error) -> {
+            failCount++;
+            println('FAIL - ' + name + ' ' + error);
+        };
+
+        LspTests.run(pass, fail);
+
+        // Test files are at the top of the folder, the files they import below
+        final files = LspTestFiles.embed('test-lsp');
+        final fileTests = new LspFileTests(path -> files.get(path));
+        final paths = [for (path in files.keys()) if (path.indexOf('/') == -1) path];
+        paths.sort(Reflect.compare);
+        for (path in paths) {
+            fileTests.runFile(path, pass, fail);
+        }
 
         println('');
         if (failCount > 0) {

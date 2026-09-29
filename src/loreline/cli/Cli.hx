@@ -128,6 +128,12 @@ class Cli {
                     else
                         fail('Missing path argument');
 
+                case 'test-lsp':
+                    if (args.length >= 2)
+                        testLsp(args[1]);
+                    else
+                        fail('Missing path argument');
+
                 case 'format':
                     if (args.length >= 2)
                         format(args[1]);
@@ -198,9 +204,13 @@ class Cli {
         var method:String = null;
         var params:Dynamic = null;
         switch command {
-            case 'definition' | 'hover' | 'completion':
+            case 'definition' | 'hover':
                 method = 'textDocument/' + command;
                 params = { textDocument: textDocument, position: position() };
+            case 'completion':
+                // Invoked, like Ctrl+Space in an editor
+                method = 'textDocument/completion';
+                params = { textDocument: textDocument, position: position(), context: { triggerKind: 1 } };
             case 'symbols':
                 method = 'textDocument/documentSymbol';
                 params = { textDocument: textDocument };
@@ -546,6 +556,59 @@ class Cli {
         if (hasFailedTest) {
             Sys.exit(1);
         }
+    }
+
+    /**
+     * Runs the language server tests written as `.lor` files (see LspFileTests):
+     * the files at the top of `dir`, the files they import in its subfolders.
+     */
+    function testLsp(dir:String) {
+
+        if (!FileSystem.exists(dir) || !FileSystem.isDirectory(dir)) {
+            fail('Invalid test-lsp directory: $dir');
+        }
+
+        passCount = 0;
+        failCount = 0;
+
+        final fileTests = new loreline.test.LspFileTests(path -> {
+            final full = Path.join([dir, path]);
+            return FileSystem.exists(full) && !FileSystem.isDirectory(full) ? File.getContent(full) : null;
+        });
+        final paths = [for (name in FileSystem.readDirectory(dir)) if (name.endsWith('.lor') && !FileSystem.isDirectory(Path.join([dir, name]))) name];
+        paths.sort(Reflect.compare);
+
+        for (path in paths) {
+            fileTests.runFile(path,
+                name -> {
+                    passCount++;
+                    print('PASS'.green().bold() + ' - ' + name.gray());
+                },
+                (name, error) -> {
+                    failCount++;
+                    hasFailedTest = true;
+                    print('FAIL'.red().bold() + ' - ' + name.gray());
+                    for (line in error.split('\n')) print('  ' + line);
+                }
+            );
+        }
+
+        print('');
+        if (failCount > 0) {
+            print('  $failCount of ${passCount + failCount} language server test requests failed (${paths.length} files)'.red().bold());
+        }
+        else if (paths.length == 0) {
+            print('  No language server test files found under $dir'.gray());
+        }
+        else {
+            print('  All $passCount language server test requests passed (${paths.length} files)'.green().bold());
+        }
+        print('');
+
+        if (hasFailedTest) {
+            Sys.exit(1);
+        }
+
     }
 
     /**

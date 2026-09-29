@@ -1,0 +1,45 @@
+import sub/middle
+
+character bob
+  name: Bob
+
+beat Start
+  bob: Hello.
+  -> Local
+  -> Middle
+  -> Deep
+  choice
+    Go deeper -> Deep
+
+beat Local
+  Here.
+
+/*
+<test>
+- request: definition
+  at: "-> |Local"
+  target: beat Local
+- request: definition
+  at: "-> |Middle"
+  file: sub/middle.lor
+  target: beat Middle
+# Imported by sub/middle.lor, found from its folder, and further down its
+# file than the last line of this one
+- request: definition
+  at: "-> |Deep"
+  file: sub/deep.lor
+  target: beat Deep
+- request: definition
+  at: "Go deeper -> |Deep"
+  file: sub/deep.lor
+  target: beat Deep
+- request: definition
+  at: "|bob: Hello."
+  target: character bob
+- request: definition
+  at: "|Here."
+  none: true
+- request: diagnostics
+  none: true
+</test>
+*/

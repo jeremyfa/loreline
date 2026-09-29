@@ -1,0 +1,16 @@
+beat Start
+  -> Shop
+
+// The shop, open every day
+beat Shop
+  Buy.
+
+/*
+<test>
+- request: hover
+  at: "-> |Shop"
+  contains:
+    - "Beat: **Shop**"
+    - The shop, open every day
+</test>
+*/

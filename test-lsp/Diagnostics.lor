@@ -1,0 +1,18 @@
+beat Start
+  -> Missing
+  when pikc
+    always
+      Hi.
+
+/*
+<test>
+- request: diagnostics
+  expected:
+    - message: "Unknown beat: Missing"
+      line: 2
+      severity: 1
+    - message: "Unknown strategy: pikc"
+      line: 3
+      severity: 2
+</test>
+*/

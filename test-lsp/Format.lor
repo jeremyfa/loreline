@@ -1,0 +1,28 @@
+state
+    menu:
+        price: 5
+
+beat Start
+    Hello.
+    choice
+        Yes
+            Ok.
+
+/*
+<test>
+# Two spaces per level, and no space at the end of a line (menu:, beat, choice)
+- request: format
+  expected: |
+    state
+      menu:
+        price: 5
+
+    beat Start
+
+      Hello.
+
+      choice
+        Yes
+          Ok.
+</test>
+*/
