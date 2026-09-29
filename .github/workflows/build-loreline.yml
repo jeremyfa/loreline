@@ -377,6 +377,9 @@ jobs:
       - name: Run C++ library tests
         run: node ./setup --cpp-lib-test
 
+      - name: Run language server tests (C++)
+        run: node ./setup --lsp-test-cpp
+
       - name: Install scons
         run: pip install scons
 
@@ -477,6 +480,9 @@ jobs:
       - name: Run CLI integration tests
         run: node run test-cli ./test-cli
 
+      - name: Run language server tests
+        run: node run test-lsp ./test-lsp
+
 
   loreline-js:
 
@@ -536,6 +542,9 @@ jobs:
 
       - name: Run syntax coloring tests
         run: node test-syntax/run.mjs
+
+      - name: Run language server tests (JS)
+        run: node ./setup --lsp-test-js
 
       - name: Create zip archive
         run: zip -9 'loreline-js.zip' js/loreline.js js/loreline.d.ts
