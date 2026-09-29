@@ -1,5 +1,5 @@
-// Decorations drawn on top of the grammar coloring (text, choices, plural pipes,
-// once-only options), for the syntax test report. Built against the current
+// Decorations drawn on top of the grammar coloring (text, choices, when rules,
+// plural pipes, once-only options), for the syntax test report. Built against the current
 // parser of this repository.
 
 import loreline.Lexer;
@@ -161,9 +161,73 @@ class SyntaxDecorations {
 					}
 				}
 			}
+			if (node is NWhenRule) {
+				final rule:NWhenRule = cast node;
+				// An insertion rule has no header of its own, like an insertion in a choice
+				if (rule.insertion == null) {
+					final start = rule.pos.offset;
+					final end = whenRuleHeaderEnd(source, start);
+					if (end > start) {
+						if (rule.once) {
+							result.push({
+								kind: "when-once-prefix",
+								offset: start,
+								length: 1
+							});
+							result.push({
+								kind: "when-once-style",
+								offset: start,
+								length: end - start
+							});
+						}
+						result.push({
+							kind: "when-rule",
+							offset: start,
+							length: end - start
+						});
+					}
+				}
+			}
 		});
 
 		return result;
+	}
+
+	/**
+	 * End of the header of a when rule starting at `start`: the end of its line,
+	 * without a trailing comment, an opening brace or spaces. Comment markers inside
+	 * strings of the condition don't count.
+	 */
+	static function whenRuleHeaderEnd(source:String, start:Int):Int {
+		var i = start;
+		var inString = false;
+		while (i < source.length) {
+			final c = source.charCodeAt(i);
+			if (c == "\n".code || c == "\r".code) break;
+			if (inString) {
+				if (c == "\\".code) i++;
+				else if (c == '"'.code) inString = false;
+			}
+			else if (c == '"'.code) {
+				inString = true;
+			}
+			else if (c == "/".code && i + 1 < source.length) {
+				final next = source.charCodeAt(i + 1);
+				if (next == "/".code || next == "*".code) break;
+			}
+			i++;
+		}
+		var end = i;
+		while (end > start && isSpace(source.charCodeAt(end - 1))) end--;
+		if (end > start && source.charCodeAt(end - 1) == "{".code) {
+			end--;
+			while (end > start && isSpace(source.charCodeAt(end - 1))) end--;
+		}
+		return end;
+	}
+
+	static function isSpace(c:Int):Bool {
+		return c == " ".code || c == "\t".code;
 	}
 
 	static function findPluralPipeRanges(text:String, baseOffset:Int, result:Array<Dynamic>):Void {

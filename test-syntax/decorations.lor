@@ -1,5 +1,5 @@
 // Constructs that get decorations on top of the grammar: text,
-// plural pipes, choice options and once-only options. The report shows them
+// plural pipes, choice options, when rules and once-only options and rules. The report shows them
 // with those decorations, the assertions check the grammar underneath.
 
 state
@@ -28,3 +28,30 @@ beat Start
 //  ^^^^^ string.unquoted
 //        ^^ keyword.control
       Left.
+  when
+    count > 2 and count < 10 // many
+//  ^^^^^ variable.other
+//            ^^^ keyword.control
+//                           ^^^^^^^ comment.line.double-slash
+      Quite a few.
+//    ^^^^^^^^^^^^ string.unquoted
+    - count is 1
+//  ^ keyword.control.once
+//    ^^^^^ variable.other
+      Just one, said once.
+//    ^^^^^^^^^^^^^^^^^^^^ string.unquoted
+    + Rumors if count > 5
+//    ^^^^^^ entity.name.type.beat
+    - always {
+//    ^^^^^^ keyword.control.always
+      Once, whatever the count.
+    }
+    always
+//  ^^^^^^ keyword.control.always
+      Some.
+//    ^^^^^ string.unquoted
+
+beat Rumors
+  when
+    always
+      Rumors.
