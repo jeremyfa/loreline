@@ -673,6 +673,65 @@ local function run_seed_random_test()
     end
 end
 
+-- The strategy of a when block can be a host function: it receives one record per
+-- rule and returns the index of the rule to play. Same scenario in every binding runner.
+-- Records are the script's own containers: a Haxe array (0 based, with a
+-- length) of maps, read with get().
+local WHEN_STRATEGY_SCRIPT = table.concat({
+    "state",
+    "  ready: true",
+    "",
+    "beat Start",
+    "  when chooser",
+    "    ready",
+    "      Zero.",
+    "    not ready",
+    "      One.",
+    "    always",
+    "      Two.",
+    "  End.",
+    "",
+}, "\n")
+
+local function run_when_strategy_test()
+    local label = "when: host strategy"
+    local ok, err = pcall(function()
+        local summary = nil
+        local log = {}
+        local function chooser(interp, args)
+            local records = args[1]
+            local parts = {}
+            local last = -1
+            for i = 0, records.length - 1 do
+                local record = records[i]
+                local index = math.floor(record:get("index"))
+                local eligible = record:get("eligible")
+                parts[#parts + 1] = index .. ":" .. tostring(eligible)
+                if eligible then last = index end
+            end
+            summary = table.concat(parts, " ")
+            return last
+        end
+        local function dialogue(interp, character, text, tags, advance)
+            log[#log + 1] = text
+            advance()
+        end
+        local script = loreline.parse(WHEN_STRATEGY_SCRIPT)
+        loreline.play(script, dialogue, function() end, function() end, nil, {functions = {chooser = chooser}})
+        if summary ~= "0:true 1:false 2:true" or table.concat(log, ",") ~= "Two.,End." then
+            error("records " .. tostring(summary) .. ", log " .. table.concat(log, ","))
+        end
+    end)
+    if ok then
+        pass_count = pass_count + 1
+        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. label .. "\027[0m\n")
+    else
+        fail_count = fail_count + 1
+        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. label .. "\027[0m\n")
+        io.write("  Error: " .. tostring(err) .. "\n")
+    end
+end
+
 local function main()
     if #arg < 1 then
         io.stderr:write("Usage: lua lua/test-runner.lua <test-directory>\n")
@@ -902,6 +961,7 @@ local function main()
 
     run_spawn_test()
     run_seed_random_test()
+    run_when_strategy_test()
 
     local total = pass_count + fail_count
     io.write("\n")

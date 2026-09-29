@@ -1370,6 +1370,96 @@ static void runSeedRandomTest() {
     fflush(stdout);
 }
 
+/* -- When strategy -------------------------------------------------------- */
+
+/* The strategy of a when block can be a host function: it receives one record per
+ * rule and returns the index of the rule to play. Same scenario in every binding runner. */
+static std::string whenStrategySummary;
+
+static Loreline_Value whenStrategyChooser(Loreline_Interpreter*, const Loreline_Value* args, int argCount, void*) {
+    int last = -1;
+    std::string parts;
+    if (argCount >= 1 && args[0].type == Loreline_ArrayValue) {
+        const Loreline_Array& records = args[0].arrayValue;
+        for (int i = 0; i < records.length(); i++) {
+            Loreline_Value record = records.get(i);
+            if (record.type != Loreline_ObjectValue) continue;
+            Loreline_Value indexValue = record.objectValue.get("index");
+            Loreline_Value eligibleValue = record.objectValue.get("eligible");
+            int index = indexValue.type == Loreline_Float ? (int)indexValue.floatValue : indexValue.intValue;
+            bool eligible = eligibleValue.type == Loreline_Bool && eligibleValue.boolValue;
+            if (!parts.empty()) parts += " ";
+            parts += std::to_string(index) + ":" + (eligible ? "true" : "false");
+            if (eligible) last = index;
+        }
+    }
+    whenStrategySummary = parts;
+    return Loreline_Value::from_int(last);
+}
+
+static void runWhenStrategyTest() {
+    const char* source =
+        "state\n"
+        "  ready: true\n"
+        "\n"
+        "beat Start\n"
+        "  when chooser\n"
+        "    ready\n"
+        "      Zero.\n"
+        "    not ready\n"
+        "      One.\n"
+        "    always\n"
+        "      Two.\n"
+        "  End.\n";
+    const char* label = "when: host strategy";
+
+    bool ok = true;
+    std::string error;
+    whenStrategySummary.clear();
+
+    SpawnTestLog log;
+    SpawnTestFlow rootFlow { &log, "root" };
+
+    Loreline_Script* script = Loreline_parse(source, "when-strategy.lor", nullptr, nullptr);
+    if (!script) {
+        ok = false;
+        error = "Error parsing when strategy test script";
+    } else {
+        Loreline_InterpreterOptions* options = Loreline_createOptions();
+        Loreline_optionsAddFunction(options, Loreline_String("chooser"), whenStrategyChooser, nullptr);
+        Loreline_Interpreter* root = Loreline_play(
+            script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+            Loreline_String("Start"), options, &rootFlow);
+        spawnTestPump();
+        while (spawnTestNext(log, "root")) {}
+
+        std::string joined;
+        for (const auto& line : log.lines) {
+            if (!joined.empty()) joined += ",";
+            joined += line;
+        }
+        if (whenStrategySummary != "0:true 1:false 2:true" || joined != "root: Two.,root: End.") {
+            ok = false;
+            error = "records " + whenStrategySummary + ", log " + joined;
+        }
+
+        if (root) Loreline_releaseInterpreter(root);
+        Loreline_releaseOptions(options);
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
 /* -- Sync calls after Loreline_update() ------------------------------------ */
 
 /* Once Loreline_update() has been called, callbacks are deferred to the dispatch
@@ -1651,6 +1741,7 @@ int main(int argc, char* argv[]) {
     fileCount++;
     runSpawnTest();
     runSeedRandomTest();
+    runWhenStrategyTest();
     fileCount++;
     runSyncAfterUpdateTest();
 

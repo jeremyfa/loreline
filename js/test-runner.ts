@@ -525,6 +525,7 @@ async function main(): Promise<void> {
     runSpawnTest();
     runCustomFieldsTest();
     runSeedRandomTest();
+    runWhenStrategyTest();
 
     const total: number = passCount + failCount;
     console.log('');
@@ -659,6 +660,55 @@ function runSeedRandomTest(): void {
         const first = log[0].split(' ')[1];
         const second = log.length > 2 ? log[2].split(' ')[1] : '';
         if (second !== first) throw new Error(`expected ${first} after reseeding, got ${log.join(' / ')}`);
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
+    }
+}
+
+// The strategy of a when block can be a host function: it receives one record per
+// rule and returns the index of the rule to play. Same scenario in every binding runner.
+const WHEN_STRATEGY_SCRIPT = [
+    'state',
+    '  ready: true',
+    '',
+    'beat Start',
+    '  when chooser',
+    '    ready',
+    '      Zero.',
+    '    not ready',
+    '      One.',
+    '    always',
+    '      Two.',
+    '  End.',
+    ''
+].join('\n');
+
+function runWhenStrategyTest(): void {
+    const label = 'when: host strategy';
+    try {
+        let summary = '';
+        const log: string[] = [];
+        const options: InterpreterOptions = {
+            functions: {
+                chooser: (_interp: Interpreter, args: any[]) => {
+                    const records = args[0] as any[];
+                    summary = records.map(r => `${r.index}:${r.eligible}`).join(' ');
+                    let last = -1;
+                    for (const r of records) if (r.eligible) last = r.index;
+                    return last;
+                }
+            }
+        };
+        const script: Script = Loreline.parse(WHEN_STRATEGY_SCRIPT);
+        Loreline.play(script, (_i, _c, text, _t, callback) => { log.push(text); callback(); }, () => {}, () => {}, null, options);
+        if (summary !== '0:true 1:false 2:true' || log.join(',') !== 'Two.,End.') {
+            throw new Error(`records ${summary}, log ${log.join(',')}`);
+        }
 
         passCount++;
         console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);

@@ -1,6 +1,9 @@
 package loreline.test;
 
+import loreline.Arrays;
 import loreline.AstUtils;
+import loreline.Interpreter;
+import loreline.Objects;
 import loreline.Lens;
 import loreline.Loreline;
 import loreline.Node;
@@ -92,7 +95,9 @@ class WhenSyntaxTests {
             {name: 'when blocks print back as written after JSON', fn: () -> testPrint(true)},
             {name: 'narration starting with when stays text', fn: () -> testNarration()},
             {name: 'an unknown strategy is an error', fn: () -> testUnknownStrategy()},
-            {name: 'the history is shared with child interpreters', fn: () -> testSharedHistory()}
+            {name: 'the history is shared with child interpreters', fn: () -> testSharedHistory()},
+            {name: 'a host function can be a strategy', fn: () -> testHostStrategy()},
+            {name: 'a strategy must return -1 or an eligible index', fn: () -> testStrategyErrors()}
         ];
 
         for (test in tests) {
@@ -282,6 +287,80 @@ class WhenSyntaxTests {
         if (host.log.join(' | ') != expected.join(' | ')) {
             throw 'expected ' + expected.join(' | ') + ', got ' + host.log.join(' | ');
         }
+    }
+
+
+    static final STRATEGY_SCRIPT = [
+        'state',
+        '  ready: true',
+        '',
+        'beat Start',
+        '  when chooser',
+        '    ready',
+        '      Zero.',
+        '    not ready',
+        '      One.',
+        '    always',
+        '      Two.',
+        '  End.'
+    ].join('\n');
+
+    /**
+     * Plays STRATEGY_SCRIPT with a host function `chooser`, and returns the dialogue
+     * lines, or the error message prefixed with "error: ".
+     */
+    static function playWithChooser(chooser:(records:Any)->Any):Array<String> {
+        final functions:FunctionsMap = #if loreline_functions_map_dynamic_access {} #else new Map<String, Any>() #end;
+        #if loreline_auto_wrap_functions
+        functions.set('chooser', (interp:Interpreter, args:Array<Any>) -> chooser(args[0]));
+        #else
+        functions.set('chooser', (records:Any) -> chooser(records));
+        #end
+        final seen:Array<String> = [];
+        try {
+            Loreline.play(parse(STRATEGY_SCRIPT), (interp, character, text, tags, advance) -> {
+                seen.push(text);
+                advance();
+            }, (interp, options, select) -> {}, interp -> {}, null, ({functions: functions} : InterpreterOptions));
+        }
+        catch (e:Any) {
+            seen.push('error: ' + ((e is loreline.Error) ? (cast e:loreline.Error).message : Std.string(e)));
+        }
+        return seen;
+    }
+
+    static function testHostStrategy():Void {
+        var summary = '';
+        final seen = playWithChooser(records -> {
+            final parts = [];
+            for (i in 0...Arrays.arrayLength(records)) {
+                final record = Arrays.arrayGet(records, i);
+                parts.push(Objects.getField(null, record, 'index') + ':' + Objects.getField(null, record, 'eligible'));
+            }
+            summary = parts.join(' ');
+            return 2;
+        });
+        expectEqual('0:true 1:false 2:true', summary, 'records seen by the host');
+        expectEqual('Two.,End.', seen.join(','), 'played rule');
+    }
+
+    static function testStrategyErrors():Void {
+        final errors:Array<String> = [];
+        for (item in [
+            {result: (5:Any), what: 'out of range'},
+            {result: (1:Any), what: 'not eligible'},
+            {result: ('zero':Any), what: 'not a number'},
+            {result: (0.5:Any), what: 'not an integer'}
+        ]) {
+            final seen = playWithChooser(records -> item.result);
+            final last = seen.length > 0 ? seen[seen.length - 1] : '';
+            if (!last.startsWith('error: ') || last.indexOf('chooser') == -1) {
+                errors.push('${item.what}: expected an error naming the strategy, got ' + seen);
+            }
+        }
+        final none = playWithChooser(records -> -1);
+        if (none.join(',') != 'End.') errors.push('-1 should play nothing, got ' + none);
+        if (errors.length > 0) throw errors.join('\n');
     }
 
 }

@@ -1,0 +1,87 @@
+// A custom strategy is a function named after `when`. It receives one record per
+// rule and returns the index of the rule to play, or -1 to play nothing. The
+// interpreter keeps the history: the function only chooses.
+
+state
+  ready: true
+  info: ""
+
+// The eligible rule played the fewest times, the last one written on a tie
+function least_played(rules)
+  var best = -1
+  for (rule in rules)
+    if rule.eligible and (best == -1 or rule.played <= rules[best].played)
+      best = rule.index
+  return best
+
+// Writes the records down, then plays the last eligible rule
+function describe(rules)
+  var parts = []
+  var last = -1
+  for (rule in rules)
+    parts.add("${rule.index}:${rule.eligible}:${rule.criteria}:${rule.played}:${rule.lastPlayed}:${rule.ephemeral}")
+    if rule.eligible
+      last = rule.index
+  info = parts.join(" ")
+  return last
+
+// Plays nothing
+function none(rules)
+  return -1
+
+beat Start
+  Greet()
+  Greet()
+  Greet()
+  Greet()
+  Probe()
+  Info $info.
+
+  Probe()
+  Info $info.
+
+  when none
+    always
+      Not shown.
+  Done.
+
+beat Greet
+  when least_played
+    ready
+      First.
+    ready
+      Second.
+    ready and ready
+      Third.
+
+beat Probe
+  when describe
+    ready and not ready
+      Never.
+    - ready
+      Once.
+    always
+      Always.
+
+/*
+<test>
+- expected: |
+    ~ Third.
+
+    ~ Second.
+
+    ~ First.
+
+    ~ Third.
+
+    ~ Always.
+
+    ~ Info 0:false:2:0:-1:false 1:true:1:0:-1:true 2:true:0:0:-1:false.
+
+    ~ Always.
+
+    ~ Info 0:false:2:0:-1:false 1:true:1:0:-1:true 2:true:0:1:1:false.
+
+    ~ Done.
+</test>
+*/

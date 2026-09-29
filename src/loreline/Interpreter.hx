@@ -4629,8 +4629,14 @@ class InterpreterContext {
     function evalWhen(when:NWhenStatement, next:()->Void) {
 
         final strategy = when.strategy;
+
+        // `first` and `pick` come first, any other name is a lorscript or host function
+        var customStrategy:Any = null;
         if (strategy != null && strategy != 'first' && strategy != 'pick') {
-            throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
+            customStrategy = topLevelFunctions.get(strategy);
+            if (customStrategy == null || !Reflect.isFunction(customStrategy)) {
+                throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
+            }
         }
 
         final eligible:Array<NWhenRule> = [];
@@ -4645,15 +4651,21 @@ class InterpreterContext {
             }
         }
 
-        if (eligible.length == 0) {
-            next();
-            return;
+        final chosen = if (customStrategy != null) {
+            customStrategyRule(when, eligible, customStrategy);
         }
-
-        final chosen = switch strategy {
+        else if (eligible.length == 0) {
+            null;
+        }
+        else switch strategy {
             case 'first': eligible[0];
             case 'pick': eligible[builtins.random(0, eligible.length - 1)];
             case _: mostSalientRule(when, eligible);
+        }
+
+        if (chosen == null) {
+            next();
+            return;
         }
 
         playWhenRule(when, chosen, next);
@@ -4679,6 +4691,60 @@ class InterpreterContext {
             }
         }
         return best;
+    }
+
+    /**
+     * Asks a custom strategy (a lorscript or host function) which rule to play.
+     * It receives one record per rule, in written order, and returns the index of
+     * the rule to play, or -1 to play nothing. The interpreter keeps the history:
+     * the function only chooses. It is called even when no rule is eligible, so
+     * that it sees every call.
+     *
+     * Each record has `index`, `eligible` (condition true, and not a rule played
+     * once that was already played), `criteria` (the score of the default strategy),
+     * `played` (how many times it was played), `lastPlayed` (the tick of the block
+     * when it was last played, -1 if never) and `ephemeral` (a rule played once).
+     *
+     * @return The rule to play, or null for none
+     * @throws RuntimeError If the function returns something else than -1 or the index of an eligible rule
+     */
+    function customStrategyRule(when:NWhenStatement, eligible:Array<NWhenRule>, strategy:Any):Null<NWhenRule> {
+        // Plain containers, not made by customCreateFields: they only live for this call
+        final records = Arrays.createArray();
+        for (i in 0...when.rules.length) {
+            final rule = when.rules[i];
+            final record = Objects.createFields();
+            Objects.setField(this, record, "index", i);
+            Objects.setField(this, record, "eligible", eligible.indexOf(rule) != -1);
+            Objects.setField(this, record, "criteria", AstUtils.whenRuleScore(rule));
+            Objects.setField(this, record, "played", getNodeStateInt(rule, "_played"));
+            Objects.setField(this, record, "lastPlayed", getWhenRuleLastPlayed(rule));
+            Objects.setField(this, record, "ephemeral", rule.once);
+            Arrays.arrayPush(records, record);
+        }
+
+        final pos = when.strategyPos ?? when.pos;
+        final result:Any = callFunctionValue(strategy, [records], pos, null);
+
+        // Numbers may come back as Int or Float depending on the target and the host
+        final index:Null<Int> = if (result is Int) {
+            (result:Int);
+        }
+        else if (result is Float && Math.ffloor((result:Float)) == (result:Float)) {
+            Std.int((result:Float));
+        }
+        else {
+            null;
+        }
+        if (index == -1) return null;
+        if (index == null || index < 0 || index >= when.rules.length) {
+            throw new RuntimeError('Strategy ${when.strategy} returned ${valueToString(result)}, expected -1 or the index of an eligible rule', pos);
+        }
+        final rule = when.rules[index];
+        if (eligible.indexOf(rule) == -1) {
+            throw new RuntimeError('Strategy ${when.strategy} returned $index, which is not an eligible rule', pos);
+        }
+        return rule;
     }
 
     /**

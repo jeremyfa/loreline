@@ -260,6 +260,7 @@ class Program
         RunSpawnTest();
         RunCustomFieldsTest();
         RunSeedRandomTest();
+        RunWhenStrategyTest();
 
         int total = passCount + failCount;
         Console.WriteLine();
@@ -468,6 +469,68 @@ class Program
             string first = log[0].Split(' ')[1];
             string second = log.Count > 2 ? log[2].Split(' ')[1] : "";
             if (second != first) throw new Exception("expected " + first + " after reseeding, got " + string.Join(" / ", log));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
+        }
+    }
+
+    // The strategy of a when block can be a host function: it receives one record per
+    // rule and returns the index of the rule to play. Same scenario in every binding runner.
+    static void RunWhenStrategyTest()
+    {
+        const string label = "when: host strategy";
+        try
+        {
+            string summary = "";
+            var log = new List<string>();
+            var options = Interpreter.InterpreterOptions.Default();
+            options.Functions = new Dictionary<string, Interpreter.Function>
+            {
+                ["chooser"] = (interp, args) =>
+                {
+                    var records = (System.Collections.IList)args[0];
+                    var parts = new List<string>();
+                    int last = -1;
+                    foreach (object item in records)
+                    {
+                        var record = (System.Collections.IDictionary)item;
+                        int index = Convert.ToInt32(record["index"]);
+                        bool eligible = (bool)record["eligible"];
+                        parts.Add(index + ":" + (eligible ? "true" : "false"));
+                        if (eligible) last = index;
+                    }
+                    summary = string.Join(" ", parts);
+                    return last;
+                }
+            };
+
+            Script script = Engine.Parse(string.Join("\n", new[] {
+                "state",
+                "  ready: true",
+                "",
+                "beat Start",
+                "  when chooser",
+                "    ready",
+                "      Zero.",
+                "    not ready",
+                "      One.",
+                "    always",
+                "      Two.",
+                "  End.",
+                ""
+            }));
+            Engine.Play(script, dialogue => { log.Add(dialogue.Text); dialogue.Callback(); }, choice => { }, finish => { }, null, options);
+            if (summary != "0:true 1:false 2:true" || string.Join(",", log) != "Two.,End.")
+            {
+                throw new Exception("records " + summary + ", log " + string.Join(",", log));
+            }
 
             passCount++;
             Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");

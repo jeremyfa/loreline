@@ -98,6 +98,9 @@ beat start
 	# 8. Random generator in save data, reseeded from the host
 	await _run_seed_random(loreline)
 
+	# 9. Host function as the strategy of a when block
+	await _run_when_strategy(loreline)
+
 
 # Same scenario in every binding runner. A child spawned from the root shares
 # its state, gets host functions bound to itself, and both playheads are saved
@@ -117,12 +120,14 @@ func _on_spawn_dialogue(interp: LorelineInterpreter, character: String, text: St
 	_spawn_pending[name] = advance
 
 
-func _spawn_wait(count: int) -> void:
+## Waits until the log has `count` lines. `what` names the scenario in the
+## failure message, since several scenarios share this log.
+func _spawn_wait(count: int, what: String = "spawn") -> void:
 	for i in 60:
 		if _spawn_log.size() >= count:
 			return
 		await _tree.process_frame
-	_fail("spawn: timed out waiting for " + str(count) + " lines, got " + str(_spawn_log))
+	_fail(what + ": timed out waiting for " + str(count) + " lines, got " + str(_spawn_log))
 
 
 func _spawn_next(name: String) -> void:
@@ -232,15 +237,15 @@ beat Main
 	var noop_choice := func(_interp, _options, _select): pass
 	var noop_finished := func(_interp): pass
 	var root: LorelineInterpreter = loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Main")
-	await _spawn_wait(1)
+	await _spawn_wait(1, "random")
 	var saved: String = root.save_state()
 
 	_spawn_pending.clear()
 	var restored: LorelineInterpreter = loreline.resume(script, _on_spawn_dialogue, noop_choice, noop_finished, saved)
-	await _spawn_wait(2)
+	await _spawn_wait(2, "random")
 	restored.seed_random(7)
 	_spawn_next("root")
-	await _spawn_wait(3)
+	await _spawn_wait(3, "random")
 
 	var first: String = _spawn_log[0].get_slice(" ", 2) if _spawn_log.size() > 0 else ""
 	var second: String = _spawn_log[2].get_slice(" ", 2) if _spawn_log.size() > 2 else ""
@@ -287,3 +292,52 @@ func _on_choice(_interp: LorelineInterpreter, options: Array, select: Callable) 
 func _on_finished(_interp: LorelineInterpreter) -> void:
 	_events.append("finished")
 	_done = true
+
+
+# Same scenario in every binding runner. The strategy of a when block can be a
+# host function: it receives one record per rule and returns the index of the
+# rule to play.
+func _run_when_strategy(loreline) -> void:
+	var source := """
+state
+  ready: true
+
+beat Start
+  when chooser
+    ready
+      Zero.
+    not ready
+      One.
+    always
+      Two.
+  End.
+"""
+	var script = await loreline.parse(source, "when-strategy.lor")
+	if script == null:
+		_fail("when strategy: parse returned null")
+		return
+
+	var summary := [""]
+	var options := LorelineOptions.new()
+	options.set_function("chooser", func(_interp, args):
+		var parts := []
+		var last := -1
+		for record in args[0]:
+			var index := int(record["index"])
+			var eligible := bool(record["eligible"])
+			parts.append(str(index) + ":" + ("true" if eligible else "false"))
+			if eligible:
+				last = index
+		summary[0] = " ".join(parts)
+		return last)
+
+	_spawn_log.clear()
+	_spawn_pending.clear()
+	var noop_choice := func(_interp, _options, _select): pass
+	var noop_finished := func(_interp): pass
+	loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Start", options)
+	await _spawn_wait(1, "when strategy")
+	_spawn_next("root")
+	await _spawn_wait(2, "when strategy")
+	if summary[0] != "0:true 1:false 2:true" or _spawn_log != ["root: Two.", "root: End."]:
+		_fail("when strategy: records " + str(summary[0]) + ", log " + str(_spawn_log))

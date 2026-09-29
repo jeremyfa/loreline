@@ -619,6 +619,62 @@ function runSeedRandomTest(): void
     }
 }
 
+// The strategy of a when block can be a host function: it receives one record per
+// rule and returns the index of the rule to play. Same scenario in every binding runner.
+const WHEN_STRATEGY_SCRIPT = [
+    'state',
+    '  ready: true',
+    '',
+    'beat Start',
+    '  when chooser',
+    '    ready',
+    '      Zero.',
+    '    not ready',
+    '      One.',
+    '    always',
+    '      Two.',
+    '  End.',
+    '',
+];
+
+function runWhenStrategyTest(): void
+{
+    global $passCount, $failCount;
+    $label = 'when: host strategy';
+    try {
+        $summary = null;
+        $log = [];
+        $chooser = function ($interp, $args) use (&$summary) {
+            $parts = [];
+            $last = -1;
+            foreach ($args[0] as $record) {
+                $index = (int) $record['index'];
+                $eligible = (bool) $record['eligible'];
+                $parts[] = $index . ':' . ($eligible ? 'true' : 'false');
+                if ($eligible) $last = $index;
+            }
+            $summary = implode(' ', $parts);
+            return $last;
+        };
+        $dialogue = function ($interp, $character, $text, $tags, $advance) use (&$log): void {
+            $log[] = $text;
+            $advance();
+        };
+        $script = Loreline::parse(implode("\n", WHEN_STRATEGY_SCRIPT));
+        Loreline::play($script, $dialogue, function ($i, $o, $s): void {}, function ($i): void {}, null, ['functions' => ['chooser' => $chooser]]);
+        if ($summary !== '0:true 1:false 2:true' || implode(',', $log) !== 'Two.,End.') {
+            throw new \Exception('records ' . var_export($summary, true) . ', log ' . implode(',', $log));
+        }
+
+        $passCount++;
+        echo "\033[1m\033[32mPASS\033[0m - \033[90m$label\033[0m\n";
+    } catch (\Throwable $e) {
+        $failCount++;
+        echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
+        echo "  Error: " . $e->getMessage() . "\n";
+    }
+}
+
 // A saveAtChoice / saveAtDialogue value: absent, one index, or a list of indices
 function saveIndices(mixed $raw): array
 {
@@ -824,6 +880,7 @@ function main(): void
 
     runSpawnTest();
     runSeedRandomTest();
+    runWhenStrategyTest();
 
     $total = $passCount + $failCount;
     echo "\n";

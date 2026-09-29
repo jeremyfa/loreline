@@ -612,6 +612,7 @@ def main():
 
     run_spawn_test()
     run_seed_random_test()
+    run_when_strategy_test()
 
     total = pass_count + fail_count
     print()
@@ -694,6 +695,62 @@ def run_seed_random_test():
         second = log[2].split(" ")[1] if len(log) > 2 else ""
         if second != first:
             raise Exception(f"expected {first} after reseeding, got {' / '.join(log)}")
+
+        pass_count += 1
+        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")
+    except Exception as e:
+        fail_count += 1
+        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+        print(f"  Error: {e}")
+
+
+# The strategy of a when block can be a host function: it receives one record per
+# rule and returns the index of the rule to play. Same scenario in every binding runner.
+# Records are the script's own containers: a list of maps, read with get().
+WHEN_STRATEGY_SCRIPT = "\n".join([
+    "state",
+    "  ready: true",
+    "",
+    "beat Start",
+    "  when chooser",
+    "    ready",
+    "      Zero.",
+    "    not ready",
+    "      One.",
+    "    always",
+    "      Two.",
+    "  End.",
+    "",
+])
+
+
+def run_when_strategy_test():
+    global pass_count, fail_count
+    label = "when: host strategy"
+    try:
+        summary = []
+        log = []
+
+        def chooser(interp, args):
+            parts = []
+            last = -1
+            for record in args[0]:
+                index = int(record.get("index"))
+                eligible = bool(record.get("eligible"))
+                parts.append(f"{index}:{'true' if eligible else 'false'}")
+                if eligible:
+                    last = index
+            summary.append(" ".join(parts))
+            return last
+
+        def dialogue(interp, character, text, tags, advance):
+            log.append(text)
+            advance()
+
+        script = Loreline.parse(WHEN_STRATEGY_SCRIPT)
+        Loreline.play(script, dialogue, lambda i, o, s: None, lambda i: None, functions={"chooser": chooser})
+        if summary != ["0:true 1:false 2:true"] or ",".join(log) != "Two.,End.":
+            raise Exception(f"records {summary}, log {log}")
 
         pass_count += 1
         print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")

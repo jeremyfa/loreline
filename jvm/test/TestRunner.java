@@ -596,6 +596,61 @@ public class TestRunner {
         }
     }
 
+    // The strategy of a when block can be a host function: it receives one record per
+    // rule and returns the index of the rule to play. Same scenario in every binding runner.
+    @SuppressWarnings("rawtypes")
+    static void runWhenStrategyTest() {
+        final String label = "when: host strategy";
+        try {
+            final String[] summary = { "" };
+            final List<String> log = new ArrayList<>();
+            InterpreterOptions options = new InterpreterOptions();
+            options.functions = new HashMap<>();
+            options.functions.put("chooser", (interp, args) -> {
+                List records = (List) args[0];
+                List<String> parts = new ArrayList<>();
+                int last = -1;
+                for (Object item : records) {
+                    Map record = (Map) item;
+                    int index = ((Number) record.get("index")).intValue();
+                    boolean eligible = (Boolean) record.get("eligible");
+                    parts.add(index + ":" + eligible);
+                    if (eligible) last = index;
+                }
+                summary[0] = String.join(" ", parts);
+                return last;
+            });
+
+            Script script = Loreline.parse(String.join("\n",
+                "state",
+                "  ready: true",
+                "",
+                "beat Start",
+                "  when chooser",
+                "    ready",
+                "      Zero.",
+                "    not ready",
+                "      One.",
+                "    always",
+                "      Two.",
+                "  End.",
+                ""
+            ));
+            Loreline.play(script, (interp, character, text, tags, advance) -> { log.add(text); advance.run(); },
+                (interp, opts, select) -> {}, interp -> {}, null, options);
+            if (!summary[0].equals("0:true 1:false 2:true") || !String.join(",", log).equals("Two.,End.")) {
+                throw new RuntimeException("records " + summary[0] + ", log " + String.join(",", log));
+            }
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
     static void runCustomFieldsTest() {
         final String label = "custom fields: factory used for state and characters";
         try {
@@ -868,6 +923,7 @@ public class TestRunner {
         runSpawnTest();
         runCustomFieldsTest();
         runSeedRandomTest();
+        runWhenStrategyTest();
 
         int total = passCount + failCount;
         System.out.println();
