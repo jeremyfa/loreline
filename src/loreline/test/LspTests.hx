@@ -10,8 +10,10 @@ import loreline.lsp.Server;
 using StringTools;
 
 /**
- * Tests of the language server, with files served from memory instead of the
- * disk: requests without a document, and "go to definition".
+ * Tests of the protocol of the language server, with files served from memory
+ * instead of the disk: requests without a document, URIs spelled differently by
+ * the client, unsaved changes of imported files. What a request answers on a
+ * script is tested by the files of test-lsp/ (see LspFileTests).
  * Tests are referenced through lambdas, see SpawnTests.
  */
 @:keep
@@ -72,10 +74,6 @@ class LspTests {
 
         final tests:Array<{name:String, fn:()->Void}> = [
             {name: 'a request without a document', fn: () -> testShutdown()},
-            {name: 'a beat of the same file', fn: () -> testSameFile()},
-            {name: 'a beat of an imported file', fn: () -> testImported()},
-            {name: 'a beat of a file imported by an imported file', fn: () -> testNestedImport()},
-            {name: 'ranges come from the file of the target', fn: () -> testTargetRanges()},
             {name: 'an open file keeps the URI sent by the client', fn: () -> testOpenFileUri()},
             {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()}
         ];
@@ -102,41 +100,6 @@ class LspTests {
         final response = server.handleMessageSync(request);
         if (response == null) throw 'no response';
         if (response.error != null) throw 'error: ' + response.error.message;
-    }
-
-    static function testSameFile() {
-        final server = createServer();
-        open(server, MAIN_URI);
-        final link = definition(server, MAIN_URI, 3, 6);
-        equals(MAIN_URI, link.targetUri, 'target uri');
-        equals(7, link.targetSelectionRange.start.line, 'target line');
-        equals('beat Local'.length, link.targetSelectionRange.end.character, 'end of the target line');
-    }
-
-    static function testImported() {
-        final server = createServer();
-        open(server, MAIN_URI);
-        final link = definition(server, MAIN_URI, 4, 6);
-        equals(pathUri('$ROOT/sub/b.lor'), link.targetUri, 'target uri');
-        equals(2, link.targetSelectionRange.start.line, 'target line');
-    }
-
-    static function testNestedImport() {
-        final server = createServer();
-        open(server, MAIN_URI);
-        final link = definition(server, MAIN_URI, 5, 6);
-        equals(pathUri('$ROOT/sub/c.lor'), link.targetUri, 'target uri');
-    }
-
-    static function testTargetRanges() {
-        final server = createServer();
-        open(server, MAIN_URI);
-        final link = definition(server, MAIN_URI, 5, 6);
-        final deep = FILES.get('$ROOT/sub/c.lor').split('\n');
-        equals(11, link.targetSelectionRange.start.line, 'target line');
-        equals(deep[11].length, link.targetSelectionRange.end.character, 'end of the target line');
-        equals(11, link.targetRange.start.line, 'start of the target range');
-        equals(12, link.targetRange.end.line, 'end of the target range');
     }
 
     static function testOpenFileUri() {
@@ -222,10 +185,6 @@ class LspTests {
         return links[0];
     }
 
-    /** The URI the server builds for a path it did not receive from the client */
-    static function pathUri(path:String):String {
-        return "file://" + [for (part in path.split("/")) StringTools.urlEncode(part)].join("/");
-    }
 
     static function equals(expected:Any, actual:Any, what:String) {
         if (Std.string(expected) != Std.string(actual)) {
