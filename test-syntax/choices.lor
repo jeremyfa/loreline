@@ -81,6 +81,32 @@ beat More
     + /* c */ Extra
 //    ^^^^^^^ comment.block
 //            ^^^^^ entity.name.type.beat
+    + Extra if count > 5
+//  ^ keyword.control.flow
+//    ^^^^^ entity.name.type.beat
+//          ^^ keyword.control
+//             ^^^^^ variable.other
+//                   ^ keyword.operator
+//                     ^ constant.numeric
+    + Extra if a and b
+//    ^^^^^ entity.name.type.beat
+//             ^ variable.other
+//               ^^^ keyword.control
+//                   ^ variable.other
+    + Extra if count >= 5 and ok // c
+//    ^^^^^ entity.name.type.beat
+//             ^^^^^ variable.other
+//                        ^^^ keyword.control
+//                            ^^ variable.other
+//                               ^^^^ comment.line.double-slash
+    + Extra if items.length > 0
+//    ^^^^^ entity.name.type.beat
+//             ^^^^^ variable.other
+//                   ^^^^^^ variable.other
+    + Extra if "a" == name
+//    ^^^^^ entity.name.type.beat
+//             ^^^ string.quoted.double
+//                    ^^^^ variable.other
   choice {
 //^^^^^^ keyword.control.choice
 //       ^ punctuation.section.block.begin
