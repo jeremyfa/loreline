@@ -1,4 +1,5 @@
-// Narration that starts with "when" stays text.
+// A when block picks one rule by saliency. Narration that starts with "when"
+// stays text.
 
 character bob
   name: Bob
@@ -14,3 +15,66 @@ beat Start
 //^^^^^^^^^ string.unquoted
   bob: Tell me when you are ready.
 //     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+
+beat Blocks
+  when
+//^^^^ keyword.control.when
+    mood is "angry" and gold > 3
+//  ^^^^ variable.other
+//       ^^ keyword.control
+//          ^^^^^^^ string.quoted.double
+//                  ^^^ keyword.control
+//                             ^ constant.numeric
+      Get out!
+//    ^^^^^^^^ string.unquoted
+    - met_before
+//  ^ keyword.control.once
+//    ^^^^^^^^^^ variable.other
+      Oh, it is you again.
+//    ^^^^^^^^^^^^^^^^^^^^ string.unquoted
+    + Rumors if (visits > 2)
+//  ^ keyword.control.flow
+//    ^^^^^^ entity.name.type.beat
+//           ^^ keyword.control
+//               ^^^^^^ variable.other
+//                        ^ constant.numeric
+    + Gossip
+//  ^ keyword.control.flow
+//    ^^^^^^ entity.name.type.beat
+    always
+//  ^^^^^^ keyword.control.always
+      when you come back, knock.
+//    ^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  After.
+//^^^^^^ string.unquoted
+  when first
+//^^^^ keyword.control.when
+//     ^^^^^ entity.name.function.strategy
+    not ready
+//  ^^^ keyword.control
+//      ^^^^^ variable.other
+      when pick
+//    ^^^^ keyword.control.when
+//         ^^^^ entity.name.function.strategy
+        always
+//      ^^^^^^ keyword.control.always
+          Nested.
+//        ^^^^^^^ string.unquoted
+    - always
+//  ^ keyword.control.once
+//    ^^^^^^ keyword.control.always
+      bob: Once.
+//    ^^^ entity.name.class
+//         ^^^^^ string.unquoted.dialogue
+  when {
+//^^^^ keyword.control.when
+//     ^ punctuation.definition.block.begin
+    ready {
+//  ^^^^^ variable.other
+//        ^ punctuation.definition.block.begin
+      Go.
+//    ^^^ string.unquoted
+    }
+  }
+  when she arrives, it rains.
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
