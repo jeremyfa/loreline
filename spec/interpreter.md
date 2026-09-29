@@ -23,13 +23,14 @@ It takes a parsed AST (`Script` from `Node.hx`) and executes it interactively.
 8. [The Choice System](#8-the-choice-system)
 9. [The Insertion System](#9-the-insertion-system)
 10. [Conditionals and Alternatives](#10-conditionals-and-alternatives)
-11. [State Management](#11-state-management)
-12. [Save System and Serialization](#12-save-system-and-serialization)
-13. [Restore System and Deserialization](#13-restore-system-and-deserialization)
-14. [Resume Dispatch: Rebuilding the Call Stack](#14-resume-dispatch-rebuilding-the-call-stack)
-15. [Complex Scenarios: Insertions + Save/Restore](#15-complex-scenarios-insertions--saverestore)
-16. [Handler Callbacks and the Host Application](#16-handler-callbacks-and-the-host-application)
-17. [Child Interpreters](#17-child-interpreters)
+11. [When Blocks: Selection by Saliency](#11-when-blocks-selection-by-saliency)
+12. [State Management](#12-state-management)
+13. [Save System and Serialization](#13-save-system-and-serialization)
+14. [Restore System and Deserialization](#14-restore-system-and-deserialization)
+15. [Resume Dispatch: Rebuilding the Call Stack](#15-resume-dispatch-rebuilding-the-call-stack)
+16. [Complex Scenarios: Insertions + Save/Restore](#16-complex-scenarios-insertions--saverestore)
+17. [Handler Callbacks and the Host Application](#17-handler-callbacks-and-the-host-application)
+18. [Child Interpreters](#18-child-interpreters)
 
 ---
 
@@ -83,17 +84,27 @@ execution is currently at within this scope's body.
 
 ### `RuntimeInsertion`
 
-When a choice option uses the insertion syntax (`+ BeatName`), the interpreter
-creates a `RuntimeInsertion` to track the process:
+When a choice option or a `when` rule uses the insertion syntax (`+ BeatName`),
+the interpreter creates a `RuntimeInsertion` to track the process:
 
 ```
 RuntimeInsertion {
     id: Int                     // unique insertion identifier
     origin: NInsertion          // the AST node that triggered the insertion
+    kind: InsertionKind         // Choice or When: what the insertion collects
     options: Array<ChoiceOption> // collected options (null while collecting)
+    rules: Array<WhenCandidate> // collected when rules (null while collecting)
     stack: Array<RuntimeScope>  // snapshot of the execution stack at collection time
+    parentPartialOptions, parentNextOptionIndex // where the parent choice was
+    parentPartialRules, parentNextRuleIndex     // where the parent when block was
+    whenFirst: Bool             // the parent when block uses `first`
 }
 ```
+
+`isCollected()` is true once `options` or `rules` is set. A block only collects
+for an insertion of its own kind: a choice reached in a beat inserted by a
+`when` rule is presented normally, and a `when` block reached in a beat inserted
+by a choice option plays normally.
 
 The `options` field starts as `null` and is populated when the inserted beat's
 choice block is reached. The `stack` field captures a shallow copy of the
@@ -420,7 +431,7 @@ if (option.insertion != null) {
 For insertion-sourced options, the interpreter:
 1. Replaces the current stack with the insertion's captured stack.
 2. Clears **all** insertion markers from every scope (important for nested
-   insertions, see Section 15).
+   insertions, see Section 16).
 3. Pushes a scope for the selected option, whose `head` is the option. It is the
    only kind of scope with an option as `head`, and `resumeChoice` (case 2) pops it
    once the option body is done, so that each epilogue then runs with its own beat
@@ -437,7 +448,9 @@ a restore, the insertion stack holds distinct scope objects for the same levels.
 ## 9. The Insertion System
 
 Insertions (`+ BeatName` in a choice block) allow one beat's choice options to
-be flattened into another beat's choice.
+be flattened into another beat's choice. The same syntax in a `when` block
+brings the rules of another beat's first `when` block, with the same mechanism
+(see [When Blocks](#11-when-blocks-selection-by-saliency)).
 
 ### How Insertions Work
 
@@ -516,6 +529,24 @@ function evalIf(ifStmt, next) {
 }
 ```
 
+### Word Operators
+
+`is`, `is not` and `not` are written forms of `==`, `!=` and `!`. The lexer
+reads them as the same tokens with a flag (`OpEquals(true)`, `OpNotEquals(true)`,
+`OpNot(true)`), and the interpreter evaluates both forms the same way. The flag
+only lets the printer write back the form of the source.
+
+- `is` followed by `not` is always a single `!=` operator: `mood is not "angry"`.
+  To compare with a negation, write `a is (not b)`. The printer adds these
+  parentheses when an `is` is followed by a `not`.
+- `not` has the precedence of `!`: `not mood is "angry"` reads
+  `(not mood) is "angry"`.
+- After a `.`, `is` and `not` are names (`result.is`).
+- In text and dialogue, a trailing `if` is a condition only when the rest of the
+  line is a complete expression, whatever the operators
+  (`Lexer.isConditionUntilLineEnd`). `Tell me if it is true.` stays text,
+  `Go outside if mood is "angry"` is a line with a condition.
+
 ### `evalAlternative`
 
 Alternatives come in five modes. All use `nodeStates` to persist their visit
@@ -535,7 +566,114 @@ progression is preserved across save/restore.
 
 ---
 
-## 11. State Management
+## 11. When Blocks: Selection by Saliency
+
+A `when` block holds rules. Each time it is reached, it plays at most one of
+them, chosen by its strategy among the rules whose condition is true. By
+default, that is the most salient one: the rule that requires the most.
+
+```
+beat Tavern
+  when
+    mood is "angry" and gold > 3     ← two criteria
+      Get out!
+    - met_before                     ← played once
+      Oh, it is you again.
+    + Rumors if visits > 2           ← brings the rules of Rumors
+    always                           ← no condition, no criteria
+      Hello.
+```
+
+### Syntax
+
+- `when` opens a block only when it is first on its line, optionally followed
+  by a strategy name (`when first`, `when pick`, `when my_strategy`), then the
+  end of the line or `{`.
+  Anything else keeps the line as text (`when she arrives, it rains.`). The
+  lexer decides it (`isWhenStart`), and the word after `when` is always a name,
+  so `when pick` is not a `pick` alternative.
+- Each rule is a condition or `always`, then an indented or braced body
+  (`NWhenRule`). A leading `- ` (a minus and a space) makes the rule ephemeral,
+  played once. A `-` glued to what follows is a unary minus of the condition
+  (`-x > 0`).
+- `+ Beat` or `+ Beat if cond` is an insertion rule. It has no body.
+
+### Criteria
+
+The criteria count of a rule (`AstUtils.whenRuleScore`) is the number of its
+top-level `and` clauses. `a and b and c` counts 3. An `or`, a `not x`, or a group in
+parentheses counts 1, whatever it holds. `always` counts 0. Parentheses matter
+here, and they are kept in the AST (`NExpr.parens`).
+
+### Evaluation
+
+`evalWhen` works in two phases, like a choice:
+
+1. **Collection** (`collectWhenRules`): the rules are visited in written order.
+   Each rule becomes a `WhenCandidate { rule, eligible, insertion }`. It is
+   eligible when its condition is true and it is not an ephemeral rule already
+   played. An insertion rule evaluates its `if` in the scope of the block, then
+   runs the inserted beat (see below), and the rules it brings are added in its
+   place. With `first`, the collection stops at the first eligible rule: later
+   rules and insertions are not evaluated at all.
+2. **Selection** (`chooseWhenCandidate`), then the chosen rule plays
+   (`playWhenRule`). If nothing is chosen, execution continues after the block.
+
+Strategies:
+
+| Strategy | Choice |
+|----------|--------|
+| (none)   | Most criteria, then the rule played least recently (never played first), then written order (`mostSalientCandidate`) |
+| `first`  | The first eligible rule in order |
+| `pick`   | A random eligible rule, with the shared random generator |
+| a name   | A lorscript or host function (`customStrategyCandidate`) |
+
+A custom strategy receives one record per collected rule, in order, eligible or
+not: `index`, `eligible`, `criteria`, `played`, `lastPlayed` (-1 if never) and
+`ephemeral`. It returns the index of an eligible rule, or -1 to play nothing.
+Anything else is a `RuntimeError`. It is called even when no rule is eligible.
+The interpreter keeps the history: the function only chooses. An unknown name
+is a `RuntimeError` when the block selects a rule, after the collection.
+
+### History
+
+The history lives in `nodeStates`, so it is saved, and shared with child
+interpreters:
+
+- `_whenTick` on the script node: one play counter for every `when` block.
+- `_played` on each rule: how many times it was played. An ephemeral rule is
+  consumed when it is above 0.
+- `_lastPlayed` on each rule: the value of `_whenTick` when it was last played.
+
+`recordWhenRulePlayed` updates the three before the rule body runs. A single
+counter lets "least recently played" compare rules of different blocks, which
+happens as soon as insertions bring rules together.
+
+### Insertions in `when` Blocks
+
+They mirror the insertions of choices (Section 9), with `kind == When`:
+
+1. The insertion rule creates a `RuntimeInsertion` with `kind = When`, and
+   stores `parentPartialRules` and `parentNextRuleIndex` for a save made while
+   the inserted beat runs.
+2. The inserted beat runs until its first `when` block. There, `evalWhen` finds
+   the collecting insertion (`collectingWhenInsertion`), collects its own rules
+   tagged with that insertion, then `finishWhenCollection` captures the stack
+   and hands the rules over instead of playing.
+3. The early exits of `evalNodeBody` fire (`isCollected()`), and the parent
+   block goes on collecting.
+4. If a rule brought by an insertion wins, `playInsertedWhenRule` puts back the
+   captured stack, pushes a scope whose `head` is the rule, and resumes: the
+   rule body, then the rest of the inserted beat (its epilogue), then the rest
+   of the parent. If a rule of the block itself wins, the epilogues of the
+   inserted beats do not run.
+
+The conditions of the inserted rules are evaluated in the scope of the inserted
+beat. Insertions can cascade, and `whenFirst` carries `first` down the cascade.
+
+---
+
+## 12. State Management
 
 Loreline has three categories of persistent data:
 
@@ -555,6 +693,8 @@ Declared at the script root. Each character has a `RuntimeCharacter` in
 
 A `Map<NodeId, RuntimeState>` that stores per-node persistent data:
 - Alternative visit counts (for sequence, cycle, once)
+- The `when` history: `_whenTick` on the script node, `_played` and
+  `_lastPlayed` on each rule
 - Beat-local `state` blocks that aren't marked `temporary`
 
 Node states are keyed by the AST node ID, which allows them to survive across
@@ -572,7 +712,7 @@ it's excluded from saves.
 
 ---
 
-## 12. Save System and Serialization
+## 13. Save System and Serialization
 
 `save()` produces a `SaveData` object:
 
@@ -668,6 +808,17 @@ SaveDataInsertion {
     origin: { id, type }                    // the NInsertion AST node
     options: Array<SaveDataChoiceOption>     // collected choice options
     stack: Array<SaveDataScope>             // captured stack snapshot
+    parentPartialOptions, parentNextOptionIndex
+    kind: "when"                            // absent for an insertion in a choice
+    rules: Array<SaveDataWhenRule>          // collected when rules
+    parentPartialRules, parentNextRuleIndex
+    whenFirst: Bool
+}
+
+SaveDataWhenRule {
+    node: { id, type }                      // the NWhenRule AST node
+    eligible: Bool
+    insertion: Int                          // the insertion that brought it, if any
 }
 ```
 
@@ -691,7 +842,7 @@ so that it exists after the restore.
 
 ---
 
-## 13. Restore System and Deserialization
+## 14. Restore System and Deserialization
 
 `restore(saveData)` performs these steps in order:
 
@@ -762,7 +913,7 @@ from the saved data. On `resume()`, if the stack is empty, it simply calls
 
 ---
 
-## 14. Resume Dispatch: Rebuilding the Call Stack
+## 15. Resume Dispatch: Rebuilding the Call Stack
 
 After `restore()` reconstructs the stack data, `resume()` must rebuild the
 *actual execution context*, that is, the chain of Haxe method calls and closures
@@ -924,9 +1075,26 @@ Cases 4 and 5 handle deeply nested structures where a choice appears within
 another choice's option body or within a beat being evaluated as part of an
 insertion chain.
 
+### Special Cases in `resumeWhen`
+
+`resumeWhen` follows the same idea:
+
+1. **`head` is `NWhenRule`**: a rule brought by an insertion was playing (the
+   scope pushed by `playInsertedWhenRule`). Resume its body, then pop that
+   scope. Without deeper scopes, the body had not started: record the play and
+   run it.
+2. **`insertion` of kind `When` on a beat scope**: the save happened during the
+   collection, while an inserted beat ran. Resume that beat, then go on
+   collecting from `parentPartialRules` and `parentNextRuleIndex`.
+3. **`node` is `NBeatDecl`**: the scope of a beat inserted by a rule, on the
+   way to a rule brought by a cascade of insertions, or back from it. Resume
+   that beat.
+4. Otherwise, find the rule whose body holds `head` and resume it. The history
+   was recorded before the body started, so it is not recorded again.
+
 ---
 
-## 15. Complex Scenarios: Insertions + Save/Restore
+## 16. Complex Scenarios: Insertions + Save/Restore
 
 ### Scenario: Triple Nested Insertions with Save/Restore
 
@@ -1023,7 +1191,7 @@ with the remaining nodes.
 
 ---
 
-## 16. Handler Callbacks and the Host Application
+## 17. Handler Callbacks and the Host Application
 
 The interpreter communicates with the host through three handler functions:
 
@@ -1080,7 +1248,7 @@ make a different selection.
 
 ---
 
-## 17. Child Interpreters
+## 18. Child Interpreters
 
 A host can run several playheads over the same story state: a background
 conversation while the main dialogue goes on, an NPC reacting on its own, and
