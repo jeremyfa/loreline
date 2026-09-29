@@ -1,0 +1,108 @@
+// Narration lines: text over several lines, quotes, tags, every form of
+// interpolation, escapes and comments.
+
+state
+  name: Alex
+  gold: 3
+  items: []
+
+function add(a, b)
+  return a + b
+
+beat Start
+  First narrative line.
+//^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Second narrative line.
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  "Quoted narration."
+//^^^^^^^^^^^^^^^^^^^ string.quoted.double
+  "Quoted narration." // note
+//^^^^^^^^^^^^^^^^^^^ string.quoted.double
+//                    ^^^^^^^ comment.line.double-slash
+  "Quoted \"escaped\" narration."
+//^^^^^^^^ string.quoted.double
+//        ^^ constant.character.escape
+//          ^^^^^^^ string.quoted.double
+//                   ^^^^^^^^^^^^ string.quoted.double
+  "Quoted \"escaped\"" -> End
+//^^^^^^^^ string.quoted.double
+//        ^^ constant.character.escape
+//                     ^^ keyword.control.flow
+//                        ^^^ entity.name.type.beat
+  Narration with <b>tag</b> and $name.
+//               ^ punctuation.definition.tag
+//                ^ storage.modifier.metadata
+//                  ^^^ string.unquoted
+//                      ^^ storage.modifier.metadata
+//                               ^^^^ variable.other
+//                                   ^ string.unquoted
+  Field $obj.field and index $items[0] here.
+//       ^^^ variable.other
+//          ^ punctuation.accessor
+//           ^^^^^ variable.other
+//                            ^^^^^ variable.other
+//                                 ^ punctuation.definition.array.begin
+//                                  ^ constant.numeric
+//                                    ^^^^^^ string.unquoted
+  Call $add(1, 2). Then more.
+//      ^^^ entity.name.function
+//         ^ punctuation.section.parens.begin
+//          ^ constant.numeric
+//              ^ punctuation.section.parens.end
+//               ^^^^^^^^^^^^ string.unquoted
+  Call $add(). Then more.
+//      ^^^ entity.name.function
+//           ^^^^^^^^^^^^ string.unquoted
+  Beat $Helper.visits() times.
+//      ^^^^^^ entity.name.type.beat
+//             ^^^^^^ entity.name.function
+//                     ^^^^^^^ string.unquoted
+  Method $obj.method(1) and $obj.method(). Then.
+//        ^^^ variable.other
+//            ^^^^^^ entity.name.function
+//                   ^ constant.numeric
+//                                       ^^^^^^^ string.unquoted
+  Result $fn(1)[0] and $fn(1).field and $fn(1).other(). Then.
+//        ^^ entity.name.function
+//             ^ punctuation.definition.array.begin
+//                            ^^^^^ variable.other
+//                                             ^^^^^ entity.name.function
+//                                                    ^^^^^^^ string.unquoted
+  Beat field $Helper.list[0] and $Helper.name. Then.
+//            ^^^^^^ entity.name.type.beat
+//                   ^^^^ variable.other
+//                        ^ constant.numeric
+//                                       ^^^^ variable.other
+//                                           ^^^^^^^ string.unquoted
+  Name $name. Then more.
+//      ^^^^ variable.other
+//          ^^^^^^^^^^^^ string.unquoted
+  Field $obj.field. Then more.
+//           ^^^^^ variable.other
+//                ^^^^^^^^^^^^ string.unquoted
+  Expression ${gold * 2} and ${items.length}.
+//           ^^ punctuation.definition.block.begin
+//             ^^^^ variable.other
+//                  ^ keyword.operator.arithmetic
+//                    ^ constant.numeric
+//                     ^ punctuation.definition.block.end
+//                                   ^^^^^^ variable.other
+  Escapes $$ and ## and \n here.
+//        ^^ constant.character.escape
+//               ^^ constant.character.escape
+//                      ^^ constant.character.escape
+//                        ^^^^^^ string.unquoted
+  Narration then comment // note
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//                       ^^^^^^^ comment.line.double-slash
+  Narration /* block */ continues.
+//          ^^^^^^^^^^^ comment.block
+//                      ^^^^^^^^^^ string.unquoted
+  A price: $gold coins.
+//^^^^^^^^^ string.unquoted
+//          ^^^^ variable.other
+//              ^^^^^^^ string.unquoted
+  Plain text -> End
+//^^^^^^^^^^ string.unquoted
+//           ^^ keyword.control.flow
+//              ^^^ entity.name.type.beat

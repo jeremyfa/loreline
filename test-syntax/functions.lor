@@ -1,0 +1,67 @@
+// Function declarations: indented and braced bodies, parameters, keywords,
+// operators and strings.
+
+function add(a, b = 2)
+// <-------- keyword.control.function
+//       ^^^ entity.name.function
+//           ^ variable.parameter
+//              ^ variable.parameter
+//                ^ keyword.operator.assignment
+//                  ^ constant.numeric
+  var result = a + b
+//^^^ keyword.control
+//    ^^^^^^ variable.other
+//           ^ keyword.operator.assignment
+//               ^ keyword.operator.arithmetic
+  if (result > 10 && !done) {
+//^^ keyword.control
+//           ^ keyword.operator
+//                ^^ keyword.operator.logical
+//                    ^^^^ variable.other
+    result -= 1
+//  ^^^^^^ variable.other
+//            ^ constant.numeric
+  } else {
+//  ^^^^ keyword.control
+    return result
+//  ^^^^^^ keyword.control
+//         ^^^^^^ variable.other
+  }
+  for (i in 0...result)
+//^^^ keyword.control
+//       ^^ keyword.control
+//          ^ constant.numeric
+//           ^^^ keyword.operator.spread
+//              ^^^^^^ variable.other
+    result = result | 1
+//                  ^ keyword.operator.bitwise
+  var s = "text ${a}"
+//        ^^^^^^ string.quoted.double
+//              ^^ punctuation.definition.block.begin
+//                ^ variable.other
+  var n = obj.x ? result : null
+//           ^ keyword.operator.accessor
+//              ^ keyword.operator.ternary
+//                         ^^^^ constant.language
+  // comment in function
+//^^^^^^^^^^^^^^^^^^^^^^ comment.line.double-slash
+  return add(1, n)
+//^^^^^^ keyword.control
+//       ^^^ entity.name.function
+
+function greet(name) {
+// <-------- keyword.control.function
+//       ^^^^^ entity.name.function
+//             ^^^^ variable.parameter
+//                   ^ punctuation.section.block.begin
+  return "Hi " + name
+//^^^^^^ keyword.control
+//       ^^^^^ string.quoted.double
+//               ^^^^ variable.other
+}
+// <- punctuation.section.block.end
+
+beat Start
+  Total is $add(1, 2).
+//^^^^^^^^^ string.unquoted
+//          ^^^ entity.name.function

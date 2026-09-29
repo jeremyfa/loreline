@@ -28,3 +28,83 @@ beat Start
 
 beat End
   Done.
+
+beat More
+  choice
+    "Quoted option"
+//  ^^^^^^^^^^^^^^^ string.quoted.double
+    "Quoted option" if gold > 0
+//  ^^^^^^^^^^^^^^^ string.quoted.double
+//                  ^^ keyword.control
+//                     ^^^^ variable.other
+    "Quoted option" -> End
+//  ^^^^^^^^^^^^^^^ string.quoted.double
+//                  ^^ keyword.control.flow
+//                     ^^^ entity.name.type.beat
+    <b>Bold</b> option $name
+//   ^ storage.modifier.metadata
+//     ^^^^ string.unquoted
+//              ^^^^^^ string.unquoted
+//                      ^^^^ variable.other
+    Leave -> End
+//  ^^^^^ string.unquoted
+//        ^^ keyword.control.flow
+//           ^^^ entity.name.type.beat
+    Water if (gold > 0 and thirsty)
+//  ^^^^^ string.unquoted
+//        ^^ keyword.control
+//            ^^^^ variable.other
+//                     ^^^ keyword.control
+//                         ^^^^^^^ variable.other
+    + Inserted(sarah)
+//  ^ keyword.control.flow
+//    ^^^^^^^^ entity.name.type.beat
+//             ^^^^^ variable.other
+    + beat(kind + "Options") if showBonus
+//  ^ keyword.control.flow
+//    ^^^^ entity.name.function
+//         ^^^^ variable.other
+//                ^^^^^^^^^ string.quoted.double
+//                           ^^ keyword.control
+//                              ^^^^^^^^^ variable.other
+    + Extra if (visits > 2)
+//    ^^^^^ entity.name.type.beat
+//          ^^ keyword.control
+//              ^^^^^^ variable.other
+    + Extra // comment
+//    ^^^^^ entity.name.type.beat
+//          ^^^^^^^^^^ comment.line.double-slash
+    + Extra /* c */ // d
+//    ^^^^^ entity.name.type.beat
+//          ^^^^^^^ comment.block
+//                  ^^^^ comment.line.double-slash
+    + /* c */ Extra
+//    ^^^^^^^ comment.block
+//            ^^^^^ entity.name.type.beat
+    if gold > 5
+//  ^^ keyword.control
+//     ^^^^ variable.other
+      Rich option
+//    ^^^^^^^^^^^ string.unquoted
+        Rich.
+//      ^^^^^ string.unquoted
+    else
+//  ^^^^ keyword.control
+      Poor option
+//    ^^^^^^^^^^^ string.unquoted
+  choice {
+//^^^^^^ keyword.control.choice
+//       ^ punctuation.section.block.begin
+    Braced option {
+//  ^^^^^^^^^^^^^ string.unquoted
+//                ^ punctuation.section.block.begin
+      Inside.
+//    ^^^^^^^ string.unquoted
+    }
+//  ^ punctuation.section.block.end
+    Second option
+//  ^^^^^^^^^^^^^ string.unquoted
+  }
+//^ punctuation.section.block.end
+  After.
+//^^^^^^ string.unquoted

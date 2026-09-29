@@ -1,0 +1,111 @@
+// State and character blocks: keys, values of every kind, arrays, objects,
+// braces and comments.
+
+import imports/shared-beat
+// <------ keyword.control.import
+//     ^^^^^^^^^^^^^^^^^^^ support.class.module.import
+import "imports/other.lor"
+// <------ keyword.control.import
+//     ^^^^^^^^^^^^^^^^^^^ string.quoted.double.module
+
+state
+// <----- keyword.control.state
+  // comment in state
+//^^^^^^^^^^^^^^^^^^^ comment.line.double-slash
+  score: 3.5 // trailing
+//^^^^^ variable.other
+//     ^ keyword.operator.type.annotation
+//       ^^^ constant.numeric
+//           ^^^^^^^^^^^ comment.line.double-slash
+  label: Hello there /* note */
+//^^^^^ variable.other
+//       ^^^^^ string.unquoted.value
+//             ^^^^^ string.unquoted.value
+//                   ^^^^^^^^^^ comment.block
+  path: "a\"b"
+//      ^^ string.quoted.double
+//        ^^ constant.character.escape
+  quote: Say \"hi\"
+//       ^^^ string.unquoted.value
+//           ^^ constant.character.escape
+//             ^^ string.unquoted.value
+//               ^^ constant.character.escape
+  done: false
+//      ^^^^^ constant.language
+  nothing: null
+//         ^^^^ constant.language
+  items: [apple, "pear", 3]
+//       ^ punctuation.section.array.begin
+//        ^^^^^ string.unquoted.value.in-array
+//               ^^^^^^ string.quoted.double
+//                       ^ constant.numeric
+//                        ^ punctuation.section.array.end
+  menu: {
+//^^^^ variable.other
+    price: 5
+//  ^^^^^ variable.other
+//       ^ keyword.operator.type.annotation
+//         ^ constant.numeric
+    tags: [
+//  ^^^^ variable.other
+//        ^ punctuation.section.array.begin
+      first thing
+//    ^^^^^ string.unquoted.value.in-array
+//          ^^^^^ string.unquoted.value.in-array
+      second
+//    ^^^^^^ string.unquoted.value.in-array
+      one \"two\"
+//    ^^^ string.unquoted.value.in-array
+//        ^^ constant.character.escape
+//          ^^^ string.unquoted.value.in-array
+//             ^^ constant.character.escape
+    ]
+//  ^ punctuation.section.array.end
+  }
+  after: 1
+//^^^^^ variable.other
+//       ^ constant.numeric
+
+state {
+// <----- keyword.control.state
+//    ^ punctuation.section.block.begin
+  counter: 0
+//^^^^^^^ variable.other
+//         ^ constant.numeric
+}
+// <- punctuation.section.block.end
+
+character narrator {
+// <--------- keyword.control.character
+//        ^^^^^^^^ entity.name.class
+//                 ^ punctuation.section.block.begin
+  name: Narrator
+//^^^^ variable.other
+//      ^^^^^^^^ string.unquoted.value
+}
+// <- punctuation.section.block.end
+
+character bob
+// <--------- keyword.control.character
+//        ^^^ entity.name.class
+  name: Bob
+//^^^^ variable.other
+//      ^^^ string.unquoted.value
+  mood: happy
+//^^^^ variable.other
+//      ^^^^^ string.unquoted.value
+
+beat Start
+  new state
+//^^^ keyword.control.state
+//    ^^^^^ keyword.control.state
+    visits: 0
+//  ^^^^^^ variable.other
+//          ^ constant.numeric
+  state
+//^^^^^ keyword.control.state
+    seen: true
+//  ^^^^ variable.other
+//        ^^^^ constant.language
+  Hello.
+//^^^^^^ string.unquoted
