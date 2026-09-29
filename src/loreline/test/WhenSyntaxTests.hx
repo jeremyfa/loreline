@@ -97,7 +97,8 @@ class WhenSyntaxTests {
             {name: 'an unknown strategy is an error', fn: () -> testUnknownStrategy()},
             {name: 'the history is shared with child interpreters', fn: () -> testSharedHistory()},
             {name: 'a host function can be a strategy', fn: () -> testHostStrategy()},
-            {name: 'a strategy must return -1 or an eligible index', fn: () -> testStrategyErrors()}
+            {name: 'a strategy must return -1 or an eligible index', fn: () -> testStrategyErrors()},
+            {name: 'editor warnings', fn: () -> testWarnings()}
         ];
 
         for (test in tests) {
@@ -360,6 +361,55 @@ class WhenSyntaxTests {
         }
         final none = playWithChooser(records -> -1);
         if (none.join(',') != 'End.') errors.push('-1 should play nothing, got ' + none);
+        if (errors.length > 0) throw errors.join('\n');
+    }
+
+
+    /**
+     * What Lens.getWhenWarnings reports for a when block: each case lists the
+     * start of every expected message, `!` in front for a warning.
+     */
+    static function testWarnings():Void {
+        final cases:Array<{lines:Array<String>, expected:Array<String>}> = [
+            // Nothing to say
+            {lines: ['  when', '    ready', '      Go.', '    always', '      Wait.'], expected: []},
+            // No always rule: information only
+            {lines: ['  when', '    ready', '      Go.'], expected: ['No `always` rule']},
+            // A rule played once doesn't count as always
+            {lines: ['  when', '    - always', '      Once.'], expected: ['No `always` rule']},
+            // An insertion may bring an always rule: nothing reported
+            {lines: ['  when', '    + Other', '    ready', '      Go.'], expected: []},
+            // Unknown strategy
+            {lines: ['  when chooser', '    always', '      Go.'], expected: ['!Unknown strategy: chooser']},
+            // Known strategies, and a function declared by the script (or for the host)
+            {lines: ['  when first', '    always', '      Go.'], expected: []},
+            {lines: ['  when declared', '    always', '      Go.'], expected: []},
+            // A minus sign glued to the condition
+            {lines: ['  when', '    -gold > 0', '      Debt.', '    always', '      Fine.'], expected: ['!This `-` is a minus sign']},
+            // With a space it is the mark of a rule played once
+            {lines: ['  when', '    - gold > 0', '      Once.', '    always', '      Fine.'], expected: []},
+            // Thresholds with the default strategy
+            {lines: ['  when', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: ['!Rules comparing `gold`']},
+            // With first, thresholds are fine
+            {lines: ['  when first', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: []},
+            // Different numbers of criteria don't tie
+            {lines: ['  when', '    gold > 100 and ready', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: []}
+        ];
+        final errors:Array<String> = [];
+        for (item in cases) {
+            final source = ['function declared(rules)', '', 'beat Start'].concat(item.lines).concat(['', 'beat Other', '  when', '    always', '      Other.']).join('\n');
+            final script = parse(source);
+            final lens = new Lens(script);
+            final block = whenBlocks(script)[0];
+            final got = [for (w in lens.getWhenWarnings(block)) (w.isWarning ? '!' : '') + w.message];
+            var ok = got.length == item.expected.length;
+            if (ok) {
+                for (i in 0...got.length) {
+                    if (!got[i].startsWith(item.expected[i])) ok = false;
+                }
+            }
+            if (!ok) errors.push(item.lines.join(' / ') + '\n  expected ' + item.expected + '\n  got ' + got);
+        }
         if (errors.length > 0) throw errors.join('\n');
     }
 

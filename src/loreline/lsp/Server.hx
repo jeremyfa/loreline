@@ -22,6 +22,9 @@ class Server {
 
     final RE_ARROW_BEFORE = ~/(->)((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
 
+    /** Text before the cursor ends with `when ` at the start of a line: a strategy name comes next */
+    final RE_WHEN_STRATEGY_BEFORE = ~/(^|\n)[ \t]*when[ \t]+[a-zA-Z0-9_]*$/;
+
     final RE_ARRAY_ACCESS_BEFORE = ~/(\])((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
 
     /**
@@ -515,6 +518,13 @@ class Server {
                         }
                     }
 
+                    // Things worth pointing out in when blocks
+                    for (when in lens.getNodesOfType(NWhenStatement, false)) {
+                        for (warning in lens.getWhenWarnings(when)) {
+                            addDiagnostic(uri, warning.pos, warning.message, warning.isWarning ? DiagnosticSeverity.Warning : DiagnosticSeverity.Information);
+                        }
+                    }
+
                     // TODO check references to beat calls and function calls
 
                     // Add semantic validation
@@ -980,8 +990,11 @@ class Server {
                 case "\"": // String completion - no special handling needed
                     return [];
 
-                case " ": // Transition?
+                case " ": // Transition or when strategy?
                     final prevText = content.uSubstr(0, lorelinePos.offset);
+                    if (RE_WHEN_STRATEGY_BEFORE.match(prevText)) {
+                        return getWhenStrategyCompletions(lens, replacementRange);
+                    }
                     final isTransition = RE_ARROW_BEFORE.match(prevText);
                     if (isTransition) {
                         final matchedLen = RE_ARROW_BEFORE.matched(0).uLength();
@@ -1009,8 +1022,27 @@ class Server {
                 return getBeatCompletions(lens, node, spaces.uLength() > 0 ? '' : ' ', replacementRange);
             }
 
+            // After `when`, only strategies make sense
+            if (RE_WHEN_STRATEGY_BEFORE.match(prevText)) {
+                return getWhenStrategyCompletions(lens, replacementRange);
+            }
+
             // Return all available completions for CTRL + Space
             final items:Array<CompletionItem> = [];
+
+            // The header of a rule of a when block can be `always`
+            if (node is NWhenStatement || node is NWhenRule) {
+                items.push({
+                    label: 'always',
+                    kind: CompletionItemKind.Keyword,
+                    detail: 'When rule',
+                    insertText: 'always',
+                    insertTextMode: AsIs,
+                    insertTextFormat: PlainText,
+                    documentation: 'A rule that is always eligible. It has no criteria, so any other eligible rule wins over it with the default strategy.',
+                    textEdit: makeTextEdit(replacementRange, 'always')
+                });
+            }
 
             // Add locals completion (if inside a function)
             if (node is NFunctionDecl) {
@@ -1589,6 +1621,10 @@ class Server {
                 return makeCharacterDeclHover(cast node, content);
             case NChoiceStatement:
                 return makeChoiceHover(cast node, content);
+            case NWhenStatement:
+                return makeWhenHover(cast node, content);
+            case NWhenRule:
+                return makeWhenRuleHover(cast node, content);
             case NImportStatement:
                 return makeImportHover(cast node, content);
             case NFunctionDecl:
@@ -2468,6 +2504,73 @@ class Server {
 
         return null;
 
+    }
+
+    /**
+     * Completion items for the strategy of a when block: `first`, `pick` and the
+     * functions of the script.
+     */
+    function getWhenStrategyCompletions(lens:Lens, replacementRange:Range):Array<CompletionItem> {
+        final items:Array<CompletionItem> = [];
+        for (strategy in ['first', 'pick']) {
+            items.push({
+                label: strategy,
+                kind: CompletionItemKind.Keyword,
+                detail: 'When strategy',
+                insertText: strategy,
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: whenStrategyDescription(strategy),
+                textEdit: makeTextEdit(replacementRange, strategy)
+            });
+        }
+        for (func in lens.getVisibleFunctions()) {
+            if (func.name == null) continue;
+            items.push({
+                label: func.name,
+                kind: CompletionItemKind.Function,
+                detail: 'When strategy (function)',
+                insertText: func.name,
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: whenStrategyDescription(func.name),
+                textEdit: makeTextEdit(replacementRange, func.name)
+            });
+        }
+        return items;
+    }
+
+    /**
+     * What a strategy of a when block does, null for the default one.
+     */
+    static function whenStrategyDescription(strategy:Null<String>):String {
+        return switch strategy {
+            case null: 'Plays the eligible rule with the most criteria (clauses joined by `and`), then the one played least recently, then the first one written.';
+            case 'first': 'Plays the first eligible rule, in written order. The way to write thresholds.';
+            case 'pick': 'Plays one of the eligible rules at random.';
+            case name: 'Calls `$name` with one record per rule (`index`, `eligible`, `criteria`, `played`, `lastPlayed`, `ephemeral`). It returns the index of the rule to play, or -1 to play nothing.';
+        }
+    }
+
+    function makeWhenHover(when:NWhenStatement, content:String):Hover {
+        final description = hoverDescriptionForNode(when);
+        if (description.length > 0) description.push('');
+        description.push(whenStrategyDescription(when.strategy));
+        return makeHover(hoverTitle('When', when.strategy ?? 'default strategy'), description, content, when);
+    }
+
+    function makeWhenRuleHover(rule:NWhenRule, content:String):Hover {
+        final description = hoverDescriptionForNode(rule);
+        if (description.length > 0) description.push('');
+        if (rule.insertion != null) {
+            description.push('Brings the rules of the first when block of the inserted beat.' + (rule.insertionCondition != null ? ' Its condition only decides whether they come in.' : ''));
+        }
+        else {
+            final criteria = AstUtils.whenRuleScore(rule);
+            description.push(rule.condition == null ? 'Always eligible, with no criteria.' : 'Criteria: $criteria.');
+            if (rule.once) description.push('Played once: after that, it is never eligible again.');
+        }
+        return makeHover(hoverTitle('When rule'), description, content, rule);
     }
 
     function makeChoiceHover(choice:NChoiceStatement, content:String):Hover {

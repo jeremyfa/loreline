@@ -9,6 +9,18 @@ import loreline.Position;
 using StringTools;
 using loreline.Utf8;
 
+/**
+ * Something worth pointing out in a when block, for editors.
+ */
+typedef WhenWarning = {
+    /** Where it is */
+    var pos:Position;
+    /** What to tell the writer */
+    var message:String;
+    /** Whether it is likely a mistake (a warning), or just good to know (information) */
+    var isWarning:Bool;
+}
+
 class Reference<T:Node> {
 
     public var target:T;
@@ -962,6 +974,135 @@ class Lens {
 
         return result;
 
+    }
+
+    /**
+     * Things worth pointing out in a when block, for editors:
+     * - a strategy that is neither `first`, `pick` nor a function of the script;
+     * - no `always` rule (information: nothing plays when no condition is true);
+     * - a `-` glued to the condition at the start of a rule, which is a minus sign,
+     *   not the mark of a rule played once;
+     * - thresholds with the default strategy: two rules comparing the same value
+     *   with a number, with as many criteria, tie. The one played least recently
+     *   wins, not the first that matches, which `when first` does.
+     */
+    public function getWhenWarnings(when:NWhenStatement):Array<WhenWarning> {
+
+        final warnings:Array<WhenWarning> = [];
+
+        final strategy = when.strategy;
+        if (strategy != null && strategy != 'first' && strategy != 'pick' && findFunctionByNameFromNode(strategy, when) == null) {
+            warnings.push({
+                pos: when.strategyPos ?? when.pos,
+                message: 'Unknown strategy: $strategy. Use first, pick, or the name of a function. A function provided by the host can be declared with `function $strategy(rules)`.',
+                isWarning: true
+            });
+        }
+
+        var hasAlways = false;
+        var hasInsertion = false;
+        final comparedValues:Map<String, Bool> = new Map();
+        var thresholdWarned = false;
+        for (rule in when.rules) {
+            if (rule.insertion != null) {
+                hasInsertion = true;
+                continue;
+            }
+            if (rule.condition == null) {
+                if (!rule.once) hasAlways = true;
+                continue;
+            }
+
+            final first = leftmostOperand(rule.condition);
+            if (!rule.once && first is NUnary && first.pos.offset == rule.pos.offset) {
+                switch (cast first:NUnary).op {
+                    case OpMinus:
+                        warnings.push({
+                            pos: new Position(first.pos.line, first.pos.column, first.pos.offset, 1),
+                            message: 'This `-` is a minus sign on the condition. To play this rule only once, write `- ` with a space after it.',
+                            isWarning: true
+                        });
+                    case _:
+                }
+            }
+
+            if (strategy == null && !thresholdWarned) {
+                final score = AstUtils.whenRuleScore(rule);
+                for (clause in topLevelClauses(rule.condition)) {
+                    final value = comparedValue(clause);
+                    if (value == null) continue;
+                    final key = score + ':' + value;
+                    if (comparedValues.exists(key)) {
+                        warnings.push({
+                            pos: clause.pos,
+                            message: 'Rules comparing `$value` with a number, with as many criteria, tie with the default strategy: the one played least recently wins, not the first that matches. Use `when first` for thresholds.',
+                            isWarning: true
+                        });
+                        thresholdWarned = true;
+                        break;
+                    }
+                    comparedValues.set(key, true);
+                }
+            }
+        }
+
+        if (!hasAlways && !hasInsertion) {
+            warnings.push({
+                pos: new Position(when.pos.line, when.pos.column, when.pos.offset, 4),
+                message: 'No `always` rule: when no condition is true, nothing plays.',
+                isWarning: false
+            });
+        }
+
+        return warnings;
+
+    }
+
+    /** The first operand written in an expression, outside of parentheses. */
+    static function leftmostOperand(expr:NExpr):NExpr {
+        if (expr.parens == 0 && expr is NBinary) {
+            return leftmostOperand((cast expr:NBinary).left);
+        }
+        return expr;
+    }
+
+    /** The clauses joined by an `and` at the top level of a condition. */
+    static function topLevelClauses(expr:NExpr):Array<NExpr> {
+        if (expr.parens == 0 && expr is NBinary) {
+            final binary:NBinary = cast expr;
+            switch binary.op {
+                case OpAnd(_):
+                    return topLevelClauses(binary.left).concat(topLevelClauses(binary.right));
+                case _:
+            }
+        }
+        return [expr];
+    }
+
+    /**
+     * For a comparison of a value with a number (`gold > 10`, `3 <= level`),
+     * the value as written, otherwise null.
+     */
+    static function comparedValue(expr:NExpr):Null<String> {
+        if (!(expr is NBinary)) return null;
+        final binary:NBinary = cast expr;
+        switch binary.op {
+            case OpGreater | OpGreaterEq | OpLess | OpLessEq:
+            case _: return null;
+        }
+        final value = isNumberLiteral(binary.right) ? binary.left : isNumberLiteral(binary.left) ? binary.right : null;
+        if (value == null || !(value is NAccess || value is NArrayAccess)) return null;
+        final printer = new Printer();
+        printer.enableComments = false;
+        return printer.print(value).trim();
+    }
+
+    static function isNumberLiteral(expr:NExpr):Bool {
+        if (!(expr is NLiteral)) return false;
+        return switch (cast expr:NLiteral).literalType {
+            case Number: true;
+            case _: false;
+        }
     }
 
     public function findFunctionByNameFromNode(name:String, node:Node):Null<NFunctionDecl> {
