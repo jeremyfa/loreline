@@ -377,11 +377,7 @@ ${html}
   .shiki .lor-choice-once-style { font-style: italic; }
   .shiki .lor-choice-once-prefix { color: rgba(255, 255, 255, 0.4) !important; }
   [data-theme="light"] .shiki .lor-choice-once-prefix { color: rgba(0, 0, 0, 0.4) !important; }
-  .lor-when-rule { background: rgba(255, 255, 255, 0.06); border-radius: 4px; padding: 1px 0; }
-  [data-theme="light"] .shiki .lor-when-rule { background-color: rgba(0, 0, 0, 0.03) !important; }
   .shiki .lor-when-once-style { font-style: italic; }
-  .shiki .lor-when-once-prefix { color: rgba(255, 255, 255, 0.4) !important; }
-  [data-theme="light"] .shiki .lor-when-once-prefix { color: rgba(0, 0, 0, 0.4) !important; }
 </style>
 </head>
 <body>

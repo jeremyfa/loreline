@@ -1,5 +1,5 @@
 // Constructs that get decorations on top of the grammar: text,
-// plural pipes, choice options, when rules and once-only options and rules. The report shows them
+// plural pipes, choice options, once-only options and when rules played once. The report shows them
 // with those decorations, the assertions check the grammar underneath.
 
 state
