@@ -1,0 +1,2 @@
+args: [lsp, request, main.lor, textDocument/documentSymbol]
+stdoutContains: "\"name\": \"Start\""

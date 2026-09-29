@@ -140,6 +140,9 @@ class Cli {
                     else
                         fail('Missing file argument');
 
+                case 'lsp':
+                    lsp(args.slice(1));
+
                 case 'benchmark':
                     if (args.length >= 2)
                         benchmark(args[1], args.length >= 3 ? (Std.parseInt(args[2]) ?? 1000) : 1000);
@@ -156,6 +159,158 @@ class Cli {
 
     }
 
+    /**
+     * The language server from the command line: without arguments, a server on
+     * stdin/stdout (messages framed with Content-Length headers), otherwise one
+     * request on a file, whose JSON result is printed.
+     */
+    function lsp(args:Array<String>) {
+
+        if (args.length == 0) {
+            lspStdio();
+            return;
+        }
+
+        final command = args[0];
+        if (args.length < 2) {
+            fail('Missing file argument');
+        }
+        final file = args[1];
+        if (!FileSystem.exists(file)) {
+            fail('File not found: $file', file);
+        }
+
+        final uri = fileUri(FileSystem.absolutePath(file));
+        final textDocument = { uri: uri };
+
+        final position = () -> {
+            if (args.length < 3) fail('Missing line:column argument');
+            final parts = args[2].split(':');
+            final line = Std.parseInt(parts[0]);
+            final column = parts.length > 1 ? Std.parseInt(parts[1]) : 1;
+            if (line == null || column == null || line < 1 || column < 1) {
+                fail('Invalid position: ${args[2]}, expected line:column starting at 1');
+            }
+            // Written like in an editor, from 1; the protocol counts from 0
+            return { line: line - 1, character: column - 1 };
+        };
+
+        var method:String = null;
+        var params:Dynamic = null;
+        switch command {
+            case 'definition' | 'hover' | 'completion':
+                method = 'textDocument/' + command;
+                params = { textDocument: textDocument, position: position() };
+            case 'symbols':
+                method = 'textDocument/documentSymbol';
+                params = { textDocument: textDocument };
+            case 'format':
+                method = 'textDocument/formatting';
+                params = { textDocument: textDocument, options: { tabSize: 2, insertSpaces: true } };
+            case 'diagnostics':
+                method = null;
+            case 'request':
+                if (args.length < 3) fail('Missing method argument');
+                method = args[2];
+                params = args.length >= 4 ? Json.parse(args[3]) : {};
+                if (!Reflect.hasField(params, 'textDocument')) {
+                    Reflect.setField(params, 'textDocument', textDocument);
+                }
+            case _:
+                fail('Unknown lsp command: $command');
+        }
+
+        final server = new loreline.lsp.Server();
+        var diagnostics:Dynamic = [];
+        server.onLog = (message, ?pos) -> Sys.stderr().writeString(Std.string(message) + '\n');
+        server.onNotification = notification -> {
+            if (notification.method == 'textDocument/publishDiagnostics') {
+                final notified:Dynamic = notification.params;
+                if (notified.uri == uri) diagnostics = notified.diagnostics;
+            }
+        };
+
+        final send = (message:Dynamic) -> server.handleMessageSync(message);
+        send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { capabilities: {} } });
+        send({ jsonrpc: '2.0', method: 'initialized', params: {} });
+        send({ jsonrpc: '2.0', method: 'textDocument/didOpen', params: {
+            textDocument: { uri: uri, languageId: 'loreline', version: 1, text: File.getContent(file) }
+        }});
+
+        if (method == null) {
+            print(Json.stringify(diagnostics, null, '  '));
+            return;
+        }
+
+        final response = send({ jsonrpc: '2.0', id: 2, method: method, params: params });
+        if (response == null) {
+            fail('No response to $method');
+        }
+        if (response.error != null) {
+            fail('$method failed: ' + response.error.message);
+        }
+        print(Json.stringify(response.result, null, '  '));
+
+    }
+
+    /**
+     * Language server on stdin/stdout. Messages in both directions are JSON with
+     * a Content-Length header (a count of bytes). Logs go to stderr so that they
+     * don't break the stream.
+     */
+    function lspStdio() {
+
+        final stdin = Sys.stdin();
+        final stdout = Sys.stdout();
+
+        final write = (message:Dynamic) -> {
+            if (message == null) return;
+            final body = haxe.io.Bytes.ofString(Json.stringify(message));
+            stdout.writeString('Content-Length: ${body.length}\r\n\r\n');
+            stdout.write(body);
+            stdout.flush();
+        };
+
+        final server = new loreline.lsp.Server();
+        server.onLog = (message, ?pos) -> Sys.stderr().writeString(Std.string(message) + '\n');
+        server.onNotification = notification -> write(notification);
+
+        while (true) {
+            var length = -1;
+            try {
+                // Headers, until an empty line
+                while (true) {
+                    final line = stdin.readLine().trim();
+                    if (line.length == 0) {
+                        if (length >= 0) break;
+                        continue;
+                    }
+                    final colon = line.indexOf(':');
+                    if (colon > 0 && line.substr(0, colon).trim().toLowerCase() == 'content-length') {
+                        length = Std.parseInt(line.substr(colon + 1).trim());
+                    }
+                }
+                final body = stdin.read(length).toString();
+                server.handleMessage(Json.parse(body), response -> write(response));
+            }
+            catch (e:haxe.io.Eof) {
+                break;
+            }
+        }
+
+    }
+
+    /**
+     * The file URI of an absolute path, with each segment percent-encoded
+     * (`file:///C:/...` for a Windows drive).
+     */
+    static function fileUri(path:String):String {
+        final normalized = Path.normalize(path);
+        final segments = [for (segment in normalized.split('/')) segment.length == 2 && segment.charAt(1) == ':' ? segment : StringTools.urlEncode(segment)];
+        final encoded = segments.join('/');
+        return 'file://' + (encoded.startsWith('/') ? '' : '/') + encoded;
+    }
+
     function help() {
 
         print("  _                _ _            ".green());
@@ -168,6 +323,10 @@ class Cli {
         print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "|".gray() + "benchmark" + "]".gray() + " " + "story.lor".underline());
         print("");
         print(" " + "benchmark".bold() + " " + "story.lor".underline() + " " + "[iterations]".gray() + "  compare source parsing vs fromJson (AST cache) speed");
+        print(" " + "lsp".bold() + "  run the language server on stdin/stdout");
+        print(" " + "lsp".bold() + " " + "[".gray() + "definition" + "|".gray() + "hover" + "|".gray() + "completion" + "]".gray() + " " + "story.lor".underline() + " " + "line:column".underline() + "  send one request, print its JSON result");
+        print(" " + "lsp".bold() + " " + "[".gray() + "symbols" + "|".gray() + "format" + "|".gray() + "diagnostics" + "]".gray() + " " + "story.lor".underline());
+        print(" " + "lsp request".bold() + " " + "story.lor".underline() + " " + "method".underline() + " " + "[params]".gray() + "  any request, params as JSON (textDocument is added)");
         print("");
 
     }
@@ -398,7 +557,9 @@ class Cli {
      *   2. Copies `<test>/input/**` into the workspace.
      *   3. Spawns `neko run.n <spec.args>` with the workspace as cwd
      *      (achieved by appending the workspace path as the last arg, which
-     *      the CLI's bootstrap interprets as the cwd to switch to).
+     *      the CLI's bootstrap interprets as the cwd to switch to). If the spec
+     *      has a `stdinFile`, that file of the test folder is sent as is on the
+     *      standard input, which is then closed.
      *   4. Applies the spec's assertions:
      *      - exit code matches `spec.exitCode` (default 0)
      *      - stdout contains `spec.stdoutContains` (if set)
@@ -507,6 +668,7 @@ class Cli {
         final argsList:Array<Dynamic> = cast spec.args;
         final stringArgs = [for (a in argsList) Std.string(a)];
         final expectedExitCode:Int = spec.exitCode != null ? (cast spec.exitCode:Int) : 0;
+        final stdinFile:String = spec.stdinFile != null ? Path.join([testPath, Std.string(spec.stdinFile)]) : null;
         final stdoutContains:String = spec.stdoutContains != null ? Std.string(spec.stdoutContains) : null;
         final stderrContains:String = spec.stderrContains != null ? Std.string(spec.stderrContains) : null;
         final expectMissingRaw:Array<Dynamic> = (spec.expectMissing != null && (spec.expectMissing is Array))
@@ -522,6 +684,10 @@ class Cli {
         var exitCode = -1;
         try {
             final proc = new Process("neko", processArgs);
+            if (stdinFile != null) {
+                proc.stdin.write(File.getBytes(stdinFile));
+            }
+            proc.stdin.close();
             stdout = proc.stdout.readAll().toString();
             stderr = proc.stderr.readAll().toString();
             exitCode = proc.exitCode();

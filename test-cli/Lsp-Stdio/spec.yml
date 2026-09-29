@@ -1,0 +1,4 @@
+# initialize, didOpen, a definition in the same file, then shutdown and exit
+args: [lsp]
+stdinFile: session.lsp
+stdoutContains: "\"targetSelectionRange\":{\"end\":{\"character\":9,\"line\":3}"

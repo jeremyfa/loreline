@@ -1,0 +1,2 @@
+args: [lsp, hover, main.lor, "4:6"]
+stdoutContains: "Beat: **Middle**"
