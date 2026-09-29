@@ -1,0 +1,78 @@
+// `+ Beat` in a when block brings the rules of the first when block of that
+// beat. The beat runs up to that block (its content before it plays), and if
+// one of its rules wins, the rest of that beat plays after the rule, then the
+// rest of this one. The `if` of an insertion only decides whether it comes in.
+
+state
+  angry: true
+  rich: false
+
+beat Start
+  Talk()
+  angry = false
+  Talk()
+  rich = true
+  Talk()
+  angry = true
+  Talk()
+  After talks.
+
+beat Talk
+  when
+    + Moods
+    + Money if rich
+    rich and angry
+      Rich and angry.
+    always
+      Hello.
+  Talk done.
+
+beat Moods
+  Moods prologue.
+
+  when
+    angry
+      Get out!
+    not angry
+      Nice day.
+  Moods epilogue.
+
+beat Money
+  when
+    rich
+      Nice purse.
+
+/*
+<test>
+- expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Moods prologue.
+
+    ~ Nice day.
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Moods prologue.
+
+    ~ Nice purse.
+
+    ~ Talk done.
+
+    ~ Moods prologue.
+
+    ~ Rich and angry.
+
+    ~ Talk done.
+
+    ~ After talks.
+</test>
+*/

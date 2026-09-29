@@ -1,0 +1,47 @@
+// Insertions cascade: an inserted beat can insert others, with arguments. The
+// strategy of the first block decides for all of them: here `first` stops at
+// the first eligible rule, in the order of the insertions.
+
+beat Start
+  Greet("Ana")
+  Greet("Bob")
+  Greet("Cy")
+
+beat Greet(name)
+  when first
+    + Formal(name)
+    always
+      Hi.
+
+beat Formal(who)
+  when
+    + Titles(who)
+    who is "Ana"
+      Good day, Ana.
+
+beat Titles(person)
+  Checking titles for $person.
+
+  when
+    person is "Bob"
+      Sir Bob.
+  Titles epilogue.
+
+/*
+<test>
+- expected: |
+    ~ Checking titles for Ana.
+
+    ~ Good day, Ana.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Checking titles for Cy.
+
+    ~ Hi.
+</test>
+*/

@@ -1,0 +1,223 @@
+// Saves while a when block collects the rules of its insertions (in the
+// inserted beat, before its when block), in a rule brought by an insertion, in
+// the rest of the inserted beat, and through a cascade of insertions.
+
+state
+  angry: true
+
+beat Start
+  Talk()
+  Greet("Bob")
+
+beat Talk
+  when
+    + Moods
+    always
+      Hello.
+  Talk done.
+
+beat Moods
+  Moods prologue.
+
+  when
+    angry
+      Get out!
+  Moods epilogue.
+
+beat Greet(name)
+  when first
+    + Formal(name)
+    always
+      Hi.
+  Greet done.
+
+beat Formal(who)
+  when
+    + Titles(who)
+    who is "Ana"
+      Good day, Ana.
+
+beat Titles(person)
+  Checking titles for $person.
+
+  when
+    person is "Bob"
+      Sir Bob.
+  Titles epilogue.
+
+/*
+<test>
+- expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 0
+  expected: |
+    ~ Moods prologue.
+
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 1
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 2
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 4
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 5
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: 6
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: [0, 2]
+  expected: |
+    ~ Moods prologue.
+
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+- saveAtDialogue: [4, 6]
+  expected: |
+    ~ Moods prologue.
+
+    ~ Get out!
+
+    ~ Moods epilogue.
+
+    ~ Talk done.
+
+    ~ Checking titles for Bob.
+
+    ~ Checking titles for Bob.
+
+    ~ Sir Bob.
+
+    ~ Titles epilogue.
+
+    ~ Titles epilogue.
+
+    ~ Greet done.
+</test>
+*/

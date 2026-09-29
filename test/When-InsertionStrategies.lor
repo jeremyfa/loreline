@@ -1,0 +1,91 @@
+// Every strategy sees the rules of the block and the rules brought by its
+// insertions, in order. A choice or a when block that doesn't match the kind of
+// the insertion (a choice before the when block of a beat inserted in a when,
+// a when block before the choice of a beat inserted in a choice) runs normally.
+
+state
+  ready: true
+  info: ""
+
+function describe(rules)
+  var parts = []
+  var last = -1
+  for (rule in rules)
+    parts.add("${rule.index}:${rule.eligible}:${rule.criteria}:${rule.ephemeral}")
+    if rule.eligible
+      last = rule.index
+  info = parts.join(" ")
+  return last
+
+beat Start
+  when describe
+    ready
+      Own rule.
+    + Extra
+  Info $info.
+
+  when first
+    not ready
+      Not shown.
+    + Asking
+    always
+      Not shown either.
+  After asking.
+
+  choice
+    + Menu
+    Leave
+      Left.
+
+beat Extra
+  when
+    - ready and ready
+      Extra once.
+    not ready
+      Extra never.
+
+beat Asking
+  choice
+    Sure
+      Sure then.
+    Nope
+      Nope then.
+
+  when
+    ready
+      Asked.
+
+beat Menu
+  when
+    ready
+      Menu intro.
+
+  choice
+    Order
+      Ordered.
+
+/*
+<test>
+- choices: [0, 0]
+  expected: |
+    ~ Extra once.
+
+    ~ Info 0:true:1:false 1:true:2:true 2:false:1:false.
+
+    + Sure
+    + Nope
+
+    ~ Sure then.
+
+    ~ Asked.
+
+    ~ After asking.
+
+    ~ Menu intro.
+
+    + Order
+    + Leave
+
+    ~ Ordered.
+</test>
+*/

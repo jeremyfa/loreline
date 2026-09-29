@@ -44,6 +44,28 @@ typedef SaveDataInsertion = {
     var ?parentPartialOptions:Array<SaveDataChoiceOption>;
     /** Next option index in the parent choice after this insertion (for Phase 1 save/restore) */
     var ?parentNextOptionIndex:Int;
+    /** "when" for an insertion in a when block, absent for one in a choice */
+    var ?kind:String;
+    /** The when rules collected by this insertion, if any */
+    var ?rules:Array<SaveDataWhenRule>;
+    /** Rules collected for the parent when block before this insertion started */
+    var ?parentPartialRules:Array<SaveDataWhenRule>;
+    /** Next rule index in the parent when block after this insertion */
+    var ?parentNextRuleIndex:Int;
+    /** Set when the parent when block uses `first` and had no eligible rule yet */
+    var ?whenFirst:Bool;
+}
+
+/**
+ * Represents a rule collected by a when block
+ */
+typedef SaveDataWhenRule = {
+    /** The rule node */
+    var node:SaveDataNode;
+    /** Whether the rule was eligible when collected */
+    var ?eligible:Bool;
+    /** The insertion that brought the rule, if any */
+    var ?insertion:Int;
 }
 
 /**

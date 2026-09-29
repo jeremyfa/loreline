@@ -389,11 +389,65 @@ class RuntimeInsertion {
      */
     public var parentNextOptionIndex:Int = 0;
 
+    /**
+     * What this insertion collects: the options of the first choice of the
+     * inserted beat, or the rules of its first when block. A block only
+     * collects for an insertion of its own kind, and runs normally otherwise.
+     */
+    public var kind:InsertionKind = Choice;
+
+    /**
+     * The collected when rules, or `null` if nothing is collected yet.
+     */
+    public var rules:Array<WhenCandidate> = null;
+
+    /**
+     * Rules collected for the parent when block BEFORE this insertion started,
+     * and the next rule index after it: like parentPartialOptions and
+     * parentNextOptionIndex, for a save made while the inserted beat runs.
+     */
+    public var parentPartialRules:Array<WhenCandidate> = null;
+    public var parentNextRuleIndex:Int = 0;
+
+    /**
+     * Set when the parent when block uses `first` and has no eligible rule yet:
+     * the collection then stops at the first eligible rule.
+     */
+    public var whenFirst:Bool = false;
+
     public function new(id:Int, origin:NInsertion) {
         this.id = id;
         this.origin = origin;
     }
 
+    /**
+     * Whether the choice options or the when rules of this insertion are collected.
+     */
+    public function isCollected():Bool {
+        return options != null || rules != null;
+    }
+
+}
+
+/**
+ * What an insertion collects from the inserted beat.
+ */
+enum abstract InsertionKind(Int) {
+    var Choice = 0;
+    var When = 1;
+}
+
+/**
+ * A rule a when block can play: one of its own, or one brought by an insertion,
+ * with whether it is eligible.
+ */
+typedef WhenCandidate = {
+    /** The rule */
+    var rule:NWhenRule;
+    /** Whether its condition was true when the rules were collected (and it is not a consumed rule played once) */
+    var eligible:Bool;
+    /** The insertion that brought it, null for a rule of the block itself */
+    var ?insertion:RuntimeInsertion;
 }
 
 /**
@@ -2133,9 +2187,39 @@ class InterpreterContext {
                 serialized.parentPartialOptions = [for (opt in insertion.parentPartialOptions) serializeChoiceOption(opt, insertions)];
                 serialized.parentNextOptionIndex = insertion.parentNextOptionIndex;
             }
+
+            // When rules (insertions in when blocks)
+            if (insertion.kind == When) {
+                serialized.kind = "when";
+            }
+            if (insertion.rules != null) {
+                serialized.rules = [for (candidate in insertion.rules) serializeWhenCandidate(candidate, insertions)];
+            }
+            if (insertion.parentPartialRules != null) {
+                serialized.parentPartialRules = [for (candidate in insertion.parentPartialRules) serializeWhenCandidate(candidate, insertions)];
+                serialized.parentNextRuleIndex = insertion.parentNextRuleIndex;
+            }
+            if (insertion.whenFirst) {
+                serialized.whenFirst = true;
+            }
         }
 
         return insertion.id;
+
+    }
+
+    function serializeWhenCandidate(candidate:WhenCandidate, insertions:Dynamic<SaveDataInsertion>):SaveDataWhenRule {
+
+        final result:SaveDataWhenRule = {
+            node: serializeNodeReference(candidate.rule)
+        };
+        if (candidate.eligible) {
+            result.eligible = true;
+        }
+        if (candidate.insertion != null) {
+            result.insertion = serializeInsertion(candidate.insertion, insertions);
+        }
+        return result;
 
     }
 
@@ -2555,7 +2639,7 @@ class InterpreterContext {
         var moveNext:()->Void = null;
         moveNext = () -> {
 
-            if (currentInsertion?.options != null) {
+            if (currentInsertion != null && currentInsertion.isCollected()) {
                 // Insertion's choice has collected options, stop body evaluation.
                 // Same early-exit as evalNodeBody uses.
                 pop();
@@ -2661,7 +2745,7 @@ class InterpreterContext {
                 evalNodeBody(currentScope.beat, option, option.body, popThenNext);
             }
         }
-        else if (currentScope.insertion != null) {
+        else if (currentScope.insertion != null && currentScope.insertion.kind == Choice) {
             // Save happened during insertion evaluation (Phase 1 of choice).
             // Resume into the insertion body instead of re-evaluating the
             // entire choice, to avoid re-running side effects.
@@ -2769,6 +2853,54 @@ class InterpreterContext {
     function resumeWhen(when:NWhenStatement, scopeLevel:Int, next:()->Void) {
 
         final currentScope = stack[scopeLevel];
+
+        if (currentScope.head is NWhenRule) {
+            // Only the scope pushed to play a rule brought by an insertion has a rule
+            // as head. Pop it once the rule body is done, so that the epilogues run
+            // with their own beat scope on top of the stack.
+            final rule:NWhenRule = cast currentScope.head;
+            final popThenNext = () -> {
+                pop();
+                next();
+            };
+            if (scopeLevel + 1 < stack.length) {
+                // Deeper scopes from a restore: the rule was already recorded as played
+                resumeNodeBody(rule, scopeLevel + 1, rule.body, popThenNext);
+            }
+            else {
+                recordWhenRulePlayed(rule);
+                evalNodeBody(currentScope.beat, rule, rule.body, popThenNext);
+            }
+            return;
+        }
+
+        if (currentScope.insertion != null && currentScope.insertion.kind == When && currentScope.node is NBeatDecl) {
+            // Saved while an inserted beat was running, before its when block handed
+            // its rules: resume that beat, then go on collecting from where it was
+            final insertion = currentScope.insertion;
+            final beat:NBeatDecl = cast currentScope.node;
+            // The stack unwinds by the time the callback runs: find the owner now
+            final owner = collectingWhenInsertion(scopeLevel - 1);
+            resumeNodeBody(beat, scopeLevel, beat.body, () -> {
+                final candidates:Array<WhenCandidate> = insertion.parentPartialRules != null ? insertion.parentPartialRules : [];
+                if (insertion.rules != null) {
+                    for (candidate in insertion.rules) candidates.push(candidate);
+                }
+                final stopAtFirst = owner != null ? owner.whenFirst : when.strategy == 'first';
+                final done = wrapNext(() -> finishWhenCollection(when, candidates, owner, next));
+                collectWhenRules(when, candidates, insertion.parentNextRuleIndex, stopAtFirst, owner, done.cb);
+                done.sync = false;
+            });
+            return;
+        }
+
+        if (currentScope.node is NBeatDecl) {
+            // The scope of a beat inserted by one of the rules: on the way to a rule
+            // brought by a cascade of insertions, or back from it. Go on with that beat.
+            final beat:NBeatDecl = cast currentScope.node;
+            resumeNodeBody(beat, scopeLevel, beat.body, next);
+            return;
+        }
 
         if (currentScope.head == null) {
             throw new RuntimeError('Failed to resolve head when resuming when block', when.pos);
@@ -3053,7 +3185,44 @@ class InterpreterContext {
             insertion.parentNextOptionIndex = saved.parentNextOptionIndex != null ? saved.parentNextOptionIndex : 0;
         }
 
+        // When rules (insertions in when blocks)
+        if (saved.kind == "when") {
+            insertion.kind = When;
+        }
+        if (saved.rules != null) {
+            insertion.rules = restoreWhenCandidates(saved.rules, savedInsertions, restoredInsertions);
+        }
+        if (saved.parentPartialRules != null) {
+            insertion.parentPartialRules = restoreWhenCandidates(saved.parentPartialRules, savedInsertions, restoredInsertions);
+            insertion.parentNextRuleIndex = saved.parentNextRuleIndex != null ? saved.parentNextRuleIndex : 0;
+        }
+        insertion.whenFirst = saved.whenFirst == true;
+
         return insertion;
+
+    }
+
+    /**
+     * Restores collected when rules. A rule that can't be found anymore (the script
+     * changed since the save) is left out.
+     */
+    function restoreWhenCandidates(
+        saved:Array<SaveDataWhenRule>,
+        savedInsertions:Dynamic<SaveDataInsertion>,
+        restoredInsertions:Map<Int, RuntimeInsertion>
+    ):Array<WhenCandidate> {
+
+        final result:Array<WhenCandidate> = [];
+        for (savedRule in saved) {
+            final node = savedRule.node != null ? lens.getNodeById(NodeId.fromString(savedRule.node.id)) : null;
+            if (node == null || node.type() != savedRule.node.type || !(node is NWhenRule)) continue;
+            result.push({
+                rule: cast node,
+                eligible: savedRule.eligible == true,
+                insertion: savedRule.insertion != null ? restoreInsertion(savedRule.insertion, savedInsertions, restoredInsertions) : null
+            });
+        }
+        return result;
 
     }
 
@@ -3974,7 +4143,7 @@ class InterpreterContext {
         final currentInsertion = this.currentInsertion;
         moveNext = () -> {
 
-            if (currentInsertion?.options != null) {
+            if (currentInsertion != null && currentInsertion.isCollected()) {
                 // At each iteration, check if we are within an insertion with completed choice options.
                 // If that's the case, we should pause this stack execution for now and return
                 pop();
@@ -4225,7 +4394,7 @@ class InterpreterContext {
         // If we are within an insertion waiting for a choice block,
         // then we reached that choice block and should collect options
         final currentInsertion = this.currentInsertion;
-        if (currentInsertion != null && currentInsertion.options == null) {
+        if (currentInsertion != null && currentInsertion.kind == Choice && currentInsertion.options == null) {
             // Copy the current stack so that we can restore it later
             currentInsertion.stack = [].concat(stack);
 
@@ -4363,12 +4532,15 @@ class InterpreterContext {
                     final done = wrapNext(moveNext);
                     final str = getTranslatedString(option, option.text);
                     final content = evaluateString(str);
+                    // An option only comes from an insertion that collects choice options:
+                    // a choice reached in a beat inserted in a when block is presented as is
+                    final owner = currentInsertion;
                     result.push({
                         text: content.text,
                         tags: content.tags,
                         enabled: enabled,
                         node: option,
-                        insertion: currentInsertion
+                        insertion: owner != null && owner.kind == Choice ? owner : null
                     });
                     _choiceEvalTexts.push(content.text);
                     _choiceEvalEnabled.push(enabled);
@@ -4618,74 +4790,183 @@ class InterpreterContext {
      * the block, then plays it. If no rule is eligible, nothing is played.
      *
      * A rule is eligible when its condition is true (`always` always is), and, for a
-     * rule played once (`- `), when it was not played yet. The conditions of all the
-     * rules still in play are evaluated, in order, whatever rule wins, so that their
-     * side effects don't depend on the selection. `when first` stops at the first
-     * true one.
+     * rule played once (`- `), when it was not played yet. The conditions of the
+     * rules are evaluated, in order, whatever rule wins, so that their side effects
+     * don't depend on the selection. `when first` stops at the first true one.
+     *
+     * An insertion (`+ Beat if cond`) brings the rules of the first when block of
+     * that beat: the beat runs up to that block, which hands its rules (and the
+     * stack at that point) to this one instead of playing. Every strategy then
+     * sees the rules of both, in the order of the insertions.
      *
      * @param when The when statement to evaluate
      * @param next Callback to call when execution completes
      */
     function evalWhen(when:NWhenStatement, next:()->Void) {
 
-        final strategy = when.strategy;
+        // Reached while an insertion collects when rules for a parent block
+        final owner = collectingWhenInsertion(stack.length - 1);
 
-        // `first` and `pick` come first, any other name is a lorscript or host function
-        var customStrategy:Any = null;
-        if (strategy != null && strategy != 'first' && strategy != 'pick') {
-            customStrategy = topLevelFunctions.get(strategy);
-            if (customStrategy == null || !Reflect.isFunction(customStrategy)) {
-                throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
-            }
-        }
+        final stopAtFirst = owner != null ? owner.whenFirst : when.strategy == 'first';
+        final candidates:Array<WhenCandidate> = [];
+        final done = wrapNext(() -> finishWhenCollection(when, candidates, owner, next));
+        collectWhenRules(when, candidates, 0, stopAtFirst, owner, done.cb);
+        done.sync = false;
 
-        final eligible:Array<NWhenRule> = [];
-        for (rule in when.rules) {
-            if (rule.insertion != null) {
-                throw new RuntimeError('Insertions in when blocks are not implemented yet', rule.pos);
-            }
-            if (rule.once && isWhenRuleConsumed(rule)) continue;
-            if (rule.condition == null || evaluateCondition(rule.condition)) {
-                eligible.push(rule);
-                if (strategy == 'first') break;
-            }
-        }
+    }
 
-        final chosen = if (customStrategy != null) {
-            customStrategyRule(when, eligible, customStrategy);
-        }
-        else if (eligible.length == 0) {
-            null;
-        }
-        else switch strategy {
-            case 'first': eligible[0];
-            case 'pick': eligible[builtins.random(0, eligible.length - 1)];
-            case _: mostSalientRule(when, eligible);
-        }
+    /**
+     * The insertion collecting when rules at or below the given stack level, if any:
+     * a when block reached there hands its rules to it instead of playing.
+     */
+    function collectingWhenInsertion(scopeLevel:Int):Null<RuntimeInsertion> {
+        final insertion = insertionAtOrBelow(scopeLevel);
+        return insertion != null && insertion.kind == When && !insertion.isCollected() ? insertion : null;
+    }
 
-        if (chosen == null) {
+    /**
+     * Once the rules of a when block are collected: hands them to the insertion
+     * collecting them, if any, otherwise selects one and plays it.
+     */
+    function finishWhenCollection(when:NWhenStatement, candidates:Array<WhenCandidate>, owner:Null<RuntimeInsertion>, next:()->Void) {
+
+        if (owner != null) {
+            owner.stack = [].concat(stack);
+            owner.rules = candidates;
             next();
             return;
         }
 
-        playWhenRule(when, chosen, next);
+        final chosen = chooseWhenCandidate(when, candidates);
+        if (chosen == null) {
+            next();
+        }
+        else if (chosen.insertion == null) {
+            playWhenRule(chosen.rule, next);
+        }
+        else {
+            playInsertedWhenRule(chosen, next);
+        }
+
+    }
+
+    /**
+     * Collects the rules a when block can play, from `startIndex`: its own rules,
+     * with whether they are eligible, and the rules brought by its insertions.
+     *
+     * @param result The collected rules, filled in order
+     * @param stopAtFirst Stop at the first eligible rule (`when first`)
+     * @param owner The insertion this block collects for, if any: its own rules then come from it
+     */
+    function collectWhenRules(when:NWhenStatement, result:Array<WhenCandidate>, startIndex:Int, stopAtFirst:Bool, owner:Null<RuntimeInsertion>, next:()->Void) {
+
+        var index = startIndex;
+        var insertion:RuntimeInsertion = null;
+        var moveNext:()->Void = null;
+        moveNext = () -> {
+
+            // Rules brought by the insertion evaluated in the previous step
+            if (insertion != null && insertion.rules != null) {
+                for (candidate in insertion.rules) {
+                    result.push(candidate);
+                }
+            }
+            insertion = null;
+
+            if (stopAtFirst && hasEligibleCandidate(result)) {
+                next();
+                return;
+            }
+
+            if (index >= when.rules.length) {
+                next();
+                return;
+            }
+
+            final rule = when.rules[index];
+            index++;
+            final done = wrapNext(moveNext);
+
+            if (rule.insertion != null) {
+                // The condition of an insertion only decides whether its rules come in.
+                // It is evaluated here, in the scope of this block.
+                if (rule.insertionCondition == null || evaluateCondition(rule.insertionCondition)) {
+                    insertion = new RuntimeInsertion(nextInsertionId++, rule.insertion);
+                    insertion.kind = When;
+                    insertion.whenFirst = stopAtFirst;
+                    // For a save made while the inserted beat runs
+                    insertion.parentPartialRules = [].concat(result);
+                    insertion.parentNextRuleIndex = index;
+                    evalInsertion(insertion, done.cb);
+                }
+                else {
+                    done.cb();
+                }
+            }
+            else {
+                final consumed = rule.once && isWhenRuleConsumed(rule);
+                final eligible = !consumed && (rule.condition == null || evaluateCondition(rule.condition));
+                result.push({ rule: rule, eligible: eligible, insertion: owner });
+                done.cb();
+            }
+            done.sync = false;
+
+        }
+
+        moveNext();
+
+    }
+
+    static function hasEligibleCandidate(candidates:Array<WhenCandidate>):Bool {
+        for (candidate in candidates) {
+            if (candidate.eligible) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Selects the rule to play with the strategy of the block.
+     *
+     * @return The chosen rule, or null for none
+     */
+    function chooseWhenCandidate(when:NWhenStatement, candidates:Array<WhenCandidate>):Null<WhenCandidate> {
+
+        final strategy = when.strategy;
+
+        // `first` and `pick` come first, any other name is a lorscript or host function
+        if (strategy != null && strategy != 'first' && strategy != 'pick') {
+            final customStrategy:Any = topLevelFunctions.get(strategy);
+            if (customStrategy == null || !Reflect.isFunction(customStrategy)) {
+                throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
+            }
+            return customStrategyCandidate(when, candidates, customStrategy);
+        }
+
+        final eligible = [for (candidate in candidates) if (candidate.eligible) candidate];
+        if (eligible.length == 0) return null;
+
+        return switch strategy {
+            case 'first': eligible[0];
+            case 'pick': eligible[builtins.random(0, eligible.length - 1)];
+            case _: mostSalientCandidate(eligible);
+        }
 
     }
 
     /**
      * The default strategy: the rule with the most criteria (see AstUtils.whenRuleScore),
      * then the one played least recently (never played first), then the first one
-     * written.
+     * in order.
      */
-    function mostSalientRule(when:NWhenStatement, eligible:Array<NWhenRule>):NWhenRule {
-        var best:NWhenRule = null;
+    function mostSalientCandidate(eligible:Array<WhenCandidate>):WhenCandidate {
+        var best:WhenCandidate = null;
         var bestScore = 0;
         var bestLastPlayed = 0;
-        for (rule in eligible) {
-            final score = AstUtils.whenRuleScore(rule);
-            final lastPlayed = getWhenRuleLastPlayed(rule);
+        for (candidate in eligible) {
+            final score = AstUtils.whenRuleScore(candidate.rule);
+            final lastPlayed = getWhenRuleLastPlayed(candidate.rule);
             if (best == null || score > bestScore || (score == bestScore && lastPlayed < bestLastPlayed)) {
-                best = rule;
+                best = candidate;
                 bestScore = score;
                 bestLastPlayed = lastPlayed;
             }
@@ -4695,32 +4976,33 @@ class InterpreterContext {
 
     /**
      * Asks a custom strategy (a lorscript or host function) which rule to play.
-     * It receives one record per rule, in written order, and returns the index of
-     * the rule to play, or -1 to play nothing. The interpreter keeps the history:
-     * the function only chooses. It is called even when no rule is eligible, so
-     * that it sees every call.
+     * It receives one record per rule, in order (rules brought by insertions
+     * included), and returns the index of the rule to play, or -1 to play nothing.
+     * The interpreter keeps the history: the function only chooses. It is called
+     * even when no rule is eligible, so that it sees every call.
      *
      * Each record has `index`, `eligible` (condition true, and not a rule played
      * once that was already played), `criteria` (how many criteria the rule
      * requires, see AstUtils.whenRuleScore), `played` (how many times it was
-     * played), `lastPlayed` (the tick of the block when it was last played, -1
-     * if never) and `ephemeral` (a rule played once).
+     * played), `lastPlayed` (the value of the play counter shared by all when
+     * blocks when it was last played, -1 if never) and `ephemeral` (a rule played
+     * once).
      *
      * @return The rule to play, or null for none
      * @throws RuntimeError If the function returns something else than -1 or the index of an eligible rule
      */
-    function customStrategyRule(when:NWhenStatement, eligible:Array<NWhenRule>, strategy:Any):Null<NWhenRule> {
+    function customStrategyCandidate(when:NWhenStatement, candidates:Array<WhenCandidate>, strategy:Any):Null<WhenCandidate> {
         // Plain containers, not made by customCreateFields: they only live for this call
         final records = Arrays.createArray();
-        for (i in 0...when.rules.length) {
-            final rule = when.rules[i];
+        for (i in 0...candidates.length) {
+            final candidate = candidates[i];
             final record = Objects.createFields();
             Objects.setField(this, record, "index", i);
-            Objects.setField(this, record, "eligible", eligible.indexOf(rule) != -1);
-            Objects.setField(this, record, "criteria", AstUtils.whenRuleScore(rule));
-            Objects.setField(this, record, "played", getNodeStateInt(rule, "_played"));
-            Objects.setField(this, record, "lastPlayed", getWhenRuleLastPlayed(rule));
-            Objects.setField(this, record, "ephemeral", rule.once);
+            Objects.setField(this, record, "eligible", candidate.eligible);
+            Objects.setField(this, record, "criteria", AstUtils.whenRuleScore(candidate.rule));
+            Objects.setField(this, record, "played", getNodeStateInt(candidate.rule, "_played"));
+            Objects.setField(this, record, "lastPlayed", getWhenRuleLastPlayed(candidate.rule));
+            Objects.setField(this, record, "ephemeral", candidate.rule.once);
             Arrays.arrayPush(records, record);
         }
 
@@ -4738,28 +5020,61 @@ class InterpreterContext {
             null;
         }
         if (index == -1) return null;
-        if (index == null || index < 0 || index >= when.rules.length) {
+        if (index == null || index < 0 || index >= candidates.length) {
             throw new RuntimeError('Strategy ${when.strategy} returned ${valueToString(result)}, expected -1 or the index of an eligible rule', pos);
         }
-        final rule = when.rules[index];
-        if (eligible.indexOf(rule) == -1) {
+        if (!candidates[index].eligible) {
             throw new RuntimeError('Strategy ${when.strategy} returned $index, which is not an eligible rule', pos);
         }
-        return rule;
+        return candidates[index];
     }
 
     /**
      * Plays a rule of a when block: records it in the history, then runs its body.
      */
-    function playWhenRule(when:NWhenStatement, rule:NWhenRule, next:()->Void) {
-        final tick = getNodeStateInt(when, "_tick") + 1;
-        setNodeStateField(when, "_tick", tick);
+    function playWhenRule(rule:NWhenRule, next:()->Void) {
+        recordWhenRulePlayed(rule);
+        evalNodeBody(currentScope.beat, rule, rule.body, next);
+    }
+
+    /**
+     * Records that a rule is played: how many times, and when, with a play counter
+     * shared by all when blocks, so that rules of different blocks (brought by
+     * insertions) compare in the same terms.
+     */
+    function recordWhenRulePlayed(rule:NWhenRule) {
+        final tick = getNodeStateInt(script, "_whenTick") + 1;
+        setNodeStateField(script, "_whenTick", tick);
         setNodeStateField(rule, "_played", getNodeStateInt(rule, "_played") + 1);
         setNodeStateField(rule, "_lastPlayed", tick);
         if (rule.once) {
             setNodeStateField(rule, "_chosen", true);
         }
-        evalNodeBody(currentScope.beat, rule, rule.body, next);
+    }
+
+    /**
+     * Plays a rule brought by an insertion: back to the stack captured where the
+     * inserted beat reached its when block, then the rule, the rest of the inserted
+     * beat and the rest of this block's beat, like an option from an insertion.
+     */
+    function playInsertedWhenRule(candidate:WhenCandidate, next:()->Void) {
+        final insertion = candidate.insertion;
+        final scopeLevel = stack.length;
+        while (stack.length > 0) stack.pop();
+        for (scope in insertion.stack) {
+            // Back to the normal execution flow
+            if (scope.insertion != null) {
+                scope.insertion = null;
+            }
+            stack.push(scope);
+        }
+        final lastScope = stack[stack.length - 1];
+        push({
+            beat: lastScope.beat,
+            node: cast lens.getParentNode(candidate.rule),
+            head: candidate.rule
+        });
+        resumeFromLevel(scopeLevel, next);
     }
 
     /**
