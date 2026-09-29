@@ -123,3 +123,21 @@ beat More
 //^ punctuation.section.block.end
   After.
 //^^^^^^ string.unquoted
+
+beat Calls
+  choice
+    Buy tea if has_item("key")
+//  ^^^^^^^ string.unquoted
+//          ^^ keyword.control
+//             ^^^^^^^^ entity.name.function
+//                      ^^^^^ string.quoted.double
+      Bought.
+    Ask again if Helper.visits() > 1
+//  ^^^^^^^^^ string.unquoted
+//            ^^ keyword.control
+//               ^^^^^^ entity.name.type.beat
+//                      ^^^^^^ entity.name.function.method
+      Asked.
+    Order if items.contains("tea") else nothing
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+      Ordered.
