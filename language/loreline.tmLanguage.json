@@ -386,33 +386,6 @@
                 }
             ]
         },
-        "keyval-keys": {
-            "patterns": [
-                {
-                    "begin": "(\\b[a-zA-Z_][a-zA-Z0-9_]*\\b)\\s*(:)",
-                    "end": "$",
-                    "captures": {
-                        "1": {
-                            "name": "variable.other.loreline"
-                        },
-                        "2": {
-                            "name": "keyword.operator.type.annotation.loreline"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "include": "#braces-in-keyval"
-                        },
-                        {
-                            "include": "#array-values"
-                        },
-                        {
-                            "include": "#keyval-patterns"
-                        }
-                    ]
-                }
-            ]
-        },
         "keyval-patterns": {
             "patterns": [
                 {
@@ -781,10 +754,6 @@
                     "include": "#unquoted-strings"
                 },
                 {
-                    "match": "#[a-zA-Z0-9_][a-zA-Z0-9_-]*",
-                    "name": "comment.line.loreline"
-                },
-                {
                     "include": "#string-interpolation"
                 },
                 {
@@ -852,14 +821,6 @@
                 {
                     "name": "keyword.control.loreline",
                     "match": "\\b(if|else|new|sequence|cycle|once|pick|shuffle)\\b|--"
-                }
-            ]
-        },
-        "keywords-in-choice": {
-            "patterns": [
-                {
-                    "name": "keyword.control.loreline",
-                    "match": "(?<!^\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)\\b(if|else)\\b"
                 }
             ]
         },
@@ -1428,18 +1389,6 @@
                 }
             ]
         },
-        "character-dialogue": {
-            "patterns": [
-                {
-                    "match": "^\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*:",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.class.loreline"
-                        }
-                    }
-                }
-            ]
-        },
         "insertions": {
             "patterns": [
                 {
@@ -1783,26 +1732,6 @@
                 },
                 {
                     "match": "\\.\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.function.method.loreline"
-                        }
-                    }
-                }
-            ]
-        },
-        "functions-in-choice": {
-            "patterns": [
-                {
-                    "match": "(?<!^\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
-                    "captures": {
-                        "1": {
-                            "name": "entity.name.function.loreline"
-                        }
-                    }
-                },
-                {
-                    "match": "(?<!^\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s)*)\\.\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
                     "captures": {
                         "1": {
                             "name": "entity.name.function.method.loreline"
