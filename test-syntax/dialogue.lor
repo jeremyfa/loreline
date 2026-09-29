@@ -67,6 +67,11 @@ beat Start
 //^^^^^^^ entity.name.class
 //       ^ keyword.operator.type.annotation
 //        ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  /* note */ barista: After a block comment.
+//^^^^^^^^^^ comment.block
+//           ^^^^^^^ entity.name.class
+//                  ^ keyword.operator.type.annotation
+//                    ^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
   Narration right after.
 //^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
 //^^^^^^^^^ - string.unquoted.dialogue
