@@ -41,6 +41,13 @@ beat Blocks
     + Gossip
 //  ^ keyword.control.flow
 //    ^^^^^^ entity.name.type.beat
+    + Rumors if visits > 2 and ready
+//  ^ keyword.control.flow
+//    ^^^^^^ entity.name.type.beat
+//           ^^ keyword.control
+//              ^^^^^^ variable.other
+//                         ^^^ keyword.control
+//                             ^^^^^ variable.other
     always
 //  ^^^^^^ keyword.control.always
       when you come back, knock.
