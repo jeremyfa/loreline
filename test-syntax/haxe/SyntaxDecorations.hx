@@ -9,6 +9,44 @@ import loreline.Parser;
 @:expose
 class SyntaxDecorations {
 
+	/**
+	 * Lexer and parser errors of a source: a test file must be valid Loreline, or
+	 * its decorations and its coloring describe code that can't exist.
+	 */
+	public static function getErrors(source:String):Array<Dynamic> {
+		final result:Array<Dynamic> = [];
+		final lexer = new Lexer(source);
+		final tokens = lexer.tokenize();
+		for (error in lexer.getErrors()) {
+			result.push({message: error.message, line: error.pos.line, column: error.pos.column});
+		}
+		final parser = new Parser(tokens);
+		final script = parser.parse();
+		for (error in parser.getErrors()) {
+			// Imports need files to load: here only their syntax is checked
+			if (error.message == "Cannot import without a context") continue;
+			result.push({message: error.message, line: error.pos.line, column: error.pos.column});
+		}
+		// Function bodies are only converted and parsed when the script runs:
+		// do it like the interpreter (initializeTopLevelFunction)
+		script.eachExcludingImported(function(node:Node, parent:Node) {
+			if (node is NFunctionDecl) {
+				final func:NFunctionDecl = cast node;
+				try {
+					final code = new loreline.CodeToLorscript().process(func.code + (func.external ? " {}" : ""));
+					final lorscript = new loreline.lorscript.Parser();
+					lorscript.allowJSON = true;
+					lorscript.allowTypes = true;
+					lorscript.parseString(code);
+				}
+				catch (e:Dynamic) {
+					result.push({message: "Invalid function body: " + Std.string(e), line: func.pos.line, column: func.pos.column});
+				}
+			}
+		});
+		return result;
+	}
+
 	public static function getDecorations(source:String):Array<Dynamic> {
 		final result:Array<Dynamic> = [];
 

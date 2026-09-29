@@ -143,10 +143,27 @@ beat Main {
 //      ^ punctuation.section.block.begin
     One.
 //  ^^^^ string.unquoted
-  --
-//^^ keyword.control.alternative
+  } -- {
+//^ punctuation.section.block.end
+//  ^^ keyword.control.alternative
+//     ^ punctuation.section.block.begin
     Two.
 //  ^^^^ string.unquoted
+  }
+//^ punctuation.section.block.end
+  sequence {
+//^^^^^^^^ keyword.control.alternative
+//         ^ punctuation.section.block.begin
+    Three.
+//  ^^^^^^ string.unquoted
+  }
+//^ punctuation.section.block.end
+  --
+//^^ keyword.control.alternative
+  {
+//^ punctuation.section.block.begin
+    Four.
+//  ^^^^^ string.unquoted
   }
 //^ punctuation.section.block.end
   shuffle
