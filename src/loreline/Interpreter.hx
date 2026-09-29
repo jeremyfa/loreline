@@ -4673,9 +4673,9 @@ class InterpreterContext {
     }
 
     /**
-     * The default strategy: the rule with the highest score (clauses joined by a
-     * top-level `and`), then the one played least recently (never played first),
-     * then the first one written.
+     * The default strategy: the rule with the most criteria (see AstUtils.whenRuleScore),
+     * then the one played least recently (never played first), then the first one
+     * written.
      */
     function mostSalientRule(when:NWhenStatement, eligible:Array<NWhenRule>):NWhenRule {
         var best:NWhenRule = null;
@@ -4701,9 +4701,10 @@ class InterpreterContext {
      * that it sees every call.
      *
      * Each record has `index`, `eligible` (condition true, and not a rule played
-     * once that was already played), `criteria` (the score of the default strategy),
-     * `played` (how many times it was played), `lastPlayed` (the tick of the block
-     * when it was last played, -1 if never) and `ephemeral` (a rule played once).
+     * once that was already played), `criteria` (how many criteria the rule
+     * requires, see AstUtils.whenRuleScore), `played` (how many times it was
+     * played), `lastPlayed` (the tick of the block when it was last played, -1
+     * if never) and `ephemeral` (a rule played once).
      *
      * @return The rule to play, or null for none
      * @throws RuntimeError If the function returns something else than -1 or the index of an eligible rule

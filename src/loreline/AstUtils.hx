@@ -134,10 +134,12 @@ class AstUtils {
     }
 
     /**
-     * Score of a rule of a when block: the number of clauses joined by an `and`
-     * at the top level of its condition. The more precise a rule, the higher it
-     * ranks. `or`, `not x` and a group in parentheses count as a single clause,
-     * `always` counts 0.
+     * How precise a rule of a when block is: the number of criteria it requires,
+     * that is the clauses joined by an `and` at the top level of its condition.
+     * `or`, `not x` and a group in parentheses count as a single criterion,
+     * `always` counts 0. It depends only on how the rule is written, and any
+     * strategy can use it: the default one plays the eligible rule with the most
+     * criteria, and custom strategies receive it as `criteria`.
      */
     public static function whenRuleScore(rule:NWhenRule):Int {
         return rule.condition == null ? 0 : andClauseCount(rule.condition);
