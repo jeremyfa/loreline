@@ -5047,9 +5047,6 @@ class InterpreterContext {
         setNodeStateField(script, "_whenTick", tick);
         setNodeStateField(rule, "_played", getNodeStateInt(rule, "_played") + 1);
         setNodeStateField(rule, "_lastPlayed", tick);
-        if (rule.once) {
-            setNodeStateField(rule, "_chosen", true);
-        }
     }
 
     /**
@@ -5081,14 +5078,12 @@ class InterpreterContext {
      * Whether a rule played once was already played.
      */
     function isWhenRuleConsumed(rule:NWhenRule):Bool {
-        final state = nodeStates.get(rule.id);
-        if (state == null) return false;
-        final chosen:Any = Objects.getField(this, state.fields, "_chosen");
-        return chosen == true;
+        return getNodeStateInt(rule, "_played") > 0;
     }
 
     /**
-     * When a rule was last played, as the `_tick` of its when block, or -1 if never.
+     * When a rule was last played, as the value of the play counter shared by all
+     * when blocks (see recordWhenRulePlayed), or -1 if never.
      */
     function getWhenRuleLastPlayed(rule:NWhenRule):Int {
         final state = nodeStates.get(rule.id);
