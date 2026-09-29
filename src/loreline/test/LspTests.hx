@@ -10,12 +10,12 @@ import loreline.lsp.Server;
 using StringTools;
 
 /**
- * Tests of "go to definition" in the language server, with files served from
- * memory instead of the disk.
+ * Tests of the language server, with files served from memory instead of the
+ * disk: requests without a document, and "go to definition".
  * Tests are referenced through lambdas, see SpawnTests.
  */
 @:keep
-class LspDefinitionTests {
+class LspTests {
 
     /**
      * A project whose root imports sub/b, which imports c: c is resolved from
@@ -71,6 +71,7 @@ class LspDefinitionTests {
     public static function run(pass:(name:String)->Void, fail:(name:String, error:String)->Void):Void {
 
         final tests:Array<{name:String, fn:()->Void}> = [
+            {name: 'a request without a document', fn: () -> testShutdown()},
             {name: 'a beat of the same file', fn: () -> testSameFile()},
             {name: 'a beat of an imported file', fn: () -> testImported()},
             {name: 'a beat of a file imported by an imported file', fn: () -> testNestedImport()},
@@ -82,13 +83,25 @@ class LspDefinitionTests {
         for (test in tests) {
             try {
                 test.fn();
-                pass('lsp definition: ' + test.name);
+                pass('lsp: ' + test.name);
             }
             catch (e:Any) {
-                fail('lsp definition: ' + test.name, Std.string(e));
+                fail('lsp: ' + test.name, Std.string(e));
             }
         }
 
+    }
+
+    /**
+     * `shutdown` has no document: the server must answer it, so that `exit`
+     * ends the process with code 0.
+     */
+    static function testShutdown() {
+        final server = createServer();
+        final request:RequestMessage = { jsonrpc: "2.0", id: 3, method: "shutdown" };
+        final response = server.handleMessageSync(request);
+        if (response == null) throw 'no response';
+        if (response.error != null) throw 'error: ' + response.error.message;
     }
 
     static function testSameFile() {

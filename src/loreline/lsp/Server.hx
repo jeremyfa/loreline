@@ -644,7 +644,8 @@ class Server {
 
     function updateDocumentIfNeeded(uri:String, ?callback:()->Void) {
 
-        if (dirtyDocuments.exists(uri)) {
+        // Requests without a document (shutdown...): some targets throw on a null map key
+        if (uri != null && dirtyDocuments.exists(uri)) {
             handleFile(pathFromUri(uri), content -> {
                 if (content != null) {
                     updateDocument(uri, content, true);

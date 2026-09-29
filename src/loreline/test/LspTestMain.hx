@@ -15,7 +15,7 @@ class LspTestMain {
         var passCount = 0;
         var failCount = 0;
 
-        LspDefinitionTests.run(
+        LspTests.run(
             name -> {
                 passCount++;
                 println('PASS - ' + name);
