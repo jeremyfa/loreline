@@ -14,6 +14,25 @@ beat Start
 //^^^^^^^^^^^^^^^^^^^^^ string.unquoted
   Second narrative line.
 //^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Third line with <b>bold</b> inside.
+//^^^^^^^^^^^^^^^^ string.unquoted
+//                ^ punctuation.definition.tag
+//                 ^ storage.modifier.metadata
+//                   ^^^^ string.unquoted
+//                        ^^ storage.modifier.metadata
+//                           ^^^^^^^^ string.unquoted
+  <whisper> Tag opening the fourth line.
+//^ punctuation.definition.tag
+// ^^^^^^^ storage.modifier.metadata
+//        ^ punctuation.definition.tag
+//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Last line with <i>italic</i> and ${gold + 1}.
+//^^^^^^^^^^^^^^^ string.unquoted
+//                ^ storage.modifier.metadata
+//                  ^^^^^^ string.unquoted
+//                         ^^ storage.modifier.metadata
+//                                 ^^ punctuation.definition.block.begin
+//                                   ^^^^ variable.other
   "Quoted narration."
 //^^^^^^^^^^^^^^^^^^^ string.quoted.double
   "Quoted narration." // note

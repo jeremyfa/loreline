@@ -28,6 +28,39 @@ beat Start
 //          ^^^^^^^^ storage.modifier.metadata
     Tag alone on the first line.
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista:
+//^^^^^^^ entity.name.class
+    Line with <b>bold</b> inside.
+//  ^^^^^^^^^^ string.unquoted.dialogue
+//            ^ punctuation.definition.tag
+//             ^ storage.modifier.metadata
+//               ^^^^ string.unquoted.dialogue
+//                    ^^ storage.modifier.metadata
+//                       ^^^^^^^^ string.unquoted.dialogue
+    <friendly> Tag opening the second line.
+//  ^ punctuation.definition.tag
+//   ^^^^^^^^ storage.modifier.metadata
+//           ^ punctuation.definition.tag
+//             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    Closing tag at the end <b>here</b>
+//  ^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                          ^ storage.modifier.metadata
+//                            ^^^^ string.unquoted.dialogue
+//                                 ^^ storage.modifier.metadata
+//                                   ^ punctuation.definition.tag
+  barista: <calm> First line.
+//          ^^^^ storage.modifier.metadata
+//                ^^^^^^^^^^^ string.unquoted.dialogue
+    Second line with <pause=2> and $gold.
+//  ^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                    ^^^^^^^ storage.modifier.metadata
+//                            ^^^^^ string.unquoted.dialogue
+//                                  ^^^^ variable.other
+    <b>Bold</b> start of the third line.
+//   ^ storage.modifier.metadata
+//     ^^^^ string.unquoted.dialogue
+//          ^^ storage.modifier.metadata
+//             ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
   barista: One line.
 //         ^^^^^^^^^ string.unquoted.dialogue
   barista:No space after the colon.
@@ -76,3 +109,9 @@ beat Start
 //             ^^^^^^^^^^^^^^^^ string.unquoted.dialogue
         And a second line.
 //      ^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+        With <b>foam</b> on top.
+//      ^^^^^ string.unquoted.dialogue
+//            ^ storage.modifier.metadata
+//              ^^^^ string.unquoted.dialogue
+//                   ^^ storage.modifier.metadata
+//                      ^^^^^^^^ string.unquoted.dialogue
