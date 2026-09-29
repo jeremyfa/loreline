@@ -43,6 +43,17 @@ class Server {
     final documentContents:Map<String, String> = new Map();
 
     /**
+     * URIs of the documents opened by the client, as the client sent them.
+     */
+    final openDocuments:Map<String, Bool> = new Map();
+
+    /**
+     * Maps file paths to the text read while resolving imports, so that positions
+     * in an imported file can be converted with the text of that file.
+     */
+    final fileContents:Map<String, String> = new Map();
+
+    /**
      * Maps document URIs to their diagnostics.
      */
     final documentDiagnostics:Map<String, Array<Diagnostic>> = new Map();
@@ -74,7 +85,8 @@ class Server {
 
     public dynamic function handleFile(path:String, callback:(content:String)->Void):Void {
 
-        final uri = uriFromPath(path);
+        // The text of a file opened by the client, whatever the spelling of its URI
+        final uri = uriForPath(path);
         if (documentContents.exists(uri)) {
             callback(documentContents.get(uri));
             return;
@@ -359,6 +371,7 @@ class Server {
      */
     function handleDidOpenTextDocument(params:{textDocument:TextDocumentItem}) {
         final doc = params.textDocument;
+        openDocuments.set(doc.uri, true);
         updateDocument(doc.uri, doc.text, true);
     }
 
@@ -395,6 +408,7 @@ class Server {
      * Handle document close
      */
     function handleDidCloseTextDocument(params:{textDocument:TextDocumentIdentifier}) {
+        openDocuments.remove(params.textDocument.uri);
         documents.remove(params.textDocument.uri);
         documentContents.remove(params.textDocument.uri);
         documentDiagnostics.remove(params.textDocument.uri);
@@ -415,10 +429,13 @@ class Server {
 
     function markDependentDocumentsDirty(uri:String) {
 
+        // Compared by path: the client may spell the URI of a file differently
+        final path = pathFromUri(uri);
+
         for (key => imports in documentImports) {
             for (i in 0...imports.length) {
                 final imp = imports[i];
-                if (imp == uri) {
+                if (imp == uri || (path != null && pathFromUri(imp) == path)) {
                     dirtyDocuments.set(key, true);
                     break;
                 }
@@ -665,8 +682,16 @@ class Server {
             // File path and file handler provided, which mean we can support
             // imports, either synchronous or asynchronous
 
+            fileContents.set(filePath, content);
+            final recordingHandleFile = (path:String, callback:(content:String)->Void) -> {
+                handleFile(path, fileContent -> {
+                    fileContents.set(Path.normalize(path), fileContent);
+                    callback(fileContent);
+                });
+            };
+
             var imports = new Imports();
-            imports.resolve(filePath, tokens, handleFile, handleError, (hasErrors, resolvedImports) -> {
+            imports.resolve(filePath, tokens, recordingHandleFile, handleError, (hasErrors, resolvedImports) -> {
 
                 final parser = new Parser(tokens, {
                     rootPath: filePath,
@@ -1288,19 +1313,17 @@ class Server {
         var node = lens.getNodeAtPosition(lorelinePos);
 
         if (node is NLiteral) {
-            var parent = node;
-            do {
-                parent = lens.getParentNode(parent);
-                if (parent != null) {
-                    switch HxType.getClass(parent) {
-                        case NAccess | NArrayAccess:
-                            node = parent;
-                            break;
-                        case _:
-                    }
+            // The access holding this literal, if any. A plain loop: the C# target
+            // generates invalid code for a break inside a switch inside a do/while.
+            var parent = lens.getParentNode(node);
+            while (parent != null) {
+                final parentClass = HxType.getClass(parent);
+                if (parentClass == NAccess || parentClass == NArrayAccess) {
+                    node = parent;
+                    break;
                 }
+                parent = lens.getParentNode(parent);
             }
-            while (parent != null);
         }
 
         if (node != null) {
@@ -1312,10 +1335,11 @@ class Server {
                     // Beat parameter usage: jump to the parameter name
                     final beatParam = lens.findBeatParamFromAccess(access);
                     if (beatParam != null) {
+                        final target = resolveNodeTarget(uri, beatParam.beat, lens);
                         result.push({
-                            targetUri: resolveNodeUri(uri, beatParam.beat, lens),
-                            targetRange: rangeFromLorelinePosition(beatParam.param.namePos, content),
-                            targetSelectionRange: rangeFromLorelinePosition(beatParam.param.namePos, content),
+                            targetUri: target.uri,
+                            targetRange: rangeFromLorelinePosition(beatParam.param.namePos, target.content),
+                            targetSelectionRange: rangeFromLorelinePosition(beatParam.param.namePos, target.content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
                         });
                         return result;
@@ -1327,10 +1351,11 @@ class Server {
                             case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? resolved;
                             case _: resolved;
                         }
+                        final target = resolveNodeTarget(uri, resolved, lens);
                         result.push({
-                            targetUri: resolveNodeUri(uri, resolved, lens),
-                            targetRange: rangeFromLorelinePosition(peekNode.pos, content),
-                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
+                            targetUri: target.uri,
+                            targetRange: rangeFromLorelinePosition(peekNode.pos, target.content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, target.content), target.content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
                         });
                     }
@@ -1343,10 +1368,11 @@ class Server {
                             case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? resolved;
                             case _: resolved;
                         }
+                        final target = resolveNodeTarget(uri, resolved, lens);
                         result.push({
-                            targetUri: resolveNodeUri(uri, resolved, lens),
-                            targetRange: rangeFromLorelinePosition(peekNode.pos, content),
-                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, content), content),
+                            targetUri: target.uri,
+                            targetRange: rangeFromLorelinePosition(peekNode.pos, target.content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(resolved.pos, target.content), target.content),
                             originSelectionRange: rangeFromLorelinePosition(access.pos, content)
                         });
                     }
@@ -1356,13 +1382,14 @@ class Server {
                     final beatDecl = lens.findBeatFromTransition(transition);
                     if (beatDecl != null) {
                         // Create a location link with more detailed targeting
+                        final target = resolveNodeTarget(uri, beatDecl, lens);
                         result.push({
                             // The document containing the target
-                            targetUri: resolveNodeUri(uri, beatDecl, lens),
+                            targetUri: target.uri,
                             // Full range of the beat declaration
-                            targetRange: rangeFromLorelinePosition(beatDecl.pos, content),
+                            targetRange: rangeFromLorelinePosition(beatDecl.pos, target.content),
                             // More precise range for the beat name
-                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(beatDecl.pos, content), content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(beatDecl.pos, target.content), target.content),
                             // Range of the transition reference in the source
                             originSelectionRange: rangeFromLorelinePosition(transition.targetPos, content)
                         });
@@ -1373,13 +1400,14 @@ class Server {
                     final beatDecl = lens.findBeatFromInsertion(insertion);
                     if (beatDecl != null) {
                         // Create a location link with more detailed targeting
+                        final target = resolveNodeTarget(uri, beatDecl, lens);
                         result.push({
                             // The document containing the target
-                            targetUri: resolveNodeUri(uri, beatDecl, lens),
+                            targetUri: target.uri,
                             // Full range of the beat declaration
-                            targetRange: rangeFromLorelinePosition(beatDecl.pos, content),
+                            targetRange: rangeFromLorelinePosition(beatDecl.pos, target.content),
                             // More precise range for the beat name
-                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(beatDecl.pos, content), content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(beatDecl.pos, target.content), target.content),
                             // Range of the insertion reference in the source
                             originSelectionRange: rangeFromLorelinePosition(insertion.targetPos, content)
                         });
@@ -1390,10 +1418,11 @@ class Server {
                     final characterDecl = lens.findCharacterFromDialogue(dialogue);
                     if (characterDecl != null) {
                         // Create a location link for the character definition
+                        final target = resolveNodeTarget(uri, characterDecl, lens);
                         result.push({
-                            targetUri: resolveNodeUri(uri, characterDecl, lens),
-                            targetRange: rangeFromLorelinePosition(characterDecl.pos, content),
-                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(characterDecl.pos, content), content),
+                            targetUri: target.uri,
+                            targetRange: rangeFromLorelinePosition(characterDecl.pos, target.content),
+                            targetSelectionRange: firstLineRange(rangeFromLorelinePosition(characterDecl.pos, target.content), target.content),
                             originSelectionRange: rangeFromLorelinePosition(dialogue.characterPos, content)
                         });
                     }
@@ -1401,7 +1430,7 @@ class Server {
                 case NImportStatement:
                     final importNode:NImportStatement = cast node;
                     result.push({
-                        targetUri: resolveNodeUri(uri, importNode, lens),
+                        targetUri: resolveImportedUri(uri, importNode, lens),
                         targetRange: rangeFromLorelinePosition(new loreline.Position(1, 1, 0, 0), ''),
                         targetSelectionRange: rangeFromLorelinePosition(new loreline.Position(1, 1, 0, 0), '')
                     });
@@ -1411,33 +1440,57 @@ class Server {
         return result;
     }
 
-    function resolveNodeUri(uri:String, node:Node, lens:Lens):String {
-        final importNode = node is NImportStatement ? cast node : lens.getFirstParentOfType(node, NImportStatement);
-
-        if (importNode != null) {
-            final rootPath = pathFromUri(uri);
-            if (rootPath != null) {
-                var importPath = switch importNode.path.parts[0].partType {
-                    case Raw(text): text;
-                    case _: "";
-                }
-
-                if (!Path.isAbsolute(importPath)) {
-                    importPath = Path.join([Path.directory(rootPath), importPath]);
-                }
-
-                importPath = Path.normalize(importPath);
-
-                if (!Imports.isLorFilePath(importPath)) {
-                    importPath += Imports.lorExtension(rootPath);
-                }
-
-                uri = uriFromPath(importPath);
-            }
+    /**
+     * The document holding a node, and its text: the requested document, or the
+     * file imported (possibly through other imports) that the node comes from.
+     */
+    function resolveNodeTarget(uri:String, node:Node, lens:Lens):{uri:String, content:String} {
+        final rootPath = pathFromUri(uri);
+        if (rootPath == null) {
+            return { uri: uri, content: documentContents.get(uri) };
         }
+        final path = lens.getNodeFilePath(node, rootPath);
+        if (path == rootPath) {
+            return { uri: uri, content: documentContents.get(uri) };
+        }
+        final targetUri = uriForPath(path);
+        return {
+            uri: targetUri,
+            content: fileContents.get(path) ?? documentContents.get(targetUri) ?? ""
+        };
+    }
 
-        return uri;
+    /**
+     * The document an import statement brings in, resolved from the folder of
+     * the file holding that statement.
+     */
+    function resolveImportedUri(uri:String, importNode:NImportStatement, lens:Lens):String {
+        final rootPath = pathFromUri(uri);
+        if (rootPath == null) return uri;
+        var importPath = switch importNode.path.parts[0].partType {
+            case Raw(text): text;
+            case _: "";
+        }
+        if (!Path.isAbsolute(importPath)) {
+            importPath = Path.join([Path.directory(lens.getNodeFilePath(importNode, rootPath)), importPath]);
+        }
+        importPath = Path.normalize(importPath);
+        if (!Imports.isLorFilePath(importPath)) {
+            importPath += Imports.lorExtension(rootPath);
+        }
+        return uriForPath(importPath);
+    }
 
+    /**
+     * The URI of a file for the client: the one it sent if it has opened that file,
+     * so that it does not see another spelling of the same file (percent-encoding
+     * differs between clients), otherwise one built from the path.
+     */
+    function uriForPath(path:String):String {
+        for (openUri in openDocuments.keys()) {
+            if (pathFromUri(openUri) == path) return openUri;
+        }
+        return uriFromPath(path);
     }
 
     function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
@@ -1935,7 +1988,7 @@ class Server {
     }
 
     function makePositionLink(text:String, uri:DocumentUri, node:Node, lens:Lens, ?extra:String):String {
-        final targetUri = resolveNodeUri(uri, node, lens);
+        final targetUri = resolveNodeTarget(uri, node, lens).uri;
         return '[${text}](${targetUri}#${node.pos.line},${node.pos.column})' + (extra != null ? ' ($extra)' : '');
     }
 
@@ -2899,6 +2952,7 @@ class Server {
         }
 
         // Find end of first non-empty line
+        if (lineStart >= lines.length) lineStart = lines.length - 1;
         var lineEnd = lineStart;
         var charEnd = lines[lineEnd].length;
 
