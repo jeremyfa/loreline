@@ -140,6 +140,17 @@ async function extractArchive(archivePath, destDir) {
     }
 }
 
+/**
+ * The language server is tooling (CLI, editors): it must not end up in the
+ * runtime exports that projects embed. Fails when a runtime export has it.
+ */
+function checkNoLanguageServer(exportName, found) {
+    if (found) {
+        throw new Error('The language server (loreline.lsp) is in the ' + exportName + ' runtime export');
+    }
+    console.log('No language server in the ' + exportName + ' runtime export');
+}
+
 // Example usage with async/await
 async function main() {
 
@@ -2227,11 +2238,16 @@ async function main() {
         console.log('\n=== JS build + tests ===');
         await command('node', ['./setup', '--js']);
         await command('npx', ['tsx', 'js/test-runner.ts', './test']);
+        // Classes of the loreline.lsp package are named loreline_lsp_* in JS
+        checkNoLanguageServer('JS', fs.readFileSync(path.join(__dirname, 'js', 'loreline.js'), 'utf8').includes('loreline_lsp_'));
 
         // 7. C++ lib build + tests
         console.log('\n=== C++ lib build + test ===');
         await command('node', ['./setup', '--cpp-lib']);
         await command('node', ['./setup', '--cpp-lib-test']);
+        // Headers generated for the loreline.lsp package would be in include/loreline/lsp
+        const cppLibPlatform = process.platform == 'darwin' ? 'mac' : process.platform == 'win32' ? 'windows' : 'linux';
+        checkNoLanguageServer('C++', fs.existsSync(path.join(__dirname, 'build', 'cpp-lib', cppLibPlatform, 'include', 'loreline', 'lsp')));
 
         // 8. Python build + tests
         console.log('\n=== Python build + tests ===');
