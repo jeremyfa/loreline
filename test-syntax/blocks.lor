@@ -1,0 +1,43 @@
+// Indented blocks inside a braced beat end with their indentation, not at the
+// next closing brace.
+
+beat Main {
+// <---- keyword.control.beat
+//   ^^^^ entity.name.type.beat
+//        ^ punctuation.section.block.begin
+  beat Inner
+//^^^^ keyword.control.beat
+//     ^^^^^ entity.name.type.beat
+    Inside.
+//  ^^^^^^^ string.unquoted
+  choice
+//^^^^^^ keyword.control.choice
+    Yes
+//  ^^^ string.unquoted
+      Ok.
+//    ^^^ string.unquoted
+  sequence
+//^^^^^^^^ keyword.control.alternative
+    One.
+//  ^^^^ string.unquoted
+  --
+//^^ keyword.control.alternative
+    Two.
+//  ^^^^ string.unquoted
+  After.
+//^^^^^^ string.unquoted
+  x = 1
+//^ variable.other
+//  ^ keyword.operator.assignment
+//    ^ constant.numeric
+}
+// <- punctuation.section.block.end
+
+beat Next
+// <---- keyword.control.beat
+//   ^^^^ entity.name.type.beat
+  Text.
+//^^^^^ string.unquoted
+  -> Next
+//^^ keyword.control.flow
+//   ^^^^ entity.name.type.beat

@@ -1,0 +1,178 @@
+// Statements in beats: beat declarations and calls, transitions, assignments,
+// conditions, alternatives, comments and translation keys.
+
+/* block
+   comment */
+#intro // "The cafe smells wonderful."
+// <------ comment.line.hash
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+#outro // "Escaped \"quote\" here."
+// <------ comment.line.hash
+//                 ^^ constant.character.escape
+//                   ^^^^^ string.unquoted
+#standalone
+// <----------- comment.line.hash
+
+beat Greet(who)
+// <---- keyword.control.beat
+//   ^^^^^ entity.name.type.beat
+//        ^ punctuation.section.group.begin
+//         ^^^ variable.other
+//            ^ punctuation.section.group.end
+  Hi $who.
+//^^^ string.unquoted
+//    ^^^ variable.other
+
+beat Braced(a) {
+//   ^^^^^^ entity.name.type.beat
+//         ^ punctuation.section.group.begin
+//          ^ variable.other
+//             ^ punctuation.section.block.begin
+  Inside.
+//^^^^^^^ string.unquoted
+}
+
+beat Main {
+//   ^^^^ entity.name.type.beat
+  beat Nested {
+//^^^^ keyword.control.beat
+//     ^^^^^^ entity.name.type.beat
+//            ^ punctuation.section.block.begin
+    Inside.
+//  ^^^^^^^ string.unquoted
+  }
+//^ punctuation.section.block.end
+  Nested()
+//^^^^^^ entity.name.type.beat
+  -> Greet(name)
+//^^ keyword.control.flow
+//   ^^^^^ entity.name.type.beat
+//         ^^^^ variable.other
+  -> beat(target)
+//^^ keyword.control.flow
+//   ^^^^ entity.name.function
+//        ^^^^^^ variable.other
+  -> .
+//^^ keyword.control.flow
+//   ^ entity.name.type.beat
+  -> End // go
+//   ^^^ entity.name.type.beat
+//       ^^^^^ comment.line.double-slash
+  -> End /* go */
+//   ^^^ entity.name.type.beat
+//       ^^^^^^^^ comment.block
+  x = 1
+//^ variable.other
+//  ^ keyword.operator.assignment
+//    ^ constant.numeric
+  x += 2 // add
+//^ variable.other
+//   ^ keyword.operator.assignment
+//     ^ constant.numeric
+//       ^^^^^^ comment.line.double-slash
+  label := wow that is neat
+//^^^^^ variable.other
+//      ^^ keyword.operator.assignment
+//         ^^^ string.unquoted.value
+//                     ^^^^ string.unquoted.value
+  flag = gold > 3 ? true : null
+//       ^^^^ variable.other
+//            ^ keyword.operator
+//                ^ keyword.operator.ternary
+//                  ^^^^ constant.language
+//                       ^ keyword.operator.ternary
+//                         ^^^^ constant.language
+  count = items.length + len(items)
+//^^^^^ variable.other
+//        ^^^^^ variable.other
+//              ^^^^^^ variable.other
+//                       ^^^ entity.name.function
+  Helper.visits()
+//^^^^^^ entity.name.type.beat
+//       ^^^^^^ entity.name.function.method
+  beat(ref)
+//^^^^ entity.name.function
+//     ^^^ variable.other
+  x = items.add(1)
+//    ^^^^^ variable.other
+//          ^^^ entity.name.function.method
+  y = Helper
+//^ variable.other
+//    ^^^^^^ entity.name.type.beat
+  label := wow \"escaped\"
+//         ^^^ string.unquoted.value
+//             ^^ constant.character.escape
+//               ^^^^^^^ string.unquoted.value
+//                      ^^ constant.character.escape
+  label := "quoted value"
+//      ^^ keyword.operator.assignment
+//         ^^^^^^^^^^^^^^ string.quoted.double
+  label := "a \"b\""
+//         ^^^ string.quoted.double
+//            ^^ constant.character.escape
+  s = "str \"esc\" ${a}"
+//    ^^^^^ string.quoted.double
+//         ^^ constant.character.escape
+//                 ^^ punctuation.definition.block.begin
+  if gold > 3 and not tired
+//^^ keyword.control
+//   ^^^^ variable.other
+//            ^^^ keyword.control
+//                ^^^ keyword.control
+//                    ^^^^^ variable.other
+    Rich.
+//  ^^^^^ string.unquoted
+  else if gold > 1
+//^^^^ keyword.control
+//     ^^ keyword.control
+//        ^^^^ variable.other
+    Fine.
+//  ^^^^^ string.unquoted
+  else
+//^^^^ keyword.control
+    Poor.
+//  ^^^^^ string.unquoted
+  if (gold > 3) {
+//^^ keyword.control
+//    ^^^^ variable.other
+    Braced.
+//  ^^^^^^^ string.unquoted
+  }
+  cycle {
+//^^^^^ keyword.control.alternative
+//      ^ punctuation.section.block.begin
+    One.
+//  ^^^^ string.unquoted
+  --
+//^^ keyword.control.alternative
+    Two.
+//  ^^^^ string.unquoted
+  }
+//^ punctuation.section.block.end
+  shuffle
+//^^^^^^^ keyword.control.alternative
+    A.
+//  ^^ string.unquoted
+  --
+//^^ keyword.control.alternative
+    B.
+//  ^^ string.unquoted
+  once
+//^^^^ keyword.control.alternative
+    Only.
+//  ^^^^^ string.unquoted
+  pick
+//^^^^ keyword.control.alternative
+    X.
+//  ^^ string.unquoted
+  sequence
+//^^^^^^^^ keyword.control.alternative
+    First.
+//  ^^^^^^ string.unquoted
+  After.
+//^^^^^^ string.unquoted
+}
+
+beat End
+  Bye.
+//^^^^ string.unquoted

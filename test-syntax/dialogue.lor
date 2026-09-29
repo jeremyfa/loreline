@@ -1,0 +1,78 @@
+// Dialogue lines: on one line, over several lines, with tags, quotes,
+// interpolations, escapes and comments.
+
+character barista
+  name: Barista
+
+beat Start
+  barista:
+//^^^^^^^ entity.name.class
+//       ^ keyword.operator.type.annotation
+    Line one of the dialogue.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    Line two of the dialogue.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: Hey, how are you?
+//^^^^^^^ entity.name.class
+//         ^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    Anything to drink?
+//  ^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: <friendly> Hey there!
+//         ^ punctuation.definition.tag
+//          ^^^^^^^^ storage.modifier.metadata
+//                  ^ punctuation.definition.tag
+//                    ^^^^^^^^^^ string.unquoted.dialogue
+    Good to see you again.
+//  ^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: <friendly>
+//          ^^^^^^^^ storage.modifier.metadata
+    Tag alone on the first line.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: One line.
+//         ^^^^^^^^^ string.unquoted.dialogue
+  barista:No space after the colon.
+//^^^^^^^ entity.name.class
+//       ^ keyword.operator.type.annotation
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  Narration right after.
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//^^^^^^^^^ - string.unquoted.dialogue
+  barista: "Quoted line."
+//         ^^^^^^^^^^^^^^ string.quoted.double
+  barista: "Quoted \"escaped\" line."
+//         ^^^^^^^^ string.quoted.double
+//                 ^^ constant.character.escape
+//                   ^^^^^^^ string.quoted.double
+//                            ^^^^^^^ string.quoted.double
+  barista: Hello $name and ${gold + 1}, costs 9$$.
+//               ^ punctuation.definition.block.begin
+//                ^^^^ variable.other
+//                         ^^ punctuation.definition.block.begin
+//                           ^^^^ variable.other
+//                                  ^ constant.numeric
+//                                             ^^ constant.character.escape
+//                                    ^^^^^^^^^ string.unquoted.dialogue
+  barista: A literal ##hashtag and \"escaped\".
+//                   ^^ constant.character.escape
+//                     ^^^^^^^ string.unquoted.dialogue
+//                                 ^^ constant.character.escape
+  barista: <a>tagged</a> text // comment
+//           ^ punctuation.definition.tag
+//            ^^^^^^ string.unquoted.dialogue
+//                   ^^ storage.modifier.metadata
+//                       ^^^^ string.unquoted.dialogue
+//                            ^^^^^^^^^^ comment.line.double-slash
+  barista: Hi /* inline */ there
+//         ^^ string.unquoted.dialogue
+//            ^^^^^^^^^^^^ comment.block
+//                         ^^^^^ string.unquoted.dialogue
+    And a continuation with $gold.
+//  ^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                           ^^^^ variable.other
+  choice
+    Order
+      barista: Coming right up.
+//    ^^^^^^^ entity.name.class
+//             ^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+        And a second line.
+//      ^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
