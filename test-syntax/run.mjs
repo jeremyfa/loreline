@@ -265,7 +265,7 @@ function decorationsOf(helper, code) {
 }
 
 function renderReport(highlighter, helper, results) {
-    const passed = results.filter(r => r.failures.length === 0).length;
+    const passed = results.filter(r => r.failures.length === 0 && r.parseErrors.length === 0).length;
     const sections = results.map(result => {
         const name = path.basename(result.file);
         const failingLines = new Set(result.failures.map(f => f.assertion.codeIndex + 1));
@@ -288,13 +288,17 @@ function renderReport(highlighter, helper, results) {
                 }
             }, wrapIndentTransformer]
         });
-        const failures = result.failures.map(f =>
+        const parseErrors = result.parseErrors.map(e =>
+            `<li><b>${escapeHtml(name)}:${e.line}</b>, column ${e.column}: not valid Loreline: ${escapeHtml(e.message)}</li>`
+        ).join('');
+        const failing = result.failures.length > 0 || result.parseErrors.length > 0;
+        const failures = parseErrors + result.failures.map(f =>
             `<li><b>${escapeHtml(name)}:${f.assertion.sourceLine}</b>, column ${f.column}: ${escapeHtml(f.problem)}` +
             `<pre>${escapeHtml(f.codeLine.text)}\n${escapeHtml(f.assertion.text)}</pre>` +
             `actual: <code>${escapeHtml(f.actual.join(' ') || '(no scope)')}</code></li>`
         ).join('');
-        return `<section class="${result.failures.length ? 'fail' : 'pass'}">
-<h2>${result.failures.length ? 'FAIL' : 'PASS'} ${escapeHtml(name)} <small>${result.assertions.length} assertions</small></h2>
+        return `<section class="${failing ? 'fail' : 'pass'}">
+<h2>${failing ? 'FAIL' : 'PASS'} ${escapeHtml(name)} <small>${result.assertions.length} assertions</small></h2>
 ${failures ? `<ul>${failures}</ul>` : ''}
 ${html}
 </section>`;
@@ -396,6 +400,22 @@ const files = fs.readdirSync(here)
     .sort()
     .map(f => path.join(here, f));
 
+const helper = loadDecorations();
+
+/**
+ * Parser errors of a test file, on the lines of the file. Empty when the helper
+ * can't be built.
+ */
+function parseErrorsOf(result) {
+    if (helper == null) return [];
+    const source = result.code.map(l => l.text).join('\n');
+    return helper.getErrors(source).map(e => ({
+        message: e.message,
+        line: result.code[e.line - 1]?.sourceLine ?? e.line,
+        column: e.column
+    }));
+}
+
 const results = [];
 let assertionCount = 0;
 let failed = 0;
@@ -407,13 +427,17 @@ for (const file of files) {
     catch (e) {
         result = { file, code: [], assertions: [], failures: [], error: e.message };
     }
+    result.parseErrors = result.error ? [] : parseErrorsOf(result);
     results.push(result);
     assertionCount += result.assertions.length;
     const name = path.basename(file);
-    if (result.error || result.failures.length > 0) {
+    if (result.error || result.failures.length > 0 || result.parseErrors.length > 0) {
         failed++;
         console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${name}\x1b[0m`);
         if (result.error) console.log(`  ${result.error}`);
+        for (const e of result.parseErrors) {
+            console.log(`  > ${name}:${e.line}, column ${e.column}: not valid Loreline: ${e.message}`);
+        }
         for (const f of result.failures) {
             console.log(`  > ${name}:${f.assertion.sourceLine}, column ${f.column}: ${f.problem}`);
             console.log(`    ${f.codeLine.text}`);
@@ -428,7 +452,7 @@ for (const file of files) {
 
 fs.mkdirSync(reportDir, { recursive: true });
 const reportPath = path.join(reportDir, 'index.html');
-fs.writeFileSync(reportPath, renderReport(highlighter, loadDecorations(), results.filter(r => !r.error)));
+fs.writeFileSync(reportPath, renderReport(highlighter, helper, results.filter(r => !r.error)));
 
 console.log('');
 console.log(`\x1b[90m  Report: ${path.relative(process.cwd(), reportPath)}\x1b[0m`);

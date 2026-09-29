@@ -192,44 +192,14 @@
                             "name": "keyword.control.alternative.loreline"
                         }
                     },
-                    "end": "(?<=\\})",
+                    "end": "(?<=\\})(?![ \\t]*--)",
                     "patterns": [
                         {
                             "match": "--",
                             "name": "keyword.control.alternative.loreline"
                         },
                         {
-                            "begin": "\\{",
-                            "beginCaptures": {
-                                "0": {
-                                    "name": "punctuation.section.block.begin.loreline"
-                                }
-                            },
-                            "end": "\\}",
-                            "endCaptures": {
-                                "0": {
-                                    "name": "punctuation.section.block.end.loreline"
-                                }
-                            },
-                            "patterns": [
-                                {
-                                    "match": "^\\s*(--)\\s*$",
-                                    "captures": {
-                                        "1": {
-                                            "name": "keyword.control.alternative.loreline"
-                                        }
-                                    }
-                                },
-                                {
-                                    "include": "#indents-in-beat"
-                                },
-                                {
-                                    "include": "#braces-in-beat"
-                                },
-                                {
-                                    "include": "#beat-patterns"
-                                }
-                            ]
+                            "include": "#braces-in-beat"
                         },
                         {
                             "include": "#beat-patterns"
@@ -759,6 +729,23 @@
                 },
                 {
                     "include": "#alternative-block"
+                },
+                {
+                    "match": "^\\s*(--)\\s*$",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.control.alternative.loreline"
+                        }
+                    }
+                },
+                {
+                    "begin": "^\\s*(?=\\{)",
+                    "end": "(?<=\\})",
+                    "patterns": [
+                        {
+                            "include": "#braces-in-beat"
+                        }
+                    ]
                 },
                 {
                     "include": "#keywords"

@@ -81,17 +81,6 @@ beat More
     + /* c */ Extra
 //    ^^^^^^^ comment.block
 //            ^^^^^ entity.name.type.beat
-    if gold > 5
-//  ^^ keyword.control
-//     ^^^^ variable.other
-      Rich option
-//    ^^^^^^^^^^^ string.unquoted
-        Rich.
-//      ^^^^^ string.unquoted
-    else
-//  ^^^^ keyword.control
-      Poor option
-//    ^^^^^^^^^^^ string.unquoted
   choice {
 //^^^^^^ keyword.control.choice
 //       ^ punctuation.section.block.begin
