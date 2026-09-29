@@ -12,7 +12,8 @@ using StringTools;
 /**
  * Tests of the printer on parentheses: a script prints back with exactly the
  * parentheses it was written with, directly and after a trip through JSON, and
- * a tree built without them still prints with the ones its meaning needs.
+ * a tree built without them still prints with the ones its meaning needs. Also
+ * no space at the end of the printed lines.
  * Tests are referenced through lambdas, see SpawnTests.
  */
 @:keep
@@ -59,7 +60,8 @@ class PrinterTests {
             {name: 'parentheses print back as written after JSON', fn: () -> testLines(true)},
             {name: 'option condition prints back as written', fn: () -> testOptionCondition()},
             {name: 'needed parentheses are added to a tree built without them', fn: () -> testTreeWithoutParens()},
-            {name: 'word and symbol operators convert both ways', fn: () -> testWordOperatorConversion()}
+            {name: 'word and symbol operators convert both ways', fn: () -> testWordOperatorConversion()},
+            {name: 'no space at the end of a line', fn: () -> testNoTrailingSpaces()}
         ];
 
         for (test in tests) {
@@ -101,6 +103,52 @@ class PrinterTests {
             if (printedLine.trim() == line) return;
         }
         throw '$what: "$line" printed as:\n' + printed;
+    }
+
+    /**
+     * Headers followed by an indented block, keys followed by a nested object,
+     * and block comments ending a line: a space is only written when something
+     * follows it on the line, such as an opening brace.
+     */
+    static function testNoTrailingSpaces():Void {
+        final source = [
+            'state',
+            '  menu:',
+            '    price: 5',
+            '    stats:',
+            '      str: 1',
+            '',
+            'character bob',
+            '  name: Bob',
+            '',
+            'beat Start',
+            '  new state',
+            '    count: 0',
+            '  Hello. /* note */',
+            '  choice',
+            '    Yes',
+            '      Ok.',
+            '',
+            'beat Braced {',
+            '  choice {',
+            '    Go {',
+            '      Went.',
+            '    }',
+            '  }',
+            '}',
+            ''
+        ].join('\n');
+        final printed = new Printer().print(parse(source)).replace('\r\n', '\n');
+        final lines = printed.split('\n');
+        for (i in 0...lines.length) {
+            final line = lines[i];
+            if (line.endsWith(' ') || line.endsWith('\t')) {
+                throw 'line ${i + 1} ends with a space: "$line" in:\n' + printed;
+            }
+        }
+        for (expected in ['beat Braced {', 'choice {']) {
+            expectLine(printed, expected, 'braced form');
+        }
     }
 
     static function testLines(json:Bool):Void {

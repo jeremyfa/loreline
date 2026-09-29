@@ -48,6 +48,11 @@ class Printer {
     var _noLn:Int;
 
     /**
+     * A space owed after the last write, see space()
+     */
+    var _pendingSpace:Bool = false;
+
+    /**
      * Counts the number of empty lines being printed
      */
     var _numEmptyLines:Int;
@@ -85,6 +90,7 @@ class Printer {
      */
     public inline function clear() {
         _noLn = 0;
+        _pendingSpace = false;
         _level = 0;
         _prevLevel = 0;
         _numEmptyLines = 0;
@@ -115,6 +121,13 @@ class Printer {
             if (_beginLine > 0) {
                 tab();
                 _beginLine = 0;
+            }
+            if (_pendingSpace) {
+                _pendingSpace = false;
+                final first = s.uCharCodeAt(0);
+                if (first != ' '.code && first != '\n'.code && first != '\r'.code) {
+                    _buf.add(' ');
+                }
             }
             _buf.add(s);
             _lastChar = s.uCharCodeAt(s.uLength() - 1);
@@ -164,6 +177,10 @@ class Printer {
      * @return This printer instance for chaining
      */
     public function newline() {
+        if (_noLn == 0) {
+            // Nothing followed the owed space on this line
+            _pendingSpace = false;
+        }
         if (_beginLine < 2 && _noLn == 0) {
             if (_beginLine == 1) {
                 _numEmptyLines++;
@@ -171,6 +188,17 @@ class Printer {
             _buf.add(_newline);
             _beginLine++;
         }
+        return this;
+    }
+
+    /**
+     * Owes a space: it is written before whatever comes next on the same line
+     * (an opening brace, a comment, a value), and dropped at the end of the line,
+     * so that a line never ends with a space.
+     * @return This printer instance for chaining
+     */
+    public function space() {
+        _pendingSpace = true;
         return this;
     }
 
@@ -428,7 +456,8 @@ class Printer {
                     write(' ');
                 }
                 if (comment.multiline) {
-                    write('/*${comment.content}*/ ');
+                    write('/*${comment.content}*/');
+                    space();
                 }
                 else if (comment.isHash) {
                     writeln('#${comment.content}');
@@ -470,7 +499,8 @@ class Printer {
         writeln();
         printLeadingComments(state);
         if (state.temporary) write('new ');
-        write('state ');
+        write('state');
+        space();
         printTrailingComments(state);
         if (state.style == Braces) writeln('{');
         else writeln();
@@ -484,7 +514,8 @@ class Printer {
             }
             first = false;
             printLeadingComments(field);
-            write('${field.name}: ');
+            write('${field.name}:');
+            space();
             printTrailingComments(field);
             printNode(field.value);
         }
@@ -501,14 +532,16 @@ class Printer {
         writeln();
         writeln();
         printLeadingComments(char);
-        write('character ${char.name} ');
+        write('character ${char.name}');
+        space();
         printTrailingComments(char);
         if (char.style == Braces) writeln('{');
         else writeln();
         indent();
         for (prop in char.fields) {
             printLeadingComments(prop);
-            write('${prop.name}: ');
+            write('${prop.name}:');
+            space();
             printTrailingComments(prop);
             printNode(prop.value);
             if (_beginLine == 0) {
@@ -544,7 +577,7 @@ class Printer {
             write(')');
             enableComments = savedComments;
         }
-        write(' ');
+        space();
         printTrailingComments(beat);
         if (beat.style == Braces) writeln('{');
         writeln();
@@ -628,7 +661,8 @@ class Printer {
         writeln();
         writeln();
         printLeadingComments(choice);
-        write('choice ');
+        write('choice');
+        space();
         printTrailingComments(choice);
         if (choice.style == Braces) writeln('{');
         else writeln();
@@ -1155,7 +1189,8 @@ class Printer {
                     }
                     first = false;
                     printLeadingComments(field);
-                    write('${field.name}: ');
+                    write('${field.name}:');
+                    space();
                     printTrailingComments(field);
                     printNode(field.value);
                 }
