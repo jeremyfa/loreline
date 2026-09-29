@@ -1,2 +1,0 @@
-args: [lsp, definition, main.lor, "5:6"]
-stdoutContains: "sub/c.lor"

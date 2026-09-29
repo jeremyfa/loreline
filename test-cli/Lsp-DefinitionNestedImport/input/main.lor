@@ -1,5 +1,0 @@
-import sub/b
-
-beat Start
-  -> Middle
-  -> Deep

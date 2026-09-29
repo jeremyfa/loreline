@@ -1,2 +1,0 @@
-args: [lsp, diagnostics, main.lor]
-stdoutContains: "Unknown beat: Missing"
