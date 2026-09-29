@@ -4038,11 +4038,8 @@ class Token {
             while (pos < length && braceLevel > 0) {
                 final c = input.uCharCodeAt(pos);
 
-                // Handle string literals
+                // Handle string literals (skipQuotedString skips the opening quote itself)
                 if (c == "\"".code) {
-                    advance(); // Skip opening quote
-
-                    // Parse string content including possible interpolations
                     skipQuotedString();
                     continue;
                 }
@@ -4057,6 +4054,11 @@ class Token {
             if (braceLevel > 0) {
                 error('Unclosed braces in function body', false);
             }
+
+            // The body ends at the closing brace: what follows it is tokenized
+            lastLineBreakPos = pos;
+            lastLineBreakLine = line;
+            lastLineBreakColumn = column;
         }
         else {
             // Indentation-delimited function body
@@ -4142,7 +4144,9 @@ class Token {
         final bodyEnd = pos;
         var code = input.uSubstr(start.offset, bodyEnd - start.offset).rtrim();
 
-        final external = (code.uIndexOf("\n") == -1);
+        // A function without body is implemented by the host. A braced body can
+        // fit on a single line.
+        final external = !usesBraces && (code.uIndexOf("\n") == -1);
         if (!external) {
             code = code + "\n";
         }

@@ -48,7 +48,9 @@ class CodeToLorscript {
     /**
      * List of control flow keywords that may need special handling
      */
-    static final CONTROL_KEYWORDS = ["for", "while", "if", "else", "switch", "catch"];
+    // Keywords followed by a condition, wrapped in parentheses when written without.
+    // Not `else`, which has no condition: `} else {` would become `} else ({`.
+    static final CONTROL_KEYWORDS = ["for", "while", "if", "switch", "catch"];
 
     /**
      * Current position in the input string
@@ -1153,6 +1155,12 @@ class CodeToLorscript {
                         }
                     }
                 }
+                else if (indent < 0 && stack.length > 0 && stack[stack.length-1] == Brace && !endsOrFollowsWithChar(line, ";".code, index)) {
+                    // Last statement before a closing brace written in the code
+                    currentPosOffset++;
+                    output.addChar(";".code);
+                    posOffsets.push(currentPosOffset);
+                }
                 else if (indent == 0 && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {
                     if (inObjectBlock()) {
                         currentPosOffset++;
@@ -1224,6 +1232,16 @@ class CodeToLorscript {
                 }
             }
             else if (c == "}".code) {
+                // Statement right before a closing brace on the same line: `{ return x }`
+                final before = lineOutput.toString().rtrim();
+                if (stack.length > 0 && stack[stack.length-1] == Brace && before.length > 0) {
+                    final last = before.uCharCodeAt(before.uLength() - 1);
+                    if (last != ";".code && last != "{".code && last != "}".code) {
+                        currentPosOffset++;
+                        output.addChar(";".code);
+                        posOffsets.push(currentPosOffset);
+                    }
+                }
                 var popped = stackPop();
                 if (popped != Brace && popped != ObjectBrace) {
                     error("Unexpected: }");

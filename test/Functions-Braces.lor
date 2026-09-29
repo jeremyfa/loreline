@@ -1,0 +1,42 @@
+
+// Function bodies between braces instead of indentation
+function greet(name) {
+  return "Hi " + name
+}
+
+// Nested braces, and braces inside strings that must not count
+function describe(count) {
+  if (count > 1) {
+    return "many {items}"
+  } else {
+    return "one }item{"
+  }
+}
+
+// Empty string and escaped quotes
+function wrap(text) {
+  var empty = ""
+  return empty + "\"" + text + "\""
+}
+function twice(value) { return value * 2 }
+
+// An indented function after the braced ones, with braced blocks inside
+function add(a, b)
+  if (a > b) {
+    return a + b
+  } else {
+    return b + a
+  }
+
+$greet("Alex"), $describe(3), $describe(1).
+
+Then $wrap("word"), twice gives $twice(4), sum gives $add(1, 2).
+
+/*
+<test>
+- expected: |
+    ~ Hi Alex, many {items}, one }item{.
+
+    ~ Then "word", twice gives 8, sum gives 3.
+</test>
+*/
