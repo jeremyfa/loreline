@@ -287,12 +287,19 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             delete _pendingFunctionDone[callId];
         },
 
-        play: function(scriptId, beatName, optionsJson) {
+        // Reserves the id of an interpreter before play/resume creates it, so the
+        // C++ side can register its wrapper and host functions first: play runs
+        // the story synchronously and may call a host function right away.
+        reserveId: function() {
+            return _nextId++;
+        },
+
+        play: function(scriptId, beatName, optionsJson, reservedId) {
             var script = _getObj(scriptId);
             if (!script) return 0;
             // Pre-allocate ID so callbacks use the correct interpId
             // (Loreline.play fires the first callback synchronously)
-            var interpId = _nextId++;
+            var interpId = reservedId || _nextId++;
 
             // Build options if provided
             var playOptions = null;
@@ -380,7 +387,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             return interpId;
         },
 
-        resume: function(scriptId, saveData, beatName, optionsJson) {
+        resume: function(scriptId, saveData, beatName, optionsJson, reservedId) {
             var script = _getObj(scriptId);
             if (!script) return 0;
             // saveData arrives as a JSON string from the C++ side. Loreline.resume
@@ -393,7 +400,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                 return 0;
             }
             // Pre-allocate ID so callbacks use the correct interpId
-            var interpId = _nextId++;
+            var interpId = reservedId || _nextId++;
 
             // Build options if provided
             var resumeOptions = null;

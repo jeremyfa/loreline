@@ -60,21 +60,28 @@ Ref<LorelineInterpreter> LorelineScript::play(const String &beat_name, const Ref
 		String options_json = options->build_js_options_json();
 		options_arg = "'" + loreline_escape_js(options_json) + "'";
 	}
-	String js_code = "_lorelineBridge.play(" + String::num_int64(_js_id) + ",'" + escaped_beat + "'," + options_arg + ")";
-	Variant result = js->eval(js_code, true);
-	int interp_id = result;
-	if (interp_id == 0) {
-		return Ref<LorelineInterpreter>();
-	}
-
+	// The story starts running inside the play/resume call, and may call a host
+	// function before returning. So the wrapper and the host functions are
+	// registered under a reserved id first, and the call uses that id.
+	const int interp_id = int(js->eval("_lorelineBridge.reserveId()", true));
 	Ref<LorelineInterpreter> interp;
 	interp.instantiate();
 	interp->_js_id = interp_id;
 	LorelineInterpreter::_js_registry[interp_id] = interp.ptr();
-
-	// Register custom functions for JS path
-	if (options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0)) {
+	const bool has_functions = options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0);
+	if (has_functions) {
 		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
+	}
+
+	String js_code = "_lorelineBridge.play(" + String::num_int64(_js_id) + ",'" + escaped_beat + "'," + options_arg + "," + String::num_int64(interp_id) + ")";
+	Variant result = js->eval(js_code, true);
+	if (int(result) == 0) {
+		if (has_functions) {
+			LorelineOptions::unregister_js_functions(interp_id);
+		}
+		LorelineInterpreter::_js_registry.erase(interp_id);
+		interp->_js_id = 0;
+		return Ref<LorelineInterpreter>();
 	}
 
 	// Don't poll events here: GDScript connects signals AFTER play/resume returns.
@@ -149,22 +156,29 @@ Ref<LorelineInterpreter> LorelineScript::resume(const String &save_data, const S
 		String options_json = options->build_js_options_json();
 		options_arg = "'" + loreline_escape_js(options_json) + "'";
 	}
-	String js_code = "_lorelineBridge.resume(" + String::num_int64(_js_id) +
-		",'" + escaped_save + "','" + escaped_beat + "'," + options_arg + ")";
-	Variant result = js->eval(js_code, true);
-	int interp_id = result;
-	if (interp_id == 0) {
-		return Ref<LorelineInterpreter>();
-	}
-
+	// The story starts running inside the play/resume call, and may call a host
+	// function before returning. So the wrapper and the host functions are
+	// registered under a reserved id first, and the call uses that id.
+	const int interp_id = int(js->eval("_lorelineBridge.reserveId()", true));
 	Ref<LorelineInterpreter> interp;
 	interp.instantiate();
 	interp->_js_id = interp_id;
 	LorelineInterpreter::_js_registry[interp_id] = interp.ptr();
-
-	// Register custom functions for JS path
-	if (options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0)) {
+	const bool has_functions = options.is_valid() && (options->get_functions().size() > 0 || options->get_async_functions().size() > 0);
+	if (has_functions) {
 		LorelineOptions::register_js_functions(interp_id, options->get_functions(), options->get_async_functions());
+	}
+
+	String js_code = "_lorelineBridge.resume(" + String::num_int64(_js_id) +
+		",'" + escaped_save + "','" + escaped_beat + "'," + options_arg + "," + String::num_int64(interp_id) + ")";
+	Variant result = js->eval(js_code, true);
+	if (int(result) == 0) {
+		if (has_functions) {
+			LorelineOptions::unregister_js_functions(interp_id);
+		}
+		LorelineInterpreter::_js_registry.erase(interp_id);
+		interp->_js_id = 0;
+		return Ref<LorelineInterpreter>();
 	}
 
 	// Don't poll events here: GDScript connects signals AFTER play/resume returns.
