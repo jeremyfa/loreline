@@ -135,6 +135,16 @@ class CodeToLorscript {
     var stack:Array<CodeToLorscriptStackType>;
 
     /**
+     * Stack lengths of the braces opened right after `do`
+     */
+    var doBraces:Array<Int>;
+
+    /**
+     * Whether the last closing brace ended the block of a `do`
+     */
+    var closedDoBrace:Bool = false;
+
+    /**
      * Creates a new CodeToLorscript instance.
      */
     public function new() {}
@@ -165,6 +175,8 @@ class CodeToLorscript {
         this.indentStack = [];
         this.indentLevel = 0;
         this.stack = [];
+        this.doBraces = [];
+        this.closedDoBrace = false;
 
         processInput();
 
@@ -752,6 +764,14 @@ class CodeToLorscript {
      * @return True if the next token is "if", false otherwise
      */
     function followsWithIf(pos:Int):Bool {
+        return followsWithWord("if", pos);
+    }
+
+    /**
+     * Whether the next meaningful token after `pos` (skipping spaces, line breaks
+     * and comments) is the given word.
+     */
+    function followsWithWord(word:String, pos:Int):Bool {
         // Skip whitespace, newlines, and comments to check if the next meaningful token is "if"
         var tempIndex = pos;
 
@@ -793,15 +813,23 @@ class CodeToLorscript {
                 }
             }
 
-            // Check if we have "if" followed by a non-alphanumeric character
-            if (tempIndex + 1 < length && input.uCharCodeAt(tempIndex) == "i".code && input.uCharCodeAt(tempIndex + 1) == "f".code) {
-                // Make sure "if" is not part of another identifier like "iffy"
-                if (tempIndex + 2 >= length || !isAlphaNumeric(input.uCharCodeAt(tempIndex + 2))) {
+            // Check if we have the word followed by a non-alphanumeric character
+            final wordLength = word.length;
+            if (tempIndex + wordLength <= length) {
+                var matches = true;
+                for (i in 0...wordLength) {
+                    if (input.uCharCodeAt(tempIndex + i) != word.charCodeAt(i)) {
+                        matches = false;
+                        break;
+                    }
+                }
+                // Make sure it is not part of another identifier like "iffy"
+                if (matches && (tempIndex + wordLength >= length || !isAlphaNumeric(input.uCharCodeAt(tempIndex + wordLength)))) {
                     return true;
                 }
             }
 
-            // We found a non-whitespace, non-comment character that is not "if"
+            // We found a non-whitespace, non-comment character that is not the word
             return false;
         }
 
@@ -845,6 +873,16 @@ class CodeToLorscript {
         }
 
         return false;
+    }
+
+    /**
+     * Whether a line ends with the given word, not preceded by an identifier character.
+     */
+    function endsWithWord(line:String, word:String):Bool {
+        final trimmed = line.rtrim();
+        if (!trimmed.endsWith(word)) return false;
+        final wordPos = trimmed.uLength() - word.length;
+        return wordPos == 0 || !isAlphaNumeric(trimmed.uCharCodeAt(wordPos - 1));
     }
 
     function endsWithArrayIndexable(line:String):Bool {
@@ -1095,6 +1133,14 @@ class CodeToLorscript {
             final line = lineOutput.toString();
             lineOutput = new Utf8Buf();
 
+            // A closing brace that the next line continues: `}` then `else`, `catch`,
+            // or the `while` of a `do`. A semicolon there would end the statement.
+            final continuedAfterBrace = endsWithChar(line, "}".code) && (
+                followsWithWord("else", index) || followsWithWord("catch", index)
+                || (closedDoBrace && followsWithWord("while", index))
+            );
+            closedDoBrace = false;
+
             if (inStatementsBlock() || inObjectBlock() || inArrayBlock()) {
                 final indent = nextLineIndentOffset(line, index);
 
@@ -1155,13 +1201,13 @@ class CodeToLorscript {
                         }
                     }
                 }
-                else if (indent < 0 && stack.length > 0 && stack[stack.length-1] == Brace && !endsOrFollowsWithChar(line, ";".code, index)) {
+                else if (indent < 0 && stack.length > 0 && stack[stack.length-1] == Brace && !continuedAfterBrace && !endsOrFollowsWithChar(line, ";".code, index)) {
                     // Last statement before a closing brace written in the code
                     currentPosOffset++;
                     output.addChar(";".code);
                     posOffsets.push(currentPosOffset);
                 }
-                else if (indent == 0 && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {
+                else if (indent == 0 && !continuedAfterBrace && !endsOrFollowsWithChar(line, ";".code, index) && !endsOrFollowsWithChar(line, ",".code, index)) {
                     if (inObjectBlock()) {
                         currentPosOffset++;
                         output.addChar(",".code);
@@ -1229,6 +1275,9 @@ class CodeToLorscript {
                 }
                 else {
                     stackPush(Brace);
+                    if (endsWithWord(lineOutput.toString(), "do")) {
+                        doBraces.push(stack.length);
+                    }
                 }
             }
             else if (c == "}".code) {
@@ -1241,6 +1290,10 @@ class CodeToLorscript {
                         output.addChar(";".code);
                         posOffsets.push(currentPosOffset);
                     }
+                }
+                closedDoBrace = doBraces.length > 0 && doBraces[doBraces.length - 1] == stack.length;
+                if (closedDoBrace) {
+                    doBraces.pop();
                 }
                 var popped = stackPop();
                 if (popped != Brace && popped != ObjectBrace) {

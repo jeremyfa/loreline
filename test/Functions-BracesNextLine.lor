@@ -1,0 +1,61 @@
+
+// A closing brace alone on its line, and the statement continuing on the next one
+function amount(count)
+  if (count > 1) {
+    return "many"
+  }
+  else if (count > 0) {
+    return "one"
+  }
+  else {
+    return "none"
+  }
+
+function safe(value) {
+  try {
+    if (value < 0) {
+      throw "negative"
+    }
+    return "ok"
+  }
+  catch (e:Dynamic) {
+    return "caught"
+  }
+}
+
+function countdown(count)
+  var steps = 0
+  do {
+    count -= 1
+    steps += 1
+  }
+  while (count > 0)
+  return steps
+
+// A while after an if block is a new loop, not the end of a do
+function loop(count)
+  var n = 0
+  if (count > 100) {
+    n = 100
+  }
+  while (count > 0)
+    count -= 1
+    n += 1
+  return n
+
+$amount(3), $amount(1), $amount(0).
+
+$safe(1), $safe(-1).
+
+$countdown(3) steps, $loop(4) loops.
+
+/*
+<test>
+- expected: |
+    ~ many, one, none.
+
+    ~ ok, caught.
+
+    ~ 3 steps, 4 loops.
+</test>
+*/
