@@ -78,11 +78,11 @@ On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI,
 
 ### How Loreline is authored
 
-Loreline's runtime is essentially handwritten, so the code you embed when depending on it can be considered almost entirely free of AI-generated code.
+Loreline's core runtime (its lexer, parser, interpreter and the overall architecture that ties them together) has been written by hand. The Loreline language is also the result of many design iterations that are essentially human authored.
 
-That said, I used coding assistants for peripheral work: unit-tests, scaffolding, debugging, documenting the code, continuous integration, and help in making surgical changes to the runtime. These improve the overall reliability and quality of Loreline, make sure that anything tested won't break in the future, and give me more bandwidth for the more creative, interesting and trickier parts of Loreline itself. I weighed that this targeted use would benefit the users of the project, and I take entire responsibility for all the code and design choices in this repository.
+That said, I have used coding assistants for unit tests, scaffolding, debugging, documenting the code, continuous integration, fixes to the runtime and help implementing new features. All of this improves the overall reliability and quality of Loreline, makes sure that anything tested won't break in the future, and gives me more bandwidth for the more creative, interesting and trickier parts of Loreline itself. I weighed that this use would benefit the users of the project, and I take entire responsibility for all the code and design choices in this repository.
 
-For some context on where I stand, I don't endorse the use of generative AI as a general rule: I do care a lot about writing code myself and human authorship in general, and I also don't use any AI-generated assets or content for the games I make.
+For some context on where I stand, I don't endorse the use of generative AI as a general rule: I care a lot about writing code myself, especially the creative parts, and about human authorship in general. I reject the use of any AI-generated asset or content in the games I make.
 
 ## License
 
