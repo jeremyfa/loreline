@@ -1,0 +1,3 @@
+args: [lsp, oops, main.lor]
+exitCode: 1
+stderrContains: "Unknown lsp command: oops"
