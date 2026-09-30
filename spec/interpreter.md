@@ -580,7 +580,7 @@ beat Tavern
     - met_before                     ← played once
       Oh, it is you again.
     + Rumors if visits > 2           ← brings the rules of Rumors
-    always                           ← no condition, no criteria
+    true                             ← always eligible, no criteria
       Hello.
 ```
 
@@ -592,8 +592,9 @@ beat Tavern
   Anything else keeps the line as text (`when she arrives, it rains.`). The
   lexer decides it (`isWhenStart`), and the word after `when` is always a name,
   so `when pick` is not a `pick` alternative.
-- Each rule is a condition or `always`, then an indented or braced body
-  (`NWhenRule`). A leading `- ` (a minus and a space) makes the rule ephemeral,
+- Each rule is a condition, then an indented or braced body (`NWhenRule`).
+  `true` makes a rule always eligible: it is an ordinary condition, not a
+  keyword. A leading `- ` (a minus and a space) makes the rule ephemeral,
   played once. A `-` glued to what follows is a unary minus of the condition
   (`-x > 0`).
 - `+ Beat` or `+ Beat if cond` is an insertion rule. It has no body.
@@ -602,8 +603,10 @@ beat Tavern
 
 The criteria count of a rule (`AstUtils.whenRuleScore`) is the number of its
 top-level `and` clauses. `a and b and c` counts 3. An `or`, a `not x`, or a group in
-parentheses counts 1, whatever it holds. `always` counts 0. Parentheses matter
-here, and they are kept in the AST (`NExpr.parens`).
+parentheses counts 1, whatever it holds. The literal `true` counts 0, alone or
+among other clauses (`true and x` counts 1), as it requires nothing: a rule
+`true` loses against any eligible rule with a criterion, with the default
+strategy. Parentheses matter here, and they are kept in the AST (`NExpr.parens`).
 
 ### Evaluation
 
