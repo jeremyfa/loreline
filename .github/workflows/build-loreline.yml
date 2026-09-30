@@ -1390,7 +1390,10 @@ jobs:
           echo 'haxe: '$(haxe --version)
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
+        with:
+          # The "tools" package installed by default is no longer in the SDK
+          packages: platform-tools
 
       - name: Install Android NDK
         run: |
@@ -2014,7 +2017,10 @@ jobs:
 
       - name: Setup Android SDK
         if: matrix.android
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
+        with:
+          # The "tools" package installed by default is no longer in the SDK
+          packages: platform-tools
 
       - name: Install Android NDK
         if: matrix.android
