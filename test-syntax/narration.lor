@@ -114,6 +114,13 @@ beat Start
 //               ^^ constant.character.escape
 //                      ^^ constant.character.escape
 //                        ^^^^^^ string.unquoted
+  Wait <pause=$delay> a moment.
+//     ^ punctuation.definition.tag
+//      ^^^^^ storage.modifier.metadata
+//           ^ punctuation.definition.tag
+//             ^^^^^ variable.other
+//                  ^ punctuation.definition.tag
+//                    ^^^^^^^^^ string.unquoted
   Narration then comment // note
 //^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
 //                       ^^^^^^^ comment.line.double-slash

@@ -99,6 +99,9 @@ class SyntaxDecorations {
 										length: section.length
 									});
 								}
+								findEscapeRanges(source, part.pos.offset, part.pos.length, "text-markup", result);
+							case Tag(_, expr):
+								pushTagRanges(source, part, expr, "text-tag", result);
 							case _:
 						}
 					}
@@ -149,6 +152,9 @@ class SyntaxDecorations {
 										length: section.length
 									});
 								}
+								findEscapeRanges(source, part.pos.offset, part.pos.length, "choice-markup", result);
+							case Tag(_, expr):
+								pushTagRanges(source, part, expr, "choice-markup", result);
 							case _:
 						}
 					}
@@ -297,6 +303,71 @@ class SyntaxDecorations {
 			}
 
 			i++;
+		}
+	}
+
+	/**
+	 * Escapes (`\x`, `$$`, `##`) in the source of a raw text part, skipping
+	 * comments. They get a tint derived from the text around them, so they stand
+	 * out without leaving their context.
+	 */
+	static function findEscapeRanges(source:String, offset:Int, length:Int, kind:String, result:Array<Dynamic>) {
+		final text = source.substr(offset, length);
+		for (section in extractTextSectionsExcludingComments(text)) {
+			final start:Int = section.offset;
+			final end:Int = start + section.length;
+			var i = start;
+			while (i < end) {
+				final c = text.charCodeAt(i);
+				if (c == '\\'.code && i + 1 < end) {
+					result.push({kind: kind, offset: offset + i, length: 2});
+					i += 2;
+				}
+				else if ((c == '$'.code || c == '#'.code) && i + 1 < end && text.charCodeAt(i + 1) == c) {
+					result.push({kind: kind, offset: offset + i, length: 2});
+					i += 2;
+				}
+				else {
+					i++;
+				}
+			}
+		}
+	}
+
+	/**
+	 * The content of a tag in narration or a choice option (`b` in `<b>` and `</b>`,
+	 * `pause` in `<pause=$x>`) gets a tint derived from the text. Its `<`, `/`,
+	 * `=` and `>` keep their coloring, and so do the interpolations inside it.
+	 */
+	static function pushTagRanges(source:String, part:NStringPart, expr:NStringLiteral, kind:String, result:Array<Dynamic>) {
+		var start = part.pos.offset + 1;
+		var end = part.pos.offset + part.pos.length;
+		if (start < end && source.charCodeAt(start) == '/'.code) start++;
+		if (end > start && source.charCodeAt(end - 1) == '>'.code) end--;
+		// Interpolations split the content
+		final pieces:Array<Array<Int>> = [];
+		var cursor = start;
+		if (expr != null) {
+			for (sub in expr.parts) {
+				switch (sub.partType) {
+					case Expr(_):
+						if (sub.pos.offset > cursor) pieces.push([cursor, sub.pos.offset]);
+						cursor = sub.pos.offset + sub.pos.length;
+					case _:
+				}
+			}
+		}
+		if (end > cursor) pieces.push([cursor, end]);
+		// And so does each `=`
+		for (piece in pieces) {
+			var from = piece[0];
+			for (i in piece[0]...piece[1]) {
+				if (source.charCodeAt(i) == '='.code) {
+					if (i > from) result.push({kind: kind, offset: from, length: i - from});
+					from = i + 1;
+				}
+			}
+			if (piece[1] > from) result.push({kind: kind, offset: from, length: piece[1] - from});
 		}
 	}
 

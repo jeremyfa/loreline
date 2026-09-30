@@ -374,6 +374,12 @@ ${html}
   .lor-choice-text .lor-plural-pipe, .lor-choice-text .lor-plural-pipe span { color: #dcdcaa !important; }
   [data-theme="light"] .shiki .lor-text-content .lor-plural-pipe, [data-theme="light"] .shiki .lor-text-content .lor-plural-pipe span,
   [data-theme="light"] .shiki .lor-choice-text .lor-plural-pipe, [data-theme="light"] .shiki .lor-choice-text .lor-plural-pipe span { color: #986801 !important; }
+  .shiki span.lor-text-markup, .shiki span.lor-text-markup span { color: #98c4cd !important; }
+  [data-theme="light"] .shiki span.lor-text-markup, [data-theme="light"] .shiki span.lor-text-markup span { color: #3366c2 !important; }
+  .shiki span.lor-text-tag, .shiki span.lor-text-tag span { color: #98c4cd !important; }
+  [data-theme="light"] .shiki span.lor-text-tag, [data-theme="light"] .shiki span.lor-text-tag span { color: #3366c2 !important; }
+  .shiki span.lor-choice-markup, .shiki span.lor-choice-markup span { color: #c8dbf7 !important; }
+  [data-theme="light"] .shiki span.lor-choice-markup, [data-theme="light"] .shiki span.lor-choice-markup span { color: #4f6a96 !important; }
   .shiki .lor-choice-once-style { font-style: italic; }
   .shiki .lor-choice-once-prefix { color: rgba(255, 255, 255, 0.4) !important; }
   [data-theme="light"] .shiki .lor-choice-once-prefix { color: rgba(0, 0, 0, 0.4) !important; }
