@@ -1389,6 +1389,13 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          # The Android command line tools need Java 17
+          java-version: 17
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
