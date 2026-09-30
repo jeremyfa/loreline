@@ -42,16 +42,16 @@ beat Start
 //    ^^^^^^^^^^^^^^^^^^^^ string.unquoted
     + Rumors if count > 5
 //    ^^^^^^ entity.name.type.beat
-    - always {
-//    ^^^^^^ keyword.control.always
+    - true {
+//    ^^^^ constant.language
       Once, whatever the count.
     }
-    always
-//  ^^^^^^ keyword.control.always
+    true
+//  ^^^^ constant.language
       Some.
 //    ^^^^^ string.unquoted
 
 beat Rumors
   when
-    always
+    true
       Rumors.

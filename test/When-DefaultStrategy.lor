@@ -1,6 +1,6 @@
 // Default strategy of a when block: the rule with the highest score wins (clauses
 // joined by a top-level `and`), then the one played least recently, then the
-// first one written. `always` scores 0. With nothing eligible, nothing plays.
+// first one written. `true` scores 0. With nothing eligible, nothing plays.
 
 state
   mood: "angry"
@@ -20,6 +20,8 @@ beat Start
   Greet()
   Greet()
   Maybe()
+  Fallback()
+  Fallback()
 
 beat Talk
   when
@@ -29,7 +31,7 @@ beat Talk
       Leave me alone.
     gold > 3
       Nice purse.
-    always
+    true
       Hello.
 
 beat Greet
@@ -46,6 +48,15 @@ beat Maybe
     not ready
       Not shown.
   After maybe.
+
+// `true` requires nothing: even played least recently, it loses against a rule
+// with a criterion
+beat Fallback
+  when
+    ready
+      Ready again.
+    true
+      Fallback.
 
 /*
 <test>
@@ -69,5 +80,9 @@ beat Maybe
     ~ Second greeting.
 
     ~ After maybe.
+
+    ~ Ready again.
+
+    ~ Ready again.
 </test>
 */

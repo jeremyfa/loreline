@@ -18,14 +18,14 @@ beat Meet
     - not met
       Nice to meet you.
       met = true
-    always
+    true
       Hello again.
 
 beat Intro
   when
-    - always
+    - true
       A first line, once.
-    - always
+    - true
       A second line, once.
 
 /*

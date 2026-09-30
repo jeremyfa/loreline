@@ -22,7 +22,7 @@ beat Weather
       Warm breeze.
     raining
       Grey rain.
-    always
+    true
       A quiet day.
 
 /*

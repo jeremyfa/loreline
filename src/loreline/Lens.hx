@@ -979,7 +979,6 @@ class Lens {
     /**
      * Things worth pointing out in a when block, for editors:
      * - a strategy that is neither `first`, `pick` nor a function of the script;
-     * - no `always` rule (information: nothing plays when no condition is true);
      * - a `-` glued to the condition at the start of a rule, which is a minus sign,
      *   not the mark of a rule played once;
      * - thresholds with the default strategy: two rules comparing the same value
@@ -999,17 +998,10 @@ class Lens {
             });
         }
 
-        var hasAlways = false;
-        var hasInsertion = false;
         final comparedValues:Map<String, Bool> = new Map();
         var thresholdWarned = false;
         for (rule in when.rules) {
-            if (rule.insertion != null) {
-                hasInsertion = true;
-                continue;
-            }
-            if (rule.condition == null) {
-                if (!rule.once) hasAlways = true;
+            if (rule.insertion != null || rule.condition == null) {
                 continue;
             }
 
@@ -1044,14 +1036,6 @@ class Lens {
                     comparedValues.set(key, true);
                 }
             }
-        }
-
-        if (!hasAlways && !hasInsertion) {
-            warnings.push({
-                pos: new Position(when.pos.line, when.pos.column, when.pos.offset, 4),
-                message: 'No `always` rule: when no condition is true, nothing plays.',
-                isWarning: false
-            });
         }
 
         return warnings;

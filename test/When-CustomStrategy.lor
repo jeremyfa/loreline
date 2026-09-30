@@ -41,7 +41,7 @@ beat Start
   Info $info.
 
   when none
-    always
+    true
       Not shown.
   Done.
 
@@ -60,7 +60,7 @@ beat Probe
       Never.
     - ready
       Once.
-    always
+    true
       Always.
 
 /*

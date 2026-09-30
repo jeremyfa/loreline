@@ -23,9 +23,9 @@ beat Greet
 
 beat Meet
   when
-    - always
+    - true
       Nice to meet you.
-    always
+    true
       Hello again.
 
 /*

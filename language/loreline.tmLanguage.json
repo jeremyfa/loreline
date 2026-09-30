@@ -2209,22 +2209,19 @@
         "when-rule": {
             "patterns": [
                 {
-                    "begin": "^([ \\t]+)(?![ \\t])(?:(-)(?=[ \\t]))?[ \\t]*(?:(always)\\b|(?!\\+|//|/\\*|\\})(.*?))[ \\t]*(\\{)?[ \\t]*(?=$|//|/\\*)",
+                    "begin": "^([ \\t]+)(?![ \\t])(?:(-)(?=[ \\t]))?[ \\t]*(?!\\+|//|/\\*|\\})(.*?)[ \\t]*(\\{)?[ \\t]*(?=$|//|/\\*)",
                     "beginCaptures": {
                         "2": {
                             "name": "keyword.control.once.loreline"
                         },
                         "3": {
-                            "name": "keyword.control.always.loreline"
-                        },
-                        "4": {
                             "patterns": [
                                 {
                                     "include": "#expressions"
                                 }
                             ]
                         },
-                        "5": {
+                        "4": {
                             "name": "punctuation.definition.block.begin.loreline"
                         }
                     },

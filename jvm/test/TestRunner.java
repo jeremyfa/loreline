@@ -631,7 +631,7 @@ public class TestRunner {
                 "      Zero.",
                 "    not ready",
                 "      One.",
-                "    always",
+                "    true",
                 "      Two.",
                 "  End.",
                 ""

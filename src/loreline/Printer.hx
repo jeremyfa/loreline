@@ -728,7 +728,8 @@ class Printer {
             write('- ');
         }
         if (rule.condition == null) {
-            write('always');
+            // Only in a tree built by hand: a rule without condition is always eligible
+            write('true');
         }
         else {
             printInLineExpression(rule.condition, false);

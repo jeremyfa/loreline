@@ -48,8 +48,8 @@ beat Blocks
 //              ^^^^^^ variable.other
 //                         ^^^ keyword.control
 //                             ^^^^^ variable.other
-    always
-//  ^^^^^^ keyword.control.always
+    true
+//  ^^^^ constant.language
       when you come back, knock.
 //    ^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
   After.
@@ -63,13 +63,13 @@ beat Blocks
       when pick
 //    ^^^^ keyword.control.when
 //         ^^^^ entity.name.function.strategy
-        always
-//      ^^^^^^ keyword.control.always
+        true
+//      ^^^^ constant.language
           Nested.
 //        ^^^^^^^ string.unquoted
-    - always
+    - true
 //  ^ keyword.control.once
-//    ^^^^^^ keyword.control.always
+//    ^^^^ constant.language
       bob: Once.
 //    ^^^ entity.name.class
 //         ^^^^^ string.unquoted.dialogue

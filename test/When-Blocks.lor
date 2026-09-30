@@ -12,11 +12,11 @@ beat Start
         thirsty {
           And thirsty.
         }
-        always {
+        true {
           But not thirsty.
         }
       }
-    always
+    true
       You are fine.
 
   choice
@@ -24,7 +24,7 @@ beat Start
       when first
         hungry
           You eat.
-        always
+        true
           You are not hungry.
     Leave
       Bye.

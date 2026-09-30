@@ -1023,8 +1023,9 @@ class ParserContext {
     }
 
     /**
-     * Parses a rule of a when block: `- ` for a rule played once, then a condition or
-     * `always`, then its body. Or an insertion `+ Beat if cond`, which has no body.
+     * Parses a rule of a when block: `- ` for a rule played once, then a condition
+     * (`true` for a rule always eligible), then its body. Or an insertion
+     * `+ Beat if cond`, which has no body.
      * @return When rule node
      */
     function parseWhenRule():NWhenRule {
@@ -1051,12 +1052,7 @@ class ParserContext {
                     rule.once = true;
                 }
 
-                if (isAlwaysHeader()) {
-                    advance();
-                }
-                else {
-                    rule.condition = parseConditionExpression();
-                }
+                rule.condition = parseConditionExpression();
 
                 rule.style = parseStatementBlock(rule.body);
             }
@@ -1074,29 +1070,6 @@ class ParserContext {
         }
 
         return rule;
-    }
-
-    /**
-     * Whether the current token is the `always` header of a when rule: the word
-     * `always` alone before the rule body.
-     */
-    function isAlwaysHeader():Bool {
-        switch tokens[current].type {
-            case Identifier('always'):
-            case _: return false;
-        }
-        var i = current + 1;
-        while (i < tokens.length) {
-            switch tokens[i].type {
-                case CommentLine(_) | CommentMultiLine(_):
-                    i++;
-                case LineBreak | Indent | LBrace | Eof:
-                    return true;
-                case _:
-                    return false;
-            }
-        }
-        return true;
     }
 
     /**
