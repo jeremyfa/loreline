@@ -751,7 +751,7 @@ class AstPrinter {
                 final rule:NWhenRule = cast node;
                 printBlockStyle(rule.style);
                 if (rule.once) add(' once');
-                if (rule.insertion == null && rule.condition == null) add(' always');
+                if (rule.insertion == null && rule.condition == null) add(' true');
                 if (rule.insertionCondition != null) {
                     printConditionStyle(rule.insertionConditionStyle, ' conditionStyle=');
                 }

@@ -682,7 +682,7 @@ const WHEN_STRATEGY_SCRIPT = [
     '      Zero.',
     '    not ready',
     '      One.',
-    '    always',
+    '    true',
     '      Two.',
     '  End.',
     ''

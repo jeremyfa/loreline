@@ -717,7 +717,7 @@ WHEN_STRATEGY_SCRIPT = "\n".join([
     "      Zero.",
     "    not ready",
     "      One.",
-    "    always",
+    "    true",
     "      Two.",
     "  End.",
     "",

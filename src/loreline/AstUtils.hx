@@ -137,7 +137,8 @@ class AstUtils {
      * How precise a rule of a when block is: the number of criteria it requires,
      * that is the clauses joined by an `and` at the top level of its condition.
      * `or`, `not x` and a group in parentheses count as a single criterion,
-     * `always` counts 0. It depends only on how the rule is written, and any
+     * and `true` (a rule always eligible) counts 0, as it requires nothing. It
+     * depends only on how the rule is written, and any
      * strategy can use it: the default one plays the eligible rule with the most
      * criteria, and custom strategies receive it as `criteria`.
      */
@@ -146,6 +147,7 @@ class AstUtils {
     }
 
     static function andClauseCount(expr:NExpr):Int {
+        if (isLiteralTrue(expr)) return 0;
         if (expr.parens == 0 && expr is NBinary) {
             final binary:NBinary = cast expr;
             switch binary.op {
@@ -155,6 +157,15 @@ class AstUtils {
             }
         }
         return 1;
+    }
+
+    /** Whether an expression is the literal `true`, in parentheses or not. */
+    public static function isLiteralTrue(expr:NExpr):Bool {
+        if (expr is NLiteral) {
+            final literal:NLiteral = cast expr;
+            return literal.literalType == Boolean && literal.value == true;
+        }
+        return false;
     }
 
     /** Convert all if conditions to use parentheses. */

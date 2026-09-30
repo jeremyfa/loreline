@@ -687,7 +687,7 @@ local WHEN_STRATEGY_SCRIPT = table.concat({
     "      Zero.",
     "    not ready",
     "      One.",
-    "    always",
+    "    true",
     "      Two.",
     "  End.",
     "",

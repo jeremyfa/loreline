@@ -12,7 +12,7 @@ beat Start
 beat Talk
   when
     + Moods
-    always
+    true
       Hello.
   Talk done.
 
@@ -27,7 +27,7 @@ beat Moods
 beat Greet(name)
   when first
     + Formal(name)
-    always
+    true
       Hi.
   Greet done.
 

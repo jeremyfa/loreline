@@ -23,7 +23,7 @@ beat Talk
     + Money if rich
     rich and angry
       Rich and angry.
-    always
+    true
       Hello.
   Talk done.
 

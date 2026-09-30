@@ -308,7 +308,7 @@ beat Start
       Zero.
     not ready
       One.
-    always
+    true
       Two.
   End.
 """

@@ -18,7 +18,7 @@ beat Wealth
       You are rich.
     gold > 10
       You are doing fine.
-    always
+    true
       You are broke.
 
 /*

@@ -245,7 +245,7 @@ class SymbolPrinter {
                 printValue(rule.insertion);
             }
             else if (rule.condition == null) {
-                "always";
+                "true";
             }
             else {
                 printValue(rule.condition);

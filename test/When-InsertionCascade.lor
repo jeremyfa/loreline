@@ -10,7 +10,7 @@ beat Start
 beat Greet(name)
   when first
     + Formal(name)
-    always
+    true
       Hi.
 
 beat Formal(who)

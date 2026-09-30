@@ -28,7 +28,7 @@ beat Start
     not ready
       Not shown.
     + Asking
-    always
+    true
       Not shown either.
   After asking.
 

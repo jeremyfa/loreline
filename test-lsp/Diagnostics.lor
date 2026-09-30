@@ -1,7 +1,7 @@
 beat Start
   -> Missing
   when pikc
-    always
+    true
       Hi.
 
 /*

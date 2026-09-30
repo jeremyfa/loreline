@@ -521,7 +521,7 @@ class Program
                 "      Zero.",
                 "    not ready",
                 "      One.",
-                "    always",
+                "    true",
                 "      Two.",
                 "  End.",
                 ""

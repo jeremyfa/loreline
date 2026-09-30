@@ -1408,7 +1408,7 @@ static void runWhenStrategyTest() {
         "      Zero.\n"
         "    not ready\n"
         "      One.\n"
-        "    always\n"
+        "    true\n"
         "      Two.\n"
         "  End.\n";
     const char* label = "when: host strategy";

@@ -32,7 +32,7 @@ class WhenSyntaxTests {
             '      Get out!',
             '    - met_before',
             '      Oh, it is you again.',
-            '    always',
+            '    true',
             '      Hello.'
         ],
         [
@@ -42,7 +42,7 @@ class WhenSyntaxTests {
             '      You are rich.',
             '    (gold > 10) and not broke',
             '      You are fine.',
-            '    always',
+            '    true',
             '      You are broke.'
         ],
         [
@@ -51,7 +51,7 @@ class WhenSyntaxTests {
             '    ready {',
             '      Go.',
             '    }',
-            '    - always {',
+            '    - true {',
             '      Wait.',
             '    }',
             '  }'
@@ -61,17 +61,17 @@ class WhenSyntaxTests {
             '  when',
             '    + Greetings',
             '    + Rumors if (visits > 2)',
-            '    always',
+            '    true',
             '      Nothing to say.',
             '',
             'beat Greetings',
             '  when',
-            '    always',
+            '    true',
             '      Hi.',
             '',
             'beat Rumors',
             '  when',
-            '    always',
+            '    true',
             '      Did you hear?'
         ],
         [
@@ -81,7 +81,7 @@ class WhenSyntaxTests {
             '      when my_strategy',
             '        -x > 0',
             '          Negative.',
-            '        always',
+            '        true',
             '          Other.'
         ]
     ];
@@ -147,8 +147,8 @@ class WhenSyntaxTests {
         expectEqual(3, first.rules.length, 'rule count');
         expectEqual(false, first.rules[0].once, 'first rule once');
         expectEqual(true, first.rules[1].once, 'second rule once');
-        expectEqual(null, first.rules[2].condition, 'always has no condition');
-        expectEqual(1, first.rules[2].body.length, 'always body');
+        expectEqual(true, AstUtils.isLiteralTrue(first.rules[2].condition), 'true is a condition');
+        expectEqual(1, first.rules[2].body.length, 'true body');
 
         final second = whenBlocks(parse(SOURCES[1].join('\n')))[0];
         expectEqual('first', second.strategy, 'strategy first');
@@ -156,8 +156,8 @@ class WhenSyntaxTests {
         final third = whenBlocks(parse(SOURCES[2].join('\n')))[0];
         expectEqual('pick', third.strategy, 'strategy pick');
         expectEqual('Braces', third.style.toString(), 'brace style');
-        expectEqual(true, third.rules[1].once, 'once always');
-        expectEqual(null, third.rules[1].condition, 'once always has no condition');
+        expectEqual(true, third.rules[1].once, 'once true');
+        expectEqual(true, AstUtils.isLiteralTrue(third.rules[1].condition), 'once true is a condition');
         expectEqual(true, third.rules[0].condition is NAccess, 'brace rule header is an expression');
 
         final fourth = whenBlocks(parse(SOURCES[3].join('\n')))[0];
@@ -186,7 +186,12 @@ class WhenSyntaxTests {
             {header: 'a and (b or c)', score: 2},
             {header: 'not a', score: 1},
             {header: 'not a and b is c', score: 2},
-            {header: 'always', score: 0}
+            // `true` requires nothing, alone or among other clauses
+            {header: 'true', score: 0},
+            {header: '(true)', score: 0},
+            {header: 'true and ready', score: 1},
+            // Not a keyword: a variable
+            {header: 'always', score: 1}
         ];
         final errors:Array<String> = [];
         for (item in cases) {
@@ -239,7 +244,7 @@ class WhenSyntaxTests {
     }
 
     static function testUnknownStrategy():Void {
-        final script = parse(['beat Start', '  Before.', '', '  when no_such_strategy', '    always', '      Inside.'].join('\n'));
+        final script = parse(['beat Start', '  Before.', '', '  when no_such_strategy', '    true', '      Inside.'].join('\n'));
         final seen:Array<String> = [];
         var error:String = null;
         try {
@@ -301,7 +306,7 @@ class WhenSyntaxTests {
         '      Zero.',
         '    not ready',
         '      One.',
-        '    always',
+        '    true',
         '      Two.',
         '  End.'
     ].join('\n');
@@ -372,32 +377,30 @@ class WhenSyntaxTests {
     static function testWarnings():Void {
         final cases:Array<{lines:Array<String>, expected:Array<String>}> = [
             // Nothing to say
-            {lines: ['  when', '    ready', '      Go.', '    always', '      Wait.'], expected: []},
-            // No always rule: information only
-            {lines: ['  when', '    ready', '      Go.'], expected: ['No `always` rule']},
-            // A rule played once doesn't count as always
-            {lines: ['  when', '    - always', '      Once.'], expected: ['No `always` rule']},
-            // An insertion may bring an always rule: nothing reported
+            {lines: ['  when', '    ready', '      Go.', '    true', '      Wait.'], expected: []},
+            // No rule always eligible: deliberate, nothing reported
+            {lines: ['  when', '    ready', '      Go.'], expected: []},
+            {lines: ['  when', '    - true', '      Once.'], expected: []},
             {lines: ['  when', '    + Other', '    ready', '      Go.'], expected: []},
             // Unknown strategy
-            {lines: ['  when chooser', '    always', '      Go.'], expected: ['!Unknown strategy: chooser']},
+            {lines: ['  when chooser', '    true', '      Go.'], expected: ['!Unknown strategy: chooser']},
             // Known strategies, and a function declared by the script (or for the host)
-            {lines: ['  when first', '    always', '      Go.'], expected: []},
-            {lines: ['  when declared', '    always', '      Go.'], expected: []},
+            {lines: ['  when first', '    true', '      Go.'], expected: []},
+            {lines: ['  when declared', '    true', '      Go.'], expected: []},
             // A minus sign glued to the condition
-            {lines: ['  when', '    -gold > 0', '      Debt.', '    always', '      Fine.'], expected: ['!This `-` is a minus sign']},
+            {lines: ['  when', '    -gold > 0', '      Debt.', '    true', '      Fine.'], expected: ['!This `-` is a minus sign']},
             // With a space it is the mark of a rule played once
-            {lines: ['  when', '    - gold > 0', '      Once.', '    always', '      Fine.'], expected: []},
+            {lines: ['  when', '    - gold > 0', '      Once.', '    true', '      Fine.'], expected: []},
             // Thresholds with the default strategy
-            {lines: ['  when', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: ['!Rules comparing `gold`']},
+            {lines: ['  when', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: ['!Rules comparing `gold`']},
             // With first, thresholds are fine
-            {lines: ['  when first', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: []},
+            {lines: ['  when first', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: []},
             // Different numbers of criteria don't tie
-            {lines: ['  when', '    gold > 100 and ready', '      Rich.', '    gold > 10', '      Fine.', '    always', '      Broke.'], expected: []}
+            {lines: ['  when', '    gold > 100 and ready', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: []}
         ];
         final errors:Array<String> = [];
         for (item in cases) {
-            final source = ['function declared(rules)', '', 'beat Start'].concat(item.lines).concat(['', 'beat Other', '  when', '    always', '      Other.']).join('\n');
+            final source = ['function declared(rules)', '', 'beat Start'].concat(item.lines).concat(['', 'beat Other', '  when', '    true', '      Other.']).join('\n');
             final script = parse(source);
             final lens = new Lens(script);
             final block = whenBlocks(script)[0];

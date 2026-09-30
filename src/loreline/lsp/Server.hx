@@ -1056,20 +1056,6 @@ class Server {
             // Return all available completions for CTRL + Space
             final items:Array<CompletionItem> = [];
 
-            // The header of a rule of a when block can be `always`
-            if (node is NWhenStatement || node is NWhenRule) {
-                items.push({
-                    label: 'always',
-                    kind: CompletionItemKind.Keyword,
-                    detail: 'When rule',
-                    insertText: 'always',
-                    insertTextMode: AsIs,
-                    insertTextFormat: PlainText,
-                    documentation: 'A rule that is always eligible. It has no criteria, so any other eligible rule wins over it with the default strategy.',
-                    textEdit: makeTextEdit(replacementRange, 'always')
-                });
-            }
-
             // Add locals completion (if inside a function)
             if (node is NFunctionDecl) {
                 final func:NFunctionDecl = cast node;
@@ -2621,7 +2607,8 @@ class Server {
         }
         else {
             final criteria = AstUtils.whenRuleScore(rule);
-            description.push(rule.condition == null ? 'Always eligible, with no criteria.' : 'Criteria: $criteria.');
+            final alwaysEligible = rule.condition == null || AstUtils.isLiteralTrue(rule.condition);
+            description.push(alwaysEligible ? 'Always eligible, with no criteria.' : 'Criteria: $criteria.');
             if (rule.once) description.push('Played once: after that, it is never eligible again.');
         }
         return makeHover(hoverTitle('When rule'), description, content, rule);
