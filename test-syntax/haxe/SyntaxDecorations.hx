@@ -1,5 +1,5 @@
 // Decorations drawn on top of the grammar coloring (text, choices, plural pipes,
-// once-only options and when rules), for the syntax test report. Built against the current
+// once-only options, when rules), for the syntax test report. Built against the current
 // parser of this repository.
 
 import loreline.Lexer;
@@ -163,13 +163,27 @@ class SyntaxDecorations {
 			}
 			if (node is NWhenRule) {
 				final rule:NWhenRule = cast node;
-				// A rule played once is in italic, like a once-only option
-				if (rule.once && rule.insertion == null) {
+				// The header of a rule gets a background, like a choice option, and a
+				// rule played once also gets a dimmed `-` and italic. An insertion rule has no
+				// header of its own.
+				if (rule.insertion == null) {
 					final start = rule.pos.offset;
 					final end = whenRuleHeaderEnd(source, start);
 					if (end > start) {
+						if (rule.once) {
+							result.push({
+								kind: "when-once-prefix",
+								offset: start,
+								length: 1
+							});
+							result.push({
+								kind: "when-once-style",
+								offset: start,
+								length: end - start
+							});
+						}
 						result.push({
-							kind: "when-once-style",
+							kind: "when-rule",
 							offset: start,
 							length: end - start
 						});
