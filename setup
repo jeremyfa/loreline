@@ -230,7 +230,7 @@ async function main() {
     }
 
     // Install dependencies (only needed for build targets, not --sample or --test)
-    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildWasm || buildCs || buildCsGenerics || buildJs || buildPython || buildLua || buildJvm || buildGdscript) {
+    if (buildCpp || buildCppLib || buildIos || buildAndroid || buildWasm || buildCs || buildCsGenerics || buildJs || buildPython || buildLua || buildJvm || buildGdscript || testLspJs || testLspCpp) {
         var haxelibRepoPath = path.join(__dirname, '.haxelib');
         if (!fs.existsSync(haxelibRepoPath)) {
             fs.mkdirSync(haxelibRepoPath);
@@ -243,6 +243,10 @@ async function main() {
         await command(haxelib, ['dev', 'hxcs', 'git/hxcs', '--quiet'], { cwd: __dirname });
         if (buildJvm) {
             await command(haxelib, ['dev', 'hxjava', 'git/hxjava', '--quiet'], { cwd: __dirname });
+        }
+        // The language server test build for node, like the VS Code extension
+        if (testLspJs && !fs.existsSync(path.join(haxelibRepoPath, 'hxnodejs'))) {
+            await command(haxelib, ['install', 'hxnodejs', '12.2.0', '--quiet', '--always'], { cwd: __dirname });
         }
     }
 
