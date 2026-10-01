@@ -378,6 +378,10 @@ ${html}
   .shiki .lor-choice-once-prefix { color: rgba(255, 255, 255, 0.4) !important; }
   [data-theme="light"] .shiki .lor-choice-once-prefix { color: rgba(0, 0, 0, 0.4) !important; }
   .shiki .lor-when-once-style { font-style: italic; }
+  .lor-when-rule { background: rgba(229, 192, 123, 0.07); border-radius: 4px; padding: 1px 0; }
+  [data-theme="light"] .shiki .lor-when-rule { background-color: rgba(230, 170, 0, 0.13) !important; }
+  .shiki .lor-when-once-prefix { color: rgba(229, 192, 123, 0.5) !important; }
+  [data-theme="light"] .shiki .lor-when-once-prefix { color: rgba(150, 110, 0, 0.5) !important; }
 </style>
 </head>
 <body>
