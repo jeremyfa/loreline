@@ -1,0 +1,53 @@
+// The same when block picked again and again while a fact changes between the
+// picks: each pick reads the value of the moment. A value no rule mentions, and
+// a null value, leave only the rules that don't look at that fact.
+
+state
+  concept: "greet"
+  gold: 5
+
+beat Start
+  Bark()
+  concept = "leave"
+  Bark()
+  concept = "dance"
+  Bark()
+  concept = null
+  Bark()
+  concept = "greet"
+  gold = 50
+  Bark()
+  concept = "leave"
+  Bark()
+
+beat Bark
+  when
+    concept is "greet" and gold > 10
+      Rich greeting.
+    concept is "greet"
+      Greeting.
+    concept is "leave" and gold > 10
+      Rich farewell.
+    concept is "leave"
+      Farewell.
+    gold > 10
+      Rich silence.
+    true
+      Silence.
+
+/*
+<test>
+- expected: |
+    ~ Greeting.
+
+    ~ Farewell.
+
+    ~ Silence.
+
+    ~ Silence.
+
+    ~ Rich greeting.
+
+    ~ Rich farewell.
+</test>
+*/

@@ -1,0 +1,48 @@
+// A beat invoked through a beat reference resolves names from where the
+// reference was created, not from the caller: the `when` inside it ignores the
+// local state of the calling beat, even when that state has the same name.
+
+state
+  tone: "root"
+
+beat Main
+  new state
+    tone: "main"
+
+  beat Inner
+    when
+      tone is "main"
+        Inner hears main.
+      tone is "caller"
+        Inner hears caller.
+      true
+        Inner hears $tone.
+
+  ref = Inner
+  -> Caller
+
+beat Caller
+  new state
+    tone: "caller"
+
+  beat(ref)
+  Direct()
+  Caller done.
+
+beat Direct
+  when
+    tone is "caller"
+      Direct hears caller.
+    true
+      Direct hears $tone.
+
+/*
+<test>
+- expected: |
+    ~ Inner hears main.
+
+    ~ Direct hears caller.
+
+    ~ Caller done.
+</test>
+*/

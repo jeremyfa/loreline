@@ -1,0 +1,49 @@
+// The history of a rule belongs to the rule, wherever its beat is inserted from:
+// a `- ` rule brought in by two beats is consumed for both, and "least recently
+// played" counts the plays made through either of them.
+
+state
+  ready: true
+
+beat Start
+  A()
+  B()
+  A()
+  B()
+  A()
+
+beat A
+  when
+    + Shared
+    true
+      A fallback.
+
+beat B
+  when
+    + Shared
+    true
+      B fallback.
+
+beat Shared
+  when
+    - ready
+      Only once, for everyone.
+    ready
+      First shared.
+    ready
+      Second shared.
+
+/*
+<test>
+- expected: |
+    ~ Only once, for everyone.
+
+    ~ First shared.
+
+    ~ Second shared.
+
+    ~ First shared.
+
+    ~ Second shared.
+</test>
+*/
