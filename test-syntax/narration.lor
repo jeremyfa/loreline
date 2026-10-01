@@ -50,6 +50,12 @@ beat Start
 //        ^^ constant.character.escape
 //                     ^^ keyword.control.flow
 //                        ^^^ entity.name.type.beat
+  "Madness!" she cried.
+//^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  She asked "why?" and ran.
+//^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  He said "this is madness!"
+//^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
   Narration with <b>tag</b> and $name.
 //               ^ punctuation.definition.tag
 //                ^ storage.modifier.metadata

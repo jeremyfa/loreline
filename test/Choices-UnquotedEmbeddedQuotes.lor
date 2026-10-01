@@ -1,0 +1,26 @@
+// Choice options are unquoted text: quotes inside them are shown as they are.
+// Only an option that is a whole quoted string loses its quotes.
+
+beat Start
+  choice
+    "Quoted start" then more
+      Picked A
+    Say "hello" to her
+      Picked B
+    Reply "fine"
+      Picked C
+    "Fully quoted"
+      Picked D
+
+/*
+<test>
+- choices: [3]
+  expected: |
+    + "Quoted start" then more
+    + Say "hello" to her
+    + Reply "fine"
+    + Fully quoted
+
+    ~ Picked D
+</test>
+*/

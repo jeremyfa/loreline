@@ -86,6 +86,12 @@ beat More
 //     ^ storage.modifier.metadata
 //       ^^^^ string.unquoted
 //                            ^^ constant.character.escape
+    "Quoted start" then more
+//  ^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+    Say "hello" to her
+//  ^^^^^^^^^^^^^^^^^^ string.unquoted
+    Reply "fine"
+//  ^^^^^^^^^^^^ string.unquoted
     Leave -> End
 //  ^^^^^ string.unquoted
 //        ^^ keyword.control.flow

@@ -36,6 +36,17 @@ label := null
 hero.name := Sir $hero.title
 "Interpolated: $hero.name"
 
+// Quotes inside an unquoted value are text, there is nothing to escape
+label := wow "no need to escape quotes"
+"Quotes: $label"
+
+label := "a" and "b"
+"Starts quoted: $label"
+
+// A value that is only a quoted string is a quoted string
+label := "quoted value"
+"Fully quoted: $label"
+
 // Bracket access assign
 state
   items: ["Sword", "Shield"]
@@ -64,6 +75,12 @@ count = 99
     ~ Label null: null
 
     ~ Interpolated: Sir Grand Wizard
+
+    ~ Quotes: wow "no need to escape quotes"
+
+    ~ Starts quoted: "a" and "b"
+
+    ~ Fully quoted: quoted value
 
     ~ Item 0: Axe
 
