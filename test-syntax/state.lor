@@ -30,6 +30,24 @@ state
 //           ^^ constant.character.escape
 //             ^^ string.unquoted.value
 //               ^^ constant.character.escape
+  said: Say "hi" to her
+//      ^^^ string.unquoted.value
+//          ^^^^ string.unquoted.value
+//               ^^ string.unquoted.value
+//                  ^^^ string.unquoted.value
+  starts: "Madness!" she cried
+//        ^^^^^^^^^^ string.unquoted.value
+//                   ^^^ string.unquoted.value
+//                       ^^^^^ string.unquoted.value
+  ends: He said "madness"
+//      ^^ string.unquoted.value
+//         ^^^^ string.unquoted.value
+//              ^^^^^^^^^ string.unquoted.value
+  mixed: [say "hi", "x" y]
+//        ^^^ string.unquoted.value.in-array
+//            ^^^^ string.unquoted.value.in-array
+//                  ^^^ string.unquoted.value.in-array
+//                      ^ string.unquoted.value.in-array
   done: false
 //      ^^^^^ constant.language
   nothing: null
@@ -91,6 +109,9 @@ character bob
   name: Bob
 //^^^^ variable.other
 //      ^^^ string.unquoted.value
+  title: "Sir" Bob
+//       ^^^^^ string.unquoted.value
+//             ^^^ string.unquoted.value
   mood: happy
 //^^^^ variable.other
 //      ^^^^^ string.unquoted.value
