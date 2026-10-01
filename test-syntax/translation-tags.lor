@@ -1,0 +1,84 @@
+// Translation tags: a #key at the end of a narration line, a dialogue line or a
+// choice option, and at the end of the last line of a text over several lines.
+// A literal # in the text is written ## or \#.
+
+state
+  count: 2
+
+character barista
+  name: Barista
+
+beat Start
+  Hello world. #greeting
+//^^^^^^^^^^^^ string.unquoted
+//             ^^^^^^^^^ comment.line.hash
+  "The cafe smells wonderful." #intro
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
+//                             ^^^^^^ comment.line.hash
+  You have $count items #item-count
+//          ^^^^^ variable.other
+//                ^^^^^^ string.unquoted
+//                      ^^^^^^^^^^^ comment.line.hash
+  Chain key from root. #chain-key
+//                     ^^^^^^^^^^ comment.line.hash
+  Escaped ## before a tag #escaped-hash
+//        ^^ constant.character.escape
+//                        ^^^^^^^^^^^^^ comment.line.hash
+  Use \#escaped for a literal hash.
+//^^^^ string.unquoted
+//    ^^ constant.character.escape
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Goodbye. #farewell // note
+//         ^^^^^^^^^ comment.line.hash
+//                   ^^^^^^^ comment.line.double-slash
+  barista: One espresso! #espresso-reply
+//^^^^^^^ entity.name.class
+//         ^^^^^^^^^^^^^ string.unquoted
+//                       ^^^^^^^^^^^^^^^ comment.line.hash
+  barista: "Welcome! What can I get you?" #welcome
+//         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
+//                                        ^^^^^^^^ comment.line.hash
+  barista: You ordered $count drinks #drink-reply
+//                      ^^^^^ variable.other
+//                                   ^^^^^^^^^^^^ comment.line.hash
+  barista:
+    First line of the dialogue.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    Second line of the dialogue. #multi-dialogue
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                               ^^^^^^^^^^^^^^^ comment.line.hash
+  barista: Hey, how are you?
+//         ^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    Anything to drink? #continued-dialogue
+//  ^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                     ^^^^^^^^^^^^^^^^^^^ comment.line.hash
+  First narrative line.
+//^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Second narrative line. #multi-narration
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//                       ^^^^^^^^^^^^^^^^ comment.line.hash
+  "Quoted first line.
+//^^^^^^^^^^^^^^^^^^^ string.unquoted
+  Quoted second line." #multi-quoted
+//^^^^^^^^^^^^^^^^^^^^ string.unquoted
+//                     ^^^^^^^^^^^^^ comment.line.hash
+  barista: "Quoted dialogue
+//         ^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+    on two lines." #multi-quoted-dialogue
+//  ^^^^^^^^^^^^^^ string.unquoted.dialogue
+//                 ^^^^^^^^^^^^^^^^^^^^^^ comment.line.hash
+  choice
+    Espresso #opt-espresso
+//  ^^^^^^^^ string.unquoted
+//           ^^^^^^^^^^^^^ comment.line.hash
+      barista: One espresso! #espresso-done
+//                           ^^^^^^^^^^^^^^ comment.line.hash
+    "Quoted latte" #opt-latte
+//  ^^^^^^^^^^^^^^ string.quoted.double
+//                 ^^^^^^^^^^ comment.line.hash
+      Latte served. #latte-done
+//                  ^^^^^^^^^^^ comment.line.hash
+    Take $count items #opt-take
+//        ^^^^^ variable.other
+//                    ^^^^^^^^^ comment.line.hash
+      Taken.
