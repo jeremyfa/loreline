@@ -155,6 +155,9 @@ class Cli {
                     else
                         fail('Missing file argument');
 
+                case 'benchmark-when':
+                    benchmarkWhen(args.slice(1));
+
                 case _:
                     help();
             }
@@ -333,6 +336,7 @@ class Cli {
         print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "|".gray() + "benchmark" + "]".gray() + " " + "story.lor".underline());
         print("");
         print(" " + "benchmark".bold() + " " + "story.lor".underline() + " " + "[iterations]".gray() + "  compare source parsing vs fromJson (AST cache) speed");
+        print(" " + "benchmark-when".bold() + " " + "[--variant all]".gray() + " " + "[--concepts N]".gray() + " " + "[--picks N]".gray() + "  measure when blocks on a generated bark system");
         print(" " + "lsp".bold() + "  run the language server on stdin/stdout");
         print(" " + "lsp".bold() + " " + "[".gray() + "definition" + "|".gray() + "hover" + "|".gray() + "completion" + "]".gray() + " " + "story.lor".underline() + " " + "line:column".underline() + "  send one request, print its JSON result");
         print(" " + "lsp".bold() + " " + "[".gray() + "symbols" + "|".gray() + "format" + "|".gray() + "diagnostics" + "]".gray() + " " + "story.lor".underline());
@@ -401,6 +405,17 @@ class Cli {
             }
             #end
             fail(e, file);
+        }
+
+    }
+
+    /**
+     * Plays a generated bark system and prints the cost of its `when` picks.
+     */
+    function benchmarkWhen(args:Array<String>) {
+
+        if (!loreline.test.WhenBenchmark.runFromArgs(args, print)) {
+            fail('Usage: ' + loreline.test.WhenBenchmark.USAGE);
         }
 
     }

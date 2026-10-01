@@ -1,0 +1,4 @@
+--class-path src
+--main loreline.test.WhenBenchmarkMain
+-D loreline_auto_wrap_functions
+-D loreline_no_loop_guard
