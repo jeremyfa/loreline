@@ -99,6 +99,14 @@ beat Main {
   y = Helper
 //^ variable.other
 //    ^^^^^^ entity.name.type.beat
+  label := wow "no need to escape quotes"
+//         ^^^ string.unquoted.value
+//             ^^^ string.unquoted.value
+//                                ^^^^^^^ string.unquoted.value
+  label := "a" and "b"
+//         ^^^ string.unquoted.value
+//             ^^^ string.unquoted.value
+//                 ^^^ string.unquoted.value
   label := wow \"escaped\"
 //         ^^^ string.unquoted.value
 //             ^^ constant.character.escape
