@@ -1,0 +1,80 @@
+// What an inserted beat has before its when block: a persistent state, which
+// only initializes once, a temporary state, which initializes at every
+// insertion, a line of text, which plays during the collection, and an
+// assignment. Each of them runs the same way at every pick.
+
+state
+  ready: true
+
+beat Start
+  Talk()
+  Talk()
+  Talk()
+
+beat Talk
+  when
+    + Counted
+    + Fresh
+    + Chatty
+    + Setter
+    true
+      Talk fallback.
+  Talk done.
+
+beat Counted
+  state
+    visits: 0
+  visits += 1
+  when
+    visits == 1
+      Counted once.
+    visits == 2
+      Counted twice.
+    visits > 2
+      Counted $visits times.
+
+beat Fresh
+  new state
+    seen: 0
+  seen += 1
+  when
+    seen == 1
+      Fresh every time.
+    seen > 1
+      Fresh kept its state.
+
+beat Chatty
+  Chatty prologue.
+  when
+    ready
+      Chatty rule.
+  Chatty epilogue.
+
+beat Setter
+  ready = true
+  when
+    ready
+      Setter rule.
+
+/*
+<test>
+- expected: |
+    ~ Chatty prologue.
+
+    ~ Counted once.
+
+    ~ Talk done.
+
+    ~ Chatty prologue.
+
+    ~ Counted twice.
+
+    ~ Talk done.
+
+    ~ Chatty prologue.
+
+    ~ Counted 3 times.
+
+    ~ Talk done.
+</test>
+*/

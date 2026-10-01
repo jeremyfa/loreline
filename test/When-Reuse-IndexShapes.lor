@@ -1,0 +1,67 @@
+// Equality clauses on a fact in every position and form: at the start, in the
+// middle or at the end of an `and` chain, in parentheses, under `or` and `not`,
+// compared to another variable, and rules without any such clause. Ties between
+// a rule with such a clause and one without go to the least recently played.
+
+state
+  concept: "greet"
+  who: "ann"
+  gold: 20
+  other: "greet"
+
+beat Start
+  Bark()
+  Bark()
+  Bark()
+  who = "bob"
+  Bark()
+  Bark()
+  concept = "leave"
+  Bark()
+  Bark()
+  Bark()
+  Bark()
+
+beat Bark
+  when
+    gold > 10 and concept is "greet" and who is "ann"
+      Rich Ann greeting.
+    who is "ann" and concept is "greet" and gold > 10
+      Ann rich greeting.
+    (concept is "greet") and gold > 10
+      Grouped greeting.
+    concept is other and gold > 10
+      Other greeting.
+    concept is "leave" or who is "bob"
+      Leave or Bob.
+    not concept is "greet"
+      Not greeting.
+    gold > 10 and who is "bob"
+      Rich Bob.
+    gold > 10
+      Just rich.
+    true
+      Nothing.
+
+/*
+<test>
+- expected: |
+    ~ Rich Ann greeting.
+
+    ~ Ann rich greeting.
+
+    ~ Rich Ann greeting.
+
+    ~ Grouped greeting.
+
+    ~ Other greeting.
+
+    ~ Rich Bob.
+
+    ~ Rich Bob.
+
+    ~ Rich Bob.
+
+    ~ Rich Bob.
+</test>
+*/

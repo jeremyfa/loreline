@@ -1,0 +1,78 @@
+// The same beat inserted by two beats sees the local state of the beat that
+// inserts it: name resolution walks the stack of the moment. A persistent beat
+// state, a temporary `new state` and a parameter all shadow the same way, and a
+// parameter can change from one pick to the next.
+
+beat Start
+  Calm()
+  Angry()
+  Calm()
+  Fresh()
+  Fresh()
+  Named("soft")
+  Named("loud")
+  Named("soft")
+
+beat Calm
+  state
+    tone: "calm"
+  when
+    + Mood
+    true
+      Calm fallback.
+
+beat Angry
+  state
+    tone: "angry"
+  when
+    + Mood
+    true
+      Angry fallback.
+
+beat Fresh
+  new state
+    tone: "fresh"
+  when
+    + Mood
+    true
+      Fresh fallback.
+
+beat Named(tone)
+  when
+    + Mood
+    true
+      Named fallback.
+
+beat Mood
+  when
+    tone is "calm"
+      A calm word.
+    tone is "angry"
+      An angry word.
+    tone is "fresh"
+      A fresh word.
+    tone is "soft"
+      A soft word.
+    tone is "loud"
+      A loud word.
+
+/*
+<test>
+- expected: |
+    ~ A calm word.
+
+    ~ An angry word.
+
+    ~ A calm word.
+
+    ~ A fresh word.
+
+    ~ A fresh word.
+
+    ~ A soft word.
+
+    ~ A loud word.
+
+    ~ A soft word.
+</test>
+*/

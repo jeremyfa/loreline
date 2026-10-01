@@ -2,6 +2,7 @@ package loreline.test;
 
 import loreline.Arrays;
 import loreline.AstUtils;
+import loreline.Fields;
 import loreline.Interpreter;
 import loreline.Objects;
 import loreline.Lens;
@@ -12,6 +13,42 @@ import loreline.Script;
 import loreline.test.SpawnTests.FlowHost;
 
 using StringTools;
+
+/**
+ * Fields object of a beat state that claims to hold the fact `concept`, as a host
+ * could with its own fields: the interpreter has to ask it, and cannot assume
+ * from the script which names a scope holds.
+ */
+@:keep
+class ShadowFields implements Fields {
+
+    final values:haxe.ds.StringMap<Any> = new haxe.ds.StringMap();
+
+    public function new() {}
+
+    public function lorelineCreate(interpreter:Interpreter):Void {}
+
+    public function lorelineGet(interpreter:Interpreter, key:String):Any {
+        return key == 'concept' ? 'shout' : values.get(key);
+    }
+
+    public function lorelineSet(interpreter:Interpreter, key:String, value:Any):Void {
+        values.set(key, value);
+    }
+
+    public function lorelineRemove(interpreter:Interpreter, key:String):Bool {
+        return values.remove(key);
+    }
+
+    public function lorelineExists(interpreter:Interpreter, key:String):Bool {
+        return key == 'concept' || values.exists(key);
+    }
+
+    public function lorelineFields(interpreter:Interpreter):Array<String> {
+        return ['concept'].concat([for (key in values.keys()) key]);
+    }
+
+}
 
 /**
  * Tests of the syntax of when blocks (parsing, printing, JSON). Their behavior is
@@ -98,7 +135,11 @@ class WhenSyntaxTests {
             {name: 'the history is shared with child interpreters', fn: () -> testSharedHistory()},
             {name: 'a host function can be a strategy', fn: () -> testHostStrategy()},
             {name: 'a strategy must return -1 or an eligible index', fn: () -> testStrategyErrors()},
-            {name: 'editor warnings', fn: () -> testWarnings()}
+            {name: 'editor warnings', fn: () -> testWarnings()},
+            {name: 'a child interpreter resolves names from its own stack', fn: () -> testChildLocalScope()},
+            {name: 'an undefined name in the winning rules is an error in strict mode', fn: () -> testStrictUndefined()},
+            {name: 'a fact set by the host between two picks is read by the next one', fn: () -> testHostSetsFact()},
+            {name: 'host fields of a local state can shadow a fact', fn: () -> testCustomFieldsShadow()}
         ];
 
         for (test in tests) {
@@ -295,6 +336,149 @@ class WhenSyntaxTests {
         }
     }
 
+
+    /**
+     * Two beats with the same local state name insert the same beat: the root
+     * interpreter and a child each resolve `tone` from their own stack, while the
+     * history of the inserted rules is shared.
+     */
+    static function testChildLocalScope():Void {
+        final script = parse([
+            'beat Calm',
+            '  state',
+            '    tone: "calm"',
+            '  when',
+            '    + Mood',
+            '',
+            'beat Angry',
+            '  state',
+            '    tone: "angry"',
+            '  when',
+            '    + Mood',
+            '',
+            'beat Mood',
+            '  when',
+            '    - tone is "calm"',
+            '      Calm once.',
+            '    tone is "calm"',
+            '      Calm again.',
+            '    tone is "angry"',
+            '      Angry word.'
+        ].join('\n'));
+        final host = new FlowHost();
+        final root = host.play(script, 'Calm');
+        final npc = host.spawn(root, 'npc');
+        npc.start('Angry');
+        host.next('root');
+        host.next('npc');
+        final again = host.spawn(root, 'again');
+        again.start('Calm');
+        final expected = ['root: Calm once.', 'npc: Angry word.', 'root: <end>', 'npc: <end>', 'again: Calm again.'];
+        expectEqual(expected.join(' | '), host.log.join(' | '), 'log');
+    }
+
+    /**
+     * In strict mode, an undefined name in the condition of the most specific
+     * rule is an error, whatever the other rules would have played.
+     */
+    static function testStrictUndefined():Void {
+        final script = parse([
+            'state',
+            '  gold: 20',
+            '',
+            'beat Start',
+            '  when',
+            '    gold > 10 and unknown_fact',
+            '      Rich unknown.',
+            '    gold > 10',
+            '      Rich.'
+        ].join('\n'));
+        var error = '';
+        final seen = [];
+        try {
+            Loreline.play(script, (interp, character, text, tags, advance) -> {
+                seen.push(text);
+                advance();
+            }, (interp, options, select) -> {}, interp -> {}, null, ({strictAccess: true} : InterpreterOptions));
+        }
+        catch (e:Any) {
+            error = (e is loreline.Error) ? (cast e:loreline.Error).message : Std.string(e);
+        }
+        expectEqual('', seen.join(','), 'nothing played');
+        expectEqual(true, error.indexOf('Undefined variable: unknown_fact') != -1, 'error: ' + error);
+    }
+
+    /**
+     * The host changes a fact between two picks of the same block: each pick
+     * reads the value of the moment.
+     */
+    static function testHostSetsFact():Void {
+        final script = parse([
+            'state',
+            '  concept: "greet"',
+            '',
+            'beat Bark',
+            '  when',
+            '    concept is "greet"',
+            '      Greeting.',
+            '    concept is "leave"',
+            '      Farewell.'
+        ].join('\n'));
+        final seen = [];
+        final interp = Loreline.play(script, (interp, character, text, tags, advance) -> {
+            seen.push(text);
+            advance();
+        }, (interp, options, select) -> {}, interp -> {}, 'Bark');
+        interp.setStateField('concept', 'leave');
+        interp.start('Bark');
+        interp.setTopLevelStateField('concept', 'greet');
+        interp.start('Bark');
+        expectEqual('Greeting.,Farewell.,Greeting.', seen.join(','), 'picks');
+    }
+
+    /**
+     * With `customCreateFields`, the fields of a beat state come from the host
+     * (asked with the beat as node), and may hold names the script never declared
+     * there: here the fields of `Local` claim the fact `concept`. The block inserted by that beat reads the fact from those fields, the
+     * one inserted by a plain beat reads the root fact.
+     */
+    static function testCustomFieldsShadow():Void {
+        final script = parse([
+            'state',
+            '  concept: "greet"',
+            '',
+            'beat Plain',
+            '  when',
+            '    + Lines',
+            '',
+            'beat Local',
+            '  state',
+            '    other: 1',
+            '  when',
+            '    + Lines',
+            '',
+            'beat Lines',
+            '  when',
+            '    concept is "greet"',
+            '      Greeting.',
+            '    concept is "shout"',
+            '      Shout.'
+        ].join('\n'));
+        final options:InterpreterOptions = {
+            customCreateFields: (interpreter:Interpreter, type:String, node:Node) -> {
+                final beat:NBeatDecl = (node != null && node is NBeatDecl) ? cast node : null;
+                return beat != null && beat.name == 'Local' ? new ShadowFields() : null;
+            }
+        };
+        final seen = [];
+        final interp = Loreline.play(script, (interp, character, text, tags, advance) -> {
+            seen.push(text);
+            advance();
+        }, (interp, options, select) -> {}, interp -> {}, 'Plain', options);
+        interp.start('Local');
+        interp.start('Plain');
+        expectEqual('Greeting.,Shout.,Greeting.', seen.join(','), 'picks');
+    }
 
     static final STRATEGY_SCRIPT = [
         'state',

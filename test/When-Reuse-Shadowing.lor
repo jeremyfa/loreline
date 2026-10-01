@@ -1,0 +1,61 @@
+// A root fact shadowed by a local state in one inserting beat only: the inserted
+// block reads the local value there, and the root value everywhere else, even
+// when the root value changes between picks. The shadowing beat never sees the
+// root value of that name.
+
+state
+  concept: "greet"
+  gold: 2
+
+beat Start
+  Plain()
+  Local()
+  concept = "leave"
+  gold = 20
+  Plain()
+  Local()
+  Plain()
+
+beat Plain
+  when
+    + Lines
+    true
+      Plain fallback.
+
+beat Local
+  state
+    concept: "shout"
+  when
+    + Lines
+    true
+      Local fallback.
+
+beat Lines
+  when
+    concept is "greet" and gold > 10
+      Rich greeting.
+    concept is "greet"
+      Greeting.
+    concept is "leave" and gold > 10
+      Rich farewell.
+    concept is "leave"
+      Farewell.
+    concept is "shout" and gold > 10
+      Rich shout.
+    concept is "shout"
+      Shout.
+
+/*
+<test>
+- expected: |
+    ~ Greeting.
+
+    ~ Shout.
+
+    ~ Rich farewell.
+
+    ~ Rich shout.
+
+    ~ Rich farewell.
+</test>
+*/
