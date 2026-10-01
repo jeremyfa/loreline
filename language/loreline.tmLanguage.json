@@ -1097,7 +1097,7 @@
         "string-tags": {
             "patterns": [
                 {
-                    "begin": "<(?!-)",
+                    "begin": "<(?!-)/?",
                     "beginCaptures": {
                         "0": {
                             "name": "punctuation.definition.tag.loreline"
@@ -1112,6 +1112,10 @@
                     "patterns": [
                         {
                             "include": "#string-interpolation"
+                        },
+                        {
+                            "match": "=",
+                            "name": "punctuation.definition.tag.loreline"
                         },
                         {
                             "match": ".",

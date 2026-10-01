@@ -19,7 +19,8 @@ beat Start
 //                ^ punctuation.definition.tag
 //                 ^ storage.modifier.metadata
 //                   ^^^^ string.unquoted
-//                        ^^ storage.modifier.metadata
+//                        ^ punctuation.definition.tag
+//                         ^ storage.modifier.metadata
 //                           ^^^^^^^^ string.unquoted
   <whisper> Tag opening the fourth line.
 //^ punctuation.definition.tag
@@ -30,7 +31,8 @@ beat Start
 //^^^^^^^^^^^^^^^ string.unquoted
 //                ^ storage.modifier.metadata
 //                  ^^^^^^ string.unquoted
-//                         ^^ storage.modifier.metadata
+//                         ^ punctuation.definition.tag
+//                          ^ storage.modifier.metadata
 //                                 ^^ punctuation.definition.block.begin
 //                                   ^^^^ variable.other
   "Quoted narration."
@@ -52,7 +54,8 @@ beat Start
 //               ^ punctuation.definition.tag
 //                ^ storage.modifier.metadata
 //                  ^^^ string.unquoted
-//                      ^^ storage.modifier.metadata
+//                      ^ punctuation.definition.tag
+//                       ^ storage.modifier.metadata
 //                               ^^^^ variable.other
 //                                   ^ string.unquoted
   Field $obj.field and index $items[0] here.

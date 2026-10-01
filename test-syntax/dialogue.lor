@@ -35,7 +35,8 @@ beat Start
 //            ^ punctuation.definition.tag
 //             ^ storage.modifier.metadata
 //               ^^^^ string.unquoted.dialogue
-//                    ^^ storage.modifier.metadata
+//                    ^ punctuation.definition.tag
+//                     ^ storage.modifier.metadata
 //                       ^^^^^^^^ string.unquoted.dialogue
     <friendly> Tag opening the second line.
 //  ^ punctuation.definition.tag
@@ -46,20 +47,24 @@ beat Start
 //  ^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
 //                          ^ storage.modifier.metadata
 //                            ^^^^ string.unquoted.dialogue
-//                                 ^^ storage.modifier.metadata
+//                                 ^ punctuation.definition.tag
+//                                  ^ storage.modifier.metadata
 //                                   ^ punctuation.definition.tag
   barista: <calm> First line.
 //          ^^^^ storage.modifier.metadata
 //                ^^^^^^^^^^^ string.unquoted.dialogue
     Second line with <pause=2> and $gold.
 //  ^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
-//                    ^^^^^^^ storage.modifier.metadata
+//                    ^^^^^ storage.modifier.metadata
+//                         ^ punctuation.definition.tag
+//                          ^ storage.modifier.metadata
 //                            ^^^^^ string.unquoted.dialogue
 //                                  ^^^^ variable.other
     <b>Bold</b> start of the third line.
 //   ^ storage.modifier.metadata
 //     ^^^^ string.unquoted.dialogue
-//          ^^ storage.modifier.metadata
+//          ^ punctuation.definition.tag
+//           ^ storage.modifier.metadata
 //             ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
   barista: One line.
 //         ^^^^^^^^^ string.unquoted.dialogue
@@ -97,7 +102,8 @@ beat Start
   barista: <a>tagged</a> text // comment
 //           ^ punctuation.definition.tag
 //            ^^^^^^ string.unquoted.dialogue
-//                   ^^ storage.modifier.metadata
+//                   ^ punctuation.definition.tag
+//                    ^ storage.modifier.metadata
 //                       ^^^^ string.unquoted.dialogue
 //                            ^^^^^^^^^^ comment.line.double-slash
   barista: Hi /* inline */ there
@@ -118,5 +124,6 @@ beat Start
 //      ^^^^^ string.unquoted.dialogue
 //            ^ storage.modifier.metadata
 //              ^^^^ string.unquoted.dialogue
-//                   ^^ storage.modifier.metadata
+//                   ^ punctuation.definition.tag
+//                    ^ storage.modifier.metadata
 //                      ^^^^^^^^ string.unquoted.dialogue
