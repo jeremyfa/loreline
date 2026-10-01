@@ -1,0 +1,39 @@
+// Unquoted values of state and character fields keep the quotes written inside
+// them, like unquoted text. Only a value that is a whole quoted string loses
+// its quotes. The same goes for the items of an array.
+
+character hero
+  name: Robin "the Hood"
+  title: "Sir" Robin
+
+state
+  quote: Say "hi" to her
+  starts: "Madness!" she cried
+  ends: He said "madness"
+  full: "only quoted"
+  escaped: Say \"hi\"
+  items: [apple, "pear", say "hi", "x" y]
+
+beat Start
+  The quote is $quote.
+  The start is $starts.
+  The end is $ends.
+  The full is $full.
+  The escaped is $escaped.
+  The name is $hero.name.
+  The title is $hero.title.
+  The items are ${items[1]}, ${items[2]}, ${items[3]}.
+
+/*
+<test>
+- expected: |
+    ~ The quote is Say "hi" to her.
+      The start is "Madness!" she cried.
+      The end is He said "madness".
+      The full is only quoted.
+      The escaped is Say "hi".
+      The name is Robin "the Hood".
+      The title is "Sir" Robin.
+      The items are pear, say "hi", "x" y.
+</test>
+*/

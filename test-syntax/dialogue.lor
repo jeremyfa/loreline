@@ -66,6 +66,12 @@ beat Start
 //          ^ punctuation.definition.tag
 //           ^ storage.modifier.metadata
 //             ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: "Try the latte!" she suggested.
+//         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: She said "try the latte".
+//         ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
+  barista: He said "this is madness!"
+//         ^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.dialogue
   barista: One line.
 //         ^^^^^^^^^ string.unquoted.dialogue
   barista:No space after the colon.
