@@ -46,6 +46,46 @@ beat More
 //     ^^^^ string.unquoted
 //              ^^^^^^ string.unquoted
 //                      ^^^^ variable.other
+    Option with <i>italic</i> inside
+//  ^^^^^^^^^^^^ string.unquoted
+//              ^ punctuation.definition.tag
+//               ^ storage.modifier.metadata
+//                ^ punctuation.definition.tag
+//                 ^^^^^^ string.unquoted
+//                         ^ storage.modifier.metadata
+    <whisper> Tag opening the option
+//  ^ punctuation.definition.tag
+//   ^^^^^^^ storage.modifier.metadata
+//          ^ punctuation.definition.tag
+//            ^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+    Wait <pause=$delay> a moment
+//       ^ punctuation.definition.tag
+//        ^^^^^ storage.modifier.metadata
+//             ^ punctuation.definition.tag
+//               ^^^^^ variable.other
+//                    ^ punctuation.definition.tag
+//                      ^^^^^^^^ string.unquoted
+    Escapes $$ and ## and \n here
+//          ^^ constant.character.escape
+//                 ^^ constant.character.escape
+//                        ^^ constant.character.escape
+//                          ^^^^^ string.unquoted
+    "Quoted \"escaped\" option"
+//  ^^^^^^^^ string.quoted.double
+//          ^^ constant.character.escape
+//            ^^^^^^^ string.quoted.double
+//                   ^^ constant.character.escape
+    "Quoted <b>tag</b> option" -> End
+//          ^ punctuation.definition.tag
+//           ^ storage.modifier.metadata
+//             ^^^ string.quoted.double
+//                             ^^ keyword.control.flow
+    - <b>Once</b> option with $$
+//  ^^ string.unquoted
+//    ^ punctuation.definition.tag
+//     ^ storage.modifier.metadata
+//       ^^^^ string.unquoted
+//                            ^^ constant.character.escape
     Leave -> End
 //  ^^^^^ string.unquoted
 //        ^^ keyword.control.flow
