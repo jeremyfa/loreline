@@ -189,6 +189,11 @@ async function main() {
     let buildGodotWasm = rawArgs.indexOf('--godot-wasm') != -1;
     let buildUnityPackage = rawArgs.indexOf('--unity-package') != -1;
     let runTest = rawArgs.indexOf('--test') != -1;
+    // --bench: a CLI build for measurements, without the debug and safety
+    // defines of the regular build, named loreline-bench. --bench-js: the
+    // same measurements on node (build/bench/when-bench.cjs).
+    let bench = rawArgs.indexOf('--bench') != -1;
+    let benchJs = rawArgs.indexOf('--bench-js') != -1;
     let debug = false;
 
     // --sample [web|unity|cpp|python|lua|sdl3|java]: copy built files into sample projects
@@ -250,7 +255,44 @@ async function main() {
         }
     }
 
-    if (buildCpp) {
+    if (buildCpp && bench) {
+
+        console.log('Build loreline-bench');
+
+        const benchArgs = [
+            'build-cli.hxml',
+            '--cpp', 'build/cpp-bench',
+            '-D', 'HXCPP_CPP11',
+            '-D', 'HXCPP_IMMORTAL_STATICS',
+            '-D', 'loreline_no_loop_guard',
+            '-D', 'no-compilation'
+        ];
+        const benchDir = path.join(__dirname, 'build', 'cpp-bench');
+        const exe = process.platform == 'win32' ? '.exe' : '';
+        let hxcppArgs;
+        if (process.platform == 'darwin') {
+            const arm = process.arch == 'arm64';
+            await command(haxe, benchArgs.concat(haxeBuildArgs).concat(['-D', 'mac', '-D', arm ? 'mac_arm64' : 'mac_x86_64']));
+            hxcppArgs = arm ? ['-DHXCPP_ARM64'] : ['-DHXCPP_M64', '-DHXCPP_X86_64'];
+        }
+        else if (process.platform == 'win32') {
+            await command(haxe, benchArgs.concat(haxeBuildArgs).concat(['-D', 'windows']));
+            let haxelibCmd = fs.readFileSync(path.join(__dirname, 'haxelib.cmd'), 'utf8');
+            haxelibCmd = haxelibCmd.split('/git/').join('/../../git/');
+            fs.writeFileSync(path.join(benchDir, 'haxelib.cmd'), haxelibCmd);
+            hxcppArgs = ['-DHXCPP_M64', '-DHXCPP_X86_64'];
+        }
+        else {
+            const arm = isLinuxArm64();
+            await command(haxe, benchArgs.concat(haxeBuildArgs).concat(['-D', 'linux', '-D', arm ? 'linux_arm64' : 'linux_x86_64']));
+            hxcppArgs = arm ? ['-DHXCPP_ARM64'] : ['-DHXCPP_M64', '-DHXCPP_X86_64'];
+        }
+        await command(process.platform == 'win32' ? haxelib : '../../haxelib', ['run', 'hxcpp', 'Build.xml'].concat(hxcppArgs), { cwd: benchDir });
+        const target = path.join(__dirname, 'loreline-bench' + exe);
+        if (fs.existsSync(target)) fs.unlinkSync(target);
+        fs.renameSync(path.join(benchDir, 'Cli' + exe), target);
+    }
+    else if (buildCpp) {
 
         let haxeBuildCppArgs = [
             'build-cli.hxml',
@@ -1409,6 +1451,12 @@ async function main() {
   </PropertyGroup>
 </Project>
 `);
+    }
+
+    if (benchJs) {
+        console.log('Build the when benchmark for node');
+        fs.mkdirSync(path.join(__dirname, 'build', 'bench'), { recursive: true });
+        await command(haxe, ['build-bench-js.hxml', '--library', 'hxnodejs', '--js', 'build/bench/when-bench.cjs'].concat(haxeBuildArgs));
     }
 
     if (buildJs) {

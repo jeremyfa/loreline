@@ -6,6 +6,8 @@
 /node_modules
 /loreline
 /loreline.exe
+/loreline-bench
+/loreline-bench.exe
 /loreline.zip
 /.haxelib
 /submit.sh

@@ -12,6 +12,9 @@ class InfiniteLoop {
 
         final fields = Context.getBuildFields();
 
+        // Benchmark builds measure the interpreter without the loop guard
+        if (Context.defined('loreline_no_loop_guard')) return fields;
+
         #if !(display || completion)
 
         // Loop through all fields
