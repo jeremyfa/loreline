@@ -2313,6 +2313,12 @@ async function main() {
         const cppLibPlatform = process.platform == 'darwin' ? 'mac' : process.platform == 'win32' ? 'windows' : 'linux';
         checkNoLanguageServer('C++', fs.existsSync(path.join(__dirname, 'build', 'cpp-lib', cppLibPlatform, 'include', 'loreline', 'lsp')));
 
+        // C++ CLI (hxcpp) build + tests: the full Haxe suite, unit tests included,
+        // which the C++ lib tests above don't run. Same commands as the CI.
+        console.log('\n=== C++ CLI build + tests ===');
+        await command('node', ['./setup', '--cpp']);
+        await command(process.platform == 'win32' ? 'loreline.exe' : './loreline', ['test', './test']);
+
         // 8. Python build + tests
         console.log('\n=== Python build + tests ===');
         await command('node', ['./setup', '--py']);
