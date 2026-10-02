@@ -6501,9 +6501,29 @@ class InterpreterContext {
 
             case NBinary:
                 final bin:NBinary = cast expr;
-                final left = evaluateExpression(bin.left);
-                final right = evaluateExpression(bin.right);
-                performOperation(bin.op, left, right, bin.pos);
+                switch bin.op {
+                    case OpAnd(_) | OpOr(_):
+                        // Short-circuit: the right side is only evaluated when the left
+                        // one leaves the result open. A left side that is not a boolean
+                        // still goes through performOperation, for its error.
+                        final left = evaluateExpression(bin.left);
+                        if (left is Bool) {
+                            final leftBool:Bool = left;
+                            if (bin.op.match(OpAnd(_)) ? !leftBool : leftBool) {
+                                leftBool;
+                            }
+                            else {
+                                performOperation(bin.op, left, evaluateExpression(bin.right), bin.pos);
+                            }
+                        }
+                        else {
+                            performOperation(bin.op, left, evaluateExpression(bin.right), bin.pos);
+                        }
+                    case _:
+                        final left = evaluateExpression(bin.left);
+                        final right = evaluateExpression(bin.right);
+                        performOperation(bin.op, left, right, bin.pos);
+                }
 
             case NUnary:
                 final un:NUnary = cast expr;
