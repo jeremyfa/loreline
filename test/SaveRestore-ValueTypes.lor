@@ -1,0 +1,44 @@
+// A value that changes kind is saved, even when the new value equals the old
+// one for the language (0 and false, "5" and 5): after a restore, each value
+// keeps its kind. The save sweep checks it at every line.
+
+state
+  a: 0
+  b: ""
+  c: "5"
+  d: 1
+  e: 5
+
+beat Start
+  Before $a $b $c $d $e.
+  a = false
+  b = 0
+  c = 5
+  d = true
+  e = "5"
+
+  First line after the changes.
+
+  After $a $b $c $d $e, plus one gives ${c + 1} ${e + 1}.
+
+  Second line after the changes.
+
+  Still $a $b $c $d $e, plus one gives ${c + 1} ${e + 1}.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Before 0  5 1 5.
+
+    ~ First line after the changes.
+
+    ~ After false 0 5 true 5, plus one gives 6 51.
+
+    ~ Second line after the changes.
+
+    ~ Still false 0 5 true 5, plus one gives 6 51.
+</test>
+*/

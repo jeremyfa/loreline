@@ -1,12 +1,15 @@
 // A fact compared with a text may hold something else than a string: a beat
 // reference or a character reference compare by their name, null matches
-// nothing. Each pick reads the fact of the moment.
+// nothing, a number matches a text written as that number, a boolean matches
+// its text. Each pick reads the fact of the moment, in a short block and in a
+// block long enough to be indexed.
 
 character bob
   name: Bob
 
 state
   target: null
+  fact: null
 
 beat Start
   Check()
@@ -18,6 +21,22 @@ beat Start
   Check()
   target = null
   Check()
+  fact = 5
+  Indexed()
+  fact = "5.0"
+  Indexed()
+  fact = 5.0
+  Indexed()
+  fact = true
+  Indexed()
+  fact = "true"
+  Indexed()
+  fact = 1
+  Indexed()
+  fact = Helper
+  Indexed()
+  fact = null
+  Indexed()
 
 beat Helper
   Never played.
@@ -31,6 +50,47 @@ beat Check
     true
       Target is something else.
 
+beat Indexed
+  when
+    fact is "a"
+      Fact is a.
+    fact is "b"
+      Fact is b.
+    fact is "c"
+      Fact is c.
+    fact is "5"
+      Fact matches 5.
+    fact is "d"
+      Fact is d.
+    fact is "e"
+      Fact is e.
+    fact is "f"
+      Fact is f.
+    fact is "true"
+      Fact matches true.
+    fact is "g"
+      Fact is g.
+    fact is "Helper"
+      Fact matches Helper.
+    fact is "h"
+      Fact is h.
+    fact is "i"
+      Fact is i.
+    fact is "j"
+      Fact is j.
+    fact is "k"
+      Fact is k.
+    fact is "l"
+      Fact is l.
+    fact is "m"
+      Fact is m.
+    fact is "n"
+      Fact is n.
+    fact is "o"
+      Fact is o.
+    true
+      Fact matches no text.
+
 /*
 <test>
 - expected: |
@@ -43,5 +103,21 @@ beat Check
     ~ Target is the Helper beat.
 
     ~ Target is something else.
+
+    ~ Fact matches 5.
+
+    ~ Fact matches no text.
+
+    ~ Fact matches 5.
+
+    ~ Fact matches true.
+
+    ~ Fact matches true.
+
+    ~ Fact matches no text.
+
+    ~ Fact matches Helper.
+
+    ~ Fact matches no text.
 </test>
 */

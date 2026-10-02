@@ -72,6 +72,7 @@ class PortableTestSuite {
         PrinterTests.run(onPass, onFail);
         WhenSyntaxTests.run(onPass, onFail);
         NodeIdMapTests.run(onPass, onFail);
+        ValuesTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 
