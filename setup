@@ -259,11 +259,14 @@ async function main() {
 
         console.log('Build loreline-bench');
 
+        // HXCPP_DEBUG_LINK only keeps the symbols (no strip), so profilers can
+        // name the functions; it does not change the generated code
         const benchArgs = [
             'build-cli.hxml',
             '--cpp', 'build/cpp-bench',
             '-D', 'HXCPP_CPP11',
             '-D', 'HXCPP_IMMORTAL_STATICS',
+            '-D', 'HXCPP_DEBUG_LINK',
             '-D', 'loreline_no_loop_guard',
             '-D', 'no-compilation'
         ];
