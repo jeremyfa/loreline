@@ -149,6 +149,14 @@ class Lens {
 
     final lorscriptFunctions:NodeIdMap<FuncLorscript> = new NodeIdMap();
 
+    /**
+     * Results of findBeatByNameFromNode, by node then by name. The resolution is
+     * lexical: it only depends on where the node is in the script, so a result
+     * holds for the life of this lens. A miss is kept too, as a holder with a
+     * null beat.
+     */
+    final beatsByNameFromNode:NodeIdMap<Map<String, {beat:Null<NBeatDecl>}>> = new NodeIdMap();
+
     public function new(script:Script) {
         this.script = script;
         initialize();
@@ -903,6 +911,26 @@ class Lens {
     }
 
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
+
+        var byName = beatsByNameFromNode.get(node.id);
+        if (byName == null) {
+            byName = new Map();
+            beatsByNameFromNode.set(node.id, byName);
+        }
+        final cached = byName.get(name);
+        if (cached != null) return cached.beat;
+
+        final result = searchBeatByNameFromNode(name, node);
+        byName.set(name, {beat: result});
+        return result;
+
+    }
+
+    /**
+     * The search behind findBeatByNameFromNode: the beats declared in the
+     * enclosing beats, innermost first, then the top-level ones.
+     */
+    function searchBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
 
         var result:Null<NBeatDecl> = null;
 
