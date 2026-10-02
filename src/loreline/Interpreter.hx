@@ -3727,7 +3727,7 @@ class InterpreterContext {
     function registerTopLevelFunction(key:String, func:Any) {
         #if loreline_auto_wrap_functions
         final userFunc = func;
-        topLevelFunctions.set(key, Reflect.makeVarArgs(args -> {
+        topLevelFunctions.set(key, VarArgs.make(args -> {
             // Character and beat references cross to hosts as marker objects
             final hostArgs = [for (arg in args) hostValueOf(arg)];
             return Reflect.callMethod(null, userFunc, [this, hostArgs]);
@@ -6573,7 +6573,7 @@ class InterpreterContext {
      */
     function callFunctionValue(fn:Any, args:Array<Any>, pos:Position, next:()->Void):Any {
         try {
-            var result:Any = Reflect.callMethod(null, fn, args);
+            var result:Any = VarArgs.call(null, fn, args);
             if (result != null && !(result is Async)) {
                 // Hosts may return reference markers; resolve them back
                 result = hostValueToRuntime(result);
@@ -6743,7 +6743,7 @@ class InterpreterContext {
                     final args = [for (arg in call.args) evaluateExpression(arg)];
                     // Beat helpers receive the plain beat, even when called on a reference
                     args.insert(0, objBeat != null ? (objBeat : Any) : obj);
-                    final result:Any = Reflect.callMethod(null, helper, args);
+                    final result:Any = VarArgs.call(null, helper, args);
                     if (result != null && result is Async) {
                         if (next == null) {
                             throw new RuntimeError(
