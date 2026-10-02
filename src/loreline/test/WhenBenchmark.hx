@@ -1,5 +1,8 @@
 package loreline.test;
 
+// The benchmark needs Sys and haxe.Timer: it is not part of the GDScript build
+#if !gdscript
+
 import loreline.Interpreter;
 import loreline.Loreline;
 import loreline.Random;
@@ -430,3 +433,5 @@ class WhenBenchmark {
     }
 
 }
+
+#end
