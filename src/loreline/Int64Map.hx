@@ -51,7 +51,7 @@ class Int64Map<V> {
     // produces floats, which breaks the bitwise mixing below. Emulate a
     // 32-bit wrapping multiplication and keep the hash within 31 bits.
     inline function hashCoords(high:Int, low:Int):Int {
-        var h = (high + (low << 16)) & 0x7FFFFFFF;
+        var h = (high ^ (low >>> 16) ^ (low << 16)) & 0x7FFFFFFF;
         h = mul32(h ^ (h >>> 16), 0x85ebca6b);
         h = mul32(h ^ (h >>> 13), 0xc2b2ae35);
         return (h ^ (h >>> 16)) & 0x7FFFFFFF;
@@ -66,7 +66,7 @@ class Int64Map<V> {
     }
     #else
     inline function hashCoords(high:Int, low:Int):Int {
-        var h = high + (low << 16);
+        var h = high ^ (low >>> 16) ^ (low << 16);
         h = (h ^ (h >>> 16)) * 0x85ebca6b;
         h = (h ^ (h >>> 13)) * 0xc2b2ae35;
         return h ^ (h >>> 16);
