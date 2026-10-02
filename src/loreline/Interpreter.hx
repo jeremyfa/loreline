@@ -349,7 +349,7 @@ class RuntimeCharacterRef {
 }
 
 /**
- * Fata that needs to be hold with a scope when
+ * Data that needs to be hold with a scope when
  * a beat is being inserted within a choice
  */
 class RuntimeInsertion {
@@ -415,6 +415,13 @@ class RuntimeInsertion {
      */
     public var whenFirst:Bool = false;
 
+    /**
+     * For an insertion in a when block: whether the block collecting the rules
+     * uses the default strategy, so that runs of pure rules can be visited by
+     * decreasing criteria count (see collectSalientRun).
+     */
+    public var whenSalient:Bool = false;
+
     public function new(id:Int, origin:NInsertion) {
         this.id = id;
         this.origin = origin;
@@ -441,6 +448,52 @@ enum abstract InsertionKind(Int) {
  * A rule a when block can play: one of its own, or one brought by an insertion,
  * with whether it is eligible.
  */
+/**
+ * A clause `name is "text"` a condition requires, with the text evaluated.
+ */
+typedef WhenIndexText = {
+    var name:String;
+    var text:String;
+}
+
+/**
+ * A run of when rules grouped by a fact, see Interpreter.runIndexOf.
+ */
+typedef WhenRunIndex = {
+    /** The fact compared with a text */
+    var fact:String;
+    /** The rules comparing the fact with each text, in score order */
+    var groups:Map<String, Array<Int>>;
+    /** The rules without a clause on the fact, in score order */
+    var ungrouped:Array<Int>;
+}
+
+/**
+ * What the collection of a when block needs, see Interpreter.whenBlockInfoOf.
+ */
+typedef WhenBlockInfo = {
+    /** The criteria count of each rule */
+    var scores:Array<Int>;
+    /** The clauses isKnownFalse checks for the condition of each rule, or null */
+    var clauses:Array<Null<Array<WhenIndexText>>>;
+    /** The runs of plain rules, by start index */
+    var runs:Array<Null<WhenSalientRun>>;
+}
+
+/**
+ * A run of plain rules of a when block, with its grouping by a fact.
+ */
+typedef WhenSalientRun = {
+    /** Index after the last rule of the run */
+    var end:Int;
+    /** Whether every condition of the run is pure */
+    var pure:Bool;
+    /** The indices of the run by decreasing criteria count, written order within a count */
+    var byScore:Array<Int>;
+    /** The grouping of the run by a fact, if any */
+    var index:Null<WhenRunIndex>;
+}
+
 typedef WhenCandidate = {
     /** The rule */
     var rule:NWhenRule;
@@ -692,6 +745,17 @@ class InterpreterContext {
      * the literals of a translation file have ids of their own.
      */
     final constantStrings:haxe.ds.ObjectMap<NStringLiteral, String> = new haxe.ds.ObjectMap();
+
+    /**
+     * The indexable clauses of conditions with the text of their literal (see
+     * Lens.indexClausesOf), by condition. Per context, as the texts come from
+     * the string literal processors.
+     */
+    final whenIndexTexts:NodeIdMap<Array<WhenIndexText>> = new NodeIdMap();
+
+    /** See Interpreter.whenBlockInfoOf, by when block. */
+    final whenBlocks:NodeIdMap<WhenBlockInfo> = new NodeIdMap();
+
 
     /**
      * Tells whether access is strict or not.
@@ -950,6 +1014,8 @@ class InterpreterContext {
         // Processors set by the host: the constant texts no longer hold
         context.userStringProcessors = true;
         context.constantStrings.clear();
+        context.whenIndexTexts.clear();
+        context.whenBlocks.clear();
         return context.stringLiteralProcessors = processors;
     }
 
@@ -2221,6 +2287,9 @@ class InterpreterContext {
             if (insertion.whenFirst) {
                 serialized.whenFirst = true;
             }
+            if (insertion.whenSalient) {
+                serialized.whenSalient = true;
+            }
         }
 
         return insertion.id;
@@ -2906,8 +2975,9 @@ class InterpreterContext {
                     for (candidate in insertion.rules) candidates.push(candidate);
                 }
                 final stopAtFirst = owner != null ? owner.whenFirst : when.strategy == 'first';
+                final salient = owner != null ? owner.whenSalient : when.strategy == null;
                 final done = wrapNext(() -> finishWhenCollection(when, candidates, owner, next));
-                collectWhenRules(when, candidates, insertion.parentNextRuleIndex, stopAtFirst, owner, done.cb);
+                collectWhenRules(when, candidates, insertion.parentNextRuleIndex, stopAtFirst, salient, owner, done.cb);
                 done.sync = false;
             });
             return;
@@ -3216,6 +3286,7 @@ class InterpreterContext {
             insertion.parentNextRuleIndex = saved.parentNextRuleIndex != null ? saved.parentNextRuleIndex : 0;
         }
         insertion.whenFirst = saved.whenFirst == true;
+        insertion.whenSalient = saved.whenSalient == true;
 
         return insertion;
 
@@ -4828,9 +4899,10 @@ class InterpreterContext {
         final owner = collectingWhenInsertion(stack.length - 1);
 
         final stopAtFirst = owner != null ? owner.whenFirst : when.strategy == 'first';
+        final salient = owner != null ? owner.whenSalient : when.strategy == null;
         final candidates:Array<WhenCandidate> = [];
         final done = wrapNext(() -> finishWhenCollection(when, candidates, owner, next));
-        collectWhenRules(when, candidates, 0, stopAtFirst, owner, done.cb);
+        collectWhenRules(when, candidates, 0, stopAtFirst, salient, owner, done.cb);
         done.sync = false;
 
     }
@@ -4878,13 +4950,17 @@ class InterpreterContext {
      * @param stopAtFirst Stop at the first eligible rule (`when first`)
      * @param owner The insertion this block collects for, if any: its own rules then come from it
      */
-    function collectWhenRules(when:NWhenStatement, result:Array<WhenCandidate>, startIndex:Int, stopAtFirst:Bool, owner:Null<RuntimeInsertion>, next:()->Void) {
+    function collectWhenRules(when:NWhenStatement, result:Array<WhenCandidate>, startIndex:Int, stopAtFirst:Bool, salient:Bool, owner:Null<RuntimeInsertion>, next:()->Void) {
 
         var index = startIndex;
         var insertion:RuntimeInsertion = null;
         // Whether an eligible rule was collected, for `first`. The result may
         // already hold rules, after a restore
         var anyEligible = stopAtFirst && hasEligibleCandidate(result);
+        final info = whenBlockInfoOf(when);
+        // The facts read by the index, emptied at each step: the prologue of an
+        // inserted beat may change them between two steps
+        final facts = new Map<String, Null<String>>();
         var moveNext:()->Void = null;
         moveNext = () -> {
 
@@ -4899,6 +4975,7 @@ class InterpreterContext {
 
             // Plain rules are evaluated in a row: nothing can pause while a
             // condition is evaluated, so they need no step of their own
+            facts.clear();
             while (index < when.rules.length) {
                 if (stopAtFirst && anyEligible) {
                     next();
@@ -4906,9 +4983,20 @@ class InterpreterContext {
                 }
                 final rule = when.rules[index];
                 if (rule.insertion != null) break;
+                if (salient && !stopAtFirst) {
+                    final run = salientRunAt(when, info, index);
+                    if (run.pure) {
+                        // The default strategy: the run is visited by decreasing
+                        // criteria count, see collectSalientRun
+                        if (collectSalientRun(when, info, run, result, owner, facts)) anyEligible = true;
+                        index = run.end;
+                        continue;
+                    }
+                }
+                final clauses = info.clauses[index];
                 index++;
                 final consumed = rule.once && isWhenRuleConsumed(rule);
-                final eligible = !consumed && (rule.condition == null || evaluateCondition(rule.condition));
+                final eligible = !consumed && (rule.condition == null || (!isKnownFalse(clauses, facts) && evaluateCondition(rule.condition)));
                 if (eligible) anyEligible = true;
                 result.push({ rule: rule, eligible: eligible, insertion: owner });
             }
@@ -4921,15 +5009,17 @@ class InterpreterContext {
             // An insertion rule: the inserted beat runs until its when block,
             // which may take several steps
             final rule = when.rules[index];
+            final clauses = info.clauses[index];
             index++;
             final done = wrapNext(moveNext);
 
             // The condition of an insertion only decides whether its rules come in.
             // It is evaluated here, in the scope of this block.
-            if (rule.insertionCondition == null || evaluateCondition(rule.insertionCondition)) {
+            if (rule.insertionCondition == null || (!isKnownFalse(clauses, facts) && evaluateCondition(rule.insertionCondition))) {
                 insertion = new RuntimeInsertion(nextInsertionId++, rule.insertion);
                 insertion.kind = When;
                 insertion.whenFirst = stopAtFirst;
+                insertion.whenSalient = salient;
                 // For a save made while the inserted beat runs
                 insertion.parentPartialRules = [].concat(result);
                 insertion.parentNextRuleIndex = index;
@@ -4944,6 +5034,271 @@ class InterpreterContext {
 
         moveNext();
 
+    }
+
+    /**
+     * What the collection of a when block needs, computed once per context so
+     * that a collection makes a single lookup: the criteria count of each rule,
+     * the clauses isKnownFalse checks for each condition (or insertion
+     * condition), and the runs of plain rules by their start index.
+     */
+    function whenBlockInfoOf(when:NWhenStatement):WhenBlockInfo {
+        final cached = context.whenBlocks.get(when.id);
+        if (cached != null) return cached;
+        final count = when.rules.length;
+        final indexable = customCreateFields == null && !context.userStringProcessors;
+        final info:WhenBlockInfo = {
+            scores: [for (rule in when.rules) lens.whenRuleScore(rule)],
+            clauses: [for (rule in when.rules) indexable ? knownFalseClausesOf(rule.insertion != null ? rule.insertionCondition : rule.condition) : null],
+            runs: [for (_ in 0...count) null]
+        };
+        var i = 0;
+        while (i < count) {
+            if (when.rules[i].insertion != null) {
+                i++;
+                continue;
+            }
+            final run = salientRunFrom(when, info, i, indexable);
+            info.runs[i] = run;
+            i = run.end;
+        }
+        context.whenBlocks.set(when.id, info);
+        return info;
+    }
+
+    /**
+     * The run of plain rules starting at `index`. A collection resumed after a
+     * restore may start in the middle of a run: that run is then computed from
+     * there.
+     */
+    function salientRunAt(when:NWhenStatement, info:WhenBlockInfo, index:Int):WhenSalientRun {
+        final run = info.runs[index];
+        if (run != null) return run;
+        final indexable = customCreateFields == null && !context.userStringProcessors;
+        final partial = salientRunFrom(when, info, index, indexable);
+        info.runs[index] = partial;
+        return partial;
+    }
+
+    function salientRunFrom(when:NWhenStatement, info:WhenBlockInfo, start:Int, indexable:Bool):WhenSalientRun {
+        final run = lens.whenRun(when, start);
+        return {
+            end: run.end,
+            pure: run.pure,
+            byScore: run.byScore,
+            index: indexable ? runIndexOf(when, info, run) : null
+        };
+    }
+
+    /**
+     * Collects a run of pure rules for the default strategy, by decreasing
+     * criteria count: once a rule of a count is eligible, the rules of a lower
+     * count are not evaluated, as they cannot win against it, in this block or
+     * in the block collecting it. The rules of the same count are all evaluated,
+     * since the history and the written order settle their ties.
+     * When the run is grouped by a fact (see runIndexOf), only the group of the
+     * current value and the rules that don't look at that fact are visited: the
+     * other rules require another value, so they are false.
+     * Only the eligible rules are pushed, in written order: the default strategy
+     * never looks at the others. Returns whether a rule of the run is eligible.
+     */
+    function collectSalientRun(when:NWhenStatement, info:WhenBlockInfo, run:WhenSalientRun, result:Array<WhenCandidate>, owner:Null<RuntimeInsertion>, facts:Map<String, Null<String>>):Bool {
+        // The rules to visit, as one or two lists in score order
+        var first:Array<Int> = run.byScore;
+        var second:Null<Array<Int>> = null;
+        final index = run.index;
+        if (index != null) {
+            final key = indexKeyOf(index.fact, facts);
+            if (key != null) {
+                final group = index.groups.get(key);
+                first = group != null ? group : NO_RULES;
+                second = index.ungrouped;
+            }
+        }
+
+        final scores = info.scores;
+        var eligible:Null<Array<Int>> = null;
+        var bestScore = -1;
+        var a = 0;
+        var b = 0;
+        while (true) {
+            // The next rule of the merged lists: highest score, then written order
+            var i = -1;
+            if (a < first.length) {
+                i = first[a];
+                if (second != null && b < second.length) {
+                    final j = second[b];
+                    if (scores[j] > scores[i] || (scores[j] == scores[i] && j < i)) {
+                        i = j;
+                        b++;
+                    }
+                    else {
+                        a++;
+                    }
+                }
+                else {
+                    a++;
+                }
+            }
+            else if (second != null && b < second.length) {
+                i = second[b];
+                b++;
+            }
+            else {
+                break;
+            }
+            final score = scores[i];
+            if (score < bestScore) break;
+            final rule = when.rules[i];
+            if (rule.once && isWhenRuleConsumed(rule)) continue;
+            if (rule.condition != null && (isKnownFalse(info.clauses[i], facts) || !evaluateCondition(rule.condition))) continue;
+            if (eligible == null) eligible = [];
+            eligible.push(i);
+            if (score > bestScore) bestScore = score;
+        }
+        if (eligible == null) return false;
+        if (eligible.length > 1) eligible.sort((x, y) -> x - y);
+        for (i in eligible) {
+            result.push({ rule: when.rules[i], eligible: true, insertion: owner });
+        }
+        return true;
+    }
+
+    static final NO_RULES:Array<Int> = [];
+
+    /** The number of rules from which a run is grouped by a fact, see runIndexOf. */
+    static inline final MIN_INDEXED_RUN = 16;
+
+    /**
+     * How a run of rules is grouped by a fact: the fact compared with the most
+     * distinct texts, the rules of each text in score order, and the rules
+     * without a clause on that fact. Null when the run is short (faster to walk
+     * whole than to merge with its groups) or has no such fact.
+     */
+    function runIndexOf(when:NWhenStatement, info:WhenBlockInfo, run:WhenRun):Null<WhenRunIndex> {
+        if (run.end - run.start < MIN_INDEXED_RUN) return null;
+
+        // The fact with the most distinct texts
+        final texts = new Map<String, Map<String, Bool>>();
+        for (i in run.byScore) {
+            final condition = when.rules[i].condition;
+            if (condition == null) continue;
+            for (clause in indexTextsOf(condition)) {
+                var values = texts.get(clause.name);
+                if (values == null) {
+                    values = new Map();
+                    texts.set(clause.name, values);
+                }
+                values.set(clause.text, true);
+            }
+        }
+        var fact:Null<String> = null;
+        var factCount = 1;
+        for (name => values in texts) {
+            var count = 0;
+            for (_ in values) count++;
+            if (count > factCount || (count == factCount && fact != null && name < fact)) {
+                fact = name;
+                factCount = count;
+            }
+        }
+        if (fact == null) return null;
+
+        final groups = new Map<String, Array<Int>>();
+        final ungrouped:Array<Int> = [];
+        for (i in run.byScore) {
+            final condition = when.rules[i].condition;
+            var text:Null<String> = null;
+            if (condition != null && lens.isPureCondition(condition)) {
+                for (clause in indexTextsOf(condition)) {
+                    if (clause.name == fact) {
+                        text = clause.text;
+                        break;
+                    }
+                }
+            }
+            if (text == null) {
+                ungrouped.push(i);
+            }
+            else {
+                var group = groups.get(text);
+                if (group == null) {
+                    group = [];
+                    groups.set(text, group);
+                }
+                group.push(i);
+            }
+        }
+        return {fact: fact, groups: groups, ungrouped: ungrouped};
+    }
+
+    /**
+     * Whether a pure condition is false without evaluating it: one of the
+     * clauses `x is "text"` it requires compares a fact holding another string
+     * (see Lens.indexClausesOf). `clauses` comes from knownFalseClausesOf, null
+     * when the check can't pay off. `facts` caches the facts read in a step.
+     */
+    function isKnownFalse(clauses:Null<Array<WhenIndexText>>, facts:Map<String, Null<String>>):Bool {
+        if (clauses == null) return false;
+        for (clause in clauses) {
+            final key = indexKeyOf(clause.name, facts);
+            if (key != null && key != clause.text) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The clauses isKnownFalse checks for a condition, or null when checking
+     * them can't pay off: no condition, not pure, no such clause, or a single
+     * clause, which evaluates as fast as it would be checked.
+     */
+    function knownFalseClausesOf(condition:Null<NExpr>):Null<Array<WhenIndexText>> {
+        if (condition == null) return null;
+        if (!lens.isPureCondition(condition) || AstUtils.conditionClauseCount(condition) <= 1) return null;
+        final texts = indexTextsOf(condition);
+        return texts.length > 0 ? texts : null;
+    }
+
+    /**
+     * The string a fact compares as, for the index: itself for a string, its
+     * name for a beat or a character reference. Null when the fact cannot be
+     * indexed at this moment: not a root field, or another kind of value, whose
+     * equality with a string is left to the evaluation.
+     */
+    function indexKeyOf(name:String, facts:Map<String, Null<String>>):Null<String> {
+        // A fact already read in this run, null included
+        if (facts.exists(name)) return facts.get(name);
+        var key:Null<String> = null;
+        if (isRootOnlyField(name)) {
+            final value:Any = Objects.getField(this, topLevelState.fields, name);
+            if (value is String) {
+                key = value;
+            }
+            else {
+                final beat = RuntimeBeatRef.beatOf(value);
+                if (beat != null) {
+                    key = beat.name;
+                }
+                else {
+                    final character = RuntimeCharacterRef.characterOf(value);
+                    if (character != null) key = character.name;
+                }
+            }
+        }
+        facts.set(name, key);
+        return key;
+    }
+
+    /**
+     * The indexable clauses of a condition with their texts, computed once per
+     * context (see WhenIndexText).
+     */
+    function indexTextsOf(condition:NExpr):Array<WhenIndexText> {
+        final cached = context.whenIndexTexts.get(condition.id);
+        if (cached != null) return cached;
+        final texts = [for (clause in lens.indexClausesOf(condition)) {name: clause.name, text: evaluateString(clause.literal).text}];
+        context.whenIndexTexts.set(condition.id, texts);
+        return texts;
     }
 
     static function hasEligibleCandidate(candidates:Array<WhenCandidate>):Bool {

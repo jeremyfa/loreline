@@ -1,0 +1,47 @@
+// A fact compared with a text may hold something else than a string: a beat
+// reference or a character reference compare by their name, null matches
+// nothing. Each pick reads the fact of the moment.
+
+character bob
+  name: Bob
+
+state
+  target: null
+
+beat Start
+  Check()
+  target = Helper
+  Check()
+  target = bob
+  Check()
+  target = "Helper"
+  Check()
+  target = null
+  Check()
+
+beat Helper
+  Never played.
+
+beat Check
+  when
+    target is "Helper"
+      Target is the Helper beat.
+    target is "bob"
+      Target is Bob.
+    true
+      Target is something else.
+
+/*
+<test>
+- expected: |
+    ~ Target is something else.
+
+    ~ Target is the Helper beat.
+
+    ~ Target is Bob.
+
+    ~ Target is the Helper beat.
+
+    ~ Target is something else.
+</test>
+*/

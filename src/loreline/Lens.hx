@@ -135,6 +135,28 @@ class LorscriptCompletion {
  * Utility class for analyzing Loreline scripts without executing them.
  * Provides methods for finding nodes, variables, references, etc.
  */
+/**
+ * A clause `name is literal` a condition requires, see Lens.indexClausesOf.
+ */
+typedef WhenIndexClause = {
+    var name:String;
+    var literal:NStringLiteral;
+}
+
+/**
+ * A run of plain rules of a when block, see Lens.whenRun.
+ */
+typedef WhenRun = {
+    /** Index of the first rule of the run */
+    var start:Int;
+    /** Index after the last rule of the run */
+    var end:Int;
+    /** Whether every condition of the run is pure */
+    var pure:Bool;
+    /** The indices of the run by decreasing criteria count, written order within a count */
+    var byScore:Array<Int>;
+}
+
 class Lens {
     /** The script being analyzed */
     final script:Script;
@@ -168,6 +190,15 @@ class Lens {
      * first use.
      */
     var scopedNames:Null<Map<String, Bool>> = null;
+
+    /** Whether a condition is pure, see isPureCondition. */
+    final pureConditions:NodeIdMap<Bool> = new NodeIdMap();
+
+    /** The indexable clauses of conditions, see indexClausesOf. */
+    final indexClauses:NodeIdMap<Array<WhenIndexClause>> = new NodeIdMap();
+
+    /** The runs of plain rules of when blocks, by block then start index, see whenRun. */
+    final whenRuns:NodeIdMap<Map<Int, WhenRun>> = new NodeIdMap();
 
     public function new(script:Script) {
         this.script = script;
@@ -966,6 +997,105 @@ class Lens {
             scopedNames = names;
         }
         return !scopedNames.exists(name);
+    }
+
+    /**
+     * Whether evaluating a condition can have no effect besides its value: it
+     * calls nothing and assigns nothing. Only such a condition may be left
+     * unevaluated when its value is known or cannot matter.
+     */
+    public function isPureCondition(expr:NExpr):Bool {
+        final cached = pureConditions.get(expr.id);
+        if (cached != null) return cached;
+        var pure = !(expr is NCall || expr is NAssign);
+        if (pure) {
+            traverse(expr, (node, parent) -> {
+                if (node is NCall || node is NAssign) {
+                    pure = false;
+                    return false;
+                }
+                return true;
+            });
+        }
+        pureConditions.set(expr.id, pure);
+        return pure;
+    }
+
+    /**
+     * The clauses `x is "text"` (or `"text" is x`) a condition requires: the
+     * clauses joined by `and` at its top level that compare a name only the
+     * root state can hold (see isRootOnlyName) with a literal made of raw
+     * text. When the fact is a string that differs from the literal, the
+     * condition is false whatever the rest says.
+     */
+    public function indexClausesOf(condition:NExpr):Array<WhenIndexClause> {
+        final cached = indexClauses.get(condition.id);
+        if (cached != null) return cached;
+        final result:Array<WhenIndexClause> = [];
+        collectIndexClauses(condition, result);
+        indexClauses.set(condition.id, result);
+        return result;
+    }
+
+    function collectIndexClauses(expr:NExpr, result:Array<WhenIndexClause>):Void {
+        if (!(expr is NBinary)) return;
+        final binary:NBinary = cast expr;
+        switch binary.op {
+            case OpAnd(_) if (expr.parens == 0):
+                collectIndexClauses(binary.left, result);
+                collectIndexClauses(binary.right, result);
+            case OpEquals(_):
+                var clause = indexClauseOf(binary.left, binary.right);
+                if (clause == null) clause = indexClauseOf(binary.right, binary.left);
+                if (clause != null) result.push(clause);
+            case _:
+        }
+    }
+
+    function indexClauseOf(nameExpr:NExpr, literalExpr:NExpr):Null<WhenIndexClause> {
+        if (!(nameExpr is NAccess) || !(literalExpr is NStringLiteral)) return null;
+        final access:NAccess = cast nameExpr;
+        if (access.target != null || !isRootOnlyName(access.name)) return null;
+        final literal:NStringLiteral = cast literalExpr;
+        if (literal.parts.length == 0) return null;
+        for (part in literal.parts) {
+            switch part.partType {
+                case Raw(_):
+                case _: return null;
+            }
+        }
+        return {name: access.name, literal: literal};
+    }
+
+    /**
+     * The run of plain rules (no insertion) of a when block starting at `start`:
+     * where it ends, whether every condition in it is pure, and its indices by
+     * decreasing criteria count, in written order within a count.
+     */
+    public function whenRun(when:NWhenStatement, start:Int):WhenRun {
+        var runs = whenRuns.get(when.id);
+        if (runs == null) {
+            runs = new Map();
+            whenRuns.set(when.id, runs);
+        }
+        final cached = runs.get(start);
+        if (cached != null) return cached;
+        var end = start;
+        var pure = true;
+        while (end < when.rules.length && when.rules[end].insertion == null) {
+            final condition = when.rules[end].condition;
+            if (condition != null && !isPureCondition(condition)) pure = false;
+            end++;
+        }
+        final byScore = [for (i in start...end) i];
+        // A stable sort: the index settles the ties
+        byScore.sort((a, b) -> {
+            final diff = whenRuleScore(when.rules[b]) - whenRuleScore(when.rules[a]);
+            return diff != 0 ? diff : a - b;
+        });
+        final run:WhenRun = {start: start, end: end, pure: pure, byScore: byScore};
+        runs.set(start, run);
+        return run;
     }
 
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {

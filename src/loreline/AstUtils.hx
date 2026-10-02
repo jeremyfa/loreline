@@ -146,6 +146,14 @@ class AstUtils {
         return rule.condition == null ? 0 : andClauseCount(rule.condition);
     }
 
+    /**
+     * The number of clauses joined by `and` at the top level of a condition,
+     * counted like whenRuleScore: the literal `true` counts 0.
+     */
+    public static function conditionClauseCount(expr:NExpr):Int {
+        return andClauseCount(expr);
+    }
+
     static function andClauseCount(expr:NExpr):Int {
         if (isLiteralTrue(expr)) return 0;
         if (expr.parens == 0 && expr is NBinary) {

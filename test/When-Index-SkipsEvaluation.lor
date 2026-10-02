@@ -1,0 +1,33 @@
+// With the default strategy, a rule that cannot win is not evaluated: a rule
+// whose `concept is "leave"` clause cannot hold, and a rule less specific than
+// an eligible one. Evaluating `nothing_here and ...` would be an error (the
+// name is undefined), so the lines below play only because those rules are
+// left alone. This is the documented consequence of that shortcut.
+
+state
+  concept: "greet"
+  gold: 20
+
+beat Start
+  Bark()
+  Bark()
+
+beat Bark
+  when
+    nothing_here and concept is "leave"
+      Not evaluated: the concept clause cannot hold.
+    gold > 10 and concept is "greet"
+      Rich greeting.
+    nothing_here
+      Not evaluated: less specific than the eligible rule above.
+    true
+      Nothing.
+
+/*
+<test>
+- expected: |
+    ~ Rich greeting.
+
+    ~ Rich greeting.
+</test>
+*/

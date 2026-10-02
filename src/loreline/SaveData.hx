@@ -54,6 +54,8 @@ typedef SaveDataInsertion = {
     var ?parentNextRuleIndex:Int;
     /** Set when the parent when block uses `first` and had no eligible rule yet */
     var ?whenFirst:Bool;
+    /** Set when the parent when block uses the default strategy */
+    var ?whenSalient:Bool;
 }
 
 /**
