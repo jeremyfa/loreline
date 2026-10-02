@@ -553,6 +553,7 @@ class Cli {
         loreline.test.RandomTests.run(onPass, onFail);
         loreline.test.PrinterTests.run(onPass, onFail);
         loreline.test.WhenSyntaxTests.run(onPass, onFail);
+        loreline.test.NodeIdMapTests.run(onPass, onFail);
         loreline.test.LspTests.run(onPass, onFail);
 
         print('');

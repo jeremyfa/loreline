@@ -19,6 +19,16 @@ class Int64Map<V> {
     private var _values:Vector<V> = null;
     #end
 
+    /**
+     * Which slots hold an entry. A slot can't be told free by a null value: on
+     * hxcpp, the values live in a cpp::VirtualArray created by
+     * VirtualArray_obj::__new(n) with an "empty" store, and the first bool or
+     * int stored converts the whole array to a native bool or int array
+     * (VirtualArray_obj::MakeBoolArray, MakeIntArray in hxcpp src/Array.cpp),
+     * where every other slot then reads false or 0, never null.
+     */
+    private var _used:Vector<Bool> = null;
+
     private var size:Int = 0;
     private var mask:Int = 0;
 
@@ -30,20 +40,31 @@ class Int64Map<V> {
         var oldK1 = _keys1;
         var oldK2 = _keys2;
         var oldVals = _values;
+        var oldUsed = _used;
 
         _keys1 = new Vector(newCapacity);
         _keys2 = new Vector(newCapacity);
         _values = new Vector(newCapacity);
+        // Filled explicitly: the default content of a vector depends on the target
+        _used = new Vector(newCapacity);
+        for (i in 0...newCapacity) _used[i] = false;
         mask = newCapacity - 1;
 
         if (oldK1 != null) {
             size = 0;
             for (i in 0...oldK1.length) {
-                if (oldVals[i] != null) {
+                if (oldUsed[i]) {
                     set(oldK1[i], oldK2[i], oldVals[i]);
                 }
             }
         }
+    }
+
+    /**
+     * Whether a slot holds an entry, for the iterators.
+     */
+    inline function isUsed(index:Int):Bool {
+        return _used[index];
     }
 
     #if php
@@ -77,6 +98,7 @@ class Int64Map<V> {
         _keys1 = null;
         _keys2 = null;
         _values = null;
+        _used = null;
         resize(INITIAL_SIZE);
         size = 0;
     }
@@ -86,6 +108,7 @@ class Int64Map<V> {
         result._keys1 = _keys1.copy();
         result._keys2 = _keys2.copy();
         result._values = _values.copy();
+        result._used = _used.copy();
         result.size = size;
         result.mask = mask;
         return result;
@@ -108,10 +131,11 @@ class Int64Map<V> {
         var index = hash & mask;
 
         while (true) {
-            if (_values[index] == null) {
+            if (!_used[index]) {
                 _keys1[index] = high;
                 _keys2[index] = low;
                 _values[index] = value;
+                _used[index] = true;
                 size++;
                 return;
             }
@@ -136,7 +160,7 @@ class Int64Map<V> {
         var index = hash & mask;
 
         while (true) {
-            if (_values[index] == null) return null;
+            if (!_used[index]) return null;
             if (_keys1[index] == high && _keys2[index] == low) return _values[index];
             index = (index + 1) & mask;
         }
@@ -155,7 +179,7 @@ class Int64Map<V> {
         var index = hash & mask;
 
         while (true) {
-            if (_values[index] == null) return false;
+            if (!_used[index]) return false;
             if (_keys1[index] == high && _keys2[index] == low) return true;
             index = (index + 1) & mask;
         }
@@ -174,21 +198,23 @@ class Int64Map<V> {
         var index = hash & mask;
 
         while (true) {
-            if (_values[index] == null) {
+            if (!_used[index]) {
                 return false;
             }
             if (_keys1[index] == high && _keys2[index] == low) {
                 _values[index] = null;
+                _used[index] = false;
                 size--;
 
                 // Re-insert any entries in the probe chain
                 index = (index + 1) & mask;
-                while (_values[index] != null) {
+                while (_used[index]) {
                     var k1 = _keys1[index];
                     var k2 = _keys2[index];
                     var v = _values[index];
 
                     _values[index] = null;
+                    _used[index] = false;
                     size--;
 
                     set(k1, k2, v);
@@ -242,7 +268,7 @@ private class Int64MapIterator<V> {
     }
 
     inline function skipNulls() {
-        while (index < map._values.length && map._values[index] == null) {
+        while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }
@@ -270,7 +296,7 @@ private class Int64MapKeyIterator<V> {
     }
 
     inline function skipNulls() {
-        while (index < map._values.length && map._values[index] == null) {
+        while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }
@@ -299,7 +325,7 @@ private class Int64MapKeyValueIterator<V> {
     }
 
     inline function skipNulls() {
-        while (index < map._values.length && map._values[index] == null) {
+        while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }

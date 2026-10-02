@@ -249,7 +249,7 @@ private class NodeIdMapIterator<V> {
     }
 
     inline function skipNulls() {
-        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+        @:privateAccess while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }
@@ -277,7 +277,7 @@ private class NodeIdMapKeyIterator<V> {
     }
 
     inline function skipNulls() {
-        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+        @:privateAccess while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }
@@ -306,7 +306,7 @@ private class NodeIdMapKeyValueIterator<V> {
     }
 
     inline function skipNulls() {
-        @:privateAccess while (index < map._values.length && map._values[index] == null) {
+        @:privateAccess while (index < map._values.length && !map.isUsed(index)) {
             index++;
         }
     }
