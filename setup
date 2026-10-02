@@ -144,6 +144,29 @@ async function extractArchive(archivePath, destDir) {
  * The language server is tooling (CLI, editors): it must not end up in the
  * runtime exports that projects embed. Fails when a runtime export has it.
  */
+/**
+ * Runs a GDScript test script in headless Godot. A script that fails to parse
+ * never calls quit(), and Godot would then run forever: --quit-after ends it,
+ * but with exit code 0, so success also requires the marker the script prints
+ * once it is done.
+ */
+async function godotTest(godotBin, args, marker) {
+    args = ['--quit-after', '600'].concat(args);
+    console.log('\n> ' + godotBin + ' ' + args.join(' '));
+    return new Promise((resolve, reject) => {
+        let output = '';
+        const child = spawn(godotBin, args, { stdio: ['inherit', 'pipe', 'pipe'], env: process.env });
+        child.stdout.on('data', (data) => { output += data; process.stdout.write(data); });
+        child.stderr.on('data', (data) => { output += data; process.stderr.write(data); });
+        child.on('close', (code) => {
+            if (code !== 0) reject(new Error(`Godot exited with code ${code}`));
+            else if (!output.includes(marker)) reject(new Error(`Godot stopped without printing "${marker}": the test script did not run to its end`));
+            else resolve(code);
+        });
+        child.on('error', reject);
+    });
+}
+
 function checkNoLanguageServer(exportName, found) {
     if (found) {
         throw new Error('The language server (loreline.lsp) is in the ' + exportName + ' runtime export');
@@ -1650,10 +1673,10 @@ async function main() {
         await command('bash', [path.join(__dirname, 'sample', 'loreline-godot', 'godot-import.sh'), godotBin, testProject]);
 
         // Full .lor suite through the compiled runtime
-        await command(godotBin, ['--headless', '--path', testProject, '--script', 'res://run_tests.gd', '--', path.join(__dirname, 'test')]);
+        await godotTest(godotBin, ['--headless', '--path', testProject, '--script', 'res://run_tests.gd', '--', path.join(__dirname, 'test')], 'tests passed');
 
         // Public API parity check
-        await command(godotBin, ['--headless', '--path', testProject, '--script', 'res://api_parity.gd']);
+        await godotTest(godotBin, ['--headless', '--path', testProject, '--script', 'res://api_parity.gd'], 'API_PARITY_OK');
     }
 
     if (testGodotLifetime) {
