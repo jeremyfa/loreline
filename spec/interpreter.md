@@ -547,6 +547,16 @@ only lets the printer write back the form of the source.
   (`Lexer.isConditionUntilLineEnd`). `Tell me if it is true.` stays text,
   `Go outside if mood is "angry"` is a line with a condition.
 
+### `and` and `or`
+
+Both operands must be booleans, otherwise the operation is a `RuntimeError`.
+The left side is always evaluated. The right side is evaluated only when the
+left one leaves the result open: `false and x` and `true or x` never evaluate
+`x`, so a function call there does not run (`evaluateExpression`, case
+`NBinary`). Lorscript functions already evaluate `&&` and `||` this way. The
+conditions of a `when` block are still all evaluated, one per rule: the
+short-circuit applies inside each condition.
+
 ### `evalAlternative`
 
 Alternatives come in five modes. All use `nodeStates` to persist their visit
