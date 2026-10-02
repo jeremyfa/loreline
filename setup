@@ -151,6 +151,54 @@ function checkNoLanguageServer(exportName, found) {
     console.log('No language server in the ' + exportName + ' runtime export');
 }
 
+/**
+ * The C# generator of Haxe (in the generics build, not with erase-generics)
+ * writes `Std.string(x)` as `x == null ? "null" : Std.string(x)`, copying x
+ * instead of evaluating it once. A call in x then runs twice, and an inline call
+ * declaring locals no longer compiles (CS0136). Fails when a copied argument
+ * holds a call that is not known to be harmless.
+ */
+function checkStdStringCopies(dir) {
+    // Calls whose second run is harmless: they only read
+    const harmless = ['global::loreline.Arrays.arrayGet('];
+    const marker = '== null )) ? ("null") : (global::Std.@string(';
+    const found = [];
+    const walk = (current) => {
+        for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+            const full = path.join(current, entry.name);
+            if (entry.isDirectory()) { walk(full); continue; }
+            if (!entry.name.endsWith('.cs')) continue;
+            const text = fs.readFileSync(full, 'utf8');
+            let k = 0;
+            while ((k = text.indexOf(marker, k)) != -1) {
+                // The copied argument, up to its closing parenthesis
+                const start = k + marker.length;
+                let depth = 0, end = start;
+                for (; end < text.length; end++) {
+                    const c = text[end];
+                    if (c == '(') depth++;
+                    else if (c == ')') { if (depth == 0) break; depth--; }
+                }
+                const arg = text.substring(start, end);
+                // A call: a name or a closing bracket followed by an opening parenthesis,
+                // casts like ((object) (x)) excluded
+                const withoutCasts = arg.replace(/\(\((?:object|string|int|long|double|bool)\)\s*/g, '(');
+                const hasCall = /[\w\]>]\s*\(/.test(withoutCasts);
+                if (hasCall && !harmless.some(h => arg.includes(h))) {
+                    const line = text.substring(0, k).split('\n').length;
+                    found.push(path.relative(__dirname, full) + ':' + line + ': ' + arg.replace(/\s+/g, ' ').substring(0, 160));
+                }
+                k = start;
+            }
+        }
+    };
+    walk(dir);
+    if (found.length > 0) {
+        throw new Error('Std.string arguments copied by the C# generator hold a call, which runs twice:\n' + found.join('\n'));
+    }
+    console.log('No call in the Std.string arguments copied by the C# generator');
+}
+
 // Example usage with async/await
 async function main() {
 
@@ -2286,6 +2334,7 @@ async function main() {
         // 4. C# (with generics) build + tests (plain Haxe consumer mode)
         console.log('\n=== C# (with generics) build + tests ===');
         await command('node', ['./setup', '--cs-generics']);
+        checkStdStringCopies(path.join(__dirname, 'build', 'cs-generics', 'src'));
         await command('dotnet', ['run', '--project', 'build/cs-generics', '--', 'test', './test']);
 
         // 5. C# (with generics) AOT build + tests
