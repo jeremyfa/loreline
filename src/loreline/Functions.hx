@@ -351,18 +351,7 @@ class Functions {
      * ```
      */
     public function bool(value:Any):Bool {
-        if (value is Bool) return (value : Bool);
-        if (value is String) return (value : String).length > 0;
-        if (Arrays.isArray(value)) return Arrays.arrayLength(value) > 0;
-        #if php
-        // On PHP, isOfType(Int) also matches integral floats while the typed
-        // Int comparison compiles to a strict check. Keep the check loose.
-        if (value is Int || value is Float) return (value : Float) != 0;
-        #else
-        if (value is Int) return (value : Int) != 0;
-        if (value is Float) return (value : Float) != 0;
-        #end
-        return value != null;
+        return Values.isTruthy(value);
     }
 
     // -- String --------------------------------------------------------
@@ -637,6 +626,7 @@ class Functions {
     /**
      * Finds and removes the first occurrence of a value from an array.
      * Returns `true` if the value was found and removed, `false` if not found.
+     * Values compare like with `==`.
      *
      * ```lor
      * array_remove(inventory, "old key")
@@ -647,7 +637,7 @@ class Functions {
         if (Arrays.isArray(array)) {
             final len = Arrays.arrayLength(array);
             for (i in 0...len) {
-                if (Arrays.arrayGet(array, i) == value) {
+                if (Values.equals(Arrays.arrayGet(array, i), value)) {
                     Arrays.arrayRemoveAt(array, i);
                     return true;
                 }
@@ -659,6 +649,7 @@ class Functions {
     /**
      * Finds the position of a value in an array (starting from `0`).
      * Returns `-1` if the value is not in the array.
+     * Values compare like with `==`.
      *
      * ```lor
      * pos = array_index(suspects, "Butler")
@@ -668,7 +659,7 @@ class Functions {
         if (Arrays.isArray(array)) {
             final len = Arrays.arrayLength(array);
             for (i in 0...len) {
-                if (Arrays.arrayGet(array, i) == value) {
+                if (Values.equals(Arrays.arrayGet(array, i), value)) {
                     return i;
                 }
             }
@@ -678,6 +669,7 @@ class Functions {
 
     /**
      * Checks if an array contains a given value.
+     * Values compare like with `==`.
      *
      * ```lor
      * if array_has(inventory, "golden key")
@@ -690,7 +682,7 @@ class Functions {
         if (Arrays.isArray(array)) {
             final len = Arrays.arrayLength(array);
             for (i in 0...len) {
-                if (Arrays.arrayGet(array, i) == value) {
+                if (Values.equals(Arrays.arrayGet(array, i), value)) {
                     return true;
                 }
             }
@@ -700,8 +692,8 @@ class Functions {
 
     /**
      * Sorts the array in place and returns it.
-     * Numbers are sorted from smallest to largest; other values are sorted
-     * alphabetically.
+     * Numbers come first, from smallest to largest, then texts in alphabetical
+     * order, then any other value in its original order.
      *
      * ```lor
      * scores = [30, 10, 20]
@@ -711,11 +703,41 @@ class Functions {
      */
     public function array_sort(array:Any):Dynamic {
         if (Arrays.isArray(array)) {
-            Arrays.arraySort(array, (a, b) -> {
-                if (a is Float && b is Float) return (a : Float) < (b : Float) ? -1 : ((a : Float) > (b : Float) ? 1 : 0);
-                if (a is Int && b is Int) return (a : Int) < (b : Int) ? -1 : ((a : Int) > (b : Int) ? 1 : 0);
-                return Std.string(a) < Std.string(b) ? -1 : (Std.string(a) > Std.string(b) ? 1 : 0);
+            // Each value is sorted with its original position, which settles the
+            // ties: the order is the same whether the sort of the target is
+            // stable or not
+            final length = Arrays.arrayLength(array);
+            final entries:Array<SortEntry> = [];
+            for (i in 0...length) {
+                final value:Any = Arrays.arrayGet(array, i);
+                final type = Type.typeof(value);
+                final rank = switch type {
+                    case TInt | TFloat: 0;
+                    case _: (value is String) ? 1 : 2;
+                }
+                entries.push({
+                    value: value,
+                    rank: rank,
+                    number: rank == 0 ? Values.numberOf(value, type) : 0.0,
+                    index: i
+                });
+            }
+            entries.sort((a, b) -> {
+                if (a.rank != b.rank) return a.rank < b.rank ? -1 : 1;
+                if (a.rank == 0) {
+                    if (a.number < b.number) return -1;
+                    if (a.number > b.number) return 1;
+                }
+                if (a.rank == 1) {
+                    final textA:String = a.value;
+                    final textB:String = b.value;
+                    if (textA != textB) return textA < textB ? -1 : 1;
+                }
+                return a.index < b.index ? -1 : (a.index > b.index ? 1 : 0);
             });
+            for (i in 0...length) {
+                Arrays.arraySet(array, i, entries[i].value);
+            }
         }
         return array;
     }
@@ -1088,4 +1110,15 @@ class Functions {
         }
         return result;
     }
+}
+
+/**
+ * A value of an array being sorted by array_sort: its rank (0 for a number,
+ * 1 for a text, 2 for anything else), its number, and its original position.
+ */
+private typedef SortEntry = {
+    value:Any,
+    rank:Int,
+    number:Float,
+    index:Int
 }
