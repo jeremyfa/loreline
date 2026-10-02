@@ -1,0 +1,90 @@
+// `and` and `or` stop as soon as the result is known: the right side is not
+// evaluated, so it has no side effect. The counter of `probe` shows which sides
+// were evaluated, in when conditions, if statements, choice option conditions
+// and interpolations.
+
+state
+  count: 0
+  gold: 20
+
+function probe(value)
+  count = count + 1
+  return value
+
+beat Start
+  // Plain conditions
+  if false and probe(true)
+    Not here.
+  if true or probe(true)
+    Skipped the right side.
+  Probed $count times.
+
+  count = 0
+  if true and probe(true)
+    Both sides.
+  if false or probe(true)
+    Both sides again.
+  Probed $count times.
+
+  // A chain stops at the first false clause
+  count = 0
+  if probe(true) and probe(false) and probe(true) and probe(true)
+    Not here.
+  Probed $count times.
+
+  // When conditions: every rule is evaluated, each one short-circuits
+  count = 0
+  when
+    gold > 100 and probe(true)
+      Rich.
+    gold > 10 and probe(true)
+      Comfortable.
+    true
+      Broke.
+  Probed $count times.
+
+  // Choice option conditions
+  count = 0
+  choice
+    Buy if gold > 100 and probe(true)
+      Bought.
+    Look if gold > 10 or probe(true)
+      Looked.
+  Probed $count times.
+
+  // Interpolations
+  count = 0
+  The result is ${false and probe(true)}, ${true or probe(true)} and ${gold > 10 and probe(true)}.
+  Probed $count times.
+
+/*
+<test>
+- choices: [1]
+  expected: |
+    ~ Skipped the right side.
+
+    ~ Probed 0 times.
+
+    ~ Both sides.
+
+    ~ Both sides again.
+
+    ~ Probed 2 times.
+
+    ~ Probed 2 times.
+
+    ~ Comfortable.
+
+    ~ Probed 1 times.
+
+    - Buy
+    + Look
+
+    ~ Looked.
+
+    ~ Probed 0 times.
+
+    ~ The result is false, true and true.
+      Probed 1 times.
+</test>
+*/
