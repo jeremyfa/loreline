@@ -8,6 +8,7 @@ state
   count: 3
   ready: false
   items: ["a"]
+  answer: null
 
 character bob
   name: Bob
@@ -57,11 +58,24 @@ beat Start
 
   bob: Eleven right. if not ready and count is 3
 
+  answer = count is 3 and not ready
+  Assigned answer is $answer.
+
+  Interpolated ${mood is "angry"} and ${count is not 3} and ${not ready or count is 2}.
+
+  when
+    mood is not "angry"
+      Twelve wrong.
+    mood is "angry" and not ready
+      Twelve right.
+    true
+      Twelve fallback.
+
   Function says $describe(3, true), $describe(4, false), $describe(3, false).
 
   choice
-    Twelve if items.length is 1
-      Picked twelve.
+    Thirteen if items.length is 1
+      Picked thirteen.
     Hidden if mood is not "angry"
       Picked hidden.
 
@@ -91,11 +105,17 @@ beat Start
 
     Bob: Eleven right.
 
+    ~ Assigned answer is true.
+
+    ~ Interpolated true and false and true.
+
+    ~ Twelve right.
+
     ~ Function says three, other, none.
 
-    + Twelve
+    + Thirteen
     - Hidden
 
-    ~ Picked twelve.
+    ~ Picked thirteen.
 </test>
 */
