@@ -32,7 +32,7 @@ class Objects {
             return true;
         }
         #end
-        else if (value is Int || value is Float || value is Bool || value is String) {
+        else if (value is Float || value is Int || value is Bool || value is String) {
             return false;
         }
         else if (Arrays.isArray(value)) {
@@ -69,6 +69,10 @@ class Objects {
             if (name == "length") Arrays.arrayLength(fields) else null;
         }
         #end
+        else if (name == "length" && fields is String) {
+            // In characters, the same on every target
+            Texts.length(fields);
+        }
         else {
             Reflect.getProperty(fields, name);
         }

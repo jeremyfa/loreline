@@ -118,8 +118,8 @@ class Functions {
      * You need $val gold coins to enter. // "You need 3 gold coins to enter."
      * ```
      */
-    public function floor(n:Float):Int {
-        return Math.floor(n);
+    public function floor(n:Any):Float {
+        return Math.ffloor(Values.numberArg(n, 'floor'));
     }
 
     /**
@@ -132,8 +132,8 @@ class Functions {
      * The journey takes at least $days days.
      * ```
      */
-    public function ceil(n:Float):Int {
-        return Math.ceil(n);
+    public function ceil(n:Any):Float {
+        return Math.fceil(Values.numberArg(n, 'ceil'));
     }
 
     /**
@@ -146,8 +146,9 @@ class Functions {
      * Your final score is $score.
      * ```
      */
-    public function round(n:Float):Int {
-        return Math.round(n);
+    public function round(n:Any):Float {
+        // Halves go up, -2.5 included: the same rule on every target
+        return Math.ffloor(Values.numberArg(n, 'round') + 0.5);
     }
 
     /**
@@ -160,8 +161,8 @@ class Functions {
      * You were off by $diff points.
      * ```
      */
-    public function abs(n:Float):Float {
-        return Math.abs(n);
+    public function abs(n:Any):Float {
+        return Math.abs(Values.numberArg(n, 'abs'));
     }
 
     /**
@@ -173,8 +174,8 @@ class Functions {
      * damage = min(attack_power, enemy_health)
      * ```
      */
-    public function min(a:Float, b:Float):Float {
-        return Math.min(a, b);
+    public function min(a:Any, b:Any):Float {
+        return smaller(Values.numberArg(a, 'min'), Values.numberArg(b, 'min'));
     }
 
     /**
@@ -186,8 +187,8 @@ class Functions {
      * health = max(health - damage, 0)
      * ```
      */
-    public function max(a:Float, b:Float):Float {
-        return Math.max(a, b);
+    public function max(a:Any, b:Any):Float {
+        return larger(Values.numberArg(a, 'max'), Values.numberArg(b, 'max'));
     }
 
     /**
@@ -200,8 +201,17 @@ class Functions {
      * health = clamp(health + healing, 0, max_health)
      * ```
      */
-    public function clamp(v:Float, lo:Float, hi:Float):Float {
-        return Math.max(lo, Math.min(hi, v));
+    public function clamp(v:Any, lo:Any, hi:Any):Float {
+        return larger(Values.numberArg(lo, 'clamp'), smaller(Values.numberArg(hi, 'clamp'), Values.numberArg(v, 'clamp')));
+    }
+
+    // Math.min and Math.max differ between targets on NaN: NaN wins here
+    static function smaller(a:Float, b:Float):Float {
+        return Math.isNaN(a) || Math.isNaN(b) ? Math.NaN : (a < b ? a : b);
+    }
+
+    static function larger(a:Float, b:Float):Float {
+        return Math.isNaN(a) || Math.isNaN(b) ? Math.NaN : (a > b ? a : b);
     }
 
     /**
@@ -214,8 +224,30 @@ class Functions {
      * The room is $area square meters.
      * ```
      */
-    public function pow(base:Float, exp:Float):Float {
-        return Math.pow(base, exp);
+    public function pow(base:Any, exp:Any):Float {
+        return power(Values.numberArg(base, 'pow'), Values.numberArg(exp, 'pow'));
+    }
+
+    /**
+     * Math.pow with the results of IEEE 754 everywhere. On Python, math.pow
+     * raises an error where IEEE gives NaN (a negative number to a decimal
+     * power) or an infinity (0 to a negative power, a result too large).
+     */
+    static function power(base:Float, exponent:Float):Float {
+        #if python
+        if (base == 0 && exponent < 0) return Math.POSITIVE_INFINITY;
+        if (base < 0 && Math.isFinite(exponent) && Math.ffloor(exponent) != exponent) return Math.NaN;
+        try {
+            return Math.pow(base, exponent);
+        }
+        catch (e:Dynamic) {
+            // Too large: the sign of the result, an odd power of a negative number being negative
+            final odd = Math.ffloor(exponent / 2) * 2 != exponent;
+            return base < 0 && odd ? Math.NEGATIVE_INFINITY : Math.POSITIVE_INFINITY;
+        }
+        #else
+        return Math.pow(base, exponent);
+        #end
     }
 
     // -- Random --------------------------------------------------------
@@ -228,8 +260,19 @@ class Functions {
      * You rolled a $roll!
      * ```
      */
-    public function random(min:Int, max:Int):Int {
-        return Math.floor(min + rng() * (max + 1 - min));
+    public function random(min:Any, max:Any):Float {
+        var lo = Values.numberArg(min, 'random');
+        var hi = Values.numberArg(max, 'random');
+        if (lo > hi) {
+            final swap = lo;
+            lo = hi;
+            hi = swap;
+        }
+        // Whole bounds, inside the range given
+        lo = Math.fceil(lo);
+        hi = Math.ffloor(hi);
+        if (hi < lo) hi = lo;
+        return Math.ffloor(lo + rng() * (hi + 1 - lo));
     }
 
     /**
@@ -242,8 +285,19 @@ class Functions {
      *   You find a rare gem on the ground!
      * ```
      */
-    public function chance(n:Int):Bool {
-        return Math.floor(rng() * n) == 0;
+    /**
+     * A whole number between `min` and `max` included, for the interpreter
+     * itself (alternatives, the `pick` strategy). Draws as `random` does.
+     */
+    public function randomInt(min:Int, max:Int):Int {
+        return Math.floor(min + rng() * (max + 1 - min));
+    }
+
+    public function chance(n:Any):Bool {
+        final count = Values.numberArg(n, 'chance');
+        // A number is drawn every time, so that what follows draws the same
+        final roll = rng();
+        return count <= 1 || Math.ffloor(roll * count) == 0;
     }
 
     /**
@@ -265,8 +319,8 @@ class Functions {
      * // From here, random results differ from one playthrough to another.
      * ```
      */
-    public function seed_random(?seed:Float):Dynamic {
-        interpreter.seedRandom(seed);
+    public function seed_random(?seed:Any):Dynamic {
+        interpreter.seedRandom(seed == null ? null : Values.numberArg(seed, 'seed_random'));
         return null;
     }
 
@@ -280,8 +334,10 @@ class Functions {
      * It's $temperature degrees outside today.
      * ```
      */
-    public function random_float(min:Float, max:Float):Float {
-        return min + rng() * (max - min);
+    public function random_float(min:Any, max:Any):Float {
+        final lo = Values.numberArg(min, 'random_float');
+        final hi = Values.numberArg(max, 'random_float');
+        return lo + rng() * (hi - lo);
     }
 
     // -- Timing --------------------------------------------------------
@@ -295,7 +351,8 @@ class Functions {
      * A massive boulder crashes through the wall!
      * ```
      */
-    public function wait(seconds:Float):Async {
+    public function wait(delay:Any):Async {
+        final seconds = Values.numberArg(delay, 'wait');
         return new Async(done -> {
             #if js
             haxe.Timer.delay(done, Std.int(seconds * 1000));
@@ -319,11 +376,17 @@ class Functions {
      * ```
      */
     @:keep public function float_(value:Any):Dynamic {
-        if (value is Float) return (value : Float);
-        if (value is Int) return (value : Int) * 1.0;
-        if (value is String) return Std.parseFloat(cast value);
-        if (value is Bool) return (value : Bool) ? 1.0 : 0.0;
-        return 0.0;
+        if (value == null) return 0.0;
+        if (value is String) {
+            final number = Values.numberOfText(value);
+            return Math.isNaN(number) ? 0.0 : number;
+        }
+        final type = Type.typeof(value);
+        return switch type {
+            case TInt | TFloat: Values.numberOf(value, type);
+            case TBool: (value : Bool) ? 1.0 : 0.0;
+            case _: 0.0;
+        }
     }
 
     /**
@@ -334,9 +397,7 @@ class Functions {
      * ```
      */
     @:keep public function string_(value:Any):Dynamic {
-        if (value == null) return "null";
-        if (value is String) return (value : String);
-        return Std.string(value);
+        return Values.textOf(value, interpreter);
     }
 
     /**
@@ -379,8 +440,8 @@ class Functions {
      * Your name has $string_length(name) letters.
      * ```
      */
-    public function string_length(text:String):Int {
-        return text.length;
+    public function string_length(text:Any):Int {
+        return Texts.length(Values.textArg(text, 'string_length'));
     }
 
     /**
@@ -393,8 +454,8 @@ class Functions {
      * The crowd chants: $title! $title!
      * ```
      */
-    public function string_upper(text:String):String {
-        return text.toUpperCase();
+    public function string_upper(text:Any):String {
+        return Texts.upper(Values.textArg(text, 'string_upper'));
     }
 
     /**
@@ -402,8 +463,8 @@ class Functions {
      *
      * `string_lower("HELLO")` returns `"hello"`.
      */
-    public function string_lower(text:String):String {
-        return text.toLowerCase();
+    public function string_lower(text:Any):String {
+        return Texts.lower(Values.textArg(text, 'string_lower'));
     }
 
     /**
@@ -416,8 +477,8 @@ class Functions {
      *   Someone needs assistance!
      * ```
      */
-    public function string_contains(text:String, needle:String):Bool {
-        return StringTools.contains(text, needle);
+    public function string_contains(text:Any, needle:Any):Bool {
+        return StringTools.contains(Values.textArg(text, 'string_contains'), Values.textArg(needle, 'string_contains'));
     }
 
     /**
@@ -429,8 +490,13 @@ class Functions {
      * censored = string_replace(message, "darn", "****")
      * ```
      */
-    public function string_replace(text:String, from:String, to:String):String {
-        return StringTools.replace(text, from, to);
+    public function string_replace(text:Any, from:Any, to:Any):String {
+        final source = Values.textArg(text, 'string_replace');
+        final search = Values.textArg(from, 'string_replace');
+        final replacement = Values.textArg(to, 'string_replace');
+        // An empty search goes between the characters, whole ones
+        if (search.length == 0) return Texts.chars(source).join(replacement);
+        return StringTools.replace(source, search, replacement);
     }
 
     /**
@@ -443,8 +509,12 @@ class Functions {
      * The sentence has $length(words) words.
      * ```
      */
-    public function string_split(text:String, sep:String):Array<String> {
-        return text.split(sep);
+    public function string_split(text:Any, sep:Any):Array<String> {
+        final source = Values.textArg(text, 'string_split');
+        final separator = Values.textArg(sep, 'string_split');
+        // An empty separator splits into characters, whole ones
+        if (separator.length == 0) return Texts.chars(source);
+        return source.split(separator);
     }
 
     /**
@@ -452,8 +522,8 @@ class Functions {
      *
      * `string_trim("  hello  ")` returns `"hello"`.
      */
-    public function string_trim(text:String):String {
-        return StringTools.trim(text);
+    public function string_trim(text:Any):String {
+        return StringTools.trim(Values.textArg(text, 'string_trim'));
     }
 
     /**
@@ -468,8 +538,8 @@ class Functions {
      *   The clue mentions a treasure!
      * ```
      */
-    public function string_index(text:String, needle:String):Int {
-        return text.indexOf(needle);
+    public function string_index(text:Any, needle:Any):Int {
+        return Texts.indexOf(Values.textArg(text, 'string_index'), Values.textArg(needle, 'string_index'));
     }
 
     /**
@@ -485,8 +555,11 @@ class Functions {
      * // prefix is "ABC"
      * ```
      */
-    public function string_sub(text:String, start:Any, len:Any):String {
-        return text.substr(Std.int(start), Std.int(len));
+    public function string_sub(text:Any, start:Any, ?len:Any):String {
+        final source = Values.textArg(text, 'string_sub');
+        final from = Std.int(Math.ffloor(Values.numberArg(start, 'string_sub')));
+        if (len == null) return Texts.sub(source, from);
+        return Texts.sub(source, from, Std.int(Math.ffloor(Values.numberArg(len, 'string_sub'))));
     }
 
     /**
@@ -499,8 +572,8 @@ class Functions {
      *   You bow before the knight.
      * ```
      */
-    public function string_starts(text:String, prefix:String):Bool {
-        return StringTools.startsWith(text, prefix);
+    public function string_starts(text:Any, prefix:Any):Bool {
+        return StringTools.startsWith(Values.textArg(text, 'string_starts'), Values.textArg(prefix, 'string_starts'));
     }
 
     /**
@@ -513,8 +586,8 @@ class Functions {
      *   It sounds like a question.
      * ```
      */
-    public function string_ends(text:String, suffix:String):Bool {
-        return StringTools.endsWith(text, suffix);
+    public function string_ends(text:Any, suffix:Any):Bool {
+        return StringTools.endsWith(Values.textArg(text, 'string_ends'), Values.textArg(suffix, 'string_ends'));
     }
 
     /**
@@ -527,11 +600,13 @@ class Functions {
      * // divider is "--------------------"
      * ```
      */
-    public function string_repeat(text:String, count:Int):String {
+    public function string_repeat(text:Any, count:Any):String {
+        final source = Values.textArg(text, 'string_repeat');
+        final times = Math.ffloor(Values.numberArg(count, 'string_repeat'));
         var result = new StringBuf();
         var i = 0;
-        while (i < count) {
-            result.add(text);
+        while (i < times) {
+            result.add(source);
             i++;
         }
         return result.toString();
@@ -554,11 +629,11 @@ class Functions {
      * // "There is 1 box here."
      * ```
      */
-    public function plural(count:Dynamic, singular:String, plural_form:String):String {
-        var n:Float = 0;
-        if (count is Int) n = (count : Int) * 1.0;
-        else if (count is Float) n = (count : Float);
-        return n == 1 ? singular : plural_form;
+    public function plural(count:Any, singular:Any, plural_form:Any):String {
+        // Only the number one, or a text written as it, picks the singular:
+        // any other value, a name included (`$name thing|things`), the plural
+        final one = !(count is Bool) && Values.equals(count, 1);
+        return one ? Values.textArg(singular, 'plural') : Values.textArg(plural_form, 'plural');
     }
 
     // -- Array ---------------------------------------------------------
@@ -586,7 +661,9 @@ class Functions {
      * ```
      */
     public function array_add(array:Any, value:Any):Dynamic {
-        Arrays.arrayPush(array, value);
+        if (Arrays.isArray(array)) {
+            Arrays.arrayPush(array, value);
+        }
         return null;
     }
 
@@ -784,9 +861,15 @@ class Functions {
      * The guests are: $array_join(guests, ", ").
      * ```
      */
-    public function array_join(array:Any, sep:String):String {
+    public function array_join(array:Any, sep:Any):String {
         if (Arrays.isArray(array)) {
-            return Arrays.arrayJoin(array, sep);
+            final separator = Values.textArg(sep, 'array_join');
+            final buf = new StringBuf();
+            for (i in 0...Arrays.arrayLength(array)) {
+                if (i > 0) buf.add(separator);
+                buf.add(Values.textOf(Arrays.arrayGet(array, i), interpreter));
+            }
+            return buf.toString();
         }
         return "";
     }
@@ -864,6 +947,7 @@ class Functions {
      * ```
      */
     public function map_length(map:Any):Int {
+        if (!Objects.isFields(map)) return 0;
         return Objects.getFields(interpreter, map).length;
     }
 
@@ -878,6 +962,7 @@ class Functions {
      * ```
      */
     public function map_keys(map:Any):Array<String> {
+        if (!Objects.isFields(map)) return [];
         final fields = Objects.getFields(interpreter, map);
         fields.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
         return fields;
@@ -891,8 +976,9 @@ class Functions {
      *   You have potions available.
      * ```
      */
-    public function map_has(map:Any, key:String):Bool {
-        return Objects.fieldExists(interpreter, map, key);
+    public function map_has(map:Any, key:Any):Bool {
+        if (!Objects.isFields(map)) return false;
+        return Objects.fieldExists(interpreter, map, Values.textArg(key, 'map_has'));
     }
 
     /**
@@ -904,8 +990,9 @@ class Functions {
      * You have $count arrows left.
      * ```
      */
-    public function map_get(map:Any, key:String):Dynamic {
-        return Objects.getField(interpreter, map, key);
+    public function map_get(map:Any, key:Any):Dynamic {
+        if (!Objects.isFields(map)) return null;
+        return Objects.getField(interpreter, map, Values.textArg(key, 'map_get'));
     }
 
     /**
@@ -915,8 +1002,10 @@ class Functions {
      * map_set(inventory_counts, "arrows", 20)
      * ```
      */
-    public function map_set(map:Any, key:String, value:Any):Dynamic {
-        Objects.setField(interpreter, map, key, value);
+    public function map_set(map:Any, key:Any, value:Any):Dynamic {
+        if (Objects.isFields(map)) {
+            Objects.setField(interpreter, map, Values.textArg(key, 'map_set'), value);
+        }
         return null;
     }
 
@@ -929,9 +1018,11 @@ class Functions {
      * You discard the broken sword.
      * ```
      */
-    public function map_remove(map:Any, key:String):Bool {
-        if (Objects.fieldExists(interpreter, map, key)) {
-            return Objects.removeField(interpreter, map, key);
+    public function map_remove(map:Any, key:Any):Bool {
+        if (!Objects.isFields(map)) return false;
+        final name = Values.textArg(key, 'map_remove');
+        if (Objects.fieldExists(interpreter, map, name)) {
+            return Objects.removeField(interpreter, map, name);
         }
         return false;
     }
@@ -948,6 +1039,7 @@ class Functions {
      * ```
      */
     public function map_copy(map:Any):Dynamic {
+        if (!Objects.isFields(map)) return null;
         final keys = Objects.getFields(interpreter, map);
         final copy = Objects.createFields(interpreter);
         for (key in keys) {

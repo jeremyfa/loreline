@@ -53,6 +53,12 @@ class Printer {
     var _pendingSpace:Bool = false;
 
     /**
+     * How deep the printer is inside interpolations: there, everything has to
+     * fit on the line, objects included.
+     */
+    var _interpolationDepth:Int = 0;
+
+    /**
      * Counts the number of empty lines being printed
      */
     var _numEmptyLines:Int;
@@ -1029,7 +1035,9 @@ class Printer {
                     final canBeSimple = isSimpleInterpolationExpr(expr);
                     write('$');
                     if (!canBeSimple) write('{');
+                    _interpolationDepth++;
                     printNode(expr);
+                    _interpolationDepth--;
                     if (!canBeSimple) write('}');
                 case Tag(closing, content):
                     write(closing ? '</' : '<');
@@ -1127,15 +1135,8 @@ class Printer {
         printLeadingComments(lit);
         switch (lit.literalType) {
             case Number:
-                #if (cs && !macro)
-                if (lit.value is Float && !(lit.value is Int)) {
-                    write(cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', lit.value));
-                } else {
-                    write(Std.string(lit.value));
-                }
-                #else
-                write(Std.string(lit.value));
-                #end
+                // Plain decimal notation, the same on every target
+                write(Values.numberLiteral(Values.numberArg(lit.value, 'print')));
             case Boolean:
                 write(lit.value ? 'true' : 'false');
             case Null:
@@ -1177,6 +1178,17 @@ class Printer {
                     }
                     write(']');
                 }
+            case Object(_) if (_interpolationDepth > 0):
+                // On one line: a line break would end the interpolation
+                write('{');
+                var first = true;
+                for (field in (lit.value:Array<NObjectField>)) {
+                    if (!first) write(', ');
+                    first = false;
+                    write('${field.name}: ');
+                    printNode(field.value);
+                }
+                write('}');
             case Object(style):
                 if (style == Braces) writeln('{');
                 else writeln();

@@ -1600,16 +1600,15 @@ class Cli {
         inline function addPlainChars(start:Int, end:Int) {
             #if neko
             var chars = neko.Utf8.sub(text, start, end - start);
-            #else
-            var chars = text.substring(start, end);
-            #end
             for (i in 0...chars.length) {
-                #if neko
                 result.push(neko.Utf8.sub(chars, i, 1));
-                #else
-                result.push(chars.charAt(i));
-                #end
             }
+            #else
+            // Whole characters: an emoji is two units on some targets
+            for (char in Texts.chars(text.substring(start, end))) {
+                result.push(char);
+            }
+            #end
         }
 
         // Process the string looking for ANSI sequences
@@ -1652,10 +1651,13 @@ class Cli {
             if (nextPos < text.length) {
                 #if neko
                 result.push(combinedAnsi + neko.Utf8.sub(text, nextPos, 1));
-                #else
-                result.push(combinedAnsi + text.charAt(nextPos));
-                #end
                 lastMatchEnd = nextPos + 1;
+                #else
+                // The whole character, which may take two units
+                final char = Texts.sub(text.substr(nextPos), 0, 1);
+                result.push(combinedAnsi + char);
+                lastMatchEnd = nextPos + char.length;
+                #end
             }
             else {
                 // Handle case where ANSI sequence is at the end
