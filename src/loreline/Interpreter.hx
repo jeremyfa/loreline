@@ -661,6 +661,13 @@ typedef InterpreterOptions = {
     public var strictAccess:Bool #if !loreline_typedef_options = false #end;
 
     /**
+     * If set to true, the interpreter prepares its caches when it is created,
+     * before the script starts, see Interpreter.prepareCaches.
+     */
+    #if loreline_typedef_options @:optional #end
+    public var prepareCaches:Bool #if !loreline_typedef_options = false #end;
+
+    /**
      * A custom instanciator to create fields objects.
      */
     #if loreline_typedef_options @:optional #end
@@ -1232,6 +1239,32 @@ class InterpreterContext {
         // e.g. `barista.name := Alex` works even without an explicit `character barista {}`.
         inferImplicitCharactersFromRootBeat();
 
+        if (options?.prepareCaches == true) {
+            prepareCaches();
+        }
+
+    }
+
+    /**
+     * Builds now what the interpreter would otherwise build the first time it
+     * needs it, so that the cost is paid at a chosen moment, like a loading
+     * screen, rather than during play. For now, what each `when` block of the
+     * script and its imports needs to pick a rule: the criteria count of each
+     * rule, and the grouping of long runs of rules by a fact, which takes a
+     * moment on blocks of thousands of rules.
+     *
+     * Optional: without it, each cache is built on first use. It changes when
+     * that cost is paid, never what the script plays. Calling it again only
+     * builds what is missing. The interpreters spawned from this one share its
+     * caches. Setting `stringLiteralProcessors` empties them, and they can be
+     * prepared again. The `prepareCaches` option does the same as a call right
+     * after the creation of the interpreter, before the script starts.
+     */
+    public function prepareCaches():Void {
+        lens.prepareCaches();
+        for (when in lens.getWhenStatements()) {
+            whenBlockInfoOf(when);
+        }
     }
 
     /**
