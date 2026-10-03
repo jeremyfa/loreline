@@ -76,13 +76,13 @@ Each `test/*.lor` file ends with a `<test>` YAML block describing its test cases
 
 On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
 
-### How Loreline is authored
+## How Loreline is authored
 
 Loreline's core runtime (its lexer, parser, interpreter and the overall architecture that ties them together) has been written by hand. The Loreline language is also the result of many design iterations that are essentially human authored.
 
-That said, I have used coding assistants for unit tests, scaffolding, debugging, documenting the code, continuous integration, fixes to the runtime and help implementing new features. All of this improves the overall reliability and quality of Loreline, makes sure that anything tested won't break in the future, and gives me more bandwidth for the more creative, interesting and trickier parts of Loreline itself. I weighed that this use would benefit the users of the project, and I take entire responsibility for all the code and design choices in this repository.
+That said, I have used coding assistants for unit tests, scaffolding, debugging, documenting the code, continuous integration, fixes to the runtime and help implementing new features. All of this improves the overall reliability and quality of Loreline and makes sure that anything tested won't break in the future. I considered that this use would benefit the users of the project, and I take full responsibility for all the code and design choices in this repository.
 
-For some context on where I stand, I don't endorse the use of generative AI as a general rule: I care a lot about writing code myself, especially the creative parts, and about human authorship in general. I reject the use of any AI-generated asset or content in the games I make.
+For some context on where I stand, I don't endorse the use of generative AI as a general rule: I care a lot about writing code myself, especially when used as a creative medium, as well as human authorship in general. I reject the use of any AI-generated asset or content in the games I make.
 
 ## License
 
