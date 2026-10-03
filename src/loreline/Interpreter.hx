@@ -6870,6 +6870,56 @@ class InterpreterContext {
      * @param t The type to get a name for
      * @return A human-readable name for the type
      */
+    /**
+     * The number held by a value already known to be an Int or a Float.
+     */
+    static inline function numberOf(value:Dynamic, type:ValueType):Float {
+        return switch type {
+            case TInt: (value : Int);
+            case _: (value : Float);
+        }
+    }
+
+    /**
+     * Numbers, booleans and null: values that can hold no reference.
+     */
+    static inline function isPlainValueType(type:ValueType):Bool {
+        return switch type {
+            case TInt | TFloat | TBool | TNull: true;
+            case _: false;
+        }
+    }
+
+    /**
+     * Equality of two values when one of them may be a beat or a character
+     * reference: a reference compared with a string uses its name.
+     */
+    function looseEquals(left:Dynamic, right:Dynamic):Bool {
+        final leftBeat = RuntimeBeatRef.beatOf(left);
+        final rightBeat = RuntimeBeatRef.beatOf(right);
+        final leftCharacter = RuntimeCharacterRef.characterOf(left);
+        final rightCharacter = RuntimeCharacterRef.characterOf(right);
+        return if (leftBeat != null && right is String) {
+            leftBeat.name == (right : String);
+        } else if (left is String && rightBeat != null) {
+            (left : String) == rightBeat.name;
+        } else if (leftBeat != null && rightBeat != null) {
+            leftBeat.name == rightBeat.name;
+        } else if (leftCharacter != null && right is String) {
+            leftCharacter.name == (right : String);
+        } else if (left is String && rightCharacter != null) {
+            (left : String) == rightCharacter.name;
+        } else if (leftCharacter != null || rightCharacter != null) {
+            // Character refs compare by underlying fields identity,
+            // so a ref also equals the raw character fields bag
+            final l:Any = leftCharacter != null ? leftCharacter.fields : left;
+            final r:Any = rightCharacter != null ? rightCharacter.fields : right;
+            l == r;
+        } else {
+            left == right;
+        };
+    }
+
     function getTypeName(t:ValueType):String {
         return switch t {
             case TNull: "Null";
@@ -6909,7 +6959,7 @@ class InterpreterContext {
                 switch [leftType, rightType] {
                     // Number + Number
                     case [TInt | TFloat, TInt | TFloat]:
-                        Std.parseFloat(Std.string(left)) + Std.parseFloat(Std.string(right));
+                        numberOf(left, leftType) + numberOf(right, rightType);
                     // String + Any (allows string concatenation)
                     case [TClass(String), _] | [_, TClass(String)]:
                         Std.string(left) + Std.string(right);
@@ -6920,8 +6970,8 @@ class InterpreterContext {
             case OpMinus | OpMultiply | OpDivide | OpModulo:
                 switch [leftType, rightType] {
                     case [TInt | TFloat, TInt | TFloat]:
-                        final leftNum = Std.parseFloat(Std.string(left));
-                        final rightNum = Std.parseFloat(Std.string(right));
+                        final leftNum = numberOf(left, leftType);
+                        final rightNum = numberOf(right, rightType);
                         switch op {
                             case OpMinus: leftNum - rightNum;
                             case OpMultiply: leftNum * rightNum;
@@ -6945,30 +6995,15 @@ class InterpreterContext {
                 }
 
             case OpEquals(_) | OpNotEquals(_):
-                // Allow comparison between any types
-                // Special case: beat values/references compared with String use the beat name
-                final leftBeat = RuntimeBeatRef.beatOf(left);
-                final rightBeat = RuntimeBeatRef.beatOf(right);
-                final leftCharacter = RuntimeCharacterRef.characterOf(left);
-                final rightCharacter = RuntimeCharacterRef.characterOf(right);
-                final result = if (leftBeat != null && right is String) {
-                    leftBeat.name == (right : String);
-                } else if (left is String && rightBeat != null) {
-                    (left : String) == rightBeat.name;
-                } else if (leftBeat != null && rightBeat != null) {
-                    leftBeat.name == rightBeat.name;
-                } else if (leftCharacter != null && right is String) {
-                    leftCharacter.name == (right : String);
-                } else if (left is String && rightCharacter != null) {
-                    (left : String) == rightCharacter.name;
-                } else if (leftCharacter != null || rightCharacter != null) {
-                    // Character refs compare by underlying fields identity,
-                    // so a ref also equals the raw character fields bag
-                    final l:Any = leftCharacter != null ? leftCharacter.fields : left;
-                    final r:Any = rightCharacter != null ? rightCharacter.fields : right;
-                    l == r;
-                } else {
+                // Allow comparison between any types. Two strings, or two plain
+                // values, compare directly; anything else may hold a beat or a
+                // character reference
+                final result = if (left is String && right is String) {
+                    (left : String) == (right : String);
+                } else if (isPlainValueType(leftType) && isPlainValueType(rightType)) {
                     left == right;
+                } else {
+                    looseEquals(left, right);
                 };
                 switch op {
                     case OpEquals(_): result;
@@ -6979,8 +7014,8 @@ class InterpreterContext {
             case OpGreater | OpGreaterEq | OpLess | OpLessEq:
                 switch [leftType, rightType] {
                     case [TInt | TFloat, TInt | TFloat]:
-                        final leftNum = Std.parseFloat(Std.string(left));
-                        final rightNum = Std.parseFloat(Std.string(right));
+                        final leftNum = numberOf(left, leftType);
+                        final rightNum = numberOf(right, rightType);
                         switch op {
                             case OpGreater: leftNum > rightNum;
                             case OpGreaterEq: leftNum >= rightNum;
