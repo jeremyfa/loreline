@@ -1,0 +1,45 @@
+// Object literals in the code of functions accept quoted keys, like JSON: a
+// key that is not a plain name (with a space, or a word like `is`), or any key
+// written between quotes out of habit.
+
+function quoted()
+  var o = { "name": "Ana", "full name": "Ana Lima", "age": 31 }
+  return o.name + ", " + o.age + ", " + o.keys().length
+
+function mixed()
+  var o = {
+    "first": 1,
+    second: 2,
+    "third": 3
+  }
+  return o.first + o.second + o.third
+
+function nested()
+  var o = { "inner": { "value": "deep" }, "list": [{ "k": "v" }] }
+  return o.inner.value + " " + o.list[0].k
+
+function tricky()
+  var o = { "a: b": "colon", "quote \" inside": "escaped", "": "empty" }
+  return o.keys().length
+
+beat Start
+  Quoted give ${quoted()}.
+
+  Mixed give ${mixed()}.
+
+  Nested give ${nested()}.
+
+  Tricky give ${tricky()}.
+
+/*
+<test>
+- expected: |
+    ~ Quoted give Ana, 31, 3.
+
+    ~ Mixed give 6.
+
+    ~ Nested give deep v.
+
+    ~ Tricky give 3.
+</test>
+*/

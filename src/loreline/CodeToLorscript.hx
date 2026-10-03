@@ -1008,6 +1008,23 @@ class CodeToLorscript {
         // Skip any whitespace and comments before looking for label
         pos = skipWhitespaceAndComments(pos);
 
+        // A quoted key, like JSON: a text followed by a colon, which can't
+        // start a block
+        if (input.uCharCodeAt(pos) == '"'.code) {
+            pos++;
+            while (pos < length && input.uCharCodeAt(pos) != '"'.code) {
+                if (input.uCharCodeAt(pos) == "\\".code) pos++;
+                if (input.uCharCodeAt(pos) == "\n".code) return false;
+                pos++;
+            }
+            if (pos >= length) return false;
+            pos++;
+            while (pos < length && isWhitespace(input.uCharCodeAt(pos))) {
+                pos++;
+            }
+            return pos < length && input.uCharCodeAt(pos) == ":".code;
+        }
+
         // Check if we have a valid identifier
         if (!isIdentifierStart(input.uCharCodeAt(pos))) {
             return false;
