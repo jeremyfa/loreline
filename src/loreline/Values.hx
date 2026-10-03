@@ -248,6 +248,26 @@ class Values {
     }
 
     /**
+     * The kind of a value as the word `type_of` gives: "number", "text",
+     * "bool", "array", "object", "beat", "character", "function" or "null".
+     * Integers and decimals are both "number": the difference depends on the
+     * target, not on the script.
+     */
+    public static function typeOf(value:Any):String {
+        if (value == null) return 'null';
+        if (value is String) return 'text';
+        if (Arrays.isArray(value)) return 'array';
+        if (RuntimeBeatRef.beatOf(value) != null) return 'beat';
+        if (RuntimeCharacterRef.characterOf(value) != null) return 'character';
+        return switch Type.typeof(value) {
+            case TBool: 'bool';
+            case TInt | TFloat: 'number';
+            case TFunction: 'function';
+            case _: 'object';
+        }
+    }
+
+    /**
      * A short name for the kind of a value, for error messages.
      */
     public static function kindOf(value:Any):String {

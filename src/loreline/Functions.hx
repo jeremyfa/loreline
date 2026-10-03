@@ -46,6 +46,7 @@ class Functions {
         target.set("float", this.float_);
         target.set("string", this.string_);
         target.set("bool", this.bool);
+        target.set("type_of", this.type_of);
         // String
         target.set("string_length", this.string_length);
         target.set("string_upper", this.string_upper);
@@ -352,6 +353,20 @@ class Functions {
      */
     public function bool(value:Any):Bool {
         return Values.isTruthy(value);
+    }
+
+    /**
+     * Tells what kind of value this is, as a word: `"number"`, `"text"`,
+     * `"bool"`, `"array"`, `"object"`, `"beat"`, `"character"`, `"function"`
+     * or `"null"`. Whole and decimal numbers are both `"number"`.
+     *
+     * ```lor
+     * if type_of(gift) is "text"
+     *   barista: A note? How sweet.
+     * ```
+     */
+    public function type_of(value:Any):String {
+        return Values.typeOf(value);
     }
 
     // -- String --------------------------------------------------------
