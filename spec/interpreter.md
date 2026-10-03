@@ -591,6 +591,31 @@ and `when` rules, `not`, `and`, `or`, the ternary, `bool()`): false for
 The save delta (`Equal.equal`, see section 13) does not use these rules: it is
 strict, so that a value which changes kind (`0` to `false`) is saved.
 
+**Numbers as text** (`Values.numberText`): wherever a number becomes text
+(interpolation, `+` with a text in a script or a function, `string()`,
+`array_join`, arrays and objects written out), it has up to 15 significant
+digits, no trailing zeros, and no exponent between 0.000001 and 10^21:
+`0.1 + 0.2` reads `0.3`, `5.0` reads `5`, `pow(10, 21)` reads `1e+21`. The
+digits are computed with plain IEEE operations rather than the conversion of
+each target, which differ. `NaN`, `Infinity` and `-Infinity` are spelled out,
+-0 reads `0`. The printer writes number literals in plain decimal notation
+instead (`Values.numberLiteral`), with the fewest digits that read back as the
+same number, as the lexer reads no exponent.
+
+**Texts** (`Texts`): the text built-in functions, and `.length` on a text, count
+characters: an accented letter or an emoji counts for one, whatever the target
+holds (UTF-8 bytes, UTF-16 units or code points). Upper and lower case follow a
+table of Loreline (Latin letters of European languages, Greek, Cyrillic, `ß`
+becoming `SS`).
+
+**Arguments of built-in functions** (`Values.numberArg`, `Values.textArg`): a
+number argument takes a number or a text written as a number, a text argument
+takes a text, a number or a boolean. Anything else is a `RuntimeError` naming
+the function and what it got (`floor() expects a number, got null`), at the
+position of the call. The array and map functions treat a value that is not an
+array or an object as an empty one, and `plural()` picks the plural form for
+any value other than one.
+
 ### `and` and `or`
 
 Any value is accepted, read with its truthiness, and the result is a boolean.
