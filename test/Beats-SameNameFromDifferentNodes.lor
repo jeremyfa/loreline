@@ -1,0 +1,63 @@
+// The same beat name resolves to a different beat depending on where it is
+// written: each parent has its own nested `Local`, and the top-level `Shared`
+// is found from everywhere. The resolution stays right when the same names are
+// used again and again, from calls, transitions and when insertions. In B's when
+// block, its own `true` rule wins the tie: the inserted one was already played.
+
+beat A
+  beat Local
+    Local of A.
+  Local()
+  Shared()
+  Local()
+  when
+    + Local
+    true
+      A has no rule.
+  -> B
+
+beat B
+  beat Local
+    Local of B.
+    when
+      true
+        Rule of B's Local.
+  Local()
+  Shared()
+  when
+    + Local
+    true
+      B has no rule.
+  Local()
+
+beat Shared
+  Shared beat.
+
+/*
+<test>
+- expected: |
+    ~ Local of A.
+
+    ~ Shared beat.
+
+    ~ Local of A.
+
+    ~ Local of A.
+
+    ~ A has no rule.
+
+    ~ Local of B.
+
+    ~ Rule of B's Local.
+
+    ~ Shared beat.
+
+    ~ Local of B.
+
+    ~ B has no rule.
+
+    ~ Local of B.
+
+    ~ Rule of B's Local.
+</test>
+*/
