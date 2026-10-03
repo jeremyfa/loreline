@@ -18,6 +18,8 @@ class ValuesTests {
         final tests:Array<{name:String, fn:()->Void}> = [
             {name: 'ordering other values is an error in scripts', fn: () -> testOrderingErrors(false)},
             {name: 'ordering other values is an error in functions', fn: () -> testOrderingErrors(true)},
+            {name: 'wrong operands of arithmetic are errors in scripts', fn: () -> testArithmeticErrors(false)},
+            {name: 'wrong operands of arithmetic are errors in functions', fn: () -> testArithmeticErrors(true)},
             {name: 'texts read as numbers', fn: () -> testNumericTexts(true)},
             {name: 'texts not read as numbers', fn: () -> testNumericTexts(false)}
         ];
@@ -105,6 +107,40 @@ class ValuesTests {
                 if (!last.startsWith('error: ') || last.indexOf('Cannot compare') == -1) {
                     errors.push('${pair[0]} $op ${pair[1]}: expected a "Cannot compare" error, got ' + seen.join(', '));
                 }
+            }
+        }
+        if (errors.length > 0) throw errors.join('\n');
+    }
+
+    /** Operations, and the message of the error each one gives. */
+    static final ARITHMETIC_ERRORS:Array<{expr:String, error:String}> = [
+        {expr: '3 * "abc"', error: 'Cannot multiply number and "abc"'},
+        {expr: '"" - 1', error: 'Cannot subtract "" and number'},
+        {expr: 'true - 1', error: 'Cannot subtract bool and number'},
+        {expr: 'null * 2', error: 'Cannot multiply null and number'},
+        {expr: '[1] / 2', error: 'Cannot divide array and number'},
+        {expr: '5 % { a: 1 }', error: 'Cannot take the modulo of number and object'},
+        {expr: 'true + 1', error: 'Cannot add bool and number'},
+        {expr: 'null + 1', error: 'Cannot add null and number'},
+        {expr: '[1] + [2]', error: 'Cannot add array and array'},
+        {expr: '1 / 0', error: 'Division by zero'},
+        {expr: '1 / "0"', error: 'Division by zero'},
+        {expr: '5 % 0', error: 'Modulo by zero'},
+        {expr: '-"abc"', error: 'Cannot negate "abc"'},
+        {expr: '-true', error: 'Cannot negate bool'}
+    ];
+
+    static function testArithmeticErrors(inFunction:Bool):Void {
+        final errors:Array<String> = [];
+        for (item in ARITHMETIC_ERRORS) {
+            // Double quotes: Haxe would read ${...} in single quotes
+            final source = inFunction
+                ? "function compute()\n  return " + item.expr + "\n\nbeat Start\n  Result is ${compute()}.\n"
+                : "beat Start\n  Result is ${" + item.expr + "}.\n";
+            final seen = play(source);
+            final last = seen.length > 0 ? seen[seen.length - 1] : '';
+            if (last != 'error: ' + item.error) {
+                errors.push(item.expr + ': expected "' + item.error + '", got "' + seen.join(', ') + '"');
             }
         }
         if (errors.length > 0) throw errors.join('\n');

@@ -1,0 +1,75 @@
+// Arithmetic, the same in a beat, in a function and on every target. `+` joins
+// texts as soon as one side is a text, and adds two numbers. `-`, `*`, `/` and
+// `%` take numbers, or texts written as numbers. float() turns a text into a
+// number for an addition. Wrong operands are errors, tested in ValuesTests.
+
+state
+  count: 10
+  word: "4"
+
+function compute()
+  return [3 * "4", 10 - "4", 8 / "2", 7 % "4", -"4", "2.5" * 2, " 3 " - 1, "1e3" / 10].join(" ")
+
+function join()
+  return [3 + "4", "4" + 3, "a" + "b", 1.5 + 1, 3 + 4, float("3.5") + 1, "" + 0.1 + 0.2].join(" ")
+
+function assign()
+  var n = 10
+  n -= "4"
+  var m = 3
+  m *= "2"
+  var d = 9
+  d /= "3"
+  var r = 7
+  r %= "4"
+  var t = "a"
+  t += 1
+  var i = "4"
+  i++
+  return [n, m, d, r, t, i].join(" ")
+
+beat Start
+  Numeric texts give ${3 * "4"} ${10 - "4"} ${8 / "2"} ${7 % "4"} ${-"4"} ${"2.5" * 2} ${" 3 " - 1} ${"1e3" / 10}.
+
+  Plus gives ${3 + "4"} ${"4" + 3} ${"a" + "b"} ${1.5 + 1} ${3 + 4} ${float("3.5") + 1} ${"" + 0.1 + 0.2}.
+
+  count -= word
+  Minus assign gives $count.
+
+  count *= "2"
+  Times assign gives $count.
+
+  count /= "3"
+  Divide assign gives $count.
+
+  count += word
+  Plus assign gives $count.
+
+  Function gives ${compute()}.
+
+  Function plus gives ${join()}.
+
+  Function assign gives ${assign()}.
+
+/*
+<test>
+- expected: |
+    ~ Numeric texts give 12 6 4 3 -4 5 2 100.
+
+    ~ Plus gives 34 43 ab 2.5 7 4.5 0.10.2.
+
+    ~ Minus assign gives 6.
+
+    ~ Times assign gives 12.
+
+    ~ Divide assign gives 4.
+
+    ~ Plus assign gives 44.
+
+    ~ Function gives 12 6 4 3 -4 5 2 100.
+
+    ~ Function plus gives 34 43 ab 2.5 7 4.5 0.10.2.
+
+    ~ Function assign gives 6 6 3 3 a1 5.
+</test>
+*/
