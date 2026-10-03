@@ -451,47 +451,51 @@ enum abstract InsertionKind(Int) {
 /**
  * A clause `name is "text"` a condition requires, with the text evaluated.
  */
-typedef WhenIndexText = {
-    var name:String;
-    var text:String;
+@:structInit
+class WhenIndexText {
+    public var name:String;
+    public var text:String;
 }
 
 /**
  * A run of when rules grouped by a fact, see Interpreter.runIndexOf.
  */
-typedef WhenRunIndex = {
+@:structInit
+class WhenRunIndex {
     /** The fact compared with a text */
-    var fact:String;
+    public var fact:String;
     /** The rules comparing the fact with each text, in score order */
-    var groups:Map<String, Array<Int>>;
+    public var groups:Map<String, Array<Int>>;
     /** The rules without a clause on the fact, in score order */
-    var ungrouped:Array<Int>;
+    public var ungrouped:Array<Int>;
 }
 
 /**
  * What the collection of a when block needs, see Interpreter.whenBlockInfoOf.
  */
-typedef WhenBlockInfo = {
+@:structInit
+class WhenBlockInfo {
     /** The criteria count of each rule */
-    var scores:Array<Int>;
+    public var scores:Array<Int>;
     /** The clauses isKnownFalse checks for the condition of each rule, or null */
-    var clauses:Array<Null<Array<WhenIndexText>>>;
+    public var clauses:Array<Null<Array<WhenIndexText>>>;
     /** The runs of plain rules, by start index */
-    var runs:Array<Null<WhenSalientRun>>;
+    public var runs:Array<Null<WhenSalientRun>>;
 }
 
 /**
  * A run of plain rules of a when block, with its grouping by a fact.
  */
-typedef WhenSalientRun = {
+@:structInit
+class WhenSalientRun {
     /** Index after the last rule of the run */
-    var end:Int;
+    public var end:Int;
     /** Whether every condition of the run is pure */
-    var pure:Bool;
+    public var pure:Bool;
     /** The indices of the run by decreasing criteria count, written order within a count */
-    var byScore:Array<Int>;
+    public var byScore:Array<Int>;
     /** The grouping of the run by a fact, if any */
-    var index:Null<WhenRunIndex>;
+    public var index:Null<WhenRunIndex>;
 }
 
 typedef WhenCandidate = {
@@ -1237,8 +1241,7 @@ class InterpreterContext {
      */
     function inferImplicitCharactersFromRootBeat() {
 
-        for (beat in lens.getNodesOfType(NBeatDecl)) {
-            if (beat.name != "_") continue;
+        for (beat in lens.getDefaultBeats()) {
 
             for (name in lens.getDialogueSpeakers(beat)) {
                 // State fields win over characters in resolveAccess, so skip those collisions
@@ -5296,7 +5299,7 @@ class InterpreterContext {
     function indexTextsOf(condition:NExpr):Array<WhenIndexText> {
         final cached = context.whenIndexTexts.get(condition.id);
         if (cached != null) return cached;
-        final texts = [for (clause in lens.indexClausesOf(condition)) {name: clause.name, text: evaluateString(clause.literal).text}];
+        final texts = [for (clause in lens.indexClausesOf(condition)) ({name: clause.name, text: evaluateString(clause.literal).text} : WhenIndexText)];
         context.whenIndexTexts.set(condition.id, texts);
         return texts;
     }

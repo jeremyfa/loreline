@@ -138,37 +138,39 @@ class LorscriptCompletion {
 /**
  * A clause `name is literal` a condition requires, see Lens.indexClausesOf.
  */
-typedef WhenIndexClause = {
-    var name:String;
-    var literal:NStringLiteral;
+@:structInit
+class WhenIndexClause {
+    public var name:String;
+    public var literal:NStringLiteral;
 }
 
 /**
  * A run of plain rules of a when block, see Lens.whenRun.
  */
-typedef WhenRun = {
+@:structInit
+class WhenRun {
     /** Index of the first rule of the run */
-    var start:Int;
+    public var start:Int;
     /** Index after the last rule of the run */
-    var end:Int;
+    public var end:Int;
     /** Whether every condition of the run is pure */
-    var pure:Bool;
+    public var pure:Bool;
     /** The indices of the run by decreasing criteria count, written order within a count */
-    var byScore:Array<Int>;
+    public var byScore:Array<Int>;
 }
 
 class Lens {
     /** The script being analyzed */
     final script:Script;
 
-    /** Map of all nodes by their unique ID */
-    final nodesById:NodeIdMap<Node> = new NodeIdMap();
+    /** Map of all nodes by their unique ID, built on first use, see buildNodeMaps */
+    var nodesById:Null<NodeIdMap<Node>> = null;
 
     /** Map of node IDs to their parent nodes */
     final parentNodes:NodeIdMap<Node> = new NodeIdMap();
 
-    /** Map of node IDs to their child nodes */
-    final childNodes:NodeIdMap<Array<Node>> = new NodeIdMap();
+    /** Map of node IDs to their child nodes, built on first use, see buildNodeMaps */
+    var childNodes:Null<NodeIdMap<Array<Node>>> = null;
 
     final lorscriptFunctions:NodeIdMap<FuncLorscript> = new NodeIdMap();
 
@@ -200,6 +202,18 @@ class Lens {
     /** The runs of plain rules of when blocks, by block then start index, see whenRun. */
     final whenRuns:NodeIdMap<Map<Int, WhenRun>> = new NodeIdMap();
 
+    /** The when blocks of the script and its imports, see getWhenStatements. */
+    final whenStatements:Array<NWhenStatement> = [];
+
+    /** The beats named `_` outside imports, see getDefaultBeats. */
+    final defaultBeats:Array<NBeatDecl> = [];
+
+    /**
+     * The states below the root or temporary, and the beats with parameters,
+     * of the script and its imports: the nodes collectScopedNames reads.
+     */
+    final scopeNodes:Array<Node> = [];
+
     public function new(script:Script) {
         this.script = script;
         initialize();
@@ -209,27 +223,80 @@ class Lens {
      * Initialize all the lookups and analysis data
      */
     function initialize() {
-        // Build node maps
+        // Only the parents are mapped here: the interpreter reads them all along.
+        // The nodes by id and the children serve restores and editor tools, and
+        // cost as much again on a large script: they are built on first use
         script.each((node, parent) -> {
-            // Track nodes by ID
-            nodesById.set(node.id, node);
-
-            // Track parent relationships
             if (parent != null) {
                 parentNodes.set(node.id, parent);
+            }
 
-                // And track the other way around
-                var children = childNodes.get(parent.id);
-                if (children == null) {
-                    children = [];
-                    childNodes.set(parent.id, children);
-                }
-                children.push(node);
+            // Nodes some caches need, found here rather than by another walk
+            if (node is NWhenStatement) {
+                whenStatements.push(cast node);
+            }
+            else if (node is NStateDecl) {
+                final state:NStateDecl = cast node;
+                if (state.temporary || parent == null || !(parent is Script)) scopeNodes.push(node);
+            }
+            else if (node is NBeatDecl) {
+                final beat:NBeatDecl = cast node;
+                if (beat.params != null && beat.params.length > 0) scopeNodes.push(node);
+                if (beat.name == '_' && !isImported(beat)) defaultBeats.push(beat);
             }
         });
     }
 
+    /**
+     * Whether a node comes from an imported script. Its parents are already
+     * mapped when initialize visits it.
+     */
+    function isImported(node:Node):Bool {
+        var current = parentNodes.get(node.id);
+        while (current != null && !(current is Script)) {
+            current = parentNodes.get(current.id);
+        }
+        return current != null && current != script;
+    }
+
+    /**
+     * Builds the maps of the nodes by id and of their children.
+     */
+    function buildNodeMaps():Void {
+        final byId = new NodeIdMap<Node>();
+        final children = new NodeIdMap<Array<Node>>();
+        script.each((node, parent) -> {
+            byId.set(node.id, node);
+            if (parent != null) {
+                var list = children.get(parent.id);
+                if (list == null) {
+                    list = [];
+                    children.set(parent.id, list);
+                }
+                list.push(node);
+            }
+        });
+        nodesById = byId;
+        childNodes = children;
+    }
+
+    /**
+     * The when blocks of the script and its imports.
+     */
+    public function getWhenStatements():Array<NWhenStatement> {
+        return whenStatements;
+    }
+
+    /**
+     * The beats named `_` outside imports: the unnamed beat the parser wraps
+     * top-level content in.
+     */
+    public function getDefaultBeats():Array<NBeatDecl> {
+        return defaultBeats;
+    }
+
     public function getNodeById(id:NodeId):Null<Node> {
+        if (nodesById == null) buildNodeMaps();
         return nodesById.get(id);
     }
 
@@ -974,29 +1041,30 @@ class Lens {
      * state, whatever beat is running or inserted.
      */
     public function isRootOnlyName(name:String):Bool {
-        if (scopedNames == null) {
-            final names = new Map<String, Bool>();
-            for (state in getNodesOfType(NStateDecl, true)) {
-                final parent = getParentNode(state);
-                if (state.temporary || parent == null || !(parent is Script)) {
-                    for (field in state.fields) {
-                        names.set(field.name, true);
-                    }
-                }
-            }
-            for (beat in getNodesOfType(NBeatDecl, true)) {
-                if (beat.params != null) {
-                    for (param in beat.params) {
-                        names.set(param.name, true);
-                    }
-                }
-            }
-            for (internal in ['_whenTick', '_played', '_lastPlayed']) {
-                names.set(internal, true);
-            }
-            scopedNames = names;
-        }
+        if (scopedNames == null) scopedNames = collectScopedNames();
         return !scopedNames.exists(name);
+    }
+
+    function collectScopedNames():Map<String, Bool> {
+        final names = new Map<String, Bool>();
+        for (node in scopeNodes) {
+            if (node is NStateDecl) {
+                final state:NStateDecl = cast node;
+                for (field in state.fields) {
+                    names.set(field.name, true);
+                }
+            }
+            else {
+                final beat:NBeatDecl = cast node;
+                for (param in beat.params) {
+                    names.set(param.name, true);
+                }
+            }
+        }
+        for (internal in ['_whenTick', '_played', '_lastPlayed']) {
+            names.set(internal, true);
+        }
+        return names;
     }
 
     /**
@@ -1009,12 +1077,11 @@ class Lens {
         if (cached != null) return cached;
         var pure = !(expr is NCall || expr is NAssign);
         if (pure) {
-            traverse(expr, (node, parent) -> {
-                if (node is NCall || node is NAssign) {
-                    pure = false;
-                    return false;
-                }
-                return true;
+            // Through the nodes themselves rather than traverse: a condition is
+            // small, and a lookup of its children per node costs more than
+            // visiting all of them
+            expr.each((node, parent) -> {
+                if (node is NCall || node is NAssign) pure = false;
             });
         }
         pureConditions.set(expr.id, pure);
@@ -1087,12 +1154,27 @@ class Lens {
             if (condition != null && !isPureCondition(condition)) pure = false;
             end++;
         }
-        final byScore = [for (i in start...end) i];
-        // A stable sort: the index settles the ties
-        byScore.sort((a, b) -> {
-            final diff = whenRuleScore(when.rules[b]) - whenRuleScore(when.rules[a]);
-            return diff != 0 ? diff : a - b;
-        });
+        // A counting sort by decreasing criteria count, written order within a
+        // count: the counts are small, and a comparison sort would cost much
+        // more on runs of thousands of rules
+        final scores = [for (i in start...end) whenRuleScore(when.rules[i])];
+        var maxScore = 0;
+        for (score in scores) {
+            if (score > maxScore) maxScore = score;
+        }
+        final offsets = [for (_ in 0...maxScore + 2) 0];
+        for (score in scores) {
+            offsets[maxScore - score + 1]++;
+        }
+        for (k in 1...offsets.length) {
+            offsets[k] += offsets[k - 1];
+        }
+        final byScore = [for (_ in start...end) 0];
+        for (i in start...end) {
+            final slot = maxScore - scores[i - start];
+            byScore[offsets[slot]] = i;
+            offsets[slot]++;
+        }
         final run:WhenRun = {start: start, end: end, pure: pure, byScore: byScore};
         runs.set(start, run);
         return run;
@@ -1821,6 +1903,7 @@ class Lens {
 
     public function traverse(node:Node, callback:(node:Node, parent:Node)->Bool):Void {
 
+        if (childNodes == null) buildNodeMaps();
         final children = childNodes.get(node.id);
         if (children != null) {
             for (i in 0...children.length) {
