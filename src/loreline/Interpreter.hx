@@ -661,13 +661,6 @@ typedef InterpreterOptions = {
     public var strictAccess:Bool #if !loreline_typedef_options = false #end;
 
     /**
-     * If set to true, the interpreter prepares its caches when it is created,
-     * before the script starts, see Interpreter.prepareCaches.
-     */
-    #if loreline_typedef_options @:optional #end
-    public var prepareCaches:Bool #if !loreline_typedef_options = false #end;
-
-    /**
      * A custom instanciator to create fields objects.
      */
     #if loreline_typedef_options @:optional #end
@@ -686,6 +679,13 @@ typedef InterpreterOptions = {
      */
     #if loreline_typedef_options @:optional #end
     public var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> #if !loreline_typedef_options = null #end;
+
+    /**
+     * If set to true, the interpreter prepares its caches when it is created,
+     * before the script starts, see Interpreter.prepareCaches.
+     */
+    #if loreline_typedef_options @:optional #end
+    public var prepareCaches:Bool #if !loreline_typedef_options = false #end;
 
 }
 

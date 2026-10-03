@@ -524,13 +524,14 @@ private:
 
 struct Loreline_InterpreterOptions {
     bool strictAccess;
+    bool prepareCaches;
     hx::Object* translationsObj; /* GC-rooted Haxe StringMap, or nullptr */
 
     typedef Loreline_FunctionEntry FunctionEntry;
     std::vector<FunctionEntry> functions;
 
     Loreline_InterpreterOptions()
-        : strictAccess(false), translationsObj(nullptr) {}
+        : strictAccess(false), prepareCaches(false), translationsObj(nullptr) {}
 
     void setTranslations(hx::Object* t) {
         if (translationsObj) hx::GCRemoveRoot(&translationsObj);
@@ -1820,7 +1821,8 @@ static LORELINE_NOINLINE void Loreline_play_hx(
             opts->strictAccess,
             null(), /* customCreateFields, not exposed through C API */
             hxTranslations,
-            null()  /* stringLiteralProcessors, not exposed */
+            null(), /* stringLiteralProcessors, not exposed */
+            opts->prepareCaches
         );
     }
 
@@ -1911,7 +1913,8 @@ static LORELINE_NOINLINE void Loreline_resume_hx(
             opts->strictAccess,
             null(),
             hxTranslations,
-            null()
+            null(),
+            opts->prepareCaches
         );
     }
 
@@ -2086,7 +2089,7 @@ static LORELINE_NOINLINE void Loreline_spawn_hx(
         ::Dynamic hxOptions = null();
         if (!hx::IsNull(hxFunctions)) {
             hxOptions = ::loreline::InterpreterOptions_obj::__new(
-                hxFunctions, false, null(), null(), null());
+                hxFunctions, false, null(), null(), null(), false);
         }
 
         ::String hxKey = linc_toHxString(key);
@@ -2413,6 +2416,23 @@ LORELINE_PUBLIC void Loreline_seedRandom(Loreline_Interpreter* interp, bool hasS
     LORELINE_END_CALL
 }
 
+/* -- Caches -------------------------------------------------------------- */
+
+static LORELINE_NOINLINE void Loreline_prepareCaches_hx(Loreline_Interpreter* interp) {
+    LORELINE_HX_BEGIN
+    ::loreline::Interpreter hxInterp = (::loreline::Interpreter)::Dynamic(interp->obj);
+    hxInterp->prepareCaches();
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC void Loreline_prepareCaches(Loreline_Interpreter* interp) {
+    if (!interp) return;
+
+    LORELINE_BEGIN_CALL
+    Loreline_prepareCaches_hx(interp);
+    LORELINE_END_CALL
+}
+
 /* -- Current node -------------------------------------------------------- */
 
 static LORELINE_NOINLINE void Loreline_currentNode_hx(
@@ -2554,6 +2574,12 @@ LORELINE_PUBLIC void Loreline_optionsSetStrictAccess(
     Loreline_InterpreterOptions* options, bool strict
 ) {
     if (options) options->strictAccess = strict;
+}
+
+LORELINE_PUBLIC void Loreline_optionsSetPrepareCaches(
+    Loreline_InterpreterOptions* options, bool prepare
+) {
+    if (options) options->prepareCaches = prepare;
 }
 
 LORELINE_PUBLIC void Loreline_optionsSetTranslations(

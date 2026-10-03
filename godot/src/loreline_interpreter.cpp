@@ -304,6 +304,7 @@ void LorelineInterpreter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume_spawn", "key", "on_dialogue", "on_choice", "on_finished"), &LorelineInterpreter::resume_spawn, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("resumable_spawn_keys"), &LorelineInterpreter::resumable_spawn_keys);
 	ClassDB::bind_method(D_METHOD("seed_random", "seed"), &LorelineInterpreter::seed_random, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("prepare_caches"), &LorelineInterpreter::prepare_caches);
 	ClassDB::bind_method(D_METHOD("dispose"), &LorelineInterpreter::dispose);
 
 	ADD_SIGNAL(MethodInfo("dialogue",
@@ -1140,6 +1141,20 @@ void LorelineInterpreter::seed_random(const Variant &seed) {
 #else
 	if (!_interp) return;
 	Loreline_seedRandom(_interp, has_seed, value);
+#endif
+}
+
+// Builds the caches of the interpreter now rather than on first use, see
+// Loreline_prepareCaches().
+void LorelineInterpreter::prepare_caches() {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return;
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return;
+	js->eval("_lorelineBridge.prepareCaches(" + String::num_int64(_js_id) + ")", true);
+#else
+	if (!_interp) return;
+	Loreline_prepareCaches(_interp);
 #endif
 }
 

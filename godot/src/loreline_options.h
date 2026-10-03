@@ -42,6 +42,7 @@ class LorelineOptions : public RefCounted {
 
 private:
 	bool _strict_access;
+	bool _prepare_caches;
 	Dictionary _functions;       // String -> Callable (sync, signature: (interp, args))
 	Dictionary _async_functions; // String -> Callable (async, signature: (interp, args, resolve))
 	Ref<LorelineTranslations> _translations;
@@ -70,6 +71,11 @@ public:
 
 	void set_strict_access(bool strict);
 	bool get_strict_access() const;
+
+	// Prepare the caches of the interpreter before the script starts,
+	// like LorelineInterpreter::prepare_caches().
+	void set_prepare_caches(bool prepare);
+	bool get_prepare_caches() const;
 
 	// Register a synchronous custom function.
 	// Callable signature: (interp, args: Array) -> Variant

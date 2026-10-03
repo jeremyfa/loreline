@@ -1298,6 +1298,87 @@ static void runSpawnTest() {
 /* The random generator is saved, and Loreline_seedRandom() reseeds it from the host:
  * same scenario in every binding runner. After a restore at the first line, reseeding
  * with the seed of the script makes the second line draw what the first one drew. */
+static void runPrepareCachesTest() {
+    const char* source =
+        "state\n"
+        "  concept: \"greet\"\n"
+        "\n"
+        "beat Main\n"
+        "  Bark()\n"
+        "  concept = \"leave\"\n"
+        "  Bark()\n"
+        "\n"
+        "beat Bark\n"
+        "  when\n"
+        "    concept is \"greet\"\n"
+        "      Hello.\n"
+        "    concept is \"leave\"\n"
+        "      Bye.\n"
+        "    true\n"
+        "      Nothing.\n";
+    const char* label = "caches: prepareCaches leaves the picks unchanged";
+
+    bool ok = true;
+    std::string error;
+    auto fail = [&](const std::string& msg) {
+        if (ok) { ok = false; error = msg; }
+    };
+    auto check = [&](const SpawnTestLog& log, const std::string& what) {
+        if (log.lines.size() != 2 || log.lines[0] != "root: Hello." || log.lines[1] != "root: Bye.") {
+            std::string got;
+            for (const auto& line : log.lines) got += "\n    " + line;
+            fail(what + ": expected Hello. then Bye., got:" + got);
+        }
+    };
+
+    Loreline_Script* script = Loreline_parse(source, "caches.lor", nullptr, nullptr);
+    if (!script) {
+        fail("Error parsing caches test script");
+    } else {
+        // Prepared by the option, before the script starts
+        SpawnTestLog optionLog;
+        SpawnTestFlow optionFlow { &optionLog, "root" };
+        Loreline_InterpreterOptions* options = Loreline_createOptions();
+        Loreline_optionsSetPrepareCaches(options, true);
+        Loreline_Interpreter* prepared = Loreline_play(
+            script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+            Loreline_String("Main"), options, &optionFlow);
+        spawnTestPump();
+        spawnTestNext(optionLog, "root");
+        spawnTestNext(optionLog, "root");
+        check(optionLog, "option");
+
+        // Prepared by the method, between two picks
+        SpawnTestLog methodLog;
+        SpawnTestFlow methodFlow { &methodLog, "root" };
+        Loreline_Interpreter* lazy = Loreline_play(
+            script, spawnTestDialogue, spawnTestChoice, spawnTestFinish,
+            Loreline_String("Main"), nullptr, &methodFlow);
+        spawnTestPump();
+        Loreline_prepareCaches(lazy);
+        Loreline_prepareCaches(lazy);
+        spawnTestNext(methodLog, "root");
+        spawnTestNext(methodLog, "root");
+        check(methodLog, "method");
+
+        if (prepared) Loreline_releaseInterpreter(prepared);
+        if (lazy) Loreline_releaseInterpreter(lazy);
+        Loreline_releaseOptions(options);
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "%s" CLR_RESET "\n", label);
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
 static void runSeedRandomTest() {
     const char* source =
         "beat Main\n"
@@ -1741,6 +1822,7 @@ int main(int argc, char* argv[]) {
     fileCount++;
     runSpawnTest();
     runSeedRandomTest();
+    runPrepareCachesTest();
     runWhenStrategyTest();
     fileCount++;
     runSyncAfterUpdateTest();

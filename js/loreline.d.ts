@@ -183,6 +183,12 @@ export interface InterpreterOptions {
      * Built from a parsed translation file using `Loreline.extractTranslations()`.
      */
     translations?: Translations;
+
+    /**
+     * If set to true, the interpreter prepares its caches when it is created,
+     * before the script starts, like `Interpreter.prepareCaches()`.
+     */
+    prepareCaches?: boolean;
 }
 
 /**
@@ -448,6 +454,16 @@ export class Interpreter {
      * @param seed The seed of the new sequence. Without one, a seed is taken from the clock.
      */
     seedRandom(seed?: number | null): void;
+
+    /**
+     * Builds now what the interpreter would otherwise build the first time it needs it,
+     * so that the cost is paid at a chosen moment, like a loading screen, rather than
+     * during play: for now, what each `when` block needs to pick a rule, which takes a
+     * moment on blocks of thousands of rules. Optional, it never changes what the script
+     * plays, and a second call only builds what is missing. Interpreters spawned from
+     * this one share these caches. See also the `prepareCaches` option.
+     */
+    prepareCaches(): void;
 
     /**
      * Stops a child interpreter for good: its playhead is cleared, it is not part of

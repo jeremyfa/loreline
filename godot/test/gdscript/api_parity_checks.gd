@@ -101,6 +101,9 @@ beat start
 	# 9. Host function as the strategy of a when block
 	await _run_when_strategy(loreline)
 
+	# 10. prepare_caches, as an option or a method
+	await _run_prepare_caches(loreline)
+
 
 # Same scenario in every binding runner. A child spawned from the root shares
 # its state, gets host functions bound to itself, and both playheads are saved
@@ -341,3 +344,58 @@ beat Start
 	await _spawn_wait(2, "when strategy")
 	if summary[0] != "0:true 1:false 2:true" or _spawn_log != ["root: Two.", "root: End."]:
 		_fail("when strategy: records " + str(summary[0]) + ", log " + str(_spawn_log))
+
+
+# Same scenario in every binding runner. prepare_caches, as an option or a
+# method, never changes what the script plays.
+func _run_prepare_caches(loreline) -> void:
+	var source := """
+state
+  concept: "greet"
+
+beat Main
+  Bark()
+  concept = "leave"
+  Bark()
+
+beat Bark
+  when
+    concept is "greet"
+      Hello.
+    concept is "leave"
+      Bye.
+    true
+      Nothing.
+"""
+	var script = await loreline.parse(source, "caches.lor")
+	if script == null:
+		_fail("caches: parse returned null")
+		return
+
+	var noop_choice := func(_interp, _options, _select): pass
+	var noop_finished := func(_interp): pass
+
+	# Prepared by the option, before the script starts
+	_spawn_log.clear()
+	_spawn_pending.clear()
+	var options := LorelineOptions.new()
+	options.prepare_caches = true
+	loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Main", options)
+	await _spawn_wait(1, "caches")
+	_spawn_next("root")
+	await _spawn_wait(2, "caches")
+	if _spawn_log != ["root: Hello.", "root: Bye."]:
+		_fail("caches: option, log " + str(_spawn_log))
+		return
+
+	# Prepared by the method, between two picks
+	_spawn_log.clear()
+	_spawn_pending.clear()
+	var lazy: LorelineInterpreter = loreline.play(script, _on_spawn_dialogue, noop_choice, noop_finished, "Main")
+	await _spawn_wait(1, "caches")
+	lazy.prepare_caches()
+	lazy.prepare_caches()
+	_spawn_next("root")
+	await _spawn_wait(2, "caches")
+	if _spawn_log != ["root: Hello.", "root: Bye."]:
+		_fail("caches: method, log " + str(_spawn_log))

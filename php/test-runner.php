@@ -582,6 +582,71 @@ const RANDOM_SCRIPT = [
     '',
 ];
 
+// prepareCaches, as an option or a method, never changes what the script plays.
+// Same scenario in every binding runner.
+const PREPARE_CACHES_SCRIPT = [
+    'state',
+    '  concept: "greet"',
+    '',
+    'beat Main',
+    '  Bark()',
+    '  concept = "leave"',
+    '  Bark()',
+    '',
+    'beat Bark',
+    '  when',
+    '    concept is "greet"',
+    '      Hello.',
+    '    concept is "leave"',
+    '      Bye.',
+    '    true',
+    '      Nothing.',
+    '',
+];
+
+function runPrepareCachesTest(): void
+{
+    global $passCount, $failCount;
+    $label = 'caches: prepareCaches leaves the picks unchanged';
+    try {
+        $choice = function ($interp, $options, $select): void {};
+        $finish = function ($interp): void {};
+        $script = Loreline::parse(implode("\n", PREPARE_CACHES_SCRIPT));
+
+        // Prepared by the option, before the script starts
+        $optionLog = [];
+        Loreline::play($script, function ($interp, $character, $text, $tags, $advance) use (&$optionLog): void {
+            $optionLog[] = $text;
+            $advance();
+        }, $choice, $finish, 'Main', ['prepareCaches' => true]);
+        if (implode(',', $optionLog) !== 'Hello.,Bye.') {
+            throw new \Exception('option: expected Hello.,Bye., got ' . implode(',', $optionLog));
+        }
+
+        // Prepared by the method, between two picks
+        $methodLog = [];
+        $pending = null;
+        $lazy = Loreline::play($script, function ($interp, $character, $text, $tags, $advance) use (&$methodLog, &$pending): void {
+            $methodLog[] = $text;
+            $pending = $advance;
+        }, $choice, $finish, 'Main');
+        $lazy->prepareCaches();
+        $lazy->prepareCaches();
+        $pending();
+        $pending();
+        if (implode(',', $methodLog) !== 'Hello.,Bye.') {
+            throw new \Exception('method: expected Hello.,Bye., got ' . implode(',', $methodLog));
+        }
+
+        $passCount++;
+        echo "\033[1m\033[32mPASS\033[0m - \033[90m$label\033[0m\n";
+    } catch (\Throwable $e) {
+        $failCount++;
+        echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
+        echo "  Error: " . $e->getMessage() . "\n";
+    }
+}
+
 function runSeedRandomTest(): void
 {
     global $passCount, $failCount;
@@ -880,6 +945,7 @@ function main(): void
 
     runSpawnTest();
     runSeedRandomTest();
+    runPrepareCachesTest();
     runWhenStrategyTest();
 
     $total = $passCount + $failCount;

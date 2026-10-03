@@ -18,6 +18,12 @@ public class InterpreterOptions {
     /** A custom instantiator to create fields objects. */
     public CreateFieldsHandler customCreateFields;
 
+    /**
+     * Whether to prepare the caches of the interpreter when it is created, before the
+     * script starts, like {@link Interpreter#prepareCaches()}.
+     */
+    public boolean prepareCaches;
+
     public InterpreterOptions() {
     }
 

@@ -72,11 +72,13 @@ public class Interpreter {
         }
 
         boolean strictAccess = options != null && options.strictAccess;
+        boolean prepareCaches = options != null && options.prepareCaches;
 
         loreline.runtime.InterpreterOptions runtimeOptions =
             new loreline.runtime.InterpreterOptions(
                 createFieldsBridge,   // customCreateFields
                 functionsMap,         // functions
+                prepareCaches,        // prepareCaches
                 strictAccess,         // strictAccess
                 null,                 // stringLiteralProcessors
                 translationsMap,      // translations
@@ -120,6 +122,7 @@ public class Interpreter {
             new loreline.runtime.InterpreterOptions(
                 createFieldsBridge,
                 functionsMap,
+                false,
                 options != null && options.strictAccess,
                 null,
                 null,
@@ -244,6 +247,18 @@ public class Interpreter {
      */
     public void seedRandom(double seed) {
         runtimeInterpreter.seedRandom(Double.valueOf(seed));
+    }
+
+    /**
+     * Builds now what the interpreter would otherwise build the first time it needs it,
+     * so that the cost is paid at a chosen moment, like a loading screen, rather than
+     * during play: for now, what each {@code when} block needs to pick a rule, which takes
+     * a moment on blocks of thousands of rules. Optional, it never changes what the script
+     * plays, and a second call only builds what is missing. Interpreters spawned from this
+     * one share these caches. See also {@link InterpreterOptions#prepareCaches}.
+     */
+    public void prepareCaches() {
+        runtimeInterpreter.prepareCaches();
     }
 
     /**

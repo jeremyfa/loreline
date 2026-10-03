@@ -55,6 +55,8 @@ final class Loreline
      * - functions: map of name to function(Interpreter $interpreter, array $args): mixed
      * - strictAccess: bool, if true accessing undefined variables raises an error
      * - translations: a translations map from extractTranslations()/loadLocale()
+     * - prepareCaches: bool, if true the caches of the interpreter are prepared
+     *   before the script starts, like Interpreter::prepareCaches()
      */
     public static function play(
         Script $script,
@@ -188,6 +190,7 @@ final class Loreline
             'functions' => self::wrapFunctions($options['functions'] ?? null),
             'strictAccess' => (bool) ($options['strictAccess'] ?? false),
             'translations' => $options['translations'] ?? null,
+            'prepareCaches' => (bool) ($options['prepareCaches'] ?? false),
         ]);
     }
 

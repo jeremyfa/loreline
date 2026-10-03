@@ -13,7 +13,13 @@ extends RefCounted
 var strict_access: bool = false:
 	set = set_strict_access, get = get_strict_access
 
+## If true, the caches of the interpreter are prepared when it is created,
+## before the script starts, like LorelineInterpreter.prepare_caches().
+var prepare_caches: bool = false:
+	set = set_prepare_caches, get = get_prepare_caches
+
 var _strict_access: bool = false
+var _prepare_caches: bool = false
 var _functions: Dictionary = {}
 var _async_functions: Dictionary = {}
 var _translations: LorelineTranslations = null
@@ -25,6 +31,14 @@ func set_strict_access(strict: bool) -> void:
 
 func get_strict_access() -> bool:
 	return _strict_access
+
+
+func set_prepare_caches(prepare: bool) -> void:
+	_prepare_caches = prepare
+
+
+func get_prepare_caches() -> bool:
+	return _prepare_caches
 
 
 func set_function(name: String, callable: Callable) -> void:
@@ -51,6 +65,8 @@ func _build_core_options() -> Dictionary:
 	var options := {}
 	if _strict_access:
 		options["strictAccess"] = true
+	if _prepare_caches:
+		options["prepareCaches"] = true
 	if _translations != null and _translations._translations != null:
 		options["translations"] = _translations._translations
 	var functions := {}

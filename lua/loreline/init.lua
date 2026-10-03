@@ -351,6 +351,16 @@ function Interpreter:seed_random(seed)
     self._internal:seedRandom(seed)
 end
 
+--- Build now what the interpreter would otherwise build the first time it needs it.
+-- The cost is then paid at a chosen moment, like a loading screen, rather than
+-- during play: for now, what each `when` block needs to pick a rule, which takes a
+-- moment on blocks of thousands of rules. Optional, it never changes what the script
+-- plays, and a second call only builds what is missing. Interpreters spawned from
+-- this one share these caches. See also the `prepare_caches` option of `play()`.
+function Interpreter:prepare_caches()
+    self._internal:prepareCaches()
+end
+
 --- Stop a child interpreter for good.
 -- Its playhead is cleared, it is not part of saves anymore, and callbacks it
 -- handed out become no-ops. Raises an error on a root interpreter.
@@ -391,7 +401,9 @@ end
 --   `function(interpreter)`
 -- @param beat_name string|nil Optional beat to start from (default: first beat).
 -- @param options table|nil Optional table with fields:
---   `functions` (table), `strict_access` (bool), `translations` (table).
+--   `functions` (table), `strict_access` (bool), `translations` (table),
+--   `prepare_caches` (bool, prepares the caches before the script starts, like
+--   `Interpreter:prepare_caches()`).
 -- @return Interpreter The running Interpreter instance.
 function M.play(script, handle_dialogue, handle_choice, handle_finish, beat_name, options)
     local hx_options = nil
@@ -401,10 +413,12 @@ function M.play(script, handle_dialogue, handle_choice, handle_finish, beat_name
                 functions = options.functions ~= nil,
                 strictAccess = options.strict_access ~= nil,
                 translations = options.translations ~= nil,
+                prepareCaches = options.prepare_caches ~= nil,
             },
             functions = wrap_functions(options.functions),
             strictAccess = options.strict_access or false,
             translations = options.translations,
+            prepareCaches = options.prepare_caches or false,
         })
     end
 
@@ -436,10 +450,12 @@ function M.resume(script, handle_dialogue, handle_choice, handle_finish, save_da
                 functions = options.functions ~= nil,
                 strictAccess = options.strict_access ~= nil,
                 translations = options.translations ~= nil,
+                prepareCaches = options.prepare_caches ~= nil,
             },
             functions = wrap_functions(options.functions),
             strictAccess = options.strict_access or false,
             translations = options.translations,
+            prepareCaches = options.prepare_caches or false,
         })
     end
 

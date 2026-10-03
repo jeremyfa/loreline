@@ -558,6 +558,59 @@ public class TestRunner {
     // The random generator is saved, and seedRandom() reseeds it from the host: same
     // scenario in every binding runner. After a restore at the first line, reseeding with
     // the seed of the script makes the second line draw what the first one drew.
+    // prepareCaches, as an option or a method, never changes what the script plays.
+    // Same scenario in every binding runner.
+    static void runPrepareCachesTest() {
+        final String label = "caches: prepareCaches leaves the picks unchanged";
+        try {
+            Script script = Loreline.parse(String.join("\n",
+                "state",
+                "  concept: \"greet\"",
+                "",
+                "beat Main",
+                "  Bark()",
+                "  concept = \"leave\"",
+                "  Bark()",
+                "",
+                "beat Bark",
+                "  when",
+                "    concept is \"greet\"",
+                "      Hello.",
+                "    concept is \"leave\"",
+                "      Bye.",
+                "    true",
+                "      Nothing.",
+                ""
+            ));
+
+            // Prepared by the option, before the script starts
+            final List<String> optionLog = new ArrayList<>();
+            InterpreterOptions options = new InterpreterOptions();
+            options.prepareCaches = true;
+            Loreline.play(script, (interp, character, text, tags, advance) -> { optionLog.add(text); advance.run(); },
+                (interp, opts, select) -> {}, interp -> {}, "Main", options);
+            if (!String.join(",", optionLog).equals("Hello.,Bye.")) throw new RuntimeException("option: expected Hello.,Bye., got " + String.join(",", optionLog));
+
+            // Prepared by the method, between two picks
+            final List<String> methodLog = new ArrayList<>();
+            final Runnable[] pending = new Runnable[1];
+            Interpreter lazy = Loreline.play(script, (interp, character, text, tags, advance) -> { methodLog.add(text); pending[0] = advance; },
+                (interp, opts, select) -> {}, interp -> {}, "Main", null);
+            lazy.prepareCaches();
+            lazy.prepareCaches();
+            pending[0].run();
+            pending[0].run();
+            if (!String.join(",", methodLog).equals("Hello.,Bye.")) throw new RuntimeException("method: expected Hello.,Bye., got " + String.join(",", methodLog));
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
     static void runSeedRandomTest() {
         final String label = "random: seedRandom after restore";
         try {
@@ -923,6 +976,7 @@ public class TestRunner {
         runSpawnTest();
         runCustomFieldsTest();
         runSeedRandomTest();
+        runPrepareCachesTest();
         runWhenStrategyTest();
 
         int total = passCount + failCount;
