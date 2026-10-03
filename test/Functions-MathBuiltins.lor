@@ -1,0 +1,51 @@
+// Math built-in functions take numbers, or texts written as numbers, and give
+// the same results on every target: whole results are not limited to 32 bits,
+// halves round up (-2.5 gives -2), and they work the same in a function.
+
+state
+  items: ["a", "b", "c"]
+
+function inFunction(n)
+  return floor(n) + " " + ceil(n) + " " + round(n) + " " + abs(n)
+
+beat Start
+  Floor gives ${floor(3.7)} ${floor(-3.2)} ${floor("3.7")} ${floor(" -2.5 ")} ${floor(3000000000.5)} ${floor(5)}.
+
+  Ceil gives ${ceil(3.2)} ${ceil(-3.7)} ${ceil("1.1")} ${ceil(2147483647.5)} ${ceil(-0.5)}.
+
+  Round gives ${round(2.5)} ${round(-2.5)} ${round(-2.6)} ${round(0.49)} ${round("1.5")} ${round(-3000000000.4)}.
+
+  Abs gives ${abs(-4)} ${abs("-4.5")} ${abs(0)} ${abs(-0.0)} ${abs(3)}.
+
+  Min and max give ${min(1, 2.5)} ${min("3", 2)} ${max(-1, -1.5)} ${max("10", 9)} ${min(2, 2)}.
+
+  Clamp gives ${clamp(5, 1, 3)} ${clamp(0.5, 1, 3)} ${clamp(2, 1, 3)} ${clamp("2.5", "1", 3)}.
+
+  Pow gives ${pow(2, 10)} ${pow("2", "3")} ${pow(4, 0.5)} ${pow(2, -1)} ${pow(0, 0)} ${pow(0, -1)} ${pow(-8, 1 / 3)} ${pow(-10, 401)}.
+
+  Results give ${type_of(floor(2.5))} ${items[floor(1.7)]} ${floor(2.5) == 2} ${round(2.5) is "3"}.
+
+  In a function gives ${inFunction(-2.5)} and ${inFunction("7.2")}.
+
+/*
+<test>
+- expected: |
+    ~ Floor gives 3 -4 3 -3 3000000000 5.
+
+    ~ Ceil gives 4 -3 2 2147483648 0.
+
+    ~ Round gives 3 -2 -3 0 2 -3000000000.
+
+    ~ Abs gives 4 4.5 0 0 3.
+
+    ~ Min and max give 1 2 -1 10 2.
+
+    ~ Clamp gives 3 1 2 2.5.
+
+    ~ Pow gives 1024 8 2 0.5 1 Infinity NaN -Infinity.
+
+    ~ Results give number b true true.
+
+    ~ In a function gives -3 -2 -2 2.5 and 7 8 7 7.2.
+</test>
+*/

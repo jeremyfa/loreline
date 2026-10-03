@@ -1,0 +1,49 @@
+// plural() picks the singular only for the number one, or a text written as
+// it. The random functions take numbers or texts written as numbers, in any
+// order, and give the same values on every target from the same seed.
+
+state
+  first: 0
+  second: 0
+  third: 0
+  fourth: 0
+  inside: true
+
+beat Start
+  Plural gives ${plural(1, "cat", "cats")} ${plural("1", "cat", "cats")} ${plural(1.0, "cat", "cats")} ${plural(" 1 ", "cat", "cats")} ${plural(0, "cat", "cats")} ${plural(-1, "cat", "cats")} ${plural(2, "cat", "cats")}.
+
+  Plural of other values gives ${plural("Alice", "cat", "cats")} ${plural(true, "cat", "cats")} ${plural(null, "cat", "cats")} ${plural(2, 5, 6)}.
+
+  seed_random(42)
+  first = random(1, 6)
+  seed_random(42)
+  second = random(6, 1)
+  seed_random(42)
+  third = random("1", "6")
+  seed_random("42")
+  fourth = random(1, 6)
+  Same seed gives ${first == second and second == third and third == fourth}.
+
+  seed_random(7)
+  first = random(1.5, 3.2)
+  second = random(5, 5)
+  third = random_float("0", "1")
+  inside = first >= 2 and first <= 3 and third >= 0 and third < 1
+  Ranges give $inside ${second} ${type_of(first)}.
+
+  Chance gives ${chance(1)} ${chance(0)} ${chance(-3)} ${chance("1")}.
+
+/*
+<test>
+- expected: |
+    ~ Plural gives cat cat cat cat cats cats cats.
+
+    ~ Plural of other values gives cats cats cats 6.
+
+    ~ Same seed gives true.
+
+    ~ Ranges give true 5 number.
+
+    ~ Chance gives true true true true.
+</test>
+*/

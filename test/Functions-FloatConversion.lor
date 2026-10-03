@@ -1,0 +1,32 @@
+// float() reads a text as a number with the same rule as the comparisons: a
+// number written with an optional sign, decimals and exponent, spaces around
+// allowed. Any other text, and any value that is not a number, a text or a
+// boolean, gives 0. The same on every target.
+
+state
+  list: [1]
+
+function inFunction(value)
+  return float(value)
+
+beat Start
+  Numbers give ${float("3.14")} ${float(" 5 ")} ${float("-2")} ${float(".5")} ${float("1e3")} ${float("2.5e-1")}.
+
+  Not numbers give ${float("5abc")} ${float("abc")} ${float("")} ${float(" ")} ${float("0x10")} ${float("Infinity")} ${float("1,5")}.
+
+  Other values give ${float(true)} ${float(false)} ${float(null)} ${float(7)} ${float(list)}.
+
+  In a function gives ${inFunction("3.14")} ${inFunction("5abc")} ${inFunction(true)}.
+
+/*
+<test>
+- expected: |
+    ~ Numbers give 3.14 5 -2 0.5 1000 0.25.
+
+    ~ Not numbers give 0 0 0 0 0 0 0.
+
+    ~ Other values give 1 0 0 7 0.
+
+    ~ In a function gives 3.14 0 1.
+</test>
+*/
