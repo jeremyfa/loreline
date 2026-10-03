@@ -4882,6 +4882,9 @@ class InterpreterContext {
 
         var index = startIndex;
         var insertion:RuntimeInsertion = null;
+        // Whether an eligible rule was collected, for `first`. The result may
+        // already hold rules, after a restore
+        var anyEligible = stopAtFirst && hasEligibleCandidate(result);
         var moveNext:()->Void = null;
         moveNext = () -> {
 
@@ -4889,44 +4892,50 @@ class InterpreterContext {
             if (insertion != null && insertion.rules != null) {
                 for (candidate in insertion.rules) {
                     result.push(candidate);
+                    if (candidate.eligible) anyEligible = true;
                 }
             }
             insertion = null;
 
-            if (stopAtFirst && hasEligibleCandidate(result)) {
+            // Plain rules are evaluated in a row: nothing can pause while a
+            // condition is evaluated, so they need no step of their own
+            while (index < when.rules.length) {
+                if (stopAtFirst && anyEligible) {
+                    next();
+                    return;
+                }
+                final rule = when.rules[index];
+                if (rule.insertion != null) break;
+                index++;
+                final consumed = rule.once && isWhenRuleConsumed(rule);
+                final eligible = !consumed && (rule.condition == null || evaluateCondition(rule.condition));
+                if (eligible) anyEligible = true;
+                result.push({ rule: rule, eligible: eligible, insertion: owner });
+            }
+
+            if (index >= when.rules.length || (stopAtFirst && anyEligible)) {
                 next();
                 return;
             }
 
-            if (index >= when.rules.length) {
-                next();
-                return;
-            }
-
+            // An insertion rule: the inserted beat runs until its when block,
+            // which may take several steps
             final rule = when.rules[index];
             index++;
             final done = wrapNext(moveNext);
 
-            if (rule.insertion != null) {
-                // The condition of an insertion only decides whether its rules come in.
-                // It is evaluated here, in the scope of this block.
-                if (rule.insertionCondition == null || evaluateCondition(rule.insertionCondition)) {
-                    insertion = new RuntimeInsertion(nextInsertionId++, rule.insertion);
-                    insertion.kind = When;
-                    insertion.whenFirst = stopAtFirst;
-                    // For a save made while the inserted beat runs
-                    insertion.parentPartialRules = [].concat(result);
-                    insertion.parentNextRuleIndex = index;
-                    evalInsertion(insertion, done.cb);
-                }
-                else {
-                    done.cb();
-                }
+            // The condition of an insertion only decides whether its rules come in.
+            // It is evaluated here, in the scope of this block.
+            if (rule.insertionCondition == null || evaluateCondition(rule.insertionCondition)) {
+                insertion = new RuntimeInsertion(nextInsertionId++, rule.insertion);
+                insertion.kind = When;
+                insertion.whenFirst = stopAtFirst;
+                // For a save made while the inserted beat runs
+                insertion.parentPartialRules = [].concat(result);
+                insertion.parentNextRuleIndex = index;
+                evalInsertion(insertion, done.cb);
             }
             else {
-                final consumed = rule.once && isWhenRuleConsumed(rule);
-                final eligible = !consumed && (rule.condition == null || evaluateCondition(rule.condition));
-                result.push({ rule: rule, eligible: eligible, insertion: owner });
                 done.cb();
             }
             done.sync = false;
@@ -4962,13 +4971,21 @@ class InterpreterContext {
             return customStrategyCandidate(when, candidates, customStrategy);
         }
 
-        final eligible = [for (candidate in candidates) if (candidate.eligible) candidate];
-        if (eligible.length == 0) return null;
-
         return switch strategy {
-            case 'first': eligible[0];
-            case 'pick': eligible[builtins.random(0, eligible.length - 1)];
-            case _: mostSalientCandidate(eligible);
+            case 'first':
+                var first:WhenCandidate = null;
+                for (candidate in candidates) {
+                    if (candidate.eligible) {
+                        first = candidate;
+                        break;
+                    }
+                }
+                first;
+            case 'pick':
+                final eligible = [for (candidate in candidates) if (candidate.eligible) candidate];
+                eligible.length == 0 ? null : eligible[builtins.random(0, eligible.length - 1)];
+            case _:
+                mostSalientCandidate(candidates);
         }
 
     }
@@ -4978,12 +4995,13 @@ class InterpreterContext {
      * then the one played least recently (never played first), then the first one
      * in order.
      */
-    function mostSalientCandidate(eligible:Array<WhenCandidate>):WhenCandidate {
+    function mostSalientCandidate(candidates:Array<WhenCandidate>):Null<WhenCandidate> {
         var best:WhenCandidate = null;
         var bestScore = 0;
         var bestLastPlayed = 0;
-        for (candidate in eligible) {
-            final score = AstUtils.whenRuleScore(candidate.rule);
+        for (candidate in candidates) {
+            if (!candidate.eligible) continue;
+            final score = lens.whenRuleScore(candidate.rule);
             final lastPlayed = getWhenRuleLastPlayed(candidate.rule);
             if (best == null || score > bestScore || (score == bestScore && lastPlayed < bestLastPlayed)) {
                 best = candidate;
@@ -5019,7 +5037,7 @@ class InterpreterContext {
             final record = Objects.createFields();
             Objects.setField(this, record, "index", i);
             Objects.setField(this, record, "eligible", candidate.eligible);
-            Objects.setField(this, record, "criteria", AstUtils.whenRuleScore(candidate.rule));
+            Objects.setField(this, record, "criteria", lens.whenRuleScore(candidate.rule));
             Objects.setField(this, record, "played", getNodeStateInt(candidate.rule, "_played"));
             Objects.setField(this, record, "lastPlayed", getWhenRuleLastPlayed(candidate.rule));
             Objects.setField(this, record, "ephemeral", candidate.rule.once);
@@ -5063,10 +5081,33 @@ class InterpreterContext {
      * insertions) compare in the same terms.
      */
     function recordWhenRulePlayed(rule:NWhenRule) {
-        final tick = getNodeStateInt(script, "_whenTick") + 1;
-        setNodeStateField(script, "_whenTick", tick);
-        setNodeStateField(rule, "_played", getNodeStateInt(rule, "_played") + 1);
-        setNodeStateField(rule, "_lastPlayed", tick);
+        final scriptState = nodeStateOf(script);
+        final tick = intFieldOf(scriptState, "_whenTick") + 1;
+        Objects.setField(this, scriptState.fields, "_whenTick", tick);
+        final ruleState = nodeStateOf(rule);
+        Objects.setField(this, ruleState.fields, "_played", intFieldOf(ruleState, "_played") + 1);
+        Objects.setField(this, ruleState.fields, "_lastPlayed", tick);
+    }
+
+    /**
+     * The persistent state of a node, created on first use.
+     */
+    function nodeStateOf(node:AstNode):RuntimeState {
+        var state = nodeStates.get(node.id);
+        if (state == null) {
+            state = new RuntimeState(this, node, null, null);
+            nodeStates.set(node.id, state);
+        }
+        return state;
+    }
+
+    /**
+     * An integer field of a node state, 0 when absent.
+     */
+    function intFieldOf(state:RuntimeState, field:String):Int {
+        final value:Any = Objects.getField(this, state.fields, field);
+        if (value == null) return 0;
+        return Std.int((value:Float));
     }
 
     /**
@@ -5128,12 +5169,7 @@ class InterpreterContext {
      * Sets a field of the persistent state of a node, creating the state if needed.
      */
     function setNodeStateField(node:AstNode, field:String, value:Any) {
-        var state = nodeStates.get(node.id);
-        if (state == null) {
-            state = new RuntimeState(this, node, null, null);
-            nodeStates.set(node.id, state);
-        }
-        Objects.setField(this, state.fields, field, value);
+        Objects.setField(this, nodeStateOf(node).fields, field, value);
     }
 
     /**

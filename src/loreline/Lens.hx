@@ -3,6 +3,7 @@ package loreline;
 import haxe.ds.Either;
 import haxe.io.Path;
 import loreline.Imports;
+import loreline.AstUtils;
 import loreline.Node;
 import loreline.Position;
 
@@ -156,6 +157,11 @@ class Lens {
      * null beat.
      */
     final beatsByNameFromNode:NodeIdMap<Map<String, {beat:Null<NBeatDecl>}>> = new NodeIdMap();
+
+    /**
+     * Criteria counts of when rules (AstUtils.whenRuleScore), computed once.
+     */
+    final whenRuleScores:NodeIdMap<Int> = new NodeIdMap();
 
     public function new(script:Script) {
         this.script = script;
@@ -908,6 +914,18 @@ class Lens {
 
         return null;
 
+    }
+
+    /**
+     * The criteria count of a when rule, see AstUtils.whenRuleScore. It only
+     * depends on the condition, so it is computed once.
+     */
+    public function whenRuleScore(rule:NWhenRule):Int {
+        final cached = whenRuleScores.get(rule.id);
+        if (cached != null) return cached;
+        final score = AstUtils.whenRuleScore(rule);
+        whenRuleScores.set(rule.id, score);
+        return score;
     }
 
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
