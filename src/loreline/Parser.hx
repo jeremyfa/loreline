@@ -1860,6 +1860,9 @@ class ParserContext {
                         final argTokens = [];
                         var currentArgTokens = [];
                         var parenLevel = 1;
+                        // Brackets and braces of an argument (an array, an
+                        // object): their commas are not those of the call
+                        var nestedLevel = 0;
 
                         while (i < tokens.length && parenLevel > 0) {
                             final t = tokens[i];
@@ -1877,7 +1880,13 @@ class ParserContext {
                                     else if (currentArgTokens.length > 0) {
                                         argTokens.push(currentArgTokens);
                                     }
-                                case Comma if (parenLevel == 1):
+                                case LBracket | LBrace:
+                                    nestedLevel++;
+                                    currentArgTokens.push(t);
+                                case RBracket | RBrace:
+                                    nestedLevel--;
+                                    currentArgTokens.push(t);
+                                case Comma if (parenLevel == 1 && nestedLevel == 0):
                                     if (currentArgTokens.length > 0) {
                                         argTokens.push(currentArgTokens);
                                         currentArgTokens = [];

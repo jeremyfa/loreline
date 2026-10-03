@@ -1,0 +1,43 @@
+// The short form `$f(...)` of an interpolation splits the arguments of a call
+// at the commas of the call only: an array, an object or a nested call given
+// as an argument keeps its own commas. Each line also reads the same in the
+// `${...}` form.
+
+state
+  items: ["a", "b", "c"]
+
+function count(list, extra)
+  return list.length + "/" + extra
+
+function sum(a, b)
+  return a + b
+
+beat Start
+  Array literal $count(["a", "b", "c"], "x") and ${count(["a", "b", "c"], "x")}.
+
+  Nested arrays $count([[1, 2], [3]], 0) and ${count([[1, 2], [3]], 0)}.
+
+  Object $count({ a: 1, b: 2 }.keys(), 9) and ${count({ a: 1, b: 2 }.keys(), 9)}.
+
+  Nested call $sum(sum(1, 2), sum(3, 4)) and ${sum(sum(1, 2), sum(3, 4))}.
+
+  Index $count(items, items[1]) and ${count(items, items[1])}.
+
+  Mixed $count([sum(1, 2), [4, 5]], { k: "v" }.k) and ${count([sum(1, 2), [4, 5]], { k: "v" }.k)}.
+
+/*
+<test>
+- expected: |
+    ~ Array literal 3/x and 3/x.
+
+    ~ Nested arrays 2/0 and 2/0.
+
+    ~ Object 2/9 and 2/9.
+
+    ~ Nested call 10 and 10.
+
+    ~ Index 3/b and 3/b.
+
+    ~ Mixed 2/v and 2/v.
+</test>
+*/
