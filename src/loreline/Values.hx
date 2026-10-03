@@ -496,6 +496,54 @@ class Values {
         throw new RuntimeError('$functionName() expects a number, got ${describeForError(value)}');
     }
 
+    /**
+     * Arithmetic, the same in scripts, in functions and on every target:
+     * - `+` joins two texts as soon as one side is a text (the other one
+     *   written as textOf writes it), and adds two numbers
+     * - `-`, `*`, `/` and `%` take numbers, or texts written as numbers
+     * Anything else is an error, and so is a division or a modulo by zero.
+     * The errors have no position: the caller gives its own.
+     */
+    public static function arithmetic(op:String, a:Any, b:Any, interpreter:Null<Interpreter>):Any {
+        if (op == '+') {
+            if (a is String || b is String) return textOf(a, interpreter) + textOf(b, interpreter);
+            if (isNumber(a) && isNumber(b)) return numberOf(a, Type.typeof(a)) + numberOf(b, Type.typeof(b));
+            throw new RuntimeError('Cannot add ${describeForError(a)} and ${describeForError(b)}');
+        }
+        if (!isNumberLike(a) || !isNumberLike(b)) {
+            final verb = switch op {
+                case '-': 'subtract';
+                case '*': 'multiply';
+                case '/': 'divide';
+                case _: 'take the modulo of';
+            }
+            throw new RuntimeError('Cannot $verb ${describeForError(a)} and ${describeForError(b)}');
+        }
+        final x = orderNumberOf(a);
+        final y = orderNumberOf(b);
+        return switch op {
+            case '-': x - y;
+            case '*': x * y;
+            case '/':
+                if (y == 0) throw new RuntimeError('Division by zero');
+                x / y;
+            case _:
+                if (y == 0) throw new RuntimeError('Modulo by zero');
+                x % y;
+        }
+    }
+
+    /** The opposite of a number, or of a text written as a number. */
+    public static function negate(value:Any):Float {
+        if (!isNumberLike(value)) throw new RuntimeError('Cannot negate ${describeForError(value)}');
+        return -orderNumberOf(value);
+    }
+
+    /** A number, or a text written as a number. */
+    static function isNumberLike(value:Any):Bool {
+        return isNumber(value) || ((value is String) && !Math.isNaN(numberOfText(value)));
+    }
+
     /** A value in an error message: a text quoted, anything else by its kind. */
     static function describeForError(value:Any):String {
         return (value is String) ? '"' + (value : String) + '"' : typeOf(value);

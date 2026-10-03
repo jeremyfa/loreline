@@ -90,10 +90,11 @@ class Interp {
         // A text on either side joins the texts, the other value written as
         // Values.textOf writes it, the same on every target
         binops.set("+",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return me.plus(v1, v2); });
-        binops.set("-",function(e1,e2) return me.expr(e1) - me.expr(e2));
-        binops.set("*",function(e1,e2) return me.expr(e1) * me.expr(e2));
-        binops.set("/",function(e1,e2) return me.expr(e1) / me.expr(e2));
-        binops.set("%",function(e1,e2) return me.expr(e1) % me.expr(e2));
+        // Arithmetic follows Values.arithmetic, the same as in scripts
+        binops.set("-",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return Values.arithmetic("-", v1, v2, me.interpreter); });
+        binops.set("*",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return Values.arithmetic("*", v1, v2, me.interpreter); });
+        binops.set("/",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return Values.arithmetic("/", v1, v2, me.interpreter); });
+        binops.set("%",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return Values.arithmetic("%", v1, v2, me.interpreter); });
         binops.set("&",function(e1,e2) return me.expr(e1) & me.expr(e2));
         binops.set("|",function(e1,e2) return me.expr(e1) | me.expr(e2));
         binops.set("^",function(e1,e2) return me.expr(e1) ^ me.expr(e2));
@@ -114,10 +115,10 @@ class Interp {
         binops.set("...",function(e1,e2) return new IntIterator(me.expr(e1),me.expr(e2)));
         binops.set("is",function(e1,e2) return #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end (me.expr(e1), me.expr(e2)));
         assignOp("+=",function(v1:Dynamic,v2:Dynamic) return me.plus(v1, v2));
-        assignOp("-=",function(v1:Float,v2:Float) return v1 - v2);
-        assignOp("*=",function(v1:Float,v2:Float) return v1 * v2);
-        assignOp("/=",function(v1:Float,v2:Float) return v1 / v2);
-        assignOp("%=",function(v1:Float,v2:Float) return v1 % v2);
+        assignOp("-=",function(v1:Dynamic,v2:Dynamic) return Values.arithmetic("-", v1, v2, me.interpreter));
+        assignOp("*=",function(v1:Dynamic,v2:Dynamic) return Values.arithmetic("*", v1, v2, me.interpreter));
+        assignOp("/=",function(v1:Dynamic,v2:Dynamic) return Values.arithmetic("/", v1, v2, me.interpreter));
+        assignOp("%=",function(v1:Dynamic,v2:Dynamic) return Values.arithmetic("%", v1, v2, me.interpreter));
         assignOp("&=",function(v1,v2) return v1 & v2);
         assignOp("|=",function(v1,v2) return v1 | v2);
         assignOp("^=",function(v1,v2) return v1 ^ v2);
@@ -236,19 +237,19 @@ class Interp {
             var l = locals.get(id);
             var v : Dynamic = (l == null) ? resolve(id) : l.r;
             if( prefix ) {
-                v += delta;
+                v = step(v, delta);
                 if( l == null ) setVar(id,v) else l.r = v;
             } else
-                if( l == null ) setVar(id,v + delta) else l.r = v + delta;
+                if( l == null ) setVar(id,step(v, delta)) else l.r = step(v, delta);
             return v;
         case EField(e,f):
             var obj = expr(e);
             var v : Dynamic = get(obj,f);
             if( prefix ) {
-                v += delta;
+                v = step(v, delta);
                 set(obj,f,v);
             } else
-                set(obj,f,v + delta);
+                set(obj,f,step(v, delta));
             return v;
         case EArray(e, index):
             var arr:Dynamic = expr(e);
@@ -256,43 +257,43 @@ class Interp {
             if (Arrays.isArray(arr)) {
                 var v:Dynamic = Arrays.arrayGet(arr, index);
                 if (prefix) {
-                    v += delta;
+                    v = step(v, delta);
                     Arrays.arraySet(arr, index, v);
                 }
                 else {
-                    Arrays.arraySet(arr, index, v + delta);
+                    Arrays.arraySet(arr, index, step(v, delta));
                 }
                 return v;
             }
             else if (Objects.isFields(arr)) {
                 var v:Dynamic = Objects.getField(interpreter, arr, index);
                 if (prefix) {
-                    v += delta;
+                    v = step(v, delta);
                     Objects.setField(interpreter, arr, index, v);
                 }
                 else {
-                    Objects.setField(interpreter, arr, index, v + delta);
+                    Objects.setField(interpreter, arr, index, step(v, delta));
                 }
                 return v;
             }
             else if (isMap(arr)) {
                 var v = getMapValue(arr, index);
                 if (prefix) {
-                    v += delta;
+                    v = step(v, delta);
                     setMapValue(arr, index, v);
                 }
                 else {
-                    setMapValue(arr, index, v + delta);
+                    setMapValue(arr, index, step(v, delta));
                 }
                 return v;
             }
             else {
                 var v = arr[index];
                 if( prefix ) {
-                    v += delta;
+                    v = step(v, delta);
                     arr[index] = v;
                 } else
-                    arr[index] = v + delta;
+                    arr[index] = step(v, delta);
                 return v;
             }
         default:
@@ -419,7 +420,8 @@ class Interp {
             case "!":
                 return !truthy(e);
             case "-":
-                return -expr(e);
+                var v:Dynamic = expr(e);
+                return Values.negate(v);
             case "++":
                 return increment(e,prefix,1);
             case "--":
@@ -631,10 +633,15 @@ class Interp {
     }
 
     function plus(v1:Dynamic, v2:Dynamic):Dynamic {
-        if (v1 is String || v2 is String) {
-            return (Values.textOf(v1, interpreter):Dynamic) + Values.textOf(v2, interpreter);
-        }
-        return v1 + v2;
+        return Values.arithmetic("+", v1, v2, interpreter);
+    }
+
+    /**
+        A value plus `delta`, for `++` and `--`: always a number, a text
+        written as a number included, as `"4"++` gives 5.
+    **/
+    function step(v:Dynamic, delta:Int):Dynamic {
+        return Values.arithmetic("-", v, -delta, interpreter);
     }
 
     /**
