@@ -680,6 +680,20 @@ class InterpreterContext {
     var stringLiteralProcessors:Array<(str:NStringLiteral) -> NStringLiteral> = [];
 
     /**
+     * Whether the host added string literal processors. The built-in one (plural
+     * pipes) leaves a literal made only of raw text unchanged, a host one may
+     * make it depend on the moment, so the texts are only cached without any.
+     */
+    var userStringProcessors:Bool = false;
+
+    /**
+     * Text of the string literals made only of raw text, once evaluated: they
+     * evaluate to the same text every time. Keyed by node rather than by id, as
+     * the literals of a translation file have ids of their own.
+     */
+    final constantStrings:haxe.ds.ObjectMap<NStringLiteral, String> = new haxe.ds.ObjectMap();
+
+    /**
      * Tells whether access is strict or not.
      */
     final strictAccess:Bool;
@@ -932,7 +946,12 @@ class InterpreterContext {
      */
     public var stringLiteralProcessors(get,set):Array<(str:NStringLiteral) -> NStringLiteral>;
     inline function get_stringLiteralProcessors():Array<(str:NStringLiteral) -> NStringLiteral> return context.stringLiteralProcessors;
-    inline function set_stringLiteralProcessors(processors:Array<(str:NStringLiteral) -> NStringLiteral>):Array<(str:NStringLiteral) -> NStringLiteral> return context.stringLiteralProcessors = processors;
+    function set_stringLiteralProcessors(processors:Array<(str:NStringLiteral) -> NStringLiteral>):Array<(str:NStringLiteral) -> NStringLiteral> {
+        // Processors set by the host: the constant texts no longer hold
+        context.userStringProcessors = true;
+        context.constantStrings.clear();
+        return context.stringLiteralProcessors = processors;
+    }
 
     /**
      * The current execution stack, which consists of scopes added on top of one another.
@@ -3654,6 +3673,7 @@ class InterpreterContext {
         if (processors != null) {
             for (p in processors) {
                 stringLiteralProcessors.push(p);
+                context.userStringProcessors = true;
             }
         }
     }
@@ -5668,6 +5688,15 @@ class InterpreterContext {
      * @return Object containing the evaluated text and any tags
      */
     function evaluateString(str:NStringLiteral):{text:String, tags:Array<TextTag>} {
+        // A literal made only of raw text gives the same text every time: it is
+        // evaluated once per context, unless a host processor could change it
+        final original = str;
+        final constant = !context.userStringProcessors && isRawOnlyString(str);
+        if (constant) {
+            final cached = context.constantStrings.get(original);
+            if (cached != null) return {text: cached, tags: []};
+        }
+
         // Run string literal processors (e.g. plural pipe syntax)
         for (i in 0...stringLiteralProcessors.length) {
             str = stringLiteralProcessors[i](str);
@@ -5806,11 +5835,28 @@ class InterpreterContext {
             }
         }
 
+        final text = buf.toString();
+        if (constant) {
+            context.constantStrings.set(original, text);
+        }
         return {
-            text: buf.toString(),
+            text: text,
             tags: tags
         };
 
+    }
+
+    /**
+     * Whether a string literal holds raw text only: no interpolation, no tag.
+     */
+    static function isRawOnlyString(str:NStringLiteral):Bool {
+        for (part in str.parts) {
+            switch part.partType {
+                case Raw(_):
+                case _: return false;
+            }
+        }
+        return true;
     }
 
     /**
