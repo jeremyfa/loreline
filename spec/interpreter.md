@@ -727,6 +727,24 @@ They mirror the insertions of choices (Section 9), with `kind == When`:
 The conditions of the inserted rules are evaluated in the scope of the inserted
 beat. Insertions can cascade, and `whenFirst` carries `first` down the cascade.
 
+### Caches
+
+What a collection needs from a block that never changes during play is computed
+once per context, by `whenBlockInfoOf`: the criteria count of each rule, the
+runs of plain rules sorted by criteria count, and the grouping of long runs by
+a fact. On blocks of thousands of rules this takes a moment, paid by the first
+pick of each block.
+
+`prepareCaches()` builds this for every `when` block of the script and its
+imports at once (`Lens.getWhenStatements`), so that the cost is paid at a chosen
+moment, like a loading screen. The `prepareCaches` option of
+`InterpreterOptions` calls it at the end of the constructor, before the script
+starts. It is optional and changes nothing in what the script plays. A second
+call only builds what is missing, and children share the caches of their
+context. Setting `stringLiteralProcessors` empties them, as the texts compared
+by the grouping may change: they are built again on first use, or by another
+call.
+
 ---
 
 ## 12. State Management
