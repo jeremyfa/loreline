@@ -49,7 +49,7 @@ class BuiltinArgumentsTests {
         {call: 'clamp(1, null, 2)', error: 'clamp() expects a number, got null'},
         {call: 'pow("a", 2)', error: 'pow() expects a number, got "a"'},
         {call: 'random("a", 2)', error: 'random() expects a number, got "a"'},
-        {call: 'random_float(null, 1)', error: 'random_float() expects a number, got null'},
+        {call: 'random_decimal(null, 1)', error: 'random_decimal() expects a number, got null'},
         {call: 'chance(null)', error: 'chance() expects a number, got null'},
         {call: 'seed_random("x")', error: 'seed_random() expects a number, got "x"'},
         {call: 'string_sub("abc", "x")', error: 'string_sub() expects a number, got "x"'},

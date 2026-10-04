@@ -28,12 +28,12 @@ beat Start
   seed_random(42)
   val = random(1, 1)
   seeded_random $val
-  val = random_float(0, 0)
-  random_float $val
+  val = random_decimal(0, 0)
+  random_decimal $val
 
   // Type conversion functions
-  val = float("3.14")
-  float_parse $val
+  val = number("3.14")
+  number_parse $val
   text = string(42)
   string_convert $text
   result = bool(1)
@@ -240,9 +240,9 @@ beat SplitTest
 
     ~ seeded_random 1
 
-    ~ random_float 0
+    ~ random_decimal 0
 
-    ~ float_parse 3.14
+    ~ number_parse 3.14
 
     ~ string_convert 42
 

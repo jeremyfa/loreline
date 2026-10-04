@@ -39,11 +39,11 @@ class Functions {
         target.set("random", this.random);
         target.set("chance", this.chance);
         target.set("seed_random", this.seed_random);
-        target.set("random_float", this.random_float);
+        target.set("random_decimal", this.random_decimal);
         // Timing
         target.set("wait", this.wait);
         // Type conversion
-        target.set("float", this.float_);
+        target.set("number", this.number);
         target.set("string", this.string_);
         target.set("bool", this.bool);
         target.set("type_of", this.type_of);
@@ -303,7 +303,7 @@ class Functions {
     /**
      * Sets the random seed so that all future random results follow a predictable
      * sequence. Calling `seed_random` with the same value always produces the same
-     * results for `random`, `chance`, `random_float`, `array_pick`, and `array_shuffle`.
+     * results for `random`, `chance`, `random_decimal`, `array_pick`, and `array_shuffle`.
      *
      * ```lor
      * seed_random(42)
@@ -327,16 +327,16 @@ class Functions {
     /**
      * Returns a random decimal number from `min` up to (but not including) `max`.
      *
-     * `random_float(0, 1)` might return `0.7341...`.
+     * `random_decimal(0, 1)` might return `0.7341...`.
      *
      * ```lor
-     * temperature = round(random_float(15, 30))
+     * temperature = round(random_decimal(15, 30))
      * It's $temperature degrees outside today.
      * ```
      */
-    public function random_float(min:Any, max:Any):Float {
-        final lo = Values.numberArg(min, 'random_float');
-        final hi = Values.numberArg(max, 'random_float');
+    public function random_decimal(min:Any, max:Any):Float {
+        final lo = Values.numberArg(min, 'random_decimal');
+        final hi = Values.numberArg(max, 'random_decimal');
         return lo + rng() * (hi - lo);
     }
 
@@ -368,14 +368,15 @@ class Functions {
     // -- Type Conversion -----------------------------------------------
 
     /**
-     * Converts a value to a number. Strings like `"3.14"` are parsed;
-     * `true` becomes `1`, `false` becomes `0`. Returns `0` if conversion fails.
+     * Converts a value to a number. A text written as a number is read as
+     * comparisons read it (`"3.14"`, `" 5 "`, `"1e3"`); `true` becomes `1`,
+     * `false` becomes `0`. Returns `0` if conversion fails.
      *
      * ```lor
-     * price = float("9.99")
+     * price = number("9.99")
      * ```
      */
-    @:keep public function float_(value:Any):Dynamic {
+    public function number(value:Any):Dynamic {
         if (value == null) return 0.0;
         if (value is String) {
             final number = Values.numberOfText(value);

@@ -1,7 +1,7 @@
 // Arithmetic, the same in a beat, in a function and on every target. `+` joins
 // texts as soon as one side is a text, and adds two numbers. `-`, `*`, `/` and
 // `%` take numbers, or texts written as numbers, and so do `++` and `--`, whose
-// value is a number too. float() turns a text into a
+// value is a number too. number() turns a text into a
 // number for an addition. Wrong operands are errors, tested in ValuesTests.
 
 state
@@ -12,7 +12,7 @@ function compute()
   return [3 * "4", 10 - "4", 8 / "2", 7 % "4", -"4", "2.5" * 2, " 3 " - 1, "1e3" / 10].join(" ")
 
 function join()
-  return [3 + "4", "4" + 3, "a" + "b", 1.5 + 1, 3 + 4, float("3.5") + 1, "" + 0.1 + 0.2].join(" ")
+  return [3 + "4", "4" + 3, "a" + "b", 1.5 + 1, 3 + 4, number("3.5") + 1, "" + 0.1 + 0.2].join(" ")
 
 function assign()
   var n = 10
@@ -41,7 +41,7 @@ function increments()
 beat Start
   Numeric texts give ${3 * "4"} ${10 - "4"} ${8 / "2"} ${7 % "4"} ${-"4"} ${"2.5" * 2} ${" 3 " - 1} ${"1e3" / 10}.
 
-  Plus gives ${3 + "4"} ${"4" + 3} ${"a" + "b"} ${1.5 + 1} ${3 + 4} ${float("3.5") + 1} ${"" + 0.1 + 0.2}.
+  Plus gives ${3 + "4"} ${"4" + 3} ${"a" + "b"} ${1.5 + 1} ${3 + 4} ${number("3.5") + 1} ${"" + 0.1 + 0.2}.
 
   count -= word
   Minus assign gives $count.
