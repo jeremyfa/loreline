@@ -341,6 +341,15 @@ A type-switch dispatcher that routes each AST node to its specific handler:
 
 ## 7. Beat Transitions and Subroutine Calls
 
+### Public beats
+
+`public beat Name` marks a top-level beat that the game starts or calls by
+name. The parser sets `NBeatDecl.isPublic` (written in JSON only when true) and
+refuses it on a nested beat. The interpreter doesn't use it: any top-level beat
+can still be started with `play(script, ..., beatName)`. Editors use it to know
+which beats are entry points. `public` is a keyword only right before `beat`
+(`Lexer.isPublicBeatStart`); anywhere else it stays a plain word.
+
 ### Transitions (`->`)
 
 A transition (`-> BeatName`) **replaces** the entire execution stack:
