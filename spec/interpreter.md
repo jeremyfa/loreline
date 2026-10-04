@@ -584,6 +584,15 @@ breaks around, an optional sign, digits with an optional decimal part (`5`,
 written as a number (`"10" > 9` is true). Anything else is a `RuntimeError`
 (`Cannot compare ...`), two texts included, even written as numbers.
 
+**Arithmetic** (`Values.arithmetic`, the same in scripts and functions): `+`
+joins two texts as soon as one side is a text (the other written as text, see
+below), `+=` included, and adds two numbers. `-`, `*`, `/`, `%` and their
+assignments take numbers or texts written as numbers (`3 * "4"` is 12), and so
+do the unary minus and `++`/`--` in functions. Anything else is a
+`RuntimeError` naming the kinds (`Cannot multiply number and "abc"`), and so is
+a division or a modulo by zero. `float()` turns a text into a number for an
+addition.
+
 **Truthiness**, wherever a value decides (`if`, conditions of choices, text
 and `when` rules, `not`, `and`, `or`, the ternary, `bool()`): false for
 `false`, `null`, `0`, `""` and an empty array, true for anything else.
