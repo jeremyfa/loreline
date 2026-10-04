@@ -329,21 +329,39 @@ static std::vector<TestItem> extractTests(const std::string& content) {
 
 /* -- Insert tags into text ------------------------------------------------ */
 
+/* Tag offsets count the UTF-16 units of the text, the units of the strings the
+ * interpreter works with on hxcpp, while the text arrives as UTF-8: the byte
+ * where a tag goes, for an offset. */
+static int tagByteOffset(const char* text, int len, int offset) {
+    int i = 0;
+    int units = 0;
+    while (i < len && units < offset) {
+        unsigned char c = (unsigned char)text[i];
+        int bytes = c < 0x80 ? 1 : c < 0xE0 ? 2 : c < 0xF0 ? 3 : 4;
+        units += bytes == 4 ? 2 : 1;
+        i += bytes;
+    }
+    return units < offset ? len + (offset - units) : i;
+}
+
 static std::string insertTagsInText(const char* text, const Loreline_TextTag* tags, int tagCount, bool multiline) {
     if (!text) return "";
 
+    int len = (int)strlen(text);
+
+    std::vector<int> tagBytes(tagCount);
     std::set<int> offsetsWithTags;
     for (int i = 0; i < tagCount; i++) {
-        offsetsWithTags.insert(tags[i].offset);
+        tagBytes[i] = tagByteOffset(text, len, tags[i].offset);
+        offsetsWithTags.insert(tagBytes[i]);
     }
 
-    int len = (int)strlen(text);
     std::string result;
 
     for (int i = 0; i < len; i++) {
         if (offsetsWithTags.count(i)) {
             for (int t = 0; t < tagCount; t++) {
-                if (tags[t].offset == i) {
+                if (tagBytes[t] == i) {
                     result += "<<";
                     if (tags[t].closing) result += "/";
                     result += tags[t].value.c_str();
@@ -361,7 +379,7 @@ static std::string insertTagsInText(const char* text, const Loreline_TextTag* ta
 
     /* Tags at or beyond end of text */
     for (int t = 0; t < tagCount; t++) {
-        if (tags[t].offset >= len) {
+        if (tagBytes[t] >= len) {
             result += "<<";
             if (tags[t].closing) result += "/";
             result += tags[t].value.c_str();
@@ -926,6 +944,108 @@ static void runContainerFieldTest() {
     fflush(stdout);
 }
 
+
+/* -- Names in any language ------------------------------------------------- */
+/* Characters and state fields named with Chinese letters or emoji go through
+ * the field accessors as UTF-8, like any other name. */
+
+static bool unicodeStringIs(Loreline_Value value, const char* expected) {
+    return value.type == Loreline_StringValue && strcmp(value.stringValue.c_str(), expected) == 0;
+}
+
+static void unicodeNamesTestCheck(Loreline_Interpreter* interp, bool* okOut, std::string* errorOut) {
+    bool ok = true;
+    std::string error;
+
+    /* 国王 named 路易斯, 🐉 named Smaug, 金币, 💰 and 龙, written as UTF-8 bytes */
+    if (!unicodeStringIs(Loreline_getCharacterField(interp, Loreline_String("\xE5\x9B\xBD\xE7\x8E\x8B"), Loreline_String("name")), "\xE8\xB7\xAF\xE6\x98\x93\xE6\x96\xAF")) {
+        ok = false; error = "name of the character with a Chinese name is wrong";
+    }
+    else if (!unicodeStringIs(Loreline_getCharacterField(interp, Loreline_String("\xF0\x9F\x90\x89"), Loreline_String("name")), "Smaug")) {
+        ok = false; error = "name of the character with an emoji name is not Smaug";
+    }
+    else {
+        Loreline_setStateField(interp, Loreline_String("\xE9\x87\x91\xE5\xB8\x81"), Loreline_Value::from_int(10));
+        Loreline_Value coins = Loreline_getStateField(interp, Loreline_String("\xE9\x87\x91\xE5\xB8\x81"));
+        if (coins.type != Loreline_Int || coins.intValue != 10) {
+            ok = false; error = "state field with a Chinese name did not round-trip";
+        }
+    }
+    if (ok) {
+        Loreline_setCharacterField(interp, Loreline_String("\xF0\x9F\x90\x89"), Loreline_String("\xF0\x9F\x92\xB0"), Loreline_Value::from_int(3));
+        Loreline_Value gold = Loreline_getCharacterField(interp, Loreline_String("\xF0\x9F\x90\x89"), Loreline_String("\xF0\x9F\x92\xB0"));
+        if (gold.type != Loreline_Int || gold.intValue != 3) {
+            ok = false; error = "emoji character field did not round-trip";
+        }
+    }
+    if (ok) {
+        Loreline_Value unknown = Loreline_getCharacterField(interp, Loreline_String("\xE9\xBE\x99"), Loreline_String("name"));
+        if (unknown.type != Loreline_Null) {
+            ok = false; error = "an unknown character gives a value";
+        }
+    }
+
+    *okOut = ok;
+    *errorOut = error;
+}
+
+static void unicodeNamesTestDialogue(
+    Loreline_Interpreter* interp,
+    Loreline_String character,
+    Loreline_String text,
+    const Loreline_TextTag* tags,
+    int tagCount,
+    Loreline_Advance advance,
+    void* userData
+) {
+    ContainerTestContext* ctx = (ContainerTestContext*)userData;
+    unicodeNamesTestCheck(interp, &ctx->ok, &ctx->error);
+    advance();
+}
+
+static void runUnicodeNamesTest() {
+    /* character 国王 named 路易斯, character 🐉 named Smaug, state field 金币 */
+    const char* source =
+        "\n"
+        "character \xE5\x9B\xBD\xE7\x8E\x8B\n"
+        "  name: \xE8\xB7\xAF\xE6\x98\x93\xE6\x96\xAF\n"
+        "\n"
+        "character \xF0\x9F\x90\x89\n"
+        "  name: Smaug\n"
+        "\n"
+        "state\n"
+        "  \xE9\x87\x91\xE5\xB8\x81: 1\n"
+        "\n"
+        "beat Main\n"
+        "  \xE5\x9B\xBD\xE7\x8E\x8B: Checking fields.\n";
+
+    ContainerTestContext ctx;
+
+    Loreline_Script* script = Loreline_parse(source, "unicode-names.lor", nullptr, nullptr);
+    if (script) {
+        Loreline_Interpreter* interp = Loreline_play(
+            script, unicodeNamesTestDialogue, containerTestChoice, containerTestFinish,
+            Loreline_String(), nullptr, &ctx);
+        if (interp) {
+            Loreline_releaseInterpreter(interp);
+        }
+        Loreline_releaseScript(script);
+    } else {
+        ctx.ok = false;
+        ctx.error = "Error parsing the names script";
+    }
+
+    if (ctx.ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "capi ~ names in any language" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "capi ~ names in any language" CLR_RESET "\n");
+        printf("  > %s\n", ctx.error.c_str());
+    }
+    fflush(stdout);
+}
 
 /* -- Parallel interpreters test -------------------------------------------- */
 
@@ -1817,6 +1937,7 @@ int main(int argc, char* argv[]) {
     /* Programmatic C API checks (not driven by .lor test blocks) */
     fileCount++;
     runContainerFieldTest();
+    runUnicodeNamesTest();
     fileCount++;
     runParallelInterpretersTest();
     fileCount++;

@@ -1,0 +1,58 @@
+state
+  coins: 3
+  rаven: 1
+
+character 国王
+  name: 路易斯
+  心情: "好"
+
+character 🐉
+  name: Smaug
+
+beat 场景
+  国王: 你好。
+  -> 结局
+
+beat 结局
+  国王：再见
+  Total $coins💰 left.
+  🎉: party
+  未知: hello
+  x = 国
+
+/*
+<test>
+- request: definition
+  at: "-> |结局"
+  target: beat 结局
+- request: definition
+  at: "|国王: 你好"
+  target: character 国王
+- request: hover
+  at: "-> |结局"
+  contains:
+    - "Beat: **结局**"
+- request: completion
+  at: "x = 国|"
+  includes: [国王]
+- request: symbols
+  includes: [coins, 国王, 心情, 🐉, 场景, 结局]
+- request: diagnostics
+  expected:
+    - message: "This name mixes Latin and Cyrillic letters: rаven"
+      line: 3
+      severity: 2
+    - message: '"：" looks like ":" but isn''t, so this line is narration. Write 国王: to make 国王 speak.'
+      line: 17
+      severity: 2
+    - message: 'No name "coins💰" here. To show coins then 💰, write ${coins}💰.'
+      line: 18
+      severity: 2
+    - message: "Unknown character: 🎉"
+      line: 19
+      severity: 2
+    - message: "Unknown character: 未知"
+      line: 20
+      severity: 2
+</test>
+*/

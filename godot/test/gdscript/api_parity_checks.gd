@@ -104,6 +104,9 @@ beat start
 	# 10. prepare_caches, as an option or a method
 	await _run_prepare_caches(loreline)
 
+	# 11. Names in any language and emoji through the field accessors
+	await _run_unicode_names(loreline)
+
 
 # Same scenario in every binding runner. A child spawned from the root shares
 # its state, gets host functions bound to itself, and both playheads are saved
@@ -399,3 +402,54 @@ beat Bark
 	await _spawn_wait(2, "caches")
 	if _spawn_log != ["root: Hello.", "root: Bye."]:
 		_fail("caches: method, log " + str(_spawn_log))
+
+
+# Characters and state fields named with letters of any language or emoji go
+# through the field accessors like any other name.
+func _run_unicode_names(loreline) -> void:
+	var source := """
+character 国王
+  name: 路易斯
+
+character 🐉
+  name: Smaug
+
+state
+  金币: 1
+
+beat Main
+  国王: Checking fields.
+"""
+	var script = await loreline.parse(source, "unicode-names.lor")
+	if script == null:
+		_fail("names: parse returned null")
+		return
+
+	var checked := [false]
+	var on_dialogue := func(interp: LorelineInterpreter, character: String, _text: String, _tags: Array, advance: Callable):
+		if character != "国王":
+			_fail("names: the speaker is " + character)
+		if interp.get_character_field("国王", "name") != "路易斯":
+			_fail("names: the name of 国王 is " + str(interp.get_character_field("国王", "name")))
+		if interp.get_character_field("🐉", "name") != "Smaug":
+			_fail("names: the name of 🐉 is " + str(interp.get_character_field("🐉", "name")))
+		interp.set_state_field("金币", 10)
+		if interp.get_state_field("金币") != 10:
+			_fail("names: 金币 did not round-trip")
+		interp.set_character_field("🐉", "💰", 3)
+		if interp.get_character_field("🐉", "💰") != 3:
+			_fail("names: an emoji field did not round-trip")
+		if interp.get_character_field("龙", "name") != null:
+			_fail("names: an unknown character gives a value")
+		checked[0] = true
+		advance.call()
+	var noop_choice := func(_interp, _options, _select): pass
+	var noop_finished := func(_interp): pass
+
+	loreline.play(script, on_dialogue, noop_choice, noop_finished, "Main")
+	for i in 600:
+		if checked[0]:
+			break
+		await _tree.process_frame
+	if not checked[0]:
+		_fail("names: the dialogue never came")

@@ -1,0 +1,20 @@
+// Tags take names in any language. An escaped `\<` stays text.
+
+character 国王
+  name: 路易斯
+
+beat 开场
+  国王: <开心>你好</开心>，朋友。
+  国王: <生气 很>走开！
+  Price \<10\> stays text.
+
+/*
+<test>
+- expected: |
+    路易斯: <<开心>>你好<</开心>>，朋友。
+
+    路易斯: <<生气 很>>走开！
+
+    ~ Price <10> stays text.
+</test>
+*/
