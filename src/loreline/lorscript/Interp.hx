@@ -230,12 +230,15 @@ class Interp {
     }
 
     function increment( e : Expr, prefix : Bool, delta : Int ) : Dynamic {
+        // The value read is made a number first: `i++` gives the old value as
+        // a number, a text written as a number included, as in JavaScript
         curExpr = e;
         var e = e.e;
         switch(e) {
         case EIdent(id):
             var l = locals.get(id);
             var v : Dynamic = (l == null) ? resolve(id) : l.r;
+            v = step(v, 0);
             if( prefix ) {
                 v = step(v, delta);
                 if( l == null ) setVar(id,v) else l.r = v;
@@ -245,6 +248,7 @@ class Interp {
         case EField(e,f):
             var obj = expr(e);
             var v : Dynamic = get(obj,f);
+            v = step(v, 0);
             if( prefix ) {
                 v = step(v, delta);
                 set(obj,f,v);
@@ -256,6 +260,7 @@ class Interp {
             var index:Dynamic = expr(index);
             if (Arrays.isArray(arr)) {
                 var v:Dynamic = Arrays.arrayGet(arr, index);
+                v = step(v, 0);
                 if (prefix) {
                     v = step(v, delta);
                     Arrays.arraySet(arr, index, v);
@@ -267,6 +272,7 @@ class Interp {
             }
             else if (Objects.isFields(arr)) {
                 var v:Dynamic = Objects.getField(interpreter, arr, index);
+                v = step(v, 0);
                 if (prefix) {
                     v = step(v, delta);
                     Objects.setField(interpreter, arr, index, v);
@@ -278,6 +284,7 @@ class Interp {
             }
             else if (isMap(arr)) {
                 var v = getMapValue(arr, index);
+                v = step(v, 0);
                 if (prefix) {
                     v = step(v, delta);
                     setMapValue(arr, index, v);
@@ -289,6 +296,7 @@ class Interp {
             }
             else {
                 var v = arr[index];
+                v = step(v, 0);
                 if( prefix ) {
                     v = step(v, delta);
                     arr[index] = v;
