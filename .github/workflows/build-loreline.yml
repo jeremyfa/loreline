@@ -1190,10 +1190,12 @@ jobs:
           test -x build/linux/loreline-sample
           cd build/linux
           # Feed a few choices so the story actually advances, and check it
-          # reached the runtime rather than just linking.
+          # reached the runtime rather than just linking. The opening line is
+          # random (rush hour or not), so check the answer to the first choice
+          # instead: option 1 is always "Order espresso".
           printf '1\n1\n1\n1\n1\n1\n1\n1\n' | ./loreline-sample > run.log 2>&1
           cat run.log
-          grep -q "freshly ground coffee beans" run.log
+          grep -q "concentrated shot of espresso" run.log
 
       - name: Create zip archive
         run: cd loreline-cpp-pkg && zip -9 ../loreline-cpp.zip -r .
