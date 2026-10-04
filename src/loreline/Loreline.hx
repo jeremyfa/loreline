@@ -541,6 +541,16 @@ class Loreline {
     }
 
     /**
+     * The names of the functions a script declares without a body, imports
+     * included. The game must provide them in the `functions` option: calling
+     * one it doesn't provide is an error. A tool that plays scripts with no
+     * game behind it can provide stand-ins for these.
+     */
+    public static function externalFunctions(script:Script):Array<String> {
+        return [for (func in new Lens(script).getExternalFunctions()) func.name];
+    }
+
+    /**
      * Lex-only scan of `content` for every hash-comment identifier
      * (`#xxxx`). Cheap compared to a full parse. Runs the lexer over
      * the text and pulls out every `CommentHash` payload. Use to build

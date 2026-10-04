@@ -817,6 +817,12 @@ class InterpreterContext {
     final scriptFunctions:Array<ScriptFunction> = [];
 
     /**
+     * Names of the functions declared without a body that the host didn't
+     * provide, in declaration order. Calling one is an error.
+     */
+    final missingExternalFunctions:Array<String> = [];
+
+    /**
      * The next insertion id to assign when creating a new insertion.
      * Shared by all interpreters so that ids stay unique in save data.
      */
@@ -3718,6 +3724,13 @@ class InterpreterContext {
             bindScriptFunction(func);
         }
 
+        // Functions declared without a body that the host doesn't provide
+        for (name in context.missingExternalFunctions) {
+            if (!topLevelFunctions.exists(name)) {
+                topLevelFunctions.set(name, missingExternalFunction(name));
+            }
+        }
+
     }
 
     /**
@@ -3785,13 +3798,32 @@ class InterpreterContext {
         }
     }
 
+    /**
+     * The function that stands for a function declared without a body when the
+     * host doesn't provide it: calling it is an error, at the position of the
+     * call (see callFunctionValue).
+     */
+    static function missingExternalFunction(name:String):Any {
+        return VarArgs.make(args -> {
+            throw new RuntimeError('$name() is declared without a body, so the game must provide it');
+        });
+    }
+
     function initializeTopLevelFunction(func:NFunctionDecl) {
 
         if (func.name != null) {
-            if (!func.external || !topLevelFunctions.exists(func.name)) {
+            if (func.external) {
+                // Provided by the host, or an error when called
+                if (!topLevelFunctions.exists(func.name)) {
+                    context.missingExternalFunctions.push(func.name);
+                    topLevelFunctions.set(func.name, missingExternalFunction(func.name));
+                    refreshFunctionHelpers();
+                }
+            }
+            else {
                 final codeToLorscript = new CodeToLorscript();
                 try {
-                    final expr = codeToLorscript.process(func.code + (func.external ? " {}" : ""));
+                    final expr = codeToLorscript.process(func.code);
                     #if loreline_debug_functions
                     final offsets = @:privateAccess codeToLorscript.posOffsets;
                     trace('\n'+func.code);
