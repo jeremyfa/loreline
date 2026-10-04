@@ -333,30 +333,24 @@ class AstUtils {
 
     /** Check if a source line contains a hash comment (# followed by word chars, not preceded by \). */
     static function lineHasHashComment(line:String):Bool {
+        final length = line.uLength();
         var i = 0;
-        while (i < line.length) {
-            if (line.charCodeAt(i) == '#'.code) {
+        while (i < length) {
+            if (line.uCharCodeAt(i) == '#'.code) {
                 // Skip escaped hashes (##)
-                if (i + 1 < line.length && line.charCodeAt(i + 1) == '#'.code) {
+                if (i + 1 < length && line.uCharCodeAt(i + 1) == '#'.code) {
                     i += 2;
                     continue;
                 }
                 // Check if preceded by backslash (escaped)
-                if (i > 0 && line.charCodeAt(i - 1) == '\\'.code) {
+                if (i > 0 && line.uCharCodeAt(i - 1) == '\\'.code) {
                     i++;
                     continue;
                 }
-                // Check if followed by at least one word character (a-z, A-Z, 0-9, _, -)
-                var j = i + 1;
-                while (j < line.length) {
-                    final c = line.charCodeAt(j);
-                    if ((c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code) ||
-                        (c >= '0'.code && c <= '9'.code) || c == '_'.code || c == '-'.code)
-                        j++;
-                    else
-                        break;
-                }
-                if (j > i + 1) return true; // found # followed by word chars
+                // Check if followed by the start of a key: a name start (in any
+                // language), a digit or a dash, as the lexer reads it
+                final next = Identifiers.codeAt(line, i + 1);
+                if (Identifiers.isStart(next) || (next >= '0'.code && next <= '9'.code) || next == '-'.code) return true;
             }
             i++;
         }
@@ -610,19 +604,11 @@ class AstUtils {
             if (StringTools.startsWith(text, kw)) return false;
         }
 
-        // Check for Identifier: pattern (dialogue)
-        var colonIdx = text.indexOf(":");
-        if (colonIdx > 0) {
-            var allIdentChars = true;
-            for (j in 0...colonIdx) {
-                final ch = text.charCodeAt(j);
-                if (!((ch >= 'a'.code && ch <= 'z'.code) || (ch >= 'A'.code && ch <= 'Z'.code) ||
-                      (ch >= '0'.code && ch <= '9'.code) || ch == '_'.code)) {
-                    allIdentChars = false;
-                    break;
-                }
-            }
-            if (allIdentChars) return false;
+        // Check for Identifier: pattern (dialogue), with a name in any language
+        var nameEnd = Identifiers.nameEnd(text, 0);
+        if (nameEnd > 0) {
+            while (Identifiers.codeAt(text, nameEnd) == ' '.code || Identifiers.codeAt(text, nameEnd) == '\t'.code) nameEnd++;
+            if (Identifiers.codeAt(text, nameEnd) == ':'.code) return false;
         }
 
         // Check for number literal, null, true, false

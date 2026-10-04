@@ -280,13 +280,14 @@ class Printer {
         enableComments = false;
         clear();
         _beginLine = 1;
-        for (part in str.parts) {
+        for (i in 0...str.parts.length) {
+            final part = str.parts[i];
             switch (part.partType) {
                 case Raw(text):
                     if (str.quotes == DoubleQuotes) writeQuotedRaw(text);
                     else writeUnquotedRaw(text);
                 case Expr(expr):
-                    final canBeSimple = isSimpleInterpolationExpr(expr);
+                    final canBeSimple = isSimpleInterpolationExpr(expr) && !continuesInterpolation(i + 1 < str.parts.length ? str.parts[i + 1] : null);
                     write('$$');
                     if (!canBeSimple) write('{');
                     printNode(expr);
@@ -1022,7 +1023,8 @@ class Printer {
             printLeadingComments(str);
             write('"');
         }
-        for (part in str.parts) {
+        for (i in 0...str.parts.length) {
+            final part = str.parts[i];
             switch (part.partType) {
                 case Raw(text):
                     if (surroundWithQuotes)
@@ -1031,8 +1033,9 @@ class Printer {
                         writeUnquotedRaw(text);
                 case Expr(expr):
                     // Use simple interpolation ($var, $var.prop, $var[idx], $var.call())
-                    // when the expression is a pure access chain.
-                    final canBeSimple = isSimpleInterpolationExpr(expr);
+                    // when the expression is a pure access chain, and the text that
+                    // follows wouldn't be read as part of it.
+                    final canBeSimple = isSimpleInterpolationExpr(expr) && !continuesInterpolation(i + 1 < str.parts.length ? str.parts[i + 1] : null);
                     write('$');
                     if (!canBeSimple) write('{');
                     _interpolationDepth++;
@@ -1359,6 +1362,23 @@ class Printer {
      * Checks if an expression can be printed as simple interpolation ($var, $var.field, $var[idx], $var.call()).
      * Simple interpolation is a chain of NAccess, NArrayAccess, and NCall rooted at a plain NAccess (no target).
      */
+    /**
+     * Whether the text right after a `$name` interpolation would be read as part of
+     * it: a name character (`${name}s`, `${国王}说`, `${hp}💖`), a `.` followed by
+     * one, `(` or `[`. The braces must then stay.
+     */
+    function continuesInterpolation(next:Null<NStringPart>):Bool {
+        if (next == null) return false;
+        return switch next.partType {
+            case Raw(text):
+                final c = Identifiers.codeAt(text, 0);
+                Identifiers.isPart(c) || c == "(".code || c == "[".code
+                    || (c == ".".code && Identifiers.isStart(Identifiers.codeAt(text, 1)));
+            case _:
+                false;
+        }
+    }
+
     function isSimpleInterpolationExpr(expr:NExpr):Bool {
         if (Std.isOfType(expr, NAccess)) {
             final access:NAccess = cast expr;
