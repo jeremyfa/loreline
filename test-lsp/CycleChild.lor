@@ -1,0 +1,15 @@
+import sub/cycle-parent
+
+beat Child
+  -> ParentBeat
+
+/*
+<test>
+- request: definition
+  at: "-> |ParentBeat"
+  file: sub/cycle-parent.lor
+  target: beat ParentBeat
+- request: diagnostics
+  none: true
+</test>
+*/

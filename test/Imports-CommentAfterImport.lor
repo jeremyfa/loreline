@@ -1,0 +1,13 @@
+// A comment between `import` and the path is allowed.
+
+import /* the helpers */ imports/comment-target
+
+beat Start
+  -> Target
+
+/*
+<test>
+- expected: |
+    ~ Reached the target.
+</test>
+*/

@@ -18,6 +18,12 @@ class Error {
     public var pos:Position;
 
     /**
+     * The file where the error is, when it isn't the root script: an imported
+     * file. Null for the root script.
+     */
+    public var filePath:Null<String> = null;
+
+    /**
      * The call stack of this error
      */
     public var stack:Array<StackItem>;

@@ -1,0 +1,25 @@
+// A file imported by this one imports it back, to use its beat and its
+// character. This file is parsed once: nothing is declared twice.
+
+import imports/cycle-child
+
+character king
+  name: Louis
+
+beat Start
+  king: Welcome.
+  -> ChildBeat
+
+beat Final
+  The end.
+
+/*
+<test>
+- expected: |
+    Louis: Welcome.
+
+    Louis: From the child.
+
+    ~ The end.
+</test>
+*/

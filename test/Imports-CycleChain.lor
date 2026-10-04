@@ -1,0 +1,24 @@
+// A chain of imports that comes back to this file: A imports B, B imports C,
+// C imports A. Each file is parsed once.
+
+import imports/chain-b
+
+beat Start
+  Start line.
+  -> ChainB
+
+beat End
+  End line.
+
+/*
+<test>
+- expected: |
+    ~ Start line.
+
+    ~ B line.
+
+    ~ C line.
+
+    ~ End line.
+</test>
+*/

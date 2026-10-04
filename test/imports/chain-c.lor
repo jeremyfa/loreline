@@ -1,0 +1,5 @@
+import ../Imports-CycleChain
+
+beat ChainC
+  C line.
+  -> End
