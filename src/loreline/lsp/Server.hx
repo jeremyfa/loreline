@@ -2275,7 +2275,7 @@ class Server {
         }
 
         return makeHover(
-            hoverTitle('Beat', titleName),
+            hoverTitle(beatDecl.isPublic ? 'Public beat' : 'Beat', titleName),
             description,
             content,
             origin ?? beatDecl

@@ -120,6 +120,8 @@ enum TokenType {
     KwChoice;
     /** Saliency block keyword, only at the start of a statement that opens a block (see Lexer.isWhenStart) */
     KwWhen;
+    /** Mark of a beat the game starts or calls by name, only right before `beat` (see Lexer.isPublicBeatStart) */
+    KwPublic;
     /** If statement keyword */
     KwIf;
     /** Else statement keyword */
@@ -269,6 +271,7 @@ class TokenTypeHelpers {
             case [KwCharacter, KwCharacter]: true;
             case [KwChoice, KwChoice]: true;
             case [KwWhen, KwWhen]: true;
+            case [KwPublic, KwPublic]: true;
             case [KwIf, KwIf]: true;
             case [KwElse, KwElse]: true;
             case [KwNew, KwNew]: true;
@@ -363,6 +366,7 @@ class TokenTypeHelpers {
             case KwCharacter: 'character';
             case KwChoice: 'choice';
             case KwWhen: 'when';
+            case KwPublic: 'public';
             case KwIf: 'if';
             case KwElse: 'else';
             case KwNew: 'new';
@@ -940,6 +944,19 @@ class Token {
                 }
         }
 
+    }
+
+    /**
+     * Whether `beat` follows on the same line, after spaces: the word before it,
+     * `public`, then marks a public beat. Anywhere else `public` is a plain word,
+     * a name or the start of a line of text.
+     * @param pos Position right after the word `public`
+     */
+    function isPublicBeatStart(pos:Int):Bool {
+        var p = pos;
+        if (p >= length || !isWhitespace(input.uCharCodeAt(p))) return false;
+        while (p < length && isWhitespace(input.uCharCodeAt(p))) p++;
+        return wordEnd(p, 'beat') != -1;
     }
 
     /**
@@ -2919,6 +2936,11 @@ class Token {
                 if (isColon(nameEnd(pos))) {
                     return null;
                 }
+
+                // Skip if declaring a public beat
+                if (identifier == 'public' && isPublicBeatStart(nameEnd(pos))) {
+                    return null;
+                }
             }
         }
 
@@ -3883,6 +3905,11 @@ class Token {
         // `when` is a keyword only where it opens a block
         if (word == 'when' && isWhenStart(startPos)) {
             tokenType = KwWhen;
+        }
+
+        // `public` is a keyword only right before `beat`
+        if (word == 'public' && isPublicBeatStart(pos)) {
+            tokenType = KwPublic;
         }
 
         // Alternative keywords (sequence, cycle, once, pick, shuffle) and the word

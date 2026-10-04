@@ -915,6 +915,9 @@ class NBeatDecl extends AstNode {
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
         json.name = name;
+        if (isPublic) {
+            json.isPublic = true;
+        }
         if (params != null) {
             json.params = [for (param in params) param.toJson()];
         }
