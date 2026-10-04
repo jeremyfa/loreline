@@ -1,0 +1,230 @@
+// Where a name ends after `$`: no ASCII punctuation or operator, and no
+// common punctuation of other languages, is part of a name. The middle dots
+// continue a name (`ジョン・スミス`, French inclusive writing `lecteur·rice`),
+// the wavy dash doesn't.
+
+state
+  jeremy: "J"
+  国王: "K"
+  🐉: "D"
+  ジョン・スミス: "S"
+  lecteur·rice: "L"
+  名前: "N"
+
+beat Start
+  A $jeremy! $国王! $🐉! z
+
+  A $jeremy? $国王? $🐉? z
+
+  A $jeremy, $国王, $🐉, z
+
+  A $jeremy; $国王; $🐉; z
+
+  A $jeremy: $国王: $🐉: z
+
+  A $jeremy) $国王) $🐉) z
+
+  A $jeremy] $国王] $🐉] z
+
+  A $jeremy} $国王} $🐉} z
+
+  A $jeremy' $国王' $🐉' z
+
+  A $jeremy" $国王" $🐉" z
+
+  A $jeremy- $国王- $🐉- z
+
+  A $jeremy+ $国王+ $🐉+ z
+
+  A $jeremy* $国王* $🐉* z
+
+  A $jeremy% $国王% $🐉% z
+
+  A $jeremy> $国王> $🐉> z
+
+  A $jeremy& $国王& $🐉& z
+
+  A $jeremy| $国王| $🐉| z
+
+  A $jeremy~ $国王~ $🐉~ z
+
+  A $jeremy^ $国王^ $🐉^ z
+
+  A $jeremy@ $国王@ $🐉@ z
+
+  A $jeremy. end $国王. end $🐉. end z
+
+  A $jeremy# end $国王# end $🐉# end z
+
+  A $jeremy< end $国王< end $🐉< end z
+
+  A $jeremy/ end $国王/ end $🐉/ end z
+
+  A $jeremy！ $国王！ $🐉！ z
+
+  A $jeremy？ $国王？ $🐉？ z
+
+  A $jeremy。 $国王。 $🐉。 z
+
+  A $jeremy、 $国王、 $🐉、 z
+
+  A $jeremy， $国王， $🐉， z
+
+  A $jeremy； $国王； $🐉； z
+
+  A $jeremy： $国王： $🐉： z
+
+  A $jeremy（ $国王（ $🐉（ z
+
+  A $jeremy） $国王） $🐉） z
+
+  A $jeremy「 $国王「 $🐉「 z
+
+  A $jeremy」 $国王」 $🐉」 z
+
+  A $jeremy『 $国王『 $🐉『 z
+
+  A $jeremy』 $国王』 $🐉』 z
+
+  A $jeremy《 $国王《 $🐉《 z
+
+  A $jeremy》 $国王》 $🐉》 z
+
+  A $jeremy【 $国王【 $🐉【 z
+
+  A $jeremy】 $国王】 $🐉】 z
+
+  A $jeremy… $国王… $🐉… z
+
+  A $jeremy« $国王« $🐉« z
+
+  A $jeremy» $国王» $🐉» z
+
+  A $jeremy“ $国王“ $🐉“ z
+
+  A $jeremy” $国王” $🐉” z
+
+  A $jeremy‘ $国王‘ $🐉‘ z
+
+  A $jeremy’ $国王’ $🐉’ z
+
+  A $jeremy¿ $国王¿ $🐉¿ z
+
+  A $jeremy¡ $国王¡ $🐉¡ z
+
+  A $jeremy〜 $国王〜 $🐉〜 z
+
+  A $ジョン・スミス and $lecteur·rice z
+
+  A $名前〰 z
+
+/*
+<test>
+- expected: |
+    ~ A J! K! D! z
+
+    ~ A J? K? D? z
+
+    ~ A J, K, D, z
+
+    ~ A J; K; D; z
+
+    ~ A J: K: D: z
+
+    ~ A J) K) D) z
+
+    ~ A J] K] D] z
+
+    ~ A J} K} D} z
+
+    ~ A J' K' D' z
+
+    ~ A J" K" D" z
+
+    ~ A J- K- D- z
+
+    ~ A J+ K+ D+ z
+
+    ~ A J* K* D* z
+
+    ~ A J% K% D% z
+
+    ~ A J> K> D> z
+
+    ~ A J& K& D& z
+
+    ~ A J| K| D| z
+
+    ~ A J~ K~ D~ z
+
+    ~ A J^ K^ D^ z
+
+    ~ A J@ K@ D@ z
+
+    ~ A J. end K. end D. end z
+
+    ~ A J# end K# end D# end z
+
+    ~ A J< end K< end D< end z
+
+    ~ A J/ end K/ end D/ end z
+
+    ~ A J！ K！ D！ z
+
+    ~ A J？ K？ D？ z
+
+    ~ A J。 K。 D。 z
+
+    ~ A J、 K、 D、 z
+
+    ~ A J， K， D， z
+
+    ~ A J； K； D； z
+
+    ~ A J： K： D： z
+
+    ~ A J（ K（ D（ z
+
+    ~ A J） K） D） z
+
+    ~ A J「 K「 D「 z
+
+    ~ A J」 K」 D」 z
+
+    ~ A J『 K『 D『 z
+
+    ~ A J』 K』 D』 z
+
+    ~ A J《 K《 D《 z
+
+    ~ A J》 K》 D》 z
+
+    ~ A J【 K【 D【 z
+
+    ~ A J】 K】 D】 z
+
+    ~ A J… K… D… z
+
+    ~ A J« K« D« z
+
+    ~ A J» K» D» z
+
+    ~ A J“ K“ D“ z
+
+    ~ A J” K” D” z
+
+    ~ A J‘ K‘ D‘ z
+
+    ~ A J’ K’ D’ z
+
+    ~ A J¿ K¿ D¿ z
+
+    ~ A J¡ K¡ D¡ z
+
+    ~ A J〜 K〜 D〜 z
+
+    ~ A S and L z
+
+    ~ A N〰 z
+</test>
+*/
