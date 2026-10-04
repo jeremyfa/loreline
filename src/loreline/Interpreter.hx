@@ -6554,8 +6554,14 @@ class InterpreterContext {
 
             case NAccess:
                 final access:NAccess = cast expr;
-                final resolved = resolveAccess(access, access.target, access.name);
-                readAccess(resolved);
+                if (access.target == null && isRootOnlyField(access.name)) {
+                    // No scope can hold this name: read the root state directly
+                    Objects.getField(this, topLevelState.fields, access.name);
+                }
+                else {
+                    final resolved = resolveAccess(access, access.target, access.name);
+                    readAccess(resolved);
+                }
 
             case NArrayAccess:
                 final arrAccess:NArrayAccess = cast expr;
@@ -6800,6 +6806,17 @@ class InterpreterContext {
      * @return The resolved runtime access
      * @throws RuntimeError if the access cannot be resolved
      */
+    /**
+     * Whether a name is a field of the root state that no scope of the stack can
+     * shadow (see Lens.isRootOnlyName). Never when the host creates the fields
+     * objects: those may answer for any name.
+     */
+    inline function isRootOnlyField(name:String):Bool {
+        return customCreateFields == null
+            && lens.isRootOnlyName(name)
+            && Objects.fieldExists(this, topLevelState.fields, name);
+    }
+
     function resolveAccess(access:NAccess, ?target:NExpr, name:String):RuntimeAccess {
 
         if (target != null) {
@@ -6814,6 +6831,15 @@ class InterpreterContext {
                 );
             }
             return FieldAccess(target.pos, RuntimeCharacterRef.fieldsOf(evaluated), name);
+        }
+
+        // A name only the root state can hold: no scope to walk
+        if (isRootOnlyField(name)) {
+            return FieldAccess(
+                access?.pos ?? currentScope?.node?.pos ?? script.pos,
+                topLevelState.fields,
+                name
+            );
         }
 
         // Iterate through scopes to identify a matching state field or character name

@@ -139,7 +139,8 @@ class WhenSyntaxTests {
             {name: 'a child interpreter resolves names from its own stack', fn: () -> testChildLocalScope()},
             {name: 'an undefined name in the winning rules is an error in strict mode', fn: () -> testStrictUndefined()},
             {name: 'a fact set by the host between two picks is read by the next one', fn: () -> testHostSetsFact()},
-            {name: 'host fields of a local state can shadow a fact', fn: () -> testCustomFieldsShadow()}
+            {name: 'host fields of a local state can shadow a fact', fn: () -> testCustomFieldsShadow()},
+            {name: 'names only the root state can hold', fn: () -> testRootOnlyNames()}
         ];
 
         for (test in tests) {
@@ -478,6 +479,41 @@ class WhenSyntaxTests {
         interp.start('Local');
         interp.start('Plain');
         expectEqual('Greeting.,Shout.,Greeting.', seen.join(','), 'picks');
+    }
+
+    /**
+     * The lens tells which names no scope can shadow: not the fields of a beat
+     * state or of a temporary state, not the parameters of a beat, not the
+     * fields the interpreter keeps on nodes.
+     */
+    static function testRootOnlyNames():Void {
+        final script = parse([
+            'state',
+            '  gold: 1',
+            '  tone: "root"',
+            '  mood: "calm"',
+            '',
+            'beat A(who)',
+            '  state',
+            '    tone: "a"',
+            '  new state',
+            '    temp: 2',
+            '  choice',
+            '    Pick',
+            '      state',
+            '        picked: true',
+            '      Picked.',
+            '  when',
+            '    gold > 0',
+            '      Ok.'
+        ].join('\n'));
+        final lens = new Lens(script);
+        for (name in ['gold', 'mood', 'unknown']) {
+            expectEqual(true, lens.isRootOnlyName(name), name);
+        }
+        for (name in ['tone', 'who', 'temp', 'picked', '_played', '_lastPlayed', '_whenTick']) {
+            expectEqual(false, lens.isRootOnlyName(name), name);
+        }
     }
 
     static final STRATEGY_SCRIPT = [

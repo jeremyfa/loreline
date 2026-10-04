@@ -163,6 +163,12 @@ class Lens {
      */
     final whenRuleScores:NodeIdMap<Int> = new NodeIdMap();
 
+    /**
+     * The names a scope on the stack may hold, see isRootOnlyName. Built on
+     * first use.
+     */
+    var scopedNames:Null<Map<String, Bool>> = null;
+
     public function new(script:Script) {
         this.script = script;
         initialize();
@@ -926,6 +932,40 @@ class Lens {
         final score = AstUtils.whenRuleScore(rule);
         whenRuleScores.set(rule.id, score);
         return score;
+    }
+
+    /**
+     * Whether no scope of the stack can hold a field of that name, so that the
+     * name can only refer to the root state (or to a character, a function or a
+     * beat). The scopes hold the fields of the states declared below the root
+     * and of the temporary states, in any file, the parameters of beats, and the
+     * fields the interpreter keeps on nodes. Everything else lives in the root
+     * state, whatever beat is running or inserted.
+     */
+    public function isRootOnlyName(name:String):Bool {
+        if (scopedNames == null) {
+            final names = new Map<String, Bool>();
+            for (state in getNodesOfType(NStateDecl, true)) {
+                final parent = getParentNode(state);
+                if (state.temporary || parent == null || !(parent is Script)) {
+                    for (field in state.fields) {
+                        names.set(field.name, true);
+                    }
+                }
+            }
+            for (beat in getNodesOfType(NBeatDecl, true)) {
+                if (beat.params != null) {
+                    for (param in beat.params) {
+                        names.set(param.name, true);
+                    }
+                }
+            }
+            for (internal in ['_whenTick', '_played', '_lastPlayed']) {
+                names.set(internal, true);
+            }
+            scopedNames = names;
+        }
+        return !scopedNames.exists(name);
     }
 
     public function findBeatByNameFromNode(name:String, node:Node):Null<NBeatDecl> {
