@@ -1354,10 +1354,18 @@ class Cli {
             var content = File.getContent(file);
             var script = Loreline.parse(content, file, handleFile);
 
+            // The root and every file it imports are rewritten one by one: the
+            // positions of a file's texts only make sense in that file
+            final files = [file].concat(new Lens(script).getImportedPaths(file));
+
             if (clearIds) {
-                content = AstUtils.removeLocalizationKeys(content, script);
-                File.saveContent(file, content);
-                print('Localization keys removed from: ' + file);
+                for (path in files) {
+                    final fileContent = File.getContent(path);
+                    final fileScript = Loreline.parse(fileContent, path, handleFile);
+                    final cleared = AstUtils.removeLocalizationKeys(fileContent, fileScript, false);
+                    if (cleared != fileContent) File.saveContent(path, cleared);
+                }
+                print('Localization keys removed from: ' + files.join(', '));
                 return;
             }
 
@@ -1365,8 +1373,16 @@ class Cli {
                 final rng = (autoIdsSeed != null && autoIdsSeed != "")
                     ? new loreline.Random(Std.parseFloat(autoIdsSeed))
                     : null;
-                content = AstUtils.insertLocalizationKeys(content, script, true, null, rng);
-                File.saveContent(file, content);
+                // The keys already used by any of the files, so that new ones are unique across them
+                final reservedIds = new Map<String, Bool>();
+                for (path in files) AstUtils.collectHashIds(File.getContent(path), reservedIds);
+                for (path in files) {
+                    final fileContent = File.getContent(path);
+                    final fileScript = Loreline.parse(fileContent, path, handleFile);
+                    final withKeys = AstUtils.insertLocalizationKeys(fileContent, fileScript, false, reservedIds, rng);
+                    if (withKeys != fileContent) File.saveContent(path, withKeys);
+                }
+                content = File.getContent(file);
                 script = Loreline.parse(content, file, handleFile);
             }
 
