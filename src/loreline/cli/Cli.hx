@@ -560,6 +560,7 @@ class Cli {
         loreline.test.IdentifiersTests.run(onPass, onFail);
         loreline.test.ImportsTests.run(onPass, onFail);
         loreline.test.ExternalFunctionsTests.run(onPass, onFail);
+        loreline.test.PublicBeatTests.run(onPass, onFail);
         loreline.test.LspTests.run(onPass, onFail);
 
         print('');

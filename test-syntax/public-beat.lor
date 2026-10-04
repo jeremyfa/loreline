@@ -1,0 +1,16 @@
+// A public beat, and `public` as an ordinary word.
+
+state
+  public: "the crowd"
+//^^^^^^ variable.other
+
+public beat EnterShop
+// <------ storage.modifier
+//     ^^^^ keyword.control.beat
+//          ^^^^^^^^^ entity.name.type.beat
+  public opinion is low.
+//^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  -> Leave
+
+beat Leave
+  Bye.

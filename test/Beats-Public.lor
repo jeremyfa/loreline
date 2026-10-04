@@ -1,0 +1,30 @@
+// A beat the game starts or calls by name can be marked public. Anywhere
+// else, `public` is an ordinary word: a state field, or the start of a line
+// of text.
+
+state
+  public: "the crowd"
+
+public beat EnterShop
+  public opinion is low.
+
+  The $public cheers.
+
+  -> Leave
+
+beat Leave
+  Bye.
+
+/*
+<test>
+- expected: |
+    ~ public opinion is low.
+
+    ~ The the crowd cheers.
+
+    ~ Bye.
+- beat: Leave
+  expected: |
+    ~ Bye.
+</test>
+*/

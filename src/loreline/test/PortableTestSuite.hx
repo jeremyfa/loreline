@@ -78,6 +78,7 @@ class PortableTestSuite {
         IdentifiersTests.run(onPass, onFail);
         ImportsTests.run(onPass, onFail);
         ExternalFunctionsTests.run(onPass, onFail);
+        PublicBeatTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 
