@@ -1944,131 +1944,91 @@ class Token {
     }
 
     /**
-     * Returns whether the input at the given position is the start of an assignment.
+     * Returns whether a line starting at the given position is an assignment.
+     * What it assigns comes first: a name, then any fields, indexes and calls,
+     * such as `list[i].count` or `find().items[a - b]`, followed by `=`, `+=`,
+     * `-=`, `*=`, `/=` or `:=`. Any other line holding one of those signs is
+     * text, such as `The score = 3.` or `Hi $name= welcome.`
      * @param pos Position to check from
      * @return True if an assignment starts at the position, false otherwise
      */
-    function isAssignStart(pos:Int, strict:Bool):Bool {
+    function isAssignStart(pos:Int):Bool {
 
-        // Helper function to read identifier
-        inline function readIdent():Bool {
-            var result = true;
-            final startPos = pos;
-
-            if (pos >= this.length) {
-                result = false;
-            }
-            else {
-                // First char must be a letter, `_` or an emoji
-                if (!isNameStartAt(pos)) {
-                    result = false;
-                }
-                else {
-                    pos = nameEnd(pos);
-                }
-            }
-
-            if (pos == startPos + 2 && input.uCharCodeAt(startPos) == "i".code && input.uCharCodeAt(startPos + 1) == "f".code) {
-                // `if` keyword isn't valid here
-                return false;
-            }
-
-            return result;
-        }
-
-        // Must start with identifier
-        if (strict && !readIdent()) {
+        if (pos >= this.length || !isNameStartAt(pos)) {
             return false;
         }
 
-        // Keep reading segments until we find opening parenthesis
-        var isEscape:Bool = false;
+        final firstEnd = nameEnd(pos);
+        if (firstEnd == pos + 2 && input.uCharCodeAt(pos) == "i".code && input.uCharCodeAt(pos + 1) == "f".code) {
+            // `if` keyword isn't valid here
+            return false;
+        }
+        pos = firstEnd;
+
+        // Fields, indexes and calls, glued to what they apply to
         while (pos < this.length) {
-            pos = skipWhitespaceAndComments(pos);
-
-            if (pos >= this.length) {
-                return false;
-            }
-
-            var c = input.uCharCodeAt(pos);
-
-            // Found assign operator (but not comparison operators ==, !=, <=, >=)
-            if (!isEscape && ((c == "=".code && (pos + 1 >= this.length || input.uCharCodeAt(pos + 1) != "=".code)) ||
-                (input.uCharCodeAt(pos + 1) == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == ":".code)))) {
-                return true;
-            }
-
-            if (strict) {
-                // Handle dot access
-                if (c == ".".code) {
-                    pos++;
-                    pos = skipWhitespaceAndComments(pos);
-                    if (!readIdent()) {
-                        return false;
-                    }
-                    continue;
-                }
-
-                // Handle bracket access (skip strings inside brackets)
-                if (c == "[".code) {
-                    pos++;
-                    while (pos < this.length) {
-                        final bc = input.uCharCodeAt(pos);
-                        if (bc == '"'.code) {
-                            pos = scanStringEnd(pos, false);
-                            if (pos == -1) return false;
-                            continue;
-                        }
-                        if (bc == "]".code) {
-                            pos++;
-                            break;
-                        }
-                        pos++;
-                    }
-                    continue;
-                }
-
-                // Any other character means this isn't an assign
-                return false;
-            }
-            else {
-                // End of line in loose mode: not an assign
-                if (c == "\\".code) {
-                    isEscape = true;
-                    pos++;
-                }
-                else if (c == "\r".code || c == "\n".code) {
+            final c = input.uCharCodeAt(pos);
+            if (c == ".".code) {
+                pos++;
+                if (pos >= this.length || !isNameStartAt(pos)) {
                     return false;
                 }
-                else if (c == '"'.code) {
-                    // Skip quoted strings so their content isn't matched as operators
-                    pos = scanStringEnd(pos, false);
-                    if (pos == -1) return false;
+                pos = nameEnd(pos);
+            }
+            else if (c == "[".code || c == "(".code) {
+                pos = bracketsEnd(pos);
+                if (pos == -1) {
+                    return false;
                 }
-                else if (isNameStartAt(pos)) {
-                    if (!readIdent()) return false;
-                }
-                else {
-                    // A line that contains a text tag region is text, never an assignment:
-                    // no assignment target or value can hold a tag, while text tags such as
-                    // `<color=red>` (and the text around them) commonly hold a `=`. This
-                    // mirrors the tmLanguage `assigns` rule, which likewise refuses any line
-                    // where a `<` precedes the `=`. A `=` met before the tag has already
-                    // returned true above, so `a = b<c>d` still reads as an assignment.
-                    if (c == "<".code && scanTagEnd(pos) != -1) {
-                        return false;
-                    }
-                    // Skip two-char comparison operators so their trailing = isn't matched as assignment
-                    else if ((c == "=".code || c == "!".code || c == "<".code || c == ">".code) && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "=".code) {
-                        pos += 2;
-                    } else {
-                        pos++;
-                    }
-                }
+            }
+            else {
+                break;
             }
         }
 
-        return false;
+        pos = skipWhitespaceAndComments(pos, true);
+        if (pos >= this.length) {
+            return false;
+        }
+
+        // An assign operator, but not a comparison (==)
+        final c = input.uCharCodeAt(pos);
+        final next = pos + 1 < this.length ? input.uCharCodeAt(pos + 1) : -1;
+        if (c == "=".code) {
+            return next != "=".code;
+        }
+        return next == "=".code && (c == "+".code || c == "-".code || c == "*".code || c == "/".code || c == ":".code);
+
+    }
+
+    /**
+     * Returns the position right after a group in brackets or parentheses
+     * starting at the given position, groups inside it and strings included,
+     * or -1 when it doesn't close on the same line.
+     */
+    function bracketsEnd(pos:Int):Int {
+
+        var depth = 0;
+        while (pos < this.length) {
+            final c = input.uCharCodeAt(pos);
+            if (c == '"'.code) {
+                pos = scanStringEnd(pos, false);
+                if (pos == -1) return -1;
+                continue;
+            }
+            if (c == "\n".code || c == "\r".code) {
+                return -1;
+            }
+            if (c == "[".code || c == "(".code) {
+                depth++;
+            }
+            else if (c == "]".code || c == ")".code) {
+                depth--;
+                if (depth == 0) return pos + 1;
+            }
+            pos++;
+        }
+        return -1;
 
     }
 
@@ -2594,8 +2554,8 @@ class Token {
     /**
      * Returns whether a text tag starts at the given position: a `<` followed by an
      * optional `/` and then a tag name start. Single source of truth for the tag
-     * detection performed by readString(), tryReadUnquotedString(), scanStringEnd()
-     * and scanTagEnd(), so that they cannot drift apart.
+     * detection performed by readString(), tryReadUnquotedString() and
+     * scanStringEnd(), so that they cannot drift apart.
      */
     function isTagStart(pos:Int):Bool {
         if (pos >= length || input.uCharCodeAt(pos) != "<".code) {
@@ -2609,30 +2569,6 @@ class Token {
         final nameStart = input.uCharCodeAt(checkPos);
         return isNameStartAt(checkPos) || nameStart == "$".code ||
             (isClosing && nameStart == ">".code);
-    }
-
-    /**
-     * Stateless lookahead: when a text tag starts at `startPos`, finds the position
-     * immediately after its closing `>`. Returns -1 when there is no tag at that
-     * position, or when the tag isn't closed before the end of the line.
-     * Known limitation, shared with scanStringEnd()'s inTag mirror: a `>` inside a
-     * `${...}` interpolation ends the tag early. Harmless for the only caller,
-     * isAssignStart(), which just needs to know that a tag region is there.
-     */
-    function scanTagEnd(startPos:Int):Int {
-        if (!isTagStart(startPos)) {
-            return -1;
-        }
-        var p = startPos + 1;
-        while (p < length) {
-            final c = input.uCharCodeAt(p);
-            // Escape: \ + any char, same rule as readString()
-            if (c == "\\".code) { p += 2; continue; }
-            if (c == "\n".code || c == "\r".code) return -1;
-            if (c == ">".code) return p + 1;
-            p++;
-        }
-        return -1;
     }
 
     /**
@@ -2890,7 +2826,7 @@ class Token {
             }
         }
         else {
-            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && ((keepOrphanExpressions && isIdentifierExpressionStart(pos, true)) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos, false))) {
+            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && ((keepOrphanExpressions && isIdentifierExpressionStart(pos, true)) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos))) {
                 return null;
             }
         }
@@ -3029,7 +2965,7 @@ class Token {
                 if (nextChar == '-'.code && nextLinePos + 1 < length && input.uCharCodeAt(nextLinePos + 1) == '>'.code) return null;
                 if (nextChar == '+'.code) return null;
                 // Reuse existing statement-detection helpers (all take pos:Int, don't modify this.pos)
-                if (isAssignStart(nextLinePos, false)) return null;
+                if (isAssignStart(nextLinePos)) return null;
                 if (isCallStart(nextLinePos)) return null;
                 if (isLabelStart(nextLinePos)) return null;
                 if (isIfStart(nextLinePos)) return null;
