@@ -20,19 +20,19 @@
         ["\"", "\""]
     ],
     "indentationRules": {
-        "increaseIndentPattern": "^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)((beat|choice|if|state|character\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*[^\\s(){}\\[\\]:,/]+|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract|default)(?![A-Za-z0-9_]).*(?:/[/*].*)?|when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:/[/*].*)?|\\s*function\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*(?:[^\\s(){}\\[\\]:,/]+)?\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*\\([^)]*\\))$|^.*\\{\\s*$|^\\s*--\\s*$",
+        "increaseIndentPattern": "^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)((?:public\\s+)?(beat|choice|if|state|character\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*[^\\s(){}\\[\\]:,/]+|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract|default)(?![A-Za-z0-9_]).*(?:/[/*].*)?|when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:/[/*].*)?|\\s*function\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*(?:[^\\s(){}\\[\\]:,/]+)?\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*\\([^)]*\\))$|^.*\\{\\s*$|^\\s*--\\s*$",
         "decreaseIndentPattern": "^\\s*}\\s*$|^\\s*(else\\s+if|else)\\b|^\\s*--\\s*$"
     },
     "onEnterRules": [
         {
-            "beforeText": "^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)((beat|choice|if|else\\s+if|else|state|character\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*[^\\s(){}\\[\\]:,/]+|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract|default)(?![A-Za-z0-9_]).*(?:/[/*].*)?|when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:/[/*].*)?|\\s*function\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*(?:[^\\s(){}\\[\\]:,/]+)?\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*\\([^)]*\\))$|^\\s*--\\s*$",
+            "beforeText": "^(?:\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*)((?:public\\s+)?(beat|choice|if|else\\s+if|else|state|character\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*[^\\s(){}\\[\\]:,/]+|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract|default)(?![A-Za-z0-9_]).*(?:/[/*].*)?|when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:/[/*].*)?|\\s*function\\s+(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*(?:[^\\s(){}\\[\\]:,/]+)?\\s*(?:/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/\\s*)*\\([^)]*\\))$|^\\s*--\\s*$",
             "action": { "indent": "indent" }
         }
     ],
     "folding": {
         "offSide": true,
         "markers": {
-            "start": "^\\s*\\b(beat|state|character|choice|function|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract)\\b|^\\s*when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:\\{\\s*)?(?:/[/*].*)?$",
+            "start": "^\\s*\\b(?:public\\s+)?(beat|state|character|choice|function|sequence|cycle|once|pick|shuffle|while|do|try|catch|for|switch|case|class|enum|abstract)\\b|^\\s*when(?:\\s+[^\\s(){}\\[\\]:,/]+)?\\s*(?:\\{\\s*)?(?:/[/*].*)?$",
             "end": "^\\s*$\\n(?!\\s+\\S)"
         }
     }

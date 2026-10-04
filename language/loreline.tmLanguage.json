@@ -10,7 +10,7 @@
         "indent-beat-block": {
             "patterns": [
                 {
-                    "match": "((?:\\s*/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*\\s*)(\\b(beat)\\b)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)\\s*(?:(\\()(.*)(\\)))?\\s*$",
+                    "match": "((?:\\s*/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*\\s*)(\\b(?:(public)\\s+)?(beat)\\b)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)\\s*(?:(\\()(.*)(\\)))?\\s*$",
                     "captures": {
                         "1": {
                             "patterns": [
@@ -20,22 +20,25 @@
                             ]
                         },
                         "3": {
-                            "name": "keyword.control.beat.loreline"
+                            "name": "storage.modifier.public.loreline"
                         },
                         "4": {
-                            "name": "entity.name.type.beat.loreline"
+                            "name": "keyword.control.beat.loreline"
                         },
                         "5": {
-                            "name": "punctuation.section.group.begin.loreline"
+                            "name": "entity.name.type.beat.loreline"
                         },
                         "6": {
+                            "name": "punctuation.section.group.begin.loreline"
+                        },
+                        "7": {
                             "patterns": [
                                 {
                                     "include": "#expressions"
                                 }
                             ]
                         },
-                        "7": {
+                        "8": {
                             "name": "punctuation.section.group.end.loreline"
                         }
                     }
@@ -580,7 +583,7 @@
         "beat-block": {
             "patterns": [
                 {
-                    "begin": "((?:\\s*/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*\\s*)(\\b(beat)\\b)(?!\\s*\\()",
+                    "begin": "((?:\\s*/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/)*\\s*)(\\b(?:(public)\\s+)?(beat)\\b)(?!\\s*\\()",
                     "beginCaptures": {
                         "1": {
                             "patterns": [
@@ -590,6 +593,9 @@
                             ]
                         },
                         "3": {
+                            "name": "storage.modifier.public.loreline"
+                        },
+                        "4": {
                             "name": "keyword.control.beat.loreline"
                         }
                     },
