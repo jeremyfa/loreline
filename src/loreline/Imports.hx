@@ -78,6 +78,35 @@ class Imports {
         return path;
     }
 
+    /**
+     * The path of an import, as every part of Loreline spells it: joined to the
+     * directory of the importing file when relative, normalized, with the
+     * Loreline extension added when missing. Paths built this way can be
+     * compared to find a file imported twice.
+     * @param fromDirectory Directory of the importing file
+     * @param importPath The path written after `import`
+     * @param ext The extension of the root script (`.lor` or `.lor.txt`)
+     */
+    public static function resolveImportPath(fromDirectory:String, importPath:String, ext:String):String {
+        var path = importPath;
+        if (!Path.isAbsolute(path)) {
+            path = Path.join([fromDirectory, path]);
+        }
+        path = Path.normalize(path);
+        if (!isLorFilePath(path)) {
+            path += ext;
+        }
+        return path;
+    }
+
+    /**
+     * The path of the root script spelled like its imports, so that a file
+     * importing the root back is recognized as the root.
+     */
+    public static function rootImportPath(rootPath:String):String {
+        return resolveImportPath('', rootPath, lorExtension(rootPath));
+    }
+
     var handleFile:ImportsFileHandler;
 
     var handleError:ImportsErrorHandler;
@@ -118,6 +147,9 @@ class Imports {
         final visitedImports:Map<String,Bool> = new Map();
         final cwd = Path.directory(rootPath);
 
+        // The root is already read: a file that imports it back doesn't read it again
+        visitedImports.set(rootImportPath(rootPath), true);
+
         // Extract root imports
         extractImports(cwd, tokens, toImport, visitedImports);
 
@@ -153,6 +185,7 @@ class Imports {
 
                     final lexerErrors = lexer.getErrors();
                     if (lexerErrors != null && lexerErrors.length > 0) {
+                        if (lexerErrors[0].filePath == null) lexerErrors[0].filePath = item;
                         handleError(lexerErrors[0]);
                     }
 
@@ -169,7 +202,9 @@ class Imports {
                 catch (e:Any) {
                     hasErrors = true;
                     if (e is Error) {
-                        handleError(e);
+                        final error:Error = cast e;
+                        if (error.filePath == null) error.filePath = item;
+                        handleError(error);
                     }
                     else {
                         throw e;
@@ -197,17 +232,13 @@ class Imports {
         var len = tokens.length;
         while (i < len - 1) {
             if (tokens[i].type == KwImport) {
-                switch tokens[i+1].type {
+                // Comments can sit between `import` and its path
+                var next = i + 1;
+                while (next < len - 1 && isComment(tokens[next].type)) next++;
+                switch tokens[next].type {
 
                     case LString(_, s, _):
-                        var path = s;
-                        if (!Path.isAbsolute(s)) {
-                            path = Path.join([cwd, path]);
-                        }
-                        path = Path.normalize(path);
-                        if (!isLorFilePath(path)) {
-                            path += ext;
-                        }
+                        final path = resolveImportPath(cwd, s, ext);
                         if (!visitedImports.exists(path)) {
                             pendingImports++;
                             visitedImports.set(path, true);
@@ -220,6 +251,13 @@ class Imports {
             i++;
         }
 
+    }
+
+    static function isComment(type:TokenType):Bool {
+        return switch type {
+            case CommentLine(_) | CommentMultiLine(_): true;
+            case _: false;
+        }
     }
 
 }

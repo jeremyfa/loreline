@@ -106,7 +106,9 @@ class Loreline {
                 final parser = new Parser(tokens, {
                     rootPath: filePath,
                     path: filePath,
-                    imports: resolvedImports
+                    imports: resolvedImports,
+                    // A file that imports the root back finds it already parsed
+                    imported: [Imports.rootImportPath(filePath) => true]
                 });
 
                 result = parser.parse();
