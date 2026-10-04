@@ -31,6 +31,9 @@ using loreline.Utf8;
  * - `diagnostics` (no `at`): a list of message extracts, or of `message`,
  *   `line` and `severity`; `none: true` for no diagnostic
  * - `format` (no `at`): `expected`, the formatted script
+ *
+ * A subclass can give its own server and initialization options, and handle
+ * more kinds of requests by overriding `runRequest`.
  */
 class LspFileTests {
 
@@ -47,8 +50,16 @@ class LspFileTests {
 
     public var failCount(default, null):Int = 0;
 
-    public function new(readFile:(path:String)->Null<String>) {
+    /** Creates the server each file is opened in, a `Server` when null. */
+    final createServer:Null<()->Server>;
+
+    /** The `initializationOptions` sent with the `initialize` request. */
+    final initializationOptions:Dynamic;
+
+    public function new(readFile:(path:String)->Null<String>, ?createServer:()->Server, ?initializationOptions:Dynamic) {
         this.readFile = readFile;
+        this.createServer = createServer;
+        this.initializationOptions = initializationOptions;
     }
 
     /**
@@ -125,7 +136,7 @@ class LspFileTests {
     var diagnostics:Map<String, Array<Dynamic>>;
 
     function openServer(path:String, crlf:Bool):Server {
-        final server = new Server();
+        final server = createServer != null ? createServer() : new Server();
         diagnostics = new Map();
         server.handleFile = (filePath, callback) -> {
             final content = filePath.startsWith(ROOT + '/') ? readFile(filePath.substr(ROOT.length + 1)) : null;
@@ -137,13 +148,20 @@ class LspFileTests {
                 diagnostics.set(params.uri, params.diagnostics);
             }
         };
-        send(server, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { capabilities: {} } });
+        send(server, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { capabilities: {}, initializationOptions: initializationOptions } });
         send(server, { jsonrpc: '2.0', method: 'initialized', params: {} });
+        beforeOpen(server, path, crlf);
         send(server, { jsonrpc: '2.0', method: 'textDocument/didOpen', params: {
             textDocument: { uri: uriOf(path), languageId: 'loreline', version: 1, text: normalize(readFile(path), crlf) }
         }});
         return server;
     }
+
+    /**
+     * Called once the server is initialized, before the file is opened: a
+     * subclass can send the server what it needs to know first.
+     */
+    function beforeOpen(server:Server, path:String, crlf:Bool):Void {}
 
     static function send(server:Server, message:Dynamic):Dynamic {
         final response = server.handleMessageSync(message);
