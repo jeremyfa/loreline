@@ -1,0 +1,30 @@
+// A line is an assignment only when it starts with what it assigns. Other
+// lines holding `=` are text.
+
+state
+  gold: 3
+
+beat Start
+  Le score = 3.
+//^^^^^^^^^^^^^ string.unquoted
+//         ^ - keyword.operator.assignment
+  Salut $jeremy= content.
+//^^^^^^ string.unquoted
+//             ^^^^^^^^^^ string.unquoted
+  Deux plus deux = quatre.
+//^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+  gold = 5
+//     ^ keyword.operator.assignment
+  gold += 2
+//      ^ keyword.operator.assignment
+  list[list[0] - 6] = 9
+//                  ^ keyword.operator.assignment
+  grid[1][0] = 4
+//           ^ keyword.operator.assignment
+  bag["apples"] *= 3
+//               ^ keyword.operator.assignment
+  findTheKiller().inventory[resolveWeapon("hello")].truc.bidule[a - b] = 42
+//                                                                     ^ keyword.operator.assignment
+  bob.name := Robert
+//         ^^ keyword.operator.assignment
+//            ^^^^^^ string.unquoted
