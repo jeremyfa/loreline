@@ -298,11 +298,14 @@ class CodeToLorscript {
                     add(c);
                 }
             }
+            else if (c >= 0x80) {
+                processNonAsciiCharacter();
+            }
             else {
-                if (isAlphaNumeric(c) && index > 0 && !isAlphaNumeric(input.uCharCodeAt(index - 1))) {
+                if (Identifiers.isPart(c) && index > 0 && !isNamePartBefore(index)) {
                     if (c == "a".code) {
                         // Convert and, unless it is a field name after a dot
-                        if (input.uCharCodeAt(index + 1) == "n".code && input.uCharCodeAt(index + 2) == "d".code && !isAlphaNumeric(input.uCharCodeAt(index + 3)) && !isAfterDot()) {
+                        if (input.uCharCodeAt(index + 1) == "n".code && input.uCharCodeAt(index + 2) == "d".code && !isNamePartAt(index + 3) && !isAfterDot()) {
                             add("&".code);
                             add("&".code);
                             add(" ".code);
@@ -313,7 +316,7 @@ class CodeToLorscript {
                     }
                     else if (c == "o".code) {
                         // Convert or, unless it is a field name after a dot
-                        if (input.uCharCodeAt(index + 1) == "r".code && !isAlphaNumeric(input.uCharCodeAt(index + 2)) && !isAfterDot()) {
+                        if (input.uCharCodeAt(index + 1) == "r".code && !isNamePartAt(index + 2) && !isAfterDot()) {
                             add("|".code);
                             add("|".code);
                             add(" ".code);
@@ -322,12 +325,12 @@ class CodeToLorscript {
                             add(c);
                         }
                     }
-                    else if (c == "i".code && input.uCharCodeAt(index + 1) == "s".code && !isAlphaNumeric(input.uCharCodeAt(index + 2)) && !isAfterDot()) {
+                    else if (c == "i".code && input.uCharCodeAt(index + 1) == "s".code && !isNamePartAt(index + 2) && !isAfterDot()) {
                         // Convert `is` to ==, and `is not` to !=. Both keep their
                         // length (spaces fill the rest), so positions don't move.
                         var p = index + 2;
                         while (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code) p++;
-                        final isNot = input.uCharCodeAt(p) == "n".code && input.uCharCodeAt(p + 1) == "o".code && input.uCharCodeAt(p + 2) == "t".code && !isAlphaNumeric(input.uCharCodeAt(p + 3));
+                        final isNot = input.uCharCodeAt(p) == "n".code && input.uCharCodeAt(p + 1) == "o".code && input.uCharCodeAt(p + 2) == "t".code && !isNamePartAt(p + 3);
                         if (isNot) {
                             add("!".code);
                             add("=".code);
@@ -338,7 +341,7 @@ class CodeToLorscript {
                             add("=".code);
                         }
                     }
-                    else if (c == "n".code && input.uCharCodeAt(index + 1) == "o".code && input.uCharCodeAt(index + 2) == "t".code && !isAlphaNumeric(input.uCharCodeAt(index + 3)) && !isAfterDot()) {
+                    else if (c == "n".code && input.uCharCodeAt(index + 1) == "o".code && input.uCharCodeAt(index + 2) == "t".code && !isNamePartAt(index + 3) && !isAfterDot()) {
                         // Convert not to !
                         add("!".code);
                         add(" ".code);
@@ -422,7 +425,7 @@ class CodeToLorscript {
                     addExtra('"'.code);
                     currentPosOffset++;
                 }
-                else if (isIdentifierStart(c)) {
+                else if (isNameStartAt(index)) {
                     currentPosOffset--;
                     addExtra('"'.code);
                     addExtra('+'.code);
@@ -454,7 +457,7 @@ class CodeToLorscript {
 
     function processFieldAccessInterpolation() {
         // Read initial identifier
-        if (!isIdentifierStart(input.uCharCodeAt(index))) {
+        if (!isNameStartAt(index)) {
             error("Expected identifier in field access");
         }
         processIdentifier();
@@ -471,7 +474,7 @@ class CodeToLorscript {
                     processInput(")".code);
                     add(")".code);
 
-                case ".".code if (index + 1 < length && isIdentifierStart(input.uCharCodeAt(index + 1))):
+                case ".".code if (index + 1 < length && isNameStartAt(index + 1)):
                     add(".".code);
                     processIdentifier();
 
@@ -483,10 +486,10 @@ class CodeToLorscript {
 
     function processIdentifier() {
 
-        while (index < length) {
-            final c = input.uCharCodeAt(index);
-            if (!isIdentifierPart(c)) break;
-            add(c);
+        while (index < length && isNamePartAt(index)) {
+            // All the units of the character
+            final units = unitsAt(index);
+            for (_ in 0...units) add(input.uCharCodeAt(index));
         }
 
     }
@@ -501,25 +504,63 @@ class CodeToLorscript {
     }
 
     /**
-     * Checks if a character is valid as the start of an identifier.
-     * Valid identifier starts are letters and underscore.
-     * @param c Character code to check
-     * @return Whether the character can start an identifier
+     * The whole character at a position of the input, a surrogate pair or UTF-8
+     * bytes read as one (see Identifiers), or -1 past the end.
      */
-    inline function isIdentifierStart(c:Int):Bool {
-        return (c >= "a".code && c <= "z".code) ||
-               (c >= "A".code && c <= "Z".code) ||
-                c == "_".code;
+    inline function codeAt(pos:Int):Int {
+        return Identifiers.codeAt(input, pos);
     }
 
     /**
-     * Checks if a character is valid as part of an identifier.
-     * Valid identifier parts are letters, numbers, and underscore.
-     * @param c Character code to check
-     * @return Whether the character can be part of an identifier
+     * How many units the character at a position of the input takes.
      */
-    inline function isIdentifierPart(c:Int):Bool {
-        return isIdentifierStart(c) || isDigit(c);
+    inline function unitsAt(pos:Int):Int {
+        return Identifiers.unitsAt(input, pos);
+    }
+
+    /**
+     * Whether a name (letters of any language, `_` or an emoji) starts at a position of the input.
+     */
+    inline function isNameStartAt(pos:Int):Bool {
+        return Identifiers.isStart(codeAt(pos));
+    }
+
+    /**
+     * Whether the character at a position of the input can be part of a name.
+     */
+    inline function isNamePartAt(pos:Int):Bool {
+        return Identifiers.isPart(codeAt(pos));
+    }
+
+    /**
+     * Whether the character that ends right before a position of the input can
+     * be part of a name.
+     */
+    inline function isNamePartBefore(pos:Int):Bool {
+        return pos > 0 && Identifiers.isPart(codeAt(Identifiers.startBefore(input, pos)));
+    }
+
+    /**
+     * Whether the character that ends right before a position of a text can be
+     * part of a name.
+     */
+    inline function isNamePartBeforeIn(text:String, pos:Int):Bool {
+        return pos > 0 && Identifiers.isPart(Identifiers.codeAt(text, Identifiers.startBefore(text, pos)));
+    }
+
+    /**
+     * Copies a character outside ASCII met in code, out of strings and comments.
+     * It belongs to a name: a letter or an emoji, or a digit or a mark that goes
+     * on with a name. Anything else is an error, such as the full-width colon or
+     * parentheses typed by an input method, which look like the ASCII ones.
+     */
+    function processNonAsciiCharacter() {
+        final c = codeAt(index);
+        if (!Identifiers.isStart(c) && !(Identifiers.isPart(c) && isNamePartBefore(index))) {
+            error(Identifiers.unexpectedCharacterMessage(c));
+        }
+        final units = unitsAt(index);
+        for (_ in 0...units) add(input.uCharCodeAt(index));
     }
 
     /*
@@ -688,11 +729,11 @@ class CodeToLorscript {
                 // A comment, or a division
                 next == "/".code || next == "*".code;
             case "a".code:
-                !(next == "n".code && p + 2 < length && input.uCharCodeAt(p + 2) == "d".code && !isAlphaNumeric(p + 3 < length ? input.uCharCodeAt(p + 3) : 0));
+                !(next == "n".code && p + 2 < length && input.uCharCodeAt(p + 2) == "d".code && !isNamePartAt(p + 3));
             case "o".code:
-                !(next == "r".code && !isAlphaNumeric(p + 2 < length ? input.uCharCodeAt(p + 2) : 0));
+                !(next == "r".code && !isNamePartAt(p + 2));
             case "i".code:
-                !(next == "s".code && !isAlphaNumeric(p + 2 < length ? input.uCharCodeAt(p + 2) : 0));
+                !(next == "s".code && !isNamePartAt(p + 2));
             case _:
                 true;
         }
@@ -890,7 +931,7 @@ class CodeToLorscript {
                     }
                 }
                 // Make sure it is not part of another identifier like "iffy"
-                if (matches && (tempIndex + wordLength >= length || !isAlphaNumeric(input.uCharCodeAt(tempIndex + wordLength)))) {
+                if (matches && (tempIndex + wordLength >= length || !isNamePartAt(tempIndex + wordLength))) {
                     return true;
                 }
             }
@@ -924,11 +965,11 @@ class CodeToLorscript {
                 final keywordPos = trimmed.uLength() - keyword.length;
 
                 // Verify there's a delimiter or beginning of line before the keyword
-                final hasValidPrefix = keywordPos == 0 || !isAlphaNumeric(trimmed.uCharCodeAt(keywordPos - 1));
+                final hasValidPrefix = keywordPos == 0 || !isNamePartBeforeIn(trimmed, keywordPos);
 
                 // Verify what follows isn't an alphanumeric character or underscore
                 final nextPos = pos; // Position to check after the current line
-                final hasValidSuffix = nextPos < length && (trimmedSize > 0 || !isAlphaNumeric(input.uCharCodeAt(nextPos)));
+                final hasValidSuffix = nextPos < length && (trimmedSize > 0 || !isNamePartAt(nextPos));
 
                 if (hasValidPrefix && hasValidSuffix) {
                     if (keyword != "else" || !followsWithIf(pos)) {
@@ -948,7 +989,7 @@ class CodeToLorscript {
         final trimmed = line.rtrim();
         if (!trimmed.endsWith(word)) return false;
         final wordPos = trimmed.uLength() - word.length;
-        return wordPos == 0 || !isAlphaNumeric(trimmed.uCharCodeAt(wordPos - 1));
+        return wordPos == 0 || !isNamePartBeforeIn(trimmed, wordPos);
     }
 
     function endsWithArrayIndexable(line:String):Bool {
@@ -973,7 +1014,7 @@ class CodeToLorscript {
         return lastChar == ")".code ||
                lastChar == "}".code ||
                lastChar == "]".code ||
-               isAlphaNumeric(lastChar);
+               isNamePartBeforeIn(line, lastNonWhitespacePos + 1);
     }
 
     /**
@@ -991,12 +1032,6 @@ class CodeToLorscript {
     }
 
     /**
-     * Checks if a character is alphanumeric or underscore.
-     *
-     * @param c The character code to check
-     * @return True if the character is alphanumeric or underscore, false otherwise
-     */
-    /**
      * Whether the word at the current index follows a dot (a field such as
      * `result.is`), in which case it is a name, not an operator.
      */
@@ -1004,13 +1039,6 @@ class CodeToLorscript {
         var p = index - 1;
         while (p >= 0 && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p--;
         return p >= 0 && input.uCharCodeAt(p) == ".".code;
-    }
-
-    function isAlphaNumeric(c:Int):Bool {
-        return (c >= "a".code && c <= "z".code)
-            || (c >= "A".code && c <= "Z".code)
-            || (c >= "0".code && c <= "9".code)
-            || c == "_".code;
     }
 
     /**
@@ -1096,7 +1124,7 @@ class CodeToLorscript {
         }
 
         // Check if we have a valid identifier
-        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
+        if (!isNameStartAt(pos)) {
             return false;
         }
 
@@ -1104,10 +1132,7 @@ class CodeToLorscript {
         var startPos = pos;
 
         // Read through identifier characters
-        pos++;
-        while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
-            pos++;
-        }
+        pos = Identifiers.nameEnd(input, pos);
 
         // Skip whitespace between identifier and colon
         while (pos < length && isWhitespace(input.uCharCodeAt(pos))) {

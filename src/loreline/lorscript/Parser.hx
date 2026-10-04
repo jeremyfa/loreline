@@ -1491,16 +1491,19 @@ class Parser {
 						}
 					}
 				}
-				if( idents[char] ) {
-					var id = String.fromCharCode(char);
+				// Names can use the letters of any language and emoji. Every unit outside
+				// ASCII belongs to a name here: CodeToLorscript lets no other character
+				// through. A character can take several units (UTF-16 surrogates, UTF-8
+				// bytes), so the name is copied from the input as it is.
+				if( idents[char] || char >= 0x80 ) {
+					var start = readPos - 1;
 					while( true ) {
 						char = readChar();
 						if( StringTools.isEof(char) ) char = 0;
-						if( !idents[char] ) {
+						if( !idents[char] && char < 0x80 ) {
 							this.char = char;
-							return TId(id);
+							return TId(input.substr(start, readPos - 1 - start));
 						}
-						id += String.fromCharCode(char);
 					}
 				}
 				invalidChar(char);
