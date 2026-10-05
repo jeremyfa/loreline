@@ -67,7 +67,8 @@ public class TestRunner {
             offsetsWithTags.add(tag.offset);
         }
 
-        char[] chars = text.toCharArray();
+        // Tag offsets count characters, a Java string holds UTF-16 units
+        int[] chars = text.codePoints().toArray();
         int length = chars.length;
         StringBuilder result = new StringBuilder();
 
@@ -82,11 +83,11 @@ public class TestRunner {
                     }
                 }
             }
-            char c = chars[i];
+            int c = chars[i];
             if (multiline && c == '\n') {
                 result.append("\n  ");
             } else {
-                result.append(c);
+                result.appendCodePoint(c);
             }
         }
 

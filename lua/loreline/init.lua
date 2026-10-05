@@ -17,7 +17,10 @@ local function hx_array_to_lua(arr)
     return t
 end
 
---- Wrap an internal TextTag into a plain Lua table.
+--- Wrap an internal TextTag into a plain Lua table. Its offset is where the tag
+-- appears in the text, in characters from its start, the same on every target.
+-- Characters, not bytes: on Lua 5.3 and later, `utf8.offset(text, offset + 1)`
+-- gives the byte where the tag goes.
 local function wrap_tag(tag)
     return {
         value = tag.value,

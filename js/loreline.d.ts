@@ -124,7 +124,11 @@ export interface TextTag {
     value: string;
 
     /**
-     * The offset in the text where this tag appears.
+     * Where the tag appears in the text, in characters (Unicode code points)
+     * from its start, the same on every target. A JavaScript string counts
+     * UTF-16 units instead, where a character above U+FFFF, such as most emoji,
+     * takes two: split the text with `[...text]` to index it in characters, for
+     * example `[...text].slice(0, tag.offset).join('')` for the text before the tag.
      */
     offset: number;
 }

@@ -1,5 +1,7 @@
 package loreline.test;
 
+import loreline.Identifiers;
+
 import loreline.Imports;
 import loreline.Json;
 import loreline.Interpreter;
@@ -54,9 +56,13 @@ class TestRunner {
             offsetsWithTags.set(tag.offset, true);
         }
 
-        final len = text.uLength();
+        // Tag offsets count characters, while the text is read in the units of
+        // the target (UTF-16 units, UTF-8 bytes or characters)
+        final units = text.uLength();
         final textBuf = new Utf8Buf();
-        for (i in 0...len) {
+        var pos = 0;
+        var i = 0;
+        while (pos < units) {
             if (offsetsWithTags.exists(i)) {
                 for (t in 0...tags.length) {
                     final tag = tags[t];
@@ -73,16 +79,20 @@ class TestRunner {
                 }
             }
 
-            final c = text.uCharCodeAt(i);
+            final c = text.uCharCodeAt(pos);
+            final count = Identifiers.unitsAt(text, pos);
             if (multiline && c == "\n".code) {
                 textBuf.addChar("\n".code);
                 textBuf.addChar(" ".code);
                 textBuf.addChar(" ".code);
             }
             else {
-                textBuf.addChar(c);
+                for (u in 0...count) textBuf.addChar(text.uCharCodeAt(pos + u));
             }
+            pos += count > 0 ? count : 1;
+            i++;
         }
+        final len = i;
         for (t in 0...tags.length) {
             final tag = tags[t];
             if (tag.offset >= len) {

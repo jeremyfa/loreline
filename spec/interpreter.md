@@ -1326,7 +1326,13 @@ The interpreter communicates with the host through three handler functions:
 
 - `character`: `null` for narrator text, otherwise the character name
 - `text`: the evaluated string content
-- `tags`: inline formatting tags (bold, italic, etc.)
+- `tags`: inline formatting tags (bold, italic, etc.), each with its value,
+  whether it closes, and its `offset`: where it appears in `text`, in
+  characters (Unicode code points) from its start. An escape counts as the
+  character it gives (`$$` is one `$`), and an interpolation as the characters
+  of its value. Offsets are the same on every target, whatever the units of
+  its strings (UTF-16 on JS, C#, Java and C++, UTF-8 bytes on Lua and in the
+  C API)
 - `callback`: call this to advance execution
 
 ### `ChoiceHandler`

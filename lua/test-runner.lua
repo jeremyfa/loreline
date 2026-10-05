@@ -113,9 +113,10 @@ local function insert_tags_in_text(text, tags, multiline)
         offsets_with_tags[tag.offset] = true
     end
 
+    -- Tag offsets count characters, Lua strings hold UTF-8 bytes
     local chars = {}
-    for i = 1, #text do
-        chars[i] = text:sub(i, i)
+    for char in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        chars[#chars + 1] = char
     end
     local length = #chars
     local result = {}

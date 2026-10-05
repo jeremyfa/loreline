@@ -619,6 +619,8 @@ Array LorelineInterpreter::_convert_tags(const Loreline_TextTag *tags, int tagCo
 	for (int i = 0; i < tagCount; i++) {
 		Dictionary tag;
 		tag["value"] = String::utf8(tags[i].value.c_str());
+		// Characters from the start of the text, which is also how a Godot
+		// String indexes it: text.substr(0, offset) is the text before the tag
 		tag["offset"] = tags[i].offset;
 		tag["closing"] = tags[i].closing;
 		result.append(tag);

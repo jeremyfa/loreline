@@ -329,19 +329,17 @@ static std::vector<TestItem> extractTests(const std::string& content) {
 
 /* -- Insert tags into text ------------------------------------------------ */
 
-/* Tag offsets count the UTF-16 units of the text, the units of the strings the
- * interpreter works with on hxcpp, while the text arrives as UTF-8: the byte
+/* Tag offsets count characters, while the text arrives as UTF-8: the byte
  * where a tag goes, for an offset. */
 static int tagByteOffset(const char* text, int len, int offset) {
     int i = 0;
-    int units = 0;
-    while (i < len && units < offset) {
+    int chars = 0;
+    while (i < len && chars < offset) {
         unsigned char c = (unsigned char)text[i];
-        int bytes = c < 0x80 ? 1 : c < 0xE0 ? 2 : c < 0xF0 ? 3 : 4;
-        units += bytes == 4 ? 2 : 1;
-        i += bytes;
+        i += c < 0x80 ? 1 : c < 0xE0 ? 2 : c < 0xF0 ? 3 : 4;
+        chars++;
     }
-    return units < offset ? len + (offset - units) : i;
+    return chars < offset ? len + (offset - chars) : i;
 }
 
 static std::string insertTagsInText(const char* text, const Loreline_TextTag* tags, int tagCount, bool multiline) {

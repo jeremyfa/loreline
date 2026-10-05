@@ -225,6 +225,11 @@ struct Loreline_Node {
 
 struct Loreline_TextTag {
     Loreline_String value;
+    /* Where the tag appears in the text, in characters (Unicode code points)
+     * from its start, the same on every target. Characters, not bytes: the
+     * text is UTF-8, where a character takes one to four bytes. To find the
+     * byte where the tag goes, skip `offset` characters, each starting with a
+     * byte that isn't a continuation byte (10xxxxxx). */
     int offset;
     bool closing;
 };

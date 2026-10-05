@@ -35,6 +35,36 @@ class Identifiers {
      */
     public static final UNITS:Int = #if neko 1 #else emoji.length #end;
 
+    /**
+     * How many characters a text holds, whatever the units of the target: an
+     * emoji or a Chinese character is one character.
+     */
+    public static function characterCount(text:String):Int {
+        final length = text.uLength();
+        if (UNITS == 1) return length;
+        var count = 0;
+        var pos = 0;
+        while (pos < length) {
+            pos += stringUnitsAt(text, pos);
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * Whether a unit read from a text with `uCharCodeAt` continues the
+     * character started by the units before it: the second half of a UTF-16
+     * surrogate pair, or a UTF-8 continuation byte. Never with
+     * `loreline_utf8_vector`, whose units are whole characters.
+     */
+    public static inline function isTrailingUnit(c:Int):Bool {
+        #if loreline_utf8_vector
+        return false;
+        #else
+        return (UNITS == 2 && c >= 0xDC00 && c <= 0xDFFF) || (UNITS == 4 && c >= 0x80 && c <= 0xBF);
+        #end
+    }
+
     /** Whether a character can start a name */
     public static function isStart(c:Int):Bool {
         if (c < 0x80) {
