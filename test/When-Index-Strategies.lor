@@ -1,0 +1,103 @@
+// Rules comparing a root fact with a text (`concept is "greet"`) under every
+// strategy: the default one, `first`, `pick` and a custom one. The interpreter
+// may leave a rule unevaluated when such a clause cannot hold, and the result
+// is the one of a full evaluation: same winner, same random draws, same
+// records for a custom strategy.
+
+state
+  concept: "greet"
+  gold: 20
+  info: ""
+
+// Writes the eligibility of every rule down, then plays the last eligible one
+function describe(rules)
+  var parts = []
+  var last = -1
+  for (rule in rules)
+    parts.add("${rule.index}:${rule.eligible}")
+    if rule.eligible
+      last = rule.index
+  info = parts.join(" ")
+  return last
+
+beat Start
+  Default()
+  First()
+  seed_random(4)
+  Pick()
+  Pick()
+  Pick()
+  Described()
+  Info $info.
+  concept = "leave"
+  Default()
+  First()
+  Described()
+  Info $info.
+
+beat Default
+  when
+    concept is "greet" and gold > 10
+      Rich greeting.
+    concept is "leave" and gold > 10
+      Rich farewell.
+    concept is "greet"
+      Greeting.
+    gold > 10
+      Just rich.
+
+beat First
+  when first
+    concept is "leave"
+      First farewell.
+    concept is "greet"
+      First greeting.
+    true
+      First nothing.
+
+beat Pick
+  when pick
+    concept is "leave"
+      Picked farewell.
+    concept is "greet"
+      Picked greeting.
+    concept is "greet"
+      Picked greeting again.
+
+beat Described
+  when describe
+    concept is "leave" and gold > 10
+      Described farewell.
+    concept is "greet" and gold > 10
+      Described greeting.
+    concept is "dance"
+      Described dance.
+    true
+      Described nothing.
+
+/*
+<test>
+- expected: |
+    ~ Rich greeting.
+
+    ~ First greeting.
+
+    ~ Picked greeting.
+
+    ~ Picked greeting again.
+
+    ~ Picked greeting.
+
+    ~ Described nothing.
+
+    ~ Info 0:false 1:true 2:false 3:true.
+
+    ~ Rich farewell.
+
+    ~ First farewell.
+
+    ~ Described nothing.
+
+    ~ Info 0:true 1:false 2:false 3:true.
+</test>
+*/

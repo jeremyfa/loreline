@@ -1,0 +1,97 @@
+// A when block long enough for its rules to be grouped by the fact compared with
+// the most texts (here `concept`): only the group of the current value and the
+// rules that don't look at `concept` are visited. The picks below change the
+// value, use one with no group and null, rely on a rule without `concept` and
+// on ties settled by the history.
+
+state
+  concept: "greet"
+  who: "ann"
+  gold: 20
+  night: false
+
+beat Start
+  Bark()
+  Bark()
+  who = "bob"
+  Bark()
+  concept = "leave"
+  Bark()
+  night = true
+  Bark()
+  concept = "trade"
+  Bark()
+  concept = "dance"
+  Bark()
+  concept = null
+  Bark()
+  concept = "greet"
+  gold = 0
+  Bark()
+  Bark()
+
+beat Bark
+  when
+    concept is "greet" and who is "ann" and gold > 10
+      Ann greets, rich.
+    concept is "greet" and who is "ann"
+      Ann greets.
+    concept is "greet" and who is "bob" and gold > 10
+      Bob greets, rich.
+    concept is "greet" and who is "bob"
+      Bob greets.
+    concept is "greet" and night
+      Someone greets at night.
+    concept is "leave" and who is "ann" and night
+      Ann leaves at night.
+    concept is "leave" and who is "ann"
+      Ann leaves.
+    concept is "leave" and who is "bob" and night
+      Bob leaves at night.
+    concept is "leave" and who is "bob"
+      Bob leaves.
+    concept is "leave" and gold > 10
+      Someone leaves, rich.
+    concept is "trade" and who is "ann"
+      Ann trades.
+    concept is "trade" and who is "bob" and gold > 10
+      Bob trades, rich.
+    concept is "trade" and who is "bob"
+      Bob trades.
+    concept is "trade" and night
+      Night trade.
+    who is "bob" and night
+      Bob at night.
+    gold > 10 and night
+      Rich night.
+    gold > 10
+      Rich.
+    true
+      Nothing.
+    true
+      Still nothing.
+
+/*
+<test>
+- expected: |
+    ~ Ann greets, rich.
+
+    ~ Ann greets, rich.
+
+    ~ Bob greets, rich.
+
+    ~ Bob leaves.
+
+    ~ Bob leaves at night.
+
+    ~ Bob trades, rich.
+
+    ~ Bob at night.
+
+    ~ Rich night.
+
+    ~ Bob greets.
+
+    ~ Someone greets at night.
+</test>
+*/
