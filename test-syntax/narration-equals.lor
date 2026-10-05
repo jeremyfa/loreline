@@ -19,12 +19,26 @@ beat Start
 //      ^ keyword.operator.assignment
   list[list[0] - 6] = 9
 //                  ^ keyword.operator.assignment
+//     ^^^^^^^^^^^ - string
   grid[1][0] = 4
 //           ^ keyword.operator.assignment
   bag["apples"] *= 3
 //               ^ keyword.operator.assignment
   findTheKiller().inventory[resolveWeapon("hello")].truc.bidule[a - b] = 42
 //                                                                     ^ keyword.operator.assignment
+//                                                              ^ variable.other
+//                                                              ^^^^^ - string
+//                                                                ^ keyword.operator.arithmetic
   bob.name := Robert
 //         ^^ keyword.operator.assignment
 //            ^^^^^^ string.unquoted
+  findTheKiller().inventory[resolveWeapon("hello )")].truc.bidule[a - b] = 42
+//                                                                       ^ keyword.operator.assignment
+//                                                                ^ variable.other
+//                                                                ^^^^^ - string
+//                                                                  ^ keyword.operator.arithmetic
+  killer.inventory[resolveWeapon("a ] b ( c")].truc.bidule[a - b] += 1
+//                                                                 ^ keyword.operator.assignment
+//                                                         ^ variable.other
+//                                                         ^^^^^ - string
+//                                                           ^ keyword.operator.arithmetic
