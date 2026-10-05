@@ -1,0 +1,62 @@
+// Typing the name of something new (a beat, a character, a function or one of
+// their parameters) gets no completion: the names that exist aren't what is
+// being written.
+
+character bob
+  name: Bob
+
+function helper()
+  return 1
+
+beat Machin
+  Hello
+  -> Ma
+
+beat M
+  Text.
+
+public beat Mo
+  Text.
+
+character bo
+  name: Bo
+
+function he()
+  return 2
+
+function twice(value)
+  return value * 2
+
+beat Visit(first, second = Machin)
+  Visit $first.
+
+/*
+<test>
+- request: completion
+  at: "beat M|"
+  occurrence: 2
+  none: true
+- request: completion
+  at: "public beat Mo|"
+  none: true
+- request: completion
+  at: "character bo|"
+  occurrence: 2
+  none: true
+- request: completion
+  at: "function he|"
+  none: true
+- request: completion
+  at: "twice(va|"
+  none: true
+- request: completion
+  at: "Visit(fir|"
+  none: true
+- request: completion
+  at: "second = Ma|"
+  includes: [Machin]
+- request: completion
+  at: "-> Ma|"
+  includes: [Machin]
+</test>
+*/
