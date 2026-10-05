@@ -4,6 +4,7 @@ import Type as HxType;
 import haxe.Json;
 import haxe.io.Path;
 import loreline.Error;
+import loreline.Identifiers;
 import loreline.Imports;
 import loreline.Lexer;
 import loreline.Node;
@@ -908,6 +909,12 @@ class Server {
         if (content == null) return [];
 
         final lorelinePos = toLorelinePosition(params.position, content);
+
+        // A new name is being written: no existing name is what it should be
+        if (isDeclaringName(linePrefix(content, lorelinePos.offset))) {
+            return [];
+        }
+
         final lens = new Lens(ast);
 
         var node = lens.getNodeAtPosition(lorelinePos);
@@ -1239,6 +1246,36 @@ class Server {
     /**
      * Get completion items for variables in scope
      */
+    /** The text of a line before the given offset */
+    static function linePrefix(content:String, offset:Int):String {
+        var start = offset;
+        while (start > 0 && content.uCharCodeAt(start - 1) != "\n".code) start--;
+        return content.uSubstr(start, offset - start);
+    }
+
+    /**
+     * Whether the text before the cursor, on its line, ends on the name of
+     * something being declared: a beat, a character or a function, or one of
+     * the parameters of a beat or a function (not their default values).
+     */
+    static function isDeclaringName(prefix:String):Bool {
+        var text = prefix.ltrim();
+        if (text.startsWith("public ")) text = text.uSubstr(7).ltrim();
+        var keyword:Null<String> = null;
+        for (candidate in ["beat", "character", "function"]) {
+            if (text.startsWith(candidate + " ") || text.startsWith(candidate + "\t")) keyword = candidate;
+        }
+        if (keyword == null) return false;
+        text = text.uSubstr(keyword.length).ltrim();
+        final nameEnd = Identifiers.nameEnd(text, 0);
+        if (nameEnd == text.uLength()) return true;
+        if (keyword == "character" || text.uCharCodeAt(nameEnd) != "(".code) return false;
+        final params = text.uSubstr(nameEnd + 1);
+        if (params.indexOf(")") != -1) return false;
+        final last = params.uSubstr(params.uLastIndexOf(",") + 1).ltrim();
+        return Identifiers.nameEnd(last, 0) == last.uLength();
+    }
+
     function getVariableCompletions(lens:Lens, node:Node, lorelinePos:loreline.Position, replacementRange:Range):Array<CompletionItem> {
         final items:Array<CompletionItem> = [];
 
