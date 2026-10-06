@@ -1,0 +1,106 @@
+// Ordering compares two numbers, or a number with a text written as a number,
+// as numbers. Anything else is an error, tested in ValuesTests.
+
+character bob
+  name: Bob
+
+state
+  n0: 0
+  n1: 1
+  n5: 5
+  f5: 5.0
+  n55: 5.5
+  nm2: -2
+  n9: 9
+  n16: 16
+  n1000: 1000
+  h: 0.5
+  s0: "0"
+  s1: "1"
+  s5: "5"
+  s5sp: " 5 "
+  s50: "5.0"
+  s55: "5.5"
+  sm2: "-2"
+  s10: "10"
+  s1e3: "1e3"
+  sdot5: ".5"
+  shex: "0x10"
+  sabc: "abc"
+  sempty: ""
+  sspace: " "
+  strue: "true"
+  sfalse: "false"
+  sTrue: "True"
+  sHelper: "Helper"
+  sbob: "bob"
+  yes: true
+  no: false
+  nothing: null
+  arr0: []
+  arr0b: []
+  arr5: [5]
+  obj: { a: 1 }
+  obj2: { a: 1 }
+  ref: null
+  ref2: null
+
+beat Start
+  ref = Helper
+  ref2 = Helper
+
+  Order n5 n9 gives ${n5 < n9} ${n5 <= n9} ${n5 > n9} ${n5 >= n9}.
+
+  Order n9 n5 gives ${n9 < n5} ${n9 <= n5} ${n9 > n5} ${n9 >= n5}.
+
+  Order n5 f5 gives ${n5 < f5} ${n5 <= f5} ${n5 > f5} ${n5 >= f5}.
+
+  Order n55 n5 gives ${n55 < n5} ${n55 <= n5} ${n55 > n5} ${n55 >= n5}.
+
+  Order nm2 n0 gives ${nm2 < n0} ${nm2 <= n0} ${nm2 > n0} ${nm2 >= n0}.
+
+  Order n9 s10 gives ${n9 < s10} ${n9 <= s10} ${n9 > s10} ${n9 >= s10}.
+
+  Order s10 n9 gives ${s10 < n9} ${s10 <= n9} ${s10 > n9} ${s10 >= n9}.
+
+  Order n5 s50 gives ${n5 < s50} ${n5 <= s50} ${n5 > s50} ${n5 >= s50}.
+
+  Order s55 n5 gives ${s55 < n5} ${s55 <= n5} ${s55 > n5} ${s55 >= n5}.
+
+  Order sm2 n0 gives ${sm2 < n0} ${sm2 <= n0} ${sm2 > n0} ${sm2 >= n0}.
+
+  Order n1000 s1e3 gives ${n1000 < s1e3} ${n1000 <= s1e3} ${n1000 > s1e3} ${n1000 >= s1e3}.
+
+  Order h sdot5 gives ${h < sdot5} ${h <= sdot5} ${h > sdot5} ${h >= sdot5}.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Order n5 n9 gives true true false false.
+
+    ~ Order n9 n5 gives false false true true.
+
+    ~ Order n5 f5 gives false true false true.
+
+    ~ Order n55 n5 gives false false true true.
+
+    ~ Order nm2 n0 gives true true false false.
+
+    ~ Order n9 s10 gives true true false false.
+
+    ~ Order s10 n9 gives false false true true.
+
+    ~ Order n5 s50 gives false true false true.
+
+    ~ Order s55 n5 gives false false true true.
+
+    ~ Order sm2 n0 gives true true false false.
+
+    ~ Order n1000 s1e3 gives false true false true.
+
+    ~ Order h sdot5 gives false true false true.
+</test>
+*/

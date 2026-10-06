@@ -1,0 +1,323 @@
+// Equality between values of every kind, the same on every target. Numbers
+// compare by value, a number and a text written as a number are equal, true
+// and false equal 1 and 0 and their texts, null equals only null, arrays and
+// objects are equal only to themselves, beat and character references compare
+// by name with a text. Each pair prints `==`, then `!=`.
+
+character bob
+  name: Bob
+
+state
+  n0: 0
+  n1: 1
+  n5: 5
+  f5: 5.0
+  n55: 5.5
+  nm2: -2
+  n9: 9
+  n16: 16
+  n1000: 1000
+  h: 0.5
+  s0: "0"
+  s1: "1"
+  s5: "5"
+  s5sp: " 5 "
+  s50: "5.0"
+  s55: "5.5"
+  sm2: "-2"
+  s10: "10"
+  s1e3: "1e3"
+  sdot5: ".5"
+  shex: "0x10"
+  sabc: "abc"
+  sempty: ""
+  sspace: " "
+  strue: "true"
+  sfalse: "false"
+  sTrue: "True"
+  sHelper: "Helper"
+  sbob: "bob"
+  yes: true
+  no: false
+  nothing: null
+  arr0: []
+  arr0b: []
+  arr5: [5]
+  obj: { a: 1 }
+  obj2: { a: 1 }
+  ref: null
+  ref2: null
+
+beat Start
+  ref = Helper
+  ref2 = Helper
+
+  Pair n5 with f5 gives ${n5 == f5} and ${n5 != f5}.
+
+  Pair n5 with n55 gives ${n5 == n55} and ${n5 != n55}.
+
+  Pair n0 with nm2 gives ${n0 == nm2} and ${n0 != nm2}.
+
+  Pair n5 with s5 gives ${n5 == s5} and ${n5 != s5}.
+
+  Pair n5 with s5sp gives ${n5 == s5sp} and ${n5 != s5sp}.
+
+  Pair n5 with s50 gives ${n5 == s50} and ${n5 != s50}.
+
+  Pair n55 with s55 gives ${n55 == s55} and ${n55 != s55}.
+
+  Pair nm2 with sm2 gives ${nm2 == sm2} and ${nm2 != sm2}.
+
+  Pair n1000 with s1e3 gives ${n1000 == s1e3} and ${n1000 != s1e3}.
+
+  Pair h with sdot5 gives ${h == sdot5} and ${h != sdot5}.
+
+  Pair n16 with shex gives ${n16 == shex} and ${n16 != shex}.
+
+  Pair n5 with sabc gives ${n5 == sabc} and ${n5 != sabc}.
+
+  Pair n0 with sempty gives ${n0 == sempty} and ${n0 != sempty}.
+
+  Pair n0 with sspace gives ${n0 == sspace} and ${n0 != sspace}.
+
+  Pair n0 with s0 gives ${n0 == s0} and ${n0 != s0}.
+
+  Pair s5 with n5 gives ${s5 == n5} and ${s5 != n5}.
+
+  Pair yes with n1 gives ${yes == n1} and ${yes != n1}.
+
+  Pair no with n0 gives ${no == n0} and ${no != n0}.
+
+  Pair yes with n5 gives ${yes == n5} and ${yes != n5}.
+
+  Pair no with n1 gives ${no == n1} and ${no != n1}.
+
+  Pair n1 with yes gives ${n1 == yes} and ${n1 != yes}.
+
+  Pair yes with strue gives ${yes == strue} and ${yes != strue}.
+
+  Pair no with sfalse gives ${no == sfalse} and ${no != sfalse}.
+
+  Pair yes with sfalse gives ${yes == sfalse} and ${yes != sfalse}.
+
+  Pair yes with s1 gives ${yes == s1} and ${yes != s1}.
+
+  Pair no with sempty gives ${no == sempty} and ${no != sempty}.
+
+  Pair yes with sTrue gives ${yes == sTrue} and ${yes != sTrue}.
+
+  Pair strue with yes gives ${strue == yes} and ${strue != yes}.
+
+  Pair nothing with nothing gives ${nothing == nothing} and ${nothing != nothing}.
+
+  Pair nothing with n0 gives ${nothing == n0} and ${nothing != n0}.
+
+  Pair nothing with sempty gives ${nothing == sempty} and ${nothing != sempty}.
+
+  Pair nothing with no gives ${nothing == no} and ${nothing != no}.
+
+  Pair nothing with arr0 gives ${nothing == arr0} and ${nothing != arr0}.
+
+  Pair s5 with s50 gives ${s5 == s50} and ${s5 != s50}.
+
+  Pair s5 with s5 gives ${s5 == s5} and ${s5 != s5}.
+
+  Pair sempty with sempty gives ${sempty == sempty} and ${sempty != sempty}.
+
+  Pair strue with sTrue gives ${strue == sTrue} and ${strue != sTrue}.
+
+  Pair arr0 with arr0 gives ${arr0 == arr0} and ${arr0 != arr0}.
+
+  Pair arr0 with arr0b gives ${arr0 == arr0b} and ${arr0 != arr0b}.
+
+  Pair arr5 with s5 gives ${arr5 == s5} and ${arr5 != s5}.
+
+  Pair arr5 with n5 gives ${arr5 == n5} and ${arr5 != n5}.
+
+  Pair obj with obj gives ${obj == obj} and ${obj != obj}.
+
+  Pair obj with obj2 gives ${obj == obj2} and ${obj != obj2}.
+
+  Pair ref with sHelper gives ${ref == sHelper} and ${ref != sHelper}.
+
+  Pair ref with ref2 gives ${ref == ref2} and ${ref != ref2}.
+
+  Pair ref with sabc gives ${ref == sabc} and ${ref != sabc}.
+
+  Pair bob with sbob gives ${bob == sbob} and ${bob != sbob}.
+
+  Pair bob with bob gives ${bob == bob} and ${bob != bob}.
+
+  Pair ref with nothing gives ${ref == nothing} and ${ref != nothing}.
+
+  Conditions()
+
+  WhenPicks()
+
+beat Conditions
+  if n5 is s5
+    If n5 is s5.
+  else
+    If n5 is not s5.
+  if yes is n1
+    If yes is n1.
+  else
+    If yes is not n1.
+  if yes is strue
+    If yes is strue.
+  else
+    If yes is not strue.
+  if n0 is sempty
+    If n0 is sempty.
+  else
+    If n0 is not sempty.
+  if ref is sHelper
+    If ref is sHelper.
+  else
+    If ref is not sHelper.
+
+beat WhenPicks
+  when
+    n5 is "5"
+      When n5 matches.
+    true
+      When n5 does not match.
+  when
+    n5 is "5.0"
+      When n5 matches.
+    true
+      When n5 does not match.
+  when
+    yes is "true"
+      When yes matches.
+    true
+      When yes does not match.
+  when
+    n0 is ""
+      When n0 matches.
+    true
+      When n0 does not match.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Pair n5 with f5 gives true and false.
+
+    ~ Pair n5 with n55 gives false and true.
+
+    ~ Pair n0 with nm2 gives false and true.
+
+    ~ Pair n5 with s5 gives true and false.
+
+    ~ Pair n5 with s5sp gives true and false.
+
+    ~ Pair n5 with s50 gives true and false.
+
+    ~ Pair n55 with s55 gives true and false.
+
+    ~ Pair nm2 with sm2 gives true and false.
+
+    ~ Pair n1000 with s1e3 gives true and false.
+
+    ~ Pair h with sdot5 gives true and false.
+
+    ~ Pair n16 with shex gives false and true.
+
+    ~ Pair n5 with sabc gives false and true.
+
+    ~ Pair n0 with sempty gives false and true.
+
+    ~ Pair n0 with sspace gives false and true.
+
+    ~ Pair n0 with s0 gives true and false.
+
+    ~ Pair s5 with n5 gives true and false.
+
+    ~ Pair yes with n1 gives true and false.
+
+    ~ Pair no with n0 gives true and false.
+
+    ~ Pair yes with n5 gives false and true.
+
+    ~ Pair no with n1 gives false and true.
+
+    ~ Pair n1 with yes gives true and false.
+
+    ~ Pair yes with strue gives true and false.
+
+    ~ Pair no with sfalse gives true and false.
+
+    ~ Pair yes with sfalse gives false and true.
+
+    ~ Pair yes with s1 gives false and true.
+
+    ~ Pair no with sempty gives false and true.
+
+    ~ Pair yes with sTrue gives false and true.
+
+    ~ Pair strue with yes gives true and false.
+
+    ~ Pair nothing with nothing gives true and false.
+
+    ~ Pair nothing with n0 gives false and true.
+
+    ~ Pair nothing with sempty gives false and true.
+
+    ~ Pair nothing with no gives false and true.
+
+    ~ Pair nothing with arr0 gives false and true.
+
+    ~ Pair s5 with s50 gives false and true.
+
+    ~ Pair s5 with s5 gives true and false.
+
+    ~ Pair sempty with sempty gives true and false.
+
+    ~ Pair strue with sTrue gives false and true.
+
+    ~ Pair arr0 with arr0 gives true and false.
+
+    ~ Pair arr0 with arr0b gives false and true.
+
+    ~ Pair arr5 with s5 gives false and true.
+
+    ~ Pair arr5 with n5 gives false and true.
+
+    ~ Pair obj with obj gives true and false.
+
+    ~ Pair obj with obj2 gives false and true.
+
+    ~ Pair ref with sHelper gives true and false.
+
+    ~ Pair ref with ref2 gives true and false.
+
+    ~ Pair ref with sabc gives false and true.
+
+    ~ Pair bob with sbob gives true and false.
+
+    ~ Pair bob with bob gives true and false.
+
+    ~ Pair ref with nothing gives false and true.
+
+    ~ If n5 is s5.
+
+    ~ If yes is n1.
+
+    ~ If yes is strue.
+
+    ~ If n0 is not sempty.
+
+    ~ If ref is sHelper.
+
+    ~ When n5 matches.
+
+    ~ When n5 matches.
+
+    ~ When yes matches.
+
+    ~ When n0 does not match.
+</test>
+*/

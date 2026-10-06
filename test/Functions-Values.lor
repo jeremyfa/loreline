@@ -1,0 +1,465 @@
+// The same rules in the code of functions: equality, ordering, truthiness,
+// `switch` cases and loops.
+
+character bob
+  name: Bob
+
+state
+  n0: 0
+  n1: 1
+  n5: 5
+  f5: 5.0
+  n55: 5.5
+  nm2: -2
+  n9: 9
+  n16: 16
+  n1000: 1000
+  h: 0.5
+  s0: "0"
+  s1: "1"
+  s5: "5"
+  s5sp: " 5 "
+  s50: "5.0"
+  s55: "5.5"
+  sm2: "-2"
+  s10: "10"
+  s1e3: "1e3"
+  sdot5: ".5"
+  shex: "0x10"
+  sabc: "abc"
+  sempty: ""
+  sspace: " "
+  strue: "true"
+  sfalse: "false"
+  sTrue: "True"
+  sHelper: "Helper"
+  sbob: "bob"
+  yes: true
+  no: false
+  nothing: null
+  arr0: []
+  arr0b: []
+  arr5: [5]
+  obj: { a: 1 }
+  obj2: { a: 1 }
+  ref: null
+  ref2: null
+
+function eq(a, b)
+  return a == b
+
+function ne(a, b)
+  return a != b
+
+function lt(a, b)
+  return a < b
+
+function ge(a, b)
+  return a >= b
+
+function truthy(v)
+  if v
+    return "truthy"
+  return "falsy"
+
+function negate(v)
+  return !v
+
+function both(v)
+  return v and true
+
+function either(v)
+  return v or false
+
+function ternaryOf(v)
+  return v ? "a" : "b"
+
+function kind(v)
+  switch v
+    case 5
+      return "five"
+    case "abc"
+      return "abc"
+    case true
+      return "yes"
+    default
+      return "other"
+
+function countdown(n)
+  var steps = 0
+  while n
+    n = n - 1
+    steps = steps + 1
+  return steps
+
+function literal(i)
+  var all = [5 == "5", 0 == "", true == "true", true == 1, null == 0, "10" > 9]
+  return all[i]
+
+beat Start
+  ref = Helper
+  ref2 = Helper
+
+  Fn pair n5 with f5 gives ${eq(n5, f5)} and ${ne(n5, f5)}.
+
+  Fn pair n5 with n55 gives ${eq(n5, n55)} and ${ne(n5, n55)}.
+
+  Fn pair n0 with nm2 gives ${eq(n0, nm2)} and ${ne(n0, nm2)}.
+
+  Fn pair n5 with s5 gives ${eq(n5, s5)} and ${ne(n5, s5)}.
+
+  Fn pair n5 with s5sp gives ${eq(n5, s5sp)} and ${ne(n5, s5sp)}.
+
+  Fn pair n5 with s50 gives ${eq(n5, s50)} and ${ne(n5, s50)}.
+
+  Fn pair n55 with s55 gives ${eq(n55, s55)} and ${ne(n55, s55)}.
+
+  Fn pair nm2 with sm2 gives ${eq(nm2, sm2)} and ${ne(nm2, sm2)}.
+
+  Fn pair n1000 with s1e3 gives ${eq(n1000, s1e3)} and ${ne(n1000, s1e3)}.
+
+  Fn pair h with sdot5 gives ${eq(h, sdot5)} and ${ne(h, sdot5)}.
+
+  Fn pair n16 with shex gives ${eq(n16, shex)} and ${ne(n16, shex)}.
+
+  Fn pair n5 with sabc gives ${eq(n5, sabc)} and ${ne(n5, sabc)}.
+
+  Fn pair n0 with sempty gives ${eq(n0, sempty)} and ${ne(n0, sempty)}.
+
+  Fn pair n0 with sspace gives ${eq(n0, sspace)} and ${ne(n0, sspace)}.
+
+  Fn pair n0 with s0 gives ${eq(n0, s0)} and ${ne(n0, s0)}.
+
+  Fn pair s5 with n5 gives ${eq(s5, n5)} and ${ne(s5, n5)}.
+
+  Fn pair yes with n1 gives ${eq(yes, n1)} and ${ne(yes, n1)}.
+
+  Fn pair no with n0 gives ${eq(no, n0)} and ${ne(no, n0)}.
+
+  Fn pair yes with n5 gives ${eq(yes, n5)} and ${ne(yes, n5)}.
+
+  Fn pair no with n1 gives ${eq(no, n1)} and ${ne(no, n1)}.
+
+  Fn pair n1 with yes gives ${eq(n1, yes)} and ${ne(n1, yes)}.
+
+  Fn pair yes with strue gives ${eq(yes, strue)} and ${ne(yes, strue)}.
+
+  Fn pair no with sfalse gives ${eq(no, sfalse)} and ${ne(no, sfalse)}.
+
+  Fn pair yes with sfalse gives ${eq(yes, sfalse)} and ${ne(yes, sfalse)}.
+
+  Fn pair yes with s1 gives ${eq(yes, s1)} and ${ne(yes, s1)}.
+
+  Fn pair no with sempty gives ${eq(no, sempty)} and ${ne(no, sempty)}.
+
+  Fn pair yes with sTrue gives ${eq(yes, sTrue)} and ${ne(yes, sTrue)}.
+
+  Fn pair strue with yes gives ${eq(strue, yes)} and ${ne(strue, yes)}.
+
+  Fn pair nothing with nothing gives ${eq(nothing, nothing)} and ${ne(nothing, nothing)}.
+
+  Fn pair nothing with n0 gives ${eq(nothing, n0)} and ${ne(nothing, n0)}.
+
+  Fn pair nothing with sempty gives ${eq(nothing, sempty)} and ${ne(nothing, sempty)}.
+
+  Fn pair nothing with no gives ${eq(nothing, no)} and ${ne(nothing, no)}.
+
+  Fn pair nothing with arr0 gives ${eq(nothing, arr0)} and ${ne(nothing, arr0)}.
+
+  Fn pair s5 with s50 gives ${eq(s5, s50)} and ${ne(s5, s50)}.
+
+  Fn pair s5 with s5 gives ${eq(s5, s5)} and ${ne(s5, s5)}.
+
+  Fn pair sempty with sempty gives ${eq(sempty, sempty)} and ${ne(sempty, sempty)}.
+
+  Fn pair strue with sTrue gives ${eq(strue, sTrue)} and ${ne(strue, sTrue)}.
+
+  Fn pair arr0 with arr0 gives ${eq(arr0, arr0)} and ${ne(arr0, arr0)}.
+
+  Fn pair arr0 with arr0b gives ${eq(arr0, arr0b)} and ${ne(arr0, arr0b)}.
+
+  Fn pair arr5 with s5 gives ${eq(arr5, s5)} and ${ne(arr5, s5)}.
+
+  Fn pair arr5 with n5 gives ${eq(arr5, n5)} and ${ne(arr5, n5)}.
+
+  Fn pair obj with obj gives ${eq(obj, obj)} and ${ne(obj, obj)}.
+
+  Fn pair obj with obj2 gives ${eq(obj, obj2)} and ${ne(obj, obj2)}.
+
+  Fn pair ref with sHelper gives ${eq(ref, sHelper)} and ${ne(ref, sHelper)}.
+
+  Fn pair ref with ref2 gives ${eq(ref, ref2)} and ${ne(ref, ref2)}.
+
+  Fn pair ref with sabc gives ${eq(ref, sabc)} and ${ne(ref, sabc)}.
+
+  Fn pair bob with sbob gives ${eq(bob, sbob)} and ${ne(bob, sbob)}.
+
+  Fn pair bob with bob gives ${eq(bob, bob)} and ${ne(bob, bob)}.
+
+  Fn pair ref with nothing gives ${eq(ref, nothing)} and ${ne(ref, nothing)}.
+
+  Fn order n5 n9 gives ${lt(n5, n9)} ${ge(n5, n9)}.
+
+  Fn order n9 n5 gives ${lt(n9, n5)} ${ge(n9, n5)}.
+
+  Fn order n5 f5 gives ${lt(n5, f5)} ${ge(n5, f5)}.
+
+  Fn order n55 n5 gives ${lt(n55, n5)} ${ge(n55, n5)}.
+
+  Fn order nm2 n0 gives ${lt(nm2, n0)} ${ge(nm2, n0)}.
+
+  Fn order n9 s10 gives ${lt(n9, s10)} ${ge(n9, s10)}.
+
+  Fn order s10 n9 gives ${lt(s10, n9)} ${ge(s10, n9)}.
+
+  Fn order n5 s50 gives ${lt(n5, s50)} ${ge(n5, s50)}.
+
+  Fn order s55 n5 gives ${lt(s55, n5)} ${ge(s55, n5)}.
+
+  Fn order sm2 n0 gives ${lt(sm2, n0)} ${ge(sm2, n0)}.
+
+  Fn order n1000 s1e3 gives ${lt(n1000, s1e3)} ${ge(n1000, s1e3)}.
+
+  Fn order h sdot5 gives ${lt(h, sdot5)} ${ge(h, sdot5)}.
+
+  Fn n0 is ${truthy(n0)}, not ${negate(n0)}, and ${both(n0)}, or ${either(n0)}, ternary ${ternaryOf(n0)}.
+
+  Fn n1 is ${truthy(n1)}, not ${negate(n1)}, and ${both(n1)}, or ${either(n1)}, ternary ${ternaryOf(n1)}.
+
+  Fn nm2 is ${truthy(nm2)}, not ${negate(nm2)}, and ${both(nm2)}, or ${either(nm2)}, ternary ${ternaryOf(nm2)}.
+
+  Fn h is ${truthy(h)}, not ${negate(h)}, and ${both(h)}, or ${either(h)}, ternary ${ternaryOf(h)}.
+
+  Fn s0 is ${truthy(s0)}, not ${negate(s0)}, and ${both(s0)}, or ${either(s0)}, ternary ${ternaryOf(s0)}.
+
+  Fn sempty is ${truthy(sempty)}, not ${negate(sempty)}, and ${both(sempty)}, or ${either(sempty)}, ternary ${ternaryOf(sempty)}.
+
+  Fn sspace is ${truthy(sspace)}, not ${negate(sspace)}, and ${both(sspace)}, or ${either(sspace)}, ternary ${ternaryOf(sspace)}.
+
+  Fn sfalse is ${truthy(sfalse)}, not ${negate(sfalse)}, and ${both(sfalse)}, or ${either(sfalse)}, ternary ${ternaryOf(sfalse)}.
+
+  Fn yes is ${truthy(yes)}, not ${negate(yes)}, and ${both(yes)}, or ${either(yes)}, ternary ${ternaryOf(yes)}.
+
+  Fn no is ${truthy(no)}, not ${negate(no)}, and ${both(no)}, or ${either(no)}, ternary ${ternaryOf(no)}.
+
+  Fn nothing is ${truthy(nothing)}, not ${negate(nothing)}, and ${both(nothing)}, or ${either(nothing)}, ternary ${ternaryOf(nothing)}.
+
+  Fn arr0 is ${truthy(arr0)}, not ${negate(arr0)}, and ${both(arr0)}, or ${either(arr0)}, ternary ${ternaryOf(arr0)}.
+
+  Fn arr5 is ${truthy(arr5)}, not ${negate(arr5)}, and ${both(arr5)}, or ${either(arr5)}, ternary ${ternaryOf(arr5)}.
+
+  Fn obj is ${truthy(obj)}, not ${negate(obj)}, and ${both(obj)}, or ${either(obj)}, ternary ${ternaryOf(obj)}.
+
+  Fn ref is ${truthy(ref)}, not ${negate(ref)}, and ${both(ref)}, or ${either(ref)}, ternary ${ternaryOf(ref)}.
+
+  Fn bob is ${truthy(bob)}, not ${negate(bob)}, and ${both(bob)}, or ${either(bob)}, ternary ${ternaryOf(bob)}.
+
+  Switch n5 gives ${kind(n5)}.
+
+  Switch f5 gives ${kind(f5)}.
+
+  Switch s5 gives ${kind(s5)}.
+
+  Switch s5sp gives ${kind(s5sp)}.
+
+  Switch sabc gives ${kind(sabc)}.
+
+  Switch yes gives ${kind(yes)}.
+
+  Switch strue gives ${kind(strue)}.
+
+  Switch n1 gives ${kind(n1)}.
+
+  Switch no gives ${kind(no)}.
+
+  Switch nothing gives ${kind(nothing)}.
+
+  Countdown from 3 takes ${countdown(3)} steps, from 0 takes ${countdown(0)}.
+
+  Literals give ${literal(0)} ${literal(1)} ${literal(2)} ${literal(3)} ${literal(4)} ${literal(5)}.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Fn pair n5 with f5 gives true and false.
+
+    ~ Fn pair n5 with n55 gives false and true.
+
+    ~ Fn pair n0 with nm2 gives false and true.
+
+    ~ Fn pair n5 with s5 gives true and false.
+
+    ~ Fn pair n5 with s5sp gives true and false.
+
+    ~ Fn pair n5 with s50 gives true and false.
+
+    ~ Fn pair n55 with s55 gives true and false.
+
+    ~ Fn pair nm2 with sm2 gives true and false.
+
+    ~ Fn pair n1000 with s1e3 gives true and false.
+
+    ~ Fn pair h with sdot5 gives true and false.
+
+    ~ Fn pair n16 with shex gives false and true.
+
+    ~ Fn pair n5 with sabc gives false and true.
+
+    ~ Fn pair n0 with sempty gives false and true.
+
+    ~ Fn pair n0 with sspace gives false and true.
+
+    ~ Fn pair n0 with s0 gives true and false.
+
+    ~ Fn pair s5 with n5 gives true and false.
+
+    ~ Fn pair yes with n1 gives true and false.
+
+    ~ Fn pair no with n0 gives true and false.
+
+    ~ Fn pair yes with n5 gives false and true.
+
+    ~ Fn pair no with n1 gives false and true.
+
+    ~ Fn pair n1 with yes gives true and false.
+
+    ~ Fn pair yes with strue gives true and false.
+
+    ~ Fn pair no with sfalse gives true and false.
+
+    ~ Fn pair yes with sfalse gives false and true.
+
+    ~ Fn pair yes with s1 gives false and true.
+
+    ~ Fn pair no with sempty gives false and true.
+
+    ~ Fn pair yes with sTrue gives false and true.
+
+    ~ Fn pair strue with yes gives true and false.
+
+    ~ Fn pair nothing with nothing gives true and false.
+
+    ~ Fn pair nothing with n0 gives false and true.
+
+    ~ Fn pair nothing with sempty gives false and true.
+
+    ~ Fn pair nothing with no gives false and true.
+
+    ~ Fn pair nothing with arr0 gives false and true.
+
+    ~ Fn pair s5 with s50 gives false and true.
+
+    ~ Fn pair s5 with s5 gives true and false.
+
+    ~ Fn pair sempty with sempty gives true and false.
+
+    ~ Fn pair strue with sTrue gives false and true.
+
+    ~ Fn pair arr0 with arr0 gives true and false.
+
+    ~ Fn pair arr0 with arr0b gives false and true.
+
+    ~ Fn pair arr5 with s5 gives false and true.
+
+    ~ Fn pair arr5 with n5 gives false and true.
+
+    ~ Fn pair obj with obj gives true and false.
+
+    ~ Fn pair obj with obj2 gives false and true.
+
+    ~ Fn pair ref with sHelper gives true and false.
+
+    ~ Fn pair ref with ref2 gives true and false.
+
+    ~ Fn pair ref with sabc gives false and true.
+
+    ~ Fn pair bob with sbob gives true and false.
+
+    ~ Fn pair bob with bob gives true and false.
+
+    ~ Fn pair ref with nothing gives false and true.
+
+    ~ Fn order n5 n9 gives true false.
+
+    ~ Fn order n9 n5 gives false true.
+
+    ~ Fn order n5 f5 gives false true.
+
+    ~ Fn order n55 n5 gives false true.
+
+    ~ Fn order nm2 n0 gives true false.
+
+    ~ Fn order n9 s10 gives true false.
+
+    ~ Fn order s10 n9 gives false true.
+
+    ~ Fn order n5 s50 gives false true.
+
+    ~ Fn order s55 n5 gives false true.
+
+    ~ Fn order sm2 n0 gives true false.
+
+    ~ Fn order n1000 s1e3 gives false true.
+
+    ~ Fn order h sdot5 gives false true.
+
+    ~ Fn n0 is falsy, not true, and false, or false, ternary b.
+
+    ~ Fn n1 is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn nm2 is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn h is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn s0 is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn sempty is falsy, not true, and false, or false, ternary b.
+
+    ~ Fn sspace is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn sfalse is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn yes is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn no is falsy, not true, and false, or false, ternary b.
+
+    ~ Fn nothing is falsy, not true, and false, or false, ternary b.
+
+    ~ Fn arr0 is falsy, not true, and false, or false, ternary b.
+
+    ~ Fn arr5 is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn obj is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn ref is truthy, not false, and true, or true, ternary a.
+
+    ~ Fn bob is truthy, not false, and true, or true, ternary a.
+
+    ~ Switch n5 gives five.
+
+    ~ Switch f5 gives five.
+
+    ~ Switch s5 gives five.
+
+    ~ Switch s5sp gives five.
+
+    ~ Switch sabc gives abc.
+
+    ~ Switch yes gives yes.
+
+    ~ Switch strue gives yes.
+
+    ~ Switch n1 gives yes.
+
+    ~ Switch no gives other.
+
+    ~ Switch nothing gives other.
+
+    ~ Countdown from 3 takes 3 steps, from 0 takes 0.
+
+    ~ Literals give true false true true false true.
+</test>
+*/

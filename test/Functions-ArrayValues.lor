@@ -1,0 +1,34 @@
+// Built-in functions that compare values use the same equality: `has`,
+// `index` and `remove` match "5" with 5 and "true" with true. `sort` puts the
+// numbers first by value, integers and decimals together, then the texts.
+
+state
+  items: [5, "abc", true, null, 2.5]
+  mixed: [3, "b", 2.5, "a", 1, "c", 10]
+
+beat Start
+  Has gives ${items.has("5")} ${items.has(5.0)} ${items.has("true")} ${items.has(1)} ${items.has(null)} ${items.has("")} ${items.has("2.5")}.
+
+  Index gives ${items.index("5")} ${items.index("true")} ${items.index(null)} ${items.index("x")}.
+  items.remove("5")
+
+  After remove, has gives ${items.has(5)}, length is ${items.length}.
+  mixed.sort()
+
+  Sorted gives ${mixed[0]} ${mixed[1]} ${mixed[2]} ${mixed[3]} ${mixed[4]} ${mixed[5]} ${mixed[6]}.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Has gives true true true true true false true.
+
+    ~ Index gives 0 2 3 -1.
+
+    ~ After remove, has gives false, length is 4.
+
+    ~ Sorted gives 1 2.5 3 10 a b c.
+</test>
+*/

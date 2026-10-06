@@ -1,0 +1,388 @@
+// Truthiness, the same everywhere a value decides: false for false, null, 0,
+// "" and an empty array, true for anything else. `and` and `or` accept any
+// value and give a boolean.
+
+character bob
+  name: Bob
+
+state
+  n0: 0
+  n1: 1
+  n5: 5
+  f5: 5.0
+  n55: 5.5
+  nm2: -2
+  n9: 9
+  n16: 16
+  n1000: 1000
+  h: 0.5
+  s0: "0"
+  s1: "1"
+  s5: "5"
+  s5sp: " 5 "
+  s50: "5.0"
+  s55: "5.5"
+  sm2: "-2"
+  s10: "10"
+  s1e3: "1e3"
+  sdot5: ".5"
+  shex: "0x10"
+  sabc: "abc"
+  sempty: ""
+  sspace: " "
+  strue: "true"
+  sfalse: "false"
+  sTrue: "True"
+  sHelper: "Helper"
+  sbob: "bob"
+  yes: true
+  no: false
+  nothing: null
+  arr0: []
+  arr0b: []
+  arr5: [5]
+  obj: { a: 1 }
+  obj2: { a: 1 }
+  ref: null
+  ref2: null
+
+beat Start
+  ref = Helper
+  ref2 = Helper
+  if n0
+    If n0 is truthy.
+  else
+    If n0 is falsy.
+
+  Not n0 gives ${not n0}, and gives ${n0 and yes}, or gives ${n0 or no}, ternary gives ${n0 ? "a" : "b"}.
+  when
+    n0
+      When n0 plays.
+    true
+      When n0 skips.
+  if n1
+    If n1 is truthy.
+  else
+    If n1 is falsy.
+
+  Not n1 gives ${not n1}, and gives ${n1 and yes}, or gives ${n1 or no}, ternary gives ${n1 ? "a" : "b"}.
+  when
+    n1
+      When n1 plays.
+    true
+      When n1 skips.
+  if nm2
+    If nm2 is truthy.
+  else
+    If nm2 is falsy.
+
+  Not nm2 gives ${not nm2}, and gives ${nm2 and yes}, or gives ${nm2 or no}, ternary gives ${nm2 ? "a" : "b"}.
+  when
+    nm2
+      When nm2 plays.
+    true
+      When nm2 skips.
+  if h
+    If h is truthy.
+  else
+    If h is falsy.
+
+  Not h gives ${not h}, and gives ${h and yes}, or gives ${h or no}, ternary gives ${h ? "a" : "b"}.
+  when
+    h
+      When h plays.
+    true
+      When h skips.
+  if s0
+    If s0 is truthy.
+  else
+    If s0 is falsy.
+
+  Not s0 gives ${not s0}, and gives ${s0 and yes}, or gives ${s0 or no}, ternary gives ${s0 ? "a" : "b"}.
+  when
+    s0
+      When s0 plays.
+    true
+      When s0 skips.
+  if sempty
+    If sempty is truthy.
+  else
+    If sempty is falsy.
+
+  Not sempty gives ${not sempty}, and gives ${sempty and yes}, or gives ${sempty or no}, ternary gives ${sempty ? "a" : "b"}.
+  when
+    sempty
+      When sempty plays.
+    true
+      When sempty skips.
+  if sspace
+    If sspace is truthy.
+  else
+    If sspace is falsy.
+
+  Not sspace gives ${not sspace}, and gives ${sspace and yes}, or gives ${sspace or no}, ternary gives ${sspace ? "a" : "b"}.
+  when
+    sspace
+      When sspace plays.
+    true
+      When sspace skips.
+  if sfalse
+    If sfalse is truthy.
+  else
+    If sfalse is falsy.
+
+  Not sfalse gives ${not sfalse}, and gives ${sfalse and yes}, or gives ${sfalse or no}, ternary gives ${sfalse ? "a" : "b"}.
+  when
+    sfalse
+      When sfalse plays.
+    true
+      When sfalse skips.
+  if yes
+    If yes is truthy.
+  else
+    If yes is falsy.
+
+  Not yes gives ${not yes}, and gives ${yes and yes}, or gives ${yes or no}, ternary gives ${yes ? "a" : "b"}.
+  when
+    yes
+      When yes plays.
+    true
+      When yes skips.
+  if no
+    If no is truthy.
+  else
+    If no is falsy.
+
+  Not no gives ${not no}, and gives ${no and yes}, or gives ${no or no}, ternary gives ${no ? "a" : "b"}.
+  when
+    no
+      When no plays.
+    true
+      When no skips.
+  if nothing
+    If nothing is truthy.
+  else
+    If nothing is falsy.
+
+  Not nothing gives ${not nothing}, and gives ${nothing and yes}, or gives ${nothing or no}, ternary gives ${nothing ? "a" : "b"}.
+  when
+    nothing
+      When nothing plays.
+    true
+      When nothing skips.
+  if arr0
+    If arr0 is truthy.
+  else
+    If arr0 is falsy.
+
+  Not arr0 gives ${not arr0}, and gives ${arr0 and yes}, or gives ${arr0 or no}, ternary gives ${arr0 ? "a" : "b"}.
+  when
+    arr0
+      When arr0 plays.
+    true
+      When arr0 skips.
+  if arr5
+    If arr5 is truthy.
+  else
+    If arr5 is falsy.
+
+  Not arr5 gives ${not arr5}, and gives ${arr5 and yes}, or gives ${arr5 or no}, ternary gives ${arr5 ? "a" : "b"}.
+  when
+    arr5
+      When arr5 plays.
+    true
+      When arr5 skips.
+  if obj
+    If obj is truthy.
+  else
+    If obj is falsy.
+
+  Not obj gives ${not obj}, and gives ${obj and yes}, or gives ${obj or no}, ternary gives ${obj ? "a" : "b"}.
+  when
+    obj
+      When obj plays.
+    true
+      When obj skips.
+  if ref
+    If ref is truthy.
+  else
+    If ref is falsy.
+
+  Not ref gives ${not ref}, and gives ${ref and yes}, or gives ${ref or no}, ternary gives ${ref ? "a" : "b"}.
+  when
+    ref
+      When ref plays.
+    true
+      When ref skips.
+  if bob
+    If bob is truthy.
+  else
+    If bob is falsy.
+
+  Not bob gives ${not bob}, and gives ${bob and yes}, or gives ${bob or no}, ternary gives ${bob ? "a" : "b"}.
+  when
+    bob
+      When bob plays.
+    true
+      When bob skips.
+  choice
+    Option n0 if n0
+      Picked n0.
+    Option n1 if n1
+      Picked n1.
+    Option nm2 if nm2
+      Picked nm2.
+    Option h if h
+      Picked h.
+    Option s0 if s0
+      Picked s0.
+    Option sempty if sempty
+      Picked sempty.
+    Option sspace if sspace
+      Picked sspace.
+    Option sfalse if sfalse
+      Picked sfalse.
+    Option yes if yes
+      Picked yes.
+    Option no if no
+      Picked no.
+    Option nothing if nothing
+      Picked nothing.
+    Option arr0 if arr0
+      Picked arr0.
+    Option arr5 if arr5
+      Picked arr5.
+    Option obj if obj
+      Picked obj.
+    Option ref if ref
+      Picked ref.
+    Option bob if bob
+      Picked bob.
+
+  Done.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- choices: [15]
+  expected: |
+    ~ If n0 is falsy.
+
+    ~ Not n0 gives true, and gives false, or gives false, ternary gives b.
+
+    ~ When n0 skips.
+
+    ~ If n1 is truthy.
+
+    ~ Not n1 gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When n1 plays.
+
+    ~ If nm2 is truthy.
+
+    ~ Not nm2 gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When nm2 plays.
+
+    ~ If h is truthy.
+
+    ~ Not h gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When h plays.
+
+    ~ If s0 is truthy.
+
+    ~ Not s0 gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When s0 plays.
+
+    ~ If sempty is falsy.
+
+    ~ Not sempty gives true, and gives false, or gives false, ternary gives b.
+
+    ~ When sempty skips.
+
+    ~ If sspace is truthy.
+
+    ~ Not sspace gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When sspace plays.
+
+    ~ If sfalse is truthy.
+
+    ~ Not sfalse gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When sfalse plays.
+
+    ~ If yes is truthy.
+
+    ~ Not yes gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When yes plays.
+
+    ~ If no is falsy.
+
+    ~ Not no gives true, and gives false, or gives false, ternary gives b.
+
+    ~ When no skips.
+
+    ~ If nothing is falsy.
+
+    ~ Not nothing gives true, and gives false, or gives false, ternary gives b.
+
+    ~ When nothing skips.
+
+    ~ If arr0 is falsy.
+
+    ~ Not arr0 gives true, and gives false, or gives false, ternary gives b.
+
+    ~ When arr0 skips.
+
+    ~ If arr5 is truthy.
+
+    ~ Not arr5 gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When arr5 plays.
+
+    ~ If obj is truthy.
+
+    ~ Not obj gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When obj plays.
+
+    ~ If ref is truthy.
+
+    ~ Not ref gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When ref plays.
+
+    ~ If bob is truthy.
+
+    ~ Not bob gives false, and gives true, or gives true, ternary gives a.
+
+    ~ When bob plays.
+
+    - Option n0
+    + Option n1
+    + Option nm2
+    + Option h
+    + Option s0
+    - Option sempty
+    + Option sspace
+    + Option sfalse
+    + Option yes
+    - Option no
+    - Option nothing
+    - Option arr0
+    + Option arr5
+    + Option obj
+    + Option ref
+    + Option bob
+
+    ~ Picked bob.
+
+    ~ Done.
+</test>
+*/
