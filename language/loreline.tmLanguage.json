@@ -252,7 +252,7 @@
                     "end": "$",
                     "patterns": [
                         {
-                            "name": "keyword.other.directive.loreline",
+                            "name": "storage.modifier.metadata.directive.loreline",
                             "match": "(?<=[\\s,])@[A-Za-z][A-Za-z0-9-]*"
                         },
                         {

@@ -4,28 +4,28 @@
 
 // @strict
 // <-- comment.line.double-slash
-// ^^^^^^^ keyword.other.directive
+// ^^^^^^^ storage.modifier.metadata.directive
 // @unreachable-beat off
-// ^^^^^^^^^^^^^^^^^ keyword.other.directive
+// ^^^^^^^^^^^^^^^^^ storage.modifier.metadata.directive
 //                   ^^^ comment.line.double-slash
 //                   ^^^ constant.language.directive
-//                   ^^^ - keyword.other.directive
+//                   ^^^ - storage.modifier.metadata.directive
 // @unused-character warning
 //                   ^^^^^^^ constant.language.directive
 
 beat Start
   Value is $name. // @ignore unknown-name @ignore shadowing
 //                ^^ comment.line.double-slash
-//                   ^^^^^^^ keyword.other.directive
+//                   ^^^^^^^ storage.modifier.metadata.directive
 //                           ^^^^^^^^^^^^ variable.parameter.directive
-//                           ^^^^^^^^^^^^ - keyword.other.directive
-//                                        ^^^^^^^ keyword.other.directive
+//                           ^^^^^^^^^^^^ - storage.modifier.metadata.directive
+//                                        ^^^^^^^ storage.modifier.metadata.directive
 //                                                ^^^^^^^^^ variable.parameter.directive
   // A comment with an email@example.com is ordinary
-//                          ^^^^^^^^^^^^ - keyword.other.directive
+//                          ^^^^^^^^^^^^ - storage.modifier.metadata.directive
 //     ^^^^^^^ - variable.parameter.directive
   // @ignore-file unknown-name, shadowing
-//   ^^^^^^^^^^^^ keyword.other.directive
+//   ^^^^^^^^^^^^ storage.modifier.metadata.directive
 //                ^^^^^^^^^^^^ variable.parameter.directive
 //                              ^^^^^^^^^ variable.parameter.directive
   Done.
