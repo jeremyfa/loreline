@@ -6521,42 +6521,14 @@ class InterpreterContext {
 
     /**
      * Evaluates a condition expression for an if statement or choice option.
-     * Converts the result to a boolean according to Loreline's rules.
+     * Converts the result to a boolean with the truthiness of Values.
      *
      * @param expr The condition expression to evaluate
      * @return True if the condition evaluates to a truthy value
      */
     function evaluateCondition(expr:NExpr):Bool {
 
-        final value:Any = evaluateExpression(expr);
-
-        return if (value is Bool) {
-            (value:Bool) == true;
-        }
-        else if (value is String) {
-            (value:String).length > 0;
-        }
-        else if (Arrays.isArray(value)) {
-            Arrays.arrayLength(value) > 0;
-        }
-        #if php
-        // On PHP, isOfType(Int) also matches integral floats while the typed
-        // Int comparison compiles to a strict check, so 0.0 would slip
-        // through as truthy. Use a single loose numeric branch instead.
-        else if (value is Int || value is Float) {
-            (value:Float) != 0;
-        }
-        #else
-        else if (value is Int) {
-            (value:Int) != 0;
-        }
-        else if (value is Float) {
-            (value:Float) != 0;
-        }
-        #end
-        else {
-            value != null;
-        }
+        return Values.isTruthy(evaluateExpression(expr));
 
     }
 
@@ -6947,20 +6919,14 @@ class InterpreterContext {
                 switch bin.op {
                     case OpAnd(_) | OpOr(_):
                         // Short-circuit: the right side is only evaluated when the left
-                        // one leaves the result open. A left side that is not a boolean
-                        // still goes through performOperation, for its error.
-                        final left = evaluateExpression(bin.left);
-                        if (left is Bool) {
-                            final leftBool:Bool = left;
-                            if (bin.op.match(OpAnd(_)) ? !leftBool : leftBool) {
-                                leftBool;
-                            }
-                            else {
-                                performOperation(bin.op, left, evaluateExpression(bin.right), bin.pos);
-                            }
+                        // one leaves the result open. Any value is read as a boolean
+                        // with its truthiness, and the result is a boolean.
+                        final left = Values.isTruthy(evaluateExpression(bin.left));
+                        if (bin.op.match(OpAnd(_)) ? !left : left) {
+                            left;
                         }
                         else {
-                            performOperation(bin.op, left, evaluateExpression(bin.right), bin.pos);
+                            Values.isTruthy(evaluateExpression(bin.right));
                         }
                     case _:
                         final left = evaluateExpression(bin.left);
@@ -6980,37 +6946,8 @@ class InterpreterContext {
                         final v:Float = operand;
                         -v;
                     }
-                    case OpNot(_) if (operand is Bool): {
-                        final v:Bool = operand;
-                        !v;
-                    }
-                    case OpNot(_) if (operand is String): {
-                        final v:String = operand;
-                        (v == null || v.length == 0);
-                    }
-                    case OpNot(_) if (Arrays.isArray(operand)): {
-                        Arrays.arrayLength(operand) == 0;
-                    }
-                    #if php
-                    // Same as evaluateCondition: on PHP integral floats match
-                    // the Int check, so keep the numeric comparison loose.
-                    case OpNot(_) if (operand is Int || operand is Float): {
-                        final v:Float = operand;
-                        (v == 0);
-                    }
-                    #else
-                    case OpNot(_) if (operand is Int): {
-                        final v:Int = operand;
-                        (v == 0);
-                    }
-                    case OpNot(_) if (operand is Float): {
-                        final v:Float = operand;
-                        (v == 0);
-                    }
-                    #end
-                    case OpNot(_): {
-                        (operand == null);
-                    }
+                    case OpNot(_):
+                        !Values.isTruthy(operand);
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
                 }
 
@@ -7281,62 +7218,16 @@ class InterpreterContext {
 
     }
 
+    static inline function numberOf(value:Dynamic, type:ValueType):Float {
+        return Values.numberOf(value, type);
+    }
+
     /**
      * Helper for getting human-readable type names in errors
      *
      * @param t The type to get a name for
      * @return A human-readable name for the type
      */
-    /**
-     * The number held by a value already known to be an Int or a Float.
-     */
-    static inline function numberOf(value:Dynamic, type:ValueType):Float {
-        return switch type {
-            case TInt: (value : Int);
-            case _: (value : Float);
-        }
-    }
-
-    /**
-     * Numbers, booleans and null: values that can hold no reference.
-     */
-    static inline function isPlainValueType(type:ValueType):Bool {
-        return switch type {
-            case TInt | TFloat | TBool | TNull: true;
-            case _: false;
-        }
-    }
-
-    /**
-     * Equality of two values when one of them may be a beat or a character
-     * reference: a reference compared with a string uses its name.
-     */
-    function looseEquals(left:Dynamic, right:Dynamic):Bool {
-        final leftBeat = RuntimeBeatRef.beatOf(left);
-        final rightBeat = RuntimeBeatRef.beatOf(right);
-        final leftCharacter = RuntimeCharacterRef.characterOf(left);
-        final rightCharacter = RuntimeCharacterRef.characterOf(right);
-        return if (leftBeat != null && right is String) {
-            leftBeat.name == (right : String);
-        } else if (left is String && rightBeat != null) {
-            (left : String) == rightBeat.name;
-        } else if (leftBeat != null && rightBeat != null) {
-            leftBeat.name == rightBeat.name;
-        } else if (leftCharacter != null && right is String) {
-            leftCharacter.name == (right : String);
-        } else if (left is String && rightCharacter != null) {
-            (left : String) == rightCharacter.name;
-        } else if (leftCharacter != null || rightCharacter != null) {
-            // Character refs compare by underlying fields identity,
-            // so a ref also equals the raw character fields bag
-            final l:Any = leftCharacter != null ? leftCharacter.fields : left;
-            final r:Any = rightCharacter != null ? rightCharacter.fields : right;
-            l == r;
-        } else {
-            left == right;
-        };
-    }
-
     function getTypeName(t:ValueType):String {
         return switch t {
             case TNull: "Null";
@@ -7412,15 +7303,11 @@ class InterpreterContext {
                 }
 
             case OpEquals(_) | OpNotEquals(_):
-                // Allow comparison between any types. Two strings, or two plain
-                // values, compare directly; anything else may hold a beat or a
-                // character reference
+                // Any two values compare, with the equality of Values
                 final result = if (left is String && right is String) {
                     (left : String) == (right : String);
-                } else if (isPlainValueType(leftType) && isPlainValueType(rightType)) {
-                    left == right;
                 } else {
-                    looseEquals(left, right);
+                    Values.equals(left, right);
                 };
                 switch op {
                     case OpEquals(_): result;
@@ -7440,20 +7327,24 @@ class InterpreterContext {
                             case OpLessEq: leftNum <= rightNum;
                             case _: throw "Unreachable";
                         }
-                    case _:
-                        throw new RuntimeError('Cannot compare ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
-                }
-
-            case OpAnd(_) | OpOr(_):
-                switch [leftType, rightType] {
-                    case [TBool, TBool]:
+                    case _ if (Values.canCompare(left, right)):
+                        // A number and a text written as a number
+                        final order = Values.compare(left, right);
                         switch op {
-                            case OpAnd(_): left && right;
-                            case OpOr(_): left || right;
+                            case OpGreater: order > 0;
+                            case OpGreaterEq: order >= 0;
+                            case OpLess: order < 0;
+                            case OpLessEq: order <= 0;
                             case _: throw "Unreachable";
                         }
                     case _:
-                        throw new RuntimeError('Cannot perform logical operation on ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                        throw new RuntimeError('Cannot compare ${Values.kindOf(left)} and ${Values.kindOf(right)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                }
+
+            case OpAnd(_) | OpOr(_):
+                switch op {
+                    case OpAnd(_): Values.isTruthy(left) && Values.isTruthy(right);
+                    case _: Values.isTruthy(left) || Values.isTruthy(right);
                 }
 
             case _:
