@@ -1,0 +1,37 @@
+// A function receives every argument it is given, null ones included, wherever
+// they are in the list.
+
+state
+  nothing: null
+  one: 1
+
+function which(a, b)
+  if a == null and b == null
+    return "both null"
+  if b == null
+    return "last null"
+  if a == null
+    return "first null"
+  return "none null"
+
+beat Start
+  One and nothing gives ${which(one, nothing)}.
+
+  Nothing and nothing gives ${which(nothing, nothing)}.
+
+  Nothing and one gives ${which(nothing, one)}.
+
+  One and one gives ${which(one, one)}.
+
+/*
+<test>
+- expected: |
+    ~ One and nothing gives last null.
+
+    ~ Nothing and nothing gives both null.
+
+    ~ Nothing and one gives first null.
+
+    ~ One and one gives none null.
+</test>
+*/

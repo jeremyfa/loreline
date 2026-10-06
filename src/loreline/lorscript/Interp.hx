@@ -32,6 +32,7 @@ import loreline.lorscript.Expr;
 import loreline.Interpreter;
 import loreline.Objects;
 import loreline.Arrays;
+import loreline.VarArgs;
 import loreline.Node.NBeatDecl;
 
 private enum Stop {
@@ -529,7 +530,7 @@ class Interp {
                 me.depth = depth;
                 return r;
             };
-            var f = Reflect.makeVarArgs(f);
+            var f = VarArgs.make(f);
             if( name != null ) {
                 if( depth == 0 ) {
                     // global function
@@ -818,7 +819,7 @@ class Interp {
     }
 
     function call( o : Dynamic, f : Dynamic, args : Array<Dynamic> ) : Dynamic {
-        return Reflect.callMethod(o,f,args);
+        return VarArgs.call(o,f,args);
     }
 
     /**
