@@ -32,6 +32,7 @@ import loreline.lorscript.Expr;
 import loreline.Interpreter;
 import loreline.Objects;
 import loreline.Arrays;
+import loreline.Values;
 import loreline.VarArgs;
 import loreline.Node.NBeatDecl;
 
@@ -108,17 +109,16 @@ class Interp {
         binops.set("<<",function(e1,e2) return me.expr(e1) << me.expr(e2));
         binops.set(">>",function(e1,e2) return me.expr(e1) >> me.expr(e2));
         binops.set(">>>",function(e1,e2) return me.expr(e1) >>> me.expr(e2));
-        binops.set("==",function(e1,e2) return me.expr(e1) == me.expr(e2));
-        binops.set("!=",function(e1,e2) return me.expr(e1) != me.expr(e2));
-        // Temporary variables are needed here to work around a Haxe C# target quirk:
-        // inline Dynamic comparisons generate Runtime.compare() calls with incorrect boxing,
-        // causing "Cannot compare System.String and System.Int32" errors.
-        binops.set(">=",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 >= v2; });
-        binops.set("<=",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 <= v2; });
-        binops.set(">",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 > v2; });
-        binops.set("<",function(e1,e2) { var v1 = me.expr(e1); var v2 = me.expr(e2); return v1 < v2; });
-        binops.set("||",function(e1,e2) return me.expr(e1) == true || me.expr(e2) == true);
-        binops.set("&&",function(e1,e2) return me.expr(e1) == true && me.expr(e2) == true);
+        // Equality, ordering and truthiness follow the rules of Values, the same
+        // as in scripts and on every target
+        binops.set("==",function(e1,e2) { var v1:Any = me.expr(e1); var v2:Any = me.expr(e2); return Values.equals(v1, v2); });
+        binops.set("!=",function(e1,e2) { var v1:Any = me.expr(e1); var v2:Any = me.expr(e2); return !Values.equals(v1, v2); });
+        binops.set(">=",function(e1,e2) return me.order(e1, e2) >= 0);
+        binops.set("<=",function(e1,e2) return me.order(e1, e2) <= 0);
+        binops.set(">",function(e1,e2) return me.order(e1, e2) > 0);
+        binops.set("<",function(e1,e2) return me.order(e1, e2) < 0);
+        binops.set("||",function(e1,e2) return me.truthy(e1) || me.truthy(e2));
+        binops.set("&&",function(e1,e2) return me.truthy(e1) && me.truthy(e2));
         binops.set("=",assign);
         binops.set("...",function(e1,e2) return new IntIterator(me.expr(e1),me.expr(e2)));
         binops.set("is",function(e1,e2) return #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end (me.expr(e1), me.expr(e2)));
@@ -426,7 +426,7 @@ class Interp {
         case EUnop(op,prefix,e):
             switch(op) {
             case "!":
-                return expr(e) != true;
+                return !truthy(e);
             case "-":
                 return -expr(e);
             case "++":
@@ -455,7 +455,7 @@ class Interp {
                 return call(null,expr(e),args);
             }
         case EIf(econd,e1,e2):
-            return if( expr(econd) == true ) expr(e1) else if( e2 == null ) null else expr(e2);
+            return if( truthy(econd) ) expr(e1) else if( e2 == null ) null else expr(e2);
         case EWhile(econd,e):
             whileLoop(econd,e);
             return null;
@@ -613,13 +613,13 @@ class Interp {
                 Objects.setField(interpreter, o, f.name, expr(f.e));
             return o;
         case ETernary(econd,e1,e2):
-            return if( expr(econd) == true ) expr(e1) else expr(e2);
+            return if( truthy(econd) ) expr(e1) else expr(e2);
         case ESwitch(e, cases, def):
             var val : Dynamic = expr(e);
             var match = false;
             for( c in cases ) {
                 for( v in c.values )
-                    if( expr(v) == val ) {
+                    if( Values.equals(expr(v), val) ) {
                         match = true;
                         break;
                     }
@@ -639,19 +639,39 @@ class Interp {
         return null;
     }
 
+    /**
+        The truthiness of an expression (see Values.isTruthy).
+    **/
+    function truthy(e:Expr):Bool {
+        return Values.isTruthy(expr(e));
+    }
+
+    /**
+        The order of two expressions: -1, 0 or 1. Only two numbers, or a
+        number and a text written as a number, can be ordered (see
+        Values.canCompare).
+    **/
+    function order(e1:Expr, e2:Expr):Int {
+        var v1:Any = expr(e1);
+        var v2:Any = expr(e2);
+        if( !Values.canCompare(v1, v2) )
+            error(ECustom('Cannot compare ' + Values.kindOf(v1) + ' and ' + Values.kindOf(v2)));
+        return Values.compare(v1, v2);
+    }
+
     function doWhileLoop(econd,e) {
         var old = declared.length;
         do {
             if( !loopRun(() -> expr(e)) )
                 break;
         }
-        while( expr(econd) == true );
+        while( truthy(econd) );
         restore(old);
     }
 
     function whileLoop(econd,e) {
         var old = declared.length;
-        while( expr(econd) == true ) {
+        while( truthy(econd) ) {
             if( !loopRun(() -> expr(e)) )
                 break;
         }

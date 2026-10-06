@@ -1050,7 +1050,8 @@ class Checker {
 				return makeMono();
 			return typeExpr(e, withType);
 		case EIf(cond, e1, e2), ETernary(cond, e1, e2):
-			typeExprWith(cond, TBool);
+			// Any value is a condition, with its truthiness
+			typeExpr(cond, Value);
 			var t1 = typeExpr(e1, withType);
 			if( e2 == null )
 				return t1;
@@ -1063,7 +1064,7 @@ class Checker {
 				return t2;
 			unify(t2,t1,e2); // error
 		case EWhile(cond, e), EDoWhile(cond, e):
-			typeExprWith(cond,TBool);
+			typeExpr(cond, Value);
 			typeExpr(e, NoValue);
 			return TVoid;
 		case EObject(fl):
@@ -1174,8 +1175,7 @@ class Checker {
 				unify(et,TInt,e);
 				return et;
 			case "!":
-				unify(et,TBool,e);
-				return et;
+				return TBool;
 			default:
 			}
 		case EFor(v, it, e):
@@ -1241,28 +1241,27 @@ class Checker {
 					unify(t2, TFloat, e2);
 				}
 			case "&&", "||":
-				typeExprWith(e1,TBool);
-				typeExprWith(e2,TBool);
+				typeExpr(e1,Value);
+				typeExpr(e2,Value);
 				return TBool;
 			case "...":
 				typeExprWith(e1,TInt);
 				typeExprWith(e2,TInt);
 				return makeIterator(TInt);
 			case "==", "!=":
-				var t1 = typeExpr(e1,Value);
-				var t2 = typeExpr(e2,WithType(t1));
-				if( !tryUnify(t1,t2) )
-					unify(t2,t1,e2);
+				// Any two values compare (see Values.equals)
+				typeExpr(e1,Value);
+				typeExpr(e2,Value);
 				return TBool;
 			case ">", "<", ">=", "<=":
-				var t1 = typeExpr(e1,Value);
-				var t2 = typeExpr(e2,WithType(t1));
-				if( !tryUnify(t1,t2) )
-					unify(t2,t1,e2);
-				switch( follow(t1) ) {
-				case TInt, TFloat, TBool, TInst({name:"String"},_):
-				default:
-					error("Cannot compare "+typeStr(t1), expr);
+				// Numbers, and texts written as numbers (see Values.compare)
+				for( e in [e1, e2] ) {
+					var t = typeExpr(e,Value);
+					switch( follow(t) ) {
+					case TBool:
+						error("Cannot compare "+typeStr(t), expr);
+					default:
+					}
 				}
 				return TBool;
 			default:
