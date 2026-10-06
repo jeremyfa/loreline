@@ -1,3 +1,8 @@
+// The game provides fetchScore, which sets the score
+function fetchScore()
+
+state
+  score: null
 
 beat start
   Fetching score...

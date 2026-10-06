@@ -9,6 +9,11 @@ state
   bonus: null
   beatRef: null
 
+// Functions the game provides
+function getConfig()
+function sendReport(profile)
+function fetchBonus(inventory, profile)
+
 beat start
   beatRef = start
   Checking initial fields.
