@@ -1,0 +1,118 @@
+state
+  // Money the player carries
+  gold: 10
+
+character bob
+  name: Bob
+  mood: 3
+
+character guard
+  role: watch
+
+function pay(amount, tip = 0)
+  gold = gold - amount - tip
+  return gold
+
+beat Start
+  bob: Hello there.
+  The weather is nice.
+  Gold is $gold and mood is ${bob.mood}.
+  if gold > 5 and true
+    -> Shop(3)
+  -> .
+
+// The shop, open every day
+beat Shop(price, discount = 2)
+  Price is $price.
+  new state
+    visits: 0
+  choice
+    Leave
+      -> .
+
+/*
+<test>
+- request: hover
+  at: "$|gold and"
+  contains:
+    - "```loreline.signature\nstate field gold = 10\n```"
+- request: hover
+  at: "gold: |10"
+  contains:
+    - "```loreline.signature\nnumber\n```"
+- request: hover
+  at: "|gold: 10"
+  contains:
+    - "```loreline.signature\nstate field gold = 10\n```"
+    - "Money the player carries"
+- request: hover
+  at: "${bob.|mood}"
+  contains:
+    - "```loreline.signature\ncharacter field bob.mood = 3\n```"
+- request: hover
+  at: "|mood: 3"
+  contains:
+    - "```loreline.signature\ncharacter field bob.mood = 3\n```"
+- request: hover
+  at: "character |bob"
+  contains:
+    - "```loreline.signature\ncharacter bob \"Bob\"\n```"
+- request: hover
+  at: "character |guard"
+  contains:
+    - "```loreline.signature\ncharacter guard\n```"
+- request: hover
+  at: "|bob: Hello"
+  contains:
+    - "```loreline.signature\ndialogue Bob\n```"
+- request: hover
+  at: "function |pay"
+  contains:
+    - "```loreline.signature\nfunction pay(amount, tip = 0)\n```"
+- request: hover
+  at: "-> |Shop(3)"
+  contains:
+    - "```loreline.signature\nbeat Shop(price, discount = 2)\n```"
+    - "The shop, open every day"
+- request: hover
+  at: "beat Shop(|price"
+  contains:
+    - "```loreline.signature\nparameter price\n```"
+    - "Parameter of beat Shop"
+- request: hover
+  at: "|discount = 2"
+  contains:
+    - "```loreline.signature\nparameter discount = 2\n```"
+- request: hover
+  at: "Price is $|price"
+  contains:
+    - "```loreline.signature\nparameter price\n```"
+- request: hover
+  at: "new |state"
+  contains:
+    - "```loreline.signature\ntemporary state\n```"
+- request: hover
+  at: "|choice"
+  contains:
+    - "```loreline.signature\nchoice\n```"
+- request: hover
+  at: "> 5 |and"
+  contains:
+    - "```loreline.signature\noperator and\n```"
+- request: hover
+  at: "|The weather"
+  contains:
+    - "```loreline.signature\ntext\n```"
+- request: hover
+  at: "-> |."
+  contains:
+    - "```loreline.signature\nend\n```"
+- request: hover
+  at: "|Start"
+  contains:
+    - "```loreline.signature\nbeat Start\n```"
+    - "Goes to Shop"
+    - "With Bob"
+    - "Reads gold"
+</test>
+*/
