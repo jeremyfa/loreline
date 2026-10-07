@@ -1,0 +1,426 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Loreline Signature",
+    "scopeName": "source.loreline.signature",
+    "patterns": [
+        {
+            "begin": "^(?:(public)\\s+)?(beat)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.modifier.public.loreline"
+                },
+                "2": {
+                    "name": "keyword.control.beat.loreline"
+                },
+                "3": {
+                    "name": "entity.name.type.beat.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#parameters"
+                },
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(?:(external|built-in)\\s+)?(function)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.modifier.loreline"
+                },
+                "2": {
+                    "name": "keyword.control.function.loreline"
+                },
+                "3": {
+                    "name": "entity.name.function.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#parameters"
+                },
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(text|list|map|beat|character)\\s+(method)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "storage.type.loreline"
+                },
+                "3": {
+                    "name": "entity.name.function.method.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#parameters"
+                },
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(character)\\s+(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)(\\.)([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.character.loreline"
+                },
+                "2": {
+                    "name": "storage.type.loreline"
+                },
+                "3": {
+                    "name": "entity.name.class.loreline"
+                },
+                "4": {
+                    "name": "punctuation.accessor.loreline"
+                },
+                "5": {
+                    "name": "variable.other.property.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(character)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.character.loreline"
+                },
+                "2": {
+                    "name": "entity.name.class.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "source.loreline#quoted-strings"
+                },
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(?:(temporary)\\s+)?(?:(state)\\s+)?(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.modifier.loreline"
+                },
+                "2": {
+                    "name": "keyword.control.state.loreline"
+                },
+                "3": {
+                    "name": "storage.type.loreline"
+                },
+                "4": {
+                    "name": "variable.other.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(local|parameter)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "variable.parameter.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "match": "^(translation\\s+key)\\s+(#.*)$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "comment.line.hash.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(import)\\s+(.+)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.import.loreline"
+                },
+                "2": {
+                    "name": "support.class.module.import.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(when)(?:\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*))?$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.when.loreline"
+                },
+                "2": {
+                    "name": "entity.name.function.strategy.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(operator)\\s+(.+)$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "keyword.operator.logical.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(tag)\\s+(<\\/?)([^>]*)(>)$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "punctuation.definition.tag.loreline"
+                },
+                "3": {
+                    "name": "entity.name.tag.loreline"
+                },
+                "4": {
+                    "name": "punctuation.definition.tag.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(dialogue)\\s+(.+)$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "entity.name.class.loreline"
+                }
+            }
+        },
+        {
+            "match": "^((?:array\\s+)?access)\\s+(.+)$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                },
+                "2": {
+                    "name": "variable.other.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(choice|when\\s+rule)\\b(.*)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.choice.loreline"
+                },
+                "2": {
+                    "name": "storage.type.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(state)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.state.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(temporary)\\s+(state)$",
+            "captures": {
+                "1": {
+                    "name": "storage.modifier.loreline"
+                },
+                "2": {
+                    "name": "keyword.control.state.loreline"
+                }
+            }
+        },
+        {
+            "match": "^(end|root|transition|insertion|beat\\s+call)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.flow.loreline"
+                }
+            }
+        },
+        {
+            "match": "^([a-z][a-z ]*?)\\s*$",
+            "captures": {
+                "1": {
+                    "name": "storage.type.loreline"
+                }
+            }
+        }
+    ],
+    "repository": {
+        "type": {
+            "begin": "(?<=\\s)(\\()(?=[a-z])",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.section.parens.begin.loreline"
+                }
+            },
+            "end": "(\\))",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.section.parens.end.loreline"
+                }
+            },
+            "contentName": "support.type.loreline",
+            "patterns": [
+                {
+                    "include": "#braces"
+                }
+            ]
+        },
+        "braces": {
+            "begin": "\\{",
+            "end": "\\}",
+            "patterns": [
+                {
+                    "include": "#braces"
+                }
+            ]
+        },
+        "returns": {
+            "match": "(→)\\s*(.+?)\\s*$",
+            "captures": {
+                "1": {
+                    "name": "keyword.operator.type.annotation.loreline"
+                },
+                "2": {
+                    "name": "support.type.loreline"
+                }
+            }
+        },
+        "value": {
+            "begin": "(?<=\\s)(=)(?=\\s)",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.assignment.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "source.loreline#expressions"
+                }
+            ]
+        },
+        "parameters": {
+            "begin": "\\G(\\()",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.section.group.begin.loreline"
+                }
+            },
+            "end": "(\\))",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.section.group.end.loreline"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "begin": "(=)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.assignment.loreline"
+                        }
+                    },
+                    "end": "(?=[,)])",
+                    "patterns": [
+                        {
+                            "include": "source.loreline#expressions"
+                        }
+                    ]
+                },
+                {
+                    "match": "[\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*",
+                    "name": "variable.parameter.loreline"
+                }
+            ]
+        }
+    }
+}
