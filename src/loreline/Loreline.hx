@@ -542,9 +542,9 @@ class Loreline {
 
     /**
      * The names of the functions a script declares without a body, imports
-     * included. The game must provide them in the `functions` option: calling
-     * one it doesn't provide is an error. A tool that plays scripts with no
-     * game behind it can provide stand-ins for these.
+     * included. The app running the story must provide them in the `functions`
+     * option: calling one it doesn't provide is an error. A tool that plays
+     * scripts on their own, such as a preview, can provide stand-ins for these.
      */
     public static function externalFunctions(script:Script):Array<String> {
         return [for (func in new Lens(script).getExternalFunctions()) func.name];

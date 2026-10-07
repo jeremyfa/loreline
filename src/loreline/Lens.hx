@@ -1602,7 +1602,7 @@ class Lens {
 
     /**
      * The functions declared without a body, in the script and its imports: the
-     * game must provide them.
+     * app running the story must provide them.
      */
     public function getExternalFunctions():Array<NFunctionDecl> {
 

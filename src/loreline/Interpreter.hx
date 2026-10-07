@@ -3814,7 +3814,7 @@ class InterpreterContext {
      */
     static function missingExternalFunction(name:String):Any {
         return VarArgs.make(args -> {
-            throw new RuntimeError('$name() is declared without a body, so the game must provide it');
+            throw new RuntimeError('$name() is declared without a body, so the app running the story must provide it');
         });
     }
 
