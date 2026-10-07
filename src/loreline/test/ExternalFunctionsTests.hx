@@ -5,8 +5,9 @@ import loreline.Interpreter;
 using StringTools;
 
 /**
- * Tests of functions declared without a body that the game doesn't provide:
- * calling one is an error, at the position of the call, wherever the call is.
+ * Tests of functions declared without a body that the app running the story
+ * doesn't provide: calling one is an error, at the position of the call,
+ * wherever the call is.
  * Tests are referenced through lambdas, see SpawnTests.
  */
 @:keep
@@ -67,28 +68,28 @@ class ExternalFunctionsTests {
     static function testStatement():Void {
         expect(
             'function playExplosion()\n\nbeat Start\n  Before.\n\n  playExplosion()\n\n  After.\n',
-            ['Before.', 'error at 6: playExplosion() is declared without a body, so the game must provide it']
+            ['Before.', 'error at 6: playExplosion() is declared without a body, so the app running the story must provide it']
         );
     }
 
     static function testInterpolation():Void {
         expect(
             "function roll(sides)\n\nbeat Start\n  You rolled ${roll(6)}.\n",
-            ['error at 4: roll() is declared without a body, so the game must provide it']
+            ['error at 4: roll() is declared without a body, so the app running the story must provide it']
         );
     }
 
     static function testFunctionCode():Void {
         expect(
             "function roll(sides)\n\nfunction twice()\n  return roll(6) + roll(6)\n\nbeat Start\n  You rolled ${twice()}.\n",
-            ['error at 7: roll() is declared without a body, so the game must provide it']
+            ['error at 7: roll() is declared without a body, so the app running the story must provide it']
         );
     }
 
     static function testWhenStrategy():Void {
         final seen = play('function pickRule(rules)\n\nbeat Start\n  when pickRule\n    true\n      Picked.\n');
         final last = seen[seen.length - 1];
-        if (!last.startsWith('error') || last.indexOf('pickRule() is declared without a body, so the game must provide it') == -1) {
+        if (!last.startsWith('error') || last.indexOf('pickRule() is declared without a body, so the app running the story must provide it') == -1) {
             throw 'expected the error of pickRule, got "${seen.join(' / ')}"';
         }
     }
