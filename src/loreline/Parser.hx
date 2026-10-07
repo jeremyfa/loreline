@@ -693,6 +693,9 @@ class ParserContext {
         // beatNode.pos.length += namePos.offset + namePos.length - (beatNode.pos.offset + beatNode.pos.length);
         beatNode.name = expectIdentifier();
 
+        // The comments above the beat are its own, not those of a default value
+        attachComments(beatNode);
+
         // Optional parameter list: beat Name(a, b = expr)
         if (match(LParen)) {
             final params:Array<NBeatParam> = [];
