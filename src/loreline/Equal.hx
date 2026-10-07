@@ -10,6 +10,9 @@ class Equal {
     /**
      * Deep (recursive) equality check between two values.
      * Supports arrays, StringMap, IntMap and objects with fields.
+     * Strict: values of different kinds are never equal (0 and false, "5" and
+     * 5), unlike the equality of the language (Values.equals). A saved value
+     * must come back with its kind.
      * @param interpreter Optional interpreter instance
      * @param a First value to compare
      * @param b Second value to compare
@@ -17,13 +20,28 @@ class Equal {
      */
     public static function equal(interpreter:Interpreter, a:Dynamic, b:Dynamic):Bool {
 
+        if (a == null || b == null)
+            return a == null && b == null;
+
+        // Strings, numbers and booleans: same kind and same value. A raw
+        // dynamic == would match some of them across kinds on some targets
+        if (a is String || b is String) {
+            return (a is String) && (b is String) && (a : String) == (b : String);
+        }
+        final typeA = Type.typeof(a);
+        final typeB = Type.typeof(b);
+        switch [typeA, typeB] {
+            case [TInt | TFloat, TInt | TFloat]:
+                return Values.numberOf(a, typeA) == Values.numberOf(b, typeB);
+            case [TBool, TBool]:
+                return (a : Bool) == (b : Bool);
+            case [TInt | TFloat | TBool, _] | [_, TInt | TFloat | TBool]:
+                return false;
+            case _:
+        }
+
         if (a == b)
             return true;
-
-        // Not equal above, so if either side is null they cannot match
-        // (also protects the container checks below from null values)
-        if (a == null || b == null)
-            return false;
 
         if (Arrays.isArray(a)) {
             if (Arrays.isArray(b)) {
