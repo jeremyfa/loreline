@@ -149,12 +149,13 @@ class Values {
      * empty array, true for anything else.
      */
     public static function isTruthy(value:Any):Bool {
+        // Booleans first: most conditions give one
+        if (value is Bool) return (value : Bool);
         if (value == null) return false;
         if (value is String) return (value : String).length > 0;
         if (Arrays.isArray(value)) return Arrays.arrayLength(value) > 0;
         final type = Type.typeof(value);
         return switch type {
-            case TBool: (value : Bool);
             case TInt | TFloat: numberOf(value, type) != 0;
             case _: true;
         }
