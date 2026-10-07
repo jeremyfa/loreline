@@ -1,0 +1,121 @@
+// The signatures at the top of hovers, one per kind of thing hovered.
+
+character field player.jitters (bool) = false
+// <--------- keyword.control.character
+//        ^^^^^ storage.type
+//              ^^^^^^ entity.name.class
+//                    ^ punctuation.accessor
+//                     ^^^^^^^ variable.other.property
+//                              ^^^^ support.type
+//                                    ^ keyword.operator.assignment
+//                                      ^^^^^ constant.language
+
+field gold (number) = 10
+// <----- storage.type
+//    ^^^^ variable.other
+//          ^^^^^^ support.type
+//                    ^^ constant.numeric
+
+state field gold (number or null)
+// <----- keyword.control.state
+//    ^^^^^ storage.type
+//          ^^^^ variable.other
+//                ^^^^^^^^^^^^^^ support.type
+
+field mood = "calm"
+//    ^^^^ variable.other
+//           ^^^^^^ string.quoted
+
+field bag (object { apples: number })
+//         ^^^^^^^^^^^^^^^^^^^^^^^^^ support.type
+
+character bob "Bob"
+// <--------- keyword.control.character
+//        ^^^ entity.name.class
+//            ^^^^^ string.quoted
+
+beat Shop(item (text), price = 3)
+// <---- keyword.control.beat
+//   ^^^^ entity.name.type.beat
+//        ^^^^ variable.parameter
+//              ^^^^ support.type
+//                     ^^^^^ variable.parameter
+//                             ^ constant.numeric
+
+public beat Start
+// <------ storage.modifier.public
+//     ^^^^ keyword.control.beat
+//          ^^^^^ entity.name.type.beat
+
+function pay(amount (number), tip) → text
+// <-------- keyword.control.function
+//       ^^^ entity.name.function
+//           ^^^^^^ variable.parameter
+//                   ^^^^^^ support.type
+//                            ^^^ variable.parameter
+//                                 ^ keyword.operator.type.annotation
+//                                   ^^^^ support.type
+
+external function playSound(name)
+// <-------- storage.modifier
+//                ^^^^^^^^^ entity.name.function
+//                          ^^^^ variable.parameter
+
+built-in function floor(value) → number
+// <-------- storage.modifier
+//                ^^^^^ entity.name.function
+//                               ^^^^^^ support.type
+
+list method sort() → array
+// <---- storage.type
+//   ^^^^^^ storage.type
+//          ^^^^ entity.name.function.method
+//                   ^^^^^ support.type
+
+local total (number)
+// <----- storage.type
+//    ^^^^^ variable.parameter
+//           ^^^^^^ support.type
+
+parameter who (character bob)
+// <--------- storage.type
+//        ^^^ variable.parameter
+//             ^^^^^^^^^^^^^ support.type
+
+translation key #a1b2
+// <--------------- storage.type
+//              ^^^^^ comment.line.hash
+
+import chapters/one
+// <------ keyword.control.import
+//     ^^^^^^^^^^^^ support.class.module.import
+
+when first
+// <---- keyword.control.when
+//   ^^^^^ entity.name.function.strategy
+
+operator and
+// <-------- storage.type
+//       ^^^ keyword.operator
+
+tag <b>
+// <--- storage.type
+//  ^ punctuation.definition.tag
+//   ^ entity.name.tag
+
+dialogue Bob
+// <-------- storage.type
+//       ^^^ entity.name.class
+
+choice option
+// <------ keyword.control.choice
+
+temporary state
+// <--------- storage.modifier
+//        ^^^^^ keyword.control.state
+
+end
+// <--- keyword.control.flow
+
+number
+// <------ storage.type
