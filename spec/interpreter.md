@@ -547,15 +547,58 @@ only lets the printer write back the form of the source.
   (`Lexer.isConditionUntilLineEnd`). `Tell me if it is true.` stays text,
   `Go outside if mood is "angry"` is a line with a condition.
 
+### Values: Equality, Ordering and Truthiness
+
+Comparisons and conditions follow the rules of `Values`, used by scripts
+(`performOperation`, `evaluateCondition`), by lorscript function code (`==`,
+`!=`, `<`, `>`, `<=`, `>=`, `&&`, `||`, `!`, `if`, ternary, loops, `switch`
+cases) and by the built-in functions (`array_has`, `array_index`,
+`array_remove`, `bool`). They give the same result on every target: a raw
+dynamic `==` between values of different kinds would not (JS coerces, C++, C#
+and Python read booleans as numbers, the other targets are strict).
+
+**Equality** (`==`, `is`, and their opposites `!=`, `is not`):
+
+| Values | Equal when |
+|--------|------------|
+| two numbers | same value, integers and decimals alike: `5 == 5.0` |
+| two texts | same text: `"5" == "5.0"` is false |
+| a number and a text | the text is written as that number: `5 == "5"`, `5 == " 5.0 "`; `0 == ""` is false |
+| a boolean and a number | `true` is 1, `false` is 0 |
+| a boolean and a text | the text is `"true"` or `"false"`: `true == "1"` is false |
+| null and anything | the other value is null too |
+| a beat or character reference and a text | the text is its name |
+| two beat references | same beat name |
+| a character reference and its fields | always |
+| arrays, objects | same array or object (identity) |
+
+Anything else is not equal.
+
+**Texts written as numbers** (`Values.numberOfText`): spaces, tabs and line
+breaks around, an optional sign, digits with an optional decimal part (`5`,
+`5.`, `.5`), an optional exponent (`1e3`). `""`, `" "`, `"0x10"`, `"Infinity"`,
+`"1_000"` or `"5abc"` are not numbers. The check is written by hand, as
+`Std.parseFloat` accepts different forms on different targets.
+
+**Ordering** (`<`, `>`, `<=`, `>=`): two numbers, or a number and a text
+written as a number (`"10" > 9` is true). Anything else is a `RuntimeError`
+(`Cannot compare ...`), two texts included, even written as numbers.
+
+**Truthiness**, wherever a value decides (`if`, conditions of choices, text
+and `when` rules, `not`, `and`, `or`, the ternary, `bool()`): false for
+`false`, `null`, `0`, `""` and an empty array, true for anything else.
+
+The save delta (`Equal.equal`, see section 13) does not use these rules: it is
+strict, so that a value which changes kind (`0` to `false`) is saved.
+
 ### `and` and `or`
 
-Both operands must be booleans, otherwise the operation is a `RuntimeError`.
+Any value is accepted, read with its truthiness, and the result is a boolean.
 The left side is always evaluated. The right side is evaluated only when the
 left one leaves the result open: `false and x` and `true or x` never evaluate
 `x`, so a function call there does not run (`evaluateExpression`, case
-`NBinary`). Lorscript functions already evaluate `&&` and `||` this way. The
-conditions of a `when` block are still all evaluated, one per rule: the
-short-circuit applies inside each condition.
+`NBinary`). Lorscript functions evaluate `&&` and `||` the same way. The
+short-circuit applies inside each condition of a `when` block too.
 
 ### `evalAlternative`
 
@@ -844,6 +887,11 @@ AST node reference, and its own insertion ID (for nested insertions).
 initial script-declared values). Only changed fields are included in save data.
 This keeps save files compact when most state hasn't changed, and lets a script
 update change the default of a field that a player never touched.
+
+The comparison (`Equal.equal`) is strict: values of different kinds are never
+equal, unlike the equality of the language. A field declared `0` and set to
+`false`, or declared `"5"` and set to `5`, is saved and comes back with its
+kind.
 
 `originalFields` holds a deep copy of each declared value
 (`snapshotOriginalValue`), never the value itself: arrays and objects are changed
