@@ -4,7 +4,7 @@
     "scopeName": "source.loreline.signature",
     "patterns": [
         {
-            "begin": "^(?:(public)\\s+)?(beat)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(?:(public)\\s+)?(beat)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.modifier.public.loreline"
@@ -33,7 +33,7 @@
             ]
         },
         {
-            "begin": "^(?:(external|built-in)\\s+)?(function)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(?:(external|built-in)\\s+)?(function)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.modifier.loreline"
@@ -62,7 +62,7 @@
             ]
         },
         {
-            "begin": "^(text|list|map|beat|character)\\s+(method)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(text|list|map|beat|character)\\s+(method)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -91,7 +91,7 @@
             ]
         },
         {
-            "begin": "^(character)\\s+(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)(\\.)([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(character)\\s+(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)(\\.)([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "keyword.control.character.loreline"
@@ -123,7 +123,7 @@
             ]
         },
         {
-            "begin": "^(character)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(character)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "keyword.control.character.loreline"
@@ -149,7 +149,7 @@
             ]
         },
         {
-            "begin": "^(?:(temporary)\\s+)?(?:(state)\\s+)?(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(?:(temporary)\\s+)?(?:(state)\\s+)?(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.modifier.loreline"
@@ -178,7 +178,7 @@
             ]
         },
         {
-            "begin": "^(local|parameter)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "begin": "^\\s*(local|parameter)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -201,7 +201,7 @@
             ]
         },
         {
-            "match": "^(translation\\s+key)\\s+(#.*)$",
+            "match": "^\\s*(translation\\s+key)\\s+(#.*)$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -212,7 +212,7 @@
             }
         },
         {
-            "match": "^(import)\\s+(.+)$",
+            "match": "^\\s*(import)\\s+(.+)$",
             "captures": {
                 "1": {
                     "name": "keyword.control.import.loreline"
@@ -223,7 +223,7 @@
             }
         },
         {
-            "match": "^(when)(?:\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*))?$",
+            "match": "^\\s*(when)(?:\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*))?$",
             "captures": {
                 "1": {
                     "name": "keyword.control.when.loreline"
@@ -234,7 +234,7 @@
             }
         },
         {
-            "match": "^(operator)\\s+(.+)$",
+            "match": "^\\s*(operator)\\s+(.+)$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -245,7 +245,7 @@
             }
         },
         {
-            "match": "^(tag)\\s+(<\\/?)([^>]*)(>)$",
+            "match": "^\\s*(tag)\\s+(<\\/?)([^>]*)(>)$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -262,7 +262,7 @@
             }
         },
         {
-            "match": "^(dialogue)\\s+(.+)$",
+            "match": "^\\s*(dialogue)\\s+(.+)$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -273,7 +273,7 @@
             }
         },
         {
-            "match": "^((?:array\\s+)?access)\\s+(.+)$",
+            "match": "^\\s*((?:array\\s+)?access)\\s+(.+)$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
@@ -284,7 +284,7 @@
             }
         },
         {
-            "match": "^(choice|when\\s+rule)\\b(.*)$",
+            "match": "^\\s*(choice|when\\s+rule)\\b(.*)$",
             "captures": {
                 "1": {
                     "name": "keyword.control.choice.loreline"
@@ -295,7 +295,7 @@
             }
         },
         {
-            "match": "^(state)$",
+            "match": "^\\s*(state)$",
             "captures": {
                 "1": {
                     "name": "keyword.control.state.loreline"
@@ -303,7 +303,7 @@
             }
         },
         {
-            "match": "^(temporary)\\s+(state)$",
+            "match": "^\\s*(temporary)\\s+(state)$",
             "captures": {
                 "1": {
                     "name": "storage.modifier.loreline"
@@ -314,7 +314,7 @@
             }
         },
         {
-            "match": "^(end|root|transition|insertion|beat\\s+call)$",
+            "match": "^\\s*(end|root|transition|insertion|beat\\s+call)$",
             "captures": {
                 "1": {
                     "name": "keyword.control.flow.loreline"
@@ -322,7 +322,7 @@
             }
         },
         {
-            "match": "^([a-z][a-z ]*?)\\s*$",
+            "match": "^\\s*([a-z][a-z ]*?)\\s*$",
             "captures": {
                 "1": {
                     "name": "storage.type.loreline"
