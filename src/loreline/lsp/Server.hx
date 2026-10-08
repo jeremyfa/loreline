@@ -2116,6 +2116,26 @@ class Server {
 
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
 
+        // The signature, with the parameters and their default values
+        var name = beatDecl.name;
+        if (beatDecl.params != null && beatDecl.params.length > 0) {
+            name += '(' + [for (param in beatDecl.params) param.name + signatureValue(param.defaultValue)].join(', ') + ')';
+        }
+
+        return makeSectionsHover(
+            hoverSignature(beatDecl.isPublic ? 'public beat' : 'beat', name),
+            [hoverDescriptionForNode(beatDecl).join("\n"), hoverLines(beatUses(beatDecl, uri, lens))],
+            content,
+            origin ?? beatDecl
+        );
+    }
+
+    /**
+     * What a beat is linked to, one line each: the beats leading to it, those
+     * it goes to and calls, its characters, the fields it changes and reads.
+     */
+    function beatUses(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens):Array<String> {
+
         final uses:Array<String> = [];
 
         // The beats leading to it, by transition, call or insertion. Several
@@ -2181,18 +2201,7 @@ class Server {
         if (changed.length > 0) uses.push("Changes " + changed.join(" · "));
         if (read.length > 0) uses.push("Reads " + read.join(" · "));
 
-        // The signature, with the parameters and their default values
-        var name = beatDecl.name;
-        if (beatDecl.params != null && beatDecl.params.length > 0) {
-            name += '(' + [for (param in beatDecl.params) param.name + signatureValue(param.defaultValue)].join(', ') + ')';
-        }
-
-        return makeSectionsHover(
-            hoverSignature(beatDecl.isPublic ? 'public beat' : 'beat', name),
-            [hoverDescriptionForNode(beatDecl).join("\n"), hoverLines(uses)],
-            content,
-            origin ?? beatDecl
-        );
+        return uses;
     }
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
