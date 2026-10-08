@@ -1597,23 +1597,22 @@ class Server {
 
     function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
-        var kind = 'Text';
+        var kind = 'text';
         var name = null;
-        var origin = null;
 
         final parent = lens.getParentNode(literal);
         var onceOption:NChoiceOption = null;
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
-                    kind = 'Choice option';
+                    kind = 'choice option';
                     final choiceOpt:NChoiceOption = cast parent;
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
-                    kind = 'Dialogue';
+                    kind = 'dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
-                        origin = characterName(characterDecl);
+                        name = shownCharacterName(characterDecl);
                     }
                 case _:
             }
@@ -1625,7 +1624,7 @@ class Server {
             hoverPos = new loreline.Position(onceOption.pos.line, onceOption.pos.column, onceOption.pos.offset,
                 endPos.offset - onceOption.pos.offset + endPos.length);
         }
-        return makeHover(hoverTitle(kind, name, origin), description, content, part, hoverPos);
+        return makeHover(hoverSignature(kind, name), description, content, part, hoverPos);
 
     }
 
@@ -1639,23 +1638,22 @@ class Server {
             spaceOffset = pos.offset - part.pos.offset;
         }
 
-        var kind = 'Text';
+        var kind = 'text';
         var name = null;
-        var origin = null;
 
         final parent = lens.getParentNode(literal);
         var onceOption:NChoiceOption = null;
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
-                    kind = 'Choice option';
+                    kind = 'choice option';
                     final choiceOpt:NChoiceOption = cast parent;
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
-                    kind = 'Dialogue';
+                    kind = 'dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
-                        origin = characterName(characterDecl);
+                        name = shownCharacterName(characterDecl);
                     }
                 case _:
             }
@@ -1675,39 +1673,46 @@ class Server {
                 var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
                     if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
-                        return makeHover(hoverTitle(kind, name, origin), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
+                        return makeHover(hoverSignature(kind, name), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
                     }
                     first = false;
                 }
                 return null;
             case _:
-                return makeHover(hoverTitle(kind, name, origin), description, content, part, extendForOnce(pos));
+                return makeHover(hoverSignature(kind, name), description, content, part, extendForOnce(pos));
         }
 
     }
 
-    function makeHover(title:String, description:Array<String>, content:String, node:Node, ?pos:loreline.Position):Hover {
+    function makeHover(signature:Null<String>, description:Array<String>, content:String, node:Node, ?pos:loreline.Position):Hover {
 
-        final value:Array<String> = [];
+        return makeSectionsHover(signature, description != null && description.length > 0 ? [description.join("\n")] : [], content, node, pos);
 
-        if (title != null) {
-            value.push(title);
+    }
+
+    /**
+     * A hover made of its signature, colored by the `loreline.signature`
+     * grammar, then sections set apart from each other (the doc, facts, uses).
+     * Empty sections are left out.
+     */
+    function makeSectionsHover(signature:Null<String>, sections:Array<String>, content:String, node:Node, ?pos:loreline.Position):Hover {
+
+        final parts:Array<String> = [];
+
+        if (signature != null) {
+            parts.push("```loreline.signature\n" + signature + "\n```");
         }
 
-        if (description != null && description.length > 0) {
-            if (title != null) {
-                value.push("");
-                value.push("---");
-                value.push("");
+        for (section in sections) {
+            if (section != null && section.trim().length > 0) {
+                parts.push(section);
             }
-
-            value.push(description.join("\n"));
         }
 
         return {
             contents: {
                 kind: MarkupKind.Markdown,
-                value: value.join("\n")
+                value: parts.join("\n\n---\n\n")
             },
             range: rangeFromLorelinePosition(pos ?? node.pos, content)
         }
@@ -1787,10 +1792,10 @@ class Server {
             case NTransition:
                 final transition:NTransition = cast node;
                 if (transition.target == '.') {
-                    return makeHover(hoverTitle('End'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverSignature('end'), hoverDescriptionForNode(cast node), content, node);
                 }
                 else if (transition.target == '_') {
-                    return makeHover(hoverTitle('Root'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverSignature('root'), hoverDescriptionForNode(cast node), content, node);
                 }
                 else {
                     final beat = lens.findBeatFromTransition(transition);
@@ -1798,7 +1803,7 @@ class Server {
                         return makeBeatDeclHover(beat, uri, content, lens, node);
                     }
                     else {
-                        return makeHover(hoverTitle('Transition'), hoverDescriptionForNode(cast node), content, node);
+                        return makeHover(hoverSignature('transition'), hoverDescriptionForNode(cast node), content, node);
                     }
                 }
             case NInsertion:
@@ -1808,13 +1813,13 @@ class Server {
                     return makeBeatDeclHover(beat, uri, content, lens, node);
                 }
                 else {
-                    return makeHover(hoverTitle('Insertion'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverSignature('insertion'), hoverDescriptionForNode(cast node), content, node);
                 }
             case NBeatCall:
                 // Dynamic beat call: target is resolved at runtime
-                return makeHover(hoverTitle('Beat call'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverSignature('beat call'), hoverDescriptionForNode(cast node), content, node);
             case NObjectField:
-                return makeObjectFieldHover(cast node, content);
+                return makeObjectFieldHover(cast node, content, lens);
             case NAccess:
                 var access:NAccess = cast node;
                 var parent = lens.getParentNode(access);
@@ -1834,36 +1839,36 @@ class Server {
                 final literal:NLiteral = cast node;
                 switch literal.literalType {
                     case Number:
-                        return makeHover(hoverTitle('Number'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverSignature('number'), hoverDescriptionForNode(literal), content, literal);
                     case Boolean:
-                        return makeHover(hoverTitle('Boolean'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverSignature('bool'), hoverDescriptionForNode(literal), content, literal);
                     case Null:
-                        return makeHover(hoverTitle('Null'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverSignature('null'), hoverDescriptionForNode(literal), content, literal);
                     case Array:
-                        return makeHover(hoverTitle('Array'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverSignature('array'), hoverDescriptionForNode(literal), content, literal);
                     case Object(style):
-                        return makeHover(hoverTitle('Object'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverSignature('object'), hoverDescriptionForNode(literal), content, literal);
                 }
             case NUnary | NBinary:
                 // Hovering a word operator (the operands have their own nodes)
                 final op = wordOperatorOf(cast node);
                 if (op != null) {
-                    return makeHover(hoverTitle('Operator', op.word), [op.doc], content, node);
+                    return makeHover(hoverSignature('operator', op.word), [op.doc], content, node);
                 }
-                return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverSignature('expression'), hoverDescriptionForNode(cast node), content, node);
             case NExpr | NAssign:
-                return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverSignature('expression'), hoverDescriptionForNode(cast node), content, node);
             case NIfStatement:
-                return makeHover("**Condition**", null, content, node);
+                return makeHover(hoverSignature('condition'), null, content, node);
             case NAlternative:
                 final alt:NAlternative = cast node;
-                return makeHover('**Alternative** (${alt.mode.toString()})', null, content, node);
+                return makeHover(hoverSignature('alternative', alt.mode.toString().toLowerCase()), null, content, node);
             case NDialogueStatement:
                 final dialogue:NDialogueStatement = cast node;
                 if (dialogue.conditionPos != null &&
                     lorelinePos.offset >= dialogue.conditionPos.offset &&
                     lorelinePos.offset <= dialogue.conditionPos.offset + dialogue.conditionPos.length) {
-                    return makeHover("**Condition**", null, content, node, dialogue.conditionPos);
+                    return makeHover(hoverSignature('condition'), null, content, node, dialogue.conditionPos);
                 }
                 return makeDialogueStatementHover(dialogue, content, lens);
             case NTextStatement:
@@ -1871,19 +1876,19 @@ class Server {
                 if (text.conditionPos != null &&
                     lorelinePos.offset >= text.conditionPos.offset &&
                     lorelinePos.offset <= text.conditionPos.offset + text.conditionPos.length) {
-                    return makeHover("**Condition**", null, content, node, text.conditionPos);
+                    return makeHover(hoverSignature('condition'), null, content, node, text.conditionPos);
                 }
-                return makeHover(hoverTitle('Text'), hoverDescriptionForNode(text), content, node);
+                return makeHover(hoverSignature('text'), hoverDescriptionForNode(text), content, node);
             case NChoiceOption:
                 final option:NChoiceOption = cast node;
                 if (option.conditionPos != null &&
                     lorelinePos.offset >= option.conditionPos.offset &&
                     lorelinePos.offset <= option.conditionPos.offset + option.conditionPos.length) {
-                    return makeHover("**Condition**", null, content, node, option.conditionPos);
+                    return makeHover(hoverSignature('condition'), null, content, node, option.conditionPos);
                 }
-                return makeHover(hoverTitle('Choice option'), hoverDescriptionForNode(option), content, node);
+                return makeHover(hoverSignature('choice option'), hoverDescriptionForNode(option), content, node);
             case NStringLiteral:
-                return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverSignature('text'), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
                 var parent = node;
                 do {
@@ -1898,7 +1903,7 @@ class Server {
                     case Expr(expr):
                         return makeNodeHover(lorelinePos, lens, uri, content, expr);
                     case Tag(closing, expr):
-                        return makeHover(hoverTitle('Tag', "&lt;" + (closing ? "/" : "") + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, stringPart);
+                        return makeHover(hoverSignature('tag', '<' + (closing ? '/' : '') + printLoreline(expr) + '>'), hoverDescriptionForNode(expr), content, stringPart);
                 }
 
                 final literal = lens.getFirstParentOfType(node, NStringLiteral);
@@ -1912,7 +1917,7 @@ class Server {
                             case Expr(expr):
                                 return makeNodeHover(lorelinePos, lens, uri, content, expr);
                             case Tag(closing, expr):
-                                return makeHover(hoverTitle('Tag', "&lt;" + (closing ? "/" : "") + printLoreline(expr) + "&gt;"), hoverDescriptionForNode(expr), content, parentStringPart);
+                                return makeHover(hoverSignature('tag', '<' + (closing ? '/' : '') + printLoreline(expr) + '>'), hoverDescriptionForNode(expr), content, parentStringPart);
                         }
                     }
 
@@ -2017,22 +2022,32 @@ class Server {
         return null;
     }
 
-    function hoverTitle(kind:String, ?name:String, ?origin:String):String {
+    /**
+     * The signature at the top of a hover: what is hovered, in the few words
+     * the `loreline.signature` grammar colors, like `state field gold = 10`.
+     * @param kind What it is, in lowercase: `beat`, `state field`
+     * @param name Its name, with what follows it: parameters, `= value`
+     */
+    function hoverSignature(kind:String, ?name:String):String {
 
-        var title = kind;
+        return name != null && name.length > 0 ? kind + ' ' + name : kind;
 
-        if (name != null) {
-            title += ': **' + name + '**';
-        }
-        else {
-            title = '**' + title + '**';
-        }
+    }
 
-        if (origin != null) {
-            title += ' (' + origin + ')';
-        }
+    /** Lines kept close together in one section of a hover */
+    static function hoverLines(lines:Array<String>):String {
 
-        return title;
+        return lines.join("  \n");
+
+    }
+
+    /** ` = value` for a signature, cut when it gets long */
+    function signatureValue(value:Null<Node>):String {
+
+        if (value == null) return '';
+        var printed = printLoreline(value).replace('\r\n', ' ').replace('\n', ' ');
+        if (printed.uLength() > 40) printed = printed.uSubstr(0, 39) + '…';
+        return ' = ' + printed;
 
     }
 
@@ -2068,9 +2083,14 @@ class Server {
 
         final description:Array<String> = [];
 
+        // The comments above it, without translation keys and directives
         if (node.leadingComments != null) {
             for (comment in node.leadingComments) {
-                description.push('_' + comment.content.trim().replace('_', '\\_') + '_');
+                if (comment.isHash) continue;
+                for (line in comment.content.replace('\r\n', '\n').split('\n')) {
+                    final text = line.trim();
+                    if (text.length > 0 && !text.startsWith('@')) description.push(text);
+                }
             }
         }
 
@@ -2081,7 +2101,7 @@ class Server {
                 description.push('');
             }
             for (comment in node.trailingComments) {
-                description.push('_' + comment.content.trim().replace('_', '\\_') + '_');
+                description.push(comment.content.trim());
             }
         }
 
@@ -2095,225 +2115,81 @@ class Server {
     }
 
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
-        final description:Array<String> = [];
 
-        // Add any comments as description
-        final comments = hoverDescriptionForNode(beatDecl);
-        if (comments.length > 0) {
-            for (comment in comments) {
-                description.push(comment);
-            }
-            description.push("");
-            description.push("---");
-            description.push("");
+        final uses:Array<String> = [];
+
+        // The beats leading to it, by transition, call or insertion. Several
+        // references from the same beat list it once.
+        final incoming:Array<String> = [];
+        final seenIncoming = new Map<String, Bool>();
+        for (ref in lens.findReferencesToBeat(beatDecl)) {
+            final from = lens.getFirstParentOfType(ref.origin, NBeatDecl);
+            if (from == null) continue;
+            final key = Std.string(from.id);
+            if (seenIncoming.exists(key)) continue;
+            seenIncoming.set(key, true);
+            incoming.push(from.name == "_" ? "top level" : makePositionLink(from.name, uri, from, lens));
         }
+        if (incoming.length > 0) uses.push("Comes from " + incoming.join(" · "));
 
-        // Add character interactions
-        final characters = lens.findBeatCharacters(beatDecl);
-        if (characters.length > 0) {
-            // Group by interaction type
-            final dialogs = new Map<String, Bool>();
-            final accessed = new Map<String, Bool>();
-
-            final dialogTargets = [];
-            final otherTargets = [];
-
-            for (ref in characters) {
-
-                if (HxType.getClass(ref.origin) == NDialogueStatement && !dialogs.exists(ref.target.name)) {
-                    if (!dialogs.exists(ref.target.name)) {
-                        dialogs.set(ref.target.name, true);
-                        dialogTargets.push(makePositionLink('**' + characterName(ref.target) + '**', uri, ref.target, lens));
-                    }
-                }
-
-                if (HxType.getClass(ref.origin) == NAccess && !accessed.exists(ref.target.name)) {
-                    if (!dialogs.exists(ref.target.name) && !accessed.exists(ref.target.name)) {
-                        accessed.set(ref.target.name, true);
-                        otherTargets.push(makePositionLink('' + characterName(ref.target) + '', uri, ref.target, lens));
-                    }
-                }
-            }
-
-            final targets = dialogTargets.concat(otherTargets);
-            if (targets.length > 0) {
-                description.push("- Characters: " + targets.join(', '));
-            }
-
-            description.push("");
-            description.push("---");
-            description.push("");
+        // The beats it goes to and the beats it calls, each once per list
+        final transitions:Array<String> = [];
+        final calls:Array<String> = [];
+        final seenTransitions = new Map<String, Bool>();
+        final seenCalls = new Map<String, Bool>();
+        for (ref in lens.findOutboundBeats(beatDecl)) {
+            final key = Std.string(ref.target.id);
+            final transition = ref.origin is NTransition;
+            final seen = transition ? seenTransitions : seenCalls;
+            if (seen.exists(key)) continue;
+            seen.set(key, true);
+            (transition ? transitions : calls).push(makePositionLink(ref.target.name, uri, ref.target, lens));
         }
+        if (transitions.length > 0) uses.push("Goes to " + transitions.join(" · "));
+        if (calls.length > 0) uses.push("Calls " + calls.join(" · "));
 
-        // Add state fields
-        final readFields = lens.findReadStateFields(beatDecl);
-        final modifiedFields = lens.findModifiedStateFields(beatDecl);
-        final characterReadFields = lens.findReadCharacterFields(beatDecl);
-        final characterModifiedFields = lens.findModifiedCharacterFields(beatDecl);
-        if (readFields.length > 0 || modifiedFields.length > 0 || characterReadFields.length > 0 || characterModifiedFields.length > 0) {
-
-            final stateTargets = [];
-            final usedStateTargets = new NodeIdMap<Bool>();
-
-            if (modifiedFields.length > 0) {
-                for (ref in modifiedFields) {
-                    if (!usedStateTargets.exists(ref.target.id)) {
-                        usedStateTargets.set(ref.target.id, true);
-                        stateTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target, lens) + '**');
-                    }
-                }
+        // The characters speaking in it, then those it only mentions
+        final characters:Array<String> = [];
+        final seenCharacters = new Map<String, Bool>();
+        final characterRefs = lens.findBeatCharacters(beatDecl);
+        for (speaking in [true, false]) {
+            for (ref in characterRefs) {
+                if ((HxType.getClass(ref.origin) == NDialogueStatement) != speaking || seenCharacters.exists(ref.target.name)) continue;
+                seenCharacters.set(ref.target.name, true);
+                characters.push(makePositionLink(characterName(ref.target), uri, ref.target, lens));
             }
-
-            if (readFields.length > 0) {
-                for (ref in readFields) {
-                    if (!usedStateTargets.exists(ref.target.id)) {
-                        usedStateTargets.set(ref.target.id, true);
-                        stateTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
-                    }
-                }
-            }
-
-            if (stateTargets.length > 0) {
-                description.push('- State: ' + stateTargets.join(', '));
-            }
-
-            final characters = [];
-            final usedCharacters = new NodeIdMap<Bool>();
-
-            if (characterModifiedFields.length > 0) {
-                for (ref in characterModifiedFields) {
-                    final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
-                    if (!usedCharacters.exists(refCharacter.id)) {
-                        usedCharacters.set(refCharacter.id, true);
-                        characters.push(refCharacter);
-                    }
-                }
-            }
-
-            if (characterReadFields.length > 0) {
-                for (ref in characterReadFields) {
-                    final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
-                    if (!usedCharacters.exists(refCharacter.id)) {
-                        usedCharacters.set(refCharacter.id, true);
-                        characters.push(refCharacter);
-                    }
-                }
-            }
-
-            for (character in characters) {
-
-                final characterTargets = [];
-                final usedCharacterTargets = new NodeIdMap<Bool>();
-
-                if (characterModifiedFields.length > 0) {
-                    for (ref in characterModifiedFields) {
-                        final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
-                        if (refCharacter.id == character.id) {
-                            usedCharacterTargets.set(ref.target.id, true);
-                            characterTargets.push('**' + makePositionLink(ref.target.name, uri, ref.target, lens) + '**');
-                        }
-                    }
-                }
-
-                if (characterReadFields.length > 0) {
-                    for (ref in characterReadFields) {
-                        if (!usedCharacterTargets.exists(ref.target.id)) {
-                            final refCharacter = lens.getFirstParentOfType(ref.target, NCharacterDecl);
-                            if (refCharacter.id == character.id) {
-                                usedCharacterTargets.set(ref.target.id, true);
-                                characterTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
-                            }
-                        }
-                    }
-                }
-
-                description.push('- ${characterName(character)}: ' + characterTargets.join(', '));
-            }
-
-            description.push("");
-            description.push("---");
-            description.push("");
         }
+        if (characters.length > 0) uses.push("With " + characters.join(" · "));
 
-        final incomingBeats = lens.findReferencesToBeat(beatDecl);
-        final outgoingBeats = lens.findOutboundBeats(beatDecl);
-
-        if (incomingBeats.length > 0 || outgoingBeats.length > 0) {
-
-            // Add incoming beats (references to this beat). Multiple transitions
-            // from the same parent would each yield a Reference; dedup by the
-            // parent beat's canonical id so the parent appears once.
-            if (incomingBeats.length > 0) {
-                final targets = [];
-                final seen = new Map<String, Bool>();
-                for (ref in incomingBeats) {
-                    final incoming = lens.getFirstParentOfType(ref.origin, NBeatDecl);
-                    if (incoming == null) continue;
-                    final key = Std.string(incoming.id);
-                    if (seen.exists(key)) continue;
-                    seen.set(key, true);
-                    if (incoming.name == "_") {
-                        targets.push("*top level*");
-                    } else {
-                        targets.push(makePositionLink(incoming.name, uri, incoming, lens));
-                    }
-                }
-                description.push("- From: " + targets.join(', '));
+        // The fields it changes, then those it only reads: `gold`, `bob.mood`
+        final seenFields = new NodeIdMap<Bool>();
+        function fieldLinks(refs:Array<loreline.Lens.Reference<NObjectField>>, links:Array<String>) {
+            for (ref in refs) {
+                if (seenFields.exists(ref.target.id)) continue;
+                seenFields.set(ref.target.id, true);
+                final character = lens.getFirstParentOfType(ref.target, NCharacterDecl);
+                final name = character != null ? character.name + '.' + ref.target.name : ref.target.name;
+                links.push(makePositionLink(name, uri, ref.target, lens));
             }
-
-            // Add outgoing beats, deduplicate transitions and calls separately so a
-            // target that is both transitioned to AND called appears in each
-            // list once, not once per statement.
-            if (outgoingBeats.length > 0) {
-                final callTargets = [];
-                final transitionTargets = [];
-                final seenTransitions = new Map<String, Bool>();
-                final seenCalls = new Map<String, Bool>();
-                for (ref in outgoingBeats) {
-                    final key = Std.string(ref.target.id);
-                    if (ref.origin is NTransition) {
-                        if (seenTransitions.exists(key)) continue;
-                        seenTransitions.set(key, true);
-                        transitionTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
-                    }
-                    else {
-                        if (seenCalls.exists(key)) continue;
-                        seenCalls.set(key, true);
-                        callTargets.push(makePositionLink(ref.target.name, uri, ref.target, lens));
-                    }
-                }
-                if (transitionTargets.length > 0) {
-                    description.push("- To: " + transitionTargets.join(', '));
-                }
-                if (callTargets.length > 0) {
-                    description.push("- Calling: " + callTargets.join(', '));
-                }
-            }
-
-            description.push("");
-            description.push("---");
-            description.push("");
         }
+        final changed:Array<String> = [];
+        fieldLinks(lens.findModifiedStateFields(beatDecl), changed);
+        fieldLinks(lens.findModifiedCharacterFields(beatDecl), changed);
+        final read:Array<String> = [];
+        fieldLinks(lens.findReadStateFields(beatDecl), read);
+        fieldLinks(lens.findReadCharacterFields(beatDecl), read);
+        if (changed.length > 0) uses.push("Changes " + changed.join(" · "));
+        if (read.length > 0) uses.push("Reads " + read.join(" · "));
 
-        while (description[description.length-1] == "" || description[description.length-1] == "---") description.pop();
-
-        // Show the full signature when the beat declares parameters
-        var titleName = beatDecl.name;
+        // The signature, with the parameters and their default values
+        var name = beatDecl.name;
         if (beatDecl.params != null && beatDecl.params.length > 0) {
-            final parts = [];
-            for (param in beatDecl.params) {
-                var part = param.name;
-                if (param.defaultValue != null) {
-                    part += ' = ' + printLoreline(param.defaultValue);
-                }
-                parts.push(part);
-            }
-            titleName += '(' + parts.join(', ') + ')';
+            name += '(' + [for (param in beatDecl.params) param.name + signatureValue(param.defaultValue)].join(', ') + ')';
         }
 
-        return makeHover(
-            hoverTitle(beatDecl.isPublic ? 'Public beat' : 'Beat', titleName),
-            description,
+        return makeSectionsHover(
+            hoverSignature(beatDecl.isPublic ? 'public beat' : 'beat', name),
+            [hoverDescriptionForNode(beatDecl).join("\n"), hoverLines(uses)],
             content,
             origin ?? beatDecl
         );
@@ -2321,13 +2197,16 @@ class Server {
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
 
-        return makeHover(hoverTitle('State'), hoverDescriptionForNode(stateDecl), content, stateDecl);
+        return makeHover(hoverSignature(stateDecl.temporary ? 'temporary state' : 'state'), hoverDescriptionForNode(stateDecl), content, stateDecl);
 
     }
 
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, content:String, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverTitle('Character', characterName(characterDecl)), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
+        // The name shown in the story, when it isn't the one of the script
+        final shown = shownCharacterName(characterDecl);
+        final name = characterDecl.name + (shown != characterDecl.name ? ' "' + shown + '"' : '');
+        return makeHover(hoverSignature('character', name), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
 
     }
 
@@ -2349,12 +2228,12 @@ class Server {
 
             // TODO: this is pretty basic for now, could be improved at some point
             final title = switch expr.e {
-                case EConst(CString(s)): 'String';
+                case EConst(CString(s)): 'Text';
                 case EConst(CFloat(f)): 'Number';
                 case EConst(CInt(v)): 'Number';
                 case EConst(c): 'Constant';
-                case EIdent('false'): 'Boolean';
-                case EIdent('true'): 'Boolean';
+                case EIdent('false'): 'Bool';
+                case EIdent('true'): 'Bool';
                 case EIdent('null'): 'Null';
                 case EIdent(v): 'Identifier';
                 case EVar(n, t, e): 'Variable';
@@ -2384,7 +2263,7 @@ class Server {
                 case ECheckType(e, t): 'Type';
             }
 
-            return makeHover(hoverTitle(title ?? 'Expression'), hoverDescriptionForNode(func), content, func, exprPos);
+            return makeHover(hoverSignature((title ?? 'expression').toLowerCase()), hoverDescriptionForNode(func), content, func, exprPos);
         }
 
         return makeFunctionDeclHover(func, content);
@@ -2409,7 +2288,7 @@ class Server {
             name += ')';
         }
 
-        return makeHover(hoverTitle('Function', name), hoverDescriptionForNode(func), content, func, lorelinePos);
+        return makeHover(hoverSignature(func.external ? 'external function' : 'function', name), hoverDescriptionForNode(func), content, func, lorelinePos);
 
     }
 
@@ -2418,12 +2297,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
 
-        final description:Array<String> = [];
-        if (param.defaultValue != null) {
-            description.push('Default: `' + printLoreline(param.defaultValue) + '`');
-        }
-
-        return makeHover(hoverTitle('Parameter', param.name, 'beat ' + beatDecl.name), description, content, anchor, pos);
+        return makeHover(hoverSignature('parameter', param.name + signatureValue(param.defaultValue)), ['Parameter of beat ' + beatDecl.name], content, anchor, pos);
 
     }
 
@@ -2436,13 +2310,8 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        final description:Array<String> = [];
-        if (eqIndex != -1) {
-            description.push('Default: `' + rawArg.substr(eqIndex + 1).trim() + '`');
-        }
-
-        final origin = func.name != null ? 'function ' + func.name : 'function';
-        return makeHover(hoverTitle('Parameter', paramName, origin), description, content, anchor, pos);
+        final name = paramName + (eqIndex != -1 ? ' = ' + rawArg.substr(eqIndex + 1).trim() : '');
+        return makeHover(hoverSignature('parameter', name), ['Parameter of ' + (func.name != null ? 'function ' + func.name : 'a function')], content, anchor, pos);
 
     }
 
@@ -2778,7 +2647,7 @@ class Server {
         final description = hoverDescriptionForNode(when);
         if (description.length > 0) description.push('');
         description.push(whenStrategyDescription(when.strategy));
-        return makeHover(hoverTitle('When', when.strategy ?? 'default strategy'), description, content, when);
+        return makeHover(hoverSignature('when', when.strategy), description, content, when);
     }
 
     function makeWhenRuleHover(rule:NWhenRule, content:String):Hover {
@@ -2793,30 +2662,53 @@ class Server {
             description.push(alwaysEligible ? 'Always eligible, with no criteria.' : 'Criteria: $criteria.');
             if (rule.once) description.push('Played once: after that, it is never eligible again.');
         }
-        return makeHover(hoverTitle('When rule'), description, content, rule);
+        return makeHover(hoverSignature('when rule'), description, content, rule);
     }
 
     function makeChoiceHover(choice:NChoiceStatement, content:String):Hover {
 
-        return makeHover(hoverTitle('Choice'), hoverDescriptionForNode(choice), content, choice);
+        return makeHover(hoverSignature('choice'), hoverDescriptionForNode(choice), content, choice);
 
     }
 
     function makeImportHover(importNode:NImportStatement, content:String):Hover {
 
-        return makeHover(hoverTitle('Import'), hoverDescriptionForNode(importNode), content, importNode);
+        return makeHover(hoverSignature('import', importPathOf(importNode)), hoverDescriptionForNode(importNode), content, importNode);
+
+    }
+
+    /** The path an import is written with, as written */
+    static function importPathOf(importNode:NImportStatement):String {
+
+        final parts = importNode.path?.parts;
+        if (parts == null || parts.length == 0) return '';
+        return switch parts[0].partType {
+            case Raw(text): text;
+            case _: '';
+        }
 
     }
 
     function makeExprHover(expr:NExpr, content:String):Hover {
 
-        return makeHover(printLoreline(expr), hoverDescriptionForNode(expr), content, expr);
+        return makeHover(hoverSignature('expression', printLoreline(expr)), hoverDescriptionForNode(expr), content, expr);
 
     }
 
-    function makeObjectFieldHover(field:NObjectField, content:String):Hover {
+    function makeObjectFieldHover(field:NObjectField, content:String, lens:Lens):Hover {
 
-        return makeHover(hoverTitle('Field', field.name), hoverDescriptionForNode(field), content, field);
+        return makeHover(fieldSignature(field, lens), hoverDescriptionForNode(field), content, field);
+
+    }
+
+    /** The signature of a field of a state, of a character (`bob.mood`), or of an object */
+    function fieldSignature(field:NObjectField, lens:Lens):String {
+
+        final owner = lens.getParentNode(field);
+        final value = signatureValue(field.value);
+        if (owner is NCharacterDecl) return hoverSignature('character field', (cast owner:NCharacterDecl).name + '.' + field.name + value);
+        if (owner is NStateDecl) return hoverSignature('state field', field.name + value);
+        return hoverSignature('field', field.name + value);
 
     }
 
@@ -2841,19 +2733,8 @@ class Server {
                 return makeBeatDeclHover(cast resolved, uri, content, lens, access);
             }
 
-            final parentCharacter = lens.getFirstParentOfType(resolved, NCharacterDecl);
-            final parentState = lens.getFirstParentOfType(resolved, NStateDecl);
-
-            var key = 'Field';
-            if (parentCharacter != null) {
-                key = characterName(parentCharacter);
-                key = 'Character field (' + key + ')';
-            }
-            else if (parentState != null) {
-                key = 'State field';
-            }
-
-            return makeHover(hoverTitle(key, access.name), hoverDescriptionForNode(access), content, access);
+            final signature = resolved is NObjectField ? fieldSignature(cast resolved, lens) : hoverSignature('field', access.name);
+            return makeHover(signature, hoverDescriptionForNode(access), content, access);
         }
         else {
             final parent = lens.getParentNode(access);
@@ -2861,15 +2742,15 @@ class Server {
             if (parent is NCall) {
                 final call:NCall = cast parent;
                 if (call.target == access) {
-                    return makeHover(hoverTitle('Function', access.name + '()'), hoverDescriptionForNode(access), content, access);
+                    return makeHover(hoverSignature('function', access.name + '()'), hoverDescriptionForNode(access), content, access);
                 }
             }
 
             if (parent is NArrayAccess) {
-                return makeHover(hoverTitle('Array access', access.name + '[]'), hoverDescriptionForNode(access), content, access);
+                return makeHover(hoverSignature('array access', access.name + '[]'), hoverDescriptionForNode(access), content, access);
             }
 
-            return makeHover(hoverTitle('Access', access.name), hoverDescriptionForNode(access), content, access);
+            return makeHover(hoverSignature('access', access.name), hoverDescriptionForNode(access), content, access);
         }
 
         return null;
@@ -2878,7 +2759,7 @@ class Server {
 
     function makeArrayAccessHover(access:NArrayAccess, content:String, lens:Lens):Hover {
 
-        return makeHover(hoverTitle('Array access', printLoreline(access.target) + '[]'), hoverDescriptionForNode(access), content, access);
+        return makeHover(hoverSignature('array access', printLoreline(access.target) + '[]'), hoverDescriptionForNode(access), content, access);
 
     }
 
@@ -2886,10 +2767,10 @@ class Server {
 
         final characterDecl = lens.findCharacterFromDialogue(expr);
         if (characterDecl != null) {
-            return makeHover(hoverTitle('Dialogue', null, characterName(characterDecl)), hoverDescriptionForNode(expr), content, expr);
+            return makeHover(hoverSignature('dialogue', shownCharacterName(characterDecl)), hoverDescriptionForNode(expr), content, expr);
         }
 
-        return makeHover(hoverTitle('Dialogue'), hoverDescriptionForNode(expr), content, expr);
+        return makeHover(hoverSignature('dialogue'), hoverDescriptionForNode(expr), content, expr);
 
     }
 
@@ -2900,6 +2781,14 @@ class Server {
         printer.enableComments = false;
 
         return printer.print(node).trim();
+
+    }
+
+    /** The name a character is shown with, without the quotes it may be written with */
+    function shownCharacterName(character:NCharacterDecl):String {
+
+        final name = characterName(character);
+        return name.length >= 2 && name.startsWith('"') && name.endsWith('"') ? name.substr(1, name.length - 2) : name;
 
     }
 

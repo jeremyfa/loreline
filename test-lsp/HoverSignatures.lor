@@ -111,8 +111,8 @@ beat Shop(price, discount = 2)
   at: "|Start"
   contains:
     - "```loreline.signature\nbeat Start\n```"
-    - "Goes to Shop"
-    - "With Bob"
-    - "Reads gold"
+    - "Goes to [Shop]("
+    - "With [Bob]("
+    - "Reads [gold]("
 </test>
 */
