@@ -1045,6 +1045,14 @@ class Lens {
         return !scopedNames.exists(name);
     }
 
+    /**
+     * Builds now the lookups this lens would otherwise build on first use and
+     * that need a walk of the whole script, see Interpreter.prepareCaches.
+     */
+    public function prepareCaches():Void {
+        if (scopedNames == null) scopedNames = collectScopedNames();
+    }
+
     function collectScopedNames():Map<String, Bool> {
         final names = new Map<String, Bool>();
         for (node in scopeNodes) {

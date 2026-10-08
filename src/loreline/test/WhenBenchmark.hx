@@ -30,6 +30,9 @@ typedef WhenBenchmarkConfig = {
     /** One of WhenBenchmark.VARIANTS. */
     var variant:String;
 
+    /** Whether the caches are prepared before the first pick (Interpreter.prepareCaches). */
+    var prepare:Bool;
+
 }
 
 /**
@@ -40,6 +43,9 @@ typedef WhenBenchmarkResult = {
     var ruleCount:Int;
     var insertionCount:Int;
     var parseTime:Float;
+    var createTime:Float;
+    var prepareTime:Float;
+    var firstPick:Float;
     var totalTime:Float;
     var medianPick:Float;
     var p95Pick:Float;
@@ -85,7 +91,8 @@ class WhenBenchmark {
             rules: 10,
             picks: 2000,
             seed: 1,
-            variant: 'nested'
+            variant: 'nested',
+            prepare: false
         };
     }
 
@@ -116,6 +123,10 @@ class WhenBenchmark {
                     }
                 case '--write' if (value != null):
                     writePath = value;
+                case '--prepare':
+                    config.prepare = true;
+                    i++;
+                    continue;
                 case _:
                     return false;
             }
@@ -173,7 +184,8 @@ class WhenBenchmark {
         return [
             'benchmark-when ${cfg.variant}: ${cfg.concepts} concepts x ${cfg.speakers} speakers x ${cfg.rules} rules (${result.ruleCount} rules, ${result.insertionCount} insertions), ${cfg.picks} picks, seed ${cfg.seed}',
             '  parse     ${ms(result.parseTime)}',
-            '  per pick  median ${us(result.medianPick)}   p95 ${us(result.p95Pick)}   mean ${us(result.meanPick)}',
+            '  create    ${ms(result.createTime)}' + (cfg.prepare ? '   prepare ${ms(result.prepareTime)}' : ''),
+            '  per pick  median ${us(result.medianPick)}   p95 ${us(result.p95Pick)}   mean ${us(result.meanPick)}   first ${us(result.firstPick)}',
             '  total     ${ms(result.totalTime)}',
             '  barks ${result.barks}   silent ${result.silent}   host calls ${result.hostCalls}',
             '  checksum  ${Std.string(result.checksum)}'
@@ -205,6 +217,7 @@ class WhenBenchmark {
         functions.set('choose', (records:Any) -> { hostCalls++; return chooseLikeDefault(records); });
         #end
 
+        t = haxe.Timer.stamp();
         final interpreter = new Interpreter(
             script,
             (interp, character, text, tags, advance) -> {
@@ -221,6 +234,14 @@ class WhenBenchmark {
             interp -> {},
             ({functions: functions} : InterpreterOptions)
         );
+        final createTime = haxe.Timer.stamp() - t;
+
+        var prepareTime = 0.0;
+        if (config.prepare) {
+            t = haxe.Timer.stamp();
+            interpreter.prepareCaches();
+            prepareTime = haxe.Timer.stamp() - t;
+        }
 
         final facts = new Random(config.seed * 7919 + 1);
         final durations:Array<Float> = [];
@@ -249,6 +270,7 @@ class WhenBenchmark {
 
         final totalTime = haxe.Timer.stamp() - totalStart;
 
+        final firstPick = durations[0];
         durations.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
         var sum = 0.0;
         for (d in durations) sum += d;
@@ -259,6 +281,9 @@ class WhenBenchmark {
             ruleCount: counts.rules,
             insertionCount: counts.insertions,
             parseTime: parseTime,
+            createTime: createTime,
+            prepareTime: prepareTime,
+            firstPick: firstPick,
             totalTime: totalTime,
             medianPick: durations[Std.int(durations.length / 2)],
             p95Pick: durations[Std.int(Math.min(durations.length - 1, Math.floor(durations.length * 0.95)))],
