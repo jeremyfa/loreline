@@ -1,14 +1,18 @@
 // The signatures at the top of hovers, one per kind of thing hovered.
 
-character field player.jitters (bool) = false
-// <--------- keyword.control.character
-//        ^^^^^ storage.type
-//              ^^^^^^ entity.name.class
-//                    ^ punctuation.accessor
-//                     ^^^^^^^ variable.other.property
-//                              ^^^^ support.type
-//                                    ^ keyword.operator.assignment
-//                                      ^^^^^ constant.language
+Player › jitters (bool) = false
+// <------ meta.character-name
+//     ^ keyword.operator.accessor
+//       ^^^^^^^ variable.other.property
+//                ^^^^ support.type
+//                      ^ keyword.operator.assignment
+//                        ^^^^^ constant.language
+
+Dr. Bean › mood (number) = 3
+// <-------- meta.character-name
+//       ^ keyword.operator.accessor
+//         ^^^^ variable.other.property
+//                         ^ constant.numeric
 
 field gold (number) = 10
 // <----- storage.type
@@ -29,10 +33,9 @@ field mood = "calm"
 field bag (object { apples: number })
 //         ^^^^^^^^^^^^^^^^^^^^^^^^^ support.type
 
-character bob "Bob"
+character Dr. Bean
 // <--------- keyword.control.character
-//        ^^^ entity.name.class
-//            ^^^^^ string.quoted
+//        ^^^^^^^^ meta.character-name
 
 beat Shop(item (text), price = 3)
 // <---- keyword.control.beat
@@ -120,12 +123,11 @@ end
 number
 // <------ storage.type
 
-  field mood (text) = calm
-//^^^^^ storage.type
-//      ^^^^ variable.other
-//            ^^^^ support.type
-//                  ^ keyword.operator.assignment
+  mood (text) = calm
+//^^^^ variable.other
+//      ^^^^ support.type
+//            ^ keyword.operator.assignment
 
-  field age (number) = 40
-//      ^^^ variable.other
-//                     ^^ constant.numeric
+  local (number) = 40
+//^^^^^ variable.other
+//                 ^^ constant.numeric
