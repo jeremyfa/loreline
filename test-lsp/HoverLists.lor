@@ -1,0 +1,26 @@
+beat A
+  -> Hub
+beat B
+  -> Hub
+beat C
+  -> Hub
+beat D
+  -> Hub
+beat E
+  -> Hub
+beat F
+  -> Hub
+
+beat Hub
+  Here.
+
+/*
+<test>
+- request: hover
+  at: "beat |Hub"
+  contains:
+    - "Comes from [A]("
+    - "[E]("
+    - " and 1 more"
+</test>
+*/

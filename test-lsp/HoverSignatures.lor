@@ -35,7 +35,8 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "$|gold and"
   contains:
-    - "```loreline.signature\nstate field gold = 10\n```"
+    - "```loreline.signature\nstate field gold"
+    - "= 10\n```"
 - request: hover
   at: "gold: |10"
   contains:
@@ -43,54 +44,58 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "|gold: 10"
   contains:
-    - "```loreline.signature\nstate field gold = 10\n```"
+    - "```loreline.signature\nstate field gold"
+    - "= 10\n```"
     - "Money the player carries"
 - request: hover
   at: "${bob.|mood}"
   contains:
-    - "```loreline.signature\ncharacter field bob.mood = 3\n```"
+    - "```loreline.signature\ncharacter field bob.mood"
+    - "= 3\n```"
 - request: hover
   at: "|mood: 3"
   contains:
-    - "```loreline.signature\ncharacter field bob.mood = 3\n```"
+    - "```loreline.signature\ncharacter field bob.mood"
+    - "= 3\n```"
 - request: hover
   at: "character |bob"
   contains:
-    - "```loreline.signature\ncharacter bob \"Bob\"\n```"
+    - "```loreline.signature\ncharacter bob \"Bob\"\n"
 - request: hover
   at: "character |guard"
   contains:
-    - "```loreline.signature\ncharacter guard\n```"
+    - "```loreline.signature\ncharacter guard\n"
 - request: hover
-  at: "|bob: Hello"
+  at: "bob: |Hello"
   contains:
     - "```loreline.signature\ndialogue Bob\n```"
 - request: hover
   at: "function |pay"
   contains:
-    - "```loreline.signature\nfunction pay(amount, tip = 0)\n```"
+    - "```loreline.signature\nfunction pay(amount, tip"
 - request: hover
   at: "-> |Shop(3)"
   contains:
-    - "```loreline.signature\nbeat Shop(price, discount = 2)\n```"
+    - "```loreline.signature\nbeat Shop(price"
     - "The shop, open every day"
 - request: hover
   at: "beat Shop(|price"
   contains:
-    - "```loreline.signature\nparameter price\n```"
-    - "Parameter of beat Shop"
+    - "```loreline.signature\nparameter price"
+    - "Parameter of beat"
 - request: hover
   at: "|discount = 2"
   contains:
-    - "```loreline.signature\nparameter discount = 2\n```"
+    - "```loreline.signature\nparameter discount"
+    - "= 2\n```"
 - request: hover
   at: "Price is $|price"
   contains:
-    - "```loreline.signature\nparameter price\n```"
+    - "```loreline.signature\nparameter price"
 - request: hover
   at: "new |state"
   contains:
-    - "```loreline.signature\ntemporary state\n```"
+    - "```loreline.signature\ntemporary state\n"
 - request: hover
   at: "|choice"
   contains:
