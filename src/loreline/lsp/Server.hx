@@ -2034,6 +2034,17 @@ class Server {
 
     }
 
+    /** How many links a list of a hover shows before `and N more` */
+    static final HOVER_LIST_LIMIT = 5;
+
+    /** Links of a hover, the first ones then how many more there are */
+    static function hoverList(links:Array<String>):String {
+
+        final shown = links.slice(0, HOVER_LIST_LIMIT).join(" · ");
+        return links.length > HOVER_LIST_LIMIT ? shown + ' and ${links.length - HOVER_LIST_LIMIT} more' : shown;
+
+    }
+
     /** Lines kept close together in one section of a hover */
     static function hoverLines(lines:Array<String>):String {
 
@@ -2150,7 +2161,7 @@ class Server {
             seenIncoming.set(key, true);
             incoming.push(from.name == "_" ? "top level" : makePositionLink(from.name, uri, from, lens));
         }
-        if (incoming.length > 0) uses.push("Comes from " + incoming.join(" · "));
+        if (incoming.length > 0) uses.push("Comes from " + hoverList(incoming));
 
         // The beats it goes to and the beats it calls, each once per list
         final transitions:Array<String> = [];
@@ -2165,8 +2176,8 @@ class Server {
             seen.set(key, true);
             (transition ? transitions : calls).push(makePositionLink(ref.target.name, uri, ref.target, lens));
         }
-        if (transitions.length > 0) uses.push("Goes to " + transitions.join(" · "));
-        if (calls.length > 0) uses.push("Calls " + calls.join(" · "));
+        if (transitions.length > 0) uses.push("Goes to " + hoverList(transitions));
+        if (calls.length > 0) uses.push("Calls " + hoverList(calls));
 
         // The characters speaking in it, then those it only mentions
         final characters:Array<String> = [];
@@ -2179,7 +2190,7 @@ class Server {
                 characters.push(makePositionLink(characterName(ref.target), uri, ref.target, lens));
             }
         }
-        if (characters.length > 0) uses.push("With " + characters.join(" · "));
+        if (characters.length > 0) uses.push("With " + hoverList(characters));
 
         // The fields it changes, then those it only reads: `gold`, `bob.mood`
         final seenFields = new NodeIdMap<Bool>();
@@ -2198,8 +2209,8 @@ class Server {
         final read:Array<String> = [];
         fieldLinks(lens.findReadStateFields(beatDecl), read);
         fieldLinks(lens.findReadCharacterFields(beatDecl), read);
-        if (changed.length > 0) uses.push("Changes " + changed.join(" · "));
-        if (read.length > 0) uses.push("Reads " + read.join(" · "));
+        if (changed.length > 0) uses.push("Changes " + hoverList(changed));
+        if (read.length > 0) uses.push("Reads " + hoverList(read));
 
         return uses;
     }
