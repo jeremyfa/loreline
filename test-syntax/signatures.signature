@@ -119,3 +119,13 @@ end
 
 number
 // <------ storage.type
+
+  field mood (text) = calm
+//^^^^^ storage.type
+//      ^^^^ variable.other
+//            ^^^^ support.type
+//                  ^ keyword.operator.assignment
+
+  field age (number) = 40
+//      ^^^ variable.other
+//                     ^^ constant.numeric
