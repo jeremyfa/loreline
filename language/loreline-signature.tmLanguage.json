@@ -4,6 +4,52 @@
     "scopeName": "source.loreline.signature",
     "patterns": [
         {
+            "begin": "^\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.other.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^(.+?)\\s+(›)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.character-name.loreline"
+                },
+                "2": {
+                    "name": "keyword.operator.accessor.loreline"
+                },
+                "3": {
+                    "name": "variable.other.property.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
             "begin": "^\\s*(?:(public)\\s+)?(beat)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
@@ -91,62 +137,15 @@
             ]
         },
         {
-            "begin": "^\\s*(character)\\s+(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)(\\.)([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
-            "beginCaptures": {
+            "match": "^\\s*(character)\\s+(.+)$",
+            "captures": {
                 "1": {
                     "name": "keyword.control.character.loreline"
                 },
                 "2": {
-                    "name": "storage.type.loreline"
-                },
-                "3": {
-                    "name": "entity.name.class.loreline"
-                },
-                "4": {
-                    "name": "punctuation.accessor.loreline"
-                },
-                "5": {
-                    "name": "variable.other.property.loreline"
+                    "name": "meta.character-name.loreline"
                 }
-            },
-            "end": "$",
-            "patterns": [
-                {
-                    "include": "#type"
-                },
-                {
-                    "include": "#returns"
-                },
-                {
-                    "include": "#value"
-                }
-            ]
-        },
-        {
-            "begin": "^\\s*(character)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.character.loreline"
-                },
-                "2": {
-                    "name": "entity.name.class.loreline"
-                }
-            },
-            "end": "$",
-            "patterns": [
-                {
-                    "include": "source.loreline#quoted-strings"
-                },
-                {
-                    "include": "#type"
-                },
-                {
-                    "include": "#returns"
-                },
-                {
-                    "include": "#value"
-                }
-            ]
+            }
         },
         {
             "begin": "^\\s*(?:(temporary)\\s+)?(?:(state)\\s+)?(field)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
