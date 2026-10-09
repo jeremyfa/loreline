@@ -2135,22 +2135,27 @@ class Server {
 
         return makeSectionsHover(
             hoverSignature(beatDecl.isPublic ? 'public beat' : 'beat', name),
-            [hoverDescriptionForNode(beatDecl).join("\n"), hoverLines(beatUses(beatDecl, uri, lens))],
+            [hoverDescriptionForNode(beatDecl).join("\n"), beatLinks(beatDecl, uri, lens)],
             content,
             origin ?? beatDecl
         );
     }
 
     /**
-     * What a beat is linked to, one line each: the beats leading to it, those
-     * it goes to and calls, its characters, the fields it changes and reads.
+     * What a beat is linked to, in groups under a short title, each left out
+     * when empty:
+     * - **Flow**: the beats leading to it, those it goes to and those it calls;
+     * - **Characters**: one per line, in bold when they speak in it, with
+     *   the fields it uses, in bold when it changes them;
+     * - **State**: the fields it changes, in bold, then those it reads.
      */
-    function beatUses(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens):Array<String> {
+    function beatLinks(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens):String {
 
-        final uses:Array<String> = [];
+        final groups:Array<String> = [];
 
         // The beats leading to it, by transition, call or insertion. Several
         // references from the same beat list it once.
+        final flow:Array<String> = [];
         final incoming:Array<String> = [];
         final seenIncoming = new Map<String, Bool>();
         for (ref in lens.findReferencesToBeat(beatDecl)) {
@@ -2161,7 +2166,7 @@ class Server {
             seenIncoming.set(key, true);
             incoming.push(from.name == "_" ? "top level" : makePositionLink(from.name, uri, from, lens));
         }
-        if (incoming.length > 0) uses.push("Comes from " + hoverList(incoming));
+        if (incoming.length > 0) flow.push("From " + hoverList(incoming));
 
         // The beats it goes to and the beats it calls, each once per list
         final transitions:Array<String> = [];
@@ -2176,43 +2181,57 @@ class Server {
             seen.set(key, true);
             (transition ? transitions : calls).push(makePositionLink(ref.target.name, uri, ref.target, lens));
         }
-        if (transitions.length > 0) uses.push("Goes to " + hoverList(transitions));
-        if (calls.length > 0) uses.push("Calls " + hoverList(calls));
+        if (transitions.length > 0) flow.push("To " + hoverList(transitions));
+        if (calls.length > 0) flow.push("Calls " + hoverList(calls));
+        if (flow.length > 0) groups.push("**Flow**  \n" + hoverLines(flow));
 
-        // The characters speaking in it, then those it only mentions
-        final characters:Array<String> = [];
-        final seenCharacters = new Map<String, Bool>();
-        final characterRefs = lens.findBeatCharacters(beatDecl);
-        for (speaking in [true, false]) {
-            for (ref in characterRefs) {
-                if ((HxType.getClass(ref.origin) == NDialogueStatement) != speaking || seenCharacters.exists(ref.target.name)) continue;
-                seenCharacters.set(ref.target.name, true);
-                characters.push(makePositionLink(characterName(ref.target), uri, ref.target, lens));
-            }
-        }
-        if (characters.length > 0) uses.push("With " + hoverList(characters));
-
-        // The fields it changes, then those it only reads: `gold`, `bob.mood`
+        // The fields it uses, changed ones first: by character, and of the state
+        final changedFields = new NodeIdMap<Bool>();
+        final fields:Array<NObjectField> = [];
         final seenFields = new NodeIdMap<Bool>();
-        function fieldLinks(refs:Array<loreline.Lens.Reference<NObjectField>>, links:Array<String>) {
+        for (changed in [true, false]) {
+            final refs = changed
+                ? lens.findModifiedStateFields(beatDecl).concat(lens.findModifiedCharacterFields(beatDecl))
+                : lens.findReadStateFields(beatDecl).concat(lens.findReadCharacterFields(beatDecl));
             for (ref in refs) {
                 if (seenFields.exists(ref.target.id)) continue;
                 seenFields.set(ref.target.id, true);
-                final character = lens.getFirstParentOfType(ref.target, NCharacterDecl);
-                final name = character != null ? character.name + '.' + ref.target.name : ref.target.name;
-                links.push(makePositionLink(name, uri, ref.target, lens));
+                if (changed) changedFields.set(ref.target.id, true);
+                fields.push(ref.target);
             }
         }
-        final changed:Array<String> = [];
-        fieldLinks(lens.findModifiedStateFields(beatDecl), changed);
-        fieldLinks(lens.findModifiedCharacterFields(beatDecl), changed);
-        final read:Array<String> = [];
-        fieldLinks(lens.findReadStateFields(beatDecl), read);
-        fieldLinks(lens.findReadCharacterFields(beatDecl), read);
-        if (changed.length > 0) uses.push("Changes " + hoverList(changed));
-        if (read.length > 0) uses.push("Reads " + hoverList(read));
+        function fieldLink(field:NObjectField):String {
+            final link = makePositionLink(field.name, uri, field, lens);
+            return changedFields.exists(field.id) ? '**' + link + '**' : link;
+        }
 
-        return uses;
+        // The characters speaking in it, then the others it mentions or whose fields it uses
+        final characters:Array<NCharacterDecl> = [];
+        final speaking = new NodeIdMap<Bool>();
+        final characterRefs = lens.findBeatCharacters(beatDecl);
+        for (speaks in [true, false]) {
+            for (ref in characterRefs) {
+                if ((HxType.getClass(ref.origin) == NDialogueStatement) != speaks) continue;
+                if (speaks) speaking.set(ref.target.id, true);
+                if (!characters.contains(ref.target)) characters.push(ref.target);
+            }
+        }
+        for (field in fields) {
+            final character = lens.getFirstParentOfType(field, NCharacterDecl);
+            if (character != null && !characters.contains(character)) characters.push(character);
+        }
+        final characterLines:Array<String> = [];
+        for (character in characters) {
+            final link = makePositionLink(shownCharacterName(character), uri, character, lens);
+            final own = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == character) fieldLink(field)];
+            characterLines.push((speaking.exists(character.id) ? '**' + link + '**' : link) + (own.length > 0 ? ' › ' + hoverList(own) : ''));
+        }
+        if (characterLines.length > 0) groups.push("**Characters**  \n" + hoverLines(characterLines));
+
+        final stateFields = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == null) fieldLink(field)];
+        if (stateFields.length > 0) groups.push("**State**  \n" + hoverList(stateFields));
+
+        return groups.join("\n\n");
     }
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
@@ -2223,10 +2242,7 @@ class Server {
 
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, content:String, ?pos:loreline.Position):Hover {
 
-        // The name shown in the story, when it isn't the one of the script
-        final shown = shownCharacterName(characterDecl);
-        final name = characterDecl.name + (shown != characterDecl.name ? ' "' + shown + '"' : '');
-        return makeHover(hoverSignature('character', name), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
+        return makeHover(hoverSignature('character', shownCharacterName(characterDecl)), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
 
     }
 
@@ -2721,12 +2737,12 @@ class Server {
 
     }
 
-    /** The signature of a field of a state, of a character (`bob.mood`), or of an object */
+    /** The signature of a field of a state, of a character (`Bob › mood`), or of an object */
     function fieldSignature(field:NObjectField, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
         final value = signatureValue(field.value);
-        if (owner is NCharacterDecl) return hoverSignature('character field', (cast owner:NCharacterDecl).name + '.' + field.name + value);
+        if (owner is NCharacterDecl) return shownCharacterName(cast owner) + ' › ' + field.name + value;
         if (owner is NStateDecl) return hoverSignature('state field', field.name + value);
         return hoverSignature('field', field.name + value);
 
@@ -2804,7 +2820,10 @@ class Server {
 
     }
 
-    /** The name a character is shown with, without the quotes it may be written with */
+    /**
+     * The name a character is shown with, without the quotes it may be
+     * written with, or its name in the script when it has none.
+     */
     function shownCharacterName(character:NCharacterDecl):String {
 
         final name = characterName(character);
