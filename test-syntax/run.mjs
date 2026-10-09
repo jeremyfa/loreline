@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
 // Syntax coloring tests for language/loreline.tmLanguage.json, run with Shiki
-// (the same Oniguruma engine as VS Code). Files ending in `.signature` test
-// language/loreline-signature.tmLanguage.json instead, the grammar of the
-// signatures at the top of hovers.
+// (the same Oniguruma engine as VS Code).
 //
 // Each .lor file of this folder holds Loreline code followed by assertion lines,
 // in the style of vscode-tmgrammar-test:
@@ -42,7 +40,6 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.dirname(here);
 const grammarPath = path.join(root, 'language', 'loreline.tmLanguage.json');
-const signatureGrammarPath = path.join(root, 'language', 'loreline-signature.tmLanguage.json');
 const reportDir = path.join(root, 'build', 'syntax-test');
 
 const args = process.argv.slice(2);
@@ -99,9 +96,9 @@ function parseTestFile(source) {
 /**
  * Scope stack of every column of every line, without the root scope.
  */
-function scopesByColumn(highlighter, code, lang) {
+function scopesByColumn(highlighter, code) {
     const lines = highlighter.codeToTokensBase(code.map(l => l.text).join('\n'), {
-        lang,
+        lang: 'loreline',
         theme: DARK,
         includeExplanation: true
     });
@@ -109,19 +106,12 @@ function scopesByColumn(highlighter, code, lang) {
         const columns = [];
         for (const token of tokens) {
             for (const part of token.explanation ?? []) {
-                const scopes = part.scopes.map(s => s.scopeName).filter(s => !ROOT_SCOPES.includes(s));
+                const scopes = part.scopes.map(s => s.scopeName).filter(s => s !== 'source.loreline');
                 for (let k = 0; k < part.content.length; k++) columns.push(scopes);
             }
         }
         return columns;
     });
-}
-
-const ROOT_SCOPES = ['source.loreline', 'source.loreline.signature'];
-
-/** The language a test file is written in */
-function langOf(file) {
-    return file.endsWith('.signature') ? 'loreline-signature' : 'loreline';
 }
 
 function hasScope(stack, expected) {
@@ -130,7 +120,7 @@ function hasScope(stack, expected) {
 
 function checkFile(highlighter, file) {
     const { code, assertions } = parseTestFile(fs.readFileSync(file, 'utf8'));
-    const columns = scopesByColumn(highlighter, code, langOf(file));
+    const columns = scopesByColumn(highlighter, code);
     const failures = [];
     for (const assertion of assertions) {
         const line = code[assertion.codeIndex];
@@ -281,11 +271,11 @@ function renderReport(highlighter, helper, results) {
         const failingLines = new Set(result.failures.map(f => f.assertion.codeIndex + 1));
         const code = result.code.map(l => l.text).join('\n');
         const html = highlighter.codeToHtml(code, {
-            lang: langOf(result.file),
+            lang: 'loreline',
             themes: { dark: DARK, light: LIGHT },
             defaultColor: 'dark',
             includeExplanation: true,
-            decorations: langOf(result.file) === 'loreline' ? decorationsOf(helper, code) : [],
+            decorations: decorationsOf(helper, code),
             transformers: [{
                 line(node, line) {
                     node.properties['data-line'] = String(result.code[line - 1]?.sourceLine ?? line);
@@ -293,7 +283,7 @@ function renderReport(highlighter, helper, results) {
                 },
                 span(node, line, col, lineElement, token) {
                     node.properties.title = (token.explanation ?? [])
-                        .map(e => JSON.stringify(e.content) + '  ' + e.scopes.map(s => s.scopeName).filter(s => !ROOT_SCOPES.includes(s)).join(' '))
+                        .map(e => JSON.stringify(e.content) + '  ' + e.scopes.map(s => s.scopeName).filter(s => s !== 'source.loreline').join(' '))
                         .join('\n');
                 }
             }, wrapIndentTransformer]
@@ -412,14 +402,11 @@ ${sections}
 const grammar = JSON.parse(fs.readFileSync(grammarPath, 'utf8'));
 const highlighter = await createHighlighter({
     themes: [oneDarkTheme, githubLightTheme],
-    langs: [
-        { ...grammar, name: 'loreline' },
-        { ...JSON.parse(fs.readFileSync(signatureGrammarPath, 'utf8')), name: 'loreline-signature' }
-    ]
+    langs: [{ ...grammar, name: 'loreline' }]
 });
 
 const files = fs.readdirSync(here)
-    .filter(f => f.endsWith('.lor') || f.endsWith('.signature'))
+    .filter(f => f.endsWith('.lor'))
     .filter(f => filters.length === 0 || filters.some(filter => f.includes(filter)))
     .sort()
     .map(f => path.join(here, f));
@@ -431,7 +418,7 @@ const helper = loadDecorations();
  * can't be built.
  */
 function parseErrorsOf(result) {
-    if (helper == null || langOf(result.file) !== 'loreline') return [];
+    if (helper == null) return [];
     const source = result.code.map(l => l.text).join('\n');
     return helper.getErrors(source).map(e => ({
         message: e.message,
