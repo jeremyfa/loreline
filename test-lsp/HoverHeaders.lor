@@ -35,7 +35,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "$|gold and"
   contains:
-    - "**State field**"
+    - "**gold**"
     - "```loreline\nstate\n  gold: 10\n```"
 - request: hover
   at: "gold: |10"
@@ -49,7 +49,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "${bob.|mood}"
   contains:
-    - "**Character field** of [Bob](file:///lsp/HoverHeaders.lor#5,1)"
+    - "**mood** ([Bob](file:///lsp/HoverHeaders.lor#5,1))"
     - "```loreline\ncharacter bob\n  mood: 3\n```"
 - request: hover
   at: "|mood: 3"
@@ -79,16 +79,16 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "beat Shop(|price"
   contains:
-    - "**Parameter** price of beat "
+    - "**price** (parameter of "
     - "```loreline\nbeat Shop(price, discount = 2)\n```"
 - request: hover
   at: "|discount = 2"
   contains:
-    - "**Parameter** discount of beat "
+    - "**discount** (parameter of "
 - request: hover
   at: "Price is $|price"
   contains:
-    - "**Parameter** price of beat "
+    - "**price** (parameter of "
 - request: hover
   at: "new |state"
   contains:
