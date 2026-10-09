@@ -2040,7 +2040,7 @@ class Server {
     /** Links of a hover, the first ones then how many more there are */
     static function hoverList(links:Array<String>):String {
 
-        final shown = links.slice(0, HOVER_LIST_LIMIT).join(" · ");
+        final shown = links.slice(0, HOVER_LIST_LIMIT).join(", ");
         return links.length > HOVER_LIST_LIMIT ? shown + ' and ${links.length - HOVER_LIST_LIMIT} more' : shown;
 
     }
@@ -2148,10 +2148,14 @@ class Server {
      * - **Characters**: one per line, in bold when they speak in it, with
      *   the fields it uses, in bold when it changes them;
      * - **State**: the fields it changes, in bold, then those it reads.
+     * @param line Wraps each line under a title, to style it
      */
-    function beatLinks(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens):String {
+    function beatLinks(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens, ?line:(text:String)->String):String {
 
         final groups:Array<String> = [];
+        function group(title:String, lines:Array<String>) {
+            if (lines.length > 0) groups.push('**$title**  \n' + hoverLines(line != null ? [for (text in lines) line(text)] : lines));
+        }
 
         // The beats leading to it, by transition, call or insertion. Several
         // references from the same beat list it once.
@@ -2183,7 +2187,7 @@ class Server {
         }
         if (transitions.length > 0) flow.push("To " + hoverList(transitions));
         if (calls.length > 0) flow.push("Calls " + hoverList(calls));
-        if (flow.length > 0) groups.push("**Flow**  \n" + hoverLines(flow));
+        group("Flow", flow);
 
         // The fields it uses, changed ones first: by character, and of the state
         final changedFields = new NodeIdMap<Bool>();
@@ -2224,14 +2228,14 @@ class Server {
         for (character in characters) {
             final link = makePositionLink(shownCharacterName(character), uri, character, lens);
             final own = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == character) fieldLink(field)];
-            characterLines.push((speaking.exists(character.id) ? '**' + link + '**' : link) + (own.length > 0 ? ' › ' + hoverList(own) : ''));
+            characterLines.push((speaking.exists(character.id) ? '**' + link + '**' : link) + (own.length > 0 ? ': ' + hoverList(own) : ''));
         }
-        if (characterLines.length > 0) groups.push("**Characters**  \n" + hoverLines(characterLines));
+        group("Characters", characterLines);
 
         final stateFields = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == null) fieldLink(field)];
-        if (stateFields.length > 0) groups.push("**State**  \n" + hoverList(stateFields));
+        if (stateFields.length > 0) group("State", [hoverList(stateFields)]);
 
-        return groups.join("\n\n");
+        return groups.join("\n\n---\n\n");
     }
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
@@ -2737,12 +2741,12 @@ class Server {
 
     }
 
-    /** The signature of a field of a state, of a character (`Bob › mood`), or of an object */
+    /** The signature of a field of a state, of a character (`Bob: mood`), or of an object */
     function fieldSignature(field:NObjectField, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
         final value = signatureValue(field.value);
-        if (owner is NCharacterDecl) return shownCharacterName(cast owner) + ' › ' + field.name + value;
+        if (owner is NCharacterDecl) return shownCharacterName(cast owner) + ': ' + field.name + value;
         if (owner is NStateDecl) return hoverSignature('state field', field.name + value);
         return hoverSignature('field', field.name + value);
 
