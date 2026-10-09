@@ -116,9 +116,12 @@ beat Shop(price, discount = 2)
   at: "|Start"
   contains:
     - "```loreline.signature\nbeat Start\n```"
-    - "**Flow**  \nTo [Shop]("
-    - "\n\n---\n\n**Characters**  \n**[Bob]("
+    - "**Flow**  \n"
+    - "To [Shop]("
+    - "\n\n---\n\n**Characters**  \n"
+    - "**[Bob]("
     - "**: [mood]("
-    - "\n\n---\n\n**State**  \n[gold]("
+    - "\n\n---\n\n**State**  \n"
+    - "[gold]("
 </test>
 */
