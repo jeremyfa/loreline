@@ -24,32 +24,6 @@
             ]
         },
         {
-            "begin": "^(.+?)\\s+(›)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
-            "beginCaptures": {
-                "1": {
-                    "name": "meta.character-name.loreline"
-                },
-                "2": {
-                    "name": "keyword.operator.accessor.loreline"
-                },
-                "3": {
-                    "name": "variable.other.property.loreline"
-                }
-            },
-            "end": "$",
-            "patterns": [
-                {
-                    "include": "#type"
-                },
-                {
-                    "include": "#returns"
-                },
-                {
-                    "include": "#value"
-                }
-            ]
-        },
-        {
             "begin": "^\\s*(?:(public)\\s+)?(beat)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
             "beginCaptures": {
                 "1": {
@@ -184,6 +158,32 @@
                 },
                 "2": {
                     "name": "variable.parameter.loreline"
+                }
+            },
+            "end": "$",
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#returns"
+                },
+                {
+                    "include": "#value"
+                }
+            ]
+        },
+        {
+            "begin": "^([^(:]+?)(:)\\s+([\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}][\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}]*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.character-name.loreline"
+                },
+                "2": {
+                    "name": "punctuation.separator.key-value.loreline"
+                },
+                "3": {
+                    "name": "variable.other.property.loreline"
                 }
             },
             "end": "$",
