@@ -19,7 +19,7 @@ beat Hub
 - request: hover
   at: "beat |Hub"
   contains:
-    - "Comes from [A]("
+    - "From [A]("
     - "[E]("
     - " and 1 more"
 </test>
