@@ -2034,14 +2034,10 @@ class Server {
 
     }
 
-    /** How many links a list of a hover shows before `and N more` */
-    static final HOVER_LIST_LIMIT = 5;
-
-    /** Links of a hover, the first ones then how many more there are */
+    /** Links of a hover, all of them, so that the list says everything */
     static function hoverList(links:Array<String>):String {
 
-        final shown = links.slice(0, HOVER_LIST_LIMIT).join(", ");
-        return links.length > HOVER_LIST_LIMIT ? shown + ' and ${links.length - HOVER_LIST_LIMIT} more' : shown;
+        return links.join(", ");
 
     }
 
