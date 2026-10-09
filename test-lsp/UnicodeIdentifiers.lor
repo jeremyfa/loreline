@@ -31,7 +31,7 @@ beat 结局
 - request: hover
   at: "-> |结局"
   contains:
-    - "```loreline.signature\nbeat 结局\n```"
+    - "```loreline\nbeat 结局\n```"
 - request: completion
   at: "x = 国|"
   includes: [国王]

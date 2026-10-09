@@ -9,10 +9,10 @@ beat Leave
 - request: hover
   at: "public beat |EnterShop"
   contains:
-    - "```loreline.signature\npublic beat EnterShop\n```"
+    - "```loreline\npublic beat EnterShop\n```"
 - request: hover
   at: "-> |Leave"
   contains:
-    - "```loreline.signature\nbeat Leave\n```"
+    - "```loreline\nbeat Leave\n```"
 </test>
 */
