@@ -1,18 +1,18 @@
 // The signatures at the top of hovers, one per kind of thing hovered.
 
-Player › jitters (bool) = false
+Player: jitters (bool) = false
 // <------ meta.character-name
-//     ^ keyword.operator.accessor
-//       ^^^^^^^ variable.other.property
-//                ^^^^ support.type
-//                      ^ keyword.operator.assignment
-//                        ^^^^^ constant.language
+//    ^ punctuation.separator
+//      ^^^^^^^ variable.other.property
+//               ^^^^ support.type
+//                     ^ keyword.operator.assignment
+//                       ^^^^^ constant.language
 
-Dr. Bean › mood (number) = 3
+Dr. Bean: mood (number) = 3
 // <-------- meta.character-name
-//       ^ keyword.operator.accessor
-//         ^^^^ variable.other.property
-//                         ^ constant.numeric
+//      ^ punctuation.separator
+//        ^^^^ variable.other.property
+//                        ^ constant.numeric
 
 field gold (number) = 10
 // <----- storage.type
