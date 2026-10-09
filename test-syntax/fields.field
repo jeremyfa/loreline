@@ -1,0 +1,26 @@
+// A field of a state or a character on its own, as hovers show it.
+
+jitters: false
+// <------- variable.other
+//     ^ keyword.operator.type.annotation
+//       ^^^^^ constant.language
+
+mood: calm
+// <---- variable.other
+//    ^^^^ string.unquoted.value
+
+title: "Sir"
+// <----- variable.other
+//     ^^^^^ string.quoted.double
+
+count: 3
+// <----- variable.other
+//     ^ constant.numeric
+
+items: [1, 2]
+// <----- variable.other
+//      ^ constant.numeric
+
+label: Hi $name
+// <----- variable.other
+//     ^^ string.unquoted.value
