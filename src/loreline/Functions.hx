@@ -276,6 +276,14 @@ class Functions {
     }
 
     /**
+     * A whole number between `min` and `max` included, for the interpreter
+     * itself (alternatives, the `pick` strategy). Draws as `random` does.
+     */
+    public function randomInt(min:Int, max:Int):Int {
+        return Math.floor(min + rng() * (max + 1 - min));
+    }
+
+    /**
      * Returns `true` with a 1-in-n probability. Useful for occasional random events.
      *
      * `chance(3)` has roughly a 33% chance of being true.
@@ -285,14 +293,6 @@ class Functions {
      *   You find a rare gem on the ground!
      * ```
      */
-    /**
-     * A whole number between `min` and `max` included, for the interpreter
-     * itself (alternatives, the `pick` strategy). Draws as `random` does.
-     */
-    public function randomInt(min:Int, max:Int):Int {
-        return Math.floor(min + rng() * (max + 1 - min));
-    }
-
     public function chance(n:Any):Bool {
         final count = Values.numberArg(n, 'chance');
         // A number is drawn every time, so that what follows draws the same
