@@ -2031,6 +2031,16 @@ class Server {
 
     }
 
+    /**
+     * The title of a hover on a name: the name in bold, then what it belongs
+     * to in parentheses, like **mood** (Bob).
+     */
+    static function hoverName(name:String, ?owner:String):String {
+
+        return '**' + name + '**' + (owner != null && owner.length > 0 ? ' (' + owner + ')' : '');
+
+    }
+
     /** Code of the script, as written, colored like in the editor */
     static function hoverCode(code:String):String {
 
@@ -2384,7 +2394,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverTitle('Parameter', param.name + ' of beat ' + beatDecl.name), beatCode(beatDecl)), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, 'parameter of ' + beatDecl.name), beatCode(beatDecl)), null, content, anchor, pos);
 
     }
 
@@ -2397,7 +2407,7 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverTitle('Parameter', paramName + ' of function' + (func.name != null ? ' ' + func.name : '')), functionCode(func)), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, 'parameter of ' + (func.name ?? 'a function')), functionCode(func)), null, content, anchor, pos);
 
     }
 
@@ -2791,9 +2801,14 @@ class Server {
     function fieldHeader(field:NObjectField, uri:DocumentUri, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
-        if (owner is NCharacterDecl) return hoverHeader(hoverTitle('Character field', 'of ' + characterLink(cast owner, uri, lens)), fieldInBlockCode(field, lens));
-        if (owner is NStateDecl) return hoverHeader(hoverTitle('State field'), fieldInBlockCode(field, lens));
-        return hoverHeader(hoverTitle('Field', field.name));
+        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens)), fieldInBlockCode(field, lens));
+        if (owner is NStateDecl) {
+            // A field of the state of a beat names its beat
+            final beat = lens.getFirstParentOfType(owner, NBeatDecl);
+            final beatOwner = beat != null && beat.name != '_' ? makePositionLink(beat.name, uri, beat, lens) : null;
+            return hoverHeader(hoverName(field.name, beatOwner), fieldInBlockCode(field, lens));
+        }
+        return hoverHeader(hoverName(field.name));
 
     }
 
