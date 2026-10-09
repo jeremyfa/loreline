@@ -1595,7 +1595,7 @@ class Server {
         return uriFromPath(path);
     }
 
-    function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
+    function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, uri:DocumentUri, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
         var kind = 'Text';
         var name = null;
@@ -1612,7 +1612,7 @@ class Server {
                     kind = 'Dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
-                        name = shownCharacterName(characterDecl);
+                        name = characterLink(characterDecl, uri, lens);
                     }
                 case _:
             }
@@ -1628,7 +1628,7 @@ class Server {
 
     }
 
-    function makeUnquotedTextHover(literal:NStringLiteral, lens:Lens, cursorLorelinePos:loreline.Position, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
+    function makeUnquotedTextHover(literal:NStringLiteral, lens:Lens, uri:DocumentUri, cursorLorelinePos:loreline.Position, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
         var spaceOffset = 0;
         if (pos == null) {
@@ -1653,7 +1653,7 @@ class Server {
                     kind = 'Dialogue';
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
-                        name = shownCharacterName(characterDecl);
+                        name = characterLink(characterDecl, uri, lens);
                     }
                 case _:
             }
@@ -1818,7 +1818,7 @@ class Server {
                 // Dynamic beat call: target is resolved at runtime
                 return makeHover(hoverTitle('Beat call'), hoverDescriptionForNode(cast node), content, node);
             case NObjectField:
-                return makeObjectFieldHover(cast node, content, lens);
+                return makeObjectFieldHover(cast node, uri, content, lens);
             case NAccess:
                 var access:NAccess = cast node;
                 var parent = lens.getParentNode(access);
@@ -1869,7 +1869,7 @@ class Server {
                     lorelinePos.offset <= dialogue.conditionPos.offset + dialogue.conditionPos.length) {
                     return makeHover(hoverTitle('Condition'), null, content, node, dialogue.conditionPos);
                 }
-                return makeDialogueStatementHover(dialogue, content, lens);
+                return makeDialogueStatementHover(dialogue, uri, content, lens);
             case NTextStatement:
                 final text:NTextStatement = cast node;
                 if (text.conditionPos != null &&
@@ -1943,7 +1943,7 @@ class Server {
                                     case Raw(text):
                                         final spaces = text.uLength() - text.ltrim().uLength();
                                         if (spaces > 0) {
-                                            return makeUnquotedTextHover(literal, lens, lorelinePos, hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
+                                            return makeUnquotedTextHover(literal, lens, uri, lorelinePos, hoverDescriptionForNode(literal.parts[partIndex]), content, stringPart, stringPart.pos.withOffset(content, spaces, stringPart.pos.length - spaces));
                                         }
                                     case _:
                                 }
@@ -1954,7 +1954,7 @@ class Server {
                         if (literal.parts.length == 1) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
+                                    return makeDoubleQuotedTextHover(literal, lens, uri, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 2));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1962,7 +1962,7 @@ class Server {
                         else if (partIndex == 0) {
                             switch literal.parts[0].partType {
                                 case Raw(text):
-                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
+                                    return makeDoubleQuotedTextHover(literal, lens, uri, hoverDescriptionForNode(literal.parts[0]), content, stringPart, stringPart.pos.withOffset(content, -1, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1970,7 +1970,7 @@ class Server {
                         else if (partIndex == literal.parts.length - 1) {
                             switch literal.parts[literal.parts.length - 1].partType {
                                 case Raw(text):
-                                    return makeDoubleQuotedTextHover(literal, lens, hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
+                                    return makeDoubleQuotedTextHover(literal, lens, uri, hoverDescriptionForNode(literal.parts[literal.parts.length - 1]), content, stringPart, stringPart.pos.withOffset(content, 0, stringPart.pos.length + 1));
                                 case Expr(expr):
                                 case Tag(closing, expr):
                             }
@@ -1980,7 +1980,7 @@ class Server {
 
                 switch stringPart.partType {
                     case Raw(text):
-                        return makeUnquotedTextHover(literal, lens, lorelinePos, hoverDescriptionForNode(stringPart), content, stringPart);
+                        return makeUnquotedTextHover(literal, lens, uri, lorelinePos, hoverDescriptionForNode(stringPart), content, stringPart);
                     case Expr(expr):
                     case Tag(closing, expr):
                 }
@@ -2781,17 +2781,17 @@ class Server {
 
     }
 
-    function makeObjectFieldHover(field:NObjectField, content:String, lens:Lens):Hover {
+    function makeObjectFieldHover(field:NObjectField, uri:DocumentUri, content:String, lens:Lens):Hover {
 
-        return makeHover(fieldHeader(field, lens), hoverDescriptionForNode(field), content, field);
+        return makeHover(fieldHeader(field, uri, lens), hoverDescriptionForNode(field), content, field);
 
     }
 
     /** The header of a field: what it belongs to, and the field as written in its block */
-    function fieldHeader(field:NObjectField, lens:Lens):String {
+    function fieldHeader(field:NObjectField, uri:DocumentUri, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
-        if (owner is NCharacterDecl) return hoverHeader(hoverTitle('Character field', 'of ' + shownCharacterName(cast owner)), fieldInBlockCode(field, lens));
+        if (owner is NCharacterDecl) return hoverHeader(hoverTitle('Character field', 'of ' + characterLink(cast owner, uri, lens)), fieldInBlockCode(field, lens));
         if (owner is NStateDecl) return hoverHeader(hoverTitle('State field'), fieldInBlockCode(field, lens));
         return hoverHeader(hoverTitle('Field', field.name));
 
@@ -2818,7 +2818,7 @@ class Server {
                 return makeBeatDeclHover(cast resolved, uri, content, lens, access);
             }
 
-            final header = resolved is NObjectField ? fieldHeader(cast resolved, lens) : hoverTitle('Field', access.name);
+            final header = resolved is NObjectField ? fieldHeader(cast resolved, uri, lens) : hoverTitle('Field', access.name);
             return makeHover(header, hoverDescriptionForNode(access), content, access);
         }
         else {
@@ -2848,11 +2848,11 @@ class Server {
 
     }
 
-    function makeDialogueStatementHover(expr:NDialogueStatement, content:String, lens:Lens):Hover {
+    function makeDialogueStatementHover(expr:NDialogueStatement, uri:DocumentUri, content:String, lens:Lens):Hover {
 
         final characterDecl = lens.findCharacterFromDialogue(expr);
         if (characterDecl != null) {
-            return makeHover(hoverTitle('Dialogue', 'of ' + shownCharacterName(characterDecl)), hoverDescriptionForNode(expr), content, expr);
+            return makeHover(hoverTitle('Dialogue', 'of ' + characterLink(characterDecl, uri, lens)), hoverDescriptionForNode(expr), content, expr);
         }
 
         return makeHover(hoverTitle('Dialogue'), hoverDescriptionForNode(expr), content, expr);
@@ -2877,6 +2877,13 @@ class Server {
 
         final name = characterName(character);
         return name.length >= 2 && name.startsWith('"') && name.endsWith('"') ? name.substr(1, name.length - 2) : name;
+
+    }
+
+    /** A link to a character, named as the story shows it */
+    function characterLink(character:NCharacterDecl, uri:DocumentUri, lens:Lens):String {
+
+        return makePositionLink(shownCharacterName(character), uri, character, lens);
 
     }
 
