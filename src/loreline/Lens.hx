@@ -1964,7 +1964,8 @@ class Lens {
                     final access:NAccess = cast node;
                     if (access.target == null) {
                         final character = findCharacterByNameFromNode(access.name, access);
-                        if (character != null) {
+                        // A character speaking in the beat keeps its dialogue as reference
+                        if (character != null && !(characters.get(character.id)?.origin is NDialogueStatement)) {
                             characters.set(character.id, new Reference(character, access));
                         }
                     }
