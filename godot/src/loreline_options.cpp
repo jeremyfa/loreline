@@ -9,7 +9,7 @@
 #endif
 
 LorelineOptions::LorelineOptions()
-		: _strict_access(false) {
+		: _strict_access(false), _prepare_caches(false) {
 }
 
 LorelineOptions::~LorelineOptions() {
@@ -102,6 +102,10 @@ void LorelineOptions::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_strict_access"), &LorelineOptions::get_strict_access);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "strict_access"), "set_strict_access", "get_strict_access");
 
+	ClassDB::bind_method(D_METHOD("set_prepare_caches", "prepare"), &LorelineOptions::set_prepare_caches);
+	ClassDB::bind_method(D_METHOD("get_prepare_caches"), &LorelineOptions::get_prepare_caches);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prepare_caches"), "set_prepare_caches", "get_prepare_caches");
+
 	ClassDB::bind_method(D_METHOD("set_function", "name", "callable"), &LorelineOptions::set_function);
 	ClassDB::bind_method(D_METHOD("set_async_function", "name", "callable"), &LorelineOptions::set_async_function);
 	ClassDB::bind_method(D_METHOD("remove_function", "name"), &LorelineOptions::remove_function);
@@ -114,6 +118,14 @@ void LorelineOptions::set_strict_access(bool strict) {
 
 bool LorelineOptions::get_strict_access() const {
 	return _strict_access;
+}
+
+void LorelineOptions::set_prepare_caches(bool prepare) {
+	_prepare_caches = prepare;
+}
+
+bool LorelineOptions::get_prepare_caches() const {
+	return _prepare_caches;
 }
 
 void LorelineOptions::set_function(const String &name, const Callable &fn) {
@@ -216,6 +228,10 @@ Loreline_InterpreterOptions *LorelineOptions::build_native_options(
 		Loreline_optionsSetStrictAccess(opts, true);
 	}
 
+	if (_prepare_caches) {
+		Loreline_optionsSetPrepareCaches(opts, true);
+	}
+
 	// Set translations from the LorelineTranslations wrapper if attached.
 	// The wrapper owns the underlying handle; we just borrow the pointer for
 	// the duration of options building (Loreline_optionsSetTranslations does
@@ -274,6 +290,12 @@ String LorelineOptions::build_js_options_json() const {
 
 	if (_strict_access) {
 		json += "\"strictAccess\":true";
+		has_prev = true;
+	}
+
+	if (_prepare_caches) {
+		if (has_prev) json += ",";
+		json += "\"prepareCaches\":true";
 		has_prev = true;
 	}
 

@@ -637,6 +637,70 @@ local RANDOM_SCRIPT = table.concat({
     "",
 }, "\n")
 
+-- prepareCaches, as an option or a method, never changes what the script plays.
+-- Same scenario in every binding runner.
+local PREPARE_CACHES_SCRIPT = table.concat({
+    "state",
+    "  concept: \"greet\"",
+    "",
+    "beat Main",
+    "  Bark()",
+    "  concept = \"leave\"",
+    "  Bark()",
+    "",
+    "beat Bark",
+    "  when",
+    "    concept is \"greet\"",
+    "      Hello.",
+    "    concept is \"leave\"",
+    "      Bye.",
+    "    true",
+    "      Nothing.",
+    "",
+}, "\n")
+
+local function run_prepare_caches_test()
+    local label = "caches: prepareCaches leaves the picks unchanged"
+    local ok, err = pcall(function()
+        local function choice(interp, options, select) end
+        local function finish(interp) end
+        local script = loreline.parse(PREPARE_CACHES_SCRIPT)
+
+        -- Prepared by the option, before the script starts
+        local option_log = {}
+        loreline.play(script, function(interp, character, text, tags, advance)
+            option_log[#option_log + 1] = text
+            advance()
+        end, choice, finish, "Main", { prepare_caches = true })
+        if table.concat(option_log, ",") ~= "Hello.,Bye." then
+            error("option: expected Hello.,Bye., got " .. table.concat(option_log, ","))
+        end
+
+        -- Prepared by the method, between two picks
+        local method_log = {}
+        local pending = nil
+        local lazy = loreline.play(script, function(interp, character, text, tags, advance)
+            method_log[#method_log + 1] = text
+            pending = advance
+        end, choice, finish, "Main")
+        lazy:prepare_caches()
+        lazy:prepare_caches()
+        pending()
+        pending()
+        if table.concat(method_log, ",") ~= "Hello.,Bye." then
+            error("method: expected Hello.,Bye., got " .. table.concat(method_log, ","))
+        end
+    end)
+    if ok then
+        pass_count = pass_count + 1
+        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. label .. "\027[0m\n")
+    else
+        fail_count = fail_count + 1
+        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. label .. "\027[0m\n")
+        io.write("  Error: " .. tostring(err) .. "\n")
+    end
+end
+
 local function run_seed_random_test()
     local label = "random: seedRandom after restore"
     local ok, err = pcall(function()
@@ -961,6 +1025,7 @@ local function main()
 
     run_spawn_test()
     run_seed_random_test()
+    run_prepare_caches_test()
     run_when_strategy_test()
 
     local total = pass_count + fail_count

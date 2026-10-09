@@ -435,6 +435,10 @@ LORELINE_PUBLIC Loreline_InterpreterOptions* Loreline_createOptions(void);
 LORELINE_PUBLIC void Loreline_releaseOptions(Loreline_InterpreterOptions* options);
 LORELINE_PUBLIC void Loreline_optionsSetStrictAccess(
     Loreline_InterpreterOptions* options, bool strict);
+/* With prepare true, Loreline_play() and Loreline_resume() prepare the caches of the
+ * interpreter before the script starts, like Loreline_prepareCaches(). */
+LORELINE_PUBLIC void Loreline_optionsSetPrepareCaches(
+    Loreline_InterpreterOptions* options, bool prepare);
 LORELINE_PUBLIC void Loreline_optionsSetTranslations(
     Loreline_InterpreterOptions* options, Loreline_Translations* translations);
 LORELINE_PUBLIC void Loreline_optionsAddFunction(
@@ -547,6 +551,14 @@ LORELINE_PUBLIC void Loreline_disposeInterpreter(Loreline_Interpreter* interp);
  * data, so a restored game draws the same random values as it would have without the
  * save: call this after Loreline_restore() or Loreline_resume() to break that on purpose. */
 LORELINE_PUBLIC void Loreline_seedRandom(Loreline_Interpreter* interp, bool hasSeed, double seed);
+
+/* Builds now what the interpreter would otherwise build the first time it needs it, so
+ * that the cost is paid at a chosen moment, like a loading screen, rather than during
+ * play: for now, what each `when` block needs to pick a rule, which takes a moment on
+ * blocks of thousands of rules. Optional, it never changes what the script plays, and a
+ * second call only builds what is missing. Interpreters spawned from this one share
+ * these caches. See also Loreline_optionsSetPrepareCaches(). */
+LORELINE_PUBLIC void Loreline_prepareCaches(Loreline_Interpreter* interp);
 
 /* Character access */
 LORELINE_PUBLIC Loreline_Value Loreline_getCharacterField(

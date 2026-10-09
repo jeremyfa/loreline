@@ -525,6 +525,7 @@ async function main(): Promise<void> {
     runSpawnTest();
     runCustomFieldsTest();
     runSeedRandomTest();
+    runPrepareCachesTest();
     runWhenStrategyTest();
 
     const total: number = passCount + failCount;
@@ -660,6 +661,63 @@ function runSeedRandomTest(): void {
         const first = log[0].split(' ')[1];
         const second = log.length > 2 ? log[2].split(' ')[1] : '';
         if (second !== first) throw new Error(`expected ${first} after reseeding, got ${log.join(' / ')}`);
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
+    }
+}
+
+// prepareCaches, as an option or a method, never changes what the script plays.
+// Same scenario in every binding runner.
+const PREPARE_CACHES_SCRIPT = [
+    'state',
+    '  concept: "greet"',
+    '',
+    'beat Main',
+    '  Bark()',
+    '  concept = "leave"',
+    '  Bark()',
+    '',
+    'beat Bark',
+    '  when',
+    '    concept is "greet"',
+    '      Hello.',
+    '    concept is "leave"',
+    '      Bye.',
+    '    true',
+    '      Nothing.',
+    ''
+].join('\n');
+
+function runPrepareCachesTest(): void {
+    const label = 'caches: prepareCaches leaves the picks unchanged';
+    try {
+        const script: Script = Loreline.parse(PREPARE_CACHES_SCRIPT);
+
+        // Prepared by the option, before the script starts
+        const optionLog: string[] = [];
+        Loreline.play(script, (_interp, _character, text, _tags, callback) => {
+            optionLog.push(text);
+            callback();
+        }, () => {}, () => {}, 'Main', { prepareCaches: true });
+        if (optionLog.join(',') !== 'Hello.,Bye.') throw new Error(`option: expected Hello.,Bye., got ${optionLog.join(',')}`);
+
+        // Prepared by the method, between two picks
+        const methodLog: string[] = [];
+        let pending: (() => void) | null = null;
+        const lazy: Interpreter = Loreline.play(script, (_interp, _character, text, _tags, callback) => {
+            methodLog.push(text);
+            pending = callback;
+        }, () => {}, () => {}, 'Main');
+        lazy.prepareCaches();
+        lazy.prepareCaches();
+        pending!();
+        pending!();
+        if (methodLog.join(',') !== 'Hello.,Bye.') throw new Error(`method: expected Hello.,Bye., got ${methodLog.join(',')}`);
 
         passCount++;
         console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);

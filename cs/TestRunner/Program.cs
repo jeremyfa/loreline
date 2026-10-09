@@ -260,6 +260,7 @@ class Program
         RunSpawnTest();
         RunCustomFieldsTest();
         RunSeedRandomTest();
+        RunPrepareCachesTest();
         RunWhenStrategyTest();
 
         int total = passCount + failCount;
@@ -469,6 +470,61 @@ class Program
             string first = log[0].Split(' ')[1];
             string second = log.Count > 2 ? log[2].Split(' ')[1] : "";
             if (second != first) throw new Exception("expected " + first + " after reseeding, got " + string.Join(" / ", log));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
+        }
+    }
+
+    // prepareCaches, as an option or a method, never changes what the script plays.
+    // Same scenario in every binding runner.
+    static void RunPrepareCachesTest()
+    {
+        const string label = "caches: prepareCaches leaves the picks unchanged";
+        try
+        {
+            Script script = Engine.Parse(string.Join("\n", new[] {
+                "state",
+                "  concept: \"greet\"",
+                "",
+                "beat Main",
+                "  Bark()",
+                "  concept = \"leave\"",
+                "  Bark()",
+                "",
+                "beat Bark",
+                "  when",
+                "    concept is \"greet\"",
+                "      Hello.",
+                "    concept is \"leave\"",
+                "      Bye.",
+                "    true",
+                "      Nothing.",
+                ""
+            }));
+
+            // Prepared by the option, before the script starts
+            var optionLog = new List<string>();
+            var options = Interpreter.InterpreterOptions.Default();
+            options.PrepareCaches = true;
+            Engine.Play(script, dialogue => { optionLog.Add(dialogue.Text); dialogue.Callback(); }, choice => { }, finish => { }, "Main", options);
+            if (string.Join(",", optionLog) != "Hello.,Bye.") throw new Exception("option: expected Hello.,Bye., got " + string.Join(",", optionLog));
+
+            // Prepared by the method, between two picks
+            var methodLog = new List<string>();
+            Interpreter.DialogueCallback pending = null;
+            Interpreter lazy = Engine.Play(script, dialogue => { methodLog.Add(dialogue.Text); pending = dialogue.Callback; }, choice => { }, finish => { }, "Main");
+            lazy.PrepareCaches();
+            lazy.PrepareCaches();
+            pending();
+            pending();
+            if (string.Join(",", methodLog) != "Hello.,Bye.") throw new Exception("method: expected Hello.,Bye., got " + string.Join(",", methodLog));
 
             passCount++;
             Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");

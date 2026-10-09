@@ -612,6 +612,7 @@ def main():
 
     run_spawn_test()
     run_seed_random_test()
+    run_prepare_caches_test()
     run_when_strategy_test()
 
     total = pass_count + fail_count
@@ -695,6 +696,70 @@ def run_seed_random_test():
         second = log[2].split(" ")[1] if len(log) > 2 else ""
         if second != first:
             raise Exception(f"expected {first} after reseeding, got {' / '.join(log)}")
+
+        pass_count += 1
+        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")
+    except Exception as e:
+        fail_count += 1
+        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+        print(f"  Error: {e}")
+
+
+# prepareCaches, as an option or a method, never changes what the script plays.
+# Same scenario in every binding runner.
+PREPARE_CACHES_SCRIPT = "\n".join([
+    "state",
+    "  concept: \"greet\"",
+    "",
+    "beat Main",
+    "  Bark()",
+    "  concept = \"leave\"",
+    "  Bark()",
+    "",
+    "beat Bark",
+    "  when",
+    "    concept is \"greet\"",
+    "      Hello.",
+    "    concept is \"leave\"",
+    "      Bye.",
+    "    true",
+    "      Nothing.",
+    "",
+])
+
+
+def run_prepare_caches_test():
+    global pass_count, fail_count
+    label = "caches: prepareCaches leaves the picks unchanged"
+    try:
+        script = Loreline.parse(PREPARE_CACHES_SCRIPT)
+
+        # Prepared by the option, before the script starts
+        option_log = []
+
+        def option_dialogue(interp, character, text, tags, advance):
+            option_log.append(text)
+            advance()
+
+        Loreline.play(script, option_dialogue, lambda i, o, s: None, lambda i: None, "Main", prepare_caches=True)
+        if ",".join(option_log) != "Hello.,Bye.":
+            raise Exception(f"option: expected Hello.,Bye., got {','.join(option_log)}")
+
+        # Prepared by the method, between two picks
+        method_log = []
+        pending = []
+
+        def method_dialogue(interp, character, text, tags, advance):
+            method_log.append(text)
+            pending.append(advance)
+
+        lazy = Loreline.play(script, method_dialogue, lambda i, o, s: None, lambda i: None, "Main")
+        lazy.prepare_caches()
+        lazy.prepare_caches()
+        pending[-1]()
+        pending[-1]()
+        if ",".join(method_log) != "Hello.,Bye.":
+            raise Exception(f"method: expected Hello.,Bye., got {','.join(method_log)}")
 
         pass_count += 1
         print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")

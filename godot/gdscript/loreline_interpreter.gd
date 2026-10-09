@@ -272,6 +272,17 @@ func seed_random(seed = null) -> void:
 		_interp.seedRandom(seed)
 
 
+## Builds now what the interpreter would otherwise build the first time it needs
+## it, so that the cost is paid at a chosen moment, like a loading screen, rather
+## than during play: for now, what each `when` block needs to pick a rule, which
+## takes a moment on blocks of thousands of rules. Optional, it never changes what
+## the script plays, and a second call only builds what is missing. Interpreters
+## spawned from this one share these caches. See also LorelineOptions.prepare_caches.
+func prepare_caches() -> void:
+	if _interp != null:
+		_interp.prepareCaches()
+
+
 ## Stops a child interpreter for good: its playhead is cleared, it is not part
 ## of saves anymore, and pending advance/select Callables become no-ops.
 ## Reports an error on a root interpreter.

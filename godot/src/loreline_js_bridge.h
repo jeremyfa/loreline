@@ -308,6 +308,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                     var parsed = JSON.parse(optionsJson);
                     playOptions = {};
                     if (parsed.strictAccess) playOptions.strictAccess = true;
+                    if (parsed.prepareCaches) playOptions.prepareCaches = true;
                     if (parsed.translationsId) {
                         playOptions.translations = _getObj(parsed.translationsId);
                     }
@@ -409,6 +410,7 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
                     var parsed = JSON.parse(optionsJson);
                     resumeOptions = {};
                     if (parsed.strictAccess) resumeOptions.strictAccess = true;
+                    if (parsed.prepareCaches) resumeOptions.prepareCaches = true;
                     if (parsed.translationsId) {
                         resumeOptions.translations = _getObj(parsed.translationsId);
                     }
@@ -660,6 +662,13 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             var interp = _getObj(interpId);
             if (interp) {
                 interp.seedRandom(seed);
+            }
+        },
+
+        prepareCaches: function(interpId) {
+            var interp = _getObj(interpId);
+            if (interp) {
+                interp.prepareCaches();
             }
         },
 

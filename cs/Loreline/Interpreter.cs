@@ -172,7 +172,8 @@ namespace Loreline
                     Functions = null,
                     StrictAccess = false,
                     CustomCreateFields = null,
-                    Translations = null
+                    Translations = null,
+                    PrepareCaches = false
                 };
             }
 
@@ -197,6 +198,12 @@ namespace Loreline
             /// Built from a parsed translation file using Engine.ExtractTranslations().
             /// </summary>
             public object Translations;
+
+            /// <summary>
+            /// If set to true, the interpreter prepares its caches when it is created,
+            /// before the script starts, like Interpreter.PrepareCaches().
+            /// </summary>
+            public bool PrepareCaches;
         }
 
         /// <summary>
@@ -258,7 +265,7 @@ namespace Loreline
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, null, null),
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, null, null, options.PrepareCaches),
                 null
             );
         }
@@ -298,7 +305,7 @@ namespace Loreline
                 handleDialogueWrap,
                 handleChoiceWrap,
                 handleFinishWrap,
-                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, translationsWrap, null),
+                new Runtime.InterpreterOptions(this, functionsWrap, options.StrictAccess, createFieldsWrap, translationsWrap, null, options.PrepareCaches),
                 null
             );
         }
@@ -334,7 +341,8 @@ namespace Loreline
                 strictAccess,
                 WrapCreateFields(this, customCreateFields),
                 null,
-                null
+                null,
+                false
             );
 
             RuntimeInterpreter = resume
@@ -410,6 +418,19 @@ namespace Loreline
         public void SeedRandom(double? seed = null)
         {
             RuntimeInterpreter.seedRandom(seed.HasValue ? (object)seed.Value : null);
+        }
+
+        /// <summary>
+        /// Builds now what the interpreter would otherwise build the first time it needs it,
+        /// so that the cost is paid at a chosen moment, like a loading screen, rather than
+        /// during play: for now, what each when block needs to pick a rule, which takes a
+        /// moment on blocks of thousands of rules. Optional, it never changes what the script
+        /// plays, and a second call only builds what is missing. Interpreters spawned from
+        /// this one share these caches. See also InterpreterOptions.PrepareCaches.
+        /// </summary>
+        public void PrepareCaches()
+        {
+            RuntimeInterpreter.prepareCaches();
         }
 
         /// <summary>

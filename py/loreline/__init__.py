@@ -367,6 +367,18 @@ class Interpreter:
         """
         self._internal.seedRandom(seed)
 
+    def prepare_caches(self) -> None:
+        """Build now what the interpreter would otherwise build the first time it needs it.
+
+        The cost is then paid at a chosen moment, like a loading screen, rather than
+        during play: for now, what each ``when`` block needs to pick a rule, which takes
+        a moment on blocks of thousands of rules. Optional, it never changes what the
+        script plays, and a second call only builds what is missing. Interpreters
+        spawned from this one share these caches. See also the ``prepare_caches``
+        argument of ``play()`` and ``resume()``.
+        """
+        self._internal.prepareCaches()
+
     def dispose(self) -> None:
         """Stop a child interpreter for good.
 
@@ -526,6 +538,7 @@ class Loreline:
         functions: Optional[dict] = None,
         strict_access: bool = False,
         translations: Any = None,
+        prepare_caches: bool = False,
     ) -> Interpreter:
         """Start playing a parsed script.
 
@@ -538,6 +551,8 @@ class Loreline:
             functions: Optional dict of ``{name: callable}`` custom functions.
             strict_access: If True, accessing undefined variables raises an error.
             translations: Optional translations map from ``extract_translations()``.
+            prepare_caches: If True, the caches of the interpreter are prepared
+                before the script starts, like ``Interpreter.prepare_caches()``.
 
         Returns:
             The running Interpreter instance.
@@ -546,6 +561,7 @@ class Loreline:
             "functions": _wrap_functions(functions),
             "strictAccess": strict_access,
             "translations": translations,
+            "prepareCaches": prepare_caches,
         })
 
         internal = _core.loreline_Loreline.play(
@@ -569,6 +585,7 @@ class Loreline:
         functions: Optional[dict] = None,
         strict_access: bool = False,
         translations: Any = None,
+        prepare_caches: bool = False,
     ) -> Interpreter:
         """Resume a script from saved state.
 
@@ -582,6 +599,8 @@ class Loreline:
             functions: Optional dict of custom functions.
             strict_access: If True, accessing undefined variables raises an error.
             translations: Optional translations map from ``extract_translations()``.
+            prepare_caches: If True, the caches of the interpreter are prepared
+                before the script starts, like ``Interpreter.prepare_caches()``.
 
         Returns:
             The running Interpreter instance.
@@ -590,6 +609,7 @@ class Loreline:
             "functions": _wrap_functions(functions),
             "strictAccess": strict_access,
             "translations": translations,
+            "prepareCaches": prepare_caches,
         })
 
         internal = _core.loreline_Loreline.resume(
