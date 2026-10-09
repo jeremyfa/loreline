@@ -10,7 +10,7 @@ beat Shop
 - request: hover
   at: "-> |Shop"
   contains:
-    - "```loreline\nbeat Shop\n```"
+    - "**Shop** (beat)"
     - The shop, open every day
 </test>
 */

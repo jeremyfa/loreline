@@ -9,10 +9,10 @@ beat Leave
 - request: hover
   at: "public beat |EnterShop"
   contains:
-    - "```loreline\npublic beat EnterShop\n```"
+    - "**EnterShop** (public beat)"
 - request: hover
   at: "-> |Leave"
   contains:
-    - "```loreline\nbeat Leave\n```"
+    - "**Leave** (beat)"
 </test>
 */

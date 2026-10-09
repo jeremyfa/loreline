@@ -35,8 +35,8 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "$|gold and"
   contains:
-    - "**gold**"
-    - "```loreline.field\ngold: 10\n```"
+    - "**gold** (state field)"
+    - "Starts at 10"
 - request: hover
   at: "gold: |10"
   contains:
@@ -44,25 +44,27 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "|gold: 10"
   contains:
-    - "```loreline.field\ngold: 10\n```"
+    - "**gold** (state field)"
     - "Money the player carries"
 - request: hover
   at: "${bob.|mood}"
   contains:
-    - "**mood** ([Bob](file:///lsp/HoverHeaders.lor#5,1))"
-    - "```loreline.field\nmood: 3\n```"
+    - "**mood** ([Bob](file:///lsp/HoverHeaders.lor#5,1) field)"
+    - "Starts at 3"
 - request: hover
   at: "|mood: 3"
   contains:
-    - "```loreline.field\nmood: 3\n```"
+    - "**mood** ([Bob]("
 - request: hover
   at: "character |bob"
   contains:
-    - "```loreline\ncharacter bob\n  name: Bob\n  mood: 3\n```"
+    - "**Bob** (character)"
+    - "Fields: mood (3)"
 - request: hover
   at: "character |guard"
   contains:
-    - "```loreline\ncharacter guard\n  role: watch\n```"
+    - "**guard** (character)"
+    - "Fields: role (watch)"
 - request: hover
   at: "bob: |Hello"
   contains:
@@ -70,29 +72,33 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "function |pay"
   contains:
-    - "```loreline\nfunction pay(amount, tip = 0)\n```"
+    - "**pay** (function)"
+    - "Parameters: amount, tip (defaults to 0)"
 - request: hover
   at: "-> |Shop(3)"
   contains:
-    - "```loreline\nbeat Shop(price, discount = 2)\n```"
+    - "**Shop** (beat)"
+    - "Parameters: price, discount (defaults to 2)"
     - "The shop, open every day"
 - request: hover
   at: "beat Shop(|price"
   contains:
-    - "**price** (parameter of "
-    - "```loreline\nbeat Shop(price, discount = 2)\n```"
+    - "**price** ("
+    - " parameter)"
 - request: hover
   at: "|discount = 2"
   contains:
-    - "**discount** (parameter of "
+    - "**discount** ("
+    - "Defaults to 2"
 - request: hover
   at: "Price is $|price"
   contains:
-    - "**price** (parameter of "
+    - "**price** ("
 - request: hover
   at: "new |state"
   contains:
-    - "```loreline\nnew state\n  visits: 0\n```"
+    - "**Temporary state**"
+    - "Fields: visits (0)"
 - request: hover
   at: "|choice"
   contains:
@@ -100,7 +106,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "> 5 |and"
   contains:
-    - "**Operator** and"
+    - "**and** (operator)"
 - request: hover
   at: "|The weather"
   contains:
@@ -112,7 +118,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "|Start"
   contains:
-    - "```loreline\nbeat Start\n```"
+    - "**Start** (beat)"
     - "**Flow**  \n"
     - "To [Shop]("
     - "\n\n---\n\n**Characters**  \n"
