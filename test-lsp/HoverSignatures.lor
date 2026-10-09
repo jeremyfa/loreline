@@ -50,12 +50,12 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "${bob.|mood}"
   contains:
-    - "```loreline.signature\nBob › mood"
+    - "```loreline.signature\nBob: mood"
     - "= 3\n```"
 - request: hover
   at: "|mood: 3"
   contains:
-    - "```loreline.signature\nBob › mood"
+    - "```loreline.signature\nBob: mood"
     - "= 3\n```"
 - request: hover
   at: "character |bob"
@@ -117,8 +117,8 @@ beat Shop(price, discount = 2)
   contains:
     - "```loreline.signature\nbeat Start\n```"
     - "**Flow**  \nTo [Shop]("
-    - "**Characters**  \n**[Bob]("
-    - " › [mood]("
-    - "**State**  \n[gold]("
+    - "\n\n---\n\n**Characters**  \n**[Bob]("
+    - "**: [mood]("
+    - "\n\n---\n\n**State**  \n[gold]("
 </test>
 */
