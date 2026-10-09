@@ -2041,10 +2041,13 @@ class Server {
 
     }
 
-    /** Code of the script, as written, colored like in the editor */
-    static function hoverCode(code:String):String {
+    /**
+     * Code of the script, as written, colored like in the editor.
+     * @param language `loreline`, or `loreline.field` for a field on its own
+     */
+    static function hoverCode(code:String, language:String = 'loreline'):String {
 
-        return "```loreline\n" + code + "\n```";
+        return "```" + language + "\n" + code + "\n```";
 
     }
 
@@ -2052,9 +2055,9 @@ class Server {
      * The top of a hover: a title for what isn't code, the code as written
      * in the script, then a note in plain text. Each one is optional.
      */
-    static function hoverHeader(?title:String, ?code:String, ?note:String):String {
+    static function hoverHeader(?title:String, ?code:String, ?note:String, language:String = 'loreline'):String {
 
-        return [for (part in [title, code != null ? hoverCode(code) : null, note]) if (part != null && part.length > 0) part].join("\n\n");
+        return [for (part in [title, code != null ? hoverCode(code, language) : null, note]) if (part != null && part.length > 0) part].join("\n\n");
 
     }
 
@@ -2079,8 +2082,15 @@ class Server {
     /** A field as written, indented under its block: `  mood: 3` */
     function fieldCode(field:NObjectField):String {
 
+        return '  ' + fieldLine(field).replace('\n', '\n  ');
+
+    }
+
+    /** A field as written, on its own: `mood: 3`, shown in a `loreline.field` block */
+    function fieldLine(field:NObjectField):String {
+
         final value = field.value != null ? printLoreline(field.value) : 'null';
-        return '  ' + field.name + ': ' + value.replace('\r\n', '\n').replace('\n', '\n  ');
+        return field.name + ': ' + value.replace('\r\n', '\n');
 
     }
 
@@ -2098,18 +2108,6 @@ class Server {
 
     }
 
-    /**
-     * A field as written, under the first line of its character or state, or
-     * null for a field of an object.
-     */
-    function fieldInBlockCode(field:NObjectField, lens:Lens):Null<String> {
-
-        final owner = lens.getParentNode(field);
-        if (owner is NCharacterDecl) return 'character ' + (cast owner:NCharacterDecl).name + '\n' + fieldCode(field);
-        if (owner is NStateDecl) return ((cast owner:NStateDecl).temporary ? 'new state' : 'state') + '\n' + fieldCode(field);
-        return null;
-
-    }
 
     /** Links of a hover, all of them, so that the list says everything */
     static function hoverList(links:Array<String>):String {
@@ -2801,12 +2799,12 @@ class Server {
     function fieldHeader(field:NObjectField, uri:DocumentUri, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
-        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens)), fieldInBlockCode(field, lens));
+        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens)), fieldLine(field), null, 'loreline.field');
         if (owner is NStateDecl) {
             // A field of the state of a beat names its beat
             final beat = lens.getFirstParentOfType(owner, NBeatDecl);
             final beatOwner = beat != null && beat.name != '_' ? makePositionLink(beat.name, uri, beat, lens) : null;
-            return hoverHeader(hoverName(field.name, beatOwner), fieldInBlockCode(field, lens));
+            return hoverHeader(hoverName(field.name, beatOwner), fieldLine(field), null, 'loreline.field');
         }
         return hoverHeader(hoverName(field.name));
 
