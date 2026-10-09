@@ -49,7 +49,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "${bob.|mood}"
   contains:
-    - "**Character field** of Bob"
+    - "**Character field** of [Bob](file:///lsp/HoverHeaders.lor#5,1)"
     - "```loreline\ncharacter bob\n  mood: 3\n```"
 - request: hover
   at: "|mood: 3"
@@ -66,7 +66,7 @@ beat Shop(price, discount = 2)
 - request: hover
   at: "bob: |Hello"
   contains:
-    - "**Dialogue** of Bob"
+    - "**Dialogue** of [Bob](file:///lsp/HoverHeaders.lor#5,1)"
 - request: hover
   at: "function |pay"
   contains:
