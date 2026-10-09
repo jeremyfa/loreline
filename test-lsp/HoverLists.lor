@@ -20,7 +20,6 @@ beat Hub
   at: "beat |Hub"
   contains:
     - "From [A]("
-    - "[D](file:///lsp/HoverLists.lor#7,1), [E]("
-    - " and 1 more"
+    - "[E](file:///lsp/HoverLists.lor#9,1), [F]("
 </test>
 */
