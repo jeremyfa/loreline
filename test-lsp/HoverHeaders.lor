@@ -59,12 +59,12 @@ beat Shop(price, discount = 2)
   at: "character |bob"
   contains:
     - "**Bob** (character)"
-    - "Fields: mood (3)"
+    - "**Fields**  \nmood: 3"
 - request: hover
   at: "character |guard"
   contains:
     - "**guard** (character)"
-    - "Fields: role (watch)"
+    - "**Fields**  \nrole: watch"
 - request: hover
   at: "bob: |Hello"
   contains:
@@ -73,12 +73,12 @@ beat Shop(price, discount = 2)
   at: "function |pay"
   contains:
     - "**pay** (function)"
-    - "Parameters: amount, tip (defaults to 0)"
+    - "**Parameters**  \namount  \ntip (defaults to 0)"
 - request: hover
   at: "-> |Shop(3)"
   contains:
     - "**Shop** (beat)"
-    - "Parameters: price"
+    - "**Parameters**  \n"
     - "discount (defaults to 2)"
     - "The shop, open every day"
 - request: hover
@@ -99,7 +99,7 @@ beat Shop(price, discount = 2)
   at: "new |state"
   contains:
     - "**Temporary state**"
-    - "Fields: visits (0)"
+    - "**Fields**  \nvisits: 0"
 - request: hover
   at: "|choice"
   contains:
