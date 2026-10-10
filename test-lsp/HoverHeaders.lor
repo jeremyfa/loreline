@@ -36,7 +36,7 @@ beat Shop(price, discount = 2)
   at: "$|gold and"
   contains:
     - "**gold** ("
-    - "state field)"
+    - "in the state)"
 - request: hover
   at: "gold: |10"
   contains:
@@ -45,17 +45,17 @@ beat Shop(price, discount = 2)
   at: "|gold: 10"
   contains:
     - "**gold** ("
-    - "state field)"
+    - "in the state)"
     - "Money the player carries"
 - request: hover
   at: "${bob.|mood}"
   contains:
     - "**mood** ("
-    - "field, [Bob](file:///lsp/HoverHeaders.lor#5,1))"
+    - "field of [Bob](file:///lsp/HoverHeaders.lor#5,1))"
 - request: hover
   at: "|mood: 3"
   contains:
-    - "field, [Bob]("
+    - "field of [Bob]("
 - request: hover
   at: "character |bob"
   contains:
@@ -92,7 +92,7 @@ beat Shop(price, discount = 2)
   at: "beat Shop(|price"
   contains:
     - "**price** ("
-    - "parameter, "
+    - "parameter of "
 - request: hover
   at: "|discount = 2"
   contains:
