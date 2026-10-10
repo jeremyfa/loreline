@@ -1608,7 +1608,7 @@ class Server {
                 case NChoiceOption:
                     kind = 'Choice option';
                     final choiceOpt:NChoiceOption = cast parent;
-                    title = optionTitle(choiceOpt);
+                    title = optionTitle(choiceOpt, uri, lens);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
@@ -1651,7 +1651,7 @@ class Server {
                 case NChoiceOption:
                     kind = 'Choice option';
                     final choiceOpt:NChoiceOption = cast parent;
-                    title = optionTitle(choiceOpt);
+                    title = optionTitle(choiceOpt, uri, lens);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
@@ -1889,7 +1889,7 @@ class Server {
                     lorelinePos.offset <= option.conditionPos.offset + option.conditionPos.length) {
                     return makeHover(hoverTitle('Condition'), null, content, node, option.conditionPos);
                 }
-                return makeHover(optionTitle(option), hoverDescriptionForNode(option), content, node);
+                return makeHover(optionTitle(option, uri, lens), hoverDescriptionForNode(option), content, node);
             case NStringLiteral:
                 return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
@@ -2047,16 +2047,55 @@ class Server {
 
     /**
      * The title of a choice option: its text, as written but without quotes,
-     * cut when it gets long, like **Leave Shop** (choice option).
+     * cut when it gets long, like **Leave Shop** (choice option). A character
+     * it names, `$sarah`, shows by its name, with a link to it.
      */
-    function optionTitle(option:NChoiceOption):String {
+    function optionTitle(option:NChoiceOption, uri:DocumentUri, lens:Lens):String {
 
-        var text = option.text != null ? valueText(option.text) : '';
-        if (text.length >= 2 && text.startsWith('"') && text.endsWith('"')) text = text.substr(1, text.length - 2);
-        if (text.uLength() > 50) text = text.uSubstr(0, 49).rtrim() + '…';
-        // The text is shown as Markdown: its own marks stay as written
-        text = ~/([\\`*_\[\]<>#])/g.replace(text, '\\$1');
-        return text.length > 0 ? hoverName(text, 'choice option') : hoverTitle('Choice option');
+        // What the text says, piece by piece: what it shows, and its Markdown
+        final pieces:Array<{shown:String, markdown:String}> = [];
+        for (part in option.text?.parts ?? []) {
+            switch part.partType {
+                case Raw(text):
+                    pieces.push({shown: text, markdown: null});
+                case Expr(expr):
+                    final character = expr is NAccess && (cast expr:NAccess).target == null ? lens.resolveAccess(cast expr) : null;
+                    if (character is NCharacterDecl) {
+                        final name = shownCharacterName(cast character);
+                        pieces.push({shown: name, markdown: makePositionLink(markdownText(name), uri, character, lens)});
+                    }
+                    else {
+                        final written = expr is NAccess && (cast expr:NAccess).target == null ? '$' + (cast expr:NAccess).name : '$${' + printLoreline(expr) + '}';
+                        pieces.push({shown: written, markdown: null});
+                    }
+                case Tag(_, _):
+            }
+        }
+
+        // Up to about fifty characters shown, whole pieces of names
+        final limit = 50;
+        var shown = 0;
+        var markdown = '';
+        var cut = false;
+        for (piece in pieces) {
+            final length = piece.shown.uLength();
+            if (shown + length > limit) {
+                if (piece.markdown == null) markdown += markdownText(piece.shown.uSubstr(0, limit - shown).rtrim());
+                cut = true;
+                break;
+            }
+            markdown += piece.markdown ?? markdownText(piece.shown);
+            shown += length;
+        }
+        markdown = markdown.trim() + (cut ? '…' : '');
+        return markdown.length > 0 ? hoverName(markdown, 'choice option') : hoverTitle('Choice option');
+
+    }
+
+    /** Text shown as is in Markdown: its own marks are escaped */
+    static function markdownText(text:String):String {
+
+        return ~/([\\`*_\[\]<>#])/g.replace(text, '\\$1');
 
     }
 
