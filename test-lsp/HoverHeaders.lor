@@ -27,6 +27,8 @@ beat Shop(price, discount = 2)
   new state
     visits: 0
   choice
+    Ask $bob
+      -> .
     Leave
       -> .
 
@@ -113,6 +115,10 @@ beat Shop(price, discount = 2)
   at: "|choice"
   contains:
     - "**Choice**"
+- request: hover
+  at: "|Ask $bob"
+  contains:
+    - "**Ask [Bob](file:///lsp/HoverHeaders.lor#5,1)** (choice option)"
 - request: hover
   at: "    |Leave"
   contains:
