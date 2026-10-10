@@ -1852,7 +1852,7 @@ class Server {
                 // Hovering a word operator (the operands have their own nodes)
                 final op = wordOperatorOf(cast node);
                 if (op != null) {
-                    return makeHover(hoverTitle('Operator', op.word), [op.doc], content, node);
+                    return makeHover(hoverName(op.word, 'operator'), [op.doc], content, node);
                 }
                 return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
             case NExpr | NAssign:
@@ -2032,82 +2032,93 @@ class Server {
     }
 
     /**
-     * The title of a hover on a name: the name in bold, then what it belongs
-     * to in parentheses, like **mood** (Bob).
+     * The title of a hover on a name: the name in bold, then what it is in
+     * parentheses, like **jitters** (Player field).
      */
-    static function hoverName(name:String, ?owner:String):String {
+    static function hoverName(name:String, ?what:String):String {
 
-        return '**' + name + '**' + (owner != null && owner.length > 0 ? ' (' + owner + ')' : '');
+        return '**' + name + '**' + (what != null && what.length > 0 ? ' (' + what + ')' : '');
 
     }
 
     /**
-     * Code of the script, as written, colored like in the editor.
-     * @param language `loreline`, or `loreline.field` for a field on its own
+     * The top of a hover: its title, then a note on what it holds, like
+     * `Starts at 10`, kept close under it. Hovers show text, not code: the
+     * code is in the editor.
      */
-    static function hoverCode(code:String, language:String = 'loreline'):String {
+    static function hoverHeader(title:String, ?note:Array<String>):String {
 
-        return "```" + language + "\n" + code + "\n```";
+        final lines = [for (line in note ?? []) if (line != null && line.length > 0) line];
+        return lines.length > 0 ? title + "\n\n" + hoverLines(lines) : title;
+
+    }
+
+    /** A value written in the script, as text on one line */
+    function valueText(value:Null<Node>):String {
+
+        if (value == null) return 'null';
+        return ~/\s*\n\s*/g.replace(printLoreline(value), ' ');
 
     }
 
     /**
-     * The top of a hover: a title for what isn't code, the code as written
-     * in the script, then a note in plain text. Each one is optional.
+     * `Parameters: price (number), discount (defaults to 2)`, or null when
+     * there is none.
+     * @param details What to say of each one, in parentheses, or null
      */
-    static function hoverHeader(?title:String, ?code:String, ?note:String, language:String = 'loreline'):String {
+    static function parametersNote(params:Array<{name:String, details:Array<String>}>):Null<String> {
 
-        return [for (part in [title, code != null ? hoverCode(code, language) : null, note]) if (part != null && part.length > 0) part].join("\n\n");
-
-    }
-
-    /** The first line of a beat as written: `beat Shop(price, discount = 2)` */
-    function beatCode(beatDecl:NBeatDecl):String {
-
-        var code = (beatDecl.isPublic ? 'public ' : '') + 'beat ' + beatDecl.name;
-        if (beatDecl.params != null && beatDecl.params.length > 0) {
-            code += '(' + [for (param in beatDecl.params) param.name + (param.defaultValue != null ? ' = ' + printLoreline(param.defaultValue) : '')].join(', ') + ')';
-        }
-        return code;
+        if (params.length == 0) return null;
+        return 'Parameters: ' + [for (param in params) {
+            final details = [for (detail in param.details) if (detail != null && detail.length > 0) detail];
+            param.name + (details.length > 0 ? ' (' + details.join(', ') + ')' : '');
+        }].join(', ');
 
     }
 
-    /** The first line of a function as written: `function pay(amount, tip = 0)` */
-    static function functionCode(func:NFunctionDecl):String {
+    /** The parameters of a beat, with their default values */
+    function beatParameters(beatDecl:NBeatDecl, ?typeOf:(param:NBeatParam)->Null<String>):Null<String> {
 
-        return 'function ' + (func.name ?? '') + '(' + [for (arg in func.args ?? []) arg.trim()].join(', ') + ')';
-
-    }
-
-    /** A field as written, indented under its block: `  mood: 3` */
-    function fieldCode(field:NObjectField):String {
-
-        return '  ' + fieldLine(field).replace('\n', '\n  ');
+        return parametersNote([for (param in beatDecl.params ?? []) {
+            name: param.name,
+            details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? 'defaults to ' + valueText(param.defaultValue) : null]
+        }]);
 
     }
 
-    /** A field as written, on its own: `mood: 3`, shown in a `loreline.field` block */
-    function fieldLine(field:NObjectField):String {
+    /** The parameters of a function, with their default values */
+    static function functionParameters(func:NFunctionDecl, ?typeOf:(name:String)->Null<String>):Null<String> {
 
-        final value = field.value != null ? printLoreline(field.value) : 'null';
-        return field.name + ': ' + value.replace('\r\n', '\n');
-
-    }
-
-    /** A character as written, with its fields */
-    function characterCode(characterDecl:NCharacterDecl):String {
-
-        return ['character ' + characterDecl.name].concat([for (field in characterDecl.fields) fieldCode(field)]).join('\n');
+        return parametersNote([for (arg in func.args ?? []) {
+            final eq = arg.indexOf('=');
+            final name = (eq != -1 ? arg.substr(0, eq) : arg).trim();
+            {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? 'defaults to ' + arg.substr(eq + 1).trim() : null]};
+        }]);
 
     }
 
-    /** A state block as written, with its fields */
-    function stateCode(stateDecl:NStateDecl):String {
+    /**
+     * `Fields: present (false), greeted (false)`, the fields of a character or
+     * a state with their values, or null when there is none.
+     * @param typeOf The type to say after the value, when it isn't obvious
+     */
+    function fieldsNote(fields:Array<NObjectField>, ?typeOf:(field:NObjectField)->Null<String>):Null<String> {
 
-        return [stateDecl.temporary ? 'new state' : 'state'].concat([for (field in stateDecl.fields) fieldCode(field)]).join('\n');
+        if (fields.length == 0) return null;
+        return 'Fields: ' + [for (field in fields) {
+            final type = typeOf != null ? typeOf(field) : null;
+            field.name + ' (' + valueText(field.value) + (type != null ? ', ' + type : '') + ')';
+        }].join(', ');
 
     }
 
+    /** The fields of a character a hover lists: its name goes without saying when it's shown */
+    function listedCharacterFields(characterDecl:NCharacterDecl):Array<NObjectField> {
+
+        final shown = shownCharacterName(characterDecl) != characterDecl.name;
+        return [for (field in characterDecl.fields) if (!(shown && field.name == 'name')) field];
+
+    }
 
     /** Links of a hover, all of them, so that the list says everything */
     static function hoverList(links:Array<String>):String {
@@ -2189,7 +2200,7 @@ class Server {
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
 
         return makeSectionsHover(
-            hoverHeader(null, beatCode(beatDecl)),
+            hoverHeader(hoverName(beatDecl.name, beatDecl.isPublic ? 'public beat' : 'beat'), [beatParameters(beatDecl)]),
             [hoverDescriptionForNode(beatDecl).join("\n"), beatLinks(beatDecl, uri, lens)],
             content,
             origin ?? beatDecl
@@ -2295,13 +2306,13 @@ class Server {
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
 
-        return makeHover(hoverHeader(null, stateCode(stateDecl)), hoverDescriptionForNode(stateDecl), content, stateDecl);
+        return makeHover(hoverHeader(hoverTitle(stateDecl.temporary ? 'Temporary state' : 'State'), [fieldsNote(stateDecl.fields)]), hoverDescriptionForNode(stateDecl), content, stateDecl);
 
     }
 
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, content:String, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(null, characterCode(characterDecl)), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
+        return makeHover(hoverHeader(hoverName(shownCharacterName(characterDecl), 'character'), [fieldsNote(listedCharacterFields(characterDecl))]), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
 
     }
 
@@ -2383,7 +2394,7 @@ class Server {
             name += ')';
         }
 
-        return makeHover(hoverHeader(null, functionCode(func)), hoverDescriptionForNode(func), content, func, lorelinePos);
+        return makeHover(hoverHeader(hoverName(func.name ?? 'function', func.external ? 'function provided by the app' : 'function'), [functionParameters(func)]), hoverDescriptionForNode(func), content, func, lorelinePos);
 
     }
 
@@ -2392,7 +2403,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(param.name, 'parameter of ' + beatDecl.name), beatCode(beatDecl)), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, beatDecl.name + ' parameter'), [param.defaultValue != null ? 'Defaults to ' + valueText(param.defaultValue) : null]), null, content, anchor, pos);
 
     }
 
@@ -2405,7 +2416,7 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverName(paramName, 'parameter of ' + (func.name ?? 'a function')), functionCode(func)), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, (func.name != null ? func.name + ' ' : '') + 'parameter'), [eqIndex != -1 ? 'Defaults to ' + rawArg.substr(eqIndex + 1).trim() : null]), null, content, anchor, pos);
 
     }
 
@@ -2767,7 +2778,7 @@ class Server {
 
     function makeImportHover(importNode:NImportStatement, content:String):Hover {
 
-        return makeHover(hoverHeader(null, 'import ' + importPathOf(importNode)), hoverDescriptionForNode(importNode), content, importNode);
+        return makeHover(hoverHeader(hoverName(importPathOf(importNode), 'import')), hoverDescriptionForNode(importNode), content, importNode);
 
     }
 
@@ -2785,7 +2796,7 @@ class Server {
 
     function makeExprHover(expr:NExpr, content:String):Hover {
 
-        return makeHover(hoverHeader(hoverTitle('Expression'), printLoreline(expr)), hoverDescriptionForNode(expr), content, expr);
+        return makeHover(hoverHeader(hoverTitle('Expression'), [valueText(expr)]), hoverDescriptionForNode(expr), content, expr);
 
     }
 
@@ -2799,14 +2810,15 @@ class Server {
     function fieldHeader(field:NObjectField, uri:DocumentUri, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
-        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens)), fieldLine(field), null, 'loreline.field');
+        final starts = ['Starts at ' + valueText(field.value)];
+        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens) + ' field'), starts);
         if (owner is NStateDecl) {
             // A field of the state of a beat names its beat
             final beat = lens.getFirstParentOfType(owner, NBeatDecl);
             final beatOwner = beat != null && beat.name != '_' ? makePositionLink(beat.name, uri, beat, lens) : null;
-            return hoverHeader(hoverName(field.name, beatOwner), fieldLine(field), null, 'loreline.field');
+            return hoverHeader(hoverName(field.name, (beatOwner != null ? beatOwner + ' ' : '') + 'state field'), starts);
         }
-        return hoverHeader(hoverName(field.name));
+        return hoverHeader(hoverName(field.name, 'field'), starts);
 
     }
 
