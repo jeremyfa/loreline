@@ -78,7 +78,8 @@ beat Shop(price, discount = 2)
   at: "-> |Shop(3)"
   contains:
     - "**Shop** (beat)"
-    - "Parameters: price, discount (defaults to 2)"
+    - "Parameters: price"
+    - "discount (defaults to 2)"
     - "The shop, open every day"
 - request: hover
   at: "beat Shop(|price"
