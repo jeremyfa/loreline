@@ -7,11 +7,11 @@ function chooser(rules)
 
 beat Start
   when
-    mood == "calm" and gold > 2
+    - mood == "calm" and gold > 2
       Calm and rich.
     - mood == "calm"
       Calm.
-    true
+    - true
       Anything.
 
   when first
@@ -45,16 +45,17 @@ beat Start
   contains:
     - "Lets the function `chooser` choose the rule to play."
 - request: hover
-  at: "|mood == \"calm\" and"
+  at: "|- mood"
   contains:
     - "2 conditions"
-- request: hover
-  at: "- |mood"
-  contains:
-    - "1 condition"
     - "Played only once"
 - request: hover
-  at: "|true\n      Anything"
+  at: "|- mood"
+  occurrence: 2
+  contains:
+    - "1 condition"
+- request: hover
+  at: "|- true"
   contains:
     - "Always applies"
 </test>
