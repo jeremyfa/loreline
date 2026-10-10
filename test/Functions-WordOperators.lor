@@ -1,0 +1,207 @@
+// Word operators in the code of functions: `is` is `==`, `is not` is `!=`,
+// `not` is `!`, `and` is `&&`, `or` is `||`, as in the rest of the script.
+// They are words only on their own: names that start with them, fields after
+// a dot, texts and comments keep them as they are, while the expressions of
+// `${...}` in a text are converted. Braced bodies work the same.
+
+state
+  count: 3
+  mood: "calm"
+  nothing: null
+  ready: false
+
+function basics()
+  return "" + (count is 3) + " " + (count is not 3) + " " + (mood is "calm") + " " + (mood is not "calm") + " " + (nothing is null) + " " + (nothing is not null)
+
+function negations()
+  return "" + (not ready) + " " + (not not ready) + " " + (not (ready or count is 2)) + " " + (not ready and not nothing) + " " + (not(ready)) + " " + (not ready is false)
+
+function spacing()
+  return "" + (count is   not 3) + " " + (count is	not 4) + " " + (count  is  3) + " " + (count is 3 and(ready is false))
+
+function grouping()
+  return "" + (ready is (not true)) + " " + (ready == not true) + " " + (ready is not not true) + " " + ((count is 3) is true)
+
+function precedence()
+  return "" + (count is 3 and mood is not "storm" or not ready) + " " + (count is 4 or mood is "calm" and ready) + " " + (not ready or count is 4)
+
+function countdown(n)
+  var steps = 0
+  while n is not 0
+    n = n - 1
+    steps = steps + 1
+  return steps
+
+function untilZero(n)
+  var steps = 0
+  do
+    n = n - 1
+    steps = steps + 1
+  while not (n is 0 or n < 0)
+  return steps
+
+function sign(n)
+  if n is 0
+    return "zero"
+  else if n is not 1
+    return "many"
+  return "one"
+
+function ternary(n)
+  return n is 0 ? "none" : (n is not 1 ? "several" : "single")
+
+function findIndex(items, wanted)
+  var i = 0
+  for item in items
+    if item is wanted
+      return i
+    i = i + 1
+  return -1
+
+function kind(value)
+  switch value
+    case 1
+      return "one"
+    default
+      return value is null ? "null" : "other"
+
+function names()
+  var basis = 1
+  var notes = 2
+  var island = 3
+  var origin = 4
+  var android = 5
+  var this_is = 6
+  var is_ready = 7
+  var isReady = 8
+  var notDone = 9
+  var andThen = 10
+  var orElse = 11
+  var nothing_here = 12
+  return basis + notes + island + origin + android + this_is + is_ready + isReady + notDone + andThen + orElse + nothing_here
+
+function fields()
+  var o = { "is": "is", "not": "not", "and": "and", "or": "or" }
+  return o.is + " " + o.not + " " + o.and + " " + o.or + " " + o . is
+
+function texts()
+  // is not, and or not: words in a comment stay as they are
+  return "this is not a test, and it is or is not"
+
+function mixedValues()
+  return "" + ("5" is 5) + " " + (true is "true") + " " + ("" is not 0) + " " + (null is not 0)
+
+function pair(a, b)
+  return "" + a + "/" + b
+
+function arguments()
+  var flags = [count is 3, mood is not "calm"]
+  var holder = { ok: count is 3 }
+  return pair(count is 3, not ready) + " " + flags[1] + " " + holder.ok
+
+function defaults(flag = not true, other = count is 3)
+  return "" + flag + " " + other
+
+function braces(n) {
+  if (n is not 0 and not ready) {
+    return "go " + n
+  } else if (n is 0 or ready) {
+    return "stop"
+  }
+  return "never"
+}
+
+function looped(n) {
+  var steps = 0
+  while (n is not 0) { n = n - 1; steps = steps + 1 }
+  return steps
+}
+
+function inText()
+  return "count is ${count is 3}, not ready is ${not ready}, and/or ${count is 3 and ready or not ready}, text $count is here"
+
+function inTextAgain()
+  var mark = count is not 4
+  return "is not: ${count is not 3} / ${mark} / $ready is not shown"
+
+beat Start
+  Basics give ${basics()}.
+
+  Negations give ${negations()}.
+
+  Spacing give ${spacing()}.
+
+  Grouping give ${grouping()}.
+
+  Precedence give ${precedence()}.
+
+  Loops give ${countdown(4)} ${countdown(0)} ${untilZero(3)}.
+
+  Branches give ${sign(0)} ${sign(1)} ${sign(5)}.
+
+  Ternary give ${ternary(0)} ${ternary(1)} ${ternary(2)}.
+
+  Index give ${findIndex(["a", "b", "c"], "b")} ${findIndex(["a"], "z")}.
+
+  Switch give ${kind(1)} ${kind(null)} ${kind(2)}.
+
+  Names give ${names()}.
+
+  Fields give ${fields()}.
+
+  Texts give ${texts()}.
+
+  Values give ${mixedValues()}.
+
+  Arguments give ${arguments()}.
+
+  Defaults give ${defaults()} and ${defaults(true, false)}.
+
+  Braces give ${braces(2)} ${braces(0)} ${looped(5)}.
+
+  Text gives ${inText()}.
+
+  Text again gives ${inTextAgain()}.
+
+/*
+<test>
+- expected: |
+    ~ Basics give true false true false true false.
+
+    ~ Negations give true false true true true false.
+
+    ~ Spacing give false true true true.
+
+    ~ Grouping give true true false true.
+
+    ~ Precedence give true false true.
+
+    ~ Loops give 4 0 3.
+
+    ~ Branches give zero one many.
+
+    ~ Ternary give none single several.
+
+    ~ Index give 1 -1.
+
+    ~ Switch give one null other.
+
+    ~ Names give 78.
+
+    ~ Fields give is not and or is.
+
+    ~ Texts give this is not a test, and it is or is not.
+
+    ~ Values give true true true true.
+
+    ~ Arguments give true/true false true.
+
+    ~ Defaults give false true and true false.
+
+    ~ Braces give go 2 stop 5.
+
+    ~ Text gives count is true, not ready is true, and/or true, text 3 is here.
+
+    ~ Text again gives is not: false / true / false is not shown.
+</test>
+*/

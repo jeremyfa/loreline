@@ -295,8 +295,8 @@ class CodeToLorscript {
             else {
                 if (isAlphaNumeric(c) && index > 0 && !isAlphaNumeric(input.uCharCodeAt(index - 1))) {
                     if (c == "a".code) {
-                        // Convert and
-                        if (input.uCharCodeAt(index + 1) == "n".code && input.uCharCodeAt(index + 2) == "d".code && !isAlphaNumeric(input.uCharCodeAt(index + 3))) {
+                        // Convert and, unless it is a field name after a dot
+                        if (input.uCharCodeAt(index + 1) == "n".code && input.uCharCodeAt(index + 2) == "d".code && !isAlphaNumeric(input.uCharCodeAt(index + 3)) && !isAfterDot()) {
                             add("&".code);
                             add("&".code);
                             add(" ".code);
@@ -306,8 +306,8 @@ class CodeToLorscript {
                         }
                     }
                     else if (c == "o".code) {
-                        // Convert or
-                        if (input.uCharCodeAt(index + 1) == "r".code && !isAlphaNumeric(input.uCharCodeAt(index + 2))) {
+                        // Convert or, unless it is a field name after a dot
+                        if (input.uCharCodeAt(index + 1) == "r".code && !isAlphaNumeric(input.uCharCodeAt(index + 2)) && !isAfterDot()) {
                             add("|".code);
                             add("|".code);
                             add(" ".code);
