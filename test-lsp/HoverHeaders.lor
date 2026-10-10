@@ -60,13 +60,15 @@ beat Shop(price, discount = 2)
   contains:
     - "**Bob** (character)"
     - "**Fields**  \n"
-    - "mood: 3"
+    - "[mood]("
+    - "): 3"
 - request: hover
   at: "character |guard"
   contains:
     - "**guard** (character)"
     - "**Fields**  \n"
-    - "role: watch"
+    - "[role]("
+    - "): watch"
 - request: hover
   at: "bob: |Hello"
   contains:
@@ -104,7 +106,8 @@ beat Shop(price, discount = 2)
   contains:
     - "**Temporary state**"
     - "**Fields**  \n"
-    - "visits: 0"
+    - "[visits]("
+    - "): 0"
 - request: hover
   at: "|choice"
   contains:
