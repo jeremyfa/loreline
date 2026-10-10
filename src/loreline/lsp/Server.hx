@@ -1599,6 +1599,7 @@ class Server {
 
         var kind = 'Text';
         var name = null;
+        var title:Null<String> = null;
 
         final parent = lens.getParentNode(literal);
         var onceOption:NChoiceOption = null;
@@ -1607,6 +1608,7 @@ class Server {
                 case NChoiceOption:
                     kind = 'Choice option';
                     final choiceOpt:NChoiceOption = cast parent;
+                    title = optionTitle(choiceOpt);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
@@ -1624,7 +1626,7 @@ class Server {
             hoverPos = new loreline.Position(onceOption.pos.line, onceOption.pos.column, onceOption.pos.offset,
                 endPos.offset - onceOption.pos.offset + endPos.length);
         }
-        return makeHover(hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, hoverPos);
+        return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, hoverPos);
 
     }
 
@@ -1640,6 +1642,7 @@ class Server {
 
         var kind = 'Text';
         var name = null;
+        var title:Null<String> = null;
 
         final parent = lens.getParentNode(literal);
         var onceOption:NChoiceOption = null;
@@ -1648,6 +1651,7 @@ class Server {
                 case NChoiceOption:
                     kind = 'Choice option';
                     final choiceOpt:NChoiceOption = cast parent;
+                    title = optionTitle(choiceOpt);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
                     kind = 'Dialogue';
@@ -1673,13 +1677,13 @@ class Server {
                 var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
                     if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
-                        return makeHover(hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
+                        return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
                     }
                     first = false;
                 }
                 return null;
             case _:
-                return makeHover(hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos));
+                return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos));
         }
 
     }
@@ -1885,7 +1889,7 @@ class Server {
                     lorelinePos.offset <= option.conditionPos.offset + option.conditionPos.length) {
                     return makeHover(hoverTitle('Condition'), null, content, node, option.conditionPos);
                 }
-                return makeHover(hoverTitle('Choice option'), hoverDescriptionForNode(option), content, node);
+                return makeHover(optionTitle(option), hoverDescriptionForNode(option), content, node);
             case NStringLiteral:
                 return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
@@ -2038,6 +2042,21 @@ class Server {
     static function hoverName(name:String, ?what:String):String {
 
         return '**' + name + '**' + (what != null && what.length > 0 ? ' (' + what + ')' : '');
+
+    }
+
+    /**
+     * The title of a choice option: its text, as written but without quotes,
+     * cut when it gets long, like **Leave Shop** (choice option).
+     */
+    function optionTitle(option:NChoiceOption):String {
+
+        var text = option.text != null ? valueText(option.text) : '';
+        if (text.length >= 2 && text.startsWith('"') && text.endsWith('"')) text = text.substr(1, text.length - 2);
+        if (text.uLength() > 50) text = text.uSubstr(0, 49).rtrim() + '…';
+        // The text is shown as Markdown: its own marks stay as written
+        text = ~/([\\`*_\[\]<>#])/g.replace(text, '\\$1');
+        return text.length > 0 ? hoverName(text, 'choice option') : hoverTitle('Choice option');
 
     }
 
