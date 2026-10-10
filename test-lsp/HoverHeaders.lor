@@ -97,7 +97,7 @@ beat Shop(price, discount = 2)
   at: "|discount = 2"
   contains:
     - "**discount** ("
-    - "Defaults to 2"
+    - "Defaults to `2`"
 - request: hover
   at: "Price is $|price"
   contains:
