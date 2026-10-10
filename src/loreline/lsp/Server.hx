@@ -2063,6 +2063,14 @@ class Server {
 
     }
 
+    /** A value written in the script, shown as code: `false` */
+    static function hoverValue(text:String):String {
+
+        // A value holding a backquote needs a longer fence
+        return text.indexOf('`') != -1 ? '`` ' + text + ' ``' : '`' + text + '`';
+
+    }
+
     /** A value written in the script, as text on one line */
     function valueText(value:Null<Node>):String {
 
@@ -2101,7 +2109,7 @@ class Server {
 
         return parameterLines([for (param in beatDecl.params ?? []) {
             name: param.name,
-            details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? 'defaults to ' + valueText(param.defaultValue) : null]
+            details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? 'defaults to ' + hoverValue(valueText(param.defaultValue)) : null]
         }]);
 
     }
@@ -2112,7 +2120,7 @@ class Server {
         return parameterLines([for (arg in func.args ?? []) {
             final eq = arg.indexOf('=');
             final name = (eq != -1 ? arg.substr(0, eq) : arg).trim();
-            {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? 'defaults to ' + arg.substr(eq + 1).trim() : null]};
+            {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? 'defaults to ' + hoverValue(arg.substr(eq + 1).trim()) : null]};
         }]);
 
     }
@@ -2137,7 +2145,7 @@ class Server {
             }
             else {
                 final type = typeOf != null ? typeOf(field) : null;
-                lines.push(indent + name + ': ' + valueText(field.value) + (type != null ? ' ($type)' : ''));
+                lines.push(indent + name + ': ' + hoverValue(valueText(field.value)) + (type != null ? ' ($type)' : ''));
             }
         }
         return lines;
@@ -2450,7 +2458,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', beatDecl.name)), [param.defaultValue != null ? 'Defaults to ' + valueText(param.defaultValue) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', beatDecl.name)), [param.defaultValue != null ? 'Defaults to ' + hoverValue(valueText(param.defaultValue)) : null]), null, content, anchor, pos);
 
     }
 
@@ -2463,7 +2471,7 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name)), [eqIndex != -1 ? 'Defaults to ' + rawArg.substr(eqIndex + 1).trim() : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name)), [eqIndex != -1 ? 'Defaults to ' + hoverValue(rawArg.substr(eqIndex + 1).trim()) : null]), null, content, anchor, pos);
 
     }
 
