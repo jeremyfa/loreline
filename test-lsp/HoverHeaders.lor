@@ -114,6 +114,10 @@ beat Shop(price, discount = 2)
   contains:
     - "**Choice**"
 - request: hover
+  at: "    |Leave"
+  contains:
+    - "**Leave** (choice option)"
+- request: hover
   at: "> 5 |and"
   contains:
     - "**and** (operator)"
