@@ -62,14 +62,14 @@ beat Shop(price, discount = 2)
     - "**Bob** (character)"
     - "**Fields**  \n"
     - "[mood]("
-    - "): 3"
+    - "): `3`"
 - request: hover
   at: "character |guard"
   contains:
     - "**guard** (character)"
     - "**Fields**  \n"
     - "[role]("
-    - "): watch"
+    - "): `watch`"
 - request: hover
   at: "bob: |Hello"
   contains:
@@ -80,13 +80,13 @@ beat Shop(price, discount = 2)
     - "**pay** (function)"
     - "**Parameters**  \n"
     - "amount"
-    - "defaults to 0)"
+    - "defaults to `0`)"
 - request: hover
   at: "-> |Shop(3)"
   contains:
     - "**Shop** (beat)"
     - "**Parameters**  \n"
-    - "defaults to 2)"
+    - "defaults to `2`)"
     - "The shop, open every day"
 - request: hover
   at: "beat Shop(|price"
@@ -108,7 +108,7 @@ beat Shop(price, discount = 2)
     - "**Temporary state**"
     - "**Fields**  \n"
     - "[visits]("
-    - "): 0"
+    - "): `0`"
 - request: hover
   at: "|choice"
   contains:

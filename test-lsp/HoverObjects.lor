@@ -14,11 +14,11 @@ beat Start
   at: "|state"
   contains:
     - "[bag](file:///lsp/HoverObjects.lor#2,3) (object)"
-    - "&emsp;[apples](file:///lsp/HoverObjects.lor#2,10): 2"
-    - "&emsp;[color](file:///lsp/HoverObjects.lor#2,21): red"
+    - "&emsp;[apples](file:///lsp/HoverObjects.lor#2,10): `2`"
+    - "&emsp;[color](file:///lsp/HoverObjects.lor#2,21): `red`"
     - "[inventory](file:///lsp/HoverObjects.lor#3,3) (object)"
-    - "&emsp;[potions](file:///lsp/HoverObjects.lor#4,5): 3"
-    - "&emsp;[keys](file:///lsp/HoverObjects.lor#5,5): [1, 2]"
-    - "[items](file:///lsp/HoverObjects.lor#6,3): [1, 2, 3]"
+    - "&emsp;[potions](file:///lsp/HoverObjects.lor#4,5): `3`"
+    - "&emsp;[keys](file:///lsp/HoverObjects.lor#5,5): `[1, 2]`"
+    - "[items](file:///lsp/HoverObjects.lor#6,3): `[1, 2, 3]`"
 </test>
 */
