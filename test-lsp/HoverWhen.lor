@@ -1,0 +1,61 @@
+state
+  mood: calm
+  gold: 3
+
+function chooser(rules)
+  return 0
+
+beat Start
+  when
+    mood == "calm" and gold > 2
+      Calm and rich.
+    - mood == "calm"
+      Calm.
+    true
+      Anything.
+
+  when first
+    gold > 1
+      Rich.
+
+  when pick
+    true
+      Something.
+
+  when chooser
+    true
+      Chosen.
+
+/*
+<test>
+- request: hover
+  at: "|when"
+  contains:
+    - "Plays the most specific rule that applies, and takes turns between equally specific ones."
+- request: hover
+  at: "|when first"
+  contains:
+    - "Plays the first rule that applies, from top to bottom. Useful for thresholds."
+- request: hover
+  at: "|when pick"
+  contains:
+    - "Plays one of the rules that apply, at random."
+- request: hover
+  at: "|when chooser"
+  contains:
+    - "Lets the function `chooser` choose the rule to play."
+- request: hover
+  at: "|mood == \"calm\" and"
+  contains:
+    - "2 conditions"
+- request: hover
+  at: "- |mood"
+  contains:
+    - "1 condition"
+    - "Played only once"
+- request: hover
+  at: "|true\n      Anything"
+  contains:
+    - "Always applies"
+</test>
+*/
