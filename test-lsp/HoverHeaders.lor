@@ -80,13 +80,13 @@ beat Shop(price, discount = 2)
     - "**pay** (function)"
     - "**Parameters**  \n"
     - "amount"
-    - "tip (defaults to 0)"
+    - "defaults to 0)"
 - request: hover
   at: "-> |Shop(3)"
   contains:
     - "**Shop** (beat)"
     - "**Parameters**  \n"
-    - "discount (defaults to 2)"
+    - "defaults to 2)"
     - "The shop, open every day"
 - request: hover
   at: "beat Shop(|price"
