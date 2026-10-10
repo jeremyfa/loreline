@@ -2062,24 +2062,34 @@ class Server {
     }
 
     /**
-     * `Parameters: price (number), discount (defaults to 2)`, or null when
+     * A group of a hover: its title, then one line per item, or null when
      * there is none.
-     * @param details What to say of each one, in parentheses, or null
+     * @param line Wraps each line, to style it
      */
-    static function parametersNote(params:Array<{name:String, details:Array<String>}>):Null<String> {
+    static function hoverGroup(title:String, lines:Array<String>, ?line:(text:String)->String):Null<String> {
 
-        if (params.length == 0) return null;
-        return 'Parameters: ' + [for (param in params) {
+        if (lines.length == 0) return null;
+        return '**$title**  \n' + hoverLines(line != null ? [for (text in lines) line(text)] : lines);
+
+    }
+
+    /**
+     * One line per parameter, with what to say of it in parentheses:
+     * `price (number)`, `discount (defaults to 2)`.
+     */
+    static function parameterLines(params:Array<{name:String, details:Array<String>}>):Array<String> {
+
+        return [for (param in params) {
             final details = [for (detail in param.details) if (detail != null && detail.length > 0) detail];
             param.name + (details.length > 0 ? ' (' + details.join(', ') + ')' : '');
-        }].join(', ');
+        }];
 
     }
 
     /** The parameters of a beat, with their default values */
-    function beatParameters(beatDecl:NBeatDecl, ?typeOf:(param:NBeatParam)->Null<String>):Null<String> {
+    function beatParameters(beatDecl:NBeatDecl, ?typeOf:(param:NBeatParam)->Null<String>):Array<String> {
 
-        return parametersNote([for (param in beatDecl.params ?? []) {
+        return parameterLines([for (param in beatDecl.params ?? []) {
             name: param.name,
             details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? 'defaults to ' + valueText(param.defaultValue) : null]
         }]);
@@ -2087,9 +2097,9 @@ class Server {
     }
 
     /** The parameters of a function, with their default values */
-    static function functionParameters(func:NFunctionDecl, ?typeOf:(name:String)->Null<String>):Null<String> {
+    static function functionParameters(func:NFunctionDecl, ?typeOf:(name:String)->Null<String>):Array<String> {
 
-        return parametersNote([for (arg in func.args ?? []) {
+        return parameterLines([for (arg in func.args ?? []) {
             final eq = arg.indexOf('=');
             final name = (eq != -1 ? arg.substr(0, eq) : arg).trim();
             {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? 'defaults to ' + arg.substr(eq + 1).trim() : null]};
@@ -2098,17 +2108,16 @@ class Server {
     }
 
     /**
-     * `Fields: present (false), greeted (false)`, the fields of a character or
-     * a state with their values, or null when there is none.
+     * One line per field of a character or a state, with its value:
+     * `present: false`, and its type when it isn't obvious.
      * @param typeOf The type to say after the value, when it isn't obvious
      */
-    function fieldsNote(fields:Array<NObjectField>, ?typeOf:(field:NObjectField)->Null<String>):Null<String> {
+    function fieldLines(fields:Array<NObjectField>, ?typeOf:(field:NObjectField)->Null<String>):Array<String> {
 
-        if (fields.length == 0) return null;
-        return 'Fields: ' + [for (field in fields) {
+        return [for (field in fields) {
             final type = typeOf != null ? typeOf(field) : null;
-            field.name + ' (' + valueText(field.value) + (type != null ? ', ' + type : '') + ')';
-        }].join(', ');
+            field.name + ': ' + valueText(field.value) + (type != null ? ' ($type)' : '');
+        }];
 
     }
 
@@ -2200,8 +2209,8 @@ class Server {
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
 
         return makeSectionsHover(
-            hoverHeader(hoverName(beatDecl.name, beatDecl.isPublic ? 'public beat' : 'beat'), [beatParameters(beatDecl)]),
-            [hoverDescriptionForNode(beatDecl).join("\n"), beatLinks(beatDecl, uri, lens)],
+            hoverName(beatDecl.name, beatDecl.isPublic ? 'public beat' : 'beat'),
+            [hoverDescriptionForNode(beatDecl).join("\n"), hoverGroup('Parameters', beatParameters(beatDecl)), beatLinks(beatDecl, uri, lens)],
             content,
             origin ?? beatDecl
         );
@@ -2306,13 +2315,15 @@ class Server {
 
     function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
 
-        return makeHover(hoverHeader(hoverTitle(stateDecl.temporary ? 'Temporary state' : 'State'), [fieldsNote(stateDecl.fields)]), hoverDescriptionForNode(stateDecl), content, stateDecl);
+        return makeSectionsHover(hoverTitle(stateDecl.temporary ? 'Temporary state' : 'State'),
+            [hoverDescriptionForNode(stateDecl).join("\n"), hoverGroup('Fields', fieldLines(stateDecl.fields))], content, stateDecl);
 
     }
 
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, content:String, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(shownCharacterName(characterDecl), 'character'), [fieldsNote(listedCharacterFields(characterDecl))]), hoverDescriptionForNode(characterDecl), content, characterDecl, pos);
+        return makeSectionsHover(hoverName(shownCharacterName(characterDecl), 'character'),
+            [hoverDescriptionForNode(characterDecl).join("\n"), hoverGroup('Fields', fieldLines(listedCharacterFields(characterDecl)))], content, characterDecl, pos);
 
     }
 
@@ -2394,7 +2405,8 @@ class Server {
             name += ')';
         }
 
-        return makeHover(hoverHeader(hoverName(func.name ?? 'function', func.external ? 'function provided by the app' : 'function'), [functionParameters(func)]), hoverDescriptionForNode(func), content, func, lorelinePos);
+        return makeSectionsHover(hoverName(func.name ?? 'function', func.external ? 'function provided by the app' : 'function'),
+            [hoverDescriptionForNode(func).join("\n"), hoverGroup('Parameters', functionParameters(func))], content, func, lorelinePos);
 
     }
 
