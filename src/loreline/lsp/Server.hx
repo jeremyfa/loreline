@@ -2118,8 +2118,8 @@ class Server {
     }
 
     /**
-     * The top of a hover: its title, then a note on what it holds, like
-     * `Starts at 10`, kept close under it. Hovers show text, not code: the
+     * The top of a hover: its title, then lines kept close under it, like
+     * `Returns a number` or `Defaults to 2`. Hovers show text, not code: the
      * code is in the editor.
      */
     static function hoverHeader(title:String, ?note:Array<String>):String {
