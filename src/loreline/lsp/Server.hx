@@ -1775,9 +1775,9 @@ class Server {
                 }
                 return makeBeatDeclHover(beatDecl, uri, content, lens);
             case NStateDecl:
-                return makeStateDeclHover(cast node, content);
+                return makeStateDeclHover(cast node, uri, content, lens);
             case NCharacterDecl:
-                return makeCharacterDeclHover(cast node, content);
+                return makeCharacterDeclHover(cast node, uri, content, lens);
             case NChoiceStatement:
                 return makeChoiceHover(cast node, content);
             case NWhenStatement:
@@ -2108,16 +2108,41 @@ class Server {
     }
 
     /**
-     * One line per field of a character or a state, with its value:
-     * `present: false`, and its type when it isn't obvious.
-     * @param typeOf The type to say after the value, when it isn't obvious
+     * One line per field of a character or a state: its name, linked to where
+     * it's declared, its value, and its type when it's known, like
+     * `present: false (bool)`. A field holding an object gives its own fields
+     * on the lines below, indented.
+     * @param typeOf The type of a field, or null when it isn't known
      */
-    function fieldLines(fields:Array<NObjectField>, ?typeOf:(field:NObjectField)->Null<String>):Array<String> {
+    function fieldLines(fields:Array<NObjectField>, uri:DocumentUri, lens:Lens, ?typeOf:(field:NObjectField)->Null<String>, depth:Int = 0):Array<String> {
 
-        return [for (field in fields) {
-            final type = typeOf != null ? typeOf(field) : null;
-            field.name + ': ' + valueText(field.value) + (type != null ? ' ($type)' : '');
-        }];
+        final lines:Array<String> = [];
+        final indent = [for (_ in 0...depth) '&emsp;'].join('');
+        for (field in fields) {
+            final name = makePositionLink(field.name, uri, field, lens);
+            final inner = objectFields(field.value);
+            if (inner != null) {
+                lines.push(indent + name + ' (object)');
+                for (line in fieldLines(inner, uri, lens, typeOf, depth + 1)) lines.push(line);
+            }
+            else {
+                final type = typeOf != null ? typeOf(field) : null;
+                lines.push(indent + name + ': ' + valueText(field.value) + (type != null ? ' ($type)' : ''));
+            }
+        }
+        return lines;
+
+    }
+
+    /** The fields of a value written as an object, or null when it isn't one */
+    static function objectFields(value:Null<Node>):Null<Array<NObjectField>> {
+
+        if (!(value is NLiteral)) return null;
+        final literal:NLiteral = cast value;
+        return switch literal.literalType {
+            case Object(_): literal.value;
+            case _: null;
+        }
 
     }
 
@@ -2313,17 +2338,17 @@ class Server {
         return groups.join("\n\n---\n\n");
     }
 
-    function makeStateDeclHover(stateDecl:NStateDecl, content:String):Hover {
+    function makeStateDeclHover(stateDecl:NStateDecl, uri:DocumentUri, content:String, lens:Lens):Hover {
 
         return makeSectionsHover(hoverTitle(stateDecl.temporary ? 'Temporary state' : 'State'),
-            [hoverDescriptionForNode(stateDecl).join("\n"), hoverGroup('Fields', fieldLines(stateDecl.fields))], content, stateDecl);
+            [hoverDescriptionForNode(stateDecl).join("\n"), hoverGroup('Fields', fieldLines(stateDecl.fields, uri, lens))], content, stateDecl);
 
     }
 
-    function makeCharacterDeclHover(characterDecl:NCharacterDecl, content:String, ?pos:loreline.Position):Hover {
+    function makeCharacterDeclHover(characterDecl:NCharacterDecl, uri:DocumentUri, content:String, lens:Lens, ?pos:loreline.Position):Hover {
 
         return makeSectionsHover(hoverName(shownCharacterName(characterDecl), 'character'),
-            [hoverDescriptionForNode(characterDecl).join("\n"), hoverGroup('Fields', fieldLines(listedCharacterFields(characterDecl)))], content, characterDecl, pos);
+            [hoverDescriptionForNode(characterDecl).join("\n"), hoverGroup('Fields', fieldLines(listedCharacterFields(characterDecl), uri, lens))], content, characterDecl, pos);
 
     }
 
@@ -2846,7 +2871,7 @@ class Server {
         if (resolved != null) {
 
             if (resolved is NCharacterDecl) {
-                return makeCharacterDeclHover(cast resolved, content, access.pos);
+                return makeCharacterDeclHover(cast resolved, uri, content, lens, access.pos);
             }
             else if (resolved is NFunctionDecl) {
                 return makeFunctionDeclHover(cast resolved, content, access.pos);
