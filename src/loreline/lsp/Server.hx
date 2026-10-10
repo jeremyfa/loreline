@@ -2042,6 +2042,16 @@ class Server {
     }
 
     /**
+     * What a name is, for its title: its type when known, its kind, then what
+     * it belongs to, like `boolean field, Sarah`.
+     */
+    static function hoverWhat(kind:String, ?owner:String, ?type:String):String {
+
+        return (type != null && type.length > 0 ? type + ' ' : '') + kind + (owner != null && owner.length > 0 ? ', ' + owner : '');
+
+    }
+
+    /**
      * The top of a hover: its title, then a note on what it holds, like
      * `Starts at 10`, kept close under it. Hovers show text, not code: the
      * code is in the editor.
@@ -2440,7 +2450,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(param.name, beatDecl.name + ' parameter'), [param.defaultValue != null ? 'Defaults to ' + valueText(param.defaultValue) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', beatDecl.name)), [param.defaultValue != null ? 'Defaults to ' + valueText(param.defaultValue) : null]), null, content, anchor, pos);
 
     }
 
@@ -2453,7 +2463,7 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverName(paramName, (func.name != null ? func.name + ' ' : '') + 'parameter'), [eqIndex != -1 ? 'Defaults to ' + rawArg.substr(eqIndex + 1).trim() : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name)), [eqIndex != -1 ? 'Defaults to ' + rawArg.substr(eqIndex + 1).trim() : null]), null, content, anchor, pos);
 
     }
 
@@ -2847,15 +2857,14 @@ class Server {
     function fieldHeader(field:NObjectField, uri:DocumentUri, lens:Lens):String {
 
         final owner = lens.getParentNode(field);
-        final starts = ['Starts at ' + valueText(field.value)];
-        if (owner is NCharacterDecl) return hoverHeader(hoverName(field.name, characterLink(cast owner, uri, lens) + ' field'), starts);
+        if (owner is NCharacterDecl) return hoverName(field.name, hoverWhat('field', characterLink(cast owner, uri, lens)));
         if (owner is NStateDecl) {
             // A field of the state of a beat names its beat
             final beat = lens.getFirstParentOfType(owner, NBeatDecl);
             final beatOwner = beat != null && beat.name != '_' ? makePositionLink(beat.name, uri, beat, lens) : null;
-            return hoverHeader(hoverName(field.name, (beatOwner != null ? beatOwner + ' ' : '') + 'state field'), starts);
+            return hoverName(field.name, hoverWhat('state field', beatOwner));
         }
-        return hoverHeader(hoverName(field.name, 'field'), starts);
+        return hoverName(field.name, 'field');
 
     }
 
