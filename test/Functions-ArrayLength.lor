@@ -1,0 +1,41 @@
+// The length of an array read in the code of a function, wherever the array
+// comes from: the state, a literal of the script, the function itself, or
+// another array. Bindings may hold the arrays of the script in a list of
+// their platform, which has no `length` field of its own.
+
+state
+  items: ["a", "b", "c"]
+  grid: [[1, 2], [3]]
+
+function len(list)
+  return list.length
+
+function made()
+  var l = ["a", "b"]
+  l.add("c")
+  return l.length
+
+function nested()
+  return grid.length + "/" + grid[0].length + "/" + grid[1].length
+
+function loop()
+  var total = 0
+  var i = 0
+  while i < items.length
+    total = total + 1
+    i = i + 1
+  return total
+
+beat Start
+  State gives ${len(items)}, literal gives ${len(["a", "b", "c", "d"])}, empty gives ${len([])}.
+
+  Made gives ${made()}, nested gives ${nested()}, loop gives ${loop()}.
+
+/*
+<test>
+- expected: |
+    ~ State gives 3, literal gives 4, empty gives 0.
+
+    ~ Made gives 3, nested gives 2/2/1, loop gives 3.
+</test>
+*/

@@ -783,6 +783,12 @@ class Interp {
 
         o = RuntimeCharacterRef.fieldsOf(o);
 
+        // A binding may hold the arrays of the script in a list of its platform
+        // (a C# or Java list), with no length field to reflect on
+        if (f == "length" && Arrays.isArray(o)) {
+            return Arrays.arrayLength(o);
+        }
+
         if (Objects.isFields(o)) {
             return Objects.getField(interpreter, o, f);
         }
