@@ -2862,10 +2862,10 @@ class Server {
      */
     static function whenStrategyDescription(strategy:Null<String>):String {
         return switch strategy {
-            case null: 'Plays the eligible rule with the most criteria (clauses joined by `and`), then the one played least recently, then the first one written.';
-            case 'first': 'Plays the first eligible rule, in written order. The way to write thresholds.';
-            case 'pick': 'Plays one of the eligible rules at random.';
-            case name: 'Calls `$name` with one record per rule (`index`, `eligible`, `criteria`, `played`, `lastPlayed`, `ephemeral`). It returns the index of the rule to play, or -1 to play nothing.';
+            case null: 'Plays the most specific rule that applies, and takes turns between equally specific ones.';
+            case 'first': 'Plays the first rule that applies, from top to bottom. Useful for thresholds.';
+            case 'pick': 'Plays one of the rules that apply, at random.';
+            case name: 'Lets the function `$name` choose the rule to play.';
         }
     }
 
@@ -2885,8 +2885,8 @@ class Server {
         else {
             final criteria = AstUtils.whenRuleScore(rule);
             final alwaysEligible = rule.condition == null || AstUtils.isLiteralTrue(rule.condition);
-            description.push(alwaysEligible ? 'Always eligible, with no criteria.' : 'Criteria: $criteria.');
-            if (rule.once) description.push('Played once: after that, it is never eligible again.');
+            description.push(alwaysEligible ? 'Always applies' : (criteria == 1 ? '1 condition' : '$criteria conditions'));
+            if (rule.once) description.push('Played only once');
         }
         return makeHover(hoverTitle('When rule'), description, content, rule);
     }
