@@ -2042,12 +2042,20 @@ class Server {
     }
 
     /**
-     * What a name is, for its title: its type when known, its kind, then what
-     * it belongs to, like `boolean field, Sarah`.
+     * What a name is, for its title: its type when known, then where it
+     * lives, like `boolean, field of Sarah` or `number, in the state`.
+     * @param kind `state field`, `field`, `parameter`, `local`
+     * @param owner What it belongs to: a character, a beat, a function
      */
     static function hoverWhat(kind:String, ?owner:String, ?type:String):String {
 
-        return (type != null && type.length > 0 ? type + ' ' : '') + kind + (owner != null && owner.length > 0 ? ', ' + owner : '');
+        final hasOwner = owner != null && owner.length > 0;
+        final place = switch kind {
+            case 'state field': hasOwner ? 'in the state of ' + owner : 'in the state';
+            case 'local': hasOwner ? 'local in ' + owner : 'local';
+            case _: hasOwner ? kind + ' of ' + owner : kind;
+        }
+        return (type != null && type.length > 0 ? type + ', ' : '') + place;
 
     }
 
