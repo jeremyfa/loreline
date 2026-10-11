@@ -6,6 +6,7 @@ import haxe.Json;
 import haxe.io.Path;
 import loreline.AstUtils;
 import loreline.Error;
+import loreline.Ifid;
 import loreline.Interpreter;
 import loreline.Lens;
 import loreline.test.TestCase;
@@ -149,6 +150,9 @@ class Cli {
                 case 'lsp':
                     lsp(args.slice(1));
 
+                case 'ifid':
+                    ifid(args.slice(1));
+
                 case 'benchmark':
                     if (args.length >= 2)
                         benchmark(args[1], args.length >= 3 ? (Std.parseInt(args[2]) ?? 1000) : 1000);
@@ -165,6 +169,32 @@ class Cli {
         else {
             help();
         }
+
+    }
+
+    /**
+     * `loreline ifid`: prints a new IFID. With a story, writes it in the
+     * metadata block of the story, or the IFID given after the file, which
+     * keeps the IFID a story already has elsewhere.
+     */
+    function ifid(args:Array<String>) {
+
+        final value = args.length >= 2 ? args[1] : Ifid.generate();
+        if (!Ifid.isValid(value)) {
+            fail('$value is not a valid IFID: it takes 8 to 63 digits, capital letters and hyphens');
+        }
+
+        if (args.length == 0) {
+            print(value);
+            return;
+        }
+
+        final file = args[0];
+        if (!FileSystem.exists(file) || FileSystem.isDirectory(file)) {
+            fail('Invalid file: $file');
+        }
+        File.saveContent(file, Ifid.write(File.getContent(file), value));
+        print(value);
 
     }
 
@@ -337,6 +367,8 @@ class Cli {
         print("");
         print(" " + "benchmark".bold() + " " + "story.lor".underline() + " " + "[iterations]".gray() + "  compare source parsing vs fromJson (AST cache) speed");
         print(" " + "benchmark-when".bold() + " " + "[--variant all]".gray() + " " + "[--concepts N]".gray() + " " + "[--picks N]".gray() + " " + "[--prepare]".gray() + "  measure when blocks on a generated bark system");
+        print(" " + "ifid".bold() + "  print a new IFID, the identifier of a story for the Treaty of Babel");
+        print(" " + "ifid".bold() + " " + "story.lor".underline() + " " + "[ifid]".gray() + "  write a new IFID, or the one given, in the metadata block of the story");
         print(" " + "lsp".bold() + "  run the language server on stdin/stdout");
         print(" " + "lsp".bold() + " " + "[".gray() + "definition" + "|".gray() + "hover" + "|".gray() + "completion" + "]".gray() + " " + "story.lor".underline() + " " + "line:column".underline() + "  send one request, print its JSON result");
         print(" " + "lsp".bold() + " " + "[".gray() + "symbols" + "|".gray() + "format" + "|".gray() + "diagnostics" + "]".gray() + " " + "story.lor".underline());
