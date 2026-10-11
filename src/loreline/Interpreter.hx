@@ -6185,8 +6185,6 @@ class InterpreterContext {
         final numParts = str.parts.length;
 
         var keepWhitespace = (str.quotes != Unquoted);
-        var keepIndents = (str.quotes != Unquoted);
-        var keepComments = (str.quotes != Unquoted);
 
         var trailingTextPartIndex = -1;
         if (!keepWhitespace) {
@@ -6211,90 +6209,12 @@ class InterpreterContext {
 
             switch (part.partType) {
                 case Raw(text):
-                    if (!keepWhitespace) {
-                        text = text.ltrim();
-                    }
-                    if (i == trailingTextPartIndex) {
-                        text = text.rtrim();
-                    }
-                    if (!keepComments) {
-                        text = stripStringComments(text);
-                    }
-                    if (!keepIndents) {
-                        text = stripStringIndent(text);
-                    }
-                    #if loreline_utf8_vector
-                    final chars = Utf8.toCodes(text);
-                    #else
-                    final chars = text;
-                    #end
-                    final len = chars.uLength();
-                    if (len > 0) keepWhitespace = true;
+                    text = prepareRawText(text, str.quotes, !keepWhitespace, i == trailingTextPartIndex);
+                    if (text.uLength() > 0) keepWhitespace = true;
                     // Tags count the characters shown, not the units of the target
-                    inline function addChar(c:Int) {
-                        buf.addChar(c);
-                        if (!Identifiers.isTrailingUnit(c)) offset++;
-                    }
-                    var prevIsDollar:Bool = false;
-                    var prevIsHash:Bool = false;
-                    var escaped:Bool = false;
-                    for (i in 0...len) {
-                        final c = chars.uCharCodeAt(i);
-                        if (escaped) {
-                            if (c == "n".code) {
-                                addChar("\n".code);
-                            }
-                            else if (c == "r".code) {
-                                addChar("\r".code);
-                            }
-                            else if (c == "t".code) {
-                                addChar("\t".code);
-                            }
-                            else {
-                                addChar(c);
-                            }
-                            escaped = false;
-                            prevIsDollar = false;
-                            prevIsHash = false;
-                        }
-                        else if (c == "\\".code) {
-                            escaped = true;
-                            prevIsDollar = false;
-                            prevIsHash = false;
-                        }
-                        else if (c == "$".code) {
-                            if (prevIsDollar) {
-                                addChar(c);
-                                prevIsDollar = false;
-                            }
-                            else {
-                                prevIsDollar = true;
-                            }
-                            prevIsHash = false;
-                        }
-                        else if (c == "#".code) {
-                            if (prevIsHash) {
-                                // ## -> single #
-                                addChar(c);
-                                prevIsHash = false;
-                            }
-                            else {
-                                prevIsHash = true;
-                            }
-                            prevIsDollar = false;
-                        }
-                        else {
-                            if (prevIsHash) {
-                                addChar("#".code);
-                                prevIsHash = false;
-                            }
-                            addChar(c);
-                        }
-                    }
-                    // Flush trailing single #
-                    if (prevIsHash) {
-                        addChar("#".code);
-                    }
+                    final shown = unescapeRawText(text);
+                    buf.add(shown);
+                    offset += Identifiers.characterCount(shown);
 
                 case Expr(expr):
                     keepWhitespace = true;
@@ -6501,7 +6421,125 @@ class InterpreterContext {
         return new NCall(NodeId.UNDEFINED, pos, target, [countExpr, singularLiteral, pluralLiteral]);
     }
 
-    function stripStringIndent(content:String):String {
+    /**
+     * The text of a raw part of a string, before its escapes are read: trimmed
+     * at its start and end when asked, and, in an unquoted string, without its
+     * comments and the indentation of its continuation lines.
+     */
+    static function prepareRawText(text:String, quotes:Quotes, trimStart:Bool, trimEnd:Bool):String {
+        if (trimStart) text = text.ltrim();
+        if (trimEnd) text = text.rtrim();
+        if (quotes == Unquoted) {
+            text = stripStringComments(text);
+            text = stripStringIndent(text);
+        }
+        return text;
+    }
+
+    /**
+     * The text a raw part of a string shows: `\n`, `\r` and `\t` read as
+     * such, any other escaped character as itself, `$$` as `$` and `##` as `#`.
+     */
+    static function unescapeRawText(text:String):String {
+        #if loreline_utf8_vector
+        final chars = Utf8.toCodes(text);
+        #else
+        final chars = text;
+        #end
+        final len = chars.uLength();
+        final buf = new loreline.Utf8.Utf8Buf();
+        var prevIsDollar:Bool = false;
+        var prevIsHash:Bool = false;
+        var escaped:Bool = false;
+        for (i in 0...len) {
+            final c = chars.uCharCodeAt(i);
+            if (escaped) {
+                if (c == "n".code) {
+                    buf.addChar("\n".code);
+                }
+                else if (c == "r".code) {
+                    buf.addChar("\r".code);
+                }
+                else if (c == "t".code) {
+                    buf.addChar("\t".code);
+                }
+                else {
+                    buf.addChar(c);
+                }
+                escaped = false;
+                prevIsDollar = false;
+                prevIsHash = false;
+            }
+            else if (c == "\\".code) {
+                escaped = true;
+                prevIsDollar = false;
+                prevIsHash = false;
+            }
+            else if (c == "$".code) {
+                if (prevIsDollar) {
+                    buf.addChar(c);
+                    prevIsDollar = false;
+                }
+                else {
+                    prevIsDollar = true;
+                }
+                prevIsHash = false;
+            }
+            else if (c == "#".code) {
+                if (prevIsHash) {
+                    // ## -> single #
+                    buf.addChar(c);
+                    prevIsHash = false;
+                }
+                else {
+                    prevIsHash = true;
+                }
+                prevIsDollar = false;
+            }
+            else {
+                if (prevIsHash) {
+                    buf.addChar("#".code);
+                    prevIsHash = false;
+                }
+                buf.addChar(c);
+            }
+        }
+        // Flush trailing single #
+        if (prevIsHash) {
+            buf.addChar("#".code);
+        }
+        return buf.toString();
+    }
+
+    /**
+     * The text of a string made of raw text only, as the script shows it, read
+     * without running the story: used for the metadata of a story.
+     */
+    public static function constantText(str:NStringLiteral):String {
+        final buf = new StringBuf();
+        var keepWhitespace = str.quotes != Unquoted;
+        var trailing = -1;
+        if (!keepWhitespace) {
+            for (i in 0...str.parts.length) {
+                switch str.parts[i].partType {
+                    case Raw(_): trailing = i;
+                    case _:
+                }
+            }
+        }
+        for (i in 0...str.parts.length) {
+            switch str.parts[i].partType {
+                case Raw(text):
+                    text = prepareRawText(text, str.quotes, !keepWhitespace, i == trailing);
+                    if (text.uLength() > 0) keepWhitespace = true;
+                    buf.add(unescapeRawText(text));
+                case _:
+            }
+        }
+        return buf.toString();
+    }
+
+    static function stripStringIndent(content:String):String {
         if (content.indexOf("\n") == -1) return content;
 
         final lines = content.split("\n");
@@ -6542,7 +6580,7 @@ class InterpreterContext {
         return content;
     }
 
-    function stripStringComments(content:String):String {
+    static function stripStringComments(content:String):String {
 
         #if loreline_utf8_vector
         final chars = Utf8.toCodes(content);

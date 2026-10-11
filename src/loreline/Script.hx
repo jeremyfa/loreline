@@ -96,14 +96,8 @@ class Script extends AstNode {
      */
     static function constantValue(expr:NExpr):Any {
         if (expr is NStringLiteral) {
-            final text = new StringBuf();
-            for (part in (cast expr:NStringLiteral).parts) {
-                switch part.partType {
-                    case Raw(raw): text.add(raw);
-                    case _:
-                }
-            }
-            return text.toString();
+            // The same text the script shows when it reads it
+            return Interpreter.constantText(cast expr);
         }
         if (expr is NLiteral) {
             final literal:NLiteral = cast expr;
