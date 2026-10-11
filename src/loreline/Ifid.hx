@@ -43,14 +43,15 @@ class Ifid {
 
     /**
      * 16 random bytes, from the system's source of randomness when there is
-     * one (the crypto API on JavaScript, /dev/urandom elsewhere), so that two
-     * stories made at the same moment don't get the same IFID.
+     * one (the crypto API on JavaScript, /dev/urandom on the targets that can
+     * read files), so that two stories made at the same moment don't get the
+     * same IFID.
      */
     static function randomBytes():Array<Int> {
         #if js
         final bytes:Null<Array<Int>> = js.Syntax.code("(typeof crypto !== 'undefined' && crypto.getRandomValues) ? Array.from(crypto.getRandomValues(new Uint8Array(16))) : null");
         if (bytes != null) return bytes;
-        #elseif sys
+        #elseif (sys && !loreline_gdscript_api)
         try {
             if (sys.FileSystem.exists('/dev/urandom')) {
                 final input = sys.io.File.read('/dev/urandom', true);

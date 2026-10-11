@@ -716,11 +716,18 @@ class ParserContext {
         }
         if (value is NLiteral) {
             final literal:NLiteral = cast value;
-            return switch literal.literalType {
-                case Array: Lambda.foreach((literal.value:Array<Dynamic>), element -> isConstantValue(element));
-                case Object(_): Lambda.foreach((literal.value:Array<NObjectField>), field -> isConstantValue(field.value));
-                case _: true;
+            switch literal.literalType {
+                case Array:
+                    for (element in (literal.value:Array<Dynamic>)) {
+                        if (!isConstantValue(element)) return false;
+                    }
+                case Object(_):
+                    for (field in (literal.value:Array<NObjectField>)) {
+                        if (!isConstantValue(field.value)) return false;
+                    }
+                case _:
             }
+            return true;
         }
         return false;
     }
