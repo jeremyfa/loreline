@@ -94,7 +94,17 @@ beat Shop(price, discount = 2)
   at: "beat Shop(|price"
   contains:
     - "**price** ("
-    - "parameter of "
+    - "parameter of [Shop]("
+- request: hover
+  at: "-> Shop(|3)"
+  contains:
+    - "**price** ("
+    - "parameter of [Shop]("
+- request: hover
+  at: "function pay(|amount"
+  contains:
+    - "**amount** ("
+    - "parameter of [pay]("
 - request: hover
   at: "|discount = 2"
   contains:
