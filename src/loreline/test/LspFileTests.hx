@@ -24,7 +24,8 @@ using loreline.Utf8;
  * - `definition`: `target` (the text the target range covers, such as
  *   `beat Deep`), `file` when it is in another file (relative to the test file),
  *   or `none: true`
- * - `hover`: `contains`, or `none: true`
+ * - `hover`: `contains`, `excludes` (texts that must not be there), or
+ *   `none: true`
  * - `completion`: `includes` and `excludes`, lists of labels, or `none: true`;
  *   `trigger` for a completion triggered by a character instead of invoked
  * - `symbols`: `includes`, names at any depth
@@ -263,6 +264,9 @@ class LspFileTests {
                 final value:String = hover.contents?.value ?? Std.string(hover.contents);
                 for (expected in strings(item.contains)) {
                     if (value.indexOf(expected) == -1) throw 'hover does not contain "$expected":\n$value';
+                }
+                for (unexpected in strings(item.excludes)) {
+                    if (value.indexOf(unexpected) != -1) throw 'hover contains "$unexpected":\n$value';
                 }
 
             case 'completion':
