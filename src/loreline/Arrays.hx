@@ -11,6 +11,30 @@ package loreline;
  */
 class Arrays {
 
+    /**
+     * An array holding values, of the type the runtime gives arrays on this
+     * target: a `List` in C#, an `ArrayList` in Java, a Haxe array elsewhere.
+     */
+    public static function fromValues(values:Array<Any>):Any {
+
+        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
+        final result = new java.util.ArrayList(values.length);
+        for (value in values) {
+            result.add(value);
+        }
+        return result;
+        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
+        cs.Syntax.code('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', values.length);
+        for (value in values) {
+            cs.Syntax.code('result.Add({0})', value);
+        }
+        return cs.Syntax.code('result');
+        #else
+        return values;
+        #end
+
+    }
+
     public static function isArray(array:Any):Bool {
 
         #if (loreline_cs_api && !macro)

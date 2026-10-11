@@ -148,6 +148,14 @@ enum RuntimeAccess {
      */
     BeatAccess(pos:Position, ref:RuntimeBeatRef);
 
+    /**
+     * Represents the metadata block of the story, read with `metadata`.
+     * It can be read, never written.
+     *
+     * @param pos Position in the source code where this access occurs
+     */
+    MetadataAccess(pos:Position);
+
 }
 
 /**
@@ -6861,22 +6869,7 @@ class InterpreterContext {
      */
     function evaluateArrayLiteral(expr:Array<Dynamic>):Any {
 
-        #if (loreline_jvm_api && loreline_use_jvm_types && !macro)
-        final result = new java.util.ArrayList(expr.length);
-        for (elem in expr) {
-            result.add(evaluateExpression(elem));
-        }
-        return result;
-        #elseif (loreline_cs_api && loreline_use_cs_types && !macro)
-        cs.Syntax.code('System.Collections.Generic.List<object> result = new System.Collections.Generic.List<object>({0})', expr.length);
-        for (elem in expr) {
-            final val = evaluateExpression(elem);
-            cs.Syntax.code('result.Add({0})', val);
-        }
-        return cs.Syntax.code('result');
-        #else
-        return [for (elem in expr) evaluateExpression(elem)];
-        #end
+        return Arrays.fromValues([for (elem in expr) evaluateExpression(elem)]);
 
     }
 
@@ -7106,6 +7099,10 @@ class InterpreterContext {
             case BeatAccess(pos, ref):
                 ref;
 
+            case MetadataAccess(pos):
+                // Made anew on each read, so that the script can't change it
+                evaluateObjectLiteral(script.metadataBlock().fields);
+
         }
 
     }
@@ -7140,6 +7137,9 @@ class InterpreterContext {
             case BeatAccess(pos, ref):
                 throw new RuntimeError('Cannot overwrite beat: ${ref.beat.name}', pos);
 
+            case MetadataAccess(pos):
+                throw metadataChangeError(pos);
+
         }
 
     }
@@ -7158,10 +7158,16 @@ class InterpreterContext {
 
             case NAccess:
                 final access:NAccess = cast target;
+                if (access.target != null && readsMetadata(access.target)) {
+                    throw metadataChangeError(access.pos);
+                }
                 resolveAccess(access, access.target, access.name);
 
             case NArrayAccess:
                 final arrAccess:NArrayAccess = cast target;
+                if (readsMetadata(arrAccess.target)) {
+                    throw metadataChangeError(arrAccess.pos);
+                }
                 final target = evaluateExpression(arrAccess.target);
                 final index = evaluateExpression(arrAccess.index);
 
@@ -7302,6 +7308,11 @@ class InterpreterContext {
             );
         }
 
+        // The metadata of the story, unless a name of the script hides it
+        if (name == 'metadata' && script.metadataBlock() != null) {
+            return MetadataAccess(access?.pos ?? currentScope?.node?.pos ?? script.pos);
+        }
+
         if (!strictAccess) {
             // When variable is not resolved, write to top level state
             return FieldAccess(
@@ -7313,6 +7324,35 @@ class InterpreterContext {
 
         throw new RuntimeError('Undefined variable: $name', access?.pos ?? currentScope?.node?.pos ?? script.pos);
 
+    }
+
+    /**
+     * Whether an expression reads the story's metadata or something inside it,
+     * like `metadata.credits` in `metadata.credits.music = …`.
+     */
+    function readsMetadata(expr:NExpr):Bool {
+        var root:Null<NExpr> = expr;
+        while (root != null) {
+            if (root is NAccess) {
+                final access:NAccess = cast root;
+                if (access.target == null) {
+                    return access.name == 'metadata'
+                        && resolveAccess(access, null, access.name).match(MetadataAccess(_));
+                }
+                root = access.target;
+            }
+            else if (root is NArrayAccess) {
+                root = (cast root:NArrayAccess).target;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function metadataChangeError(pos:Position):RuntimeError {
+        return new RuntimeError("The story's metadata can't be changed by the script", pos);
     }
 
     static inline function numberOf(value:Dynamic, type:ValueType):Float {
