@@ -59,6 +59,9 @@ class ParserContext {
     /** Comments waiting to be attached to nodes */
     var pendingComments:Array<Comment>;
 
+    /** Whether the metadata block of the file was parsed already */
+    var metadataParsed:Bool = false;
+
     /** Position of the last processed token */
     var lastTokenEnd:Position;
 
@@ -397,6 +400,7 @@ class ParserContext {
         return switch (tokens[current].type) {
             case KwImport: parseImport();
             case KwState: parseStateDecl(false);
+            case KwMetadata if (topLevel): parseMetadataDecl();
             case KwNew:
                 advance();
                 if (!check(KwState)) {
@@ -654,6 +658,71 @@ class ParserContext {
         stateNode.pos = stateNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
 
         return stateNode;
+    }
+
+    /**
+     * Parses the metadata block of a story. A file has one at most, and its
+     * values are constant: the story's details don't depend on the game.
+     * @return Metadata block node
+     */
+    function parseMetadataDecl():NMetadataDecl {
+        final startPos = currentPos();
+        if (metadataParsed) {
+            throw new ParseError('A story has only one metadata block', startPos);
+        }
+        metadataParsed = true;
+
+        final metadataNode = new NMetadataDecl(nextNodeId(BLOCK), startPos, []);
+
+        expect(KwMetadata);
+
+        final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
+        metadataNode.style = (blockEnd == RBrace) ? Braces : Plain;
+
+        attachComments(metadataNode);
+
+        while (!check(blockEnd) && !isAtEnd()) {
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+            final field = parseObjectField();
+            if (!isConstantValue(field.value)) {
+                throw new ParseError('Metadata values are constant: text, numbers, true or false, lists and objects', field.pos);
+            }
+            metadataNode.fields.push(field);
+            while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        }
+
+        while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
+        expect(blockEnd);
+
+        metadataNode.pos = metadataNode.pos.extendedTo(prevNonWhitespaceOrComment().pos);
+
+        return metadataNode;
+    }
+
+    /**
+     * Whether a value is written as is, with no interpolation, call or
+     * operation: text, numbers, booleans, null, and lists and objects of those.
+     */
+    static function isConstantValue(value:Null<NExpr>):Bool {
+        if (value == null) return true;
+        if (value is NStringLiteral) {
+            for (part in (cast value:NStringLiteral).parts) {
+                switch part.partType {
+                    case Raw(_):
+                    case _: return false;
+                }
+            }
+            return true;
+        }
+        if (value is NLiteral) {
+            final literal:NLiteral = cast value;
+            return switch literal.literalType {
+                case Array: Lambda.foreach((literal.value:Array<Dynamic>), element -> isConstantValue(element));
+                case Object(_): Lambda.foreach((literal.value:Array<NObjectField>), field -> isConstantValue(field.value));
+                case _: true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1120,7 +1189,7 @@ class ParserContext {
      */
     function isKnownNodeStart():Bool {
         return switch (tokens[current].type) {
-            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Arrow | LString(_): true;
+            case KwState | KwMetadata | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Arrow | LString(_): true;
             case Identifier(_) if (peek().type == Colon): true; // Dialogue
             case Identifier(_) if (peek().type == Arrow): true; // Transition
             case _: false;
@@ -2445,7 +2514,7 @@ class ParserContext {
 
         while (!isAtEnd()) {
             switch (tokens[current].type) {
-                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Indent:
+                case RBrace | KwState | KwMetadata | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Indent:
                     return;
                 case Arrow:
                     advance();

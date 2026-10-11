@@ -658,6 +658,77 @@ class NStateDecl extends AstNode {
 }
 
 /**
+ * Represents the metadata block of a story: its title, authors, IFID and
+ * other details, for the app running it and the tools around it. Its values
+ * are constant, and don't change while the story plays.
+ */
+class NMetadataDecl extends AstNode {
+
+    /**
+     * Fields defined in this block.
+     */
+    public var fields:Array<NObjectField>;
+
+    /**
+     * Block style of this block
+     */
+    public var style:BlockStyle;
+
+    /**
+     * Creates a new metadata block node.
+     * @param pos Position in source where this block appears
+     * @param fields Array of field definitions
+     * @param leadingComments Optional comments before the block
+     * @param trailingComments Optional comments after the block
+     */
+    public function new(id:NodeId, pos:Position, fields:Array<NObjectField>, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
+        super(id, pos, leadingComments, trailingComments);
+        this.fields = fields;
+        this.style = Plain;
+    }
+
+    override function type():String {
+        return "Metadata";
+    }
+
+    public function get(name:String):NExpr {
+
+        for (field in fields) {
+            if (field.name == name) {
+                return field.value;
+            }
+        }
+
+        return null;
+
+    }
+
+    public override function each(handleNode:(node:Node, parent:Node)->Void):Void {
+        super.each(handleNode);
+
+        if (fields != null) {
+            for (i in 0...fields.length) {
+                final child = fields[i];
+                handleNode(child, this);
+                child.each(handleNode);
+            }
+        }
+    }
+
+    /**
+     * Converts the metadata block to a JSON representation.
+     * @return Dynamic object containing the block data
+     */
+    public override function toJson():Dynamic {
+        final json:Dynamic = super.toJson();
+        json.fields = [for (field in fields) field.toJson()];
+        json.style = style.toString();
+        return json;
+    }
+
+}
+
+/**
  * Represents an object field in the AST (name-value pair).
  */
 class NObjectField extends AstNode {

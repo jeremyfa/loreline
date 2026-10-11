@@ -55,6 +55,7 @@ class JsonToAst {
             case "Script": scriptFromJson(json);
             case "Comment": commentFromJson(json);
             case "State": stateFromJson(json);
+            case "Metadata": metadataFromJson(json);
             case "Field": objectFieldFromJson(json);
             case "Character": characterFromJson(json);
             case "Beat": beatFromJson(json);
@@ -102,6 +103,17 @@ class JsonToAst {
         final fields:Array<NObjectField> = [for (f in fieldsArr) cast nodeFromJson(f)];
         final comments = extractComments(json);
         final node = new NStateDecl(id, pos, json.temporary, fields, comments.leading, comments.trailing);
+        node.style = blockStyleFromString(json.style);
+        return node;
+    }
+
+    static function metadataFromJson(json:Dynamic):NMetadataDecl {
+        final id = idFromJson(json);
+        final pos = positionFromJson(json.pos);
+        final fieldsArr:Array<Dynamic> = json.fields;
+        final fields:Array<NObjectField> = [for (f in fieldsArr) cast nodeFromJson(f)];
+        final comments = extractComments(json);
+        final node = new NMetadataDecl(id, pos, fields, comments.leading, comments.trailing);
         node.style = blockStyleFromString(json.style);
         return node;
     }

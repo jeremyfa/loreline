@@ -112,6 +112,8 @@ enum TokenType {
     KwImport;
     /** State declaration keyword */
     KwState;
+    /** Metadata block of a story, only where it opens a top-level block (see Lexer.isMetadataStart) */
+    KwMetadata;
     /** Beat declaration keyword */
     KwBeat;
     /** Character declaration keyword */
@@ -267,6 +269,7 @@ class TokenTypeHelpers {
             case [Unindent, Unindent]: true;
             case [LineBreak, LineBreak]: true;
             case [KwState, KwState]: true;
+            case [KwMetadata, KwMetadata]: true;
             case [KwBeat, KwBeat]: true;
             case [KwCharacter, KwCharacter]: true;
             case [KwChoice, KwChoice]: true;
@@ -352,7 +355,7 @@ class TokenTypeHelpers {
      */
     public static function isBlockStart(a:TokenType):Bool {
         return switch a {
-            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf: true;
+            case KwState | KwMetadata | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf: true;
             case KwSequence | KwCycle | KwOnce | KwPick | KwShuffle | Separator: true;
             case _: false;
         }
@@ -362,6 +365,7 @@ class TokenTypeHelpers {
         return switch a {
             case KwImport: 'import';
             case KwState: 'state';
+            case KwMetadata: 'metadata';
             case KwBeat: 'beat';
             case KwCharacter: 'character';
             case KwChoice: 'choice';
@@ -650,7 +654,8 @@ class Token {
             tokens.push(token);
 
             switch token.type {
-                case KwState:
+                case KwState | KwMetadata:
+                    // The fields of a metadata block read like those of a state
                     nextBlock = StateIndent;
                 case KwCharacter:
                     nextBlock = CharacterIndent;
@@ -1099,6 +1104,30 @@ class Token {
         }
         if (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) return false;
         return nextLineOpensBlock(p, indent);
+    }
+
+    /**
+     * Whether `metadata` at a position opens the metadata block of a story:
+     * at the top level, first on its line and not indented, then a block,
+     * indented or in braces. Anywhere else it's a name like any other.
+     */
+    function isMetadataStart(pos:Int):Bool {
+        final end = wordEnd(pos, 'metadata');
+        if (end == -1 || stack.length > 0) return false;
+
+        // First on its line, not indented
+        if (pos > 0 && input.uCharCodeAt(pos - 1) != "\n".code && input.uCharCodeAt(pos - 1) != "\r".code) return false;
+
+        // Brace block on the same line
+        var p = skipInlineSpacesAndComments(end);
+        if (p < this.length && input.uCharCodeAt(p) == "{".code) return true;
+
+        // Otherwise the line must end here, and a block must follow
+        if (p < this.length && input.uCharCodeAt(p) == "/".code && p + 1 < this.length && input.uCharCodeAt(p + 1) == "/".code) {
+            while (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) p++;
+        }
+        if (p < this.length && input.uCharCodeAt(p) != "\n".code && input.uCharCodeAt(p) != "\r".code) return false;
+        return nextLineOpensBlock(p, 0);
     }
 
     /**
@@ -2877,6 +2906,11 @@ class Token {
                 if (identifier == 'public' && isPublicBeatStart(nameEnd(pos))) {
                     return null;
                 }
+
+                // Skip if opening the metadata block of the story
+                if (identifier == 'metadata' && isMetadataStart(pos)) {
+                    return null;
+                }
             }
         }
 
@@ -2970,6 +3004,7 @@ class Token {
                 if (isLabelStart(nextLinePos)) return null;
                 if (isIfStart(nextLinePos)) return null;
                 if (isWhenStart(nextLinePos)) return null;
+                if (isMetadataStart(nextLinePos)) return null;
                 if (isIdentifierExpressionStart(nextLinePos, true)) return null;
                 // Check for keywords (beat, state, character, choice, function, etc.)
                 if (isNameStartAt(nextLinePos)) {
@@ -3841,6 +3876,11 @@ class Token {
         // `when` is a keyword only where it opens a block
         if (word == 'when' && isWhenStart(startPos)) {
             tokenType = KwWhen;
+        }
+
+        // `metadata` is a keyword only where it opens a block at the top level
+        if (word == 'metadata' && isMetadataStart(startPos)) {
+            tokenType = KwMetadata;
         }
 
         // `public` is a keyword only right before `beat`

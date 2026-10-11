@@ -330,6 +330,8 @@ class Printer {
                 printScript(cast node);
             case NStateDecl:
                 printStateDecl(cast node);
+            case NMetadataDecl:
+                printMetadataDecl(cast node);
             case NCharacterDecl:
                 printCharacterDecl(cast node);
             case NBeatDecl:
@@ -529,6 +531,39 @@ class Printer {
         writeln();
         unindent();
         if (state.style == Braces) writeln('}');
+    }
+
+    /**
+     * Prints the metadata block of a story, like a state.
+     * @param metadata Metadata block to print
+     */
+    function printMetadataDecl(metadata:NMetadataDecl) {
+        writeln();
+        writeln();
+        printLeadingComments(metadata);
+        write('metadata');
+        space();
+        printTrailingComments(metadata);
+        if (metadata.style == Braces) writeln('{');
+        else writeln();
+        indent();
+        var first = true;
+        for (field in metadata.fields) {
+            if (!first) {
+                if (_beginLine == 0) {
+                    writeln();
+                }
+            }
+            first = false;
+            printLeadingComments(field);
+            write('${field.name}:');
+            space();
+            printTrailingComments(field);
+            printNode(field.value);
+        }
+        writeln();
+        unindent();
+        if (metadata.style == Braces) writeln('}');
     }
 
     /**

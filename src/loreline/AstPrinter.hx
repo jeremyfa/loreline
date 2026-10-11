@@ -181,6 +181,17 @@ class AstPrinter {
                 }
                 indentLevel--;
 
+            case NMetadataDecl:
+                final metadata:NMetadataDecl = cast node;
+                printBlockStyle(metadata.style);
+                addLineBreak();
+                indentLevel++;
+                for (field in metadata.fields) {
+                    printNode(field);
+                    addLineBreak();
+                }
+                indentLevel--;
+
             case NObjectField:
                 final field:NObjectField = cast node;
                 add(' name="');
