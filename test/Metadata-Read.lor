@@ -9,7 +9,9 @@ metadata
 
 beat Start
   Welcome to $metadata.title.
+
   Version ${metadata.version} by ${metadata.author[0]} and ${metadata.author[1]}.
+
   Music by ${metadata.credits.music}, game ${metadata.ifid}.
 
 /*

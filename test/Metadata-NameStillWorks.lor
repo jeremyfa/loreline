@@ -6,7 +6,9 @@ state
 
 beat Start
   Value is $metadata.
-  metadata = updated
+
+  metadata = "updated"
+
   Then $metadata.
 
 /*
