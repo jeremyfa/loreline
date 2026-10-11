@@ -132,6 +132,14 @@ function Script._new(internal)
     return setmetatable({ _internal = internal }, Script)
 end
 
+--- Get a field of the story's metadata block, like its title, author or IFID.
+-- Values have the same types as state fields.
+-- @param name string The field name to retrieve.
+-- @return any The field value, or nil if the block doesn't give it.
+function Script:get_metadata_field(name)
+    return self._internal:getMetadataField(name)
+end
+
 --- Reconstruct a Script from a JSON string.
 -- @param json_str string A JSON string (as returned by `to_json()`).
 -- @return Script The reconstructed Script.

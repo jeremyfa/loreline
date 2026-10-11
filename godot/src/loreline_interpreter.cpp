@@ -72,19 +72,6 @@ public:
 
 HashMap<int, LorelineInterpreter *> LorelineInterpreter::_js_registry;
 
-// Parses a JSON string returned by the JS bridge into a Variant.
-// Values cross the eval boundary as JSON so containers (arrays,
-// dictionaries) survive; scalars ride the same way for uniformity.
-static Variant loreline_json_to_variant(const Variant &json_str) {
-	if (json_str.get_type() != Variant::STRING) return Variant();
-	String s = json_str;
-	if (s.is_empty()) return Variant();
-	Ref<JSON> json_parser;
-	json_parser.instantiate();
-	if (json_parser->parse(s) != OK) return Variant();
-	return json_parser->get_data();
-}
-
 // Serializes a Variant (including arrays and dictionaries) into a
 // JS expression that rebuilds the value on the JS side.
 static String loreline_variant_to_js_json(const Variant &value) {

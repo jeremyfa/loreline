@@ -494,6 +494,12 @@ static const char LORELINE_JS_BRIDGE[] = R"LORELINE_BRIDGE(
             return Loreline.print(script);
         },
 
+        getMetadataField: function(scriptId, field) {
+            var script = _getObj(scriptId);
+            if (!script) return 'null';
+            return _lorStringify(script.getMetadataField(field));
+        },
+
         scriptToJson: function(scriptId, pretty) {
             var script = _getObj(scriptId);
             if (!script) return "";

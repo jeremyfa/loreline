@@ -248,6 +248,19 @@ class Script(Node):
     def __init__(self, _internal: Any) -> None:
         super().__init__(_internal)
 
+    def get_metadata_field(self, name: str) -> Any:
+        """Get a field of the story's metadata block, like its title, author or IFID.
+
+        Values have the same types as state fields.
+
+        Args:
+            name: The field name to retrieve.
+
+        Returns:
+            The field value, or None if the block doesn't give it.
+        """
+        return self._internal.getMetadataField(name)
+
     @staticmethod
     def from_json(json_str: str) -> "Script":
         """Reconstruct a Script from a JSON string.

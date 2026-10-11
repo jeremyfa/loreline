@@ -13,6 +13,17 @@ public class Script extends Node {
     }
 
     /**
+     * Gets a field of the story's metadata block, like its title, author or
+     * IFID. Values have the same types as state fields.
+     *
+     * @param name the name of the field
+     * @return the field value or null if the block doesn't give it
+     */
+    public Object getMetadataField(String name) {
+        return runtimeScript.getMetadataField(name);
+    }
+
+    /**
      * Reconstructs a Script from a JSON string.
      *
      * @param json a JSON string (as returned by {@link #toJson()})

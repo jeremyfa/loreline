@@ -658,6 +658,14 @@ export class Script extends Node {
     filePath: string | null;
 
     /**
+     * Gets a field of the story's metadata block, as written in the script.
+     *
+     * @param name The name of the field to get
+     * @return The field value or null if not found
+     */
+    getMetadataField(name: string): any;
+
+    /**
      * Reconstructs a Script from a JSON representation.
      * @param json The JSON object (as returned by script.toJson())
      * @return The reconstructed Script

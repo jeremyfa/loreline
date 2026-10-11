@@ -24,6 +24,17 @@ namespace Loreline
         }
 
         /// <summary>
+        /// Gets a field of the story's metadata block, like its title, author or IFID.
+        /// Values have the same types as state fields.
+        /// </summary>
+        /// <param name="name">The name of the field to get</param>
+        /// <returns>The field value or null if the block doesn't give it</returns>
+        public object GetMetadataField(string name)
+        {
+            return RuntimeScript.getMetadataField(name);
+        }
+
+        /// <summary>
         /// Reconstructs a Script from a JSON string.
         /// </summary>
         /// <param name="json">A JSON string (as returned by <see cref="Node.ToJson"/>)</param>

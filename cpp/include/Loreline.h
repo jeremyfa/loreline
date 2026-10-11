@@ -370,6 +370,11 @@ LORELINE_PUBLIC void Loreline_parseAsync(
 
 /* Translations: extract from a script for localized playback */
 LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Script* script);
+
+/* A field of the story's metadata block, like its title, author or IFID, read from the
+ * parsed script: no interpreter needed. Values have the same types as state fields, and
+ * the value is null when the block doesn't give the field. */
+LORELINE_PUBLIC Loreline_Value Loreline_getMetadataField(Loreline_Script* script, Loreline_String field);
 LORELINE_PUBLIC void Loreline_releaseTranslations(Loreline_Translations* translations);
 
 /* Translations: load all .<locale>.lor files from the script's import tree.

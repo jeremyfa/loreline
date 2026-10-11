@@ -1583,6 +1583,29 @@ LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Scr
     return handle;
 }
 
+/* -- Metadata --------------------------------------------------------------- */
+
+static LORELINE_NOINLINE void Loreline_getMetadataField_hx(
+    Loreline_Script* script, Loreline_String field, Loreline_Value* outResult
+) {
+    LORELINE_HX_BEGIN
+    ::loreline::Script hxScript = (::loreline::Script)::Dynamic(script->obj);
+    ::Dynamic val = hxScript->getMetadataField(linc_toHxString(field));
+    *outResult = linc_hxToValue(val);
+    LORELINE_HX_END
+}
+
+LORELINE_PUBLIC Loreline_Value Loreline_getMetadataField(Loreline_Script* script, Loreline_String field) {
+    if (!script || field.isNull()) return Loreline_Value::null_val();
+    Loreline_Value result;
+
+    LORELINE_BEGIN_CALL_SYNC
+    Loreline_getMetadataField_hx(script, field, &result);
+    LORELINE_END_CALL
+
+    return result;
+}
+
 static LORELINE_NOINLINE void Loreline_releaseTranslations_hx(Loreline_Translations* translations) {
     LORELINE_HX_BEGIN
     delete translations;

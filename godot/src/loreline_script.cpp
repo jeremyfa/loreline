@@ -40,6 +40,7 @@ void LorelineScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("extract_translations"), &LorelineScript::extract_translations);
 	ClassDB::bind_method(D_METHOD("print_script"), &LorelineScript::print_script);
 	ClassDB::bind_method(D_METHOD("to_json", "pretty"), &LorelineScript::to_json, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_metadata_field", "field"), &LorelineScript::get_metadata_field);
 	ClassDB::bind_static_method("LorelineScript", D_METHOD("from_json", "json"), &LorelineScript::from_json);
 }
 
@@ -291,6 +292,26 @@ String LorelineScript::print_script() {
 		return String();
 	}
 	return String::utf8(result.c_str());
+#endif
+}
+
+Variant LorelineScript::get_metadata_field(const String &field) {
+#ifdef LORELINE_USE_JS
+	if (_js_id == 0) return Variant();
+	JavaScriptBridge *js = JavaScriptBridge::get_singleton();
+	if (!js) return Variant();
+	String escaped_field = loreline_escape_js(field);
+	return loreline_json_to_variant(js->eval("_lorelineBridge.getMetadataField(" + String::num_int64(_js_id) +
+		",'" + escaped_field + "')", true));
+#else
+	if (!_script) {
+		return Variant();
+	}
+	CharString field_utf8 = field.utf8();
+	Loreline_Value value = Loreline_getMetadataField(
+			_script,
+			Loreline_String(field_utf8.get_data()));
+	return LorelineInterpreter::_value_to_variant(value);
 #endif
 }
 

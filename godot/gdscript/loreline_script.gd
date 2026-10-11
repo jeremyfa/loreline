@@ -30,6 +30,11 @@ func print_script() -> String:
 	return _Loreline_Loreline._print(_script, null, null)
 
 
+## Returns a field of the story's metadata block, or null.
+func get_metadata_field(field: String):
+	return _script.getMetadataField(field) if _script != null else null
+
+
 ## Serializes the script AST to JSON.
 func to_json(pretty: bool = false) -> String:
 	return _Loreline_loreline_Json.stringify(_script.toJson(), pretty)
