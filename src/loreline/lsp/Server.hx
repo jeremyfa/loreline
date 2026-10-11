@@ -1773,7 +1773,7 @@ class Server {
                         if (param.namePos != null && param.namePos.length > 0 &&
                             lorelinePos.offset >= param.namePos.offset &&
                             lorelinePos.offset <= param.namePos.offset + param.namePos.length) {
-                            return makeBeatParamHover(param, beatDecl, content, beatDecl, param.namePos);
+                            return makeBeatParamHover(param, beatDecl, uri, content, lens, beatDecl, param.namePos);
                         }
                     }
                 }
@@ -1791,7 +1791,7 @@ class Server {
             case NImportStatement:
                 return makeImportHover(cast node, content);
             case NFunctionDecl:
-                return makeFunctionHover(cast node, content, lens, lorelinePos);
+                return makeFunctionHover(cast node, uri, content, lens, lorelinePos);
             case NTransition:
                 final transition:NTransition = cast node;
                 if (transition.target == '.') {
@@ -2436,10 +2436,10 @@ class Server {
 
     }
 
-    function makeFunctionHover(func:NFunctionDecl, content:String, lens:Lens, lorelinePos:loreline.Position):Hover {
+    function makeFunctionHover(func:NFunctionDecl, uri:DocumentUri, content:String, lens:Lens, lorelinePos:loreline.Position):Hover {
 
         // Parameter hover when pointing at a name in the signature parens
-        final paramHover = makeFunctionSignatureParamHover(func, content, lorelinePos);
+        final paramHover = makeFunctionSignatureParamHover(func, uri, content, lens, lorelinePos);
         if (paramHover != null) return paramHover;
 
         var expr = null;
@@ -2522,9 +2522,9 @@ class Server {
     /**
      * Creates a hover for a beat parameter, showing its default value when any.
      */
-    function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
+    function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', beatDecl.name)), [param.defaultValue != null ? 'Defaults to ' + hoverValue(valueText(param.defaultValue)) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', makePositionLink(beatDecl.name, uri, beatDecl, lens))), [param.defaultValue != null ? 'Defaults to ' + hoverValue(valueText(param.defaultValue)) : null]), null, content, anchor, pos);
 
     }
 
@@ -2532,12 +2532,12 @@ class Server {
      * Creates a hover for a function parameter from its raw signature entry
      * (e.g. "level = 1": name before the first `=`, default after).
      */
-    function makeFunctionParamHover(rawArg:String, func:NFunctionDecl, content:String, anchor:Node, ?pos:loreline.Position):Hover {
+    function makeFunctionParamHover(rawArg:String, func:NFunctionDecl, uri:DocumentUri, content:String, lens:Lens, anchor:Node, ?pos:loreline.Position):Hover {
 
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name)), [eqIndex != -1 ? 'Defaults to ' + hoverValue(rawArg.substr(eqIndex + 1).trim()) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name != null ? makePositionLink(func.name, uri, func, lens) : null)), [eqIndex != -1 ? 'Defaults to ' + hoverValue(rawArg.substr(eqIndex + 1).trim()) : null]), null, content, anchor, pos);
 
     }
 
@@ -2603,13 +2603,13 @@ class Server {
                         // Beats win over functions, matching runtime precedence
                         final beat = lens.findBeatByNameFromNode(access.name, owner);
                         if (beat != null) {
-                            return makeBeatParamHoverAt(beat, index, content, anchor);
+                            return makeBeatParamHoverAt(beat, index, uri, content, lens, anchor);
                         }
                         final resolved = lens.resolveAccess(access);
                         if (resolved is NFunctionDecl) {
                             final func:NFunctionDecl = cast resolved;
                             if (func.args != null && index < func.args.length) {
-                                return makeFunctionParamHover(func.args[index], func, content, anchor);
+                                return makeFunctionParamHover(func.args[index], func, uri, content, lens, anchor);
                             }
                         }
                     }
@@ -2620,7 +2620,7 @@ class Server {
                 if (name != null) {
                     final beat = lens.findBeatByNameFromNode(name, owner);
                     if (beat != null) {
-                        return makeBeatParamHoverAt(beat, index, content, anchor);
+                        return makeBeatParamHoverAt(beat, index, uri, content, lens, anchor);
                     }
                 }
 
@@ -2634,10 +2634,10 @@ class Server {
     /**
      * Param hover for the beat's parameter at the given index, if declared.
      */
-    function makeBeatParamHoverAt(beat:NBeatDecl, index:Int, content:String, anchor:Node):Null<Hover> {
+    function makeBeatParamHoverAt(beat:NBeatDecl, index:Int, uri:DocumentUri, content:String, lens:Lens, anchor:Node):Null<Hover> {
 
         if (beat.params != null && index < beat.params.length) {
-            return makeBeatParamHover(beat.params[index], beat, content, anchor);
+            return makeBeatParamHover(beat.params[index], beat, uri, content, lens, anchor);
         }
 
         return null;
@@ -2752,7 +2752,7 @@ class Server {
      * the lexer's top-level comma splitting; bails out (no hover) on any
      * inconsistency rather than guessing.
      */
-    function makeFunctionSignatureParamHover(func:NFunctionDecl, content:String, lorelinePos:loreline.Position):Null<Hover> {
+    function makeFunctionSignatureParamHover(func:NFunctionDecl, uri:DocumentUri, content:String, lens:Lens, lorelinePos:loreline.Position):Null<Hover> {
 
         if (func.args == null || func.args.length == 0) return null;
 
@@ -2815,7 +2815,7 @@ class Server {
             if (lorelinePos.offset >= identStart && lorelinePos.offset <= identEnd) {
                 // The whole signature sits on the declaration line
                 final identPos = new loreline.Position(func.pos.line, func.pos.column + (identStart - func.pos.offset), identStart, identEnd - identStart);
-                return makeFunctionParamHover(func.args[index], func, content, func, identPos);
+                return makeFunctionParamHover(func.args[index], func, uri, content, lens, func, identPos);
             }
         }
 
@@ -2947,7 +2947,7 @@ class Server {
         // Beat parameter usage (params shadow state fields, innermost beat first)
         final beatParam = lens.findBeatParamFromAccess(access);
         if (beatParam != null) {
-            return makeBeatParamHover(beatParam.param, beatParam.beat, content, access);
+            return makeBeatParamHover(beatParam.param, beatParam.beat, uri, content, lens, access);
         }
 
         final resolved = lens.resolveAccess(access);
