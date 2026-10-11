@@ -2256,10 +2256,9 @@ class Server {
 
         final description:Array<String> = [];
 
-        if (node.leadingComments != null) {
-            for (comment in node.leadingComments) {
-                description.push(comment.content.trim());
-            }
+        // The comments right above it, not those set apart by a blank line
+        for (comment in AstUtils.docComments(node)) {
+            description.push(comment.content.trim());
         }
 
         if (node.trailingComments != null) {
