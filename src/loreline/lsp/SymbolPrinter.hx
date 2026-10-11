@@ -62,6 +62,8 @@ class SymbolPrinter {
                     symbols.push(printWhen(cast decl));
                 case NStateDecl:
                     symbols.push(printStateDecl(cast decl));
+                case NMetadataDecl:
+                    symbols.push(printMetadataDecl(cast decl));
                 case NBeatDecl:
                     symbols.push(printBeatDecl(cast decl));
                 case NCharacterDecl:
@@ -140,6 +142,36 @@ class SymbolPrinter {
             deprecated: false,
             range: rangeFromPosition(char.pos),
             selectionRange: rangeFromPosition(char.pos),
+            children: children
+        };
+    }
+
+    /**
+     * Process the metadata block of a story.
+     * @param metadata Metadata node to process
+     * @return Document symbol for the block
+     */
+    function printMetadataDecl(metadata:NMetadataDecl):DocumentSymbol {
+        final children:Array<DocumentSymbol> = [];
+
+        for (field in metadata.fields) {
+            children.push({
+                name: field.name,
+                detail: printValue(field.value),
+                kind: SymbolKind.Property,
+                deprecated: false,
+                range: rangeFromPosition(field.pos),
+                selectionRange: rangeFromPosition(field.pos)
+            });
+        }
+
+        return {
+            name: "metadata",
+            detail: children.length + " fields",
+            kind: SymbolKind.Namespace,
+            deprecated: false,
+            range: rangeFromPosition(metadata.pos),
+            selectionRange: rangeFromPosition(metadata.pos),
             children: children
         };
     }

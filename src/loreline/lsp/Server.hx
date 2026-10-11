@@ -23,6 +23,15 @@ class Server {
 
     final RE_ARRAY_ACCESS_BEFORE = ~/(\])((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
 
+    /** The start of a line where the name of a field goes: its indentation, then the name being typed */
+    final RE_FIELD_NAME_START = ~/^[ \t]+[A-Za-z_][A-Za-z0-9_]*$|^[ \t]+$/;
+
+    /** A field of a block: its name, then a colon */
+    final RE_FIELD_LINE = ~/^[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]*:/;
+
+    /** The line opening the metadata block */
+    final RE_METADATA_LINE = ~/^metadata[ \t]*(\{[ \t]*)?(\/\/.*)?$/;
+
     /**
      * Maps document URIs to their parsed ASTs.
      */
@@ -902,13 +911,22 @@ class Server {
 
         final uri = params.textDocument.uri;
 
-        final ast = documents.get(uri);
-        if (ast == null) return [];
-
         final content = documentContents.get(uri);
         if (content == null) return [];
 
         final lorelinePos = toLorelinePosition(params.position, content);
+
+        // A key of the metadata block, where its name is written, read from
+        // the text: the script doesn't parse while a key is being typed
+        if (params.context?.triggerCharacter == null) {
+            final metadataKeys = metadataKeyCompletions(content, lorelinePos);
+            if (metadataKeys != null) {
+                return metadataKeys;
+            }
+        }
+
+        final ast = documents.get(uri);
+        if (ast == null) return [];
 
         // A new name is being written: no existing name is what it should be
         if (isDeclaringName(linePrefix(content, lorelinePos.offset))) {
@@ -1052,6 +1070,23 @@ class Server {
                                     label: field.name,
                                     kind: CompletionItemKind.Property,
                                     detail: "Character property",
+                                    insertText: field.name,
+                                    insertTextMode: AsIs,
+                                    insertTextFormat: PlainText,
+                                    documentation: documentationForNode(field),
+                                    textEdit: makeTextEdit(replacementRange, field.name)
+                                });
+                            }
+                            return items;
+
+                        case NMetadataDecl:
+                            final metadata:NMetadataDecl = cast resolved;
+                            final items:Array<CompletionItem> = [];
+                            for (field in metadata.fields) {
+                                items.push({
+                                    label: field.name,
+                                    kind: CompletionItemKind.Property,
+                                    detail: "Metadata",
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
@@ -1205,6 +1240,10 @@ class Server {
                 }
             }
 
+            if (!(node is NFunctionDecl)) {
+                addMetadataCompletion(lens, items, replacementRange);
+            }
+
             // Add word operators inside expressions and conditions (not in text)
             if ((node is NExpr && !(node is NStringLiteral) && !(node is NStringPart)) || node is NIfStatement) {
                 for (op in WORD_OPERATORS) {
@@ -1244,8 +1283,56 @@ class Server {
     }
 
     /**
-     * Get completion items for variables in scope
+     * The known keys of the metadata block not written yet, when the cursor
+     * is where the name of a field of the block goes, or null elsewhere.
      */
+    function metadataKeyCompletions(content:String, lorelinePos:loreline.Position):Null<Array<CompletionItem>> {
+
+        final offset = lorelinePos.offset;
+        final prefix = linePrefix(content, offset);
+        if (!RE_FIELD_NAME_START.match(prefix)) return null;
+
+        // The part of the name already typed is replaced
+        final typed = prefix.ltrim().uLength();
+        final replacementRange:Range = {
+            start: fromLorelinePosition(lorelinePos.withOffset(content, -typed)),
+            end: fromLorelinePosition(lorelinePos)
+        };
+
+        // The lines above, inside the block, up to the line opening it
+        final lines = content.uSubstr(0, offset - prefix.uLength()).replace('\r', '').split('\n');
+        final written:Map<String, Bool> = new Map();
+        var i = lines.length - 1;
+        while (i >= 0) {
+            final line = lines[i];
+            if (line.trim() == '' || line.startsWith(' ') || line.startsWith('\t')) {
+                if (RE_FIELD_LINE.match(line)) written.set(RE_FIELD_LINE.matched(1), true);
+                i--;
+                continue;
+            }
+            if (!RE_METADATA_LINE.match(line)) return null;
+            break;
+        }
+        if (i < 0) return null;
+
+        final items:Array<CompletionItem> = [];
+        for (known in MetadataKeys.KEYS) {
+            if (written.exists(known.key)) continue;
+            items.push({
+                label: known.key,
+                kind: CompletionItemKind.Property,
+                detail: "Metadata",
+                insertText: known.key + ': ',
+                insertTextMode: AsIs,
+                insertTextFormat: PlainText,
+                documentation: {kind: MarkupKind.Markdown, value: known.meaning},
+                textEdit: makeTextEdit(replacementRange, known.key + ': ')
+            });
+        }
+        return items;
+
+    }
+
     /** The text of a line before the given offset */
     static function linePrefix(content:String, offset:Int):String {
         var start = offset;
@@ -1343,7 +1430,27 @@ class Server {
             }
         }
 
+        addMetadataCompletion(lens, items, replacementRange);
+
         return items;
+    }
+
+    /** The metadata of the story, to read in the script, when it has a block */
+    function addMetadataCompletion(lens:Lens, items:Array<CompletionItem>, replacementRange:Range):Void {
+
+        final metadata = lens.getMetadata();
+        if (metadata == null) return;
+        items.push({
+            label: 'metadata',
+            kind: CompletionItemKind.Module,
+            detail: "Metadata",
+            insertText: 'metadata',
+            insertTextMode: AsIs,
+            insertTextFormat: PlainText,
+            documentation: documentationForNode(metadata),
+            textEdit: makeTextEdit(replacementRange, 'metadata')
+        });
+
     }
 
     /**
@@ -1450,7 +1557,7 @@ class Server {
                     final resolved = lens.resolveAccess(access);
                     if (resolved != null) {
                         final peekNode:Node = switch HxType.getClass(resolved) {
-                            case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? resolved;
+                            case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NMetadataDecl):Node) ?? resolved;
                             case _: resolved;
                         }
                         final target = resolveNodeTarget(uri, resolved, lens);
@@ -1467,7 +1574,7 @@ class Server {
                     final resolved = lens.resolveArrayAccess(access);
                     if (resolved != null) {
                         final peekNode:Node = switch HxType.getClass(resolved) {
-                            case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? resolved;
+                            case NObjectField: cast (lens.getFirstParentOfType(resolved, NCharacterDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NStateDecl):Node) ?? cast (lens.getFirstParentOfType(resolved, NMetadataDecl):Node) ?? resolved;
                             case _: resolved;
                         }
                         final target = resolveNodeTarget(uri, resolved, lens);
@@ -1780,6 +1887,8 @@ class Server {
                 return makeBeatDeclHover(beatDecl, uri, content, lens);
             case NStateDecl:
                 return makeStateDeclHover(cast node, uri, content, lens);
+            case NMetadataDecl:
+                return makeMetadataDeclHover(cast node, uri, content, lens);
             case NCharacterDecl:
                 return makeCharacterDeclHover(cast node, uri, content, lens);
             case NChoiceStatement:
@@ -2428,6 +2537,13 @@ class Server {
 
     }
 
+    function makeMetadataDeclHover(metadata:NMetadataDecl, uri:DocumentUri, content:String, lens:Lens, ?pos:loreline.Position):Hover {
+
+        return makeSectionsHover(hoverTitle('Metadata'),
+            [hoverDescriptionForNode(metadata).join("\n"), hoverGroup('Fields', fieldLines(metadata.fields, uri, lens))], content, metadata, pos);
+
+    }
+
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, uri:DocumentUri, content:String, lens:Lens, ?pos:loreline.Position):Hover {
 
         return makeSectionsHover(hoverName(shownCharacterName(characterDecl), 'character'),
@@ -2922,7 +3038,7 @@ class Server {
 
     function makeObjectFieldHover(field:NObjectField, uri:DocumentUri, content:String, lens:Lens):Hover {
 
-        return makeHover(fieldHeader(field, uri, lens), hoverDescriptionForNode(field), content, field);
+        return makeHover(hoverHeader(fieldHeader(field, uri, lens), fieldNote(field, lens)), hoverDescriptionForNode(field), content, field);
 
     }
 
@@ -2931,6 +3047,7 @@ class Server {
 
         final owner = lens.getParentNode(field);
         if (owner is NCharacterDecl) return hoverName(field.name, hoverWhat('field', characterLink(cast owner, uri, lens)));
+        if (owner is NMetadataDecl) return hoverName(field.name, 'metadata');
         if (owner is NStateDecl) {
             // A field of the state of a beat names its beat
             final beat = lens.getFirstParentOfType(owner, NBeatDecl);
@@ -2938,6 +3055,14 @@ class Server {
             return hoverName(field.name, hoverWhat('state field', beatOwner));
         }
         return hoverName(field.name, 'field');
+
+    }
+
+    /** What a field means, kept under its title: only a known key of the metadata block has one */
+    function fieldNote(field:NObjectField, lens:Lens):Array<String> {
+
+        final meaning = lens.getParentNode(field) is NMetadataDecl ? MetadataKeys.meaning(field.name) : null;
+        return meaning != null ? [meaning] : [];
 
     }
 
@@ -2961,8 +3086,11 @@ class Server {
             else if (resolved is NBeatDecl) {
                 return makeBeatDeclHover(cast resolved, uri, content, lens, access);
             }
+            else if (resolved is NMetadataDecl) {
+                return makeMetadataDeclHover(cast resolved, uri, content, lens, access.pos);
+            }
 
-            final header = resolved is NObjectField ? fieldHeader(cast resolved, uri, lens) : hoverTitle('Field', access.name);
+            final header = resolved is NObjectField ? hoverHeader(fieldHeader(cast resolved, uri, lens), fieldNote(cast resolved, lens)) : hoverTitle('Field', access.name);
             return makeHover(header, hoverDescriptionForNode(access), content, access);
         }
         else {

@@ -719,6 +719,13 @@ class Lens {
                                 return prop;
                             }
                         }
+                    case NMetadataDecl:
+                        // A field of the metadata block of the story
+                        for (field in (cast targetNode:NMetadataDecl).fields) {
+                            if (field.name == access.name) {
+                                return field;
+                            }
+                        }
                     case NLiteral:
                         // If target is a literal, check if it is an object
                         final literal:NLiteral = cast targetNode;
@@ -803,10 +810,15 @@ class Lens {
             return beatDecl;
         }
 
-        // 5. Finally, look for a top-level function declaration
+        // 5. Look for a top-level function declaration
         final functionDecl = findFunctionByNameFromNode(name, access);
         if (functionDecl != null) {
             return functionDecl;
+        }
+
+        // 6. Finally, the metadata block of the story, when nothing above has its name
+        if (name == 'metadata') {
+            return script.metadataBlock();
         }
 
         // Nothing found
@@ -1569,6 +1581,13 @@ class Lens {
         });
 
         return result;
+
+    }
+
+    /** The metadata block of the story, or null when it has none */
+    public function getMetadata():Null<NMetadataDecl> {
+
+        return script.metadataBlock();
 
     }
 
