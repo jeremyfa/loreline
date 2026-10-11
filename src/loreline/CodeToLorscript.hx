@@ -145,6 +145,11 @@ class CodeToLorscript {
     var closedDoBrace:Bool = false;
 
     /**
+     * Indentation of an object key whose value starts on the next line, or -1
+     */
+    var continuedKeyIndent:Int = -1;
+
+    /**
      * Creates a new CodeToLorscript instance.
      */
     public function new() {}
@@ -177,6 +182,7 @@ class CodeToLorscript {
         this.stack = [];
         this.doBraces = [];
         this.closedDoBrace = false;
+        this.continuedKeyIndent = -1;
 
         processInput();
 
@@ -976,6 +982,10 @@ class CodeToLorscript {
      * @param c The character code to check
      * @return True if the character is whitespace, false otherwise
      */
+    function lineIndentOf(line:String):Int {
+        return line.uLength() - line.ltrim().uLength();
+    }
+
     function isWhitespace(c:Int):Bool {
         return (c == " ".code || c == "\n".code || c == "\t".code || c == "\r".code);
     }
@@ -1230,10 +1240,22 @@ class CodeToLorscript {
             closedDoBrace = false;
 
             if (inStatementsBlock() || inObjectBlock() || inArrayBlock()) {
-                final indent = nextLineIndentOffset(line, index);
+                var indent = nextLineIndentOffset(line, index);
+
+                // A key of an object whose value starts on the next line
+                final keyWithValueBelow = line.trim().length > 0 && inObjectBlock() && endsWithChar(line, ":".code);
+                if (!keyWithValueBelow && line.trim().length > 0 && continuedKeyIndent >= 0) {
+                    // The line of that value: what follows is placed against the key
+                    indent += lineIndentOf(line) - continuedKeyIndent;
+                    continuedKeyIndent = -1;
+                }
 
                 if (line.trim().length == 0) {
                     // Nothing special to do
+                }
+                else if (keyWithValueBelow) {
+                    // Nothing to close or to separate before the value
+                    continuedKeyIndent = lineIndentOf(line);
                 }
                 else if (indent > 0 && !endsOrFollowsWithChar(line, "{".code, index) && !endsOrFollowsWithChar(line, "[".code, index)) {
                     final trimmedLine = line.ltrim();

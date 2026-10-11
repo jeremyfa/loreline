@@ -1,0 +1,62 @@
+// In an object literal of a function, the value of a key can start on the next
+// line, indented below its key, with or without a comma after it.
+
+function settings()
+  var o = {
+    name:
+      "Ana",
+    age:
+      31
+    city: "Lyon"
+  }
+  return o.name + " " + o.age + " " + o.city
+
+function computed()
+  var o = {
+    total:
+      1 + 2,
+    inner:
+      { k: "v" },
+    list:
+      [1, 2, 3]
+  }
+  return o.total + " " + o.inner.k + " " + o.list.length
+
+function braced() {
+  var o = {
+    first:
+      "one",
+    "second":
+      "two"
+  }
+  return o.first + " " + o.second
+}
+
+function last()
+  var o = {
+    only:
+      "value"
+  }
+  return o.only
+
+beat Start
+  Settings give ${settings()}.
+
+  Computed gives ${computed()}.
+
+  Braced gives ${braced()}.
+
+  Last gives ${last()}.
+
+/*
+<test>
+- expected: |
+    ~ Settings give Ana 31 Lyon.
+
+    ~ Computed gives 3 v 3.
+
+    ~ Braced gives one two.
+
+    ~ Last gives value.
+</test>
+*/
