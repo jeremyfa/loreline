@@ -1,0 +1,24 @@
+// The metadata of the story, read from the script with $metadata
+
+metadata
+  title: The Coffee Shop
+  author: [Ana, Bob]
+  version: 1.2
+  ifid: 448E73DF-2D2F-47E7-A494-A46B40D4CFB3
+  credits: { music: Cleo, art: Dan }
+
+beat Start
+  Welcome to $metadata.title.
+  Version ${metadata.version} by ${metadata.author[0]} and ${metadata.author[1]}.
+  Music by ${metadata.credits.music}, game ${metadata.ifid}.
+
+/*
+<test>
+- expected: |
+    ~ Welcome to The Coffee Shop.
+
+    ~ Version 1.2 by Ana and Bob.
+
+    ~ Music by Cleo, game 448E73DF-2D2F-47E7-A494-A46B40D4CFB3.
+</test>
+*/

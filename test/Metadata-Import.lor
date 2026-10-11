@@ -1,0 +1,20 @@
+// Only the metadata of the file that is played counts: the block of an
+// imported file is left aside
+
+import imports/metadata-chapter
+
+metadata
+  title: The Whole Story
+
+beat Start
+  Playing $metadata.title.
+  -> Chapter
+
+/*
+<test>
+- expected: |
+    ~ Playing The Whole Story.
+
+    ~ In the chapter of The Whole Story.
+</test>
+*/

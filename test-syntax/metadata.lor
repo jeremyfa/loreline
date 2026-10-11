@@ -1,0 +1,22 @@
+// The metadata of a story, colored like a state
+
+metadata
+// <-------- keyword.control.metadata
+  title: The Coffee Shop
+//^^^^^ variable.other
+//       ^^^^^^^^^^^^^^^ string.unquoted.value
+  version: 1.2
+//^^^^^^^ variable.other
+//         ^^^ constant.numeric
+  author: [Ana, Bob]
+//^^^^^^ variable.other
+
+state
+// <----- keyword.control.state
+  metadata: notes
+//^^^^^^^^ variable.other
+//^^^^^^^^ - keyword.control.metadata
+
+beat Start
+  Hello $metadata.title.
+//       ^^^^^^^^ - keyword.control.metadata

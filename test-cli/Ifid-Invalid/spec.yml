@@ -1,0 +1,3 @@
+args: [ifid, story.lor, not-an-ifid]
+exitCode: 1
+stderrContains: "not a valid IFID"

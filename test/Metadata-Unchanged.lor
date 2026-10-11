@@ -1,0 +1,16 @@
+// Changing a list read from the metadata doesn't change the metadata
+
+metadata
+  author: [Ana, Bob]
+
+beat Start
+  authors = metadata.author
+  authors.add("Cleo")
+  Now ${authors.length} names here, ${metadata.author.length} in the metadata.
+
+/*
+<test>
+- expected: |
+    ~ Now 3 names here, 2 in the metadata.
+</test>
+*/

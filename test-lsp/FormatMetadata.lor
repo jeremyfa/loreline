@@ -1,0 +1,25 @@
+metadata
+    title: The Coffee Shop
+    author: [Ana, Bob]
+    credits:
+        music: Cleo
+
+beat Start
+    Hello.
+
+/*
+<test>
+# The metadata block is printed like a state: two spaces per level
+- request: format
+  expected: |
+    metadata
+      title: The Coffee Shop
+      author: [Ana, Bob]
+      credits:
+        music: Cleo
+
+    beat Start
+
+      Hello.
+</test>
+*/

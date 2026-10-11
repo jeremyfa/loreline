@@ -1,0 +1,20 @@
+// A name declared by the script wins over the metadata of the story
+
+metadata
+  title: The Coffee Shop
+
+character metadata
+  name: Meta
+
+beat Start
+  metadata: Hello.
+  The title stays hidden behind ${metadata.name}.
+
+/*
+<test>
+- expected: |
+    Meta: Hello.
+
+    ~ The title stays hidden behind Meta.
+</test>
+*/

@@ -1,0 +1,5 @@
+metadata
+  title: Only a chapter
+
+beat Chapter
+  In the chapter of $metadata.title.

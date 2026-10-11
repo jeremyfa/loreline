@@ -1,0 +1,19 @@
+// metadata is only a keyword where it opens a block at the top level: as a
+// name, it works as it always did
+
+state
+  metadata: notes
+
+beat Start
+  Value is $metadata.
+  metadata = updated
+  Then $metadata.
+
+/*
+<test>
+- expected: |
+    ~ Value is notes.
+
+    ~ Then updated.
+</test>
+*/

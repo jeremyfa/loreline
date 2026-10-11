@@ -1,0 +1,2 @@
+args: [ifid]
+stdoutContains: "-4"
