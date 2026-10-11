@@ -713,6 +713,12 @@
                     "include": "#imports"
                 },
                 {
+                    "include": "#indent-metadata-block"
+                },
+                {
+                    "include": "#metadata-block"
+                },
+                {
                     "include": "#indent-function-block"
                 },
                 {
@@ -2312,6 +2318,57 @@
                     "patterns": [
                         {
                             "include": "#beat-patterns"
+                        }
+                    ]
+                }
+            ]
+        },
+        "indent-metadata-block": {
+            "patterns": [
+                {
+                    "comment": "The metadata block of a story, at the top level only, like a state",
+                    "begin": "^(metadata)(\\s*(?://.*))?$",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.metadata.loreline"
+                        },
+                        "2": {
+                            "patterns": [
+                                {
+                                    "include": "#comments"
+                                }
+                            ]
+                        }
+                    },
+                    "end": "^(?![ \\t]*$)(?=\\S)",
+                    "patterns": [
+                        {
+                            "include": "#comments"
+                        },
+                        {
+                            "include": "#keyval-patterns"
+                        }
+                    ]
+                }
+            ]
+        },
+        "metadata-block": {
+            "patterns": [
+                {
+                    "comment": "The metadata block of a story in braces, at the top level only",
+                    "begin": "^(metadata)\\b(?=\\s*\\{)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.metadata.loreline"
+                        }
+                    },
+                    "end": "(?<=\\})",
+                    "patterns": [
+                        {
+                            "include": "#comments"
+                        },
+                        {
+                            "include": "#braces-in-keyval"
                         }
                     ]
                 }
