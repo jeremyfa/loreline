@@ -4,7 +4,7 @@ metadata
 // <-------- keyword.control.metadata
   title: The Coffee Shop
 //^^^^^ variable.other
-//       ^^^^^^^^^^^^^^^ string.unquoted.value
+//       ^^^ string.unquoted.value
   version: 1.2
 //^^^^^^^ variable.other
 //         ^^^ constant.numeric
