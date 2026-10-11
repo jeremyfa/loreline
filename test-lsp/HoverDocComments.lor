@@ -1,0 +1,33 @@
+// A comment at the top of the file, about the whole file.
+
+// Where the story starts
+beat Start
+  -> Next
+
+// About what follows, not about Next itself
+
+beat Next
+  The end.
+
+/*
+<test>
+- request: hover
+  at: "beat |Start"
+  contains:
+    - "Where the story starts"
+  excludes:
+    - "about the whole file"
+- request: hover
+  at: "-> |Next"
+  contains:
+    - "**Next** (beat)"
+  excludes:
+    - "About what follows"
+- request: hover
+  at: "beat |Next"
+  contains:
+    - "**Next** (beat)"
+  excludes:
+    - "About what follows"
+</test>
+*/
