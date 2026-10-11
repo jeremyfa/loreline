@@ -176,6 +176,30 @@ class AstUtils {
         return false;
     }
 
+    /**
+     * The comments that document a node: those right above it, each one
+     * touching the next and the last one touching the node. A comment set
+     * apart by a blank line, like one about the whole file, is attached to
+     * the node too (the printer keeps it in place) but doesn't document it.
+     */
+    public static function docComments(node:AstNode):Array<Comment> {
+        final comments = node.leadingComments;
+        if (comments == null) return [];
+        final result:Array<Comment> = [];
+        var expected = node.pos.line - 1;
+        var i = comments.length - 1;
+        while (i >= 0) {
+            final comment = comments[i];
+            // The line a comment ends on, a block comment taking several
+            final lastLine = comment.pos.line + comment.content.split('\n').length - 1;
+            if (lastLine != expected) break;
+            result.unshift(comment);
+            expected = comment.pos.line - 1;
+            i--;
+        }
+        return result;
+    }
+
     /** Convert all if conditions to use parentheses. */
     public static function useParenConditions(node:AstNode):Void {
         node.each((child, _) -> {
