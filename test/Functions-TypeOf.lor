@@ -1,0 +1,88 @@
+// type_of tells what kind of value a value is, with the same words on every
+// target, in a beat as in the code of a function. Whole and decimal numbers
+// are both "number", and a text holding a number is still a text.
+
+character bob
+  name: Bob
+
+state
+  whole: 5
+  decimal: 5.5
+  text: "hello"
+  numeric: "5"
+  empty: ""
+  flag: true
+  nothing: null
+  list: [1, 2]
+  emptyList: []
+  record: { a: 1 }
+  ref: null
+  kind: null
+
+function kindOf(value)
+  return type_of(value)
+
+function describe(value)
+  if type_of(value) is "number"
+    return "a number"
+  else if type_of(value) is not "null"
+    return "something else"
+  return "nothing"
+
+function local()
+  var made = { b: 2 }
+  var items = [made]
+  return type_of(made) + " " + type_of(items) + " " + type_of(items.length) + " " + type_of(1 + 1.5) + " " + type_of(kindOf)
+
+beat Start
+  ref = Helper
+
+  Beat gives ${type_of(whole)} ${type_of(decimal)} ${type_of(text)} ${type_of(numeric)} ${type_of(empty)} ${type_of(flag)} ${type_of(nothing)}.
+
+  Beat also gives ${type_of(list)} ${type_of(emptyList)} ${type_of(record)} ${type_of(ref)} ${type_of(bob)} ${type_of(kindOf)}.
+
+  Function gives ${kindOf(whole)} ${kindOf(decimal)} ${kindOf(text)} ${kindOf(numeric)} ${kindOf(empty)} ${kindOf(flag)} ${kindOf(nothing)}.
+
+  Function also gives ${kindOf(list)} ${kindOf(emptyList)} ${kindOf(record)} ${kindOf(ref)} ${kindOf(bob)} ${kindOf(kindOf)}.
+
+  Inside gives ${local()}.
+
+  Described gives ${describe(whole)}, ${describe(numeric)}, ${describe(nothing)}.
+
+  kind = type_of(record)
+  Assigned gives $kind.
+
+  if type_of(text) is "text" and type_of(nothing) is not "text"
+    Condition gives text.
+
+  when
+    type_of(list) is "array" and type_of(whole) is "number"
+      When gives array and number.
+    true
+      When gives nothing.
+
+beat Helper
+  Never played.
+
+/*
+<test>
+- expected: |
+    ~ Beat gives number number text text text bool null.
+
+    ~ Beat also gives array array object beat character function.
+
+    ~ Function gives number number text text text bool null.
+
+    ~ Function also gives array array object beat character function.
+
+    ~ Inside gives object array number number function.
+
+    ~ Described gives a number, something else, nothing.
+
+    ~ Assigned gives object.
+
+    ~ Condition gives text.
+
+    ~ When gives array and number.
+</test>
+*/
