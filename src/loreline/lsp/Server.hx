@@ -2284,9 +2284,9 @@ class Server {
 
         final description:Array<String> = [];
 
-        // The comments above it, without translation keys and directives
+        // The comments right above it, without translation keys and directives
         if (node.leadingComments != null) {
-            for (comment in node.leadingComments) {
+            for (comment in AstUtils.docComments(node)) {
                 if (comment.isHash) continue;
                 for (line in comment.content.replace('\r\n', '\n').split('\n')) {
                     final text = line.trim();
