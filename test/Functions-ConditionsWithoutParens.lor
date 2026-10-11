@@ -1,0 +1,93 @@
+// The condition of `if`, `else if`, `while` and `for` needs no parentheses,
+// in an indented body as in a braced one, even when it starts with a
+// parenthesis that doesn't wrap all of it.
+
+state
+  ready: false
+  count: 3
+
+function sign(n) {
+  if n > 0 {
+    return "positive"
+  } else if n is 0 {
+    return "zero"
+  }
+  return "negative"
+}
+
+function countdown(n) {
+  var steps = 0
+  while n is not 0 { n = n - 1; steps = steps + 1 }
+  return steps
+}
+
+function joined(list) {
+  var text = ""
+  for item in list {
+    text = text + item
+  }
+  return text
+}
+
+function idle() {
+  if not ready { return "idle" }
+  return "busy"
+}
+
+function partlyWrapped(n)
+  if (n > 1) or ready
+    return "big"
+  else if (n is 1) and not ready
+    return "one"
+  return "small"
+
+function partlyWrappedBraces(n) {
+  if (n > 1) or ready {
+    return "big"
+  }
+  while (n < 0) and not ready { n = n + 1 }
+  return "small " + n
+}
+
+function wrapped(n) {
+  if (n > 1) {
+    return "big"
+  }
+  if (n is 1) return "one"
+  return "small"
+}
+
+function grouped(n)
+  if (n > 1 or ready) and (count is 3)
+    return "both"
+  return "neither"
+
+beat Start
+  Sign gives ${sign(4)} ${sign(0)} ${sign(-2)}.
+
+  Loops give ${countdown(3)} ${joined(["a", "b", "c"])} ${idle()}.
+
+  Partly wrapped gives ${partlyWrapped(2)} ${partlyWrapped(1)} ${partlyWrapped(0)}.
+
+  With braces gives ${partlyWrappedBraces(2)} ${partlyWrappedBraces(-3)}.
+
+  Wrapped gives ${wrapped(2)} ${wrapped(1)} ${wrapped(0)}.
+
+  Grouped gives ${grouped(2)} ${grouped(0)}.
+
+/*
+<test>
+- expected: |
+    ~ Sign gives positive zero negative.
+
+    ~ Loops give 3 abc idle.
+
+    ~ Partly wrapped gives big one small.
+
+    ~ With braces gives big small 0.
+
+    ~ Wrapped gives big one small.
+
+    ~ Grouped gives both neither.
+</test>
+*/

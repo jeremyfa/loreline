@@ -633,6 +633,66 @@ class CodeToLorscript {
      * @param pos The position to start looking from
      * @return True if the next meaningful character is the one we're looking for, false otherwise
      */
+    /**
+     * Whether the condition after a control keyword is wrapped whole in
+     * parentheses: it starts with `(`, and what follows the matching `)` is
+     * not an operator going on with the condition. `(a > 1)` is, followed by
+     * the end of the line, a block or a statement. `(a > 1) or b` is not.
+     */
+    function isWholeConditionInParens(pos:Int):Bool {
+
+        if (!followsWithChar("(".code, pos)) return false;
+
+        // The matching closing parenthesis, texts skipped
+        var p = pos;
+        while (p < length && input.uCharCodeAt(p) != "(".code) p++;
+        var depth = 0;
+        while (p < length) {
+            final c = input.uCharCodeAt(p);
+            if (c == '"'.code) {
+                p++;
+                while (p < length && input.uCharCodeAt(p) != '"'.code) {
+                    if (input.uCharCodeAt(p) == "\\".code) p++;
+                    p++;
+                }
+            }
+            else if (c == "(".code) {
+                depth++;
+            }
+            else if (c == ")".code) {
+                depth--;
+                if (depth == 0) break;
+            }
+            p++;
+        }
+        // Unbalanced: left to the parser to report
+        if (p >= length) return true;
+
+        p++;
+        while (p < length && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p++;
+        if (p >= length) return true;
+
+        final c = input.uCharCodeAt(p);
+        final next = p + 1 < length ? input.uCharCodeAt(p + 1) : 0;
+        return switch c {
+            case "&".code | "|".code | "=".code | "!".code | "<".code | ">".code | "+".code | "-".code
+                | "*".code | "%".code | "?".code | ".".code | "[".code:
+                false;
+            case "/".code:
+                // A comment, or a division
+                next == "/".code || next == "*".code;
+            case "a".code:
+                !(next == "n".code && p + 2 < length && input.uCharCodeAt(p + 2) == "d".code && !isAlphaNumeric(p + 3 < length ? input.uCharCodeAt(p + 3) : 0));
+            case "o".code:
+                !(next == "r".code && !isAlphaNumeric(p + 2 < length ? input.uCharCodeAt(p + 2) : 0));
+            case "i".code:
+                !(next == "s".code && !isAlphaNumeric(p + 2 < length ? input.uCharCodeAt(p + 2) : 0));
+            case _:
+                true;
+        }
+
+    }
+
     function followsWithChar(c:Int, pos:Int):Bool {
         // Skip whitespace, newlines, and comments to check if the next meaningful character is c
         var tempIndex = pos;
@@ -1127,6 +1187,17 @@ class CodeToLorscript {
             currentPosOffset++;
         }
 
+        if (!inString && c == "{".code && inControlWithoutParens && stack.length > 0 && stack[stack.length - 1] == Paren && !isLabelStart(index)) {
+            // The block of a condition written without parentheses opens on
+            // the same line: the condition ends here
+            inControlWithoutParens = false;
+            stackPop();
+            currentPosOffset++;
+            lineOutput.addChar(")".code);
+            output.addChar(")".code);
+            posOffsets.push(currentPosOffset);
+        }
+
         if (inString) {
             // When inside a string, we treat it as "the same line"
             lineOutput.addChar(c == '"'.code ? c : " ".code);
@@ -1248,13 +1319,18 @@ class CodeToLorscript {
         }
         else if (!inControl && !isWhitespace(c) && endsWithControlKeyword(lineOutput.toString(), index - 1)) {
             inControl = true;
-            if (!followsWithChar("(".code, index - 1)) {
+            if (!isWholeConditionInParens(index - 1)) {
                 inControlWithoutParens = true;
                 stackPush(Paren);
                 currentPosOffset++;
                 lineOutput.addChar(c);
                 output.addChar("(".code);
                 posOffsets.push(currentPosOffset);
+                // A condition that starts with a parenthesis without being
+                // wrapped by it, like `(a > 1) or b`
+                if (c == "(".code) {
+                    stackPush(Paren);
+                }
             }
             else if (c == "(".code) {
                 stackPush(Paren);
