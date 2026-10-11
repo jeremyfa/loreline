@@ -19,6 +19,7 @@ class MetadataTests {
         final tests:Array<{name:String, fn:()->Void}> = [
             {name: 'fields are read from the script', fn: () -> testFields()},
             {name: 'a missing field or block gives null', fn: () -> testMissing()},
+            {name: 'a text reads as the script shows it', fn: () -> testTexts()},
             {name: 'a second block is an error', fn: () -> testSecondBlock()},
             {name: 'a value that is not constant is an error', fn: () -> testNotConstant()},
             {name: 'metadata stays a name elsewhere', fn: () -> testName()},
@@ -75,6 +76,16 @@ class MetadataTests {
     static function testMissing():Void {
         if (parse(SOURCE).getMetadataField('genre') != null) throw 'expected null for a missing field';
         if (parse('beat Start\n  Hello.\n').getMetadataField('title') != null) throw 'expected null without a block';
+    }
+
+    static function testTexts():Void {
+        final script = parse('metadata\n  title: The Shop // working title\n  description: "One\\n\\nTwo \\"q\\" $$$$5 ## \\$$x"\n\nbeat Start\n  Read [$${metadata.title}] [$${metadata.description}]\n');
+        if (script.getMetadataField('title') != 'The Shop') throw 'title: "' + script.getMetadataField('title') + '"';
+        final description = 'One\n\nTwo "q" $$5 # $$x';
+        if (script.getMetadataField('description') != description) throw 'description: "' + script.getMetadataField('description') + '"';
+        var shown:Null<String> = null;
+        Loreline.play(script, (interp, character, text, tags, advance) -> shown = text, (interp, options, select) -> select(0), interp -> {});
+        if (shown != 'Read [The Shop] [' + description + ']') throw 'the script shows "$$shown"';
     }
 
     static function testSecondBlock():Void {
