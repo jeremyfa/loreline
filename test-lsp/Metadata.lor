@@ -1,0 +1,60 @@
+// About the coffee shop story
+metadata
+  title: The Coffee Shop
+  author: [Ana, Bob]
+  // Bumped on each release
+  version: 1.2
+  steamId: 123
+
+beat Start
+  Welcome to $metadata.title, version ${metadata.version}.
+  x = metadata.ti
+
+/*
+<test>
+- request: hover
+  at: "|metadata"
+  contains:
+    - "**Metadata**"
+    - "About the coffee shop story"
+    - "[title](file:///lsp/Metadata.lor#3,3): `The Coffee Shop`"
+    - "[steamId](file:///lsp/Metadata.lor#7,3): `123`"
+- request: hover
+  at: "|title: The"
+  contains:
+    - "**title** (metadata)"
+    - "The title of the story."
+- request: hover
+  at: "|version: 1.2"
+  contains:
+    - "**version** (metadata)"
+    - "The version of the story."
+    - "Bumped on each release"
+- request: hover
+  at: "|steamId"
+  contains:
+    - "**steamId** (metadata)"
+  excludes:
+    - "The "
+- request: hover
+  at: "$metadata.|title"
+  contains:
+    - "**title** (metadata)"
+    - "The title of the story."
+- request: hover
+  at: "$|metadata.title"
+  contains:
+    - "**Metadata**"
+- request: definition
+  at: "$metadata.|title"
+  target: "title: The Coffee Shop"
+- request: completion
+  at: "x = metadata.|ti"
+  includes: [title, author, version, steamId]
+- request: completion
+  at: "x = metadata.ti|"
+  includes: [metadata]
+- request: symbols
+  includes: [metadata, title, author, version, steamId]
+</test>
+*/
