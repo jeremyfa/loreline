@@ -612,6 +612,7 @@ def main():
 
     run_spawn_test()
     run_seed_random_test()
+    run_metadata_test()
     run_prepare_caches_test()
     run_when_strategy_test()
 
@@ -671,6 +672,51 @@ RANDOM_SCRIPT = "\n".join([
     "  Second $random(1, 1000000000)",
     "",
 ])
+
+
+# The metadata block of a story, read from the parsed script, with the same
+# types as state fields. Same scenario in every binding runner.
+METADATA_SCRIPT = "\n".join([
+    "metadata",
+    "  title: The Coffee Shop",
+    "  author: [Ana, Bob]",
+    "  version: 1.2",
+    "  credits: { music: Cleo }",
+    "",
+    "beat Main",
+    "  Hello",
+    "",
+])
+
+
+def run_metadata_test():
+    global pass_count, fail_count
+    label = "metadata: fields read from the script"
+    try:
+        script = Loreline.parse(METADATA_SCRIPT)
+        checks = []
+        if script.get_metadata_field("title") != "The Coffee Shop":
+            checks.append(f"title: {script.get_metadata_field('title')}")
+        if script.get_metadata_field("version") != 1.2:
+            checks.append(f"version: {script.get_metadata_field('version')}")
+        author = script.get_metadata_field("author")
+        if author is None or len(author) != 2 or author[1] != "Bob":
+            checks.append(f"author: {author}")
+        credits = script.get_metadata_field("credits")
+        # Objects are maps, like the objects of state fields
+        if credits is None or getattr(credits, "h", credits).get("music") != "Cleo":
+            checks.append(f"credits: {credits}")
+        if script.get_metadata_field("genre") is not None:
+            checks.append(f"genre: {script.get_metadata_field('genre')}")
+        if checks:
+            raise Exception("; ".join(checks))
+
+        pass_count += 1
+        print(f"\033[1m\033[32mPASS\033[0m - \033[90m{label}\033[0m")
+    except Exception as e:
+        fail_count += 1
+        print(f"\033[1m\033[31mFAIL\033[0m - \033[90m{label}\033[0m")
+        print(f"  Error: {e}")
 
 
 def run_seed_random_test():

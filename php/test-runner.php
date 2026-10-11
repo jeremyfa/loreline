@@ -647,6 +647,44 @@ function runPrepareCachesTest(): void
     }
 }
 
+// The metadata block of a story, read from the parsed script, with the same
+// types as state fields. Same scenario in every binding runner.
+function runMetadataTest(): void
+{
+    global $passCount, $failCount;
+    $label = 'metadata: fields read from the script';
+    try {
+        $script = Loreline::parse(implode("\n", [
+            'metadata',
+            '  title: The Coffee Shop',
+            '  author: [Ana, Bob]',
+            '  version: 1.2',
+            '  credits: { music: Cleo }',
+            '',
+            'beat Main',
+            '  Hello',
+            '',
+        ]));
+
+        $checks = [];
+        if ($script->getMetadataField('title') !== 'The Coffee Shop') $checks[] = 'title: ' . var_export($script->getMetadataField('title'), true);
+        if ($script->getMetadataField('version') != 1.2) $checks[] = 'version: ' . var_export($script->getMetadataField('version'), true);
+        $author = $script->getMetadataField('author');
+        if (!is_array($author) || count($author) !== 2 || $author[1] !== 'Bob') $checks[] = 'author: ' . var_export($author, true);
+        $credits = $script->getMetadataField('credits');
+        if (!is_array($credits) || ($credits['music'] ?? null) !== 'Cleo') $checks[] = 'credits: ' . var_export($credits, true);
+        if ($script->getMetadataField('genre') !== null) $checks[] = 'genre: ' . var_export($script->getMetadataField('genre'), true);
+        if ($checks) throw new \Exception(implode('; ', $checks));
+
+        $passCount++;
+        echo "\033[1m\033[32mPASS\033[0m - \033[90m$label\033[0m\n";
+    } catch (\Throwable $e) {
+        $failCount++;
+        echo "\033[1m\033[31mFAIL\033[0m - \033[90m$label\033[0m\n";
+        echo "  Error: " . $e->getMessage() . "\n";
+    }
+}
+
 function runSeedRandomTest(): void
 {
     global $passCount, $failCount;
@@ -945,6 +983,7 @@ function main(): void
 
     runSpawnTest();
     runSeedRandomTest();
+    runMetadataTest();
     runPrepareCachesTest();
     runWhenStrategyTest();
 

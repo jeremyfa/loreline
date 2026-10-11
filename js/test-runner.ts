@@ -524,6 +524,7 @@ async function main(): Promise<void> {
 
     runSpawnTest();
     runCustomFieldsTest();
+    runMetadataTest();
     runSeedRandomTest();
     runPrepareCachesTest();
     runWhenStrategyTest();
@@ -661,6 +662,43 @@ function runSeedRandomTest(): void {
         const first = log[0].split(' ')[1];
         const second = log.length > 2 ? log[2].split(' ')[1] : '';
         if (second !== first) throw new Error(`expected ${first} after reseeding, got ${log.join(' / ')}`);
+
+        passCount++;
+        console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);
+    } catch (e) {
+        failCount++;
+        console.log(`\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m${label}\x1b[0m`);
+        console.log(`  Error: ${(e as Error).toString()}`);
+    }
+}
+
+// The metadata block is read from the parsed script, without playing it.
+// Same scenario in every binding runner.
+const METADATA_SCRIPT = [
+    'metadata',
+    '  title: The Coffee Shop',
+    '  author: [Ana, Bob]',
+    '  version: 1.2',
+    '  credits: { music: Cleo }',
+    '',
+    'beat Start',
+    '  Hello.',
+    ''
+].join('\n');
+
+function runMetadataTest(): void {
+    const label = 'metadata: getMetadataField reads the block';
+    try {
+        const script: Script = Loreline.parse(METADATA_SCRIPT);
+        const title = script.getMetadataField('title');
+        if (title !== 'The Coffee Shop') throw new Error(`title: ${title}`);
+        const version = script.getMetadataField('version');
+        if (version !== 1.2) throw new Error(`version: ${version}`);
+        const author = script.getMetadataField('author');
+        if (!Array.isArray(author) || author.length !== 2 || author[1] !== 'Bob') throw new Error(`author: ${author}`);
+        const credits = script.getMetadataField('credits');
+        if (credits == null || credits.music !== 'Cleo') throw new Error(`credits: ${JSON.stringify(credits)}`);
+        if (script.getMetadataField('genre') != null) throw new Error('genre should be null');
 
         passCount++;
         console.log(`\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m${label}\x1b[0m`);

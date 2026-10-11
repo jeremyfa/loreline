@@ -943,6 +943,67 @@ static void runContainerFieldTest() {
 }
 
 
+/* -- Metadata of a story --------------------------------------------------- */
+/* The metadata block is read from the parsed script, without playing it. */
+
+static void runMetadataTest() {
+    const char* source =
+        "metadata\n"
+        "  title: The Coffee Shop\n"
+        "  author: [Ana, Bob]\n"
+        "  version: 1.2\n"
+        "  credits: { music: Cleo }\n"
+        "\n"
+        "beat Start\n"
+        "  Hello.\n";
+
+    bool ok = true;
+    std::string error;
+
+    Loreline_Script* script = Loreline_parse(source, "metadata.lor", nullptr, nullptr);
+    if (!script) {
+        ok = false; error = "Error parsing metadata script";
+    }
+    else {
+        Loreline_Value title = Loreline_getMetadataField(script, Loreline_String("title"));
+        Loreline_Value version = Loreline_getMetadataField(script, Loreline_String("version"));
+        Loreline_Value author = Loreline_getMetadataField(script, Loreline_String("author"));
+        Loreline_Value credits = Loreline_getMetadataField(script, Loreline_String("credits"));
+        Loreline_Value genre = Loreline_getMetadataField(script, Loreline_String("genre"));
+        if (title.type != Loreline_StringValue || strcmp(title.stringValue.c_str(), "The Coffee Shop") != 0) {
+            ok = false; error = "title is not The Coffee Shop";
+        }
+        else if (version.type != Loreline_Float || version.floatValue != 1.2) {
+            ok = false; error = "version is not 1.2";
+        }
+        else if (author.type != Loreline_ArrayValue || author.arrayValue.length() != 2
+            || author.arrayValue.get(1).type != Loreline_StringValue
+            || strcmp(author.arrayValue.get(1).stringValue.c_str(), "Bob") != 0) {
+            ok = false; error = "author is not [Ana, Bob]";
+        }
+        else if (credits.type != Loreline_ObjectValue || credits.objectValue.get("music").type != Loreline_StringValue
+            || strcmp(credits.objectValue.get("music").stringValue.c_str(), "Cleo") != 0) {
+            ok = false; error = "credits.music is not Cleo";
+        }
+        else if (genre.type != Loreline_Null) {
+            ok = false; error = "a missing field is not null";
+        }
+        Loreline_releaseScript(script);
+    }
+
+    if (ok) {
+        passCount++;
+        printf(CLR_BOLD_GREEN "PASS" CLR_RESET " - " CLR_GRAY "capi ~ metadata fields" CLR_RESET "\n");
+    } else {
+        failCount++;
+        fileFailCount++;
+        printf(CLR_BOLD_RED "FAIL" CLR_RESET " - " CLR_GRAY "capi ~ metadata fields" CLR_RESET "\n");
+        printf("  > %s\n", error.c_str());
+    }
+    fflush(stdout);
+}
+
+
 /* -- Names in any language ------------------------------------------------- */
 /* Characters and state fields named with Chinese letters or emoji go through
  * the field accessors as UTF-8, like any other name. */
@@ -1941,6 +2002,7 @@ int main(int argc, char* argv[]) {
     fileCount++;
     runSpawnTest();
     runSeedRandomTest();
+    runMetadataTest();
     runPrepareCachesTest();
     runWhenStrategyTest();
     fileCount++;

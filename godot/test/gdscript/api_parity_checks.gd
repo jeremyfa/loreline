@@ -66,6 +66,33 @@ beat start
 	if script.print_script().find("Hello!") == -1:
 		_fail("print_script missing content")
 
+	# 2b. metadata fields, read from the parsed script
+	var meta_script = await loreline.parse("""
+metadata
+  title: The Coffee Shop
+  author: [Ana, Bob]
+  version: 1.2
+  credits: { music: Cleo }
+
+beat start
+  Hello.
+""", "metadata.lor")
+	if meta_script == null:
+		_fail("metadata script failed to parse")
+		return
+	if meta_script.get_metadata_field("title") != "The Coffee Shop":
+		_fail("get_metadata_field title != The Coffee Shop")
+	if not is_equal_approx(float(meta_script.get_metadata_field("version")), 1.2):
+		_fail("get_metadata_field version != 1.2")
+	var author = meta_script.get_metadata_field("author")
+	if not (author is Array) or author.size() != 2 or author[1] != "Bob":
+		_fail("get_metadata_field author != [Ana, Bob]")
+	var credits = meta_script.get_metadata_field("credits")
+	if not (credits is Dictionary) or credits.get("music") != "Cleo":
+		_fail("get_metadata_field credits.music != Cleo")
+	if meta_script.get_metadata_field("genre") != null:
+		_fail("get_metadata_field genre should be null")
+
 	# 3. play with custom sync + async functions
 	var options := LorelineOptions.new()
 	options.set_function("add", func(_interp, args): return args[0] + args[1])

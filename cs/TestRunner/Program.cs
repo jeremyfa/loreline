@@ -259,6 +259,7 @@ class Program
 
         RunSpawnTest();
         RunCustomFieldsTest();
+        RunMetadataTest();
         RunSeedRandomTest();
         RunPrepareCachesTest();
         RunWhenStrategyTest();
@@ -423,6 +424,44 @@ class Program
             if (!(root.GetCharacter("bob") is TestFields)) checks.Add("character bob not created by the factory");
             if ((string)root.GetCharacterField("bob", "mood") != "happy") checks.Add("bob.mood not written through the factory object");
             if (!created.Contains(root)) checks.Add("factory not called with the interpreter");
+            if (checks.Count > 0) throw new Exception(string.Join("; ", checks));
+
+            passCount++;
+            Console.WriteLine($"\x1b[1m\x1b[32mPASS\x1b[0m - \x1b[90m{label}\x1b[0m");
+        }
+        catch (Exception e)
+        {
+            failCount++;
+            Console.WriteLine($"\x1b[1m\x1b[31mFAIL\x1b[0m - \x1b[90m{label}\x1b[0m");
+            Console.WriteLine("  Error: " + e.ToString());
+        }
+    }
+
+    // The metadata block of a story, read from the parsed script, with the
+    // same types as state fields: same scenario in every binding runner.
+    static void RunMetadataTest()
+    {
+        const string label = "metadata: fields read from the script";
+        try
+        {
+            Script script = Engine.Parse(string.Join("\n", new[] {
+                "metadata",
+                "  title: The Coffee Shop",
+                "  author: [Ana, Bob]",
+                "  version: 1.2",
+                "  credits: { music: Cleo }",
+                "",
+                "beat Main",
+                "  Hello",
+                ""
+            }));
+
+            var checks = new List<string>();
+            if ((string)script.GetMetadataField("title") != "The Coffee Shop") checks.Add("title: " + script.GetMetadataField("title"));
+            if (!(script.GetMetadataField("version") is double version) || version != 1.2) checks.Add("version: " + script.GetMetadataField("version"));
+            if (!(script.GetMetadataField("author") is List<object> author) || author.Count != 2 || (string)author[1] != "Bob") checks.Add("author: " + script.GetMetadataField("author"));
+            if (!(script.GetMetadataField("credits") is Dictionary<string, object> credits) || (string)credits["music"] != "Cleo") checks.Add("credits: " + script.GetMetadataField("credits"));
+            if (script.GetMetadataField("genre") != null) checks.Add("genre: " + script.GetMetadataField("genre"));
             if (checks.Count > 0) throw new Exception(string.Join("; ", checks));
 
             passCount++;

@@ -746,6 +746,43 @@ public class TestRunner {
         }
     }
 
+    // The metadata block of a story, read from the parsed script, with the
+    // same types as state fields: same scenario in every binding runner.
+    static void runMetadataTest() {
+        final String label = "metadata: fields read from the script";
+        try {
+            Script script = Loreline.parse(String.join("\n",
+                "metadata",
+                "  title: The Coffee Shop",
+                "  author: [Ana, Bob]",
+                "  version: 1.2",
+                "  credits: { music: Cleo }",
+                "",
+                "beat Main",
+                "  Hello",
+                ""
+            ));
+
+            List<String> checks = new ArrayList<>();
+            if (!"The Coffee Shop".equals(script.getMetadataField("title"))) checks.add("title: " + script.getMetadataField("title"));
+            Object version = script.getMetadataField("version");
+            if (!(version instanceof Number) || ((Number) version).doubleValue() != 1.2) checks.add("version: " + version);
+            Object author = script.getMetadataField("author");
+            if (!(author instanceof List) || ((List<?>) author).size() != 2 || !"Bob".equals(((List<?>) author).get(1))) checks.add("author: " + author);
+            Object credits = script.getMetadataField("credits");
+            if (!(credits instanceof Map) || !"Cleo".equals(((Map<?, ?>) credits).get("music"))) checks.add("credits: " + credits);
+            if (script.getMetadataField("genre") != null) checks.add("genre: " + script.getMetadataField("genre"));
+            if (!checks.isEmpty()) throw new RuntimeException(String.join("; ", checks));
+
+            passCount++;
+            System.out.println("\033[1m\033[32mPASS\033[0m - \033[90m" + label + "\033[0m");
+        } catch (Throwable e) {
+            failCount++;
+            System.out.println("\033[1m\033[31mFAIL\033[0m - \033[90m" + label + "\033[0m");
+            System.out.println("  Error: " + e);
+        }
+    }
+
     static void spawnNext(Map<String, Runnable> pending, String name) {
         Runnable cb = pending.remove(name);
         if (cb == null) throw new RuntimeException("No pending dialogue for " + name);
@@ -976,6 +1013,7 @@ public class TestRunner {
 
         runSpawnTest();
         runCustomFieldsTest();
+        runMetadataTest();
         runSeedRandomTest();
         runPrepareCachesTest();
         runWhenStrategyTest();

@@ -702,6 +702,56 @@ local function run_prepare_caches_test()
     end
 end
 
+-- The metadata block of a story, read from the parsed script, with the same
+-- types as state fields. Same scenario in every binding runner. Lists and
+-- objects are the script's own containers: a Haxe array (0 based, with a
+-- length) and a map, read with get().
+local METADATA_SCRIPT = table.concat({
+    "metadata",
+    "  title: The Coffee Shop",
+    "  author: [Ana, Bob]",
+    "  version: 1.2",
+    "  credits: { music: Cleo }",
+    "",
+    "beat Main",
+    "  Hello",
+    "",
+}, "\n")
+
+local function run_metadata_test()
+    local label = "metadata: fields read from the script"
+    local ok, err = pcall(function()
+        local script = loreline.parse(METADATA_SCRIPT)
+        local checks = {}
+        if script:get_metadata_field("title") ~= "The Coffee Shop" then
+            checks[#checks + 1] = "title: " .. tostring(script:get_metadata_field("title"))
+        end
+        if script:get_metadata_field("version") ~= 1.2 then
+            checks[#checks + 1] = "version: " .. tostring(script:get_metadata_field("version"))
+        end
+        local author = script:get_metadata_field("author")
+        if author == nil or author.length ~= 2 or author[1] ~= "Bob" then
+            checks[#checks + 1] = "author: " .. tostring(author)
+        end
+        local credits = script:get_metadata_field("credits")
+        if credits == nil or credits:get("music") ~= "Cleo" then
+            checks[#checks + 1] = "credits: " .. tostring(credits)
+        end
+        if script:get_metadata_field("genre") ~= nil then
+            checks[#checks + 1] = "genre: " .. tostring(script:get_metadata_field("genre"))
+        end
+        if #checks > 0 then error(table.concat(checks, "; ")) end
+    end)
+    if ok then
+        pass_count = pass_count + 1
+        io.write("\027[1m\027[32mPASS\027[0m - \027[90m" .. label .. "\027[0m\n")
+    else
+        fail_count = fail_count + 1
+        io.write("\027[1m\027[31mFAIL\027[0m - \027[90m" .. label .. "\027[0m\n")
+        io.write("  Error: " .. tostring(err) .. "\n")
+    end
+end
+
 local function run_seed_random_test()
     local label = "random: seedRandom after restore"
     local ok, err = pcall(function()
@@ -1026,6 +1076,7 @@ local function main()
 
     run_spawn_test()
     run_seed_random_test()
+    run_metadata_test()
     run_prepare_caches_test()
     run_when_strategy_test()
 
