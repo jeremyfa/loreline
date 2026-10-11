@@ -1,0 +1,13 @@
+// A character with no body, declared after the beats
+
+beat Start
+  You meet $Barista.
+
+character Barista
+
+/*
+<test>
+- expected: |
+    ~ You meet Barista.
+</test>
+*/

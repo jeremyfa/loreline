@@ -1,0 +1,17 @@
+// A character declared by its identifier alone: the identifier is its name
+
+character Barista
+
+beat Start
+  Barista: Hello.
+
+  You meet $Barista.
+
+/*
+<test>
+- expected: |
+    Barista: Hello.
+
+    ~ You meet Barista.
+</test>
+*/

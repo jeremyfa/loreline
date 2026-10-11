@@ -1,0 +1,18 @@
+// Characters with no body, one after the other, one with a comment
+
+character Barista // the one at the counter
+character Client
+
+beat Start
+  Barista: Hello.
+
+  Client: Hi, $Barista.
+
+/*
+<test>
+- expected: |
+    Barista: Hello.
+
+    Client: Hi, Barista.
+</test>
+*/

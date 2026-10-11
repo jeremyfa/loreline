@@ -1,0 +1,25 @@
+character Barista
+character Client // a regular
+character Alex
+    name: Alex
+
+beat Start
+    Barista: Hello.
+
+/*
+<test>
+# A character with no body stays on one line, apart from the next declaration
+- request: format
+  expected: |
+    character Barista
+
+    character Client // a regular
+
+    character Alex
+      name: Alex
+
+    beat Start
+
+      Barista: Hello.
+</test>
+*/

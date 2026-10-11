@@ -1,0 +1,12 @@
+// A character declared by its identifier alone, colored like one with a body
+
+character Barista
+// <--------- keyword.control.character
+//        ^^^^^^^ entity.name.class
+character Client // a regular
+// <--------- keyword.control.character
+//        ^^^^^^ entity.name.class
+
+beat Start
+// <---- keyword.control.beat
+  Barista: Hello.
