@@ -1,0 +1,22 @@
+metadata
+  title: The Coffee Shop
+  ifid: 448E73DF-2D2F-47E7-A494-A46B40D4CFB3
+
+beat Start
+  Hi.
+
+/*
+<test>
+- locale: fr
+- request: hover
+  at: "|title"
+  contains:
+    - "**title** (métadonnée)"
+    - "Le titre de l'histoire."
+- request: hover
+  at: "|metadata"
+  contains:
+    - "**Métadonnées**"
+    - "**Champs**"
+</test>
+*/

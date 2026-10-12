@@ -1,0 +1,19 @@
+state
+  gold: 3
+
+character bob
+  name: Bob
+
+beat Start
+  x = gol
+  Hi.
+
+/*
+<test>
+- locale: fr
+- request: completion
+  at: "x = gol|"
+  includes: [gold, bob, and]
+  details: ["Champ d'état", "Personnage", "Opérateur, comme &&"]
+</test>
+*/

@@ -27,11 +27,16 @@ using loreline.Utf8;
  * - `hover`: `contains`, `excludes` (texts that must not be there), or
  *   `none: true`
  * - `completion`: `includes` and `excludes`, lists of labels, or `none: true`;
- *   `trigger` for a completion triggered by a character instead of invoked
- * - `symbols`: `includes`, names at any depth
+ *   `details`, details the items must have; `trigger` for a completion
+ *   triggered by a character instead of invoked
+ * - `symbols`: `includes`, names at any depth, and `details`, details of
+ *   symbols at any depth
  * - `diagnostics` (no `at`): a list of message extracts, or of `message`,
  *   `line` and `severity`; `none: true` for no diagnostic
  * - `format` (no `at`): `expected`, the formatted script
+ *
+ * An item `- locale: fr`, anywhere in the list, starts the server in that
+ * language.
  *
  * A subclass can give its own server and initialization options, and handle
  * more kinds of requests by overriding `runRequest`.
@@ -74,15 +79,19 @@ class LspFileTests {
             fail(path, 'file not found');
             return;
         }
-        final items = testItems(source);
+        var items = testItems(source);
         if (items == null || items.length == 0) {
             failCount++;
             fail(path, 'no <test> block with requests');
             return;
         }
+        // `- locale: fr` starts the server in that language
+        final localeItem = Lambda.find(items, item -> item.locale != null);
+        final locale:Null<String> = localeItem != null ? Std.string(localeItem.locale) : null;
+        items = [for (item in items) if (item.locale == null) item];
         for (crlf in [false, true]) {
             final server = try {
-                openServer(path, crlf);
+                openServer(path, crlf, locale);
             }
             catch (e:Any) {
                 failCount++;
@@ -136,7 +145,7 @@ class LspFileTests {
     /** Diagnostics published for each document, filled as the server sends them. */
     var diagnostics:Map<String, Array<Dynamic>>;
 
-    function openServer(path:String, crlf:Bool):Server {
+    function openServer(path:String, crlf:Bool, ?locale:String):Server {
         final server = createServer != null ? createServer() : new Server();
         diagnostics = new Map();
         server.handleFile = (filePath, callback) -> {
@@ -149,7 +158,7 @@ class LspFileTests {
                 diagnostics.set(params.uri, params.diagnostics);
             }
         };
-        send(server, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { capabilities: {}, initializationOptions: initializationOptions } });
+        send(server, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { capabilities: {}, locale: locale, initializationOptions: initializationOptions } });
         send(server, { jsonrpc: '2.0', method: 'initialized', params: {} });
         beforeOpen(server, path, crlf);
         send(server, { jsonrpc: '2.0', method: 'textDocument/didOpen', params: {
@@ -285,22 +294,31 @@ class LspFileTests {
                 for (unexpected in strings(item.excludes)) {
                     if (labels.contains(unexpected)) throw 'completion has "$unexpected": ' + labels.join(', ');
                 }
+                final details = [for (entry in list) if (entry.detail != null) Std.string(entry.detail)];
+                for (expected in strings(item.details)) {
+                    if (!details.contains(expected)) throw 'no completion item has the detail "$expected", got: ' + details.join(', ');
+                }
 
             case 'symbols':
                 final symbols:Array<Dynamic> = send(server, { jsonrpc: '2.0', id: 2, method: 'textDocument/documentSymbol', params: {
                     textDocument: textDocument
                 }});
                 final names:Array<String> = [];
+                final details:Array<String> = [];
                 function collect(list:Array<Dynamic>) {
                     if (list == null) return;
                     for (symbol in list) {
                         names.push(Std.string(symbol.name));
+                        if (symbol.detail != null) details.push(Std.string(symbol.detail));
                         collect(symbol.children);
                     }
                 }
                 collect(symbols);
                 for (expected in strings(item.includes)) {
                     if (!names.contains(expected)) throw 'symbols lack "$expected", got: ' + names.join(', ');
+                }
+                for (expected in strings(item.details)) {
+                    if (!details.contains(expected)) throw 'no symbol has the detail "$expected", got: ' + details.join(', ');
                 }
 
             case 'diagnostics':

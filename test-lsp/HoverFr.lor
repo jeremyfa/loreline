@@ -1,0 +1,47 @@
+state
+  gold: 3
+
+character barista
+  name: Alex
+  mood: happy
+
+beat Start(price = 2)
+  barista: Hello, $barista.mood.
+  -> Shop
+
+beat Shop
+  when
+    - gold > 1
+      Rich.
+    true
+      Poor.
+
+/*
+<test>
+- locale: fr
+- request: hover
+  at: "beat |Shop"
+  contains:
+    - "**Shop** (beat)"
+    - "Depuis [Start]"
+- request: hover
+  at: "$barista.|mood"
+  contains:
+    - "**mood** (champ de"
+- request: hover
+  at: "|gold: 3"
+  contains:
+    - "**gold** (dans l'état)"
+- request: hover
+  at: "Start(|price"
+  contains:
+    - "**price** (paramètre de"
+    - "Vaut `2` par défaut"
+- request: hover
+  at: "|- gold > 1"
+  contains:
+    - "**Règle when**"
+    - "1 condition"
+    - "Jouée une seule fois"
+</test>
+*/

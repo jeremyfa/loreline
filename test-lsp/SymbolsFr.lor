@@ -1,0 +1,20 @@
+state
+  gold: 3
+
+beat Start
+  choice
+    One
+      A.
+    Two
+      B.
+    Three
+      C.
+
+/*
+<test>
+- locale: fr
+- request: symbols
+  includes: [state, gold, Start, choice]
+  details: ["1 champ", "3 options", "beat"]
+</test>
+*/

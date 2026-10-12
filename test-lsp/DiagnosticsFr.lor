@@ -1,0 +1,15 @@
+import sub/broken
+
+beat Start
+  -> Missing
+  Hi ${.
+
+/*
+<test>
+- locale: fr
+- request: diagnostics
+  expected:
+    - "Beat inconnu : Missing"
+    - "Erreur dans sub/broken.lor"
+</test>
+*/
