@@ -1,0 +1,72 @@
+// Text built-in functions count characters, the same on every target: an
+// accented letter or an emoji counts for one. Upper and lower case cover the
+// Latin letters of European languages, Greek and Cyrillic, and `ß` becomes
+// `SS`. A number or a boolean given as a text is written as text first.
+
+state
+  word: "été😀"
+
+function dotted(t)
+  return t.length + " " + t.upper() + " " + t.sub(1, 2) + " " + t.index("😀")
+
+beat Start
+  Length gives ${string_length("été")} ${string_length("😀")} ${string_length("a😀b")} ${string_length("")} ${string_length("Ελλάδα")} ${string_length("привет")}.
+
+  Length of other values gives ${string_length(12345)} ${string_length(2.5)} ${string_length(true)} ${string_length(1 / 3)}.
+
+  Upper gives ${string_upper("été")} ${string_upper("straße")} ${string_upper("ελλάδα")} ${string_upper("привет")} ${string_upper("ÿ")} ${string_upper("ς")} ${string_upper("çà œ")}.
+
+  Upper of other text gives ${string_upper("abc😀")} ${string_upper("ç123")} ${string_upper(true)} ${string_upper(1.5)}.
+
+  Lower gives ${string_lower("ÉTÉ")} ${string_lower("STRASSE")} ${string_lower("ΕΛΛΆΔΑ")} ${string_lower("ПРИВЕТ")} ${string_lower("Ÿ")} ${string_lower("ÀÉÎÕÜ")} ${string_lower("ŁÓDŹ")}.
+
+  Sub gives ${string_sub("héllo", 1, 3)} ${string_sub("😀ab", 1, 1)} ${string_sub("😀ab", 0, 1)} ${string_sub("abc", -2)} ${string_sub("abc", -2, 1)} ${string_sub("abc", 1)} ${string_sub("été", "1", "1")}.
+
+  Sub at the edges gives [${string_sub("abc", 1, -1)}] [${string_sub("abc", 5, 1)}] [${string_sub("abc", 1.7, 1)}] [${string_sub("abc", -5, 2)}] [${string_sub("", 0, 2)}].
+
+  Index gives ${string_index("héllo", "l")} ${string_index("😀ab", "a")} ${string_index("abc", "")} ${string_index("abc", "z")} ${string_index("a😀b😀", "😀")} ${string_index(12345, 3)}.
+
+  Split gives ${array_join(string_split("a,b,,c", ","), "|")} ${array_join(string_split("été", ""), "|")} ${array_join(string_split("a😀b", ""), "|")} ${string_split("", ",").length}.
+
+  Replace gives ${string_replace("aaa", "a", "b")} ${string_replace("été", "é", "e")} ${string_replace("abc", "", "-")} ${string_replace("a😀", "", "-")} ${string_replace(12345, 3, "x")}.
+
+  Repeat gives [${string_repeat("ab", 3)}] [${string_repeat("ab", 2.7)}] [${string_repeat("ab", -1)}] [${string_repeat("ab", 0)}] [${string_repeat("é", "2")}].
+
+  Search gives ${string_contains("été", "t")} ${string_contains("abc", "")} ${string_starts("été", "é")} ${string_ends("été", "é")} ${string_starts(123, 1)} [${string_trim("  a b  ")}].
+
+  Dots in a script give ${word.length} ${word.upper()} ${word.sub(1, 2)} ${word.index("😀")}.
+
+  Dots in a function give ${dotted(word)}.
+
+/*
+<test>
+- expected: |
+    ~ Length gives 3 1 3 0 6 6.
+
+    ~ Length of other values gives 5 3 4 17.
+
+    ~ Upper gives ÉTÉ STRASSE ΕΛΛΆΔΑ ПРИВЕТ Ÿ Σ ÇÀ Œ.
+
+    ~ Upper of other text gives ABC😀 Ç123 TRUE 1.5.
+
+    ~ Lower gives été strasse ελλάδα привет ÿ àéîõü łódź.
+
+    ~ Sub gives éll a 😀 bc b bc t.
+
+    ~ Sub at the edges gives [] [] [b] [ab] [].
+
+    ~ Index gives 2 1 0 -1 1 2.
+
+    ~ Split gives a|b||c é|t|é a|😀|b 1.
+
+    ~ Replace gives bbb ete a-b-c a-😀 12x45.
+
+    ~ Repeat gives [ababab] [abab] [] [] [éé].
+
+    ~ Search gives true true true true true [a b].
+
+    ~ Dots in a script give 4 ÉTÉ😀 té 3.
+
+    ~ Dots in a function give 4 ÉTÉ😀 té 3.
+</test>
+*/

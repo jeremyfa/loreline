@@ -1,6 +1,7 @@
 // A value that changes kind is saved, even when the new value equals the old
 // one for the language (0 and false, "5" and 5): after a restore, each value
-// keeps its kind. The save sweep checks it at every line.
+// keeps its kind. Large and precise numbers come back as they were, and texts
+// beyond ASCII too. The save sweep checks it at every line.
 
 state
   a: 0
@@ -8,6 +9,8 @@ state
   c: "5"
   d: 1
   e: 5
+  big: 0
+  word: ""
 
 beat Start
   Before $a $b $c $d $e.
@@ -16,6 +19,8 @@ beat Start
   c = 5
   d = true
   e = "5"
+  big = 3000000000.5 + 1 / 3
+  word = "été 😀"
 
   First line after the changes.
 
@@ -24,6 +29,8 @@ beat Start
   Second line after the changes.
 
   Still $a $b $c $d $e, plus one gives ${c + 1} ${e + 1}.
+
+  Saved gives $big and $word ${big > 3000000000} ${string_length(word)}.
 
 beat Helper
   Never played.
@@ -40,5 +47,7 @@ beat Helper
     ~ Second line after the changes.
 
     ~ Still false 0 5 true 5, plus one gives 6 51.
+
+    ~ Saved gives 3000000000.83333 and été 😀 true 5.
 </test>
 */

@@ -1,0 +1,67 @@
+// Numbers written as text, the same on every target: up to 15 significant
+// digits, no trailing zeros, no exponent between 0.000001 and 10^21, NaN and
+// Infinity spelled out. The same writing everywhere a number becomes text:
+// interpolation, concatenation in a script or a function, string(),
+// array_join, arrays and objects.
+
+state
+  text: ""
+  third: 0
+
+function joined(n)
+  return "" + n
+
+function appended(n)
+  var t = "a"
+  t += n
+  return t
+
+function interpolated(n)
+  return "n=$n"
+
+beat Start
+  Decimals give ${0.1 + 0.2} ${1 / 3} ${2 / 3} ${10 / 4} ${0.1 * 3} ${9.995} ${123.456}.
+
+  Whole numbers give ${100 / 4} ${5.0} ${2.50} ${-0.0} ${-1.5} ${1000000} ${3 * 1000000000}.
+
+  Powers give ${pow(10, 15)} ${pow(10, 20)} ${pow(10, 21)} ${pow(10, 22)} ${pow(10, 100)} ${-pow(10, 21)}.
+
+  Small numbers give ${0.000001} ${0.000015} ${pow(10, -7)} ${pow(10, -300)}.
+
+  Precision gives ${pow(2, 0.5)} ${pow(2, 60)} ${1.005 * 1000}.
+
+  Special values give ${pow(-1, 0.5)} ${pow(10, 400)} ${-pow(10, 400)}.
+
+  text = "x" + (0.1 + 0.2) + " " + 5.0 + " " + [1.5] + " " + true + " " + null
+  Script concatenation gives $text.
+
+  Function concatenation gives ${joined(0.1 + 0.2)} ${appended(1.5)} ${interpolated(2 / 3)} ${joined(pow(10, 21))}.
+
+  Conversion gives ${string(1 / 3)} ${string([0.1 + 0.2, 1 / 4])} ${array_join([0.5, 1 / 4, pow(10, 21)], ";")}.
+
+  Containers give ${[0.1 + 0.2, [2 / 3]]} ${{ a: 1 / 3 }}.
+
+/*
+<test>
+- expected: |
+    ~ Decimals give 0.3 0.333333333333333 0.666666666666667 2.5 0.3 9.995 123.456.
+
+    ~ Whole numbers give 25 5 2.5 0 -1.5 1000000 3000000000.
+
+    ~ Powers give 1000000000000000 100000000000000000000 1e+21 1e+22 1e+100 -1e+21.
+
+    ~ Small numbers give 0.000001 0.000015 1e-7 1e-300.
+
+    ~ Precision gives 1.4142135623731 1152921504606850000 1005.
+
+    ~ Special values give NaN Infinity -Infinity.
+
+    ~ Script concatenation gives x0.3 5 [1.5] true null.
+
+    ~ Function concatenation gives 0.3 a1.5 n=0.666666666666667 1e+21.
+
+    ~ Conversion gives 0.333333333333333 [0.3, 0.25] 0.5;0.25;1e+21.
+
+    ~ Containers give [0.3, [0.666666666666667]] {a: 0.333333333333333}.
+</test>
+*/
