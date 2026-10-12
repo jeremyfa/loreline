@@ -27,15 +27,15 @@ beat Shop
 - request: hover
   at: "$barista.|mood"
   contains:
-    - "**mood** (champ de"
+    - "champ de [Alex]"
 - request: hover
   at: "|gold: 3"
   contains:
-    - "**gold** (dans l'état)"
+    - "dans l'état)"
 - request: hover
   at: "Start(|price"
   contains:
-    - "**price** (paramètre de"
+    - "paramètre de [Start]"
     - "Vaut `2` par défaut"
 - request: hover
   at: "|- gold > 1"
