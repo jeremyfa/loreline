@@ -48,6 +48,17 @@ export interface Error {
     stack: Array<any>;
 
     /**
+     * The English template the message was made from, when tools can show it
+     * in another language. The message itself is always in English.
+     */
+    template?: string | null;
+
+    /**
+     * The parameters of the template, by name.
+     */
+    params?: any;
+
+    /**
      * Converts the error to a human-readable string.
      * @return Formatted error message with position
      */

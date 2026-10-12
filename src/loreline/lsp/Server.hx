@@ -9,6 +9,7 @@ import loreline.Imports;
 import loreline.Lexer;
 import loreline.Node;
 import loreline.Parser;
+import loreline.i18n.I18n;
 import loreline.lsp.Protocol;
 
 using StringTools;
@@ -304,6 +305,15 @@ class Server {
                 case "exit":
                     handleExit();
 
+                case "loreline/locale":
+                    // The host changed its language: texts and diagnostics follow
+                    final params:Dynamic = notification.params;
+                    I18n.locale = I18n.fromTag(params != null ? params.locale : null);
+                    for (uri in openDocuments.keys()) {
+                        final content = documentContents.get(uri);
+                        if (content != null) updateDocument(uri, content, true);
+                    }
+
                 case _:
                     // Ignore unknown notifications
             }
@@ -321,6 +331,12 @@ class Server {
         }
 
         clientCapabilities = params.capabilities;
+
+        // The language of the texts: the editor's, or the one its host asks for
+        loreline.i18n.Fr.register();
+        LspFr.register();
+        final options:Dynamic = params.initializationOptions;
+        I18n.locale = I18n.fromTag(params.locale ?? (options != null ? options.locale : null));
 
         return {
             capabilities: {
@@ -478,7 +494,7 @@ class Server {
                                 addImportedFileError(uri, ast, error);
                             }
                             else {
-                                addDiagnostic(uri, error.pos, error.message, DiagnosticSeverity.Error);
+                                addDiagnostic(uri, error.pos, I18n.errorText(error), DiagnosticSeverity.Error);
                             }
                         }
                     }
@@ -493,7 +509,7 @@ class Server {
                         if (!func.external) {
                             final funcLorscript = lens.getFuncLorscript(func);
                             if (funcLorscript.error != null) {
-                                addDiagnostic(uri, funcLorscript.error.pos, funcLorscript.error.message, DiagnosticSeverity.Error);
+                                addDiagnostic(uri, funcLorscript.error.pos, I18n.errorText(funcLorscript.error), DiagnosticSeverity.Error);
                             }
                         }
                     }
@@ -503,7 +519,7 @@ class Server {
                     for (transition in lens.getNodesOfType(NTransition, false)) {
                         if (transition.targetExpr == null && transition.target != '.') {
                             if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
-                                addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error, 'unknown-beat');
+                                addDiagnostic(uri, transition.targetPos, I18n.t('Unknown beat: {name}', {name: transition.target}), DiagnosticSeverity.Error, 'unknown-beat');
                             }
                         }
                     }
@@ -513,7 +529,7 @@ class Server {
                     for (insertion in lens.getNodesOfType(NInsertion, false)) {
                         if (insertion.targetExpr == null && insertion.target != '.') {
                             if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
-                                addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error, 'unknown-beat');
+                                addDiagnostic(uri, insertion.targetPos, I18n.t('Unknown beat: {name}', {name: insertion.target}), DiagnosticSeverity.Error, 'unknown-beat');
                             }
                         }
                     }
@@ -543,7 +559,7 @@ class Server {
                                 addDiagnostic(
                                     uri,
                                     dialogue.characterPos,
-                                    'Unknown character: ${dialogue.character}',
+                                    I18n.t('Unknown character: {name}', {name: dialogue.character}),
                                     DiagnosticSeverity.Warning,
                                     'unknown-character'
                                 );
@@ -577,7 +593,7 @@ class Server {
                                 addImportedFileError(uri, null, err);
                             }
                             else {
-                                addDiagnostic(uri, err.pos, err.message, DiagnosticSeverity.Error);
+                                addDiagnostic(uri, err.pos, I18n.errorText(err), DiagnosticSeverity.Error);
                             }
                         }
                         else {
@@ -628,7 +644,7 @@ class Server {
         addDiagnostic(
             uri,
             importPosLeadingTo(ast, rootPath, error.filePath),
-            'Error in $shownPath$line: ${error.message}',
+            I18n.t('Error in {file}{line}: {message}', {file: shownPath, line: line, message: I18n.errorText(error)}),
             DiagnosticSeverity.Error,
             'import-error'
         );
@@ -1028,7 +1044,7 @@ class Server {
                                                     items.push({
                                                         label: field.name,
                                                         kind: CompletionItemKind.Field,
-                                                        detail: "Object field",
+                                                        detail: I18n.t('Object field'),
                                                         insertText: field.name,
                                                         insertTextMode: AsIs,
                                                         insertTextFormat: PlainText,
@@ -1079,7 +1095,7 @@ class Server {
                                 items.push({
                                     label: field.name,
                                     kind: CompletionItemKind.Property,
-                                    detail: "Character property",
+                                    detail: I18n.t('Character property'),
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
@@ -1096,7 +1112,7 @@ class Server {
                                 items.push({
                                     label: field.name,
                                     kind: CompletionItemKind.Property,
-                                    detail: "Metadata",
+                                    detail: I18n.t('Metadata'),
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
@@ -1120,7 +1136,7 @@ class Server {
                                         items.push({
                                             label: field.name,
                                             kind: CompletionItemKind.Field,
-                                            detail: "Object field",
+                                            detail: I18n.t('Object field'),
                                             insertText: field.name,
                                             insertTextMode: AsIs,
                                             insertTextFormat: PlainText,
@@ -1195,7 +1211,7 @@ class Server {
                         items.push({
                             label: name,
                             kind: CompletionItemKind.Field,
-                            detail: "Local variable",
+                            detail: I18n.t('Local variable'),
                             data: {kind: 'local'},
                             insertText: name,
                             insertTextMode: AsIs,
@@ -1212,7 +1228,7 @@ class Server {
                 items.push({
                     label: field.name,
                     kind: CompletionItemKind.Variable,
-                    detail: "State field",
+                    detail: I18n.t('State field'),
                     data: {kind: 'stateField'},
                     insertText: field.name,
                     insertTextMode: AsIs,
@@ -1227,7 +1243,7 @@ class Server {
                 items.push({
                     label: character.name,
                     kind: CompletionItemKind.Struct,
-                    detail: "Character",
+                    detail: I18n.t('Character'),
                     data: {kind: 'character'},
                     insertText: character.name,
                     insertTextMode: AsIs,
@@ -1243,7 +1259,7 @@ class Server {
                     items.push({
                         label: func.name,
                         kind: CompletionItemKind.Function,
-                        detail: "Function",
+                        detail: I18n.t('Function'),
                         data: {kind: 'function'},
                         insertText: func.name,
                         insertTextMode: AsIs,
@@ -1264,11 +1280,11 @@ class Server {
                     items.push({
                         label: op.word,
                         kind: CompletionItemKind.Keyword,
-                        detail: 'Operator, like ${op.symbol}',
+                        detail: I18n.t('Operator, like {symbol}', {symbol: op.symbol}),
                         insertText: op.word,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
-                        documentation: op.doc,
+                        documentation: operatorDoc(op.word),
                         textEdit: makeTextEdit(replacementRange, op.word)
                     });
                 }
@@ -1280,7 +1296,7 @@ class Server {
                     items.push({
                         label: beat.name,
                         kind: CompletionItemKind.Class,
-                        detail: "Beat",
+                        detail: I18n.t('Beat'),
                         insertText: beat.name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
@@ -1335,11 +1351,11 @@ class Server {
             items.push({
                 label: known.key,
                 kind: CompletionItemKind.Property,
-                detail: "Metadata",
+                detail: I18n.t('Metadata'),
                 insertText: known.key + ': ',
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
-                documentation: {kind: MarkupKind.Markdown, value: known.meaning},
+                documentation: {kind: MarkupKind.Markdown, value: known.meaning()},
                 textEdit: makeTextEdit(replacementRange, known.key + ': ')
             });
         }
@@ -1389,7 +1405,7 @@ class Server {
                     items.push({
                         label: name,
                         kind: CompletionItemKind.Field,
-                        detail: "Local variable",
+                        detail: I18n.t('Local variable'),
                         data: {kind: 'local'},
                         insertText: name,
                         insertTextMode: AsIs,
@@ -1406,7 +1422,7 @@ class Server {
             items.push({
                 label: field.name,
                 kind: CompletionItemKind.Variable,
-                detail: "State field",
+                detail: I18n.t('State field'),
                 data: {kind: 'stateField'},
                 insertText: field.name,
                 insertTextMode: AsIs,
@@ -1421,7 +1437,7 @@ class Server {
             items.push({
                 label: character.name,
                 kind: CompletionItemKind.Class,
-                detail: "Character",
+                detail: I18n.t('Character'),
                 data: {kind: 'character'},
                 insertText: character.name,
                 insertTextMode: AsIs,
@@ -1437,7 +1453,7 @@ class Server {
                 items.push({
                     label: func.name,
                     kind: CompletionItemKind.Function,
-                    detail: "Function",
+                    detail: I18n.t('Function'),
                     data: {kind: 'function'},
                     insertText: func.name,
                     insertTextMode: AsIs,
@@ -1461,7 +1477,7 @@ class Server {
         items.push({
             label: 'metadata',
             kind: CompletionItemKind.Module,
-            detail: "Metadata",
+            detail: I18n.t('Metadata'),
             insertText: 'metadata',
             insertTextMode: AsIs,
             insertTextFormat: PlainText,
@@ -1483,7 +1499,7 @@ class Server {
             items.push({
                 label: beat.name,
                 kind: CompletionItemKind.Class,
-                detail: "Beat",
+                detail: I18n.t('Beat'),
                 insertText: newText,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
@@ -1507,11 +1523,11 @@ class Server {
             items.push({
                 label: tag,
                 kind: CompletionItemKind.Enum,
-                detail: "Tag",
+                detail: I18n.t('Tag'),
                 insertText: tag,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
-                documentation: 'Used $uses time' + (uses == 1 ? '' : 's'),
+                documentation: I18n.count(uses, 'Used {n} time', 'Used {n} times'),
                 textEdit: makeTextEdit(replacementRange, tag)
             });
         }
@@ -1722,7 +1738,7 @@ class Server {
 
     function makeDoubleQuotedTextHover(literal:NStringLiteral, lens:Lens, uri:DocumentUri, description:Array<String>, content:String, part:NStringPart, ?pos:loreline.Position):Hover {
 
-        var kind = 'Text';
+        var kind = I18n.t('Text');
         var name = null;
         var title:Null<String> = null;
 
@@ -1731,12 +1747,12 @@ class Server {
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
-                    kind = 'Choice option';
+                    kind = I18n.t('Choice option');
                     final choiceOpt:NChoiceOption = cast parent;
                     title = optionTitle(choiceOpt, uri, lens);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
-                    kind = 'Dialogue';
+                    kind = I18n.t('Dialogue');
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
                         name = characterLink(characterDecl, uri, lens);
@@ -1751,7 +1767,7 @@ class Server {
             hoverPos = new loreline.Position(onceOption.pos.line, onceOption.pos.column, onceOption.pos.offset,
                 endPos.offset - onceOption.pos.offset + endPos.length);
         }
-        return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, hoverPos);
+        return makeHover(title ?? hoverTitle(kind, name != null ? I18n.t('of {name}', {name: name}) : null), description, content, part, hoverPos);
 
     }
 
@@ -1765,7 +1781,7 @@ class Server {
             spaceOffset = pos.offset - part.pos.offset;
         }
 
-        var kind = 'Text';
+        var kind = I18n.t('Text');
         var name = null;
         var title:Null<String> = null;
 
@@ -1774,12 +1790,12 @@ class Server {
         if (parent != null) {
             switch HxType.getClass(parent) {
                 case NChoiceOption:
-                    kind = 'Choice option';
+                    kind = I18n.t('Choice option');
                     final choiceOpt:NChoiceOption = cast parent;
                     title = optionTitle(choiceOpt, uri, lens);
                     if (choiceOpt.once) onceOption = choiceOpt;
                 case NDialogueStatement:
-                    kind = 'Dialogue';
+                    kind = I18n.t('Dialogue');
                     final characterDecl = lens.findCharacterFromDialogue(cast parent);
                     if (characterDecl != null) {
                         name = characterLink(characterDecl, uri, lens);
@@ -1802,13 +1818,13 @@ class Server {
                 var first = true;
                 for (sub in extractTextSectionsExcludingComments(text)) {
                     if (offset >= sub.offset && offset < sub.offset + sub.length - (first ? spaceOffset : 0)) {
-                        return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
+                        return makeHover(title ?? hoverTitle(kind, name != null ? I18n.t('of {name}', {name: name}) : null), description, content, part, extendForOnce(pos.withOffset(content, sub.offset - (first ? 0 : spaceOffset), sub.length - (first ? spaceOffset : 0))));
                     }
                     first = false;
                 }
                 return null;
             case _:
-                return makeHover(title ?? hoverTitle(kind, name != null ? 'of ' + name : null), description, content, part, extendForOnce(pos));
+                return makeHover(title ?? hoverTitle(kind, name != null ? I18n.t('of {name}', {name: name}) : null), description, content, part, extendForOnce(pos));
         }
 
     }
@@ -1922,10 +1938,10 @@ class Server {
             case NTransition:
                 final transition:NTransition = cast node;
                 if (transition.target == '.') {
-                    return makeHover(hoverTitle('End'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverTitle(I18n.t('End')), hoverDescriptionForNode(cast node), content, node);
                 }
                 else if (transition.target == '_') {
-                    return makeHover(hoverTitle('Root'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverTitle(I18n.t('Root')), hoverDescriptionForNode(cast node), content, node);
                 }
                 else {
                     final beat = lens.findBeatFromTransition(transition);
@@ -1933,7 +1949,7 @@ class Server {
                         return makeBeatDeclHover(beat, uri, content, lens, node);
                     }
                     else {
-                        return makeHover(hoverTitle('Transition'), hoverDescriptionForNode(cast node), content, node);
+                        return makeHover(hoverTitle(I18n.t('Transition')), hoverDescriptionForNode(cast node), content, node);
                     }
                 }
             case NInsertion:
@@ -1943,11 +1959,11 @@ class Server {
                     return makeBeatDeclHover(beat, uri, content, lens, node);
                 }
                 else {
-                    return makeHover(hoverTitle('Insertion'), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverTitle(I18n.t('Insertion')), hoverDescriptionForNode(cast node), content, node);
                 }
             case NBeatCall:
                 // Dynamic beat call: target is resolved at runtime
-                return makeHover(hoverTitle('Beat call'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverTitle(I18n.t('Beat call')), hoverDescriptionForNode(cast node), content, node);
             case NObjectField:
                 return makeObjectFieldHover(cast node, uri, content, lens);
             case NAccess:
@@ -1969,36 +1985,36 @@ class Server {
                 final literal:NLiteral = cast node;
                 switch literal.literalType {
                     case Number:
-                        return makeHover(hoverTitle('Number'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverTitle(I18n.t('Number')), hoverDescriptionForNode(literal), content, literal);
                     case Boolean:
-                        return makeHover(hoverTitle('Boolean'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverTitle(I18n.t('Boolean')), hoverDescriptionForNode(literal), content, literal);
                     case Null:
-                        return makeHover(hoverTitle('Null'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverTitle(I18n.t('Null')), hoverDescriptionForNode(literal), content, literal);
                     case Array:
-                        return makeHover(hoverTitle('Array'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverTitle(I18n.t('Array')), hoverDescriptionForNode(literal), content, literal);
                     case Object(style):
-                        return makeHover(hoverTitle('Object'), hoverDescriptionForNode(literal), content, literal);
+                        return makeHover(hoverTitle(I18n.t('Object')), hoverDescriptionForNode(literal), content, literal);
                 }
             case NUnary | NBinary:
                 // Hovering a word operator (the operands have their own nodes)
                 final op = wordOperatorOf(cast node);
                 if (op != null) {
-                    return makeHover(hoverName(op.word, 'operator'), [op.doc], content, node);
+                    return makeHover(hoverName(op.word, I18n.t('operator')), [operatorDoc(op.word)], content, node);
                 }
-                return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverTitle(I18n.t('Expression')), hoverDescriptionForNode(cast node), content, node);
             case NExpr | NAssign:
-                return makeHover(hoverTitle('Expression'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverTitle(I18n.t('Expression')), hoverDescriptionForNode(cast node), content, node);
             case NIfStatement:
-                return makeHover(hoverTitle('Condition'), null, content, node);
+                return makeHover(hoverTitle(I18n.t('Condition')), null, content, node);
             case NAlternative:
                 final alt:NAlternative = cast node;
-                return makeHover(hoverTitle('Alternative', alt.mode.toString().toLowerCase()), null, content, node);
+                return makeHover(hoverTitle(I18n.t('Alternative'), alt.mode.toString().toLowerCase()), null, content, node);
             case NDialogueStatement:
                 final dialogue:NDialogueStatement = cast node;
                 if (dialogue.conditionPos != null &&
                     lorelinePos.offset >= dialogue.conditionPos.offset &&
                     lorelinePos.offset <= dialogue.conditionPos.offset + dialogue.conditionPos.length) {
-                    return makeHover(hoverTitle('Condition'), null, content, node, dialogue.conditionPos);
+                    return makeHover(hoverTitle(I18n.t('Condition')), null, content, node, dialogue.conditionPos);
                 }
                 return makeDialogueStatementHover(dialogue, uri, content, lens);
             case NTextStatement:
@@ -2006,19 +2022,19 @@ class Server {
                 if (text.conditionPos != null &&
                     lorelinePos.offset >= text.conditionPos.offset &&
                     lorelinePos.offset <= text.conditionPos.offset + text.conditionPos.length) {
-                    return makeHover(hoverTitle('Condition'), null, content, node, text.conditionPos);
+                    return makeHover(hoverTitle(I18n.t('Condition')), null, content, node, text.conditionPos);
                 }
-                return makeHover(hoverTitle('Text'), hoverDescriptionForNode(text), content, node);
+                return makeHover(hoverTitle(I18n.t('Text')), hoverDescriptionForNode(text), content, node);
             case NChoiceOption:
                 final option:NChoiceOption = cast node;
                 if (option.conditionPos != null &&
                     lorelinePos.offset >= option.conditionPos.offset &&
                     lorelinePos.offset <= option.conditionPos.offset + option.conditionPos.length) {
-                    return makeHover(hoverTitle('Condition'), null, content, node, option.conditionPos);
+                    return makeHover(hoverTitle(I18n.t('Condition')), null, content, node, option.conditionPos);
                 }
                 return makeHover(optionTitle(option, uri, lens), hoverDescriptionForNode(option), content, node);
             case NStringLiteral:
-                return makeHover(hoverTitle('Text'), hoverDescriptionForNode(cast node), content, node);
+                return makeHover(hoverTitle(I18n.t('Text')), hoverDescriptionForNode(cast node), content, node);
             case NStringPart:
                 var parent = node;
                 do {
@@ -2033,7 +2049,7 @@ class Server {
                     case Expr(expr):
                         return makeNodeHover(lorelinePos, lens, uri, content, expr);
                     case Tag(closing, expr):
-                        return makeHover(hoverTitle('Tag', '&lt;' + (closing ? '/' : '') + printLoreline(expr) + '&gt;'), hoverDescriptionForNode(expr), content, stringPart);
+                        return makeHover(hoverTitle(I18n.t('Tag'), '&lt;' + (closing ? '/' : '') + printLoreline(expr) + '&gt;'), hoverDescriptionForNode(expr), content, stringPart);
                 }
 
                 final literal = lens.getFirstParentOfType(node, NStringLiteral);
@@ -2047,7 +2063,7 @@ class Server {
                             case Expr(expr):
                                 return makeNodeHover(lorelinePos, lens, uri, content, expr);
                             case Tag(closing, expr):
-                                return makeHover(hoverTitle('Tag', '&lt;' + (closing ? '/' : '') + printLoreline(expr) + '&gt;'), hoverDescriptionForNode(expr), content, parentStringPart);
+                                return makeHover(hoverTitle(I18n.t('Tag'), '&lt;' + (closing ? '/' : '') + printLoreline(expr) + '&gt;'), hoverDescriptionForNode(expr), content, parentStringPart);
                         }
                     }
 
@@ -2124,18 +2140,29 @@ class Server {
     /**
      * Word operators, for completion and hover.
      */
-    static final WORD_OPERATORS:Array<{word:String, symbol:String, doc:String}> = [
-        {word: 'and', symbol: '&&', doc: '`a and b` is true when both `a` and `b` are true, like `a && b`.'},
-        {word: 'or', symbol: '||', doc: '`a or b` is true when `a` or `b` is true, like `a || b`.'},
-        {word: 'is', symbol: '==', doc: '`a is b` is true when `a` equals `b`, like `a == b`.'},
-        {word: 'is not', symbol: '!=', doc: '`a is not b` is true when `a` differs from `b`, like `a != b`. It is always a single operator: to compare with a negation, write `a is (not b)`.'},
-        {word: 'not', symbol: '!', doc: '`not a` is true when `a` is false, like `!a`. It applies to what follows it directly: `not a is b` reads `(not a) is b`, so write `not (a is b)` to negate a comparison.'}
+    static final WORD_OPERATORS:Array<{word:String, symbol:String}> = [
+        {word: 'and', symbol: '&&'},
+        {word: 'or', symbol: '||'},
+        {word: 'is', symbol: '=='},
+        {word: 'is not', symbol: '!='},
+        {word: 'not', symbol: '!'}
     ];
+
+    /** What a word operator does, in the language of the tools */
+    static function operatorDoc(word:String):String {
+        return switch word {
+            case 'and': I18n.t('`a and b` is true when both `a` and `b` are true, like `a && b`.');
+            case 'or': I18n.t('`a or b` is true when `a` or `b` is true, like `a || b`.');
+            case 'is': I18n.t('`a is b` is true when `a` equals `b`, like `a == b`.');
+            case 'is not': I18n.t('`a is not b` is true when `a` differs from `b`, like `a != b`. It is always a single operator: to compare with a negation, write `a is (not b)`.');
+            case _: I18n.t('`not a` is true when `a` is false, like `!a`. It applies to what follows it directly: `not a is b` reads `(not a) is b`, so write `not (a is b)` to negate a comparison.');
+        }
+    }
 
     /**
      * The word operator of an expression, if it is written with one.
      */
-    static function wordOperatorOf(node:NExpr):Null<{word:String, symbol:String, doc:String}> {
+    static function wordOperatorOf(node:NExpr):Null<{word:String, symbol:String}> {
         final op:Null<loreline.Lexer.TokenType> = if (node is NBinary) (cast node:NBinary).op else if (node is NUnary) (cast node:NUnary).op else null;
         final word = switch op {
             case OpAnd(true): 'and';
@@ -2215,7 +2242,7 @@ class Server {
             shown += length;
         }
         markdown = markdown.trim() + (cut ? '…' : '');
-        return markdown.length > 0 ? hoverName(markdown, 'choice option') : hoverTitle('Choice option');
+        return markdown.length > 0 ? hoverName(markdown, I18n.t('choice option')) : hoverTitle(I18n.t('Choice option'));
 
     }
 
@@ -2236,11 +2263,32 @@ class Server {
 
         final hasOwner = owner != null && owner.length > 0;
         final place = switch kind {
-            case 'state field': hasOwner ? 'in the state of ' + owner : 'in the state';
-            case 'local': hasOwner ? 'local in ' + owner : 'local';
-            case _: hasOwner ? kind + ' of ' + owner : kind;
+            case 'state field': hasOwner ? I18n.t('in the state of {owner}', {owner: owner}) : I18n.t('in the state');
+            case 'local': hasOwner ? I18n.t('local in {owner}', {owner: owner}) : I18n.t('local');
+            case _: hasOwner ? I18n.t('{kind} of {owner}', {kind: kindText(kind), owner: owner}) : kindText(kind);
         }
         return (type != null && type.length > 0 ? type + ', ' : '') + place;
+    }
+
+    /** What a name is, as a hover says it: `public beat`, `field`, `text method`, in the language of the tools */
+    public static function kindText(kind:String):String {
+        return switch kind {
+            case 'beat': I18n.t('beat');
+            case 'public beat': I18n.t('public beat');
+            case 'character': I18n.t('character');
+            case 'function': I18n.t('function');
+            case 'function provided by the app': I18n.t('function provided by the app');
+            case 'built-in function': I18n.t('built-in function');
+            case 'parameter': I18n.t('parameter');
+            case 'field': I18n.t('field');
+            case 'state field': I18n.t('state field');
+            case 'local': I18n.t('local');
+            case 'text method': I18n.t('text method');
+            case 'list method': I18n.t('list method');
+            case 'map method': I18n.t('map method');
+            case 'beat method': I18n.t('beat method');
+            case _: kind;
+        }
 
     }
 
@@ -2302,7 +2350,7 @@ class Server {
 
         return parameterLines([for (param in beatDecl.params ?? []) {
             name: param.name,
-            details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? 'defaults to ' + hoverValue(valueText(param.defaultValue)) : null]
+            details: [typeOf != null ? typeOf(param) : null, param.defaultValue != null ? I18n.t('defaults to {value}', {value: hoverValue(valueText(param.defaultValue))}) : null]
         }]);
 
     }
@@ -2313,7 +2361,7 @@ class Server {
         return parameterLines([for (arg in func.args ?? []) {
             final eq = arg.indexOf('=');
             final name = (eq != -1 ? arg.substr(0, eq) : arg).trim();
-            {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? 'defaults to ' + hoverValue(arg.substr(eq + 1).trim()) : null]};
+            {name: name, details: [typeOf != null ? typeOf(name) : null, eq != -1 ? I18n.t('defaults to {value}', {value: hoverValue(arg.substr(eq + 1).trim())}) : null]};
         }]);
 
     }
@@ -2333,7 +2381,7 @@ class Server {
             final name = makePositionLink(field.name, uri, field, lens);
             final inner = objectFields(field.value);
             if (inner != null) {
-                lines.push(indent + name + ' (object)');
+                lines.push(indent + I18n.t('{name} (object)', {name: name}));
                 for (line in fieldLines(inner, uri, lens, typeOf, depth + 1)) lines.push(line);
             }
             else {
@@ -2444,8 +2492,8 @@ class Server {
     function makeBeatDeclHover(beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, ?origin:Node):Hover {
 
         return makeSectionsHover(
-            hoverName(beatDecl.name, beatDecl.isPublic ? 'public beat' : 'beat'),
-            [hoverDescriptionForNode(beatDecl).join("\n"), hoverGroup('Parameters', beatParameters(beatDecl)), beatLinks(beatDecl, uri, lens)],
+            hoverName(beatDecl.name, beatDecl.isPublic ? I18n.t('public beat') : I18n.t('beat')),
+            [hoverDescriptionForNode(beatDecl).join("\n"), hoverGroup(I18n.t('Parameters'), beatParameters(beatDecl)), beatLinks(beatDecl, uri, lens)],
             content,
             origin ?? beatDecl
         );
@@ -2478,9 +2526,9 @@ class Server {
             final key = Std.string(from.id);
             if (seenIncoming.exists(key)) continue;
             seenIncoming.set(key, true);
-            incoming.push(from.name == "_" ? "top level" : makePositionLink(from.name, uri, from, lens));
+            incoming.push(from.name == "_" ? I18n.t('top level') : makePositionLink(from.name, uri, from, lens));
         }
-        if (incoming.length > 0) flow.push("From " + hoverList(incoming));
+        if (incoming.length > 0) flow.push(I18n.t('From {list}', {list: hoverList(incoming)}));
 
         // The beats it goes to and the beats it calls, each once per list
         final transitions:Array<String> = [];
@@ -2495,9 +2543,9 @@ class Server {
             seen.set(key, true);
             (transition ? transitions : calls).push(makePositionLink(ref.target.name, uri, ref.target, lens));
         }
-        if (transitions.length > 0) flow.push("To " + hoverList(transitions));
-        if (calls.length > 0) flow.push("Calls " + hoverList(calls));
-        group("Flow", flow);
+        if (transitions.length > 0) flow.push(I18n.t('To {list}', {list: hoverList(transitions)}));
+        if (calls.length > 0) flow.push(I18n.t('Calls {list}', {list: hoverList(calls)}));
+        group(I18n.t('Flow'), flow);
 
         // The fields it uses, changed ones first: by character, and of the state
         final changedFields = new NodeIdMap<Bool>();
@@ -2540,32 +2588,32 @@ class Server {
             final own = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == character) fieldLink(field)];
             characterLines.push((speaking.exists(character.id) ? '**' + link + '**' : link) + (own.length > 0 ? ': ' + hoverList(own) : ''));
         }
-        group("Characters", characterLines);
+        group(I18n.t('Characters'), characterLines);
 
         final stateFields = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == null) fieldLink(field)];
-        if (stateFields.length > 0) group("State", [hoverList(stateFields)]);
+        if (stateFields.length > 0) group(I18n.t('State§group'), [hoverList(stateFields)]);
 
         return groups.join("\n\n---\n\n");
     }
 
     function makeStateDeclHover(stateDecl:NStateDecl, uri:DocumentUri, content:String, lens:Lens):Hover {
 
-        return makeSectionsHover(hoverTitle(stateDecl.temporary ? 'Temporary state' : 'State'),
-            [hoverDescriptionForNode(stateDecl).join("\n"), hoverGroup('Fields', fieldLines(stateDecl.fields, uri, lens))], content, stateDecl);
+        return makeSectionsHover(hoverTitle(stateDecl.temporary ? I18n.t('Temporary state') : I18n.t('State')),
+            [hoverDescriptionForNode(stateDecl).join("\n"), hoverGroup(I18n.t('Fields'), fieldLines(stateDecl.fields, uri, lens))], content, stateDecl);
 
     }
 
     function makeMetadataDeclHover(metadata:NMetadataDecl, uri:DocumentUri, content:String, lens:Lens, ?pos:loreline.Position):Hover {
 
-        return makeSectionsHover(hoverTitle('Metadata'),
-            [hoverDescriptionForNode(metadata).join("\n"), hoverGroup('Fields', fieldLines(metadata.fields, uri, lens))], content, metadata, pos);
+        return makeSectionsHover(hoverTitle(I18n.t('Metadata')),
+            [hoverDescriptionForNode(metadata).join("\n"), hoverGroup(I18n.t('Fields'), fieldLines(metadata.fields, uri, lens))], content, metadata, pos);
 
     }
 
     function makeCharacterDeclHover(characterDecl:NCharacterDecl, uri:DocumentUri, content:String, lens:Lens, ?pos:loreline.Position):Hover {
 
-        return makeSectionsHover(hoverName(shownCharacterName(characterDecl), 'character'),
-            [hoverDescriptionForNode(characterDecl).join("\n"), hoverGroup('Fields', fieldLines(listedCharacterFields(characterDecl), uri, lens))], content, characterDecl, pos);
+        return makeSectionsHover(hoverName(shownCharacterName(characterDecl), I18n.t('character')),
+            [hoverDescriptionForNode(characterDecl).join("\n"), hoverGroup(I18n.t('Fields'), fieldLines(listedCharacterFields(characterDecl), uri, lens))], content, characterDecl, pos);
 
     }
 
@@ -2587,42 +2635,42 @@ class Server {
 
             // TODO: this is pretty basic for now, could be improved at some point
             final title = switch expr.e {
-                case EConst(CString(s)): 'Text';
-                case EConst(CFloat(f)): 'Number';
-                case EConst(CInt(v)): 'Number';
-                case EConst(c): 'Constant';
-                case EIdent('false'): 'Boolean';
-                case EIdent('true'): 'Boolean';
-                case EIdent('null'): 'Null';
-                case EIdent(v): 'Identifier';
-                case EVar(n, t, e): 'Variable';
-                case EParent(e): 'Parenthesis';
-                case EBlock(e): 'Block';
-                case EField(e, f): 'Field';
-                case EBinop(op, e1, e2): 'Binary operation';
-                case EUnop(op, prefix, e): 'Unary operation';
-                case ECall(e, params): 'Function';
-                case EIf(cond, e1, e2): 'Condition';
-                case EWhile(cond, e): 'Loop';
-                case EFor(v, it, e): 'Iteration';
-                case EBreak: 'Break';
-                case EContinue: 'Continue';
-                case EFunction(args, e, name, ret): 'Function';
-                case EReturn(e): 'Return';
-                case EArray(e, index): 'Array access';
-                case EArrayDecl(e): 'Array';
-                case ENew(cl, params): 'New';
-                case EThrow(e): 'Throw';
-                case ETry(e, v, t, ecatch): 'Try';
-                case EObject(fl): 'Object';
-                case ETernary(cond, e1, e2): 'Ternary operation';
-                case ESwitch(e, cases, defaultExpr): 'Switch';
-                case EDoWhile(cond, e): 'Do... while';
-                case EMeta(name, args, e): 'Metadata';
-                case ECheckType(e, t): 'Type';
+                case EConst(CString(s)): I18n.t('Text');
+                case EConst(CFloat(f)): I18n.t('Number');
+                case EConst(CInt(v)): I18n.t('Number');
+                case EConst(c): I18n.t('Constant');
+                case EIdent('false'): I18n.t('Boolean');
+                case EIdent('true'): I18n.t('Boolean');
+                case EIdent('null'): I18n.t('Null');
+                case EIdent(v): I18n.t('Identifier');
+                case EVar(n, t, e): I18n.t('Variable');
+                case EParent(e): I18n.t('Parenthesis');
+                case EBlock(e): I18n.t('Block');
+                case EField(e, f): I18n.t('Field');
+                case EBinop(op, e1, e2): I18n.t('Binary operation');
+                case EUnop(op, prefix, e): I18n.t('Unary operation');
+                case ECall(e, params): I18n.t('Function');
+                case EIf(cond, e1, e2): I18n.t('Condition');
+                case EWhile(cond, e): I18n.t('Loop');
+                case EFor(v, it, e): I18n.t('Iteration');
+                case EBreak: I18n.t('Break');
+                case EContinue: I18n.t('Continue');
+                case EFunction(args, e, name, ret): I18n.t('Function');
+                case EReturn(e): I18n.t('Return');
+                case EArray(e, index): I18n.t('Array access');
+                case EArrayDecl(e): I18n.t('Array');
+                case ENew(cl, params): I18n.t('New');
+                case EThrow(e): I18n.t('Throw');
+                case ETry(e, v, t, ecatch): I18n.t('Try');
+                case EObject(fl): I18n.t('Object');
+                case ETernary(cond, e1, e2): I18n.t('Ternary operation');
+                case ESwitch(e, cases, defaultExpr): I18n.t('Switch');
+                case EDoWhile(cond, e): I18n.t('Do... while');
+                case EMeta(name, args, e): I18n.t('Metadata');
+                case ECheckType(e, t): I18n.t('Type');
             }
 
-            return makeHover(hoverTitle(title ?? 'Expression'), hoverDescriptionForNode(func), content, func, exprPos);
+            return makeHover(hoverTitle(title ?? I18n.t('Expression')), hoverDescriptionForNode(func), content, func, exprPos);
         }
 
         return makeFunctionDeclHover(func, content);
@@ -2647,8 +2695,8 @@ class Server {
             name += ')';
         }
 
-        return makeSectionsHover(hoverName(func.name ?? 'function', func.external ? 'function provided by the app' : 'function'),
-            [hoverDescriptionForNode(func).join("\n"), hoverGroup('Parameters', functionParameters(func))], content, func, lorelinePos);
+        return makeSectionsHover(hoverName(func.name ?? I18n.t('function'), func.external ? I18n.t('function provided by the app') : I18n.t('function')),
+            [hoverDescriptionForNode(func).join("\n"), hoverGroup(I18n.t('Parameters'), functionParameters(func))], content, func, lorelinePos);
 
     }
 
@@ -2657,7 +2705,7 @@ class Server {
      */
     function makeBeatParamHover(param:NBeatParam, beatDecl:NBeatDecl, uri:DocumentUri, content:String, lens:Lens, anchor:Node, ?pos:loreline.Position):Hover {
 
-        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', makePositionLink(beatDecl.name, uri, beatDecl, lens))), [param.defaultValue != null ? 'Defaults to ' + hoverValue(valueText(param.defaultValue)) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(param.name, hoverWhat('parameter', makePositionLink(beatDecl.name, uri, beatDecl, lens))), [param.defaultValue != null ? I18n.t('Defaults to {value}', {value: hoverValue(valueText(param.defaultValue))}) : null]), null, content, anchor, pos);
 
     }
 
@@ -2670,7 +2718,7 @@ class Server {
         final eqIndex = rawArg.indexOf('=');
         final paramName = (eqIndex != -1 ? rawArg.substr(0, eqIndex) : rawArg).trim();
 
-        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name != null ? makePositionLink(func.name, uri, func, lens) : null)), [eqIndex != -1 ? 'Defaults to ' + hoverValue(rawArg.substr(eqIndex + 1).trim()) : null]), null, content, anchor, pos);
+        return makeHover(hoverHeader(hoverName(paramName, hoverWhat('parameter', func.name != null ? makePositionLink(func.name, uri, func, lens) : null)), [eqIndex != -1 ? I18n.t('Defaults to {value}', {value: hoverValue(rawArg.substr(eqIndex + 1).trim())}) : null]), null, content, anchor, pos);
 
     }
 
@@ -2966,7 +3014,7 @@ class Server {
             items.push({
                 label: strategy,
                 kind: CompletionItemKind.Keyword,
-                detail: 'When strategy',
+                detail: I18n.t('When strategy'),
                 insertText: strategy,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
@@ -2979,7 +3027,7 @@ class Server {
             items.push({
                 label: func.name,
                 kind: CompletionItemKind.Function,
-                detail: 'When strategy (function)',
+                detail: I18n.t('When strategy (function)'),
                 insertText: func.name,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
@@ -2995,10 +3043,10 @@ class Server {
      */
     static function whenStrategyDescription(strategy:Null<String>):String {
         return switch strategy {
-            case null: 'Plays the most specific rule that applies, and takes turns between equally specific ones.';
-            case 'first': 'Plays the first rule that applies, from top to bottom. Useful for thresholds.';
-            case 'pick': 'Plays one of the rules that apply, at random.';
-            case name: 'Lets the function `$name` choose the rule to play.';
+            case null: I18n.t('Plays the most specific rule that applies, and takes turns between equally specific ones.');
+            case 'first': I18n.t('Plays the first rule that applies, from top to bottom. Useful for thresholds.');
+            case 'pick': I18n.t('Plays one of the rules that apply, at random.');
+            case name: I18n.t('Lets the function `{name}` choose the rule to play.', {name: name});
         }
     }
 
@@ -3006,33 +3054,35 @@ class Server {
         final description = hoverDescriptionForNode(when);
         if (description.length > 0) description.push('');
         description.push(whenStrategyDescription(when.strategy));
-        return makeHover(hoverTitle('When', when.strategy), description, content, when);
+        return makeHover(hoverTitle(I18n.t('When'), when.strategy), description, content, when);
     }
 
     function makeWhenRuleHover(rule:NWhenRule, content:String):Hover {
         final description = hoverDescriptionForNode(rule);
         if (description.length > 0) description.push('');
         if (rule.insertion != null) {
-            description.push('Brings the rules of the first when block of the inserted beat.' + (rule.insertionCondition != null ? ' Its condition only decides whether they come in.' : ''));
+            description.push(rule.insertionCondition != null
+                ? I18n.t('Brings the rules of the first when block of the inserted beat. Its condition only decides whether they come in.')
+                : I18n.t('Brings the rules of the first when block of the inserted beat.'));
         }
         else {
             final criteria = AstUtils.whenRuleScore(rule);
             final alwaysEligible = rule.condition == null || AstUtils.isLiteralTrue(rule.condition);
-            description.push(alwaysEligible ? 'Always applies' : (criteria == 1 ? '1 condition' : '$criteria conditions'));
-            if (rule.once) description.push('Played only once');
+            description.push(alwaysEligible ? I18n.t('Always applies') : I18n.count(criteria, '{n} condition', '{n} conditions'));
+            if (rule.once) description.push(I18n.t('Played only once'));
         }
-        return makeHover(hoverTitle('When rule'), description, content, rule);
+        return makeHover(hoverTitle(I18n.t('When rule')), description, content, rule);
     }
 
     function makeChoiceHover(choice:NChoiceStatement, content:String):Hover {
 
-        return makeHover(hoverTitle('Choice'), hoverDescriptionForNode(choice), content, choice);
+        return makeHover(hoverTitle(I18n.t('Choice')), hoverDescriptionForNode(choice), content, choice);
 
     }
 
     function makeImportHover(importNode:NImportStatement, content:String):Hover {
 
-        return makeHover(hoverHeader(hoverName(importPathOf(importNode), 'import')), hoverDescriptionForNode(importNode), content, importNode);
+        return makeHover(hoverHeader(hoverName(importPathOf(importNode), I18n.t('import'))), hoverDescriptionForNode(importNode), content, importNode);
 
     }
 
@@ -3050,7 +3100,7 @@ class Server {
 
     function makeExprHover(expr:NExpr, content:String):Hover {
 
-        return makeHover(hoverHeader(hoverTitle('Expression'), [valueText(expr)]), hoverDescriptionForNode(expr), content, expr);
+        return makeHover(hoverHeader(hoverTitle(I18n.t('Expression')), [valueText(expr)]), hoverDescriptionForNode(expr), content, expr);
 
     }
 
@@ -3065,14 +3115,14 @@ class Server {
 
         final owner = lens.getParentNode(field);
         if (owner is NCharacterDecl) return hoverName(field.name, hoverWhat('field', characterLink(cast owner, uri, lens)));
-        if (owner is NMetadataDecl) return hoverName(field.name, 'metadata');
+        if (owner is NMetadataDecl) return hoverName(field.name, I18n.t('metadata'));
         if (owner is NStateDecl) {
             // A field of the state of a beat names its beat
             final beat = lens.getFirstParentOfType(owner, NBeatDecl);
             final beatOwner = beat != null && beat.name != '_' ? makePositionLink(beat.name, uri, beat, lens) : null;
             return hoverName(field.name, hoverWhat('state field', beatOwner));
         }
-        return hoverName(field.name, 'field');
+        return hoverName(field.name, I18n.t('field'));
 
     }
 
@@ -3108,7 +3158,7 @@ class Server {
                 return makeMetadataDeclHover(cast resolved, uri, content, lens, access.pos);
             }
 
-            final header = resolved is NObjectField ? hoverHeader(fieldHeader(cast resolved, uri, lens), fieldNote(cast resolved, lens)) : hoverTitle('Field', access.name);
+            final header = resolved is NObjectField ? hoverHeader(fieldHeader(cast resolved, uri, lens), fieldNote(cast resolved, lens)) : hoverTitle(I18n.t('Field'), access.name);
             return makeHover(header, hoverDescriptionForNode(access), content, access);
         }
         else {
@@ -3117,15 +3167,15 @@ class Server {
             if (parent is NCall) {
                 final call:NCall = cast parent;
                 if (call.target == access) {
-                    return makeHover(hoverTitle('Function', access.name + '()'), hoverDescriptionForNode(access), content, access);
+                    return makeHover(hoverTitle(I18n.t('Function'), access.name + '()'), hoverDescriptionForNode(access), content, access);
                 }
             }
 
             if (parent is NArrayAccess) {
-                return makeHover(hoverTitle('Array access', access.name + '[]'), hoverDescriptionForNode(access), content, access);
+                return makeHover(hoverTitle(I18n.t('Array access'), access.name + '[]'), hoverDescriptionForNode(access), content, access);
             }
 
-            return makeHover(hoverTitle('Access', access.name), hoverDescriptionForNode(access), content, access);
+            return makeHover(hoverTitle(I18n.t('Access'), access.name), hoverDescriptionForNode(access), content, access);
         }
 
         return null;
@@ -3134,7 +3184,7 @@ class Server {
 
     function makeArrayAccessHover(access:NArrayAccess, content:String, lens:Lens):Hover {
 
-        return makeHover(hoverTitle('Array access', printLoreline(access.target) + '[]'), hoverDescriptionForNode(access), content, access);
+        return makeHover(hoverTitle(I18n.t('Array access'), printLoreline(access.target) + '[]'), hoverDescriptionForNode(access), content, access);
 
     }
 
@@ -3142,10 +3192,10 @@ class Server {
 
         final characterDecl = lens.findCharacterFromDialogue(expr);
         if (characterDecl != null) {
-            return makeHover(hoverTitle('Dialogue', 'of ' + characterLink(characterDecl, uri, lens)), hoverDescriptionForNode(expr), content, expr);
+            return makeHover(hoverTitle(I18n.t('Dialogue'), 'of ' + characterLink(characterDecl, uri, lens)), hoverDescriptionForNode(expr), content, expr);
         }
 
-        return makeHover(hoverTitle('Dialogue'), hoverDescriptionForNode(expr), content, expr);
+        return makeHover(hoverTitle(I18n.t('Dialogue')), hoverDescriptionForNode(expr), content, expr);
 
     }
 

@@ -4,6 +4,7 @@ import Type as HxType;
 import loreline.Node;
 import loreline.Position;
 import loreline.Printer;
+import loreline.i18n.I18n;
 import loreline.lsp.Protocol;
 
 using StringTools;
@@ -107,7 +108,7 @@ class SymbolPrinter {
 
         return {
             name: beat.name,
-            detail: "beat",
+            detail: I18n.t('beat'),
             kind: SymbolKind.Class,
             deprecated: false,
             range: rangeFromPosition(beat.pos),
@@ -137,7 +138,7 @@ class SymbolPrinter {
 
         return {
             name: char.name,
-            detail: "character",
+            detail: I18n.t('character'),
             kind: SymbolKind.Object,
             deprecated: false,
             range: rangeFromPosition(char.pos),
@@ -167,7 +168,7 @@ class SymbolPrinter {
 
         return {
             name: "metadata",
-            detail: children.length + " fields",
+            detail: I18n.count(children.length, '{n} field', '{n} fields'),
             kind: SymbolKind.Namespace,
             deprecated: false,
             range: rangeFromPosition(metadata.pos),
@@ -198,7 +199,7 @@ class SymbolPrinter {
 
         return {
             name: state.temporary ? "new state" : "state",
-            detail: children.length + " fields",
+            detail: I18n.count(children.length, '{n} field', '{n} fields'),
             kind: SymbolKind.Namespace,
             deprecated: false,
             range: rangeFromPosition(state.pos),
@@ -255,7 +256,7 @@ class SymbolPrinter {
 
         return {
             name: "choice",
-            detail: choice.options.length + " options",
+            detail: I18n.count(choice.options.length, '{n} option', '{n} options'),
             kind: SymbolKind.Enum,
             deprecated: false,
             range: rangeFromPosition(choice.pos),
@@ -317,7 +318,7 @@ class SymbolPrinter {
 
         return {
             name: when.strategy != null ? "when " + when.strategy : "when",
-            detail: when.rules.length + " rules",
+            detail: I18n.count(when.rules.length, '{n} rule', '{n} rules'),
             kind: SymbolKind.Enum,
             deprecated: false,
             range: rangeFromPosition(when.pos),
@@ -338,7 +339,7 @@ class SymbolPrinter {
             final blockSymbol = printBlock('then', null, ifStmt.thenBranch);
             result.push({
                 name: printValue(ifStmt.condition),
-                detail: "condition",
+                detail: I18n.t('condition'),
                 kind: SymbolKind.Boolean,
                 deprecated: false,
                 range: rangeFromPosition(ifStmt.pos),
@@ -374,7 +375,7 @@ class SymbolPrinter {
 
         return {
             name: alt.mode.toString(),
-            detail: alt.items.length + " items",
+            detail: I18n.count(alt.items.length, '{n} item', '{n} items'),
             kind: SymbolKind.Enum,
             deprecated: false,
             range: rangeFromPosition(alt.pos),

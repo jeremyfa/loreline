@@ -316,6 +316,34 @@ class ParserContext {
         return tokens[current]?.pos ?? new Position(1, 1, 0, 0);
     }
 
+    /** The current token in an error, see `tokenWord` */
+    function currentTokenWord():Dynamic {
+        return (tokens != null && current >= 0 && tokens[current] != null) ? tokenWord(tokens[current].type) : null;
+    }
+
+    /**
+     * A token in an error: its code when it's written as such (`{`, `state`),
+     * or what it is, as a word the tools can show in another language
+     * (an indent, the end of the file).
+     */
+    static function tokenWord(type:TokenType):Dynamic {
+        return switch type {
+            case Indent: I18n.key('indent§token');
+            case Unindent: I18n.key('unindent§token');
+            case LineBreak: I18n.key('line break§token');
+            case Eof: I18n.key('end of file');
+            case Identifier(_): I18n.key('identifier§token');
+            case LString(_, _, _): I18n.key('string§token');
+            case LNumber(_): I18n.key('number§token');
+            case LBoolean(_): I18n.key('boolean§token');
+            case Function(_, _, _): I18n.key('function§token');
+            case CommentLine(_): I18n.key('comment§token');
+            case CommentMultiLine(_): I18n.key('multiline comment§token');
+            case CommentHash(_): I18n.key('hash comment§token');
+            case _: type.toCodeString();
+        }
+    }
+
     function currentTokenTypeToString():String {
         if (tokens != null && current >= 0) {
             final token = tokens[current];
@@ -447,7 +475,7 @@ class ParserContext {
             case OpPlus: ensureInBeat(parseInsertion());
             case Function(_, _, _) if (topLevel): parseFunction();
             case _:
-                addError(ParseError.of(I18n.text('Unexpected: {token}', {token: currentTokenTypeToString()}), currentPos()));
+                addError(ParseError.of(I18n.text('Unexpected: {token}', {token: currentTokenWord()}), currentPos()));
                 advance();
                 new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
@@ -570,7 +598,7 @@ class ParserContext {
         if (checkBlockStart()) {
             final blockToken = parseBlockStart();
             if (blockToken.type != Indent) {
-                throw ParseError.of(I18n.text('Expected indent, got {got}', {got: blockToken.type.toCodeString()}), blockToken.pos);
+                throw ParseError.of(I18n.text('Expected indent, got {got}', {got: tokenWord(blockToken.type)}), blockToken.pos);
             }
             indented = true;
         }
@@ -898,7 +926,7 @@ class ParserContext {
             return indentToken;
         }
         else {
-            addError(ParseError.of(I18n.text('Expected {a} or {b}, got {got}', {a: TokenType.LBrace.toCodeString(), b: TokenType.Indent.toCodeString(), got: currentTokenTypeToString()}), currentPos()));
+            addError(ParseError.of(I18n.text('Expected {a} or {b}, got {got}', {a: tokenWord(TokenType.LBrace), b: tokenWord(TokenType.Indent), got: currentTokenWord()}), currentPos()));
             return new Token(Indent, currentPos());
         }
 
@@ -1793,7 +1821,7 @@ class ParserContext {
                 return stringLiteral;
 
             case _:
-                throw ParseError.of(I18n.text('Expected text, got {got}', {got: currentTokenTypeToString()}), currentPos());
+                throw ParseError.of(I18n.text('Expected text, got {got}', {got: currentTokenWord()}), currentPos());
         }
     }
 
@@ -2027,7 +2055,7 @@ class ParserContext {
                         prevIsDot = true;
 
                     case _:
-                        addError(ParseError.of(I18n.text('Unexpected token in field access: {token}', {token: token.type.toCodeString()}), token.pos));
+                        addError(ParseError.of(I18n.text('Unexpected token in field access: {token}', {token: tokenWord(token.type)}), token.pos));
                         return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                 }
             }
@@ -2413,7 +2441,7 @@ class ParserContext {
             return advance();
         }
         else {
-            final error = ParseError.of(I18n.text('Expected {type}, got {got}', {type: type.toCodeString(), got: isAtEnd() ? (I18n.key('end of file'):Dynamic) : (currentTokenTypeToString():Dynamic)}), tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+            final error = ParseError.of(I18n.text('Expected {type}, got {got}', {type: tokenWord(type), got: isAtEnd() ? tokenWord(Eof) : currentTokenWord()}), tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
             switch type {
                 case RBrace | RParen | Unindent:
                     addError(error);
@@ -2448,7 +2476,7 @@ class ParserContext {
                 advance();
                 name;
             case _:
-                throw ParseError.of(I18n.text('Expected identifier, got {got}', {got: currentTokenTypeToString()}), currentPos());
+                throw ParseError.of(I18n.text('Expected identifier, got {got}', {got: currentTokenWord()}), currentPos());
         }
     }
 

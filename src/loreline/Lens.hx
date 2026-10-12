@@ -1317,12 +1317,16 @@ class Lens {
 
         function checkLetters(name:Null<String>, pos:Null<Position>) {
             if (name == null || pos == null) return;
-            final scripts = scriptsOf(name);
+            final scripts = [for (script in scriptsOf(name)) switch script {
+                case 'Greek': I18n.t('Greek§letters');
+                case 'Cyrillic': I18n.t('Cyrillic§letters');
+                case _: I18n.t('Latin§letters');
+            }];
             if (scripts.length > 1) {
                 final last = scripts.pop();
                 warnings.push({
                     pos: pos,
-                    message: 'This name mixes ' + scripts.join(', ') + ' and ' + last + ' letters: ' + name
+                    message: I18n.t('This name mixes {scripts} and {last} letters: {name}', {scripts: scripts.join(', '), last: last, name: name})
                 });
             }
         }
@@ -1406,7 +1410,7 @@ class Lens {
                 if (findCharacterByNameFromNode(name, text) == null) return;
                 warnings.push({
                     pos: text.pos,
-                    message: '"：" looks like ":" but isn\'t, so this line is narration. Write $name: to make $name speak.'
+                    message: I18n.t('"：" looks like ":" but isn\'t, so this line is narration. Write {name}: to make {name} speak.', {name: name})
                 });
             case _:
         }
@@ -1431,7 +1435,7 @@ class Lens {
         if (isKnownName(name, access) || !isKnownName(before, access)) return;
         warnings.push({
             pos: access.pos,
-            message: 'No name "$name" here. To show $before then $after, write $${$before}$after.'
+            message: I18n.t("No name \"{name}\" here. To show {before} then {after}, write ${{{before}}}{after}.", {name: name, before: before, after: after})
         });
     }
 
@@ -1481,7 +1485,7 @@ class Lens {
         if (strategy != null && strategy != 'first' && strategy != 'pick' && findFunctionByNameFromNode(strategy, when) == null) {
             warnings.push({
                 pos: when.strategyPos ?? when.pos,
-                message: 'Unknown strategy: $strategy. Use first, pick, or the name of a function. A function provided by the host can be declared with `function $strategy(rules)`.',
+                message: I18n.t('Unknown strategy: {strategy}. Use first, pick, or the name of a function. A function provided by the host can be declared with `function {strategy}(rules)`.', {strategy: strategy}),
                 isWarning: true,
                 kind: 'unknown-strategy'
             });
@@ -1500,7 +1504,7 @@ class Lens {
                     case OpMinus:
                         warnings.push({
                             pos: new Position(first.pos.line, first.pos.column, first.pos.offset, 1),
-                            message: 'This `-` is a minus sign on the condition. To play this rule only once, write `- ` with a space after it.',
+                            message: I18n.t('This `-` is a minus sign on the condition. To play this rule only once, write `- ` with a space after it.'),
                             isWarning: true
                         });
                     case _:
@@ -1516,7 +1520,7 @@ class Lens {
                     if (comparedValues.exists(key)) {
                         warnings.push({
                             pos: clause.pos,
-                            message: 'Rules comparing `$value` with a number, with as many criteria, tie with the default strategy: the one played least recently wins, not the first that matches. Use `when first` for thresholds.',
+                            message: I18n.t('Rules comparing `{value}` with a number, with as many criteria, tie with the default strategy: the one played least recently wins, not the first that matches. Use `when first` for thresholds.', {value: value}),
                             isWarning: true
                         });
                         thresholdWarned = true;

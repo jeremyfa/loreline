@@ -2,3 +2,5 @@
 --main loreline.cli.Cli
 -D loreline_auto_wrap_functions
 --macro addGlobalMetadata('loreline', '@:build(loreline.macros.InfiniteLoop.build())', true, true, false)
+# Every text of the core and language server tables is used somewhere (see loreline.i18n.I18nMacro)
+-D loreline_i18n_strict=core,lsp
