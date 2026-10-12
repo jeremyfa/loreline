@@ -81,6 +81,7 @@ class PortableTestSuite {
         PublicBeatTests.run(onPass, onFail);
         MetadataTests.run(onPass, onFail);
         CharacterDeclTests.run(onPass, onFail);
+        I18nTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 
