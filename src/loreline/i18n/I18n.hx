@@ -18,6 +18,7 @@ import haxe.macro.Expr;
  * `t`, `text`, `count` and `key` are macros: they record each template, and a
  * build with a table of the locale fails when a template has no translation.
  */
+@:expose
 class I18n {
 
     /** The locale of the tools: `en` or `fr`. Games never change it. */
@@ -44,6 +45,16 @@ class I18n {
             tables.set(locale, all);
         }
         for (key => value in table) all.set(key, value);
+    }
+
+    /**
+     * Adds the translations of a table given as a plain object, `{english: translated}`,
+     * like `js/loreline-fr.js` on JavaScript.
+     */
+    public static function registerObject(locale:String, table:Dynamic):Void {
+        final map = new Map<String, String>();
+        for (key in Reflect.fields(table)) map.set(key, Reflect.field(table, key));
+        register(locale, map);
     }
 
     /** A word looked up in the table when it's given as a parameter, from a name known only when running */

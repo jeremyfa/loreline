@@ -66,6 +66,35 @@ export interface Error {
 }
 
 /**
+ * The texts the Loreline tools show, in English or in other languages. Errors
+ * keep their English message for games; a tool can show them in French by
+ * loading `loreline-fr.js` and asking `errorText` for French.
+ *
+ * ```ts
+ * import { I18n } from './loreline.js';
+ * import fr from './loreline-fr.js';
+ * I18n.registerObject('fr', fr);
+ * const text = I18n.errorText(error, 'fr');
+ * ```
+ */
+export class I18n {
+    /** The language of the texts: `en` or `fr`. */
+    static locale: string;
+
+    /** Adds the translations of a table, `{ english: translated }`, for a language. */
+    static registerObject(locale: string, table: { [english: string]: string }): void;
+
+    /** The message of an error in a language, from its template, or its English message. */
+    static errorText(error: Error, locale?: string): string;
+
+    /** A template in a language, its `{name}` parameters filled. */
+    static format(template: string, params?: any, locale?: string): string;
+
+    /** The language for a language tag: `fr-CA` gives `fr`, anything not French gives `en`. */
+    static fromTag(tag: string | null): string;
+}
+
+/**
  * Represents a position within source code, tracking line number, column, and offset information.
  * Used throughout the compiler to pinpoint locations of tokens, nodes, and error messages.
  */

@@ -1547,7 +1547,13 @@ async function main() {
         js += ln + 'export const Interpreter = runtime.loreline.Interpreter;';
         js += ln + 'export const Node = runtime.loreline.Node;';
         js += ln + 'export const Script = runtime.loreline.Script;';
+        js += ln + 'export const I18n = runtime.loreline.i18n.I18n;';
         fs.writeFileSync('js/loreline.js', js);
+
+        // The French of the errors, apart: a page loads it only when it wants
+        // them in French, with I18n.registerObject('fr', table)
+        const frTable = execSync(haxe + ' --class-path src --run loreline.i18n.ExportTables', { cwd: __dirname, encoding: 'utf8' }).trim();
+        fs.writeFileSync('js/loreline-fr.js', '// The French of the errors of Loreline, made by setup --js from src/loreline/i18n/Fr.hx' + ln + 'export default ' + frTable + ';' + ln);
 
         // Minify
         const esbuild = await import('esbuild');
