@@ -189,6 +189,56 @@ class Utf8Buf {
         return buf.toString();
     }
 }
+#elseif cpp
+/**
+ * A StringBuf that puts characters above U+FFFF back together. Readers that
+ * go through a text unit by unit add the two UTF-16 surrogates of such a
+ * character one after the other, and on hxcpp StringBuf.addChar makes each of
+ * them alone a text with String.fromCharCode, which refuses surrogates and
+ * gives U+FFFD instead (String.cpp, IsUtf16Surrogate).
+ */
+class Utf8Buf {
+    public var length(get, never):Int;
+    inline function get_length():Int {
+        return buf.length + (pendingHigh != -1 ? 1 : 0);
+    }
+    final buf = new StringBuf();
+    var pendingHigh:Int = -1;
+
+    public function new() {}
+
+    public function add(x:Dynamic):Void {
+        flushPending();
+        buf.add(x);
+    }
+
+    public function addChar(c:Int):Void {
+        if (c >= 0xD800 && c <= 0xDBFF) {
+            flushPending();
+            pendingHigh = c;
+        }
+        else if (c >= 0xDC00 && c <= 0xDFFF && pendingHigh != -1) {
+            buf.addChar(0x10000 + ((pendingHigh - 0xD800) << 10) + (c - 0xDC00));
+            pendingHigh = -1;
+        }
+        else {
+            flushPending();
+            buf.addChar(c);
+        }
+    }
+
+    function flushPending():Void {
+        if (pendingHigh != -1) {
+            buf.addChar(pendingHigh);
+            pendingHigh = -1;
+        }
+    }
+
+    public function toString():String {
+        flushPending();
+        return buf.toString();
+    }
+}
 #else
 typedef Utf8Buf = StringBuf;
 #end
