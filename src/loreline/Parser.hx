@@ -907,6 +907,15 @@ class ParserContext {
         characterNode.name = expectIdentifier();
         characterNode.namePos = prevNonWhitespaceOrComment().pos;
 
+        // Declared by its identifier alone, which is then its name: what
+        // follows is the next declaration, or the end of the file
+        if (!check(Indent) && !check(LBrace)) {
+            characterNode.style = Plain;
+            characterNode.pos = characterNode.pos.extendedTo(characterNode.namePos);
+            attachComments(characterNode);
+            return characterNode;
+        }
+
         final blockEnd:TokenType = parseBlockStart().type == Indent ? Unindent : RBrace;
         characterNode.style = (blockEnd == RBrace) ? Braces : Plain;
 
