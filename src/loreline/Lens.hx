@@ -20,6 +20,8 @@ typedef WhenWarning = {
     var message:String;
     /** Whether it is likely a mistake (a warning), or just good to know (information) */
     var isWarning:Bool;
+    /** What it is about, for code that can't read the message, which may be translated */
+    var ?kind:String;
 }
 
 /**
@@ -1470,7 +1472,8 @@ class Lens {
             warnings.push({
                 pos: when.strategyPos ?? when.pos,
                 message: 'Unknown strategy: $strategy. Use first, pick, or the name of a function. A function provided by the host can be declared with `function $strategy(rules)`.',
-                isWarning: true
+                isWarning: true,
+                kind: 'unknown-strategy'
             });
         }
 

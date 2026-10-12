@@ -503,7 +503,7 @@ class Server {
                     for (transition in lens.getNodesOfType(NTransition, false)) {
                         if (transition.targetExpr == null && transition.target != '.') {
                             if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
-                                addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error);
+                                addDiagnostic(uri, transition.targetPos, 'Unknown beat: ${transition.target}', DiagnosticSeverity.Error, 'unknown-beat');
                             }
                         }
                     }
@@ -513,7 +513,7 @@ class Server {
                     for (insertion in lens.getNodesOfType(NInsertion, false)) {
                         if (insertion.targetExpr == null && insertion.target != '.') {
                             if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
-                                addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error);
+                                addDiagnostic(uri, insertion.targetPos, 'Unknown beat: ${insertion.target}', DiagnosticSeverity.Error, 'unknown-beat');
                             }
                         }
                     }
@@ -544,7 +544,8 @@ class Server {
                                     uri,
                                     dialogue.characterPos,
                                     'Unknown character: ${dialogue.character}',
-                                    DiagnosticSeverity.Warning
+                                    DiagnosticSeverity.Warning,
+                                    'unknown-character'
                                 );
                             }
                         }
@@ -558,7 +559,7 @@ class Server {
                     // Things worth pointing out in when blocks
                     for (when in lens.getNodesOfType(NWhenStatement, false)) {
                         for (warning in lens.getWhenWarnings(when)) {
-                            addDiagnostic(uri, warning.pos, warning.message, warning.isWarning ? DiagnosticSeverity.Warning : DiagnosticSeverity.Information);
+                            addDiagnostic(uri, warning.pos, warning.message, warning.isWarning ? DiagnosticSeverity.Warning : DiagnosticSeverity.Information, warning.kind);
                         }
                     }
 
@@ -628,7 +629,8 @@ class Server {
             uri,
             importPosLeadingTo(ast, rootPath, error.filePath),
             'Error in $shownPath$line: ${error.message}',
-            DiagnosticSeverity.Error
+            DiagnosticSeverity.Error,
+            'import-error'
         );
     }
 
@@ -838,7 +840,13 @@ class Server {
     /**
      * Add a diagnostic
      */
-    function addDiagnostic(uri:String, pos:Null<loreline.Position>, message:String, severity:DiagnosticSeverity) {
+    /**
+     * Adds a diagnostic to a document.
+     * @param kind What the diagnostic is about, in `data.kind`, for code that
+     *             needs to know it without reading the message, which may be
+     *             translated
+     */
+    function addDiagnostic(uri:String, pos:Null<loreline.Position>, message:String, severity:DiagnosticSeverity, ?kind:String) {
         final diagnostics = documentDiagnostics.get(uri);
         if (diagnostics == null) return;
 
@@ -859,12 +867,14 @@ class Server {
             if (diag.message == message && diag.severity == severity && rangesEqual(diag.range, range)) return;
         }
 
-        diagnostics.push({
+        final diagnostic:Diagnostic = {
             range: range,
             severity: severity,
             source: "loreline",
             message: message
-        });
+        };
+        if (kind != null) diagnostic.data = {kind: kind};
+        diagnostics.push(diagnostic);
     }
 
     /**
@@ -1186,6 +1196,7 @@ class Server {
                             label: name,
                             kind: CompletionItemKind.Field,
                             detail: "Local variable",
+                            data: {kind: 'local'},
                             insertText: name,
                             insertTextMode: AsIs,
                             insertTextFormat: PlainText,
@@ -1202,6 +1213,7 @@ class Server {
                     label: field.name,
                     kind: CompletionItemKind.Variable,
                     detail: "State field",
+                    data: {kind: 'stateField'},
                     insertText: field.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
@@ -1216,6 +1228,7 @@ class Server {
                     label: character.name,
                     kind: CompletionItemKind.Struct,
                     detail: "Character",
+                    data: {kind: 'character'},
                     insertText: character.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
@@ -1231,6 +1244,7 @@ class Server {
                         label: func.name,
                         kind: CompletionItemKind.Function,
                         detail: "Function",
+                        data: {kind: 'function'},
                         insertText: func.name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
@@ -1376,6 +1390,7 @@ class Server {
                         label: name,
                         kind: CompletionItemKind.Field,
                         detail: "Local variable",
+                        data: {kind: 'local'},
                         insertText: name,
                         insertTextMode: AsIs,
                         insertTextFormat: PlainText,
@@ -1392,6 +1407,7 @@ class Server {
                 label: field.name,
                 kind: CompletionItemKind.Variable,
                 detail: "State field",
+                data: {kind: 'stateField'},
                 insertText: field.name,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
@@ -1406,6 +1422,7 @@ class Server {
                 label: character.name,
                 kind: CompletionItemKind.Class,
                 detail: "Character",
+                data: {kind: 'character'},
                 insertText: character.name,
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,
@@ -1421,6 +1438,7 @@ class Server {
                     label: func.name,
                     kind: CompletionItemKind.Function,
                     detail: "Function",
+                    data: {kind: 'function'},
                     insertText: func.name,
                     insertTextMode: AsIs,
                     insertTextFormat: PlainText,
