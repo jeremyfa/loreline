@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 using StringTools;
 using loreline.Utf8;
 using loreline.Utf8Vector;
@@ -243,7 +245,7 @@ class CodeToLorscript {
                 processString();
             }
             else if (c == "'".code) {
-                error("Unexpected single quote");
+                error(I18n.text('Unexpected single quote'));
             }
             else if (c == "/".code) {
                 final cc = input.uCharCodeAt(index + 1);
@@ -440,7 +442,7 @@ class CodeToLorscript {
                     add("$".code);
                 }
                 else {
-                    error("Expected identifier or { after $");
+                    error(I18n.text("Expected identifier or { after $"));
                 }
             }
             else {
@@ -448,7 +450,7 @@ class CodeToLorscript {
             }
         }
 
-        error("Unterminated string");
+        error(I18n.text('Unterminated string'));
     }
 
     function processComplexInterpolation() {
@@ -458,7 +460,7 @@ class CodeToLorscript {
     function processFieldAccessInterpolation() {
         // Read initial identifier
         if (!isNameStartAt(index)) {
-            error("Expected identifier in field access");
+            error(I18n.text('Expected identifier in field access'));
         }
         processIdentifier();
 
@@ -1243,7 +1245,7 @@ class CodeToLorscript {
             if (inControlWithoutParens) {
                 inControlWithoutParens = false;
                 if (stackPop() != Paren) {
-                    error("Unexpected end of line");
+                    error(I18n.text('Unexpected end of line'));
                 }
                 currentPosOffset++;
                 lineOutput.addChar(")".code);
@@ -1392,7 +1394,7 @@ class CodeToLorscript {
             }
             else if (c == ")".code) {
                 if (stackPop() != Paren) {
-                    error("Unexpected: )");
+                    error(I18n.text('Unexpected: {token}', {token: ')'}));
                 }
             }
             else if (c == "[".code) {
@@ -1406,7 +1408,7 @@ class CodeToLorscript {
             else if (c == "]".code) {
                 var popped = stackPop();
                 if (popped != Bracket && popped != ArrayBracket) {
-                    error("Unexpected: ]");
+                    error(I18n.text('Unexpected: {token}', {token: ']'}));
                 }
             }
             else if (c == "{".code) {
@@ -1437,7 +1439,7 @@ class CodeToLorscript {
                 }
                 var popped = stackPop();
                 if (popped != Brace && popped != ObjectBrace) {
-                    error("Unexpected: }");
+                    error(I18n.text('Unexpected: {token}', {token: '}'}));
                 }
             }
 
@@ -1447,8 +1449,8 @@ class CodeToLorscript {
         }
     }
 
-    function error(message:String) {
-        throw new Error(message, Position.fromContentAndIndex(inputText, index));
+    function error(text:loreline.i18n.I18nText) {
+        throw Error.of(text, Position.fromContentAndIndex(inputText, index));
     }
 
 }

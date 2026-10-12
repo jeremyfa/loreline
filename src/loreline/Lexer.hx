@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 using StringTools;
 using loreline.Utf8;
 using loreline.Utf8Vector;
@@ -8,6 +10,13 @@ using loreline.Utf8Vector;
  * Represents an error that occurred during lexical analysis.
  */
 class LexerError extends Error {
+
+    /** A lexer error from a text the tools can show in another language, see `Error.of` */
+    public static function of(text:loreline.i18n.I18nText, ?pos:Position):LexerError {
+        final error = new LexerError(text.toString(), pos);
+        @:privateAccess error.keep(text);
+        return error;
+    }
 
 }
 
@@ -875,7 +884,7 @@ class Token {
                         }
                         else {
                             advance();
-                            error('Expected &', false);
+                            error(I18n.text('Expected &'), false);
                             makeToken(OpAnd(false), startPos);
                         }
 
@@ -886,7 +895,7 @@ class Token {
                         }
                         else {
                             advance();
-                            error('Expected |', false);
+                            error(I18n.text('Expected |'), false);
                             makeToken(OpOr(false), startPos);
                         }
 
@@ -939,7 +948,7 @@ class Token {
                             return readHashComment();
                         }
                         else {
-                            error('Unexpected character: #', true);
+                            error(I18n.text('Unexpected character: {text}', {text: '#'}), true);
                             null;
                         }
 
@@ -3114,7 +3123,7 @@ class Token {
                 currentLine = line;
 
                 if (!commentClosed) {
-                    error("Unterminated multiline comment", false);
+                    error(I18n.text('Unterminated multiline comment'), false);
                 }
             }
             // Check for trailing if
@@ -3130,7 +3139,7 @@ class Token {
             }
             else if (allowTags && c == "<".code) {
                 if (tagStart != -1) {
-                    error("Unexpected < inside tag", true);
+                    error(I18n.text('Unexpected < inside tag'), true);
                 }
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
@@ -3207,7 +3216,7 @@ class Token {
                         currentColumn += 1;
                     }
                     else {
-                        error("Expected identifier or { after $", false);
+                        error(I18n.text("Expected identifier or { after $"), false);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, [], interpStart, interpLength));
 
@@ -3363,7 +3372,7 @@ class Token {
             }
             else if (allowTags && c == "<".code) {
                 if (tagStart != -1) {
-                    error("Unexpected < inside tag", true);
+                    error(I18n.text('Unexpected < inside tag'), true);
                 }
                 final nextChar = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
                 tagIsClosing = nextChar == "/".code;
@@ -3419,7 +3428,7 @@ class Token {
                         currentColumn += 1;
                     }
                     else {
-                        error("Expected identifier or { after $", false);
+                        error(I18n.text("Expected identifier or { after $"), false);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, [], interpStart, interpLength));
 
@@ -3445,7 +3454,7 @@ class Token {
             }
         }
 
-        error("Unterminated string", true);
+        error(I18n.text('Unterminated string'), true);
         return null;
     }
 
@@ -3517,7 +3526,7 @@ class Token {
             }
 
             if (token.type == Eof) {
-                error("Unterminated interpolation expression", true);
+                error(I18n.text('Unterminated interpolation expression'), true);
             }
         }
 
@@ -3569,7 +3578,7 @@ class Token {
 
         // Read initial identifier
         if (!isNameStartAt(pos)) {
-            error("Expected identifier in field access", true);
+            error(I18n.text('Expected identifier in field access'), true);
         }
 
         // Read identifier token
@@ -3613,7 +3622,7 @@ class Token {
                     }
 
                     if (bracketLevel > 0) {
-                        error("Unterminated array access in interpolation", true);
+                        error(I18n.text('Unterminated array access in interpolation'), true);
                     }
 
                 case "(".code:
@@ -3653,7 +3662,7 @@ class Token {
                     }
 
                     if (parenLevel > 0) {
-                        error("Unterminated function call in interpolation", true);
+                        error(I18n.text('Unterminated function call in interpolation'), true);
                     }
 
                 case ".".code if (pos + 1 < length && isNameStartAt(pos + 1)):
@@ -3767,7 +3776,7 @@ class Token {
             }
         }
 
-        error("Unterminated multi-line comment", true);
+        error(I18n.text('Unterminated multi-line comment'), true);
         return null;
     }
 
@@ -3930,7 +3939,7 @@ class Token {
 
         // Read parameters
         if (pos >= length || input.uCharCodeAt(pos) != "(".code) {
-            error('Expected opening parenthesis after function name', true);
+            error(I18n.text('Expected opening parenthesis after function name'), true);
         }
 
         // Extract the arguments
@@ -3951,7 +3960,7 @@ class Token {
                 skipWhitespaceAndComments();
                 if (pos == prevPos) {
                     advance();
-                    error('Invalid character "/"', false);
+                    error(I18n.text('Invalid character "/"'), false);
                 }
             }
             else if (c == "(".code) {
@@ -3994,7 +4003,7 @@ class Token {
         }
 
         if (parenLevel > 0) {
-            error('Unclosed parentheses in function declaration', false);
+            error(I18n.text('Unclosed parentheses in function declaration'), false);
         }
 
         skipWhitespaceAndComments();
@@ -4028,7 +4037,7 @@ class Token {
             }
 
             if (braceLevel > 0) {
-                error('Unclosed braces in function body', false);
+                error(I18n.text('Unclosed braces in function body'), false);
             }
 
             // The body ends at the closing brace: what follows it is tokenized
@@ -4255,8 +4264,8 @@ class Token {
      * @param message Error message
      * @throws LexerError with the given message and current position
      */
-    function error(message:String, fatal:Bool):LexerError {
-        final err = new LexerError(message, makePosition());
+    function error(text:loreline.i18n.I18nText, fatal:Bool):LexerError {
+        final err = LexerError.of(text, makePosition());
         if (errors == null) {
             errors = [];
         }

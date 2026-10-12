@@ -1,5 +1,8 @@
 package loreline;
 
+import loreline.i18n.I18n;
+import loreline.i18n.I18nKey;
+
 import Type.ValueType;
 import loreline.Interpreter;
 
@@ -472,7 +475,7 @@ class Values {
         final type = value == null ? TNull : Type.typeof(value);
         return switch type {
             case TBool | TInt | TFloat: textOf(value, null);
-            case _: throw new RuntimeError('$functionName() expects a text, got ${describeForError(value)}');
+            case _: throw RuntimeError.of(I18n.text('{fn}() expects a text, got {value}', {fn: functionName, value: describeForError(value)}));
         }
     }
 
@@ -493,7 +496,7 @@ class Values {
                 if (!Math.isNaN(number)) return number;
             }
         }
-        throw new RuntimeError('$functionName() expects a number, got ${describeForError(value)}');
+        throw RuntimeError.of(I18n.text('{fn}() expects a number, got {value}', {fn: functionName, value: describeForError(value)}));
     }
 
     /**
@@ -508,16 +511,16 @@ class Values {
         if (op == '+') {
             if (a is String || b is String) return textOf(a, interpreter) + textOf(b, interpreter);
             if (isNumber(a) && isNumber(b)) return numberOf(a, Type.typeof(a)) + numberOf(b, Type.typeof(b));
-            throw new RuntimeError('Cannot add ${describeForError(a)} and ${describeForError(b)}');
+            throw RuntimeError.of(I18n.text('Cannot add {a} and {b}', {a: describeForError(a), b: describeForError(b)}));
         }
         if (!isNumberLike(a) || !isNumberLike(b)) {
-            final verb = switch op {
-                case '-': 'subtract';
-                case '*': 'multiply';
-                case '/': 'divide';
-                case _: 'take the modulo of';
-            }
-            throw new RuntimeError('Cannot $verb ${describeForError(a)} and ${describeForError(b)}');
+            final operands = {a: describeForError(a), b: describeForError(b)};
+            throw RuntimeError.of(switch op {
+                case '-': I18n.text('Cannot subtract {a} and {b}', operands);
+                case '*': I18n.text('Cannot multiply {a} and {b}', operands);
+                case '/': I18n.text('Cannot divide {a} and {b}', operands);
+                case _: I18n.text('Cannot take the modulo of {a} and {b}', operands);
+            });
         }
         final x = orderNumberOf(a);
         final y = orderNumberOf(b);
@@ -525,17 +528,17 @@ class Values {
             case '-': x - y;
             case '*': x * y;
             case '/':
-                if (y == 0) throw new RuntimeError('Division by zero');
+                if (y == 0) throw RuntimeError.of(I18n.text('Division by zero'));
                 x / y;
             case _:
-                if (y == 0) throw new RuntimeError('Modulo by zero');
+                if (y == 0) throw RuntimeError.of(I18n.text('Modulo by zero'));
                 x % y;
         }
     }
 
     /** The opposite of a number, or of a text written as a number. */
     public static function negate(value:Any):Float {
-        if (!isNumberLike(value)) throw new RuntimeError('Cannot negate ${describeForError(value)}');
+        if (!isNumberLike(value)) throw RuntimeError.of(I18n.text('Cannot negate {value}', {value: describeForError(value)}));
         return -orderNumberOf(value);
     }
 
@@ -544,9 +547,28 @@ class Values {
         return isNumber(value) || ((value is String) && !Math.isNaN(numberOfText(value)));
     }
 
-    /** A value in an error message: a text quoted, anything else by its kind. */
-    static function describeForError(value:Any):String {
-        return (value is String) ? '"' + (value : String) + '"' : typeOf(value);
+    /**
+     * A value in an error message: a text quoted, anything else by its kind,
+     * as a word the tools can show in another language.
+     */
+    static function describeForError(value:Any):Dynamic {
+        if (value is String) return '"' + (value : String) + '"';
+        return describeKind(typeOf(value));
+    }
+
+    /** A kind of value from `typeOf`, as a word the tools can show in another language */
+    public static function describeKind(kind:String):I18nKey {
+        return switch kind {
+            case 'null': I18n.key('null§value');
+            case 'text': I18n.key('text§value');
+            case 'array': I18n.key('array§value');
+            case 'beat': I18n.key('beat§value');
+            case 'character': I18n.key('character§value');
+            case 'bool': I18n.key('bool§value');
+            case 'number': I18n.key('number§value');
+            case 'function': I18n.key('function§value');
+            case _: I18n.key('object§value');
+        }
     }
 
     /**
@@ -566,6 +588,24 @@ class Values {
             case TInt | TFloat: 'number';
             case TFunction: 'function';
             case _: 'object';
+        }
+    }
+
+    /**
+     * A short name for the kind of a value, for error messages, as a word the
+     * tools can show in another language.
+     */
+    public static function describeKindOf(value:Any):I18nKey {
+        if (value == null) return I18n.key('Null§kind');
+        if (value is String) return I18n.key('String§kind');
+        if (Arrays.isArray(value)) return I18n.key('Array§kind');
+        if (RuntimeBeatRef.beatOf(value) != null) return I18n.key('Beat§kind');
+        if (RuntimeCharacterRef.characterOf(value) != null) return I18n.key('Character§kind');
+        return switch Type.typeof(value) {
+            case TInt: I18n.key('Int§kind');
+            case TFloat: I18n.key('Float§kind');
+            case TBool: I18n.key('Bool§kind');
+            case _: I18n.key('Object§kind');
         }
     }
 

@@ -21,6 +21,9 @@
  */
 package loreline.lorscript;
 
+import loreline.i18n.I18n;
+import loreline.i18n.I18nText;
+
 // This is the loreline script interpreter, a modified version of the original
 // `hscript.Interp` (now vendored as `loreline.lorscript`) with better support of
 // loreline types and objects. It also gets access to the loreline interpreter context.
@@ -346,6 +349,14 @@ class Interp {
         }
     }
 
+    /** An error the tools can show in another language */
+    function errorText(text : I18nText) : Dynamic {
+        var e = new Error(ECustom(text.toString()), curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line);
+        e.text = text;
+        throw e;
+        return null;
+    }
+
     inline function error(e : ErrorDef, rethrow=false ) : Dynamic {
         var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line);
         if( rethrow ) this.rethrow(e) else throw e;
@@ -556,7 +567,7 @@ class Interp {
                         values.push(expr(eValue));
                     default:
                         curExpr = e;
-                        error(ECustom("Invalid map key=>value expression"));
+                        errorText(I18n.text('Invalid map key=>value expression'));
                     }
                 }
                 return makeMap(keys,values);
@@ -668,7 +679,7 @@ class Interp {
         var v1:Any = expr(e1);
         var v2:Any = expr(e2);
         if( !Values.canCompare(v1, v2) )
-            error(ECustom('Cannot compare ' + Values.kindOf(v1) + ' and ' + Values.kindOf(v2)));
+            errorText(I18n.text('Cannot compare {a} and {b}', {a: Values.describeKindOf(v1), b: Values.describeKindOf(v2)}));
         return Values.compare(v1, v2);
     }
 
@@ -787,7 +798,7 @@ class Interp {
                 m.set(key, values[i]);
             return m;
         }
-        error(ECustom("Invalid map keys "+keys));
+        errorText(I18n.text('Invalid map keys {keys}', {keys: keys}));
         return null;
     }
 
@@ -887,30 +898,30 @@ class Interp {
      * beats need the Loreline interpreter's async evaluation loop.
      */
     function dynamicCall( args : Array<Dynamic> ) : Dynamic {
-        if( args.length == 0 ) error(ECustom("call() requires a target argument"));
+        if( args.length == 0 ) errorText(I18n.text('call() requires a target argument'));
 
         var target : Dynamic = args[0];
         var rest = args.slice(1);
 
         if( RuntimeBeatRef.beatOf(target) != null ) {
-            error(ECustom("call() can only call functions. Beats cannot run inside function code."));
+            errorText(I18n.text('call() can only call functions. Beats cannot run inside function code.'));
         }
 
         if( target is String ) {
             var name : String = target;
             if( interpreter.resolveBeatByName(name) != null ) {
-                error(ECustom("call() can only call functions. Beats cannot run inside function code."));
+                errorText(I18n.text('call() can only call functions. Beats cannot run inside function code.'));
             }
             if( interpreter.topLevelFunctions.exists(name) ) {
                 target = interpreter.topLevelFunctions.get(name);
             }
             else {
-                error(ECustom("call() target not found: " + name));
+                errorText(I18n.text('call() target not found: {name}', {name: name}));
             }
         }
 
         if( !Reflect.isFunction(target) ) {
-            error(ECustom("call() target is not a function"));
+            errorText(I18n.text('call() target is not a function'));
         }
 
         return call(null, target, rest);

@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 import haxe.io.Path;
 import loreline.Imports;
 import loreline.Lexer;
@@ -12,6 +14,13 @@ using loreline.Utf8;
  * Represents a parsing error with position information.
  */
 class ParseError extends Error {
+
+    /** A parse error from a text the tools can show in another language, see `Error.of` */
+    public static function of(text:loreline.i18n.I18nText, ?pos:Position):ParseError {
+        final error = new ParseError(text.toString(), pos);
+        @:privateAccess error.keep(text);
+        return error;
+    }
 
 }
 
@@ -385,12 +394,12 @@ class ParserContext {
             }
             advance();
             if (isAtEnd()) {
-                throw new ParseError("Unexpected end of file", currentPos());
+                throw ParseError.of(I18n.text('Unexpected end of file'), currentPos());
             }
         }
 
         if (isAtEnd()) {
-            throw new ParseError("Unexpected end of file", currentPos());
+            throw ParseError.of(I18n.text('Unexpected end of file'), currentPos());
         }
 
         inline function ensureInBeat(node:AstNode):AstNode {
@@ -404,7 +413,7 @@ class ParserContext {
             case KwNew:
                 advance();
                 if (!check(KwState)) {
-                    throw new ParseError("Expected 'state' after 'new'", currentPos());
+                    throw ParseError.of(I18n.text("Expected 'state' after 'new'"), currentPos());
                 }
                 ensureInBeat(parseStateDecl(true));
             case KwBeat:
@@ -419,7 +428,7 @@ class ParserContext {
                 // A beat the game starts or calls by name: only top-level beats
                 final publicPos = currentPos();
                 if (!topLevel) {
-                    throw new ParseError("A nested beat can't be public", publicPos);
+                    throw ParseError.of(I18n.text("A nested beat can't be public"), publicPos);
                 }
                 advance();
                 final beat = parseBeatDecl(publicPos);
@@ -438,7 +447,7 @@ class ParserContext {
             case OpPlus: ensureInBeat(parseInsertion());
             case Function(_, _, _) if (topLevel): parseFunction();
             case _:
-                addError(new ParseError('Unexpected: ${currentTokenTypeToString()}', currentPos()));
+                addError(ParseError.of(I18n.text('Unexpected: {token}', {token: currentTokenTypeToString()}), currentPos()));
                 advance();
                 new NLiteral(nextNodeId(NODE), currentPos(), null, Null);
         }
@@ -483,7 +492,7 @@ class ParserContext {
             case LString(q, s, _):
                 quotes = q;
                 s;
-            case _: throw new ParseError("Expected string literal for import path", currentPos());
+            case _: throw ParseError.of(I18n.text('Expected string literal for import path'), currentPos());
         }
         // Relative import paths are resolved against the IMPORTING file's
         // directory, matching how Imports.resolve walks the tree at lex time.
@@ -503,7 +512,7 @@ class ParserContext {
 
         final importedTokens = context.imports.get(importPath);
         if (importedTokens == null) {
-            throw new ParseError("Failed to import file at path " + importPath + " (" + rawImportPath + ")", currentPos());
+            throw ParseError.of(I18n.text('Failed to import file at path {path} ({raw})', {path: importPath, raw: rawImportPath}), currentPos());
         }
 
         // Mark this path as imported BEFORE recursing, so a deeper file that
@@ -547,7 +556,7 @@ class ParserContext {
         // Parse character name
         dialogue.character = switch (tokens[current].type) {
             case Identifier(name): name;
-            case _: throw new ParseError("Expected character name", currentPos());
+            case _: throw ParseError.of(I18n.text('Expected character name'), currentPos());
         };
         dialogue.characterPos = tokens[current].pos;
         advance(); // Move past identifier
@@ -561,7 +570,7 @@ class ParserContext {
         if (checkBlockStart()) {
             final blockToken = parseBlockStart();
             if (blockToken.type != Indent) {
-                throw new ParseError('Expected indent, got ${blockToken.type.toCodeString()}', blockToken.pos);
+                throw ParseError.of(I18n.text('Expected indent, got {got}', {got: blockToken.type.toCodeString()}), blockToken.pos);
             }
             indented = true;
         }
@@ -668,7 +677,7 @@ class ParserContext {
     function parseMetadataDecl():NMetadataDecl {
         final startPos = currentPos();
         if (metadataParsed) {
-            throw new ParseError('A story has only one metadata block', startPos);
+            throw ParseError.of(I18n.text('A story has only one metadata block'), startPos);
         }
         metadataParsed = true;
 
@@ -685,7 +694,7 @@ class ParserContext {
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
             final field = parseObjectField();
             if (!isConstantValue(field.value)) {
-                throw new ParseError('Metadata values are constant: text, numbers, true or false, lists and objects', field.pos);
+                throw ParseError.of(I18n.text('Metadata values are constant: text, numbers, true or false, lists and objects'), field.pos);
             }
             metadataNode.fields.push(field);
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
@@ -786,7 +795,7 @@ class ParserContext {
                     }
                     for (existing in params) {
                         if (existing.name == paramName) {
-                            addError(new ParseError('Duplicate beat parameter: $paramName', paramPos));
+                            addError(ParseError.of(I18n.text('Duplicate beat parameter: {name}', {name: paramName}), paramPos));
                         }
                     }
                     params.push(new NBeatParam(paramName, paramPos, defaultValue));
@@ -848,7 +857,7 @@ class ParserContext {
         }
         else if (indentToken != null) {
             if (numIndents > 1) {
-                throw new ParseError('Invalid indentation level', indentToken.pos);
+                throw ParseError.of(I18n.text('Invalid indentation level'), indentToken.pos);
             }
             return true;
         }
@@ -884,12 +893,12 @@ class ParserContext {
         }
         else if (indentToken != null) {
             if (numIndents > 1) {
-                throw new ParseError('Invalid indentation level', indentToken.pos);
+                throw ParseError.of(I18n.text('Invalid indentation level'), indentToken.pos);
             }
             return indentToken;
         }
         else {
-            addError(new ParseError('Expected ${TokenType.LBrace.toCodeString()} or ${TokenType.Indent.toCodeString()}, got ${currentTokenTypeToString()}', currentPos()));
+            addError(ParseError.of(I18n.text('Expected {a} or {b}, got {got}', {a: TokenType.LBrace.toCodeString(), b: TokenType.Indent.toCodeString(), got: currentTokenTypeToString()}), currentPos()));
             return new Token(Indent, currentPos());
         }
 
@@ -1268,7 +1277,7 @@ class ParserContext {
             case KwOnce: Once;
             case KwPick: Pick;
             case KwShuffle: Shuffle;
-            case _: throw new ParseError("Expected alternative keyword", currentPos());
+            case _: throw ParseError.of(I18n.text('Expected alternative keyword'), currentPos());
         };
 
         final altNode = new NAlternative(nextNodeId(BRANCH), startPos, mode, []);
@@ -1340,7 +1349,7 @@ class ParserContext {
             expect(LParen);
             final callArgs = parseCallArguments();
             if (callArgs.length == 0) {
-                addError(new ParseError('beat() requires a target expression', targetStart));
+                addError(ParseError.of(I18n.text('beat() requires a target expression'), targetStart));
             }
             final node = new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
             node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
@@ -1379,7 +1388,7 @@ class ParserContext {
             expect(LParen);
             final callArgs = parseCallArguments();
             if (callArgs.length == 0) {
-                addError(new ParseError('beat() requires a target expression', targetStart));
+                addError(ParseError.of(I18n.text('beat() requires a target expression'), targetStart));
             }
             final node = new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
             node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
@@ -1413,7 +1422,7 @@ class ParserContext {
         expect(LParen);
         final callArgs = parseCallArguments();
         if (callArgs.length == 0) {
-            addError(new ParseError('beat() requires a target expression', startPos));
+            addError(ParseError.of(I18n.text('beat() requires a target expression'), startPos));
         }
         final node = new NBeatCall(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), callArgs.length > 0 ? callArgs[0] : null, startPos.extendedTo(prevNonWhitespaceOrComment().pos));
         if (callArgs.length > 1) {
@@ -1435,7 +1444,7 @@ class ParserContext {
                 attachComments(new NFunctionDecl(nextNodeId(BLOCK), startPos, name, [].concat(args), code, external));
 
             case _:
-                throw new ParseError("Unexpected token in expression", currentPos());
+                throw ParseError.of(I18n.text('Unexpected token in expression'), currentPos());
         }
     }
 
@@ -1659,7 +1668,7 @@ class ParserContext {
                 parsePostfix(startPos, expr);
 
             case _:
-                throw new ParseError("Unexpected token in expression", currentPos());
+                throw ParseError.of(I18n.text('Unexpected token in expression'), currentPos());
         }
     }
 
@@ -1784,7 +1793,7 @@ class ParserContext {
                 return stringLiteral;
 
             case _:
-                throw new ParseError('Expected text, got ${currentTokenTypeToString()}', currentPos());
+                throw ParseError.of(I18n.text('Expected text, got {got}', {got: currentTokenTypeToString()}), currentPos());
         }
     }
 
@@ -1826,7 +1835,7 @@ class ParserContext {
                 if (errors == null || errors.length == 0) {
                     // No need to log an error here, if we already
                     // logged one in identifier expression parsing
-                    addError(new ParseError("Invalid access: " + (name != null ? "'" + name + "'" : "null"), pos));
+                    addError(ParseError.of(name != null ? I18n.text("Invalid access: '{name}'", {name: name}) : I18n.text('Invalid access: null'), pos));
                 }
             }
             if (target != null) {
@@ -1837,7 +1846,7 @@ class ParserContext {
                     );
                 }
                 else {
-                    throw new ParseError("Invalid access (missing name position)", pos);
+                    throw ParseError.of(I18n.text('Invalid access (missing name position)'), pos);
                 }
             }
             else if (pos.length == 0) {
@@ -1866,7 +1875,7 @@ class ParserContext {
         pos.length = length;
 
         if (tokens.length == 0) {
-            addError(new ParseError("Empty interpolation", tokens[0]?.pos ?? currentPos()));
+            addError(ParseError.of(I18n.text('Empty interpolation'), tokens[0]?.pos ?? currentPos()));
             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
         }
 
@@ -1891,7 +1900,7 @@ class ParserContext {
                             target = attachComments(makeAccess(token.pos, target, name, token.pos));
                         }
                         else {
-                            addError(new ParseError("Missing dot in field access", token.pos));
+                            addError(ParseError.of(I18n.text('Missing dot in field access'), token.pos));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
                         prevIsDot = false;
@@ -1899,7 +1908,7 @@ class ParserContext {
                     case LBracket:
                         // Handle array access: read until matching RBracket
                         if (target == null) {
-                            addError(new ParseError("Array access without target", token.pos));
+                            addError(ParseError.of(I18n.text('Array access without target'), token.pos));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
@@ -1928,7 +1937,7 @@ class ParserContext {
                         }
 
                         if (bracketLevel > 0) {
-                            addError(new ParseError("Unterminated array access", arrayStart));
+                            addError(ParseError.of(I18n.text('Unterminated array access'), arrayStart));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
@@ -1947,7 +1956,7 @@ class ParserContext {
                     case LParen:
                         // Handle function call: read until matching RParen
                         if (target == null) {
-                            addError(new ParseError("Function call without target", token.pos));
+                            addError(ParseError.of(I18n.text('Function call without target'), token.pos));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
@@ -1992,7 +2001,7 @@ class ParserContext {
                         }
 
                         if (parenLevel > 0) {
-                            addError(new ParseError("Unterminated function call", callStart));
+                            addError(ParseError.of(I18n.text('Unterminated function call'), callStart));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
 
@@ -2012,19 +2021,19 @@ class ParserContext {
 
                     case Dot:
                         if (target == null) {
-                            addError(new ParseError("Leading dot in field access", token.pos));
+                            addError(ParseError.of(I18n.text('Leading dot in field access'), token.pos));
                             return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                         }
                         prevIsDot = true;
 
                     case _:
-                        addError(new ParseError('Unexpected token in field access: ${token.type.toCodeString()}', token.pos));
+                        addError(ParseError.of(I18n.text('Unexpected token in field access: {token}', {token: token.type.toCodeString()}), token.pos));
                         return new NStringPart(nextNodeId(NODE), pos, Expr(new NLiteral(nextNodeId(NODE), tokens[0]?.pos ?? currentPos(), null, Null)));
                 }
             }
 
             if (prevIsDot) {
-                addError(new ParseError("Trailing dot in field access", tokens[tokens.length - 1].pos));
+                addError(ParseError.of(I18n.text('Trailing dot in field access'), tokens[tokens.length - 1].pos));
             }
 
             expr = target;
@@ -2037,7 +2046,7 @@ class ParserContext {
             currentNodeId = tempParser.currentNodeId;
 
             if (!tempParser.isAtEnd()) {
-                addError(new ParseError("Unexpected tokens after interpolation expression", tempParser.tokens[tempParser.current].pos));
+                addError(ParseError.of(I18n.text('Unexpected tokens after interpolation expression'), tempParser.tokens[tempParser.current].pos));
             }
         }
 
@@ -2185,7 +2194,7 @@ class ParserContext {
                 if (checkIdentifier()) {
                     prop = expectIdentifier();
                 } else {
-                    addError(new ParseError("Expected identifier after '.'", currentPos()));
+                    addError(ParseError.of(I18n.text("Expected identifier after '.'"), currentPos()));
                     prop = "";
                 }
 
@@ -2237,7 +2246,7 @@ class ParserContext {
             }
 
             if (!check(RBracket) && needsSeparator) {
-                throw new ParseError("Expected comma or line break between elements", currentPos());
+                throw ParseError.of(I18n.text('Expected comma or line break between elements'), currentPos());
             }
 
             while (match(LineBreak) || match(Indent) || match(Unindent)) {}
@@ -2291,7 +2300,7 @@ class ParserContext {
             }
 
             if (!check(blockEnd) && needsSeparator) {
-                throw new ParseError("Expected comma or line break between fields", currentPos());
+                throw ParseError.of(I18n.text('Expected comma or line break between fields'), currentPos());
             }
 
             while (match(LineBreak) || (blockEnd != Unindent && match(Unindent))) {}
@@ -2344,7 +2353,7 @@ class ParserContext {
             if (expr != null) {
                 switch Type.getClass(expr) {
                     case NAssign:
-                        addError(new ParseError("Invalid condition expression: can't assign a variable here. Did you want to use '==' instead?", expr.pos));
+                        addError(ParseError.of(I18n.text("Invalid condition expression: can't assign a variable here. Did you want to use '==' instead?"), expr.pos));
                     case _:
                 }
             }
@@ -2404,7 +2413,7 @@ class ParserContext {
             return advance();
         }
         else {
-            final error = new ParseError('Expected ${type.toCodeString()}, got ${isAtEnd() ? 'end of file' : currentTokenTypeToString()}', tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
+            final error = ParseError.of(I18n.text('Expected {type}, got {got}', {type: type.toCodeString(), got: isAtEnd() ? (I18n.key('end of file'):Dynamic) : (currentTokenTypeToString():Dynamic)}), tokens[Std.int(Math.min(current, tokens.length - 1))].pos);
             switch type {
                 case RBrace | RParen | Unindent:
                     addError(error);
@@ -2439,7 +2448,7 @@ class ParserContext {
                 advance();
                 name;
             case _:
-                throw new ParseError('Expected identifier, got ${currentTokenTypeToString()}', currentPos());
+                throw ParseError.of(I18n.text('Expected identifier, got {got}', {got: currentTokenTypeToString()}), currentPos());
         }
     }
 

@@ -329,17 +329,21 @@ class Printer {
 		return new Printer().exprToString(e);
 	}
 
-	public static function errorToString( e : Expr.Error ) {
-		var message = switch(  e.e  ) {
-			case EInvalidChar(c): "Invalid character: '"+(StringTools.isEof(c) ? "EOF" : String.fromCharCode(c))+"' ("+c+")";
-			case EUnexpected(s): "Unexpected token: \""+s+"\"";
-			case EUnterminatedString: "Unterminated string";
-			case EUnterminatedComment: "Unterminated comment";
-			case EInvalidPreprocessor(str): "Invalid preprocessor (" + str + ")";
-			case EUnknownVariable(v): "Unknown variable: "+v;
-			case EInvalidIterator(v): "Invalid iterator: "+v;
-			case EInvalidOp(op): "Invalid operator: "+op;
-			case EInvalidAccess(f): "Invalid access to field " + f;
+	/**
+	 * An error as text, in a locale (English unless given, see `loreline.i18n.I18n`).
+	 */
+	public static function errorToString( e : Expr.Error, ?locale : String ) {
+		final loc = locale ?? 'en';
+		var message = if (e.text != null) e.text.format(loc) else switch(  e.e  ) {
+			case EInvalidChar(c): loreline.i18n.I18n.t("Invalid character: '{char}' ({code})", {char: StringTools.isEof(c) ? "EOF" : String.fromCharCode(c), code: c}, loc);
+			case EUnexpected(s): loreline.i18n.I18n.t('Unexpected token: "{token}"', {token: s}, loc);
+			case EUnterminatedString: loreline.i18n.I18n.t('Unterminated string', null, loc);
+			case EUnterminatedComment: loreline.i18n.I18n.t('Unterminated comment', null, loc);
+			case EInvalidPreprocessor(str): loreline.i18n.I18n.t('Invalid preprocessor ({text})', {text: str}, loc);
+			case EUnknownVariable(v): loreline.i18n.I18n.t('Unknown variable: {name}', {name: v}, loc);
+			case EInvalidIterator(v): loreline.i18n.I18n.t('Invalid iterator: {name}', {name: v}, loc);
+			case EInvalidOp(op): loreline.i18n.I18n.t('Invalid operator: {op}', {op: op}, loc);
+			case EInvalidAccess(f): loreline.i18n.I18n.t('Invalid access to field {field}', {field: f}, loc);
 			case ECustom(msg): msg;
 		};
 		

@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 import Type.ValueType;
 import haxe.ds.StringMap;
 import loreline.Arrays;
@@ -619,6 +621,21 @@ typedef FinishHandler = (interpreter:Interpreter)->Void;
  * Runtime error that can occur during script execution.
  */
 class RuntimeError extends Error {
+
+    /** A runtime error from a text the tools can show in another language, see `Error.of` */
+    public static function of(text:loreline.i18n.I18nText, ?pos:Position):RuntimeError {
+        final error = new RuntimeError(text.toString(), pos);
+        @:privateAccess error.keep(text);
+        return error;
+    }
+
+    /** The same error at another position, with its template kept */
+    public static function at(error:Error, ?pos:Position):RuntimeError {
+        final moved = new RuntimeError(error.message, pos);
+        moved.template = error.template;
+        moved.params = error.params;
+        return moved;
+    }
 
 }
 
@@ -1330,7 +1347,7 @@ class InterpreterContext {
         if (beatName != null) {
             resolvedBeat = topLevelBeats.get(beatName);
             if (resolvedBeat == null) {
-                throw new RuntimeError('Beat $beatName not found', script.pos);
+                throw RuntimeError.of(I18n.text('Beat {name} not found', {name: beatName}), script.pos);
             }
         }
         else {
@@ -1365,7 +1382,7 @@ class InterpreterContext {
             }
 
             if (resolvedBeat == null) {
-                throw new RuntimeError("No beats found in script", script.pos);
+                throw RuntimeError.of(I18n.text('No beats found in script'), script.pos);
             }
         }
         transitionToBeat(resolvedBeat);
@@ -1560,7 +1577,7 @@ class InterpreterContext {
 
         // Verify version compatibility
         if (saveData.version != 1) {
-            throw new RuntimeError("Unsupported save version: " + saveData.version, script.pos);
+            throw RuntimeError.of(I18n.text('Unsupported save version: {version}', {version: saveData.version}), script.pos);
         }
 
         // Current children belong to the state being replaced
@@ -3822,7 +3839,7 @@ class InterpreterContext {
      */
     static function missingExternalFunction(name:String):Any {
         return VarArgs.make(args -> {
-            throw new RuntimeError('$name() is declared without a body, so the app running the story must provide it');
+            throw RuntimeError.of(I18n.text('{name}() is declared without a body, so the app running the story must provide it', {name: name}));
         });
     }
 
@@ -3870,12 +3887,12 @@ class InterpreterContext {
                     #if loreline_debug_functions
                     trace(codeToLorscript.output.toString());
                     #end
-                    throw new RuntimeError('Failed to parse function code: $e', func.pos);
+                    throw RuntimeError.of(I18n.text('Failed to parse function code: {error}', {error: e}), func.pos);
                 }
             }
         }
         else {
-            throw new RuntimeError('Top level function must have a name', func.pos);
+            throw RuntimeError.of(I18n.text('Top level function must have a name'), func.pos);
         }
 
     }
@@ -3999,7 +4016,7 @@ class InterpreterContext {
 
         // Top level states cannot be temporary
         if (state.temporary) {
-            throw new RuntimeError('Top level temporary states are not allowed', state.pos);
+            throw RuntimeError.of(I18n.text('Top level temporary states are not allowed'), state.pos);
         }
 
         // Evaluate state values
@@ -4024,7 +4041,7 @@ class InterpreterContext {
 
         // Look for duplicate entries
         if (topLevelBeats.exists(beat.name)) {
-            throw new RuntimeError('Duplicate top level beat: ${beat.name}', beat.pos);
+            throw RuntimeError.of(I18n.text('Duplicate top level beat: {name}', {name: beat.name}), beat.pos);
         }
 
         // Create new beat entry in mapping
@@ -4043,7 +4060,7 @@ class InterpreterContext {
 
         // Look for duplicate entries
         if (topLevelCharacters.exists(character.name)) {
-            throw new RuntimeError('Duplicate top level character: ${character.name}', character.pos);
+            throw RuntimeError.of(I18n.text('Duplicate top level character: {name}', {name: character.name}), character.pos);
         }
 
         // Create new character state
@@ -4113,7 +4130,7 @@ class InterpreterContext {
 
         final numParams = beat.params != null ? beat.params.length : 0;
         if (args.length > numParams) {
-            throw new RuntimeError('Beat ${beat.name} expects at most $numParams argument(s), got ${args.length}', pos);
+            throw RuntimeError.of(I18n.text('Beat {name} expects at most {args}, got {count}', {name: beat.name, args: I18n.count(numParams, '{n} argument', '{n} arguments'), count: args.length}), pos);
         }
 
         return [for (arg in args) evaluateExpression(arg)];
@@ -4272,7 +4289,7 @@ class InterpreterContext {
             currentScope.beats = [];
         }
         else if (currentScope.beatByName(beat.name) != null) {
-            throw new RuntimeError('Duplicate beat with name: ${beat.name}', beat.pos);
+            throw RuntimeError.of(I18n.text('Duplicate beat with name: {name}', {name: beat.name}), beat.pos);
         }
 
         currentScope.beats.push(beat);
@@ -4740,7 +4757,7 @@ class InterpreterContext {
                     done.sync = false;
                 }
                 else {
-                    throw new RuntimeError('Invalid choice option', option.pos);
+                    throw RuntimeError.of(I18n.text('Invalid choice option'), option.pos);
                 }
 
             }
@@ -5406,7 +5423,7 @@ class InterpreterContext {
         if (strategy != null && strategy != 'first' && strategy != 'pick') {
             final customStrategy:Any = topLevelFunctions.get(strategy);
             if (customStrategy == null || !Reflect.isFunction(customStrategy)) {
-                throw new RuntimeError('Unknown when strategy: $strategy', when.strategyPos ?? when.pos);
+                throw RuntimeError.of(I18n.text('Unknown when strategy: {strategy}', {strategy: strategy}), when.strategyPos ?? when.pos);
             }
             return customStrategyCandidate(when, candidates, customStrategy);
         }
@@ -5499,10 +5516,10 @@ class InterpreterContext {
         }
         if (index == -1) return null;
         if (index == null || index < 0 || index >= candidates.length) {
-            throw new RuntimeError('Strategy ${when.strategy} returned ${valueToString(result)}, expected -1 or the index of an eligible rule', pos);
+            throw RuntimeError.of(I18n.text('Strategy {strategy} returned {value}, expected -1 or the index of an eligible rule', {strategy: when.strategy, value: valueToString(result)}), pos);
         }
         if (!candidates[index].eligible) {
-            throw new RuntimeError('Strategy ${when.strategy} returned $index, which is not an eligible rule', pos);
+            throw RuntimeError.of(I18n.text('Strategy {strategy} returned {index}, which is not an eligible rule', {strategy: when.strategy, index: index}), pos);
         }
         return candidates[index];
     }
@@ -5676,7 +5693,7 @@ class InterpreterContext {
             case OpMinusAssign: performOperation(OpMinus, readAccess(target), value, assign.pos);
             case OpMultiplyAssign: performOperation(OpMultiply, readAccess(target), value, assign.pos);
             case OpDivideAssign: performOperation(OpDivide, readAccess(target), value, assign.pos);
-            case _: throw new RuntimeError('Invalid assignment operator', assign.pos);
+            case _: throw RuntimeError.of(I18n.text('Invalid assignment operator'), assign.pos);
         }
 
         writeAccess(target, currentValue);
@@ -6008,7 +6025,7 @@ class InterpreterContext {
             return resolved;
         }
 
-        throw new RuntimeError('Invalid dynamic beat target: ${valueToString(value)}', node.pos);
+        throw RuntimeError.of(I18n.text('Invalid dynamic beat target: {value}', {value: valueToString(value)}), node.pos);
 
     }
 
@@ -6023,11 +6040,11 @@ class InterpreterContext {
 
         for (decl in lens.getNodesOfType(NBeatDecl, true)) {
             if (decl.name == name) {
-                return new RuntimeError('Beat $name is not visible from this scope. Store a reference (ref = $name) while it is in scope to use it from elsewhere.', pos);
+                return RuntimeError.of(I18n.text('Beat {name} is not visible from this scope. Store a reference (ref = {name}) while it is in scope to use it from elsewhere.', {name: name}), pos);
             }
         }
 
-        return new RuntimeError('Beat $name not found', pos);
+        return RuntimeError.of(I18n.text('Beat {name} not found', {name: name}), pos);
 
     }
 
@@ -6097,7 +6114,7 @@ class InterpreterContext {
             if (value is String && (value:String) == ".") {
                 // Dynamic end of stream, mirrors -> .
                 if (transition.args != null && transition.args.length > 0) {
-                    throw new RuntimeError('Cannot pass arguments when ending the script', transition.pos);
+                    throw RuntimeError.of(I18n.text('Cannot pass arguments when ending the script'), transition.pos);
                 }
                 finish();
                 return;
@@ -6679,10 +6696,7 @@ class InterpreterContext {
             }
             if (result != null && result is Async) {
                 if (next == null) {
-                    throw new RuntimeError(
-                        'Cannot call async function in expression',
-                        pos
-                    );
+                    throw RuntimeError.of(I18n.text('Cannot call async function in expression'), pos);
                 }
                 else {
                     final asyncResult:Async = cast result;
@@ -6697,20 +6711,14 @@ class InterpreterContext {
         catch (e:Dynamic) {
             if (e is loreline.lorscript.Expr.Error) {
                 final lorscriptErr:loreline.lorscript.Expr.Error = cast e;
-                throw new RuntimeError(
-                    'Error when evaluating function (${lorscriptErr.pmin}-${lorscriptErr.pmax}): ' + lorscriptErr.e,
-                    pos
-                );
+                throw RuntimeError.of(I18n.text('Error when evaluating function ({min}-{max}): {error}', {min: lorscriptErr.pmin, max: lorscriptErr.pmax, error: lorscriptErr.e}), pos);
             }
             if (e is RuntimeError && (cast e:RuntimeError).pos == null) {
                 // An error of a built-in function about its arguments: its
                 // message as it is, at the position of the call
-                throw new RuntimeError((cast e:RuntimeError).message, pos);
+                throw RuntimeError.at(cast e, pos);
             }
-            throw new RuntimeError(
-                'Error when calling function: ' + e,
-                pos
-            );
+            throw RuntimeError.of(I18n.text('Error when calling function: {error}', {error: e}), pos);
             return null;
         }
     }
@@ -6762,13 +6770,13 @@ class InterpreterContext {
     function evaluateDynamicCall(call:NCall, next:()->Void):Any {
 
         if (call.args.length == 0) {
-            throw new RuntimeError('call() requires a target argument', call.pos);
+            throw RuntimeError.of(I18n.text('call() requires a target argument'), call.pos);
         }
 
         final targetValue:Any = evaluateExpression(call.args[0]);
 
         if (RuntimeBeatRef.beatOf(targetValue) != null) {
-            throw new RuntimeError('call() can only call functions. Use beat(...) to call a beat.', call.pos);
+            throw RuntimeError.of(I18n.text('call() can only call functions. Use beat(...) to call a beat.'), call.pos);
         }
 
         var fn:Any = null;
@@ -6779,7 +6787,7 @@ class InterpreterContext {
         else if (targetValue is String) {
             final name:String = targetValue;
             if (resolveBeatByName(name) != null) {
-                throw new RuntimeError('call() can only call functions. Use beat(...) to call a beat.', call.pos);
+                throw RuntimeError.of(I18n.text('call() can only call functions. Use beat(...) to call a beat.'), call.pos);
             }
             if (topLevelFunctions.exists(name)) {
                 fn = topLevelFunctions.get(name);
@@ -6791,7 +6799,7 @@ class InterpreterContext {
             return callFunctionValue(fn, values, call.pos, next);
         }
 
-        throw new RuntimeError('call() target is not a function: ${valueToString(targetValue)}', call.pos);
+        throw RuntimeError.of(I18n.text('call() target is not a function: {value}', {value: valueToString(targetValue)}), call.pos);
 
     }
 
@@ -6850,10 +6858,7 @@ class InterpreterContext {
                     final result:Any = VarArgs.call(null, helper, args);
                     if (result != null && result is Async) {
                         if (next == null) {
-                            throw new RuntimeError(
-                                'Cannot call async function in expression',
-                                call.pos
-                            );
+                            throw RuntimeError.of(I18n.text('Cannot call async function in expression'), call.pos);
                         }
                         else {
                             final asyncResult:Async = cast result;
@@ -6871,10 +6876,7 @@ class InterpreterContext {
                         final result:Any = Reflect.callMethod(obj, method, args);
                         if (result != null && result is Async) {
                             if (next == null) {
-                                throw new RuntimeError(
-                                    'Cannot call async function in expression',
-                                    call.pos
-                                );
+                                throw RuntimeError.of(I18n.text('Cannot call async function in expression'), call.pos);
                             }
                             else {
                                 final asyncResult:Async = cast result;
@@ -6891,10 +6893,7 @@ class InterpreterContext {
         }
 
         // If we get here, the call target was invalid
-        throw new RuntimeError(
-            'Invalid call target: ${printLoreline(call.target) ?? Type.getClassName(Type.getClass(call.target))}',
-            call.pos
-        );
+        throw RuntimeError.of(I18n.text('Invalid call target: {target}', {target: printLoreline(call.target) ?? Type.getClassName(Type.getClass(call.target))}), call.pos);
 
     }
 
@@ -7015,7 +7014,7 @@ class InterpreterContext {
                 if (Arrays.isArray(target) && (index is Float || index is Int)) {
                     final i:Int = Std.int(index);
                     if (i < 0 || i >= Arrays.arrayLength(target)) {
-                        throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
+                        throw RuntimeError.of(I18n.text('Array index out of bounds: {index}', {index: i}), arrAccess.pos);
                     }
                     else {
                         Arrays.arrayGet(target, i);
@@ -7023,12 +7022,12 @@ class InterpreterContext {
                 }
                 else if (index is String) {
                     if (target == null) {
-                        throw new RuntimeError('Cannot access field \'$index\' of null', arrAccess.pos);
+                        throw RuntimeError.of(I18n.text("Cannot access field '{field}' of null", {field: index}), arrAccess.pos);
                     }
                     Objects.getField(this, target, index);
                 }
                 else {
-                    throw new RuntimeError('Invalid array access', arrAccess.pos);
+                    throw RuntimeError.of(I18n.text('Invalid array access'), arrAccess.pos);
                 }
 
             case NBinary:
@@ -7071,12 +7070,12 @@ class InterpreterContext {
                             Values.negate(operand);
                         }
                         catch (e:RuntimeError) {
-                            throw new RuntimeError(e.message, un.pos);
+                            throw RuntimeError.at(e, un.pos);
                         }
                     }
                     case OpNot(_):
                         !Values.isTruthy(operand);
-                    case _: throw new RuntimeError('Invalid unary operation', un.pos);
+                    case _: throw RuntimeError.of(I18n.text('Invalid unary operation'), un.pos);
                 }
 
             case NTernary:
@@ -7107,7 +7106,7 @@ class InterpreterContext {
 
             case FieldAccess(pos, obj, name):
                 if (obj == null) {
-                    throw new RuntimeError('Cannot read field \'$name\' of null', pos);
+                    throw RuntimeError.of(I18n.text("Cannot read field '{name}' of null", {name: name}), pos);
                 }
                 Objects.getField(this, obj, name);
 
@@ -7123,7 +7122,7 @@ class InterpreterContext {
                     character.characterRef;
                 }
                 else {
-                    throw new RuntimeError('Character not found: $name', pos);
+                    throw RuntimeError.of(I18n.text('Character not found: {name}', {name: name}), pos);
                 }
 
             case FunctionAccess(pos, name):
@@ -7131,7 +7130,7 @@ class InterpreterContext {
                     topLevelFunctions.get(name);
                 }
                 else {
-                    throw new RuntimeError('Function not found: $name', pos);
+                    throw RuntimeError.of(I18n.text('Function not found: {name}', {name: name}), pos);
                 }
 
             case BeatAccess(pos, ref):
@@ -7159,7 +7158,7 @@ class InterpreterContext {
         switch access {
             case FieldAccess(pos, obj, name):
                 if (obj == null) {
-                    throw new RuntimeError('Cannot set field \'$name\' of null', pos);
+                    throw RuntimeError.of(I18n.text("Cannot set field '{name}' of null", {name: name}), pos);
                 }
                 Objects.setField(this, obj, name, value);
 
@@ -7167,13 +7166,13 @@ class InterpreterContext {
                 Arrays.arraySet(array, index, value);
 
             case CharacterAccess(pos, name):
-                throw new RuntimeError('Cannot overwrite character: $name', pos);
+                throw RuntimeError.of(I18n.text('Cannot overwrite character: {name}', {name: name}), pos);
 
             case FunctionAccess(pos, name):
-                throw new RuntimeError('Cannot overwrite function: $name', pos);
+                throw RuntimeError.of(I18n.text('Cannot overwrite function: {name}', {name: name}), pos);
 
             case BeatAccess(pos, ref):
-                throw new RuntimeError('Cannot overwrite beat: ${ref.beat.name}', pos);
+                throw RuntimeError.of(I18n.text('Cannot overwrite beat: {name}', {name: ref.beat.name}), pos);
 
             case MetadataAccess(pos):
                 throw metadataChangeError(pos);
@@ -7215,16 +7214,16 @@ class InterpreterContext {
                 }
                 else if (index is String) {
                     if (target == null) {
-                        throw new RuntimeError('Cannot access field \'$index\' of null', arrAccess.pos);
+                        throw RuntimeError.of(I18n.text("Cannot access field '{field}' of null", {field: index}), arrAccess.pos);
                     }
                     FieldAccess(arrAccess.pos, target, index);
                 }
                 else {
-                    throw new RuntimeError('Invalid array access target', arrAccess.pos);
+                    throw RuntimeError.of(I18n.text('Invalid array access target'), arrAccess.pos);
                 }
 
             case _:
-                throw new RuntimeError('Invalid assignment target', target.pos);
+                throw RuntimeError.of(I18n.text('Invalid assignment target'), target.pos);
         }
 
     }
@@ -7256,10 +7255,10 @@ class InterpreterContext {
             final evaluated = evaluateExpression(target);
             if (evaluated == null) {
                 final targetName = if (Type.getClass(target) == NAccess) (cast target : NAccess).name else null;
-                throw new RuntimeError(
+                throw RuntimeError.of(
                     targetName != null
-                        ? 'Cannot access field \'$name\' of undefined variable \'$targetName\''
-                        : 'Cannot access field \'$name\' of null value',
+                        ? I18n.text("Cannot access field '{name}' of undefined variable '{target}'", {name: name, target: targetName})
+                        : I18n.text("Cannot access field '{name}' of null value", {name: name}),
                     target.pos
                 );
             }
@@ -7360,7 +7359,7 @@ class InterpreterContext {
             );
         }
 
-        throw new RuntimeError('Undefined variable: $name', access?.pos ?? currentScope?.node?.pos ?? script.pos);
+        throw RuntimeError.of(I18n.text('Undefined variable: {name}', {name: name}), access?.pos ?? currentScope?.node?.pos ?? script.pos);
 
     }
 
@@ -7390,7 +7389,7 @@ class InterpreterContext {
     }
 
     function metadataChangeError(pos:Position):RuntimeError {
-        return new RuntimeError("The story's metadata can't be changed by the script", pos);
+        return RuntimeError.of(I18n.text("The story's metadata can't be changed by the script"), pos);
     }
 
     static inline function numberOf(value:Dynamic, type:ValueType):Float {
@@ -7440,7 +7439,7 @@ class InterpreterContext {
             return Values.arithmetic(op, left, right, this);
         }
         catch (e:RuntimeError) {
-            throw new RuntimeError(e.message, pos ?? currentScope?.node?.pos ?? script.pos);
+            throw RuntimeError.at(e, pos ?? currentScope?.node?.pos ?? script.pos);
         }
     }
 
@@ -7469,10 +7468,10 @@ class InterpreterContext {
                             case OpMinus: leftNum - rightNum;
                             case OpMultiply: leftNum * rightNum;
                             case OpDivide:
-                                if (rightNum == 0) throw new RuntimeError('Division by zero', pos ?? currentScope?.node?.pos ?? script.pos);
+                                if (rightNum == 0) throw RuntimeError.of(I18n.text('Division by zero'), pos ?? currentScope?.node?.pos ?? script.pos);
                                 leftNum / rightNum;
                             case OpModulo:
-                                if (rightNum == 0) throw new RuntimeError('Modulo by zero', pos ?? currentScope?.node?.pos ?? script.pos);
+                                if (rightNum == 0) throw RuntimeError.of(I18n.text('Modulo by zero'), pos ?? currentScope?.node?.pos ?? script.pos);
                                 leftNum % rightNum;
                             case _: throw "Unreachable";
                         }
@@ -7522,7 +7521,7 @@ class InterpreterContext {
                             case _: throw "Unreachable";
                         }
                     case _:
-                        throw new RuntimeError('Cannot compare ${Values.kindOf(left)} and ${Values.kindOf(right)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                        throw RuntimeError.of(I18n.text('Cannot compare {a} and {b}', {a: Values.describeKindOf(left), b: Values.describeKindOf(right)}), pos ?? currentScope?.node?.pos ?? script.pos);
                 }
 
             case OpAnd(_) | OpOr(_):
@@ -7532,7 +7531,7 @@ class InterpreterContext {
                 }
 
             case _:
-                throw new RuntimeError('Invalid operation: $op', pos ?? currentScope?.node?.pos ?? script.pos);
+                throw RuntimeError.of(I18n.text('Invalid operation: {op}', {op: op}), pos ?? currentScope?.node?.pos ?? script.pos);
         }
     }
 

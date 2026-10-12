@@ -86,6 +86,8 @@ class Error {
 	public var pmax : Int;
 	public var origin : String;
 	public var line : Int;
+	/** The text of the error, when the tools can show it in another language */
+	public var text : Null<loreline.i18n.I18nText> = null;
 	public function new(e, pmin, pmax, origin, line) {
 		this.e = e;
 		this.pmin = pmin;

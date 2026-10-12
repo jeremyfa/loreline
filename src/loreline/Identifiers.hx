@@ -138,13 +138,13 @@ class Identifiers {
      * The message of an error on a character that has no place there, which
      * names the ASCII mark to use when it is a full-width lookalike.
      */
-    public static function unexpectedCharacterMessage(c:Int):String {
+    public static function unexpectedCharacterMessage(c:Int):loreline.i18n.I18nText {
         final twin = asciiTwinOf(c);
         final text = textOf(c);
         if (twin != -1) {
-            return '"' + text + '" looks like "' + String.fromCharCode(twin) + '" but isn\'t';
+            return loreline.i18n.I18n.text('"{text}" looks like "{twin}" but isn\'t', {text: text, twin: String.fromCharCode(twin)});
         }
-        return 'Unexpected character: ' + text;
+        return loreline.i18n.I18n.text('Unexpected character: {text}', {text: text});
     }
 
     /**

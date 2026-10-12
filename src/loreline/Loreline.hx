@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 #if (cs && (loreline_cs_api || loreline_use_cs_types) && !erase_generics)
 #error "The Loreline C# API defines (loreline_cs_api / loreline_use_cs_types) require -D erase-generics. Plain Haxe to C# consumers should omit all loreline_* C# defines."
 #end
@@ -326,11 +328,11 @@ class Loreline {
                         // (with file context) and keep going so other files
                         // still get tried; final routing happens in dispatchResult.
                         if (firstParseError == null) {
-                            firstParseError = new Error('Failed to load translation file "$transPath": ' + e.message);
+                            firstParseError = Error.of(I18n.text('Failed to load translation file "{path}": {message}', {path: transPath, message: e}));
                         }
                     } catch (e:Any) {
                         if (firstParseError == null) {
-                            firstParseError = new Error('Failed to load translation file "$transPath": ' + Std.string(e));
+                            firstParseError = Error.of(I18n.text('Failed to load translation file "{path}": {message}', {path: transPath, message: Std.string(e)}));
                         }
                     }
                 }

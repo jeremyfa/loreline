@@ -1,4 +1,7 @@
 package loreline.lorscript;
+
+import loreline.i18n.I18n;
+import loreline.i18n.I18nText;
 import loreline.lorscript.Expr;
 
 /**
@@ -433,9 +436,9 @@ class Checker {
 		
 	}
 
-	inline function error( msg : String, curExpr : Expr ) {
-		var e = ECustom(msg);
-		 var e = new Error(e, curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line); 
+	inline function error( text : I18nText, curExpr : Expr ) {
+		var e = new Error(ECustom(text.toString()), curExpr.pmin, curExpr.pmax, curExpr.origin, curExpr.line);
+		e.text = text;
 		if( !isCompletion ) throw e;
 	}
 
@@ -448,7 +451,7 @@ class Checker {
 		case CTPath(path, params):
 			var ct = types.resolve(path.join("."),params == null ? [] : [for( p in params ) makeType(p,e)]);
 			if( ct == null ) {
-				error("Unknown type "+path, e);
+				error(I18n.text('Unknown type {path}', {path: path}), e);
 				ct = TDynamic;
 			}
 			return ct;
@@ -727,7 +730,7 @@ class Checker {
 
 	public function unify( t1 : TType, t2 : TType, e : Expr ) {
 		if( !tryUnify(t1,t2) )
-			error(typeStr(t1)+" should be "+typeStr(t2),e);
+			error(I18n.text('{a} should be {b}', {a: typeStr(t1), b: typeStr(t2)}), e);
 	}
 
 	public function apply( t : TType, params : Array<TType>, args : Array<TType> ) {
@@ -852,9 +855,9 @@ class Checker {
 				return ft;
 			}
 			if( !cf.isPublic )
-				error("Can't access private field "+f+" on "+c.name, e);
+				error(I18n.text("Can't access private field {field} on {type}", {field: f, type: c.name}), e);
 			if( forWrite && !cf.canWrite )
-				error("Can't write readonly field "+f+" on "+c.name, e);
+				error(I18n.text("Can't write readonly field {field} on {type}", {field: f, type: c.name}), e);
 			var t = cf.t;
 			if( cf.params != null ) t = apply(t, cf.params, [for( i in 0...cf.params.length ) makeMono()]);
 			return apply(t, c.params, args);
@@ -918,7 +921,7 @@ class Checker {
 			onCompletion(expr, ot);
 		var ft = getField(ot, f, expr, forWrite);
 		if( ft == null ) {
-			error(typeStr(ot)+" has no field "+f, expr);
+			error(I18n.text('{type} has no field {field}', {type: typeStr(ot), field: f}), expr);
 			ft = TDynamic;
 		}
 		return ft;
@@ -973,7 +976,7 @@ class Checker {
 				default:
 				}
 				if( isCompletion ) return TDynamic;
-				error("Unknown identifier "+v, expr);
+				error(I18n.text('Unknown identifier {name}', {name: v}), expr);
 			}
 		case EBlock(el):
 			var t = TVoid;
@@ -1002,7 +1005,7 @@ class Checker {
 					for( p in params ) {
 						var a = remainArgs.shift();
 						if( a == null ) {
-							error("Too many arguments", p);
+							error(I18n.text('Too many arguments'), p);
 							return TFun([], ret);
 						}
 						typeExprWith(p, a.t);
@@ -1021,7 +1024,7 @@ class Checker {
 				for( i in 0...params.length ) {
 					var a = args[i];
 					if( a == null ) {
-						error("Too many arguments", params[i]);
+						error(I18n.text('Too many arguments'), params[i]);
 						break;
 					}
 					var t = typeExpr(params[i], a == null ? Value : WithType(a.t));
@@ -1029,13 +1032,13 @@ class Checker {
 				}
 				for( i in params.length...args.length )
 					if( !args[i].opt )
-						error("Missing argument "+args[i].name+":"+typeStr(args[i].t), expr);
+						error(I18n.text('Missing argument {name}:{type}', {name: args[i].name, type: typeStr(args[i].t)}), expr);
 				return ret;
 			case TDynamic:
 				for( p in params ) typeExpr(p,Value);
 				return makeMono();
 			default:
-				error(typeStr(ft)+" cannot be called", e);
+				error(I18n.text('{type} cannot be called', {type: typeStr(ft)}), e);
 				return makeMono();
 			}
 		case EField(o, f):
@@ -1074,7 +1077,7 @@ class Checker {
 				return TAnon([for( f in fl ) {
 					var ft = map.get(f.name);
 					var ft = if( ft == null ) {
-						error("Extra field "+f.name, f.e);
+						error(I18n.text('Extra field {field}', {field: f.name}), f.e);
 						TDynamic;
 					} else ft.t;
 					{ t : typeExprWith(f.e, ft), opt : false, name : f.name }
@@ -1088,7 +1091,7 @@ class Checker {
 			var et = v == null ? TVoid : typeExpr(v, allowReturn == null ? Value : WithType(allowReturn));
 			hasReturn = true;
 			if( allowReturn == null )
-				error("Return not allowed here", expr);
+				error(I18n.text('Return not allowed here'), expr);
 			else
 				unify(et, allowReturn, v == null ? expr : v);
 			return makeMono();
@@ -1107,7 +1110,7 @@ class Checker {
 			var at = typeExpr(a, Value);
 			switch( follow(at) ) {
 			case TInst({ name : "Array"},[et]): return et;
-			default: error(typeStr(at)+" is not an Array", a);
+			default: error(I18n.text('{type} is not an Array', {type: typeStr(at)}), a);
 			}
 		case EThrow(e):
 			typeExpr(e, Value);
@@ -1150,15 +1153,15 @@ class Checker {
 					if( i < withArgs.length )
 						unify(withArgs[i].t, a.t, expr);
 					else
-						error("Extra argument "+a.name, expr);
+						error(I18n.text('Extra argument {name}', {name: a.name}), expr);
 				}
 				this.locals.set(a.name, a.t);
 			}
 			if( withArgs != null && targs.length < withArgs.length )
-				error("Missing "+(withArgs.length - targs.length)+" arguments ("+[for( i in targs.length...withArgs.length ) typeStr(withArgs[i].t)].join(",")+")", expr);
+				error(I18n.text('Missing {count} ({types})', {count: I18n.count(withArgs.length - targs.length, '{n} argument', '{n} arguments'), types: [for( i in targs.length...withArgs.length ) typeStr(withArgs[i].t)].join(",")}), expr);
 			typeExpr(body,NoValue);
 			if( !hasReturn && !tryUnify(tret, TVoid) )
-				error("Missing return "+typeStr(tret), expr);
+				error(I18n.text('Missing return {type}', {type: typeStr(tret)}), expr);
 			allowDefine = oldGDef;
 			allowReturn = oldRet;
 			hasReturn = oldHasRet;
@@ -1259,7 +1262,7 @@ class Checker {
 					var t = typeExpr(e,Value);
 					switch( follow(t) ) {
 					case TBool:
-						error("Cannot compare "+typeStr(t), expr);
+						error(I18n.text('Cannot compare {type}', {type: typeStr(t)}), expr);
 					default:
 					}
 				}
@@ -1269,7 +1272,7 @@ class Checker {
 					var t = typeExpr(mk(EBinop(op.substr(0,op.length-1),e1,e2),expr),withType);
 					return typeExpr(mk(EBinop("=",e1,e2),expr), withType);
 				}
-				error("Unsupported operation "+op, expr);
+				error(I18n.text('Unsupported operation {op}', {op: op}), expr);
 			}
 		case ETry(etry, v, et, ecatch):
 			var vt = typeExpr(etry, withType);
@@ -1311,7 +1314,7 @@ class Checker {
 			return withType == NoValue ? TVoid : tmin == null ? makeMono() : tmin;
 		case ENew(cl, params):
 		}
-		error("Don't know how to type "+edef(expr).getName(), expr);
+		error(new I18nText("Don't know how to type " + edef(expr).getName()), expr);
 		return TDynamic;
 	}
 

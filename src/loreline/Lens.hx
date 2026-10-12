@@ -1,5 +1,7 @@
 package loreline;
 
+import loreline.i18n.I18n;
+
 import haxe.ds.Either;
 import haxe.io.Path;
 import loreline.Imports;
@@ -92,22 +94,30 @@ class FuncLorscript {
             if (this.error == null) {
                 if (e is loreline.lorscript.Expr.Error) {
                     final lorscriptError:loreline.lorscript.Expr.Error = cast e;
+                    final text:Null<loreline.i18n.I18nText> = lorscriptError.text ?? switch lorscriptError.e {
+                        case EInvalidChar(c): I18n.text('Invalid character: {code}', {code: c});
+                        case EUnexpected(s): I18n.text('Unexpected: {token}', {token: s});
+                        case EUnterminatedString: I18n.text('Unterminated string');
+                        case EUnterminatedComment: I18n.text('Unterminated comment');
+                        case EInvalidPreprocessor(msg): I18n.text('Invalid preprocessor: {text}', {text: msg});
+                        case EUnknownVariable(v): I18n.text('Unknown variable: {name}', {name: v});
+                        case EInvalidIterator(v): I18n.text('Invalid iterator: {name}', {name: v});
+                        case EInvalidOp(op): I18n.text('Invalid operator: {op}', {op: op});
+                        case EInvalidAccess(f): I18n.text('Invalid access: {name}', {name: f});
+                        case ECustom(msg): null;
+                    }
                     this.error = new WrappedError(
                         lorscriptError,
-                        switch lorscriptError.e {
-                            case EInvalidChar(c): 'Invalid character: $c';
-                            case EUnexpected(s): 'Unexpected: $s';
-                            case EUnterminatedString: 'Unterminated string';
-                            case EUnterminatedComment: 'Unterminated comment';
-                            case EInvalidPreprocessor(msg): 'Invalid preprocessor: $msg';
-                            case EUnknownVariable(v): 'Unknown variable: $v';
-                            case EInvalidIterator(v): 'Invalid iterator: $v';
-                            case EInvalidOp(op): 'Invalid operator: $op';
-                            case EInvalidAccess(f): 'Invalid access: $f';
+                        text != null ? text.toString() : switch lorscriptError.e {
                             case ECustom(msg): msg;
+                            case _: '';
                         },
                         codeToLorscript.toLorelinePos(func.pos, lorscriptError.pmin, lorscriptError.pmax)
                     );
+                    if (text != null) {
+                        this.error.template = text.template;
+                        this.error.params = text.params;
+                    }
                 }
                 else if (e is Error) {
                     this.error = cast e;
