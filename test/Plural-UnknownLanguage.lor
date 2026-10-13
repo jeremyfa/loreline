@@ -1,0 +1,14 @@
+// A language without known plural rules follows English
+
+metadata
+  language: xx
+
+beat Start
+  ${plural(0, "cat", "cats")} ${plural(1, "cat", "cats")} ${plural(2, "cat", "cats")}
+
+/*
+<test>
+- expected: |
+    ~ cats cat cats
+</test>
+*/

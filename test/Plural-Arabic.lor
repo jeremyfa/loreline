@@ -1,0 +1,14 @@
+// Arabic has six plural forms: zero, one, two, a few, many and other
+
+metadata
+  language: ar
+
+beat Start
+  ${plural(0, "zero", "one", "two", "few", "many", "other")} ${plural(1, "zero", "one", "two", "few", "many", "other")} ${plural(2, "zero", "one", "two", "few", "many", "other")} ${plural(3, "zero", "one", "two", "few", "many", "other")} ${plural(11, "zero", "one", "two", "few", "many", "other")} ${plural(100, "zero", "one", "two", "few", "many", "other")}
+
+/*
+<test>
+- expected: |
+    ~ zero one two few many other
+</test>
+*/

@@ -1,0 +1,41 @@
+// A translated line follows the plural rules of its language, and a line shown
+// from the source, when the translation misses it, those of the source
+
+state
+  count: 0
+
+function describe()
+  return plural(count, "one", "many")
+
+beat Start
+  You have $count ${plural(count, "item", "items")} #items
+  You found $count ${plural(count, "apple", "apples")} #apples
+  Described as ${describe()} #describe
+  choice
+    Take $count ${plural(count, "coin", "coins")} #take
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    ~ You have 0 items
+
+    ~ You found 0 apples
+
+    ~ Described as many
+
+    + Take 0 coins
+
+- choices: [0]
+  translation: fr
+  expected: |
+    ~ Vous avez 0 article
+
+    ~ You found 0 apples
+
+    ~ Décrit comme one
+
+    + Prendre 0 pièce
+
+</test>
+*/

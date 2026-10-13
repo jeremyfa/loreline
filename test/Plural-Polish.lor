@@ -1,0 +1,18 @@
+// Polish has three plural forms: one, a few (2 to 4, but not 12 to 14), and many
+
+metadata
+  language: pl
+
+beat Start
+  ${plural(1, "plik", "pliki", "plików")} ${plural(2, "plik", "pliki", "plików")} ${plural(5, "plik", "pliki", "plików")} ${plural(12, "plik", "pliki", "plików")} ${plural(22, "plik", "pliki", "plików")} ${plural(25, "plik", "pliki", "plików")}
+
+  A fraction takes the last form: ${plural(1.5, "plik", "pliki", "plików")}
+
+/*
+<test>
+- expected: |
+    ~ plik pliki plików plików pliki plików
+
+    ~ A fraction takes the last form: plików
+</test>
+*/

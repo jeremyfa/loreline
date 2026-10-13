@@ -1,0 +1,14 @@
+// Portuguese as spoken in Brazil puts zero in the singular
+
+metadata
+  language: pt-BR
+
+beat Start
+  ${plural(0, "arquivo", "arquivos")} ${plural(1, "arquivo", "arquivos")} ${plural(2, "arquivo", "arquivos")}
+
+/*
+<test>
+- expected: |
+    ~ arquivo arquivo arquivos
+</test>
+*/

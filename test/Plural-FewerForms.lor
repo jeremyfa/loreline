@@ -1,0 +1,15 @@
+// When a line gives fewer forms than its language uses, the last one stands
+// for the missing ones
+
+metadata
+  language: pl
+
+beat Start
+  ${plural(1, "plik", "pliki")} ${plural(2, "plik", "pliki")} ${plural(5, "plik", "pliki")}
+
+/*
+<test>
+- expected: |
+    ~ plik pliki pliki
+</test>
+*/

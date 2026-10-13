@@ -1,0 +1,14 @@
+// French puts zero and one in the singular, and any count below two
+
+metadata
+  language: fr
+
+beat Start
+  ${plural(0, "article", "articles")} ${plural(1, "article", "articles")} ${plural(1.5, "article", "articles")} ${plural(2, "article", "articles")} ${plural(-1, "article", "articles")}
+
+/*
+<test>
+- expected: |
+    ~ article article article articles article
+</test>
+*/

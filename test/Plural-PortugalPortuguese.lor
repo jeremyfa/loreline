@@ -1,0 +1,14 @@
+// Portuguese as spoken in Portugal puts zero in the plural
+
+metadata
+  language: pt-PT
+
+beat Start
+  ${plural(0, "ficheiro", "ficheiros")} ${plural(1, "ficheiro", "ficheiros")} ${plural(2, "ficheiro", "ficheiros")}
+
+/*
+<test>
+- expected: |
+    ~ ficheiros ficheiro ficheiros
+</test>
+*/

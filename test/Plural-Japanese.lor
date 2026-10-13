@@ -1,0 +1,14 @@
+// Japanese has a single form: the first one is always shown
+
+metadata
+  language: ja
+
+beat Start
+  ${plural(1, "本", "冊")} ${plural(5, "本", "冊")}
+
+/*
+<test>
+- expected: |
+    ~ 本 本
+</test>
+*/
