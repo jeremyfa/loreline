@@ -11,6 +11,7 @@ beat Start
   You have $count ${plural(count, "item", "items")} #items
   You found $count ${plural(count, "apple", "apples")} #apples
   Described as ${describe()} #describe
+  $count drink|drinks left. #drinks
   choice
     Take $count ${plural(count, "coin", "coins")} #take
 
@@ -24,6 +25,8 @@ beat Start
 
     ~ Described as many
 
+    ~ 0 drinks left.
+
     + Take 0 coins
 
 - choices: [0]
@@ -34,6 +37,8 @@ beat Start
     ~ You found 0 apples
 
     ~ Décrit comme one
+
+    ~ 0 boisson restante.
 
     + Prendre 0 pièce
 

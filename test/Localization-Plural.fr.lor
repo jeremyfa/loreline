@@ -4,5 +4,8 @@ Vous avez $count ${plural(count, "article", "articles")}
 #describe // Described as ${describe()}
 Décrit comme ${describe()}
 
+#drinks // $count drink|drinks left.
+$count boisson|boissons restante|restantes.
+
 #take // Take $count ${plural(count, "coin", "coins")}
 Prendre $count ${plural(count, "pièce", "pièces")}

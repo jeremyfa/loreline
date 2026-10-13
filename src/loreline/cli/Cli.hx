@@ -597,6 +597,7 @@ class Cli {
         loreline.test.CharacterDeclTests.run(onPass, onFail);
         loreline.test.I18nTests.run(onPass, onFail);
         loreline.test.PluralRulesTests.run(onPass, onFail);
+        loreline.test.PluralPipesTests.run(onPass, onFail);
         loreline.test.LspTests.run(onPass, onFail);
 
         print('');

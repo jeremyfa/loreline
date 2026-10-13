@@ -83,6 +83,7 @@ class PortableTestSuite {
         CharacterDeclTests.run(onPass, onFail);
         I18nTests.run(onPass, onFail);
         PluralRulesTests.run(onPass, onFail);
+        PluralPipesTests.run(onPass, onFail);
         if (failCount > failBefore) fileFailCount++;
     }
 

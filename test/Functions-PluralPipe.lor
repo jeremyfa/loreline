@@ -25,6 +25,21 @@ beat Start
   count = 2
   $count cat|cats and $count dog|dogs
 
+  count = 1
+  $count coin|coins.
+
+  count = 3
+  $count coin|coins.
+
+  count = 1
+  $count «coin|coins»!
+
+  count = 2
+  $count first|second|third
+
+  count = 5
+  $count (red apple|red apples|extra)
+
   -> .
 
 /*
@@ -45,5 +60,15 @@ beat Start
     ~ Alice things
 
     ~ 2 cats and 2 dogs
+
+    ~ 1 coin.
+
+    ~ 3 coins.
+
+    ~ 1 «coin»!
+
+    ~ 2 second
+
+    ~ 5 red apples
 </test>
 */
