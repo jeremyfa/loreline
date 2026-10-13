@@ -27,6 +27,7 @@ class I18nTests {
             {name: 'a language tag gives its locale', fn: () -> testFromTag()},
             {name: 'a parse error keeps its English message and shows in French', fn: () -> testParseError()},
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
+            {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
             {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()}
         ];
 
@@ -114,7 +115,25 @@ class I18nTests {
         }
         if (error == null) throw 'expected a runtime error';
         expect(error.message, 'Cannot subtract "abc" and number');
-        expect(I18n.errorText(error, 'fr'), 'Impossible de soustraire un nombre de "abc"');
+        expect(I18n.errorText(error, 'fr'), 'Impossible de soustraire un nombre à "abc"');
+    }
+
+    /** A value described with its article reads as a sentence wherever the template puts it */
+    static function testOperandWithArticle():Void {
+        expect(I18n.errorText(runtimeError('x = 3 - "abc"'), 'fr'), 'Impossible de soustraire "abc" à un nombre');
+        expect(I18n.errorText(runtimeError('x = 3 % "abc"'), 'fr'), 'Impossible de calculer un nombre modulo "abc"');
+        expect(I18n.errorText(runtimeError('x = -"abc"'), 'fr'), 'Impossible d\'appliquer le signe moins à "abc"');
+    }
+
+    static function runtimeError(line:String):loreline.Error {
+        final script = Loreline.parse('beat Start\n  ' + line + '\n  Hi.\n');
+        try {
+            Loreline.play(script, (interp, character, text, tags, advance) -> advance(), (interp, options, select) -> select(0), interp -> {});
+        }
+        catch (e:loreline.Error) {
+            return e;
+        }
+        throw 'expected a runtime error from ' + line;
     }
 
     static function testFunctionCodeError():Void {
