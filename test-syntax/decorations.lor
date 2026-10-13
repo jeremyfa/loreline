@@ -14,6 +14,9 @@ beat Start
   $count (cold drink|cold drinks) left
 //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
 
+  $count plik|pliki|plików, then «$count cat|cats».
+//       ^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+
   "Quoted narration, with $count items."
 //^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
 //                         ^^^^^ variable.other
