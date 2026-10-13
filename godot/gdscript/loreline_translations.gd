@@ -1,9 +1,10 @@
 class_name LorelineTranslations
 extends RefCounted
 
-## Opaque holder for a translations map, obtained from
-## LorelineScript.extract_translations() or Loreline.load_locale(), and
-## passed to LorelineOptions.set_translations().
+## Opaque holder for a translations map. To play a story in a language, get it
+## from Loreline.load_locale() and pass it to LorelineOptions.set_translations().
+## LorelineScript.extract_translations() gives the translations of one file by
+## #id, which the interpreter can't play.
 
 var _translations = null
 

@@ -701,8 +701,7 @@ typedef InterpreterOptions = {
     public var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any #if !loreline_typedef_options = null #end;
 
     /**
-     * Optional translations map (localization key -> translated string literal).
-     * Built from a parsed translation file using AstUtils.extractTranslations().
+     * Optional translations, as `Loreline.loadLocale()` returns them.
      */
     #if loreline_typedef_options @:optional #end
     public var translations:Map<String, NStringLiteral> #if !loreline_typedef_options = null #end;

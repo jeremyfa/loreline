@@ -172,11 +172,12 @@ class Loreline {
      * the extension (e.g. `characters.lor` -> `characters.fr.lor`). Missing translation
      * files are silently skipped.
      *
-     * Each translation key is stored under both:
-     *   - a global key `<id>` (first occurrence wins, root file priority)
-     *   - a scoped key `<source-rel-path>#<id>` (always set per file, allows override)
+     * Each translation is stored under the key `<source-rel-path>#<id>`: the path of
+     * its source file relative to the root script, without extension (`.` for the
+     * root itself), then its `#id`. The interpreter looks a line up in its own file,
+     * then in the files importing it, up to the root.
      *
-     * The interpreter prefers the scoped key when looking up a translation.
+     * The result is the map to pass as `options.translations` to `play()` or `resume()`.
      *
      * @param locale The locale code (e.g. "fr")
      * @param script The parsed source script (must have been parsed with a file path
@@ -454,13 +455,15 @@ class Loreline {
     }
 
     /**
-     * Extracts translations from a parsed translation script.
+     * Extracts the translations of a parsed translation file, by their `#id`.
      *
-     * Given a translation file parsed with `parse()`, this returns a translations map
-     * that can be passed as `options.translations` to `play()` or `resume()`.
+     * This is what `generateTranslationFile()` takes as `existing`, to keep the
+     * translations already written when a translation file is generated again.
+     * To play a story in a language, use `loadLocale()` instead: the interpreter
+     * looks translations up by file, which this map doesn't hold.
      *
      * @param script The parsed translation script (result from `parse()` on a `.XX.lor` file)
-     * @return A translations map to pass as `InterpreterOptions.translations`
+     * @return The translations of the file, by `#id`
      */
     public static function extractTranslations(script:Script):Map<String, NStringLiteral> {
         return AstUtils.extractTranslations(script);

@@ -16,8 +16,9 @@ using namespace godot;
 /**
  * Ref-counted wrapper around a Loreline translations handle.
  *
- * Obtained from `LorelineScript::extract_translations()` or
- * `Loreline::load_locale()`. Pass to `LorelineOptions::set_translations()`.
+ * To play a story in a language, get it from `Loreline::load_locale()` and pass
+ * it to `LorelineOptions::set_translations()`. `LorelineScript::extract_translations()`
+ * gives the translations of one file by #id, which the interpreter can't play.
  *
  * Opaque to GDScript: users only pass it around.
  */

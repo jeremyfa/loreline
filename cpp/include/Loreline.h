@@ -368,7 +368,9 @@ LORELINE_PUBLIC void Loreline_parseAsync(
     void* completionHandlerData
 );
 
-/* Translations: extract from a script for localized playback */
+/* Translations: those of a parsed translation file, by #id. To play a story in a
+ * language, use Loreline_loadLocale() instead: the interpreter looks translations up
+ * by file, which this map doesn't hold. */
 LORELINE_PUBLIC Loreline_Translations* Loreline_extractTranslations(Loreline_Script* script);
 
 /* A field of the story's metadata block, like its title, author or IFID, read from the

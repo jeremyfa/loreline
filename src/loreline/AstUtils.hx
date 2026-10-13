@@ -389,7 +389,9 @@ class AstUtils {
 
     /**
      * Extract translations from a parsed translation file.
-     * Returns a map of localization key -> NStringLiteral.
+     * Returns a map of localization key -> NStringLiteral, by bare `#key`: the
+     * existing translations `generateTranslationFile` merges, not a map to play
+     * (`Loreline.loadLocale` scopes each key by file).
      * Looks for hash comments (#key) on text/dialogue nodes.
      */
     public static function extractTranslations(node:AstNode):Map<String, NStringLiteral> {

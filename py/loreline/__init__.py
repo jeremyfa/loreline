@@ -565,7 +565,7 @@ class Loreline:
             beat_name: Optional beat to start from (default: first beat).
             functions: Optional dict of ``{name: callable}`` custom functions.
             strict_access: If True, accessing undefined variables raises an error.
-            translations: Optional translations map from ``extract_translations()``.
+            translations: Optional translations map from ``load_locale()``.
             prepare_caches: If True, the caches of the interpreter are prepared
                 before the script starts, like ``Interpreter.prepare_caches()``.
 
@@ -613,7 +613,7 @@ class Loreline:
             beat_name: Optional beat name to override resume point.
             functions: Optional dict of custom functions.
             strict_access: If True, accessing undefined variables raises an error.
-            translations: Optional translations map from ``extract_translations()``.
+            translations: Optional translations map from ``load_locale()``.
             prepare_caches: If True, the caches of the interpreter are prepared
                 before the script starts, like ``Interpreter.prepare_caches()``.
 
@@ -640,14 +640,16 @@ class Loreline:
 
     @staticmethod
     def extract_translations(script: Script) -> Any:
-        """Extract translations from a parsed translation script.
+        """Extract the translations of a parsed translation file, by their ``#id``.
+
+        To play a story in a language, use ``load_locale()`` instead: the
+        interpreter looks translations up by file, which this map doesn't hold.
 
         Args:
             script: A parsed translation script (``.XX.lor`` file).
 
         Returns:
-            A translations object to pass as the ``translations`` argument
-            to ``play()`` or ``resume()``.
+            The translations of the file, by ``#id``.
         """
         return _core.loreline_Loreline.extractTranslations(script._internal)
 

@@ -54,7 +54,7 @@ final class Loreline
      * $options accepts an associative array with these keys:
      * - functions: map of name to function(Interpreter $interpreter, array $args): mixed
      * - strictAccess: bool, if true accessing undefined variables raises an error
-     * - translations: a translations map from extractTranslations()/loadLocale()
+     * - translations: a translations map from loadLocale()
      * - prepareCaches: bool, if true the caches of the interpreter are prepared
      *   before the script starts, like Interpreter::prepareCaches()
      */
@@ -105,10 +105,10 @@ final class Loreline
     }
 
     /**
-     * Extract translations from a parsed translation script (a .XX.lor file).
+     * Extract the translations of a parsed translation file (a .XX.lor file), by their #id.
      *
-     * Returns an opaque translations map to pass as the translations option
-     * to play() or resume().
+     * To play a story in a language, use loadLocale() instead: the interpreter looks
+     * translations up by file, which this map doesn't hold.
      */
     public static function extractTranslations(Script $script): mixed
     {

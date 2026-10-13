@@ -20,7 +20,9 @@ func resume(save_data: String, beat_name: String = "", options: LorelineOptions 
 	return LorelineInterpreter._resume(_script, save_data, beat_name, options)
 
 
-## Extracts translations from a parsed translation script.
+## Extracts the translations of a parsed translation file, by their #id. To play
+## a story in a language, use Loreline.load_locale() instead: the interpreter
+## looks translations up by file, which this map doesn't hold.
 func extract_translations() -> LorelineTranslations:
 	return LorelineTranslations.new(_Loreline_Loreline.extractTranslations(_script))
 

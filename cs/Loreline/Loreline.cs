@@ -245,15 +245,14 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Extracts translations from a parsed translation script.
+        /// Extracts the translations of a parsed translation file, by their #id.
         /// </summary>
         /// <remarks>
-        /// Given a translation file parsed with <see cref="Parse"/>, this returns a translations map
-        /// that can be passed as <see cref="Interpreter.InterpreterOptions.Translations"/> to
-        /// Play() or Resume().
+        /// To play a story in a language, use LoadLocale() instead: the interpreter looks
+        /// translations up by file, which this map doesn't hold.
         /// </remarks>
         /// <param name="script">The parsed translation script (result from <see cref="Parse"/> on a .XX.lor file)</param>
-        /// <returns>A translations object to pass as <see cref="Interpreter.InterpreterOptions.Translations"/></returns>
+        /// <returns>The translations of the file, by #id</returns>
         public static object ExtractTranslations(Script script)
         {
             return Runtime.Loreline.extractTranslations(script.RuntimeScript);

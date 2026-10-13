@@ -115,10 +115,13 @@ public final class Loreline {
     }
 
     /**
-     * Extracts translations from a parsed translation script.
+     * Extracts the translations of a parsed translation file, by their #id.
+     *
+     * To play a story in a language, use loadLocale() instead: the interpreter looks
+     * translations up by file, which this map doesn't hold.
      *
      * @param script the parsed translation script
-     * @return a translations object to pass as InterpreterOptions.translations
+     * @return the translations of the file, by #id
      */
     public static Object extractTranslations(Script script) {
         return loreline.runtime.Loreline.extractTranslations(script.runtimeScript);

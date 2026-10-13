@@ -198,8 +198,7 @@ namespace Loreline
             public CreateFields CustomCreateFields;
 
             /// <summary>
-            /// Optional translations map for localization.
-            /// Built from a parsed translation file using Engine.ExtractTranslations().
+            /// Optional translations map for localization, as Engine.LoadLocale() returns it.
             /// </summary>
             public object Translations;
 
@@ -630,7 +629,7 @@ namespace Loreline
         {
             if (translations == null) return null;
 
-            // Translations is an opaque object returned by Engine.ExtractTranslations(),
+            // Translations is an opaque object returned by Engine.LoadLocale(),
             // which is already a StringMap internally.
             return (Internal.Ds.StringMap)translations;
         }

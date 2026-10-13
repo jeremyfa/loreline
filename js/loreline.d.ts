@@ -24,7 +24,7 @@ export type SaveData = any;
 
 /**
  * Opaque type for a translations map.
- * Obtained from `Loreline.extractTranslations()` and passed to `InterpreterOptions.translations`.
+ * Obtained from `Loreline.loadLocale()` and passed to `InterpreterOptions.translations`.
  */
 export type Translations = any;
 
@@ -223,8 +223,7 @@ export interface InterpreterOptions {
     customCreateFields?: (interpreter: Interpreter, type: string, node: Node) => any;
 
     /**
-     * Optional translations map for localization.
-     * Built from a parsed translation file using `Loreline.extractTranslations()`.
+     * Optional translations map for localization, as `Loreline.loadLocale()` returns it.
      */
     translations?: Translations;
 
@@ -310,13 +309,13 @@ export class Loreline {
     ): Interpreter;
 
     /**
-     * Extracts translations from a parsed translation script.
+     * Extracts the translations of a parsed translation file, by their `#id`.
      *
-     * Given a translation file parsed with `parse()`, this returns a translations map
-     * that can be passed as `options.translations` to `play()` or `resume()`.
+     * To play a story in a language, use `loadLocale()` instead: the interpreter
+     * looks translations up by file, which this map doesn't hold.
      *
      * @param script The parsed translation script (result from `parse()` on a `.XX.lor` file)
-     * @returns A translations map to pass as `InterpreterOptions.translations`
+     * @returns The translations of the file, by `#id`
      */
     static extractTranslations(script: Script): Translations;
 

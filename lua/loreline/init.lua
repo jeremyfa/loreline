@@ -482,9 +482,11 @@ function M.resume(script, handle_dialogue, handle_choice, handle_finish, save_da
     return Interpreter._of(internal)
 end
 
---- Extract translations from a parsed translation script.
+--- Extract the translations of a parsed translation file, by their `#id`.
+-- To play a story in a language, use `load_locale()` instead: the interpreter
+-- looks translations up by file, which this map doesn't hold.
 -- @param script Script A parsed translation script (`.XX.lor` file).
--- @return table A translations object to pass to `play()` or `resume()`.
+-- @return table The translations of the file, by `#id`.
 function M.extract_translations(script)
     return __loreline_Loreline.extractTranslations(script._internal)
 end
