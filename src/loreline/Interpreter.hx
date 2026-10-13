@@ -771,6 +771,17 @@ class InterpreterContext {
      */
     var translations:Null<Map<String, NStringLiteral>>;
 
+    /** Whether the text of a line is being evaluated, in `lineLanguage` */
+    var inLine:Bool = false;
+
+    /** The language of the line being evaluated, null when unknown */
+    var lineLanguage:Null<String> = null;
+
+    /** The `language` of the script's metadata, once read */
+    var sourceLanguage:Null<String> = null;
+
+    var sourceLanguageRead:Bool = false;
+
     /**
      * Processors that transform string literals before evaluation.
      */
@@ -4426,7 +4437,7 @@ class InterpreterContext {
         final str = getTranslatedString(text, text.content);
 
         // Evaluate the content
-        final content = evaluateString(str);
+        final content = evaluateLine(str, str != text.content);
 
         // Then call the user-defined dialogue handler.
         // The execution will be "paused" until the callback
@@ -4456,7 +4467,7 @@ class InterpreterContext {
         final str = getTranslatedString(dialogue, dialogue.content);
 
         // Evaluate the content
-        final content = evaluateString(str);
+        final content = evaluateLine(str, str != dialogue.content);
 
         // Resolve the speaker: when the identifier is a scope value holding
         // a character reference (e.g. a beat param), use that character's
@@ -4723,7 +4734,7 @@ class InterpreterContext {
                 if (option.text != null) {
                     final done = wrapNext(moveNext);
                     final str = getTranslatedString(option, option.text);
-                    final content = evaluateString(str);
+                    final content = evaluateLine(str, str != option.text);
                     // An option only comes from an insertion that collects choice options:
                     // a choice reached in a beat inserted in a when block is presented as is
                     final owner = currentInsertion;
@@ -6153,6 +6164,58 @@ class InterpreterContext {
      * `.<lang>.lor` file applies to descendants that don't translate the same
      * key themselves. Siblings (non-ancestor files) never share translations.
      */
+    /**
+     * Evaluates the text of a line in its language: the translation's when the
+     * line is translated, the script's otherwise. `plural()` follows it.
+     */
+    function evaluateLine(str:NStringLiteral, translated:Bool):{text:String, tags:Array<TextTag>} {
+        final wasInLine = context.inLine;
+        final previousLanguage = context.lineLanguage;
+        context.inLine = true;
+        context.lineLanguage = translated ? translationLocale() : sourceLanguage();
+        final content = try {
+            evaluateString(str);
+        }
+        catch (e:Dynamic) {
+            context.inLine = wasInLine;
+            context.lineLanguage = previousLanguage;
+            throw e;
+        }
+        context.inLine = wasInLine;
+        context.lineLanguage = previousLanguage;
+        return content;
+    }
+
+    /**
+     * The language `plural()` follows: the one of the line being evaluated, or
+     * out of a line, the translation's, else the script's. Null when unknown.
+     */
+    @:allow(loreline.Functions)
+    function pluralLanguage():Null<String> {
+        if (context.inLine) return context.lineLanguage;
+        return translationLocale() ?? sourceLanguage();
+    }
+
+    /** The language of the translations, as `Loreline.loadLocale` keeps it */
+    function translationLocale():Null<String> {
+        final literal = context.translations?.get(Loreline.TRANSLATIONS_LOCALE);
+        if (literal == null || literal.parts.length != 1) return null;
+        return switch literal.parts[0].partType {
+            case Raw(text): text;
+            case _: null;
+        }
+    }
+
+    /** The `language` of the script's metadata, only the played file's */
+    function sourceLanguage():Null<String> {
+        if (!context.sourceLanguageRead) {
+            final language:Any = script.getMetadataField('language');
+            context.sourceLanguage = language is String ? language : null;
+            context.sourceLanguageRead = true;
+        }
+        return context.sourceLanguage;
+    }
+
     function getTranslatedString(node:AstNode, str:NStringLiteral):NStringLiteral {
         if (translations != null) {
             final id = findHashCommentId(node, str);

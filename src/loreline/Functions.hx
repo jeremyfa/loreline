@@ -61,7 +61,8 @@ class Functions {
         target.set("string_ends", this.string_ends);
         target.set("string_repeat", this.string_repeat);
         // Text
-        target.set("plural", this.plural);
+        // Seven arguments, more than a closure takes on some targets (Neko)
+        target.set("plural", VarArgs.make(args -> plural(args[0], args[1], args[2], args[3], args[4], args[5], args[6])));
         // Array
         target.set("array_length", this.array_length);
         target.set("array_add", this.array_add);
@@ -616,9 +617,11 @@ class Functions {
     // -- Text ----------------------------------------------------------
 
     /**
-     * Returns `singular` when count is 1, `plural_form` otherwise.
-     * Useful for both noun plurals and verb conjugation. The writer provides
-     * both forms, so this works in any language.
+     * Returns the form of a word that goes with a count, following the plural
+     * rules of the language of the line: its translation's, else the `language`
+     * of the story's metadata. In English, `singular` for one, `plural_form`
+     * otherwise. Languages with more forms give the others after, in order:
+     * Polish takes three. With no language known, only one is singular.
      *
      * ```lor
      * items = 3
@@ -628,13 +631,29 @@ class Functions {
      * boxes = 1
      * There $plural(boxes, "is", "are") $boxes $plural(boxes, "box", "boxes") here.
      * // "There is 1 box here."
+     *
+     * // In a story whose metadata gives `language: pl`
+     * files = 5
+     * $files $plural(files, "plik", "pliki", "plików")
+     * // "5 plików"
      * ```
      */
-    public function plural(count:Any, singular:Any, plural_form:Any):String {
-        // Only the number one, or a text written as it, picks the singular:
-        // any other value, a name included (`$name thing|things`), the plural
-        final one = !(count is Bool) && Values.equals(count, 1);
-        return one ? Values.textArg(singular, 'plural') : Values.textArg(plural_form, 'plural');
+    public function plural(count:Any, singular:Any, plural_form:Any, ?form3:Any, ?form4:Any, ?form5:Any, ?form6:Any):String {
+        final forms:Array<Any> = [singular, plural_form];
+        for (form in [form3, form4, form5, form6]) {
+            if (form == null) break;
+            forms.push(form);
+        }
+        final number:Float = switch Type.typeof(count) {
+            case TInt | TFloat: (count : Float);
+            case _: count is String ? Values.numberOfText(count) : Math.NaN;
+        }
+        // Any other value, a name included (`$name thing|things`), takes the
+        // second form, and only the number one, or a text written as it, the first
+        final index = Math.isNaN(number)
+            ? (!(count is Bool) && Values.equals(count, 1) ? 0 : 1)
+            : PluralRules.formIndex(interpreter != null ? interpreter.pluralLanguage() : null, number, forms.length);
+        return Values.textArg(forms[index], 'plural');
     }
 
     // -- Array ---------------------------------------------------------

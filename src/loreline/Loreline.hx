@@ -13,6 +13,8 @@ import loreline.Interpreter;
 import loreline.Lens;
 import loreline.Lexer;
 import loreline.Node.NStringLiteral;
+import loreline.Node.NStringPart;
+import loreline.Node.NodeId;
 import loreline.Parser;
 
 using loreline.Utf8;
@@ -165,6 +167,13 @@ class Loreline {
     }
 
     /**
+     * The key under which `loadLocale` keeps the locale of the translations it
+     * loads, for plurals to follow its rules. No translation has it: their keys
+     * all hold a `#`.
+     */
+    public static inline final TRANSLATIONS_LOCALE:String = "$locale";
+
+    /**
      * Loads translations for a specific locale, walking the script's full import tree.
      *
      * For each file involved in the script (root + transitively imported), the
@@ -177,7 +186,9 @@ class Loreline {
      * root itself), then its `#id`. The interpreter looks a line up in its own file,
      * then in the files importing it, up to the root.
      *
-     * The result is the map to pass as `options.translations` to `play()` or `resume()`.
+     * The map also holds the locale, under the key `$locale`, so that plurals follow
+     * the rules of its language. The result is the map to pass as
+     * `options.translations` to `play()` or `resume()`.
      *
      * @param locale The locale code (e.g. "fr")
      * @param script The parsed source script (must have been parsed with a file path
@@ -278,6 +289,9 @@ class Loreline {
         }
 
         final result:Map<String, NStringLiteral> = new Map();
+        // The language of the translations, for plurals to follow its rules
+        result.set(TRANSLATIONS_LOCALE, new NStringLiteral(NodeId.UNDEFINED, new Position(0, 0, 0), DoubleQuotes,
+            [new NStringPart(NodeId.UNDEFINED, new Position(0, 0, 0), Raw(locale))]));
         var pending = relativePaths.length;
         var allProcessed = false;
         // First parse error (own or via the wrapper) encountered during the

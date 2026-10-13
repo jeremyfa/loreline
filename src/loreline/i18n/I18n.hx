@@ -76,11 +76,12 @@ class I18n {
 
     /**
      * The singular or the plural of a template, by a number given to it as
-     * `{n}`: in English the singular is for 1 only, in French for 0 and 1.
+     * `{n}`, with the plural rules of stories (see loreline.PluralRules): in
+     * English the singular is for 1 only, in French for 0 and 1.
      */
     public static function formatCount(n:Float, one:String, many:String, ?params:Dynamic, ?locale:String):String {
         final loc = locale ?? I18n.locale;
-        final singular = loc == 'fr' ? Math.abs(n) < 2 : n == 1;
+        final singular = loreline.PluralRules.formIndex(loc, n, 2) == 0;
         final all:Dynamic = {};
         if (params != null) {
             for (field in Reflect.fields(params)) Reflect.setField(all, field, Reflect.field(params, field));
