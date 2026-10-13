@@ -248,6 +248,260 @@ class Values {
     }
 
     /**
+     * A number as text, the same on every target: up to 15 significant digits,
+     * so that `0.1 + 0.2` reads `0.3`, without trailing zeros (`5.0` reads `5`),
+     * and without exponent between 0.000001 and 10^21. Outside of that range,
+     * the exponent form of JavaScript (`1e+21`, `1e-7`). `NaN`, `Infinity` and
+     * `-Infinity` for the special values, `0` for -0.
+     * The digits are computed with the basic operations of IEEE 754 doubles,
+     * which give the same results on every target, instead of the conversion
+     * of each target, which differ (`0.30000000000000004`, `1e+15`, `1.0E15`).
+     */
+    public static function numberText(n:Float):String {
+        return formatNumber(n, 15, false);
+    }
+
+    /**
+     * A number as a literal of the script, for the printer: in plain decimal
+     * notation, which the lexer reads, with the fewest significant digits (15
+     * to 17) that read back as the same number.
+     */
+    public static function numberLiteral(n:Float):String {
+        if (Math.isNaN(n) || !Math.isFinite(n)) return numberText(n);
+        for (digits in 15...17) {
+            final text = formatNumber(n, digits, true);
+            if (numberOfText(text) == n) return text;
+        }
+        return formatNumber(n, 17, true);
+    }
+
+    /**
+     * A number written with up to `significant` digits, without trailing
+     * zeros. With `plain`, never with an exponent.
+     */
+    static function formatNumber(n:Float, significant:Int, plain:Bool):String {
+
+        if (Math.isNaN(n)) return 'NaN';
+        if (!Math.isFinite(n)) return n > 0 ? 'Infinity' : '-Infinity';
+        if (n == 0) return '0';
+
+        final negative = n < 0;
+        final a = negative ? -n : n;
+
+        // Whole numbers that hold in 15 digits: their digits as they are
+        if (a < 1e15 && Math.ffloor(a) == a) {
+            final text = wholeDigits(a);
+            return negative ? '-' + text : text;
+        }
+
+        // The exponent, estimated with a logarithm (which may differ by one
+        // unit between targets), then settled with exact comparisons
+        final low = POWERS_OF_TEN[significant - 1];
+        final high = POWERS_OF_TEN[significant];
+        var e = Math.floor(Math.log(a) / Math.log(10));
+        var scaled = scaleByPowerOfTen(a, significant - 1 - e);
+        if (scaled >= high) {
+            e++;
+            scaled = scaleByPowerOfTen(a, significant - 1 - e);
+        }
+        else if (scaled < low) {
+            e--;
+            scaled = scaleByPowerOfTen(a, significant - 1 - e);
+        }
+        var m = Math.ffloor(scaled + 0.5);
+        if (m >= high) {
+            m = low;
+            e++;
+        }
+
+        // The digits, without the zeros at the end
+        var digits = wholeDigits(m);
+        var end = digits.length;
+        while (end > 1 && StringTools.fastCodeAt(digits, end - 1) == '0'.code) end--;
+        digits = digits.substr(0, end);
+
+        final text = if (!plain && (e >= 21 || e < -6)) {
+            digits.charAt(0) + (digits.length > 1 ? '.' + digits.substr(1) : '') + 'e' + (e > 0 ? '+' : '-') + wholeDigits(Math.abs(e));
+        }
+        else if (e >= 0) {
+            digits.length <= e + 1 ? digits + zeros(e + 1 - digits.length) : digits.substr(0, e + 1) + '.' + digits.substr(e + 1);
+        }
+        else {
+            '0.' + zeros(-e - 1) + digits;
+        }
+        return negative ? '-' + text : text;
+
+    }
+
+    /** The digits of a whole number, written by hand. */
+    static function wholeDigits(n:Float):String {
+        if (n == 0) return '0';
+        final buf = new StringBuf();
+        final codes:Array<Int> = [];
+        var rest = n;
+        while (rest > 0) {
+            final digit = rest % 10;
+            codes.push('0'.code + Std.int(digit));
+            rest = (rest - digit) / 10;
+        }
+        var i = codes.length - 1;
+        while (i >= 0) {
+            buf.addChar(codes[i]);
+            i--;
+        }
+        return buf.toString();
+    }
+
+    static function zeros(count:Int):String {
+        final buf = new StringBuf();
+        for (_ in 0...count) buf.addChar('0'.code);
+        return buf.toString();
+    }
+
+    /** The exact powers of ten that a double holds. */
+    static final POWERS_OF_TEN:Array<Float> = [
+        1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11,
+        1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21, 1e22
+    ];
+
+    /**
+     * `a * 10^k`, through exact powers of ten only, so that every target does
+     * the same rounded operations.
+     */
+    static function scaleByPowerOfTen(a:Float, k:Int):Float {
+        var result = a;
+        if (k >= 0) {
+            while (k > 22) {
+                result *= 1e22;
+                k -= 22;
+            }
+            return result * POWERS_OF_TEN[k];
+        }
+        k = -k;
+        while (k > 22) {
+            result /= 1e22;
+            k -= 22;
+        }
+        return result / POWERS_OF_TEN[k];
+    }
+
+    /**
+     * A value as text, as interpolation, concatenation, `string()` and
+     * `array_join` write it: a text as it is, numbers with numberText, `true`
+     * and `false`, `null`, arrays and objects with their items (cycles written
+     * `...`), a beat by its name, a character by its `name` field.
+     */
+    public static function textOf(value:Any, interpreter:Null<Interpreter>):String {
+        return textOfImpl(value, interpreter, null);
+    }
+
+    static function textOfImpl(value:Any, interpreter:Null<Interpreter>, seen:Null<Array<Any>>):String {
+
+        if (value == null) return 'null';
+        if (value is String) return (value : String);
+
+        final type = Type.typeof(value);
+        switch type {
+            case TBool: return (value : Bool) ? 'true' : 'false';
+            case TInt | TFloat: return numberText(numberOf(value, type));
+            case _:
+        }
+
+        // Cycle detection for reference types (arrays and fields)
+        if (seen == null) seen = [];
+        for (s in seen) {
+            if (same(s, value)) return '...';
+        }
+        seen.push(value);
+
+        if (Arrays.isArray(value)) {
+            final len = Arrays.arrayLength(value);
+            final buf = new StringBuf();
+            buf.add('[');
+            for (i in 0...len) {
+                if (i > 0) buf.add(', ');
+                buf.add(textOfImpl(Arrays.arrayGet(value, i), interpreter, seen));
+            }
+            buf.add(']');
+            seen.pop();
+            return buf.toString();
+        }
+
+        final asBeat = RuntimeBeatRef.beatOf(value);
+        if (asBeat != null) {
+            seen.pop();
+            return asBeat.name;
+        }
+
+        final asCharacter = RuntimeCharacterRef.characterOf(value);
+        if (asCharacter != null) {
+            final nameValue = Objects.getField(interpreter, asCharacter.fields, 'name');
+            seen.pop();
+            return nameValue != null ? textOfImpl(nameValue, interpreter, null) : asCharacter.name;
+        }
+
+        if (Objects.isFields(value)) {
+            final keys = Objects.getFields(interpreter, value);
+            keys.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
+            final buf = new StringBuf();
+            buf.add('{');
+            for (i in 0...keys.length) {
+                if (i > 0) buf.add(', ');
+                buf.add(keys[i]);
+                buf.add(': ');
+                buf.add(textOfImpl(Objects.getField(interpreter, value, keys[i]), interpreter, seen));
+            }
+            buf.add('}');
+            seen.pop();
+            return buf.toString();
+        }
+
+        // Anything else: a function, a value of the host
+        seen.pop();
+        return Std.string(value);
+
+    }
+
+    /**
+     * A text argument of a built-in function: a text as it is, a number or a
+     * boolean as textOf writes it. Anything else is an error naming the
+     * function, as there is no text that could stand for it.
+     */
+    public static function textArg(value:Any, functionName:String):String {
+        if (value is String) return (value : String);
+        final type = value == null ? TNull : Type.typeof(value);
+        return switch type {
+            case TBool | TInt | TFloat: textOf(value, null);
+            case _: throw new RuntimeError('$functionName() expects a text, got ${describeForError(value)}');
+        }
+    }
+
+    /**
+     * A number argument of a built-in function: a number, or a text written
+     * as a number (see numberOfText). Anything else is an error naming the
+     * function.
+     */
+    public static function numberArg(value:Any, functionName:String):Float {
+        if (value != null) {
+            final type = Type.typeof(value);
+            switch type {
+                case TInt | TFloat: return numberOf(value, type);
+                case _:
+            }
+            if (value is String) {
+                final number = numberOfText(value);
+                if (!Math.isNaN(number)) return number;
+            }
+        }
+        throw new RuntimeError('$functionName() expects a number, got ${describeForError(value)}');
+    }
+
+    /** A value in an error message: a text quoted, anything else by its kind. */
+    static function describeForError(value:Any):String {
+        return (value is String) ? '"' + (value : String) + '"' : typeOf(value);
+    }
+
+    /**
      * The kind of a value as the word `type_of` gives: "number", "text",
      * "bool", "array", "object", "beat", "character", "function" or "null".
      * Integers and decimals are both "number": the difference depends on the

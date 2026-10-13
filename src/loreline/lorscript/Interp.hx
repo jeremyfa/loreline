@@ -87,18 +87,9 @@ class Interp {
     function initOps() {
         var me = this;
         binops = new Map();
-        #if php
-        // On PHP, dynamic string concatenation relies on native casts where
-        // booleans become "1" or "". Stringify operands explicitly instead.
-        binops.set("+",function(e1,e2) {
-            var v1:Dynamic = me.expr(e1);
-            var v2:Dynamic = me.expr(e2);
-            if (v1 is String || v2 is String) return (Std.string(v1):Dynamic) + Std.string(v2);
-            return v1 + v2;
-        });
-        #else
-        binops.set("+",function(e1,e2) return me.expr(e1) + me.expr(e2));
-        #end
+        // A text on either side joins the texts, the other value written as
+        // Values.textOf writes it, the same on every target
+        binops.set("+",function(e1,e2) { var v1:Dynamic = me.expr(e1); var v2:Dynamic = me.expr(e2); return me.plus(v1, v2); });
         binops.set("-",function(e1,e2) return me.expr(e1) - me.expr(e2));
         binops.set("*",function(e1,e2) return me.expr(e1) * me.expr(e2));
         binops.set("/",function(e1,e2) return me.expr(e1) / me.expr(e2));
@@ -122,7 +113,7 @@ class Interp {
         binops.set("=",assign);
         binops.set("...",function(e1,e2) return new IntIterator(me.expr(e1),me.expr(e2)));
         binops.set("is",function(e1,e2) return #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end (me.expr(e1), me.expr(e2)));
-        assignOp("+=",function(v1:Dynamic,v2:Dynamic) return v1 + v2);
+        assignOp("+=",function(v1:Dynamic,v2:Dynamic) return me.plus(v1, v2));
         assignOp("-=",function(v1:Float,v2:Float) return v1 - v2);
         assignOp("*=",function(v1:Float,v2:Float) return v1 * v2);
         assignOp("/=",function(v1:Float,v2:Float) return v1 / v2);
@@ -639,6 +630,13 @@ class Interp {
         return null;
     }
 
+    function plus(v1:Dynamic, v2:Dynamic):Dynamic {
+        if (v1 is String || v2 is String) {
+            return (Values.textOf(v1, interpreter):Dynamic) + Values.textOf(v2, interpreter);
+        }
+        return v1 + v2;
+    }
+
     /**
         The truthiness of an expression (see Values.isTruthy).
     **/
@@ -787,6 +785,11 @@ class Interp {
         // (a C# or Java list), with no length field to reflect on
         if (f == "length" && Arrays.isArray(o)) {
             return Arrays.arrayLength(o);
+        }
+
+        // The length of a text in characters, the same on every target
+        if (f == "length" && o is String) {
+            return Texts.length(o);
         }
 
         if (Objects.isFields(o)) {

@@ -2011,7 +2011,7 @@ class InterpreterContext {
 
     function hostValueToRuntimeDepth(value:Any, depth:Int):Any {
 
-        if (value == null || value is String || value is Int || value is Float || value is Bool) return value;
+        if (value == null || value is String || value is Float || value is Int || value is Bool) return value;
         if (depth >= HOST_VALUE_MAX_DEPTH) return value;
 
         // Already-live references are in runtime form: never walk their
@@ -4833,7 +4833,7 @@ class InterpreterContext {
                 evalNodeBody(currentScope.beat, item, item.body, next);
 
             case Pick:
-                final idx = builtins.random(0, alt.items.length - 1);
+                final idx = builtins.randomInt(0, alt.items.length - 1);
                 final item = alt.items[idx];
                 evalNodeBody(currentScope.beat, item, item.body, next);
 
@@ -4843,7 +4843,7 @@ class InterpreterContext {
                 // Fisher-Yates shuffle
                 var i = indices.length - 1;
                 while (i > 0) {
-                    final j = builtins.random(0, i);
+                    final j = builtins.randomInt(0, i);
                     final tmp = indices[i];
                     indices[i] = indices[j];
                     indices[j] = tmp;
@@ -5374,7 +5374,7 @@ class InterpreterContext {
                 first;
             case 'pick':
                 final eligible = [for (candidate in candidates) if (candidate.eligible) candidate];
-                eligible.length == 0 ? null : eligible[builtins.random(0, eligible.length - 1)];
+                eligible.length == 0 ? null : eligible[builtins.randomInt(0, eligible.length - 1)];
             case _:
                 mostSalientCandidate(candidates);
         }
@@ -5656,7 +5656,7 @@ class InterpreterContext {
      */
     function snapshotOriginalValue(value:Any):Any {
 
-        if (value == null || value is String || value is Int || value is Float || value is Bool) return value;
+        if (value == null || value is String || value is Float || value is Int || value is Bool) return value;
         if (RuntimeCharacterRef.characterOf(value) != null || RuntimeBeatRef.beatOf(value) != null) return value;
 
         if (Arrays.isArray(value)) {
@@ -6611,6 +6611,11 @@ class InterpreterContext {
                     pos
                 );
             }
+            if (e is RuntimeError && (cast e:RuntimeError).pos == null) {
+                // An error of a built-in function about its arguments: its
+                // message as it is, at the position of the call
+                throw new RuntimeError((cast e:RuntimeError).message, pos);
+            }
             throw new RuntimeError(
                 'Error when calling function: ' + e,
                 pos
@@ -6931,7 +6936,7 @@ class InterpreterContext {
                 final target = evaluateExpression(arrAccess.target);
                 final index = evaluateExpression(arrAccess.index);
 
-                if (Arrays.isArray(target) && (index is Int || index is Float)) {
+                if (Arrays.isArray(target) && (index is Float || index is Int)) {
                     final i:Int = Std.int(index);
                     if (i < 0 || i >= Arrays.arrayLength(target)) {
                         throw new RuntimeError('Array index out of bounds: $i', arrAccess.pos);
@@ -6974,11 +6979,13 @@ class InterpreterContext {
                 final un:NUnary = cast expr;
                 final operand:Any = evaluateExpression(un.operand);
                 switch un.op {
-                    case OpMinus if (operand is Int): {
+                    // Type.typeof rather than `is Int`: on PHP and Lua, `is Int`
+                    // fails on a decimal too large for an integer (1e20, INF)
+                    case OpMinus if (Type.typeof(operand) == TInt): {
                         final v:Int = operand;
                         -v;
                     }
-                    case OpMinus if (operand is Float): {
+                    case OpMinus if (Type.typeof(operand) == TFloat): {
                         final v:Float = operand;
                         -v;
                     }
@@ -7104,7 +7111,7 @@ class InterpreterContext {
                 final target = evaluateExpression(arrAccess.target);
                 final index = evaluateExpression(arrAccess.index);
 
-                if (Arrays.isArray(target) && (index is Int || index is Float)) {
+                if (Arrays.isArray(target) && (index is Float || index is Int)) {
                     final i:Int = Std.int(index);
                     ArrayAccess(arrAccess.pos, target, i);
                 }
@@ -7306,7 +7313,7 @@ class InterpreterContext {
                         numberOf(left, leftType) + numberOf(right, rightType);
                     // String + Any (allows string concatenation)
                     case [TClass(String), _] | [_, TClass(String)]:
-                        Std.string(left) + Std.string(right);
+                        valueToString(left) + valueToString(right);
                     case _:
                         throw new RuntimeError('Cannot add ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
                 }
@@ -7396,73 +7403,7 @@ class InterpreterContext {
      * @return The string representation of the value
      */
     function valueToString(value:Any):String {
-        return valueToStringImpl(value, null);
-    }
-
-    function valueToStringImpl(value:Any, seen:Array<Any>):String {
-        if (value == null) return "null";
-
-        #if (cs && !macro)
-        if (value is Float && !(value is Int)) {
-            return cs.Syntax.code('((double){0}).ToString(System.Globalization.CultureInfo.InvariantCulture)', value);
-        }
-        #end
-
-        if (value is String) return (value : String);
-        if (value is Bool || value is Int || value is Float) return Std.string(value);
-
-        // Cycle detection for reference types (arrays and fields)
-        if (seen == null) seen = [];
-        for (s in seen) {
-            if (s == value) return "...";
-        }
-        seen.push(value);
-
-        if (Arrays.isArray(value)) {
-            final len = Arrays.arrayLength(value);
-            final buf = new StringBuf();
-            buf.add("[");
-            for (i in 0...len) {
-                if (i > 0) buf.add(", ");
-                buf.add(valueToStringImpl(Arrays.arrayGet(value, i), seen));
-            }
-            buf.add("]");
-            seen.pop();
-            return buf.toString();
-        }
-
-        final asBeat = RuntimeBeatRef.beatOf(value);
-        if (asBeat != null) {
-            seen.pop();
-            return asBeat.name;
-        }
-
-        final asCharacter = RuntimeCharacterRef.characterOf(value);
-        if (asCharacter != null) {
-            final nameValue = Objects.getField(this, asCharacter.fields, 'name');
-            seen.pop();
-            return nameValue != null ? valueToStringImpl(nameValue, null) : asCharacter.name;
-        }
-
-        if (Objects.isFields(value)) {
-            final keys = Objects.getFields(this, value);
-            keys.sort((a, b) -> a < b ? -1 : (a > b ? 1 : 0));
-            final buf = new StringBuf();
-            buf.add("{");
-            for (i in 0...keys.length) {
-                if (i > 0) buf.add(", ");
-                buf.add(keys[i]);
-                buf.add(": ");
-                buf.add(valueToStringImpl(Objects.getField(this, value, keys[i]), seen));
-            }
-            buf.add("}");
-            seen.pop();
-            return buf.toString();
-        }
-
-        // Fallback for unknown types
-        seen.pop();
-        return Std.string(value);
+        return Values.textOf(value, this);
     }
 
     function printLoreline(node:Node):String {
