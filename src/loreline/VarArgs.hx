@@ -1,7 +1,8 @@
 package loreline;
 
 /**
- * Reflect.makeVarArgs and Reflect.callMethod, with every argument kept on Lua.
+ * Reflect.makeVarArgs and Reflect.callMethod, with every argument kept on Lua,
+ * and any number of them on the JVM.
  *
  * The Lua version of Reflect.makeVarArgs in the Haxe standard library counts
  * the arguments up to the last one that is not nil: `f(1, nil)` gives `[1]`, and
@@ -28,6 +29,14 @@ class VarArgs {
     }
 
     public static function call(o:Dynamic, f:haxe.Constraints.Function, args:Array<Dynamic>):Dynamic {
+        #if (jvm && !macro)
+        // The JVM calls a function with five arguments at most: one made by
+        // make takes them all as one array, given to it directly
+        if (Std.isOfType(f, jvm.Closure.VarArgs)) {
+            final inner:(args:Array<Dynamic>)->Dynamic = cast (cast f : jvm.Closure.VarArgs).func;
+            return inner(args);
+        }
+        #end
         #if lua
         if (o == null && args.length == 0) {
             final fn:()->Dynamic = cast f;
