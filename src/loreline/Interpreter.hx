@@ -6989,6 +6989,15 @@ class InterpreterContext {
                         final v:Float = operand;
                         -v;
                     }
+                    case OpMinus: {
+                        // A text written as a number, or an error
+                        try {
+                            Values.negate(operand);
+                        }
+                        catch (e:RuntimeError) {
+                            throw new RuntimeError(e.message, un.pos);
+                        }
+                    }
                     case OpNot(_):
                         !Values.isTruthy(operand);
                     case _: throw new RuntimeError('Invalid unary operation', un.pos);
@@ -7300,6 +7309,18 @@ class InterpreterContext {
      * @return The result of the operation
      * @throws RuntimeError if the operation is invalid for the given types
      */
+    /**
+     * Values.arithmetic, its errors at the position of the operation.
+     */
+    function arithmetic(op:String, left:Any, right:Any, pos:Position):Any {
+        try {
+            return Values.arithmetic(op, left, right, this);
+        }
+        catch (e:RuntimeError) {
+            throw new RuntimeError(e.message, pos ?? currentScope?.node?.pos ?? script.pos);
+        }
+    }
+
     function performOperation(op:TokenType, left:Dynamic, right:Dynamic, pos:Position):Any {
         // Get precise runtime types
         final leftType = Type.typeof(left);
@@ -7311,11 +7332,9 @@ class InterpreterContext {
                     // Number + Number
                     case [TInt | TFloat, TInt | TFloat]:
                         numberOf(left, leftType) + numberOf(right, rightType);
-                    // String + Any (allows string concatenation)
-                    case [TClass(String), _] | [_, TClass(String)]:
-                        valueToString(left) + valueToString(right);
+                    // A text on either side joins, anything else is an error
                     case _:
-                        throw new RuntimeError('Cannot add ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                        arithmetic('+', left, right, pos);
                 }
 
             case OpMinus | OpMultiply | OpDivide | OpModulo:
@@ -7334,15 +7353,14 @@ class InterpreterContext {
                                 leftNum % rightNum;
                             case _: throw "Unreachable";
                         }
+                    // Texts written as numbers, or an error
                     case _:
-                        final opName = switch op {
-                            case OpMinus: "subtract";
-                            case OpMultiply: "multiply";
-                            case OpDivide: "divide";
-                            case OpModulo: "modulo";
-                            case _: "perform operation on";
-                        }
-                        throw new RuntimeError('Cannot ${opName} ${getTypeName(leftType)} and ${getTypeName(rightType)}', pos ?? currentScope?.node?.pos ?? script.pos);
+                        arithmetic(switch op {
+                            case OpMinus: '-';
+                            case OpMultiply: '*';
+                            case OpDivide: '/';
+                            case _: '%';
+                        }, left, right, pos);
                 }
 
             case OpEquals(_) | OpNotEquals(_):
