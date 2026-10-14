@@ -1,5 +1,6 @@
 package loreline.test;
 
+import loreline.Identifiers;
 import loreline.PluralPipes;
 
 /**
@@ -34,12 +35,27 @@ class PluralPipesTests {
 
     }
 
-    /** The pipes of a text, written as `start-end forms marks` */
+    /**
+     * The pipes of a text, written as `start-end forms marks`, with positions
+     * counted in characters: targets count the units of a text differently
+     */
     static function expect(text:String, expected:Array<String>):Void {
-        final actual = [for (pipe in PluralPipes.scan(text)) pipe.start + '-' + pipe.end + ' ' + pipe.forms.join('/') + ' ' + pipe.marks.join(',')];
+        inline function chars(pos:Int) return characterIndex(text, pos);
+        final actual = [for (pipe in PluralPipes.scan(text)) chars(pipe.start) + '-' + chars(pipe.end) + ' ' + pipe.forms.join('/') + ' ' + [for (mark in pipe.marks) chars(mark)].join(',')];
         if (actual.join(' ; ') != expected.join(' ; ')) {
             throw 'in "$text", expected [${expected.join(' ; ')}], got [${actual.join(' ; ')}]';
         }
+    }
+
+    /** How many characters come before a position given in units */
+    static function characterIndex(text:String, pos:Int):Int {
+        var count = 0;
+        var i = 0;
+        while (i < pos) {
+            i += Identifiers.unitsAt(text, i);
+            count++;
+        }
+        return count;
     }
 
     static function testTwoWords():Void {
