@@ -20,7 +20,8 @@ class PluralPipesTests {
             {name: 'punctuation and quotes around stay out of the forms', fn: () -> testPunctuation()},
             {name: 'an escaped pipe or an empty form is no plural', fn: () -> testNotPlurals()},
             {name: 'several plurals in one text', fn: () -> testSeveral()},
-            {name: 'positions count accented letters once', fn: () -> testAccents()}
+            {name: 'positions count accented letters once', fn: () -> testAccents()},
+            {name: 'characters beyond U+FFFF around and inside a plural', fn: () -> testAstral()}
         ];
 
         for (test in tests) {
@@ -93,6 +94,12 @@ class PluralPipesTests {
 
     static function testAccents():Void {
         expect(' été|étés left', ['1-9 été/étés 4']);
+    }
+
+    static function testAstral():Void {
+        expect(' 🐉coin|coins…', ['1-12 🐉coin/coins 6']);
+        expect(' "😀coin|😀coins", then', ['2-14 😀coin/😀coins 7']);
+        expect(' \\😀 cat|cats', ['4-12 cat/cats 7']);
     }
 
 }

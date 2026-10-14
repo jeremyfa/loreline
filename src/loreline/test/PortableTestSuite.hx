@@ -76,6 +76,7 @@ class PortableTestSuite {
         PrepareCachesTests.run(onPass, onFail);
         BuiltinArgumentsTests.run(onPass, onFail);
         IdentifiersTests.run(onPass, onFail);
+        CharsTests.run(onPass, onFail);
         ImportsTests.run(onPass, onFail);
         ExternalFunctionsTests.run(onPass, onFail);
         PublicBeatTests.run(onPass, onFail);

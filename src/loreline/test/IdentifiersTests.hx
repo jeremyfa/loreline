@@ -109,10 +109,6 @@ class IdentifiersTests {
             final name = text.uSubstr(0, end);
             if (name != item[1]) errors.push('"$text": expected "${item[1]}", got "$name"');
         }
-        // Stepping back over a whole character
-        final text = 'a𠀀';
-        final before = Identifiers.startBefore(text, text.uLength());
-        if (Identifiers.codeAt(text, before) != 0x20000) errors.push('startBefore: expected the start of 𠀀');
         if (errors.length > 0) throw errors.join('\n');
     }
 

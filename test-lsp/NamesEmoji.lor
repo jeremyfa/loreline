@@ -1,0 +1,38 @@
+state
+  hp💖: 7
+  café: 1
+
+character 🐉
+  name: Smaug
+
+beat Start
+  🐉: Hello.
+  -> Wow🎉
+
+beat Wow🎉
+  You have $hp💖 left and $café.
+  x = hp
+
+/*
+<test>
+- request: definition
+  at: "-> |Wow🎉"
+  target: beat Wow🎉
+- request: definition
+  at: "$|hp💖 left"
+  target: "hp💖: 7"
+- request: hover
+  at: "$|hp💖 left"
+  contains:
+    - "**hp💖**"
+- request: hover
+  at: "-> Wow🎉|"
+  contains:
+    - "**Wow🎉** (beat)"
+- request: completion
+  at: "x = hp|"
+  includes: [hp💖]
+- request: symbols
+  includes: [hp💖, café, 🐉, Wow🎉]
+</test>
+*/
