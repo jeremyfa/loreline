@@ -119,18 +119,18 @@ class PluralRules {
 
 }
 
-/** The languages that share a plural rule */
-private enum PluralFamily {
-    NoPlural;
-    OneApart;
-    ZeroAndOne;
-    Russian;
-    Polish;
-    Czech;
-    Lithuanian;
-    Latvian;
-    Romanian;
-    Slovenian;
-    Irish;
-    Arabic;
+/** The languages that share a plural rule (numbers, which every target handles alike) */
+private enum abstract PluralFamily(Int) {
+    var NoPlural = 0;
+    var OneApart = 1;
+    var ZeroAndOne = 2;
+    var Russian = 3;
+    var Polish = 4;
+    var Czech = 5;
+    var Lithuanian = 6;
+    var Latvian = 7;
+    var Romanian = 8;
+    var Slovenian = 9;
+    var Irish = 10;
+    var Arabic = 11;
 }
