@@ -1,6 +1,7 @@
 // Arithmetic, the same in a beat, in a function and on every target. `+` joins
 // texts as soon as one side is a text, and adds two numbers. `-`, `*`, `/` and
-// `%` take numbers, or texts written as numbers. float() turns a text into a
+// `%` take numbers, or texts written as numbers, and so do `++` and `--`, whose
+// value is a number too. float() turns a text into a
 // number for an addition. Wrong operands are errors, tested in ValuesTests.
 
 state
@@ -28,6 +29,15 @@ function assign()
   i++
   return [n, m, d, r, t, i].join(" ")
 
+function increments()
+  var j = "3"
+  var old = j++
+  var k = "3"
+  var pre = ++k
+  var n = "3"
+  var down = n--
+  return old + " " + type_of(old) + " " + j + " " + pre + " " + type_of(pre) + " " + down + " " + n
+
 beat Start
   Numeric texts give ${3 * "4"} ${10 - "4"} ${8 / "2"} ${7 % "4"} ${-"4"} ${"2.5" * 2} ${" 3 " - 1} ${"1e3" / 10}.
 
@@ -51,6 +61,8 @@ beat Start
 
   Function assign gives ${assign()}.
 
+  Increments give ${increments()}.
+
 /*
 <test>
 - expected: |
@@ -71,5 +83,7 @@ beat Start
     ~ Function plus gives 34 43 ab 2.5 7 4.5 0.10.2.
 
     ~ Function assign gives 6 6 3 3 a1 5.
+
+    ~ Increments give 3 number 4 4 number 3 2.
 </test>
 */
