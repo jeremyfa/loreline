@@ -632,8 +632,22 @@ number argument takes a number or a text written as a number, a text argument
 takes a text, a number or a boolean. Anything else is a `RuntimeError` naming
 the function and what it got (`floor() expects a number, got null`), at the
 position of the call. The array and map functions treat a value that is not an
-array or an object as an empty one, and `plural()` picks the plural form for
-any value other than one.
+array or an object as an empty one, and `plural()` picks the second form for
+any value that is not a number nor a text written as one.
+
+**Plurals** (`Functions.plural`, `PluralRules`): `plural(count, singular,
+plural_form, ...)` takes up to six forms, and a pipe (`coin|coins`,
+`plik|pliki|plików`, `(cold drink|cold drinks)`) is a call of it with the last
+expression before it as the count (`PluralPipes`). Punctuation after the last
+form and quotes before the first one are not part of the forms. The form
+follows the plural rules of the language of the line being evaluated: the
+locale of the translations (`$locale` in the map `Loreline.loadLocale`
+returns) for a translated line, else the `language` of the played script's
+metadata (`evaluateLine`). Out of a line, it is the locale of the translations,
+else the script's language. With no language, only one takes the first form;
+with a language, the rules apply to the count without its sign, a form past the
+last one given is the last one, and a fraction takes the last form, except in
+languages that count zero and one together, where below two takes the first.
 
 ### `and` and `or`
 
