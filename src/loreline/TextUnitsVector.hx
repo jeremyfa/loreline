@@ -1,20 +1,22 @@
 package loreline;
 
 import haxe.ds.Vector;
-import loreline.Utf8.Utf8Buf;
+import loreline.TextUnits.TextUnitsBuf;
 
 /**
- * Mirrors the loreline.Utf8 extension API but over a Vector<Int> of code
- * points, so a lexer/scanner whose source buffer is a Vector<Int> can index
- * characters in O(1) on every target. Enabled via -D loreline_utf8_vector.
+ * Mirrors `loreline.TextUnits` over the vector of code points that
+ * `TextUnits.toCodes` builds, so the lexer and the scanners on Neko and PHP
+ * index characters in O(1). Only compiled there: on every other target, the
+ * native units are the ones scanned.
  *
- * Use with: using loreline.Utf8Vector;
+ * Use with: using loreline.TextUnitsVector;
  *
- * Method names, signatures and return types match loreline.Utf8, so call
- * sites (input.uCharCodeAt(pos), input.uSubstr(...), ...) resolve here or on
- * loreline.Utf8 purely by the receiver type, with no other change.
+ * Method names, signatures and return types match `loreline.TextUnits`, so
+ * call sites (`input.uCharCodeAt(pos)`, `input.uSubstr(...)`) resolve here or
+ * there by the receiver type, with no other change.
  */
-class Utf8Vector {
+#if (neko || php)
+class TextUnitsVector {
 
     public static inline function uLength(v:Vector<Int>):Int {
         return v.length;
@@ -37,7 +39,7 @@ class Utf8Vector {
     }
 
     public static function uIndexOf(v:Vector<Int>, substr:String, ?startIndex:Int):Int {
-        final needle = Utf8.toCodes(substr);
+        final needle = TextUnits.toCodes(substr);
         final nlen = needle.length;
         if (nlen == 0) return startIndex != null ? startIndex : 0;
         var i = (startIndex != null && startIndex > 0) ? startIndex : 0;
@@ -54,7 +56,7 @@ class Utf8Vector {
     static function slice(v:Vector<Int>, start:Int, end:Int):String {
         if (start < 0) start = 0;
         if (end > v.length) end = v.length;
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         var i = start;
         while (i < end) {
             buf.addChar(v[i]);
@@ -64,3 +66,4 @@ class Utf8Vector {
     }
 
 }
+#end

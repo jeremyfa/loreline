@@ -4,7 +4,7 @@ import haxe.io.Path;
 import loreline.Lexer;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 typedef ImportsFileHandler = (path:String, callback:(data:String)->Void)->Void;
 

@@ -17,7 +17,7 @@ import loreline.Node.NStringPart;
 import loreline.Node.NodeId;
 import loreline.Parser;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * The main public API for Loreline runtime.

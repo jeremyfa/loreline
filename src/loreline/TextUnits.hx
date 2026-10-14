@@ -5,15 +5,26 @@ import neko.Utf8;
 #end
 import haxe.ds.Vector;
 
-/**
- * UTF-8 aware string operations that can be used as extension methods.
- * Use with: using loreline.Utf8;
- */
-class Utf8 {
+#if loreline_utf8_vector
+#error "loreline_utf8_vector is gone: Neko and PHP always scan a vector of code points"
+#end
 
-    /**
-     * UTF-8 aware string length
-     */
+/**
+ * Text operations indexed in the units of the target, those of every
+ * `Position` (line, column, offset, length): UTF-16 units on JS, C#, Java and
+ * C++, UTF-8 bytes on Lua, characters (code points) on Python, PHP, GDScript
+ * and Neko (through `neko.Utf8`, although its strings hold bytes). The `u`
+ * prefix means "units". Use with: using loreline.TextUnits;
+ *
+ * `uCharCodeAt` gives one unit. That is enough to compare with ASCII: a
+ * trailing unit of a longer character (a low surrogate, a UTF-8 continuation
+ * byte) is never below 0x80, so a scan that only compares with ASCII may step
+ * one unit at a time. To read a character beyond ASCII, or to classify one
+ * (`Identifiers.isStart`, `isPart`...), read it whole with `loreline.Chars`.
+ */
+class TextUnits {
+
+    /** The length of a text, in units */
     public static inline function uLength(str:String):Int {
         #if neko
         return neko.Utf8.length(str);
@@ -22,9 +33,7 @@ class Utf8 {
         #end
     }
 
-    /**
-     * UTF-8 aware substring extraction
-     */
+    /** Part of a text, from a unit position, `len` units long */
     public static inline function uSubstr(str:String, pos:Int, ?len:Int):String {
         #if neko
         return neko.Utf8.sub(str, pos, len != null ? len : (neko.Utf8.length(str) - pos));
@@ -33,9 +42,7 @@ class Utf8 {
         #end
     }
 
-    /**
-     * UTF-8 aware substring with end position
-     */
+    /** Part of a text, between two unit positions */
     public static #if !neko inline #end function uSubstring(str:String, startIndex:Int, ?endIndex:Int):String {
         #if neko
         final len = neko.Utf8.length(str);
@@ -47,7 +54,8 @@ class Utf8 {
     }
 
     /**
-     * UTF-8 aware character code at position
+     * The unit at a position, or -1 past the end. On UTF-16 and UTF-8 targets
+     * it can be half a character: `Chars.codeAt` reads a whole one.
      */
     public static #if (!neko && !python) inline #end function uCharCodeAt(str:String, pos:Int):Int {
         #if neko
@@ -59,9 +67,7 @@ class Utf8 {
         #end
     }
 
-    /**
-     * UTF-8 aware indexOf
-     */
+    /** Where a text first appears in another, in units, or -1 */
     public static #if !neko inline #end function uIndexOf(str:String, substr:String, ?startIndex:Int):Int {
         #if neko
         if (startIndex == null) startIndex = 0;
@@ -80,9 +86,7 @@ class Utf8 {
         #end
     }
 
-    /**
-     * UTF-8 aware lastIndexOf
-     */
+    /** Where a text last appears in another, in units, or -1 */
     public static #if !neko inline #end function uLastIndexOf(str:String, substr:String, ?startIndex:Int):Int {
         #if neko
         final strLen = neko.Utf8.length(str);
@@ -102,21 +106,7 @@ class Utf8 {
         #end
     }
 
-    /**
-     * UTF-8 aware string to char array
-     */
-    public static #if !neko inline #end function uToChars(str:String):Array<String> {
-        #if neko
-        final len = neko.Utf8.length(str);
-        return [for (i in 0...len) neko.Utf8.sub(str, i, 1)];
-        #else
-        return str.split("");
-        #end
-    }
-
-    /**
-     * UTF-8 aware charAt
-     */
+    /** The unit at a position as a text, empty past the end */
     public static inline function uCharAt(str:String, pos:Int):String {
         #if neko
         if (pos < 0 || pos >= neko.Utf8.length(str)) return "";
@@ -127,11 +117,11 @@ class Utf8 {
     }
 
     /**
-     * Decode a string into a fixed-size Vector of code points in a single
-     * forward pass (O(n) on every target). This is the linear decode that
-     * lets scanners index characters in O(1); a naive uCharCodeAt/uToChars
-     * loop would itself be O(n^2) on neko/php.
+     * The code points of a text, one per slot, in a single pass. Only for
+     * Neko and PHP, whose native units are code points but whose indexing is
+     * O(n): the lexer and the scanners there index this vector in O(1).
      */
+    #if (neko || php)
     public static function toCodes(str:String):Vector<Int> {
         #if neko
         final len = neko.Utf8.length(str);
@@ -139,7 +129,7 @@ class Utf8 {
         var i = 0;
         neko.Utf8.iter(str, function(c:Int) { v[i++] = c; });
         return v;
-        #elseif php
+        #else
         final chars:php.NativeIndexedArray<String> = php.Syntax.code("mb_str_split({0})", str);
         final len = php.Global.count(chars);
         final v = new Vector<Int>(len);
@@ -147,20 +137,14 @@ class Utf8 {
             v[i] = chars[i].charCodeAt(0);
         }
         return v;
-        #else
-        final len = str.length;
-        final v = new Vector<Int>(len);
-        for (i in 0...len) {
-            v[i] = StringTools.fastCodeAt(str, i);
-        }
-        return v;
         #end
     }
+    #end
 
 }
 
 #if neko
-class Utf8Buf {
+class TextUnitsBuf {
     public var length(get, never):Int;
     inline function get_length():Int {
         return codes.length;
@@ -197,7 +181,7 @@ class Utf8Buf {
  * them alone a text with String.fromCharCode, which refuses surrogates and
  * gives U+FFFD instead (String.cpp, IsUtf16Surrogate).
  */
-class Utf8Buf {
+class TextUnitsBuf {
     public var length(get, never):Int;
     inline function get_length():Int {
         return buf.length + (pendingHigh != -1 ? 1 : 0);
@@ -240,5 +224,5 @@ class Utf8Buf {
     }
 }
 #else
-typedef Utf8Buf = StringBuf;
+typedef TextUnitsBuf = StringBuf;
 #end

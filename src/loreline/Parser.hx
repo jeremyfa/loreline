@@ -8,7 +8,7 @@ import loreline.Lexer;
 import loreline.Node;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Represents a parsing error with position information.

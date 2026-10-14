@@ -9,7 +9,7 @@ import loreline.lsp.Protocol;
 import loreline.lsp.Server;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Language server tests written as `.lor` files: a script followed by a `<test>`

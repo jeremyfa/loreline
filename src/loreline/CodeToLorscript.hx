@@ -3,8 +3,8 @@ package loreline;
 import loreline.i18n.I18n;
 
 using StringTools;
-using loreline.Utf8;
-using loreline.Utf8Vector;
+using loreline.TextUnits;
+using loreline.TextUnitsVector;
 
 enum abstract CodeToLorscriptStackType(Int) {
 
@@ -62,7 +62,7 @@ class CodeToLorscript {
     /**
      * The input Loreline script code
      */
-    #if loreline_utf8_vector
+    #if (neko || php)
     var input:haxe.ds.Vector<Int> = null;
     #else
     var input:String = null;
@@ -74,12 +74,12 @@ class CodeToLorscript {
     /**
      * Buffer for the processed output
      */
-    public var output(default, null):Utf8Buf = null;
+    public var output(default, null):TextUnitsBuf = null;
 
     /**
      * Buffer for tracking the current line
      */
-    var lineOutput:Utf8Buf = null;
+    var lineOutput:TextUnitsBuf = null;
 
     /**
      * Length of the input string
@@ -167,10 +167,10 @@ class CodeToLorscript {
         input = input.rtrim() + "\n//<END>"; // Small hack to make sure last dedent is processed
 
         this.inputText = input;
-        this.input = #if loreline_utf8_vector Utf8.toCodes(input) #else input #end;
+        this.input = #if (neko || php) TextUnits.toCodes(input) #else input #end;
         this.index = 0;
-        this.output = new Utf8Buf();
-        this.lineOutput = new Utf8Buf();
+        this.output = new TextUnitsBuf();
+        this.lineOutput = new TextUnitsBuf();
         this.length = input.uLength();
         this.indent = 0;
         this.inComment = false;
@@ -510,14 +510,14 @@ class CodeToLorscript {
      * bytes read as one (see Identifiers), or -1 past the end.
      */
     inline function codeAt(pos:Int):Int {
-        return Identifiers.codeAt(input, pos);
+        return Chars.codeAt(input, pos);
     }
 
     /**
      * How many units the character at a position of the input takes.
      */
     inline function unitsAt(pos:Int):Int {
-        return Identifiers.unitsAt(input, pos);
+        return Chars.unitsAt(input, pos);
     }
 
     /**
@@ -539,7 +539,7 @@ class CodeToLorscript {
      * be part of a name.
      */
     inline function isNamePartBefore(pos:Int):Bool {
-        return pos > 0 && Identifiers.isPart(codeAt(Identifiers.startBefore(input, pos)));
+        return pos > 0 && Identifiers.isPart(codeAt(Chars.startBefore(input, pos)));
     }
 
     /**
@@ -547,7 +547,7 @@ class CodeToLorscript {
      * part of a name.
      */
     inline function isNamePartBeforeIn(text:String, pos:Int):Bool {
-        return pos > 0 && Identifiers.isPart(Identifiers.codeAt(text, Identifiers.startBefore(text, pos)));
+        return pos > 0 && Identifiers.isPart(Chars.codeAt(text, Chars.startBefore(text, pos)));
     }
 
     /**
@@ -1256,7 +1256,7 @@ class CodeToLorscript {
             inControl = false;
 
             final line = lineOutput.toString();
-            lineOutput = new Utf8Buf();
+            lineOutput = new TextUnitsBuf();
 
             // A closing brace that the next line continues: `}` then `else`, `catch`,
             // or the `while` of a `do`. A semicolon there would end the statement.

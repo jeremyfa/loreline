@@ -1,9 +1,9 @@
 package loreline.test;
 
-import loreline.Identifiers;
+import loreline.Chars;
 import loreline.Texts;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Tests of whole characters read from a text in the units of the target: a
@@ -43,9 +43,9 @@ class CharsTests {
     /** A character, its code point, and the units it takes on this target */
     static final CASES:Array<{text:String, code:Int, units:Int}> = [
         {text: 'a', code: 0x61, units: 1},
-        {text: 'é', code: 0xE9, units: Identifiers.UNITS == 4 ? 2 : 1},
-        {text: '国', code: 0x56FD, units: Identifiers.UNITS == 4 ? 3 : 1},
-        {text: '😀', code: 0x1F600, units: Identifiers.UNITS}
+        {text: 'é', code: 0xE9, units: Chars.UNITS == 4 ? 2 : 1},
+        {text: '国', code: 0x56FD, units: Chars.UNITS == 4 ? 3 : 1},
+        {text: '😀', code: 0x1F600, units: Chars.UNITS}
     ];
 
     static final MIXED = 'aé国😀';
@@ -53,33 +53,33 @@ class CharsTests {
     static function testCodeAt():Void {
         for (item in CASES) {
             if (item.text.uLength() != item.units) throw '"${item.text}" takes ${item.text.uLength()} units, expected ${item.units}';
-            final code = Identifiers.codeAt(item.text, 0);
+            final code = Chars.codeAt(item.text, 0);
             if (code != item.code) throw '"${item.text}": expected ${StringTools.hex(item.code)}, got ${StringTools.hex(code)}';
-            final units = Identifiers.unitsAt(item.text, 0);
+            final units = Chars.unitsAt(item.text, 0);
             if (units != item.units) throw '"${item.text}": expected ${item.units} units, got $units';
         }
         // Each character of a mixed text, at the unit where it starts
         var pos = 0;
         for (item in CASES) {
-            final code = Identifiers.codeAt(MIXED, pos);
+            final code = Chars.codeAt(MIXED, pos);
             if (code != item.code) throw 'at $pos: expected ${StringTools.hex(item.code)}, got ${StringTools.hex(code)}';
-            pos += Identifiers.unitsAt(MIXED, pos);
+            pos += Chars.unitsAt(MIXED, pos);
         }
         if (pos != MIXED.uLength()) throw 'the characters end at $pos, the text at ${MIXED.uLength()}';
     }
 
     static function testPastEnd():Void {
         final len = MIXED.uLength();
-        if (Identifiers.codeAt(MIXED, len) != -1) throw 'codeAt past the end should give -1';
-        if (Identifiers.unitsAt(MIXED, len) != 0) throw 'unitsAt past the end should give 0';
-        if (Identifiers.startBefore(MIXED, 0) != -1) throw 'startBefore at the start should give -1';
+        if (Chars.codeAt(MIXED, len) != -1) throw 'codeAt past the end should give -1';
+        if (Chars.unitsAt(MIXED, len) != 0) throw 'unitsAt past the end should give 0';
+        if (Chars.startBefore(MIXED, 0) != -1) throw 'startBefore at the start should give -1';
     }
 
     static function testCount():Void {
-        if (Identifiers.characterCount(MIXED) != 4) throw 'expected 4 characters, got ${Identifiers.characterCount(MIXED)}';
-        if (Identifiers.characterCount('') != 0) throw 'an empty text has no character';
+        if (Chars.count(MIXED) != 4) throw 'expected 4 characters, got ${Chars.count(MIXED)}';
+        if (Chars.count('') != 0) throw 'an empty text has no character';
         // The string builtins count the same characters by another route
-        if (Identifiers.characterCount(MIXED) != Texts.length(MIXED)) throw 'characterCount and Texts.length disagree';
+        if (Chars.count(MIXED) != Texts.length(MIXED)) throw 'Chars.count and Texts.length disagree';
     }
 
     static function testStartBefore():Void {
@@ -89,17 +89,17 @@ class CharsTests {
         var i = CASES.length;
         while (i > 0) {
             i--;
-            pos = Identifiers.startBefore(MIXED, pos);
-            final code = Identifiers.codeAt(MIXED, pos);
+            pos = Chars.startBefore(MIXED, pos);
+            final code = Chars.codeAt(MIXED, pos);
             if (code != CASES[i].code) throw 'stepping back to $pos: expected ${StringTools.hex(CASES[i].code)}, got ${StringTools.hex(code)}';
         }
         if (pos != 0) throw 'walking back should end at 0, got $pos';
-        if (Identifiers.startBefore(MIXED, len) != len - Identifiers.UNITS) throw 'the last character starts ${Identifiers.UNITS} units before the end';
+        if (Chars.startBefore(MIXED, len) != len - Chars.UNITS) throw 'the last character starts ${Chars.UNITS} units before the end';
     }
 
     static function testTextOf():Void {
         for (item in CASES) {
-            final text = Identifiers.textOf(item.code);
+            final text = Chars.textOf(item.code);
             if (text != item.text) throw 'textOf(${StringTools.hex(item.code)}): expected "${item.text}", got "$text"';
             if (text.uLength() != item.units) throw 'textOf(${StringTools.hex(item.code)}) takes ${text.uLength()} units, expected ${item.units}';
         }
@@ -107,14 +107,14 @@ class CharsTests {
 
     #if (neko || php)
     static function testVector():Void {
-        final codes = loreline.Utf8.toCodes(MIXED);
+        final codes = loreline.TextUnits.toCodes(MIXED);
         if (codes.length != 4) throw 'expected 4 slots, got ${codes.length}';
         for (i in 0...CASES.length) {
-            if (Identifiers.codeAt(codes, i) != CASES[i].code) throw 'slot $i: expected ${StringTools.hex(CASES[i].code)}';
-            if (Identifiers.unitsAt(codes, i) != 1) throw 'slot $i should take one unit';
+            if (Chars.codeAt(codes, i) != CASES[i].code) throw 'slot $i: expected ${StringTools.hex(CASES[i].code)}';
+            if (Chars.unitsAt(codes, i) != 1) throw 'slot $i should take one unit';
         }
-        if (Identifiers.codeAt(codes, 4) != -1) throw 'past the end should give -1';
-        if (Identifiers.startBefore(codes, 4) != 3) throw 'a step back is one slot';
+        if (Chars.codeAt(codes, 4) != -1) throw 'past the end should give -1';
+        if (Chars.startBefore(codes, 4) != 3) throw 'a step back is one slot';
     }
     #end
 

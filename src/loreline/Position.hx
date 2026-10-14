@@ -1,6 +1,6 @@
 package loreline;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Represents a position within source code, tracking line number, column, and offset information.

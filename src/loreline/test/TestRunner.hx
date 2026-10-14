@@ -8,11 +8,11 @@ import loreline.Interpreter;
 import loreline.Loreline;
 import loreline.SaveData;
 import loreline.Script;
-import loreline.Utf8;
+import loreline.TextUnits;
 import loreline.test.TestCase;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * A test runner for Loreline.
@@ -59,7 +59,7 @@ class TestRunner {
         // Tag offsets count characters, while the text is read in the units of
         // the target (UTF-16 units, UTF-8 bytes or characters)
         final units = text.uLength();
-        final textBuf = new Utf8Buf();
+        final textBuf = new TextUnitsBuf();
         var pos = 0;
         var i = 0;
         while (pos < units) {
@@ -80,7 +80,7 @@ class TestRunner {
             }
 
             final c = text.uCharCodeAt(pos);
-            final count = Identifiers.unitsAt(text, pos);
+            final count = Chars.unitsAt(text, pos);
             if (multiline && c == "\n".code) {
                 textBuf.addChar("\n".code);
                 textBuf.addChar(" ".code);
@@ -137,7 +137,7 @@ class TestRunner {
 
     function runInterpreterTestCase(testCase:InterpreterTestCase, done:(result:TestResult)->Void) {
 
-        final output = new Utf8Buf();
+        final output = new TextUnitsBuf();
         final choices = testCase.choices != null ? [].concat(testCase.choices) : null;
         var choiceCount:Int = 0;
         var dialogueCount:Int = 0;

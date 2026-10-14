@@ -2,7 +2,7 @@ package loreline;
 
 import loreline.macros.IdentifierTables;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Which characters make a name (of a character, beat, state field, function,
@@ -13,57 +13,11 @@ using loreline.Utf8;
  * variation selectors, skin tones). Letters follow Unicode's identifier rule
  * (XID_Start, XID_Continue), as in Python, Rust or JavaScript.
  *
- * Texts reach the lexers in different units depending on the target: characters
- * (Neko through neko.Utf8, Python, PHP, GDScript, or the vector of
- * `loreline_utf8_vector`), UTF-16 units (JS, C#, Java, C++) or UTF-8 bytes (Lua).
- * A character above U+FFFF takes two UTF-16 units, and anything outside ASCII
- * takes two to four bytes, so the helpers below read the whole character at a
- * position before testing it.
+ * The classifiers take a whole character (a code point): read it from a text
+ * with `Chars.codeAt`, never with `uCharCodeAt`, which gives one unit of the
+ * target (see loreline.TextUnits and loreline.Chars).
  */
 class Identifiers {
-
-    /**
-     * An emoji, in a variable rather than a constant: the compiler would compute
-     * the length of a constant with its own encoding, not with the one of the target.
-     */
-    static var emoji:String = "\u{1F600}";
-
-    /**
-     * How many units `uCharCodeAt` reads for an emoji: 1 for characters, 2 for
-     * UTF-16 units, 4 for UTF-8 bytes. On Neko, `uCharCodeAt` reads characters
-     * through neko.Utf8 although strings hold bytes.
-     */
-    public static final UNITS:Int = #if neko 1 #else emoji.length #end;
-
-    /**
-     * How many characters a text holds, whatever the units of the target: an
-     * emoji or a Chinese character is one character.
-     */
-    public static function characterCount(text:String):Int {
-        final length = text.uLength();
-        if (UNITS == 1) return length;
-        var count = 0;
-        var pos = 0;
-        while (pos < length) {
-            pos += stringUnitsAt(text, pos);
-            count++;
-        }
-        return count;
-    }
-
-    /**
-     * Whether a unit read from a text with `uCharCodeAt` continues the
-     * character started by the units before it: the second half of a UTF-16
-     * surrogate pair, or a UTF-8 continuation byte. Never with
-     * `loreline_utf8_vector`, whose units are whole characters.
-     */
-    public static inline function isTrailingUnit(c:Int):Bool {
-        #if loreline_utf8_vector
-        return false;
-        #else
-        return (UNITS == 2 && c >= 0xDC00 && c <= 0xDFFF) || (UNITS == 4 && c >= 0x80 && c <= 0xBF);
-        #end
-    }
 
     /** Whether a character can start a name */
     public static function isStart(c:Int):Bool {
@@ -140,7 +94,7 @@ class Identifiers {
      */
     public static function unexpectedCharacterMessage(c:Int):loreline.i18n.I18nText {
         final twin = asciiTwinOf(c);
-        final text = textOf(c);
+        final text = Chars.textOf(c);
         if (twin != -1) {
             return loreline.i18n.I18n.text('"{text}" looks like "{twin}" but isn\'t', {text: text, twin: String.fromCharCode(twin)});
         }
@@ -148,159 +102,23 @@ class Identifiers {
     }
 
     /**
-     * A character as a text, on every target: added unit by unit, as UTF-8 bytes
-     * or UTF-16 surrogates when the target's texts hold those.
-     */
-    public static function textOf(c:Int):String {
-        final buf = new loreline.Utf8.Utf8Buf();
-        if (UNITS == 4 && c >= 0x80) {
-            if (c < 0x800) {
-                buf.addChar(0xC0 | (c >> 6));
-            }
-            else if (c < 0x10000) {
-                buf.addChar(0xE0 | (c >> 12));
-                buf.addChar(0x80 | ((c >> 6) & 0x3F));
-            }
-            else {
-                buf.addChar(0xF0 | (c >> 18));
-                buf.addChar(0x80 | ((c >> 12) & 0x3F));
-                buf.addChar(0x80 | ((c >> 6) & 0x3F));
-            }
-            buf.addChar(0x80 | (c & 0x3F));
-        }
-        else if (UNITS == 2 && c >= 0x10000) {
-            buf.addChar(0xD800 + ((c - 0x10000) >> 10));
-            buf.addChar(0xDC00 + ((c - 0x10000) & 0x3FF));
-        }
-        else {
-            buf.addChar(c);
-        }
-        return buf.toString();
-    }
-
-    /**
-     * The whole character at the given position of a text read with
-     * `uCharCodeAt`, or -1 past its end.
-     */
-    public static overload extern inline function codeAt(text:String, pos:Int):Int {
-        return stringCodeAt(text, pos);
-    }
-
-    /**
-     * How many units the character at the given position takes (0 past the end).
-     */
-    public static overload extern inline function unitsAt(text:String, pos:Int):Int {
-        return stringUnitsAt(text, pos);
-    }
-
-    /**
      * Where the name parts that start at the given position end (the position
      * itself if there is none).
      */
     public static overload extern inline function nameEnd(text:String, pos:Int):Int {
-        while (isPart(stringCodeAt(text, pos))) pos += stringUnitsAt(text, pos);
+        while (isPart(Chars.codeAt(text, pos))) pos += Chars.unitsAt(text, pos);
         return pos;
     }
 
-    /**
-     * Where the character that ends right before the given position starts.
-     */
-    public static overload extern inline function startBefore(text:String, pos:Int):Int {
-        return stringStartBefore(text, pos);
-    }
-
-    #if loreline_utf8_vector
-
-    public static overload extern inline function codeAt(codes:haxe.ds.Vector<Int>, pos:Int):Int {
-        return pos >= 0 && pos < codes.length ? codes[pos] : -1;
-    }
-
-    public static overload extern inline function unitsAt(codes:haxe.ds.Vector<Int>, pos:Int):Int {
-        return pos >= 0 && pos < codes.length ? 1 : 0;
-    }
+    #if (neko || php)
 
     public static overload extern inline function nameEnd(codes:haxe.ds.Vector<Int>, pos:Int):Int {
         while (pos >= 0 && pos < codes.length && isPart(codes[pos])) pos++;
         return pos;
     }
 
-    public static overload extern inline function startBefore(codes:haxe.ds.Vector<Int>, pos:Int):Int {
-        return pos - 1;
-    }
-
     #end
 
-    static function stringCodeAt(text:String, pos:Int):Int {
-        final c = text.uCharCodeAt(pos);
-        if (c < 0x80) return c;
-        if (UNITS == 2) {
-            if (c >= 0xD800 && c <= 0xDBFF) {
-                final next = text.uCharCodeAt(pos + 1);
-                if (next >= 0xDC00 && next <= 0xDFFF) {
-                    return 0x10000 + ((c - 0xD800) << 10) + (next - 0xDC00);
-                }
-            }
-            return c;
-        }
-        if (UNITS == 4) {
-            final count = utf8Length(c);
-            if (count == 1) return 0xFFFD;
-            var code = c & (count == 2 ? 0x1F : count == 3 ? 0x0F : 0x07);
-            for (i in 1...count) {
-                final b = text.uCharCodeAt(pos + i);
-                if (b < 0x80 || b > 0xBF) return 0xFFFD;
-                code = (code << 6) | (b & 0x3F);
-            }
-            return code;
-        }
-        return c;
-    }
-
-    static function stringUnitsAt(text:String, pos:Int):Int {
-        final c = text.uCharCodeAt(pos);
-        if (c < 0) return 0;
-        if (c < 0x80 || UNITS == 1) return 1;
-        if (UNITS == 2) {
-            if (c >= 0xD800 && c <= 0xDBFF) {
-                final next = text.uCharCodeAt(pos + 1);
-                if (next >= 0xDC00 && next <= 0xDFFF) return 2;
-            }
-            return 1;
-        }
-        // UTF-8: as many bytes as the lead byte says, if they are all there
-        final count = utf8Length(c);
-        for (i in 1...count) {
-            final b = text.uCharCodeAt(pos + i);
-            if (b < 0x80 || b > 0xBF) return i;
-        }
-        return count;
-    }
-
-    static function stringStartBefore(text:String, pos:Int):Int {
-        if (pos <= 0) return pos - 1;
-        if (UNITS == 1) return pos - 1;
-        final c = text.uCharCodeAt(pos - 1);
-        if (UNITS == 2) {
-            if (c >= 0xDC00 && c <= 0xDFFF && pos >= 2) {
-                final prev = text.uCharCodeAt(pos - 2);
-                if (prev >= 0xD800 && prev <= 0xDBFF) return pos - 2;
-            }
-            return pos - 1;
-        }
-        // UTF-8: step back over the continuation bytes, up to a lead byte
-        var p = pos - 1;
-        while (p > 0 && pos - p < 4) {
-            final b = text.uCharCodeAt(p);
-            if (b < 0x80 || b > 0xBF) break;
-            p--;
-        }
-        return p;
-    }
-
-    /** How many bytes a UTF-8 character takes, from its lead byte (1 for a stray continuation byte) */
-    static inline function utf8Length(lead:Int):Int {
-        return lead >= 0xF0 ? 4 : lead >= 0xE0 ? 3 : lead >= 0xC0 ? 2 : 1;
-    }
 
     /** Whether a code point is in a table of ranges, by binary search */
     static function inRanges(table:Array<Int>, c:Int):Bool {

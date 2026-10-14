@@ -4,7 +4,7 @@ import loreline.AstUtils;
 import loreline.Node;
 import loreline.Printer;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Converts GNU gettext PO file content into a Loreline translation file body.
@@ -30,7 +30,7 @@ class PoTranslation {
 
     public static function toLoreline(content:String, locale:String):String {
         final entries = parse(content);
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         var first = true;
         for (entry in entries) {
             if (entry.msgstr == null || entry.msgstr == "") continue;
@@ -77,7 +77,7 @@ class PoTranslation {
     ):String {
         final entries = AstUtils.extractTranslatableEntries(script);
         final printer = new Printer();
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
 
         // Header
         buf.add("msgid \"\"\n");
@@ -221,7 +221,7 @@ class PoTranslation {
         if (i >= len || line.uCharCodeAt(i) != "\"".code) return null;
         i++; // skip opening quote
 
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         while (i < len) {
             final c = line.uCharCodeAt(i);
             if (c == "\\".code && i + 1 < len) {

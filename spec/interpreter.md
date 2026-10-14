@@ -1540,8 +1540,8 @@ function code (`CodeToLorscript`), the printer and the language server.
 ### Reading whole characters
 
 The lexers read texts in the units of the target: characters (Neko through
-`neko.Utf8`, Python, PHP, GDScript, or the vector of `loreline_utf8_vector`),
-UTF-16 units (JS, C#, Java, C++) or UTF-8 bytes (Lua). `Identifiers.codeAt`
+`neko.Utf8`, Python, PHP, GDScript, which on Neko and PHP scan a vector of code points),
+UTF-16 units (JS, C#, Java, C++) or UTF-8 bytes (Lua). `Chars.codeAt`
 reads the whole character at a position (a surrogate pair, or two to four
 bytes), `unitsAt` gives its length, `nameEnd` the end of the name parts that
 start at a position, and `startBefore` steps back over a whole character.

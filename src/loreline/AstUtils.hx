@@ -3,7 +3,7 @@ package loreline;
 import loreline.Node;
 import loreline.Printer;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Static utility functions for programmatic AST formatting transformations.
@@ -379,7 +379,7 @@ class AstUtils {
                 }
                 // Check if followed by the start of a key: a name start (in any
                 // language), a digit or a dash, as the lexer reads it
-                final next = Identifiers.codeAt(line, i + 1);
+                final next = Chars.codeAt(line, i + 1);
                 if (Identifiers.isStart(next) || (next >= '0'.code && next <= '9'.code) || next == '-'.code) return true;
             }
             i++;
@@ -503,7 +503,7 @@ class AstUtils {
         printer:Printer
     ):String {
         final entries = extractTranslatableEntries(sourceScript);
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         var first = true;
         buf.add("\n");
 
@@ -639,8 +639,8 @@ class AstUtils {
         // Check for Identifier: pattern (dialogue), with a name in any language
         var nameEnd = Identifiers.nameEnd(text, 0);
         if (nameEnd > 0) {
-            while (Identifiers.codeAt(text, nameEnd) == ' '.code || Identifiers.codeAt(text, nameEnd) == '\t'.code) nameEnd++;
-            if (Identifiers.codeAt(text, nameEnd) == ':'.code) return false;
+            while (Chars.codeAt(text, nameEnd) == ' '.code || Chars.codeAt(text, nameEnd) == '\t'.code) nameEnd++;
+            if (Chars.codeAt(text, nameEnd) == ':'.code) return false;
         }
 
         // Check for number literal, null, true, false
@@ -742,7 +742,7 @@ class AstUtils {
     static function randomId(rng:Random, length:Int):String {
         static final chars = "0123456789abcdefghijklmnopqrstuvwxyz";
         static final nonHexChars = "ghijklmnopqrstuvwxyz";
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         for (_ in 0...length) {
             buf.addChar(chars.charCodeAt(rng.between(0, 36)));
         }

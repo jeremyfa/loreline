@@ -4,8 +4,8 @@ import loreline.AstUtils;
 import loreline.Node;
 import loreline.Printer;
 
-using loreline.Utf8;
-using loreline.Utf8Vector;
+using loreline.TextUnits;
+using loreline.TextUnitsVector;
 
 /**
  * Converts CSV/TSV file content into a Loreline translation file body.
@@ -58,7 +58,7 @@ class CsvTranslation {
             else return "";
         }
 
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         var first = true;
         for (i in 1...rows.length) {
             final row = rows[i];
@@ -117,7 +117,7 @@ class CsvTranslation {
     ):String {
         final entries = AstUtils.extractTranslatableEntries(script);
         final printer = new Printer();
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         final sepStr = String.fromCharCode(sep);
 
         // Header
@@ -200,11 +200,11 @@ class CsvTranslation {
     static function parseRows(content:String, sep:Int):Array<Array<String>> {
         final rows:Array<Array<String>> = [];
         var row:Array<String> = [];
-        var field = new Utf8Buf();
+        var field = new TextUnitsBuf();
         var inQuotes = false;
         var i = 0;
-        #if loreline_utf8_vector
-        final chars = Utf8.toCodes(content);
+        #if (neko || php)
+        final chars = TextUnits.toCodes(content);
         #else
         final chars = content;
         #end
@@ -232,11 +232,11 @@ class CsvTranslation {
                     i++;
                 } else if (c == sep) {
                     row.push(field.toString());
-                    field = new Utf8Buf();
+                    field = new TextUnitsBuf();
                     i++;
                 } else if (c == "\n".code || c == "\r".code) {
                     row.push(field.toString());
-                    field = new Utf8Buf();
+                    field = new TextUnitsBuf();
                     // Only push non-empty rows (skip blank lines)
                     if (row.length > 1 || (row.length == 1 && row[0] != "")) {
                         rows.push(row);

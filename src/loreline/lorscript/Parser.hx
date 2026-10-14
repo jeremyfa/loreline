@@ -1237,8 +1237,8 @@ class Parser {
 	function readString( until ) {
 		var c = 0;
 		// On hxcpp, a StringBuf loses the characters above U+FFFF added unit by
-		// unit (see loreline.Utf8.Utf8Buf)
-		var b = #if cpp new loreline.Utf8.Utf8Buf() #else new StringBuf() #end;
+		// unit (see loreline.TextUnits.TextUnitsBuf)
+		var b = #if cpp new loreline.TextUnits.TextUnitsBuf() #else new StringBuf() #end;
 		var esc = false;
 		var old = line;
 		var s = input;

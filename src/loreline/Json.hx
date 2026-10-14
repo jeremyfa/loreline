@@ -25,7 +25,7 @@ class Json {
 /**
  * haxe.format.JsonPrinter, with what it gets wrong on some targets:
  * - on hxcpp it adds a text unit by unit, and a UTF-16 surrogate added alone
- *   becomes U+FFFD (see loreline.Utf8.Utf8Buf): a character above U+FFFF in a
+ *   becomes U+FFFD (see loreline.TextUnits.TextUnitsBuf): a character above U+FFFF in a
  *   saved text was lost. This printer adds such a character whole.
  * - on Lua it writes a decimal with Std.string, which fails on a decimal
  *   without an integer representation beyond 2^31 (the bit32 operations of

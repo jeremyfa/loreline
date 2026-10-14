@@ -3,7 +3,7 @@ package loreline.translation;
 import loreline.Imports;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Registry + wrapper for pluggable translation file formats.

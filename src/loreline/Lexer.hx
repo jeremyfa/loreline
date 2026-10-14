@@ -3,8 +3,8 @@ package loreline;
 import loreline.i18n.I18n;
 
 using StringTools;
-using loreline.Utf8;
-using loreline.Utf8Vector;
+using loreline.TextUnits;
+using loreline.TextUnitsVector;
 
 /**
  * Represents an error that occurred during lexical analysis.
@@ -512,7 +512,7 @@ class Token {
     /**
      * The input source code being lexed.
      */
-    #if loreline_utf8_vector
+    #if (neko || php)
     final input:haxe.ds.Vector<Int>;
     #else
     final input:String;
@@ -609,8 +609,8 @@ class Token {
      * @param input The source code to lex
      */
     public function new(input:String) {
-        #if loreline_utf8_vector
-        this.input = Utf8.toCodes(input);
+        #if (neko || php)
+        this.input = TextUnits.toCodes(input);
         this.length = this.input.length;
         #else
         this.input = input;
@@ -2562,7 +2562,7 @@ class Token {
             return readString(startPos);
         }
         else {
-            final buf = new Utf8Buf();
+            final buf = new TextUnitsBuf();
             while (pos < length) {
                 final cc = input.uCharCodeAt(pos);
                 if (cc == "\n".code) {
@@ -3031,7 +3031,7 @@ class Token {
 
         // If we get here, we can start reading the unquoted string
         final start = makePosition();
-        final buf = new loreline.Utf8.Utf8Buf();
+        final buf = new loreline.TextUnits.TextUnitsBuf();
         final attachments = new Array<LStringAttachment>();
 
         final startLine = line;
@@ -3336,7 +3336,7 @@ class Token {
      */
     function readString(stringStart:Position):Token {
         advance(); // Skip opening quote
-        final buf = new loreline.Utf8.Utf8Buf();
+        final buf = new loreline.TextUnits.TextUnitsBuf();
         final attachments = new Array<LStringAttachment>();
         var escaped = false;
         var tagStart = -1;
@@ -3950,7 +3950,7 @@ class Token {
         advance();
         parenLevel = 1;
 
-        var currentArg = new Utf8Buf();
+        var currentArg = new TextUnitsBuf();
         while (pos < length && parenLevel > 0) {
             final c = input.uCharCodeAt(pos);
 
@@ -3991,7 +3991,7 @@ class Token {
                 if (argStr.length > 0) {
                     args.push(argStr);
                 }
-                currentArg = new Utf8Buf();
+                currentArg = new TextUnitsBuf();
                 advance();
 
                 skipWhitespaceAndComments();
@@ -4313,28 +4313,28 @@ class Token {
      * read as one (see Identifiers), or -1 past the end.
      */
     inline function codeAt(pos:Int):Int {
-        return Identifiers.codeAt(input, pos);
+        return Chars.codeAt(input, pos);
     }
 
     /**
      * How many units the character at the given position takes.
      */
     inline function unitsAt(pos:Int):Int {
-        return Identifiers.unitsAt(input, pos);
+        return Chars.unitsAt(input, pos);
     }
 
     /**
      * Whether a name (letters of any language, `_` or an emoji) starts at the given position.
      */
     inline function isNameStartAt(pos:Int):Bool {
-        return Identifiers.isStart(Identifiers.codeAt(input, pos));
+        return Identifiers.isStart(Chars.codeAt(input, pos));
     }
 
     /**
      * Whether the character at the given position can be part of a name.
      */
     inline function isNamePartAt(pos:Int):Bool {
-        return Identifiers.isPart(Identifiers.codeAt(input, pos));
+        return Identifiers.isPart(Chars.codeAt(input, pos));
     }
 
     /**

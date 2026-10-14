@@ -1,6 +1,6 @@
 package loreline;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * A plural written with pipes in a text: `coin|coins`, `plik|pliki|plików`,
@@ -25,8 +25,8 @@ typedef PluralPipe = {
 /**
  * Finds the plurals written with pipes in the raw text of a string literal,
  * the same way for the interpreter and for the editors that color them.
- * Characters are read whole (see Identifiers.codeAt), and positions are in the
- * units of `loreline.Utf8`, those of node positions.
+ * Characters are read whole (see Chars.codeAt), and positions are in the
+ * units of `loreline.TextUnits`, those of node positions.
  */
 class PluralPipes {
 
@@ -43,11 +43,11 @@ class PluralPipes {
         var i = 0;
 
         while (i < len) {
-            final c = Identifiers.codeAt(text, i);
+            final c = Chars.codeAt(text, i);
 
             // An escaped character, like \|, is no pipe
             if (c == '\\'.code) {
-                i += 1 + Identifiers.unitsAt(text, i + 1);
+                i += 1 + Chars.unitsAt(text, i + 1);
                 continue;
             }
 
@@ -71,7 +71,7 @@ class PluralPipes {
                 }
             }
 
-            i += Identifiers.unitsAt(text, i);
+            i += Chars.unitsAt(text, i);
         }
 
         return result;
@@ -85,9 +85,9 @@ class PluralPipes {
         var close = -1;
         var j = open + 1;
         while (j < len) {
-            final c = Identifiers.codeAt(text, j);
+            final c = Chars.codeAt(text, j);
             if (c == '\\'.code) {
-                j += 1 + Identifiers.unitsAt(text, j + 1);
+                j += 1 + Chars.unitsAt(text, j + 1);
                 continue;
             }
             if (c == '|'.code) {
@@ -97,7 +97,7 @@ class PluralPipes {
                 close = j;
                 break;
             }
-            j += Identifiers.unitsAt(text, j);
+            j += Chars.unitsAt(text, j);
         }
         if (close == -1 || pipes.length == 0) return null;
 
@@ -122,11 +122,11 @@ class PluralPipes {
 
         var start = pipe;
         while (start > minStart) {
-            final before = Identifiers.startBefore(text, start);
-            if (before < minStart || isWordEnd(Identifiers.codeAt(text, before))) break;
+            final before = Chars.startBefore(text, start);
+            if (before < minStart || isWordEnd(Chars.codeAt(text, before))) break;
             start = before;
         }
-        while (start < pipe && isOpeningMark(Identifiers.codeAt(text, start))) start += Identifiers.unitsAt(text, start);
+        while (start < pipe && isOpeningMark(Chars.codeAt(text, start))) start += Chars.unitsAt(text, start);
         if (start == pipe) return null;
 
         final forms = [text.uSubstring(start, pipe)];
@@ -135,13 +135,13 @@ class PluralPipes {
         while (true) {
             var k = formStart;
             while (k < len) {
-                final c = Identifiers.codeAt(text, k);
+                final c = Chars.codeAt(text, k);
                 if (c == '\\'.code) {
-                    k += 1 + Identifiers.unitsAt(text, k + 1);
+                    k += 1 + Chars.unitsAt(text, k + 1);
                     continue;
                 }
                 if (isWordEnd(c)) break;
-                k += Identifiers.unitsAt(text, k);
+                k += Chars.unitsAt(text, k);
             }
             if (k > len) k = len;
             if (k < len && text.uCharCodeAt(k) == '|'.code) {
@@ -154,8 +154,8 @@ class PluralPipes {
             // The last form leaves out the punctuation after it
             var end = k;
             while (end > formStart) {
-                final before = Identifiers.startBefore(text, end);
-                if (before < formStart || !isClosingMark(Identifiers.codeAt(text, before))) break;
+                final before = Chars.startBefore(text, end);
+                if (before < formStart || !isClosingMark(Chars.codeAt(text, before))) break;
                 end = before;
             }
             if (end == formStart) return null;

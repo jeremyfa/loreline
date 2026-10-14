@@ -53,7 +53,7 @@ class PluralPipesTests {
         var count = 0;
         var i = 0;
         while (i < pos) {
-            i += Identifiers.unitsAt(text, i);
+            i += Chars.unitsAt(text, i);
             count++;
         }
         return count;

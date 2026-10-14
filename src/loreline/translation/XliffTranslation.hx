@@ -5,7 +5,7 @@ import loreline.AstUtils;
 import loreline.Node;
 import loreline.Printer;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Converts XLIFF (1.2 or 2.x) file content into a Loreline translation file body.
@@ -82,7 +82,7 @@ class XliffTranslation {
         // For 2.x, the trgLang must match the requested locale.
         if (is2x && !localeMatches(xliffTrgLang, locale)) return "";
 
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
         var first = true;
 
         for (file in xliff.elementsNamed("file")) {
@@ -196,7 +196,7 @@ class XliffTranslation {
     ):String {
         final entries = AstUtils.extractTranslatableEntries(script);
         final printer = new Printer();
-        final buf = new Utf8Buf();
+        final buf = new TextUnitsBuf();
 
         buf.add("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         buf.add("<xliff version=\"1.2\" xmlns=\"urn:oasis:names:tc:xliff:document:1.2\">\n");
@@ -243,7 +243,7 @@ class XliffTranslation {
         return out;
     }
 
-    static function writeEntry(buf:Utf8Buf, id:String, src:String, tgt:String):Void {
+    static function writeEntry(buf:TextUnitsBuf, id:String, src:String, tgt:String):Void {
         buf.add("#");
         buf.add(id);
         if (src != null && src != "") {

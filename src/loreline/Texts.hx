@@ -10,6 +10,11 @@ package loreline;
  * character starts are found first (charOffsets), then the native operations
  * are used between them.
  *
+ * Positions here are character indices for script authors, not the unit
+ * positions of `loreline.TextUnits` and `Position`: on Neko this class counts
+ * bytes under the hood while `TextUnits` reads code points, which changes
+ * nothing in what it returns. Its results never become positions.
+ *
  * Upper and lower case follow a table of their own, the same everywhere: the
  * Latin letters of European languages, Greek and Cyrillic. `ß` becomes `SS` in
  * upper case, as in Unicode. Other characters stay as they are.

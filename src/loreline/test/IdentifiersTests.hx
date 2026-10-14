@@ -7,7 +7,7 @@ import loreline.Loreline;
 import loreline.Script;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Tests of names in any language: which characters make a name, how a name is
@@ -45,13 +45,13 @@ class IdentifiersTests {
 
     /** How many units a character from U+0800 to U+FFFF takes on this target */
     static function unitsOfBmp():Int {
-        return Identifiers.UNITS == 4 ? 3 : 1;
+        return Chars.UNITS == 4 ? 3 : 1;
     }
 
     static function testClassification():Void {
         final errors:Array<String> = [];
         inline function check(text:String, start:Bool, part:Bool) {
-            final c = Identifiers.codeAt(text, 0);
+            final c = Chars.codeAt(text, 0);
             if (Identifiers.isStart(c) != start) errors.push('$text (U+${StringTools.hex(c, 4)}) start: expected $start');
             if (Identifiers.isPart(c) != part) errors.push('$text (U+${StringTools.hex(c, 4)}) part: expected $part');
         }
@@ -74,18 +74,18 @@ class IdentifiersTests {
         for (i in 0...punctuation.length) {
             check(punctuation.charAt(i), false, false);
         }
-        for (text in ['！', '？', '、', '；', '）', '「', '」', '『', '』', '《', '》', '【', '】', '…', '«', '»', '“', '”', '‘', '’', '¿', '¡', '〜', '〰', '〽', Identifiers.textOf(0x2014), Identifiers.textOf(0x2013)]) {
+        for (text in ['！', '？', '、', '；', '）', '「', '」', '『', '』', '《', '》', '【', '】', '…', '«', '»', '“', '”', '‘', '’', '¿', '¡', '〜', '〰', '〽', Chars.textOf(0x2014), Chars.textOf(0x2013)]) {
             check(text, false, false);
         }
-        if (Identifiers.scriptOf(Identifiers.codeAt('a', 0)) != 'Latin') errors.push('a is Latin');
-        if (Identifiers.scriptOf(Identifiers.codeAt('é', 0)) != 'Latin') errors.push('é is Latin');
-        if (Identifiers.scriptOf(Identifiers.codeAt('а', 0)) != 'Cyrillic') errors.push('а is Cyrillic');
-        if (Identifiers.scriptOf(Identifiers.codeAt('ο', 0)) != 'Greek') errors.push('ο is Greek');
-        if (Identifiers.scriptOf(Identifiers.codeAt('国', 0)) != null) errors.push('国 has no lookalike alphabet');
-        if (Identifiers.scriptOf(Identifiers.codeAt('_', 0)) != null) errors.push('_ is no letter');
-        if (!Identifiers.isUpperCase(Identifiers.codeAt('É', 0))) errors.push('É is upper case');
-        if (!Identifiers.isLowerCase(Identifiers.codeAt('ж', 0))) errors.push('ж is lower case');
-        if (Identifiers.isLowerCase(Identifiers.codeAt('国', 0)) || Identifiers.isUpperCase(Identifiers.codeAt('国', 0))) errors.push('国 has no case');
+        if (Identifiers.scriptOf(Chars.codeAt('a', 0)) != 'Latin') errors.push('a is Latin');
+        if (Identifiers.scriptOf(Chars.codeAt('é', 0)) != 'Latin') errors.push('é is Latin');
+        if (Identifiers.scriptOf(Chars.codeAt('а', 0)) != 'Cyrillic') errors.push('а is Cyrillic');
+        if (Identifiers.scriptOf(Chars.codeAt('ο', 0)) != 'Greek') errors.push('ο is Greek');
+        if (Identifiers.scriptOf(Chars.codeAt('国', 0)) != null) errors.push('国 has no lookalike alphabet');
+        if (Identifiers.scriptOf(Chars.codeAt('_', 0)) != null) errors.push('_ is no letter');
+        if (!Identifiers.isUpperCase(Chars.codeAt('É', 0))) errors.push('É is upper case');
+        if (!Identifiers.isLowerCase(Chars.codeAt('ж', 0))) errors.push('ж is lower case');
+        if (Identifiers.isLowerCase(Chars.codeAt('国', 0)) || Identifiers.isUpperCase(Chars.codeAt('国', 0))) errors.push('国 has no case');
         if (errors.length > 0) throw errors.join('\n');
     }
 
@@ -198,7 +198,7 @@ class IdentifiersTests {
         // Neko, that parser counts bytes while the conversion counts characters,
         // which shifts its positions after a character beyond ASCII.
         final ascii = functionError('function f(a)\n  return a + )\n');
-        final astral = Identifiers.UNITS == 1 ? 1 : (Identifiers.UNITS == 2 ? 2 : 4);
+        final astral = Chars.UNITS == 1 ? 1 : (Chars.UNITS == 2 ? 2 : 4);
         expectFunctionError('function f(𠀀)\n  return 𠀀 + )\n', ascii.message, 2, ascii.pos.column + astral - 1);
         #end
     }

@@ -16,7 +16,7 @@ import sys.io.File;
 import sys.io.Process;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 using loreline.cli.CliColors;
 
 enum CliCommand {
@@ -1795,7 +1795,7 @@ class Cli {
 
     function printStackTrace(returnOnly:Bool = false, ?stack:Array<StackItem>):String {
 
-        var result = new loreline.Utf8.Utf8Buf();
+        var result = new loreline.TextUnits.TextUnitsBuf();
 
         inline function print(data:Dynamic) {
             if (!returnOnly) {

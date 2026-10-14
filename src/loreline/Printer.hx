@@ -3,7 +3,7 @@ package loreline;
 import loreline.Lexer;
 import loreline.Node;
 
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * A code printer that converts AST nodes back into formatted Loreline source code.
@@ -25,7 +25,7 @@ class Printer {
     /**
      * Buffer containing the generated output.
      */
-    var _buf:Utf8Buf;
+    var _buf:TextUnitsBuf;
 
     /**
      * State tracking for blank lines at start of output.
@@ -100,7 +100,7 @@ class Printer {
         _level = 0;
         _prevLevel = 0;
         _numEmptyLines = 0;
-        _buf = new Utf8Buf();
+        _buf = new TextUnitsBuf();
     }
 
     /**
@@ -1407,9 +1407,9 @@ class Printer {
         if (next == null) return false;
         return switch next.partType {
             case Raw(text):
-                final c = Identifiers.codeAt(text, 0);
+                final c = Chars.codeAt(text, 0);
                 Identifiers.isPart(c) || c == "(".code || c == "[".code
-                    || (c == ".".code && Identifiers.isStart(Identifiers.codeAt(text, 1)));
+                    || (c == ".".code && Identifiers.isStart(Chars.codeAt(text, 1)));
             case _:
                 false;
         }

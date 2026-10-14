@@ -10,7 +10,7 @@ import loreline.Node;
 import loreline.Position;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Something worth pointing out in a when block, for editors.
@@ -1384,11 +1384,11 @@ class Lens {
         final scripts:Array<String> = [];
         var pos = 0;
         while (true) {
-            final c = Identifiers.codeAt(name, pos);
+            final c = Chars.codeAt(name, pos);
             if (c == -1) break;
             final script = Identifiers.scriptOf(c);
             if (script != null && !scripts.contains(script)) scripts.push(script);
-            pos += Identifiers.unitsAt(name, pos);
+            pos += Chars.unitsAt(name, pos);
         }
         return scripts;
     }
@@ -1404,8 +1404,8 @@ class Lens {
                 final end = Identifiers.nameEnd(raw, 0);
                 if (end == 0) return;
                 var p = end;
-                while (Identifiers.codeAt(raw, p) == " ".code || Identifiers.codeAt(raw, p) == "\t".code) p++;
-                if (Identifiers.codeAt(raw, p) != 0xFF1A) return;
+                while (Chars.codeAt(raw, p) == " ".code || Chars.codeAt(raw, p) == "\t".code) p++;
+                if (Chars.codeAt(raw, p) != 0xFF1A) return;
                 final name = raw.uSubstr(0, end);
                 if (findCharacterByNameFromNode(name, text) == null) return;
                 warnings.push({
@@ -1424,10 +1424,10 @@ class Lens {
         final name = access.name;
         var pos = 0;
         while (true) {
-            final c = Identifiers.codeAt(name, pos);
+            final c = Chars.codeAt(name, pos);
             if (c == -1) return;
             if (Identifiers.isEmoji(c)) break;
-            pos += Identifiers.unitsAt(name, pos);
+            pos += Chars.unitsAt(name, pos);
         }
         if (pos == 0) return;
         final before = name.uSubstr(0, pos);
@@ -2282,7 +2282,7 @@ class Lens {
         var fullLen = truncated.uLength();
         truncated = truncated.uSubstring(truncated.uIndexOf('{') + 1, fullLen);
         var truncatedLen = truncated.uLength();
-        var spaces = new Utf8Buf();
+        var spaces = new TextUnitsBuf();
         for (i in 0...(fullLen - truncatedLen)) {
             spaces.addChar(' '.code);
         }

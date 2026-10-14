@@ -10,7 +10,7 @@ import loreline.test.TestCase;
 import loreline.test.TestRunner;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Target-agnostic test suite runner: replicates the CLI's per-file

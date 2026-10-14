@@ -13,7 +13,7 @@ import loreline.i18n.I18n;
 import loreline.lsp.Protocol;
 
 using StringTools;
-using loreline.Utf8;
+using loreline.TextUnits;
 
 /**
  * Main LSP server implementation for Loreline
@@ -2885,12 +2885,12 @@ class Server {
         // The name parts before them, starting with a name start
         var start = end;
         while (start > 0) {
-            final previous = Identifiers.startBefore(text, start);
-            if (!Identifiers.isPart(Identifiers.codeAt(text, previous))) break;
+            final previous = Chars.startBefore(text, start);
+            if (!Identifiers.isPart(Chars.codeAt(text, previous))) break;
             start = previous;
         }
-        while (start < end && !Identifiers.isStart(Identifiers.codeAt(text, start))) {
-            start += Identifiers.unitsAt(text, start);
+        while (start < end && !Identifiers.isStart(Chars.codeAt(text, start))) {
+            start += Chars.unitsAt(text, start);
         }
         if (start >= end) return null;
 
@@ -2910,8 +2910,8 @@ class Server {
 
         // The strategy typed so far
         while (p > 0) {
-            final previous = Identifiers.startBefore(text, p);
-            if (!Identifiers.isPart(Identifiers.codeAt(text, previous))) break;
+            final previous = Chars.startBefore(text, p);
+            if (!Identifiers.isPart(Chars.codeAt(text, previous))) break;
             p = previous;
         }
 

@@ -13,8 +13,8 @@ import loreline.Objects;
 import loreline.SaveData;
 
 using StringTools;
-using loreline.Utf8;
-using loreline.Utf8Vector;
+using loreline.TextUnits;
+using loreline.TextUnitsVector;
 
 
 /**
@@ -6257,7 +6257,7 @@ class InterpreterContext {
             str = stringLiteralProcessors[i](str);
         }
 
-        final buf = new loreline.Utf8.Utf8Buf();
+        final buf = new loreline.TextUnits.TextUnitsBuf();
         final tags:Array<TextTag> = [];
         var offset = 0;
 
@@ -6293,7 +6293,7 @@ class InterpreterContext {
                     // Tags count the characters shown, not the units of the target
                     final shown = unescapeRawText(text);
                     buf.add(shown);
-                    offset += Identifiers.characterCount(shown);
+                    offset += Chars.count(shown);
 
                 case Expr(expr):
                     keepWhitespace = true;
@@ -6301,7 +6301,7 @@ class InterpreterContext {
                     // whether referenced directly or through a variable/param
                     final value = evaluateExpression(expr);
                     final text = valueToString(value);
-                    offset += Identifiers.characterCount(text);
+                    offset += Chars.count(text);
                     buf.add(text);
 
                 case Tag(closing, expr):
@@ -6448,13 +6448,13 @@ class InterpreterContext {
      * such, any other escaped character as itself, `$$` as `$` and `##` as `#`.
      */
     static function unescapeRawText(text:String):String {
-        #if loreline_utf8_vector
-        final chars = Utf8.toCodes(text);
+        #if (neko || php)
+        final chars = TextUnits.toCodes(text);
         #else
         final chars = text;
         #end
         final len = chars.uLength();
-        final buf = new loreline.Utf8.Utf8Buf();
+        final buf = new loreline.TextUnits.TextUnitsBuf();
         var prevIsDollar:Bool = false;
         var prevIsHash:Bool = false;
         var escaped:Bool = false;
@@ -6589,12 +6589,12 @@ class InterpreterContext {
 
     static function stripStringComments(content:String):String {
 
-        #if loreline_utf8_vector
-        final chars = Utf8.toCodes(content);
+        #if (neko || php)
+        final chars = TextUnits.toCodes(content);
         #else
         final chars = content;
         #end
-        final result = new Utf8Buf();
+        final result = new TextUnitsBuf();
         final len:Int = chars.uLength();
         var i:Int = 0;
 
