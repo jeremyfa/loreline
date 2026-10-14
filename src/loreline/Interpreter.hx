@@ -6402,102 +6402,30 @@ class InterpreterContext {
     }
 
     function transformPipeRaw(text:String, countExpr:NExpr, pos:Position, parts:Array<NStringPart>):Void {
-        final len = text.uLength();
-        var i = 0;
         var segStart = 0;
-
-        while (i < len) {
-            final c = text.uCharCodeAt(i);
-
-            // Skip escaped characters
-            if (c == "\\".code && i + 1 < len) {
-                i += 2;
-                continue;
+        for (pipe in PluralPipes.scan(text)) {
+            // Emit text before the plural
+            if (pipe.start > segStart) {
+                parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstring(segStart, pipe.start))));
             }
-
-            // Parenthesized pattern: (text1|text2)
-            if (c == "(".code) {
-                var pipePos = -1;
-                var closePos = -1;
-                var j = i + 1;
-                while (j < len) {
-                    final cj = text.uCharCodeAt(j);
-                    if (cj == "\\".code && j + 1 < len) {
-                        j += 2;
-                        continue;
-                    }
-                    if (cj == "|".code && pipePos == -1) {
-                        pipePos = j;
-                    } else if (cj == ")".code) {
-                        closePos = j;
-                        break;
-                    }
-                    j++;
-                }
-                if (pipePos != -1 && closePos != -1 && pipePos > i + 1 && closePos > pipePos + 1) {
-                    final singular = text.uSubstr(i + 1, pipePos - i - 1);
-                    final pluralForm = text.uSubstr(pipePos + 1, closePos - pipePos - 1);
-                    // Emit text before the pattern
-                    if (i > segStart) {
-                        parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, i - segStart))));
-                    }
-                    // Emit synthetic NCall to plural(countExpr, singular, pluralForm)
-                    parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, singular, pluralForm, pos))));
-                    i = closePos + 1;
-                    segStart = i;
-                    continue;
-                }
-            }
-
-            // Simple pattern: word1|word2
-            if (c == "|".code) {
-                // Scan backward for word1
-                var wordStart = i;
-                while (wordStart > segStart) {
-                    final wc = text.uCharCodeAt(wordStart - 1);
-                    if (wc == " ".code || wc == "\t".code || wc == "\n".code
-                        || wc == "|".code || wc == "(".code || wc == ")".code) break;
-                    wordStart--;
-                }
-                // Scan forward for word2
-                var wordEnd = i + 1;
-                while (wordEnd < len) {
-                    final wc = text.uCharCodeAt(wordEnd);
-                    if (wc == " ".code || wc == "\t".code || wc == "\n".code
-                        || wc == "|".code || wc == "(".code || wc == ")".code) break;
-                    wordEnd++;
-                }
-                final word1 = text.uSubstr(wordStart, i - wordStart);
-                final word2 = text.uSubstr(i + 1, wordEnd - i - 1);
-                if (word1.length > 0 && word2.length > 0) {
-                    // Emit text before word1
-                    if (wordStart > segStart) {
-                        parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, wordStart - segStart))));
-                    }
-                    // Emit synthetic NCall to plural(countExpr, word1, word2)
-                    parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, word1, word2, pos))));
-                    i = wordEnd;
-                    segStart = i;
-                    continue;
-                }
-            }
-
-            i++;
+            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, pipe.forms, pos))));
+            segStart = pipe.end;
         }
-
         // Emit remaining text
+        final len = text.uLength();
         if (segStart < len) {
-            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstr(segStart, len - segStart))));
+            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstring(segStart, len))));
         }
     }
 
-    function makePluralCall(countExpr:NExpr, singular:String, pluralForm:String, pos:Position):NCall {
+    function makePluralCall(countExpr:NExpr, forms:Array<String>, pos:Position):NCall {
         final target = new NAccess(NodeId.UNDEFINED, pos, null, "plural");
-        final singularLiteral = new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
-            [new NStringPart(NodeId.UNDEFINED, pos, Raw(singular))]);
-        final pluralLiteral = new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
-            [new NStringPart(NodeId.UNDEFINED, pos, Raw(pluralForm))]);
-        return new NCall(NodeId.UNDEFINED, pos, target, [countExpr, singularLiteral, pluralLiteral]);
+        final args:Array<NExpr> = [countExpr];
+        for (form in forms) {
+            args.push(new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
+                [new NStringPart(NodeId.UNDEFINED, pos, Raw(form))]));
+        }
+        return new NCall(NodeId.UNDEFINED, pos, target, args);
     }
 
     /**

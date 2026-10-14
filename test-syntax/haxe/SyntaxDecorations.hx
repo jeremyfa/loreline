@@ -5,6 +5,7 @@
 import loreline.Lexer;
 import loreline.Node;
 import loreline.Parser;
+import loreline.PluralPipes;
 
 @:expose
 class SyntaxDecorations {
@@ -58,18 +59,21 @@ class SyntaxDecorations {
 		script.eachExcludingImported(function(node:Node, parent:Node) {
 			if (node is NStringLiteral) {
 				final stringLit:NStringLiteral = cast node;
-				var prevWasExpr = false;
+				// A plural counts after any expression of the literal, as when the story plays
+				var afterExpr = false;
 				for (part in stringLit.parts) {
 					switch (part.partType) {
 						case Expr(_):
-							prevWasExpr = true;
+							afterExpr = true;
 						case Raw(rawText):
-							if (prevWasExpr) {
-								findPluralPipeRanges(rawText, part.pos.offset, result);
+							if (afterExpr) {
+								for (pipe in PluralPipes.scan(rawText)) {
+									for (mark in pipe.marks) {
+										result.push({kind: "plural-pipe", offset: part.pos.offset + mark, length: 1});
+									}
+								}
 							}
-							prevWasExpr = false;
 						case _:
-							prevWasExpr = false;
 					}
 				}
 			}
@@ -236,74 +240,6 @@ class SyntaxDecorations {
 
 	static function isSpace(c:Int):Bool {
 		return c == " ".code || c == "\t".code;
-	}
-
-	static function findPluralPipeRanges(text:String, baseOffset:Int, result:Array<Dynamic>):Void {
-		final len = text.length;
-		var i = 0;
-
-		while (i < len) {
-			final c = text.charCodeAt(i);
-
-			// Skip escaped pipes
-			if (c == "\\".code && i + 1 < len && text.charCodeAt(i + 1) == "|".code) {
-				i += 2;
-				continue;
-			}
-
-			// Parenthesized pattern: (text1|text2)
-			if (c == "(".code) {
-				var pipePos = -1;
-				var closePos = -1;
-				var j = i + 1;
-				while (j < len) {
-					final cj = text.charCodeAt(j);
-					if (cj == "\\".code && j + 1 < len && text.charCodeAt(j + 1) == "|".code) {
-						j += 2;
-						continue;
-					}
-					if (cj == "|".code && pipePos == -1) {
-						pipePos = j;
-					} else if (cj == ")".code) {
-						closePos = j;
-						break;
-					}
-					j++;
-				}
-				if (pipePos != -1 && closePos != -1 && pipePos > i + 1 && closePos > pipePos + 1) {
-					result.push({kind: "plural-pipe", offset: baseOffset + i, length: 1});
-					result.push({kind: "plural-pipe", offset: baseOffset + pipePos, length: 1});
-					result.push({kind: "plural-pipe", offset: baseOffset + closePos, length: 1});
-					i = closePos + 1;
-					continue;
-				}
-			}
-
-			// Simple word pattern: word1|word2
-			if (c == "|".code) {
-				var wordStart = i;
-				while (wordStart > 0) {
-					final wc = text.charCodeAt(wordStart - 1);
-					if (wc == " ".code || wc == "\t".code || wc == "\n".code
-						|| wc == "|".code || wc == "(".code || wc == ")".code) break;
-					wordStart--;
-				}
-				var wordEnd = i + 1;
-				while (wordEnd < len) {
-					final wc = text.charCodeAt(wordEnd);
-					if (wc == " ".code || wc == "\t".code || wc == "\n".code
-						|| wc == "|".code || wc == "(".code || wc == ")".code) break;
-					wordEnd++;
-				}
-				if (i - wordStart > 0 && wordEnd - (i + 1) > 0) {
-					result.push({kind: "plural-pipe", offset: baseOffset + i, length: 1});
-					i = wordEnd;
-					continue;
-				}
-			}
-
-			i++;
-		}
 	}
 
 	/**
