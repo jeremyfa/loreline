@@ -27,7 +27,7 @@ beat Start
   seed_random(7)
   first = random(1.5, 3.2)
   second = random(5, 5)
-  third = random_float("0", "1")
+  third = random_decimal("0", "1")
   inside = first >= 2 and first <= 3 and third >= 0 and third < 1
   Ranges give $inside ${second} ${type_of(first)}.
 
