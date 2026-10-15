@@ -362,7 +362,10 @@ class Server {
                 definitionProvider: true,    // For go-to-definition
                 hoverProvider: true,         // For hover tooltips
                 documentSymbolProvider: true, // For document outline
-                documentFormattingProvider: true  // For code formatting
+                documentFormattingProvider: true,  // For code formatting
+                // Columns and offsets of `loreline.Position` are units of the target;
+                // the server runs on JS and C++, where they are UTF-16 units, the LSP default
+                positionEncoding: PositionEncodingKind.UTF16
             }
         };
     }
@@ -866,7 +869,11 @@ class Server {
         final diagnostics = documentDiagnostics.get(uri);
         if (diagnostics == null) return;
 
-        final range = if (pos != null) {
+        final content = documentContents.get(uri);
+        final range = if (pos != null && content != null) {
+            // A span of zero units still shows as one, so that the mark is visible
+            rangeFromLorelinePosition(pos.length > 0 ? pos : pos.withOffset(content, 0, 1), content);
+        } else if (pos != null) {
             {
                 start: {line: pos.line - 1, character: pos.column - 1},
                 end: {line: pos.line - 1, character: pos.column - 1 + (pos.length > 0 ? pos.length : 1)}
@@ -3248,7 +3255,7 @@ class Server {
         final content = documentContents.get(params.textDocument.uri);
         if (content == null) return [];
 
-        final printer = new SymbolPrinter(content);
+        final printer = new SymbolPrinter(this, content);
         return printer.print(ast);
 
     }
@@ -3416,7 +3423,7 @@ class Server {
      * @param lorelinePos The Loreline position instance
      * @return An LSP Protocol position
      */
-    function fromLorelinePosition(lorelinePos:loreline.Position):loreline.lsp.Protocol.Position {
+    public function fromLorelinePosition(lorelinePos:loreline.Position):loreline.lsp.Protocol.Position {
         return {
             // Convert from 1-based to 0-based indexing
             line: lorelinePos.line - 1,
@@ -3424,7 +3431,7 @@ class Server {
         };
     }
 
-    function rangeFromLorelinePosition(lorelinePos:loreline.Position, content:String):loreline.lsp.Protocol.Range {
+    public function rangeFromLorelinePosition(lorelinePos:loreline.Position, content:String):loreline.lsp.Protocol.Range {
         final start = fromLorelinePosition(lorelinePos);
         final end = fromLorelinePosition(lorelinePos.withOffset(content, lorelinePos.length));
         return {

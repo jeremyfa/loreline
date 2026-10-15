@@ -18,14 +18,19 @@ class SymbolPrinter {
     /** Reference to the document content for range calculations */
     final content:String;
 
+    /** The server, whose position conversions the ranges use */
+    final server:Server;
+
     /** Current parent symbol being built */
     var currentSymbol:DocumentSymbol;
 
     /**
      * Creates a new symbol printer.
+     * @param server The server, for its position conversions
      * @param content Document content for range calculation
      */
-    public function new(content:String) {
+    public function new(server:Server, content:String) {
+        this.server = server;
         this.content = content;
     }
 
@@ -111,8 +116,8 @@ class SymbolPrinter {
             detail: I18n.t('beat'),
             kind: SymbolKind.Class,
             deprecated: false,
-            range: rangeFromPosition(beat.pos),
-            selectionRange: rangeFromPosition(beat.pos),
+            range: server.rangeFromLorelinePosition(beat.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(beat.pos, content),
             children: children
         };
     }
@@ -131,8 +136,8 @@ class SymbolPrinter {
                 detail: printValue(prop.value),
                 kind: SymbolKind.Property,
                 deprecated: false,
-                range: rangeFromPosition(prop.pos),
-                selectionRange: rangeFromPosition(prop.pos)
+                range: server.rangeFromLorelinePosition(prop.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(prop.pos, content)
             });
         }
 
@@ -141,8 +146,8 @@ class SymbolPrinter {
             detail: I18n.t('character'),
             kind: SymbolKind.Object,
             deprecated: false,
-            range: rangeFromPosition(char.pos),
-            selectionRange: rangeFromPosition(char.pos),
+            range: server.rangeFromLorelinePosition(char.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(char.pos, content),
             children: children
         };
     }
@@ -161,8 +166,8 @@ class SymbolPrinter {
                 detail: printValue(field.value),
                 kind: SymbolKind.Property,
                 deprecated: false,
-                range: rangeFromPosition(field.pos),
-                selectionRange: rangeFromPosition(field.pos)
+                range: server.rangeFromLorelinePosition(field.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(field.pos, content)
             });
         }
 
@@ -171,8 +176,8 @@ class SymbolPrinter {
             detail: I18n.count(children.length, '{n} field', '{n} fields'),
             kind: SymbolKind.Namespace,
             deprecated: false,
-            range: rangeFromPosition(metadata.pos),
-            selectionRange: rangeFromPosition(metadata.pos),
+            range: server.rangeFromLorelinePosition(metadata.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(metadata.pos, content),
             children: children
         };
     }
@@ -192,8 +197,8 @@ class SymbolPrinter {
                 detail: printValue(field.value),
                 kind: SymbolKind.Variable,
                 deprecated: false,
-                range: rangeFromPosition(field.pos),
-                selectionRange: rangeFromPosition(field.pos)
+                range: server.rangeFromLorelinePosition(field.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(field.pos, content)
             });
         }
 
@@ -202,8 +207,8 @@ class SymbolPrinter {
             detail: I18n.count(children.length, '{n} field', '{n} fields'),
             kind: SymbolKind.Namespace,
             deprecated: false,
-            range: rangeFromPosition(state.pos),
-            selectionRange: rangeFromPosition(state.pos),
+            range: server.rangeFromLorelinePosition(state.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(state.pos, content),
             children: children
         };
     }
@@ -227,8 +232,8 @@ class SymbolPrinter {
                 detail: option.condition != null ? 'if ${printValue(option.condition)}' : "",
                 kind: SymbolKind.EnumMember,
                 deprecated: false,
-                range: rangeFromPosition(option.pos),
-                selectionRange: rangeFromPosition(option.pos),
+                range: server.rangeFromLorelinePosition(option.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(option.pos, content),
                 children: []
             };
 
@@ -259,8 +264,8 @@ class SymbolPrinter {
             detail: I18n.count(choice.options.length, '{n} option', '{n} options'),
             kind: SymbolKind.Enum,
             deprecated: false,
-            range: rangeFromPosition(choice.pos),
-            selectionRange: rangeFromPosition(choice.pos),
+            range: server.rangeFromLorelinePosition(choice.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(choice.pos, content),
             children: children
         };
     }
@@ -289,8 +294,8 @@ class SymbolPrinter {
                 detail: rule.insertionCondition != null ? 'if ${printValue(rule.insertionCondition)}' : "",
                 kind: SymbolKind.EnumMember,
                 deprecated: false,
-                range: rangeFromPosition(rule.pos),
-                selectionRange: rangeFromPosition(rule.pos),
+                range: server.rangeFromLorelinePosition(rule.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(rule.pos, content),
                 children: []
             };
 
@@ -321,8 +326,8 @@ class SymbolPrinter {
             detail: I18n.count(when.rules.length, '{n} rule', '{n} rules'),
             kind: SymbolKind.Enum,
             deprecated: false,
-            range: rangeFromPosition(when.pos),
-            selectionRange: rangeFromPosition(when.pos),
+            range: server.rangeFromLorelinePosition(when.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(when.pos, content),
             children: children
         };
     }
@@ -342,8 +347,8 @@ class SymbolPrinter {
                 detail: I18n.t('condition'),
                 kind: SymbolKind.Boolean,
                 deprecated: false,
-                range: rangeFromPosition(ifStmt.pos),
-                selectionRange: rangeFromPosition(ifStmt.pos),
+                range: server.rangeFromLorelinePosition(ifStmt.pos, content),
+                selectionRange: server.rangeFromLorelinePosition(ifStmt.pos, content),
                 children: blockSymbol.children
             });
         }
@@ -378,8 +383,8 @@ class SymbolPrinter {
             detail: I18n.count(alt.items.length, '{n} item', '{n} items'),
             kind: SymbolKind.Enum,
             deprecated: false,
-            range: rangeFromPosition(alt.pos),
-            selectionRange: rangeFromPosition(alt.pos),
+            range: server.rangeFromLorelinePosition(alt.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(alt.pos, content),
             children: children
         };
     }
@@ -418,8 +423,8 @@ class SymbolPrinter {
             detail: detail,
             kind: SymbolKind.Namespace,
             deprecated: false,
-            range: rangeFromPosition(block.pos),
-            selectionRange: rangeFromPosition(block.pos),
+            range: server.rangeFromLorelinePosition(block.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(block.pos, content),
             children: children
         };
     }
@@ -433,33 +438,6 @@ class SymbolPrinter {
         final printer = new Printer();
         printer.enableComments = false;
         return printer.print(node).trim();
-    }
-
-    /**
-     * Convert a Loreline position to an LSP Range.
-     * @param pos Loreline position
-     * @return LSP Range
-     */
-    function rangeFromPosition(pos:loreline.Position):Range {
-        final start = fromLorelinePosition(pos);
-        final end = fromLorelinePosition(pos.withOffset(content, pos.length));
-        return {
-            start: start,
-            end: end
-        };
-    }
-
-    /**
-     * Convert a Loreline position to an LSP Position.
-     * @param pos Loreline position
-     * @return LSP Position
-     */
-    function fromLorelinePosition(pos:loreline.Position):loreline.lsp.Protocol.Position {
-        return {
-            // Convert from 1-based to 0-based indexing
-            line: pos.line - 1,
-            character: pos.column - 1
-        };
     }
 
 }
