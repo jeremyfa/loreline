@@ -336,7 +336,16 @@ class Lens {
                 nodePos.offset <= pos.offset &&
                 nodePos.offset + nodePos.length >= pos.offset) {
 
-                bestMatch = node;
+                // The deepest node wins, in tree order. Except at a boundary,
+                // where the node the cursor just left meets the raw text that
+                // follows: right after `$name`, the name is what is meant, and
+                // a raw part of a string never beats a node it touches
+                final rawStartingHere = node is NStringPart && nodePos.offset == pos.offset
+                    && switch (cast node:NStringPart).partType { case Raw(_): true; case _: false; };
+                final bestEndsHere = bestMatch != null && bestMatch.pos.offset + bestMatch.pos.length == pos.offset;
+                if (!(rawStartingHere && bestEndsHere)) {
+                    bestMatch = node;
+                }
             }
         });
 
