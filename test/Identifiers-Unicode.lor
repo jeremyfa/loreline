@@ -1,0 +1,134 @@
+// Names can use the letters of any language: characters, beats, state fields,
+// character fields, functions and their parameters, in interpolation,
+// transitions, insertions, calls and when blocks.
+
+state
+  金币: 10
+  café: "noir"
+  кот: "Мурзик"
+  λόγος: 3
+  ラーメン: 2
+  人々: 5
+  角色1: "un"
+  𠀀: "rare"
+
+character 国王
+  name: 路易斯
+  心情: "好"
+
+character Élodie
+  name: Élodie
+
+character Борис
+  name: Борис
+
+// Without a name, a character shows its identifier
+character 骑士
+  忠诚: true
+
+function 加倍(数量)
+  return 数量 * 2
+
+beat 开场
+  国王: 你好！
+
+  Élodie: Bonjour.
+
+  Борис: Привет.
+
+  骑士: 在。$骑士 arrives.
+
+  You have $金币 coins, ${国王.name}说你好。
+
+  Café is $café, the cat is $кот, logos is $λόγος.
+
+  Bowls are $ラーメン for $人々 people, $角色1 and $𠀀.
+
+  金币 += 5
+
+  国王.心情 = "很好"
+
+  Now $金币 coins and ${国王.心情}.
+
+  Double is ${加倍(金币)}.
+
+  财富()
+
+  choice
+    前去征讨
+      -> 结局
+    + 插曲
+
+beat 财富
+  when first
+    金币 > 100
+      国王: 我们很富有。
+    金币 > 12
+      国王: 还不错。
+    true
+      国王: 我们很穷。
+
+beat 插曲
+  choice
+    留下
+      国王: 那就留下吧。
+
+beat 结局
+  国王: 再见。
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    路易斯: 你好！
+
+    Élodie: Bonjour.
+
+    Борис: Привет.
+
+    骑士: 在。骑士 arrives.
+
+    ~ You have 10 coins, 路易斯说你好。
+
+    ~ Café is noir, the cat is Мурзик, logos is 3.
+
+    ~ Bowls are 2 for 5 people, un and rare.
+
+    ~ Now 15 coins and 很好.
+
+    ~ Double is 30.
+
+    路易斯: 还不错。
+
+    + 前去征讨
+    + 留下
+
+    路易斯: 再见。
+- choices: [1]
+  expected: |
+    路易斯: 你好！
+
+    Élodie: Bonjour.
+
+    Борис: Привет.
+
+    骑士: 在。骑士 arrives.
+
+    ~ You have 10 coins, 路易斯说你好。
+
+    ~ Café is noir, the cat is Мурзик, logos is 3.
+
+    ~ Bowls are 2 for 5 people, un and rare.
+
+    ~ Now 15 coins and 很好.
+
+    ~ Double is 30.
+
+    路易斯: 还不错。
+
+    + 前去征讨
+    + 留下
+
+    路易斯: 那就留下吧。
+</test>
+*/

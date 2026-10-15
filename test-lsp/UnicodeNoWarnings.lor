@@ -1,0 +1,27 @@
+state
+  coins: 3
+  Wow🎉: "party"
+  café: "noir"
+
+character 国王
+  name: 路易斯
+
+character 🐉
+  name: Smaug
+
+beat 场景
+  国王: 你好。
+  🐉: Grrr.
+  注意：小心
+  Here are ${coins}💰 and $Wow🎉 and $café.
+  -> 结局
+
+beat 结局
+  The end.
+
+/*
+<test>
+- request: diagnostics
+  none: true
+</test>
+*/

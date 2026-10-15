@@ -1,0 +1,80 @@
+// Function code reads names in any language: parameters, local variables,
+// object fields, state fields and characters. Word operators only count as
+// whole words, never inside a name such as noté, caféor or 国王is.
+
+state
+  金币: 10
+  已婚: false
+  列表: ["剑", "盾"]
+
+character 国王
+  name: 路易斯
+  年龄: 40
+
+function 加倍(数量)
+  return 数量 * 2
+
+function 感叹(𠀀)
+  var 结果 = "$𠀀!"
+  return 结果
+
+function 词语(国王is, noté, caféor)
+  return "$国王is $noté $caféor"
+
+function 运算()
+  var 甲 = true
+  var 乙 = false
+  return "${甲 and 乙} ${甲 or 乙} ${not 已婚} ${金币 is 10} ${金币 is not 10}"
+
+function 循环()
+  var 物品 = ""
+  for 东西 in 列表
+    物品 = 物品 + 东西
+  var 计数 = 0
+  while 计数 < 3 and not 已婚
+    计数 = 计数 + 1
+  if 物品 is "剑盾"
+    物品 = 物品 + "!"
+  return "$物品 $计数"
+
+function 对象()
+  var 字典 = { 国王: 1, 名字: "王" }
+  return "${字典.国王} ${字典.名字}"
+
+function 角色()
+  国王.年龄 = 国王.年龄 + 1
+  金币 = 加倍(金币)
+  return "${国王.name} ${国王.年龄} $金币"
+
+function 文字()
+  return "${国王.name}说" + "，${金币}枚"
+
+beat 开始
+  Double gives ${加倍(21)}, cry: ${感叹("好")}, words: ${词语("a", "b", "c")}.
+
+  Operators give ${运算()}.
+
+  Loops give ${循环()}.
+
+  Object gives ${对象()}.
+
+  Character gives ${角色()}.
+
+  Text gives ${文字()}.
+
+/*
+<test>
+- expected: |
+    ~ Double gives 42, cry: 好!, words: a b c.
+
+    ~ Operators give false true true true false.
+
+    ~ Loops give 剑盾! 3.
+
+    ~ Object gives 1 王.
+
+    ~ Character gives 路易斯 41 20.
+
+    ~ Text gives 路易斯说，20枚.
+</test>
+*/

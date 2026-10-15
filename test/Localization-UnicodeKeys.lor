@@ -1,0 +1,22 @@
+// Translation keys take names in any language.
+
+character 国王
+  name: 路易斯
+
+beat 开场
+  国王: Hello, friend. #问候
+  The king leaves. #离开
+
+/*
+<test>
+- expected: |
+    路易斯: Hello, friend.
+
+    ~ The king leaves.
+- translation: fr
+  expected: |
+    路易斯: Bonjour, l'ami.
+
+    ~ Le roi s'en va.
+</test>
+*/

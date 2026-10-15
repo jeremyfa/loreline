@@ -1,0 +1,28 @@
+// The colon of the syntax is the ASCII one. A full-width colon, which Chinese
+// and Japanese input methods type by default, keeps the line as text (the
+// editor warns about it when the name before it is a character).
+
+character 国王
+  name: 路易斯
+
+beat 开场
+  国王：你好
+
+  注意：小心
+
+  国王: 时间：现在
+
+  "国王：引号里的文字"
+
+/*
+<test>
+- expected: |
+    ~ 国王：你好
+
+    ~ 注意：小心
+
+    路易斯: 时间：现在
+
+    ~ 国王：引号里的文字
+</test>
+*/

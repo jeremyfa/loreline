@@ -1,0 +1,34 @@
+// State fields and characters named in any language, or with emoji, are saved
+// and restored like any other. The save sweep checks it at every line.
+
+state
+  金币: 1
+  💰: 2
+
+character 🐉
+  name: Smaug
+  心情: "calm"
+
+beat Start
+  Before $金币 $💰 ${🐉.心情}.
+
+  金币 = 10
+
+  💰 = 20
+
+  🐉.心情 = "angry"
+
+  First line after the changes.
+
+  After $金币 $💰 ${🐉.心情}.
+
+/*
+<test>
+- expected: |
+    ~ Before 1 2 calm.
+
+    ~ First line after the changes.
+
+    ~ After 10 20 angry.
+</test>
+*/

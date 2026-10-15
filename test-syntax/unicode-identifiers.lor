@@ -1,0 +1,64 @@
+// Names in any language and emoji: declarations, dialogue, transitions,
+// insertions, interpolation, calls, tags and keys.
+
+state
+  金币: 10
+//^^ variable.other
+  coins: 3
+
+character 国王
+//        ^^ entity.name.class
+  name: 路易斯
+
+character 🐉
+//        ^^ entity.name.class
+  name: Smaug
+
+function 加倍(数量)
+//       ^^ entity.name.function
+//          ^^ variable.parameter
+  return 数量 * 2
+//       ^^ variable.other
+
+beat 场景
+//   ^^ entity.name.type.beat
+  国王: 你好！
+//^^ entity.name.class
+//    ^^^ string.unquoted.dialogue
+  🐉: Grrr.
+//^^ entity.name.class
+//    ^^^^^ string.unquoted.dialogue
+  Wow🎉: Party.
+//^^^^^ entity.name.class
+  国王：这是旁白
+//^^^^^^^ string.unquoted
+//^^^^^^^ - entity.name.class
+  You have $金币 coins and $coins💰.
+//          ^^ variable.other
+//                        ^^^^^^^ variable.other
+  ${国王.name}说你好。
+//  ^^ variable.other
+  Tagged <开心>text</开心>. #问候
+//        ^^ storage.modifier.metadata
+//                      ^^^ comment.line.hash
+  Bark()
+//^^^^ entity.name.type.beat
+  加倍(2)
+//^^ entity.name.function
+  + 结局
+//  ^^ entity.name.type.beat
+  -> 结局
+//   ^^ entity.name.type.beat
+  -> 🌙
+//   ^^ entity.name.type.beat
+
+beat Bark
+  Woof.
+
+beat 结局
+//   ^^ entity.name.type.beat
+  The end.
+
+beat 🌙
+//   ^^ entity.name.type.beat
+  Moon.

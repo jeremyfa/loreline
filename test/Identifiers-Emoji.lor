@@ -1,0 +1,112 @@
+// Emoji are names too, alone or mixed with letters, so an emoji right after a
+// name is part of it: `${coins}💰` shows coins then the emoji. Sequences stay
+// whole: a family tied by invisible joiners, a skin tone, the emoji selector,
+// flags. Symbols below U+2300, such as ™ or ©, and keycaps stay text.
+
+state
+  coins: 3
+  👨‍👩‍👧: "family"
+  👍🏽: "thumb"
+  ❤️: "heart"
+  🇫🇷: "France"
+  🏴󠁧󠁢󠁥󠁮󠁧󠁿: "England"
+  龙🐉: "dragon"
+  hero_👑2: "king"
+  hp💖: 7
+
+character 🐉
+  name: Smaug
+
+character Wow🎉
+  name: Party
+
+function 🎲()
+  return 4
+
+function heal(n)
+  return hp💖 + n
+
+beat Start
+  🐉: Grrr.
+
+  Wow🎉: What a party.
+
+  Pieces are $👨‍👩‍👧, $👍🏽, $❤️, $🇫🇷, $🏴󠁧󠁢󠁥󠁮󠁧󠁿.
+
+  Mixed are $龙🐉, $hero_👑2, ${🐉.name}, $Wow🎉.name.
+
+  Coins are ${coins}💰 and $coins💰.
+
+  Dragon is ${🐉.name}龙.
+
+  Brand™: text.
+
+  © 2026: text.
+
+  Press #️⃣ to call.
+
+  \🎉: escaped.
+
+  Wow\🎉: escaped.
+
+  Tagged <🎉>party</🎉> text.
+
+  Keyed line. #🎉
+
+  Function gives ${🎲()} ${heal(2)}.
+
+  🌙()
+
+  choice
+    + ⭐
+  -> 🌙
+
+beat ⭐
+  choice
+    Star
+      Picked.
+
+beat 🌙
+  Moon.
+
+/*
+<test>
+- choices: [0]
+  expected: |
+    Smaug: Grrr.
+
+    Party: What a party.
+
+    ~ Pieces are family, thumb, heart, France, England.
+
+    ~ Mixed are dragon, king, Smaug, Party.
+
+    ~ Coins are 3💰 and null.
+
+    ~ Dragon is Smaug龙.
+
+    ~ Brand™: text.
+
+    ~ © 2026: text.
+
+    ~ Press #️⃣ to call.
+
+    ~ 🎉: escaped.
+
+    ~ Wow🎉: escaped.
+
+    ~ Tagged <<🎉>>party<</🎉>> text.
+
+    ~ Keyed line.
+
+    ~ Function gives 4 9.
+
+    ~ Moon.
+
+    + Star
+
+    ~ Picked.
+
+    ~ Moon.
+</test>
+*/
