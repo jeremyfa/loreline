@@ -1,0 +1,24 @@
+state
+  coins: 3
+
+beat Start
+  You have $coins left.
+  Still ${coins} here.
+  -> Start
+
+/*
+<test>
+- request: hover
+  at: "$coins| left"
+  contains:
+    - "**coins**"
+- request: hover
+  at: "${coins|} here"
+  contains:
+    - "**coins**"
+- request: hover
+  at: "-> Start|"
+  contains:
+    - "**Start** (beat)"
+</test>
+*/
