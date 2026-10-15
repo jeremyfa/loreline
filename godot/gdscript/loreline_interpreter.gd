@@ -357,7 +357,8 @@ func set_top_level_state_field(field: String, value) -> void:
 		_interp.setTopLevelStateField(field, value)
 
 
-## Information about the node currently being evaluated.
+## Information about the node currently being evaluated. Its column and
+## offset count characters (code points), as a Godot String does.
 func current_node() -> Dictionary:
 	if _interp == null:
 		return {}

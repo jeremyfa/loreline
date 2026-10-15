@@ -13,7 +13,8 @@ class Error {
     public var message:String;
 
     /**
-     * The position in the source code where the error occurred.
+     * The position in the source code where the error occurred. Its column
+     * and offset count units of the target, see `loreline.Position`.
      */
     public var pos:Position;
 

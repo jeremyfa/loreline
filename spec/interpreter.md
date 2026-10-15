@@ -1547,6 +1547,24 @@ bytes), `unitsAt` gives its length, `nameEnd` the end of the name parts that
 start at a position, and `startBefore` steps back over a whole character.
 Positions and lengths stay in the units of the target.
 
+The rule for contributors: positions, offsets and lengths are units, never
+added to or compared with a count of characters. Comparing with ASCII,
+`uCharCodeAt` and `i++` are enough, since a trailing unit of a longer
+character is never below 0x80. Comparing with anything beyond ASCII, or
+passing to `Identifiers.is*`, use `Chars.codeAt` and `i += Chars.unitsAt`.
+Stepping back, use `Chars.startBefore`. Counting what a reader sees, use
+`Chars.count`. The string builtins of scripts use `Texts`, which counts
+characters and never mixes with positions.
+
+### Where positions cross boundaries
+
+| Boundary | Unit |
+|---|---|
+| `Position.line/column/offset/length` (AST, errors, `currentNode`) | units of the target: UTF-16 on JS, C#, Java, C++ and the C API; UTF-8 bytes on Lua; code points on Python, PHP, GDScript, Neko |
+| `TextTag.offset` | characters (code points), every target |
+| LSP `Position.character` | UTF-16, declared as `positionEncoding`; equals `column` on the JS and C++ hosts |
+| String builtins (`Texts`) | characters, every target |
+
 Function code goes through two stages. `CodeToLorscript` checks the
 characters: outside strings and comments, a character beyond ASCII must belong
 to a name, otherwise it is an error at its position. The lorscript parser then

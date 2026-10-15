@@ -193,12 +193,12 @@ class Node:
 
     @property
     def column(self) -> int:
-        """The column number in the source code where this node appears (1-based)."""
+        """The column in the source code where this node appears (1-based), in characters (code points), as Python strings count."""
         return self._internal.pos.column
 
     @property
     def offset(self) -> int:
-        """The absolute character offset from the start of the source code."""
+        """The offset from the start of the source code, in characters (code points): an index into the source as a Python string."""
         return self._internal.pos.offset
 
     @property

@@ -61,12 +61,14 @@ namespace Loreline
         public readonly int Line;
 
         /// <summary>
-        /// The column number in the source code where this node appears (1-based).
+        /// The column in the source code where this node appears (1-based), in
+        /// UTF-16 units, those of a .NET string: a character above U+FFFF counts for two.
         /// </summary>
         public readonly int Column;
 
         /// <summary>
-        /// The absolute character offset from the start of the source code.
+        /// The offset from the start of the source code, in UTF-16 units: an index
+        /// into the source as a .NET string.
         /// </summary>
         public readonly int Offset;
 

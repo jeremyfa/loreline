@@ -41,7 +41,8 @@ class Node
     }
 
     /**
-     * The column number in the source code where this node appears (1-based).
+     * The column in the source code where this node appears (1-based), in
+     * characters (code points), as the mb_* functions count.
      */
     public function column(): int
     {
@@ -49,7 +50,8 @@ class Node
     }
 
     /**
-     * The absolute character offset from the start of the source code.
+     * The offset from the start of the source code, in characters (code
+     * points), as the mb_* functions count.
      */
     public function offset(): int
     {

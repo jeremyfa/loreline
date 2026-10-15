@@ -215,7 +215,12 @@ struct LORELINE_PUBLIC Loreline_Value {
 
 struct Loreline_Node {
     Loreline_String type;
+    /* 1-based */
     int line;
+    /* 1-based. `column`, `offset` and `length` count UTF-16 units of the source,
+     * the units of the runtime's strings: a character above U+FFFF counts for
+     * two, and the other characters for one. Not bytes of the UTF-8 source:
+     * see Loreline_TextTag.offset, which counts characters instead. */
     int column;
     int offset;
     int length;

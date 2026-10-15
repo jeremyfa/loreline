@@ -28,12 +28,14 @@ public class Node {
     public final int line;
 
     /**
-     * The column number in the source code where this node appears (1-based).
+     * The column in the source code where this node appears (1-based), in
+     * UTF-16 units, those of a Java string: a character above U+FFFF counts for two.
      */
     public final int column;
 
     /**
-     * The absolute character offset from the start of the source code.
+     * The offset from the start of the source code, in UTF-16 units: an index
+     * into the source as a Java string.
      */
     public final int offset;
 

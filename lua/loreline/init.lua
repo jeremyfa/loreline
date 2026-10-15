@@ -77,13 +77,16 @@ function Node:line()
     return self._internal.pos.line
 end
 
---- Get the column number in the source code where this node appears (1-based).
+--- Get the column in the source code where this node appears (1-based), in
+-- bytes of the UTF-8 source, as Lua strings count: a character beyond ASCII
+-- takes two to four.
 -- @return number The column number.
 function Node:column()
     return self._internal.pos.column
 end
 
---- Get the absolute character offset from the start of the source code.
+--- Get the offset from the start of the source code, in bytes of the UTF-8
+-- source: an index into the source as a Lua string.
 -- @return number The offset.
 function Node:offset()
     return self._internal.pos.offset

@@ -545,7 +545,8 @@ class TextTag {
      * Haxe strings don't use the same units on every target: UTF-16 units on
      * JS, C#, Java and C++, UTF-8 bytes on Lua, characters elsewhere. Where
      * they aren't characters, the offset is an index in the text only while
-     * the text before the tag is ASCII.
+     * the text before the tag is ASCII. This is the one offset counted in
+     * characters (`Chars.count`): positions in the source count units.
      */
     public var offset:Int;
 }
@@ -2253,6 +2254,7 @@ class InterpreterContext {
      * Returns the current node being executed.
      * During a dialogue callback, this returns the dialogue statement node.
      * During a choice callback, this returns the choice statement node.
+     * Its `pos` counts units of the target, see `loreline.Position`.
      *
      * @return The current AST node or null if no node is being executed
      */

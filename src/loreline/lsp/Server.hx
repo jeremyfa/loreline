@@ -3362,7 +3362,9 @@ class Server {
      * Convert an LSP Protocol Position to a Loreline Position
      *
      * LSP positions are 0-based for both line and character
-     * Loreline positions are 1-based for both line and column
+     * Loreline positions are 1-based for both line and column. The LSP
+     * `character` is a UTF-16 unit (the `positionEncoding` declared), equal
+     * to a Loreline column because the server runs on UTF-16 targets.
      *
      * @param protocolPos The LSP Protocol position with line and character fields
      * @param content document content string to compute offset
