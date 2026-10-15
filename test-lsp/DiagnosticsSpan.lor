@@ -1,0 +1,16 @@
+character 国王
+  name: 路易斯
+
+beat Start
+  国王：你好
+  还有一句
+
+/*
+<test>
+- request: diagnostics
+  expected:
+    - message: '"：" looks like ":" but isn''t'
+      line: 5
+      endLine: 6
+</test>
+*/

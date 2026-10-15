@@ -74,6 +74,7 @@ class LspTests {
 
         final tests:Array<{name:String, fn:()->Void}> = [
             {name: 'a request without a document', fn: () -> testShutdown()},
+            {name: 'the server declares UTF-16 positions', fn: () -> testPositionEncoding()},
             {name: 'an open file keeps the URI sent by the client', fn: () -> testOpenFileUri()},
             {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()}
         ];
@@ -100,6 +101,18 @@ class LspTests {
         final response = server.handleMessageSync(request);
         if (response == null) throw 'no response';
         if (response.error != null) throw 'error: ' + response.error.message;
+    }
+
+    /**
+     * Columns of `loreline.Position` count the units of the target, UTF-16 ones
+     * where the server runs, so it says so instead of leaving the default implied.
+     */
+    static function testPositionEncoding() {
+        final server = new Server();
+        final initialize:RequestMessage = { jsonrpc: "2.0", id: 1, method: "initialize", params: { capabilities: {} } };
+        final response:Dynamic = server.handleMessageSync(initialize);
+        final encoding:Null<String> = response?.result?.capabilities?.positionEncoding;
+        if (encoding != "utf-16") throw 'expected positionEncoding "utf-16", got ' + Std.string(encoding);
     }
 
     static function testOpenFileUri() {

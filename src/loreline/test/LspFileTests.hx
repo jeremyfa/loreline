@@ -333,10 +333,11 @@ class LspFileTests {
                     final found = published.filter(d ->
                         Std.string(d.message).indexOf(message) != -1
                         && (expected is String || expected.line == null || d.range.start.line + 1 == Std.int(expected.line))
+                        && (expected is String || expected.endLine == null || d.range.end.line + 1 == Std.int(expected.endLine))
                         && (expected is String || expected.severity == null || d.severity == Std.int(expected.severity))
                     );
                     if (found.length == 0) {
-                        throw 'no diagnostic matching "$message", got: ' + [for (d in published) '${d.range.start.line + 1}: ${d.message}'].join(' / ');
+                        throw 'no diagnostic matching "$message", got: ' + [for (d in published) '${d.range.start.line + 1}-${d.range.end.line + 1}: ${d.message}'].join(' / ');
                     }
                 }
 
