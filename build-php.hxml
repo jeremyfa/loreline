@@ -7,4 +7,3 @@
 -D loreline_node_id_class
 -D loreline_auto_wrap_functions
 -D loreline_php_api
--D loreline_utf8_vector
