@@ -3389,7 +3389,7 @@ class Server {
             var currentCol = 1;
             var i = 0;
 
-            while (i < content.length) {
+            while (i < content.uLength()) {
                 if (currentLine == line && currentCol == column) {
                     offset = i;
                     break;
@@ -3455,7 +3455,7 @@ class Server {
         // Find end of first non-empty line
         if (lineStart >= lines.length) lineStart = lines.length - 1;
         var lineEnd = lineStart;
-        var charEnd = lines[lineEnd].length;
+        var charEnd = lines[lineEnd].uLength();
 
         return {
             start: {
