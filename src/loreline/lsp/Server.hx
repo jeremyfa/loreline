@@ -18,12 +18,7 @@ using loreline.Utf8;
  */
 class Server {
 
-    final RE_IDENTIFIER_BEFORE = ~/([a-zA-Z_][a-zA-Z0-9_]*)((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
-
     final RE_ARROW_BEFORE = ~/(->)((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
-
-    /** Text before the cursor ends with `when ` at the start of a line: a strategy name comes next */
-    final RE_WHEN_STRATEGY_BEFORE = ~/(^|\n)[ \t]*when[ \t]+[a-zA-Z0-9_]*$/;
 
     final RE_ARRAY_ACCESS_BEFORE = ~/(\])((?:\s*|\/\*(?:[^*]|\*[^\/])*\*\/)*)$/;
 
@@ -535,6 +530,11 @@ class Server {
                         }
                     }
 
+                    // Names that are likely mistakes
+                    for (warning in lens.getNameWarnings()) {
+                        addDiagnostic(uri, warning.pos, warning.message, DiagnosticSeverity.Warning);
+                    }
+
                     // Things worth pointing out in when blocks
                     for (when in lens.getNodesOfType(NWhenStatement, false)) {
                         for (warning in lens.getWhenWarnings(when)) {
@@ -877,8 +877,9 @@ class Server {
         var replacementRange:Range = { start: cursorLspPos, end: cursorLspPos };
         if (triggerCharacter == null) {
             final prevText = content.uSubstr(0, lorelinePos.offset);
-            if (RE_IDENTIFIER_BEFORE.match(prevText) && RE_IDENTIFIER_BEFORE.matched(2).uLength() == 0) {
-                final identLen = RE_IDENTIFIER_BEFORE.matched(1).uLength();
+            final before = nameBefore(prevText);
+            if (before != null && before.gapLength == 0) {
+                final identLen = before.nameLength;
                 final startPos = fromLorelinePosition(lorelinePos.withOffset(content, -identLen));
                 replacementRange = { start: startPos, end: cursorLspPos };
             }
@@ -892,8 +893,9 @@ class Server {
                     if (dotIdx < 0) return [];
                     prevText = prevText.uSubstr(0, dotIdx);
                     var resolved:Node = null;
-                    if (RE_IDENTIFIER_BEFORE.match(prevText)) {
-                        final beforePos = lorelinePos.withOffset(content, -RE_IDENTIFIER_BEFORE.matched(0).uLength() - 1);
+                    final before = nameBefore(prevText);
+                    if (before != null) {
+                        final beforePos = lorelinePos.withOffset(content, -before.totalLength - 1);
                         final beforeNode = lens.getNodeAtPosition(beforePos);
                         if (beforeNode == null) {
                             return [];
@@ -1018,7 +1020,7 @@ class Server {
 
                 case " ": // Transition or when strategy?
                     final prevText = content.uSubstr(0, lorelinePos.offset);
-                    if (RE_WHEN_STRATEGY_BEFORE.match(prevText)) {
+                    if (isWhenStrategyBefore(prevText)) {
                         return getWhenStrategyCompletions(lens, replacementRange);
                     }
                     final isTransition = RE_ARROW_BEFORE.match(prevText);
@@ -1049,7 +1051,7 @@ class Server {
             }
 
             // After `when`, only strategies make sense
-            if (RE_WHEN_STRATEGY_BEFORE.match(prevText)) {
+            if (isWhenStrategyBefore(prevText)) {
                 return getWhenStrategyCompletions(lens, replacementRange);
             }
 
@@ -2464,6 +2466,78 @@ class Server {
     }
 
     /**
+     * The name that ends a text, possibly followed by spaces and multiline
+     * comments, or null. Names take letters of any language and emoji, read
+     * whole (see Identifiers). Lengths are in the units of `uLength`:
+     * `nameLength` for the name, `gapLength` for what follows it, `totalLength`
+     * for both.
+     */
+    static function nameBefore(text:String):Null<{nameLength:Int, gapLength:Int, totalLength:Int}> {
+        final length = text.uLength();
+
+        // Spaces and multiline comments before the end
+        var end = length;
+        while (end > 0) {
+            final c = text.uCharCodeAt(end - 1);
+            if (c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\r'.code) {
+                end--;
+            }
+            else if (c == '/'.code && end >= 2 && text.uCharCodeAt(end - 2) == '*'.code) {
+                var p = end - 3;
+                while (p >= 1 && !(text.uCharCodeAt(p - 1) == '/'.code && text.uCharCodeAt(p) == '*'.code)) p--;
+                if (p < 1) break;
+                end = p - 1;
+            }
+            else {
+                break;
+            }
+        }
+
+        // The name parts before them, starting with a name start
+        var start = end;
+        while (start > 0) {
+            final previous = Identifiers.startBefore(text, start);
+            if (!Identifiers.isPart(Identifiers.codeAt(text, previous))) break;
+            start = previous;
+        }
+        while (start < end && !Identifiers.isStart(Identifiers.codeAt(text, start))) {
+            start += Identifiers.unitsAt(text, start);
+        }
+        if (start >= end) return null;
+
+        return {
+            nameLength: end - start,
+            gapLength: length - end,
+            totalLength: length - start
+        };
+    }
+
+    /**
+     * Whether a text ends with `when` at the start of a line, then spaces and the
+     * part of a strategy name typed so far: a strategy name comes next.
+     */
+    static function isWhenStrategyBefore(text:String):Bool {
+        var p = text.uLength();
+
+        // The strategy typed so far
+        while (p > 0) {
+            final previous = Identifiers.startBefore(text, p);
+            if (!Identifiers.isPart(Identifiers.codeAt(text, previous))) break;
+            p = previous;
+        }
+
+        // At least one space or tab after `when`
+        final afterWhen = p;
+        while (p > 0 && (text.uCharCodeAt(p - 1) == ' '.code || text.uCharCodeAt(p - 1) == '\t'.code)) p--;
+        if (p == afterWhen || p < 4 || text.uSubstr(p - 4, 4) != 'when') return false;
+        p -= 4;
+
+        // Only spaces or tabs before it on its line
+        while (p > 0 && (text.uCharCodeAt(p - 1) == ' '.code || text.uCharCodeAt(p - 1) == '\t'.code)) p--;
+        return p == 0 || text.uCharCodeAt(p - 1) == '\n'.code;
+    }
+
+    /**
      * When the given position points at a parameter name inside the
      * function's signature parens, returns a parameter hover. The signature
      * is scanned from the source (raw args carry no positions), mirroring
@@ -2527,13 +2601,8 @@ class Server {
             final segment = segments[index];
             var identStart = segment.start;
             while (identStart < segment.end && StringTools.isSpace(content, identStart)) identStart++;
-            var identEnd = identStart;
-            while (identEnd < segment.end) {
-                final c = content.charCodeAt(identEnd);
-                final isIdent = (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code) || (c >= '0'.code && c <= '9'.code) || c == '_'.code;
-                if (!isIdent) break;
-                identEnd++;
-            }
+            var identEnd = Identifiers.nameEnd(content, identStart);
+            if (identEnd > segment.end) identEnd = segment.end;
             if (identEnd == identStart) continue;
             if (lorelinePos.offset >= identStart && lorelinePos.offset <= identEnd) {
                 // The whole signature sits on the declaration line

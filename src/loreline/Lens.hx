@@ -22,6 +22,16 @@ typedef WhenWarning = {
     var isWarning:Bool;
 }
 
+/**
+ * Something about a name that is likely a mistake, for editors.
+ */
+typedef NameWarning = {
+    /** Where it is */
+    var pos:Position;
+    /** What to tell the writer */
+    var message:String;
+}
+
 class Reference<T:Node> {
 
     public var target:T;
@@ -1280,6 +1290,169 @@ class Lens {
 
         return result;
 
+    }
+
+    /**
+     * Things about the names of the script that are likely mistakes, for editors:
+     * - a name that mixes Latin, Greek or Cyrillic letters, often a lookalike typo
+     *   (`rаven` written with a Cyrillic `а`). Emoji in the name are not counted;
+     * - a line of narration that starts with the name of a character and a
+     *   full-width colon `：`, typed by Chinese and Japanese input methods: only
+     *   the ASCII colon makes a dialogue line;
+     * - a `$name` in a text that reads an emoji as part of the name, when the name
+     *   without the emoji exists: `$coins💰` is meant to be `${coins}💰`.
+     */
+    public function getNameWarnings():Array<NameWarning> {
+
+        final warnings:Array<NameWarning> = [];
+
+        function checkLetters(name:Null<String>, pos:Null<Position>) {
+            if (name == null || pos == null) return;
+            final scripts = scriptsOf(name);
+            if (scripts.length > 1) {
+                final last = scripts.pop();
+                warnings.push({
+                    pos: pos,
+                    message: 'This name mixes ' + scripts.join(', ') + ' and ' + last + ' letters: ' + name
+                });
+            }
+        }
+
+        script.eachExcludingImported((node, parent) -> {
+            switch Type.getClass(node) {
+                case NCharacterDecl:
+                    final character:NCharacterDecl = cast node;
+                    checkLetters(character.name, character.namePos ?? character.pos);
+                case NBeatDecl:
+                    final beat:NBeatDecl = cast node;
+                    checkLetters(beat.name, beat.pos);
+                    if (beat.params != null) {
+                        for (param in beat.params) checkLetters(param.name, param.namePos);
+                    }
+                case NObjectField:
+                    final field:NObjectField = cast node;
+                    checkLetters(field.name, field.pos);
+                case NFunctionDecl:
+                    final func:NFunctionDecl = cast node;
+                    checkLetters(func.name, func.pos);
+                    if (func.args != null) {
+                        for (arg in func.args) checkLetters(arg, func.pos);
+                    }
+                case NDialogueStatement:
+                    final dialogue:NDialogueStatement = cast node;
+                    checkLetters(dialogue.character, dialogue.characterPos);
+                case NTransition:
+                    final transition:NTransition = cast node;
+                    checkLetters(transition.target, transition.targetPos);
+                case NInsertion:
+                    final insertion:NInsertion = cast node;
+                    checkLetters(insertion.target, insertion.targetPos);
+                case NAccess:
+                    final access:NAccess = cast node;
+                    checkLetters(access.name, access.pos);
+                    if (access.target == null && parent is NStringPart) {
+                        checkEmojiAfterName(access, warnings);
+                    }
+                case NTextStatement:
+                    checkFullWidthColon(cast node, warnings);
+                case _:
+            }
+        });
+
+        return warnings;
+
+    }
+
+    /**
+     * The alphabets with lookalike letters (Latin, Greek, Cyrillic) that a name
+     * uses, in the order met.
+     */
+    static function scriptsOf(name:String):Array<String> {
+        final scripts:Array<String> = [];
+        var pos = 0;
+        while (true) {
+            final c = Identifiers.codeAt(name, pos);
+            if (c == -1) break;
+            final script = Identifiers.scriptOf(c);
+            if (script != null && !scripts.contains(script)) scripts.push(script);
+            pos += Identifiers.unitsAt(name, pos);
+        }
+        return scripts;
+    }
+
+    /**
+     * A line of narration that starts with the name of a character followed by a
+     * full-width colon `：`.
+     */
+    function checkFullWidthColon(text:NTextStatement, warnings:Array<NameWarning>):Void {
+        if (text.content == null || text.content.parts.length == 0) return;
+        switch text.content.parts[0].partType {
+            case Raw(raw):
+                final end = Identifiers.nameEnd(raw, 0);
+                if (end == 0) return;
+                var p = end;
+                while (Identifiers.codeAt(raw, p) == " ".code || Identifiers.codeAt(raw, p) == "\t".code) p++;
+                if (Identifiers.codeAt(raw, p) != 0xFF1A) return;
+                final name = raw.uSubstr(0, end);
+                if (findCharacterByNameFromNode(name, text) == null) return;
+                warnings.push({
+                    pos: text.pos,
+                    message: '"：" looks like ":" but isn\'t, so this line is narration. Write $name: to make $name speak.'
+                });
+            case _:
+        }
+    }
+
+    /**
+     * A `$name` that reads an emoji as part of the name, when the name without
+     * the emoji exists.
+     */
+    function checkEmojiAfterName(access:NAccess, warnings:Array<NameWarning>):Void {
+        final name = access.name;
+        var pos = 0;
+        while (true) {
+            final c = Identifiers.codeAt(name, pos);
+            if (c == -1) return;
+            if (Identifiers.isEmoji(c)) break;
+            pos += Identifiers.unitsAt(name, pos);
+        }
+        if (pos == 0) return;
+        final before = name.uSubstr(0, pos);
+        final after = name.uSubstr(pos);
+        if (isKnownName(name, access) || !isKnownName(before, access)) return;
+        warnings.push({
+            pos: access.pos,
+            message: 'No name "$name" here. To show $before then $after, write $${$before}$after.'
+        });
+    }
+
+    /**
+     * Whether a name is declared for the given node: a state field, a character,
+     * a beat, a function, or a parameter of an enclosing beat.
+     */
+    function isKnownName(name:String, node:Node):Bool {
+        if (findCharacterByNameFromNode(name, node) != null) return true;
+        if (findFunctionByNameFromNode(name, node) != null) return true;
+        if (findBeatByNameFromNode(name, node) != null) return true;
+        var known = false;
+        script.each((child, parent) -> {
+            if (!known && child is NStateDecl) {
+                for (field in (cast child:NStateDecl).fields) {
+                    if (field.name == name) known = true;
+                }
+            }
+        });
+        if (known) return true;
+        var beat = getFirstParentOfType(node, NBeatDecl);
+        while (beat != null) {
+            if (beat.params != null) {
+                for (param in beat.params) {
+                    if (param.name == name) return true;
+                }
+            }
+            beat = getFirstParentOfType(beat, NBeatDecl);
+        }
+        return false;
     }
 
     /**
