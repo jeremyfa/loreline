@@ -798,7 +798,7 @@ class Token {
                     case ",".code: advance(); makeToken(Comma, startPos);
                     case ".".code: advance(); makeToken(Dot, startPos);
                     case c if (isDigit(c)): readNumber();
-                    case c if (isIdentifierStart(c)): readIdentifier();
+                    case _ if (isNameStartAt(pos)): readIdentifier();
 
                     case "+".code:
                         if (peek() == "=".code) {
@@ -925,8 +925,7 @@ class Token {
                         makeToken(Question);
 
                     case "#".code:
-                        final nextC = pos + 1 < length ? input.uCharCodeAt(pos + 1) : 0;
-                        if (isIdentifierPart(nextC) || nextC == "-".code) {
+                        if (isKeyStartAt(pos + 1)) {
                             return readHashComment();
                         }
                         else {
@@ -935,7 +934,7 @@ class Token {
                         }
 
                     case _:
-                        error('Unexpected character: ${String.fromCharCode(c)}', true);
+                        error(Identifiers.unexpectedCharacterMessage(codeAt(pos)), true);
                         null;
                 }
         }
@@ -1049,8 +1048,8 @@ class Token {
 
         // Optional strategy name
         var p = skipInlineSpacesAndComments(end);
-        if (p < this.length && isIdentifierStart(input.uCharCodeAt(p))) {
-            while (p < this.length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+        if (p < this.length && isNameStartAt(p)) {
+            p = nameEnd(p);
             p = skipInlineSpacesAndComments(p);
         }
 
@@ -1127,30 +1126,10 @@ class Token {
      * @return The matched identifier, or `null` if not matching
      */
     function matchIdentifier(pos:Int):Null<String> {
-        // Handle empty strings first
-        if (this.length == 0) {
+        if (!isNameStartAt(pos)) {
             return null;
         }
-
-        // Check if the first character is a valid identifier start
-        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
-            return null;
-        }
-
-        // Keep track of where the identifier ends
-        var identifierLength = 1;
-
-        // Check subsequent characters until we find an invalid one
-        // or reach the end of the string
-        while (identifierLength < this.length) {
-            if (!isIdentifierPart(input.uCharCodeAt(pos + identifierLength))) {
-                break;
-            }
-            identifierLength++;
-        }
-
-        // Return the substring that contains our identifier
-        return input.uSubstr(pos, identifierLength);
+        return input.uSubstr(pos, nameEnd(pos) - pos);
     }
 
     /**
@@ -1300,7 +1279,7 @@ class Token {
         pos++;
 
         // If "if" is directly followed by an identifier or digit (without space), that's part of a word, not an if
-        if (pos < this.length && (isIdentifierStart(input.uCharCodeAt(pos)) || isDigit(input.uCharCodeAt(pos)))) {
+        if (pos < this.length && isNamePartAt(pos)) {
             return false;
         }
 
@@ -1410,9 +1389,9 @@ class Token {
         if (c == "(".code || c == "[".code) {
             pos = conditionGroupEnd(pos);
         }
-        else if (isIdentifierStart(c)) {
+        else if (isNameStartAt(pos)) {
             final start = pos;
-            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) pos++;
+            pos = nameEnd(pos);
             // Operator words are not operands
             switch input.uSubstr(start, pos - start) {
                 case 'and' | 'or' | 'is' | 'not': return -1;
@@ -1428,8 +1407,8 @@ class Token {
             if (p == ".".code) {
                 // No space after the dot: `tired. Now` is prose, not a field access
                 pos++;
-                if (pos >= this.length || !isIdentifierStart(input.uCharCodeAt(pos))) return -1;
-                while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) pos++;
+                if (pos >= this.length || !isNameStartAt(pos)) return -1;
+                pos = nameEnd(pos);
             }
             else if (p == "(".code || p == "[".code) {
                 pos = conditionGroupEnd(pos);
@@ -1520,28 +1499,47 @@ class Token {
                 result = false;
             }
             else {
-                var isUnderscore:Bool = false;
-                var c = input.uCharCodeAt(pos);
-                isUnderscore = (c == "_".code);
+                var c = codeAt(pos);
+                var isUnderscore = (c == "_".code);
 
-                // First char must be letter or underscore
-                if (!isIdentifierStart(c) || (lowercaseIdentOnly && !isUnderscore && !isLowerCase(c))) {
+                // A letter without case (Chinese, Japanese, an emoji...) can't tell an
+                // expression from prose the way lower case does: the name then needs a
+                // `.`, `(` or `[` right after it. In Chinese, a sentence ends with `。`.
+                var needsAccess = false;
+
+                // First char must be a letter, `_` or an emoji
+                if (!Identifiers.isStart(c)) {
                     result = false;
                 }
-                else {
-                    pos++;
+                else if (lowercaseIdentOnly && !isUnderscore && !Identifiers.isLowerCase(c)) {
+                    if (isUncased(c)) needsAccess = true;
+                    else result = false;
+                }
+
+                if (result) {
+                    pos += unitsAt(pos);
 
                     // Continue reading identifier chars
                     while (pos < this.length) {
                         final wasUnderscore = isUnderscore;
-                        c = input.uCharCodeAt(pos);
+                        c = codeAt(pos);
                         isUnderscore = (c == "_".code);
-                        if (!isIdentifierPart(c)) break;
-                        if (lowercaseIdentOnly && wasUnderscore && !isUnderscore && !isLowerCase(c)) {
-                            result = false;
-                            break;
+                        if (!Identifiers.isPart(c)) break;
+                        if (lowercaseIdentOnly && wasUnderscore && !isUnderscore && !Identifiers.isLowerCase(c)) {
+                            if (isUncased(c)) {
+                                needsAccess = true;
+                            }
+                            else {
+                                result = false;
+                                break;
+                            }
                         }
-                        pos++;
+                        pos += unitsAt(pos);
+                    }
+
+                    if (result && needsAccess) {
+                        final next = codeAt(pos);
+                        result = (next == ".".code || next == "(".code || next == "[".code);
                     }
                 }
             }
@@ -1667,12 +1665,9 @@ class Token {
             // Move past dot
             pos++;
         }
-        else if (isIdentifierPart(input.uCharCodeAt(pos))) {
+        else if (isNamePartAt(pos)) {
             // Move past identifier
-            pos++;
-            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
-                pos++;
-            }
+            pos = nameEnd(pos);
             // Optional argument list right after the identifier: -> Name(args)
             // or a dynamic target: -> beat(expr, args). Single-line, balanced.
             if (pos < this.length && input.uCharCodeAt(pos) == "(".code) {
@@ -1722,12 +1717,9 @@ class Token {
             // Move past dot
             pos++;
         }
-        else if (isIdentifierPart(input.uCharCodeAt(pos))) {
+        else if (isNamePartAt(pos)) {
             // Move past identifier
-            pos++;
-            while (pos < this.length && isIdentifierPart(input.uCharCodeAt(pos))) {
-                pos++;
-            }
+            pos = nameEnd(pos);
             // Optional argument list right after the identifier: + Name(args)
             // or a dynamic target: + beat(expr, args). Single-line, balanced.
             if (pos < this.length && input.uCharCodeAt(pos) == "(".code) {
@@ -1751,7 +1743,7 @@ class Token {
             // Allow trailing "if" keyword (conditional insertion)
             if (c == "i".code && pos + 1 < this.length && input.uCharCodeAt(pos + 1) == "f".code) {
                 // Make sure "if" is followed by a non-identifier char (word boundary)
-                if (pos + 2 >= this.length || !isIdentifierPart(input.uCharCodeAt(pos + 2))) {
+                if (pos + 2 >= this.length || !isNamePartAt(pos + 2)) {
                     return true;
                 }
             }
@@ -1789,7 +1781,7 @@ class Token {
         pos = skipWhitespaceAndComments(pos);
 
         // Check if we have a valid identifier
-        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
+        if (!isNameStartAt(pos)) {
             return false;
         }
 
@@ -1797,10 +1789,7 @@ class Token {
         var startPos = pos;
 
         // Read through identifier characters
-        pos++;
-        while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
-            pos++;
-        }
+        pos = nameEnd(pos);
 
         // Skip whitespace between identifier and colon
         while (pos < length && isWhitespace(input.uCharCodeAt(pos))) {
@@ -1839,21 +1828,12 @@ class Token {
                 result = false;
             }
             else {
-                var c = input.uCharCodeAt(pos);
-
-                // First char must be letter or underscore
-                if (!isIdentifierStart(c)) {
+                // First char must be a letter, `_` or an emoji
+                if (!isNameStartAt(pos)) {
                     result = false;
                 }
                 else {
-                    pos++;
-
-                    // Continue reading identifier chars
-                    while (pos < this.length) {
-                        c = input.uCharCodeAt(pos);
-                        if (!isIdentifierPart(c)) break;
-                        pos++;
-                    }
+                    pos = nameEnd(pos);
                 }
             }
 
@@ -1942,21 +1922,12 @@ class Token {
                 result = false;
             }
             else {
-                var c = input.uCharCodeAt(pos);
-
-                // First char must be letter or underscore
-                if (!isIdentifierStart(c)) {
+                // First char must be a letter, `_` or an emoji
+                if (!isNameStartAt(pos)) {
                     result = false;
                 }
                 else {
-                    pos++;
-
-                    // Continue reading identifier chars
-                    while (pos < this.length) {
-                        c = input.uCharCodeAt(pos);
-                        if (!isIdentifierPart(c)) break;
-                        pos++;
-                    }
+                    pos = nameEnd(pos);
                 }
             }
 
@@ -2037,7 +2008,7 @@ class Token {
                     pos = scanStringEnd(pos, false);
                     if (pos == -1) return false;
                 }
-                else if (isIdentifierStart(c)) {
+                else if (isNameStartAt(pos)) {
                     if (!readIdent()) return false;
                 }
                 else {
@@ -2568,8 +2539,7 @@ class Token {
                     if (next == "/".code || next == "*".code) break;
                 }
                 if (cc == "#".code && pos + 1 < length) {
-                    final next = input.uCharCodeAt(pos + 1);
-                    if (isIdentifierPart(next) || next == "-".code) break;
+                    if (isKeyStartAt(pos + 1)) break;
                 }
                 buf.addChar(cc);
                 pos++;
@@ -2600,7 +2570,7 @@ class Token {
             return false;
         }
         final nameStart = input.uCharCodeAt(checkPos);
-        return isIdentifierStart(nameStart) || nameStart == "_".code || nameStart == "$".code ||
+        return isNameStartAt(checkPos) || nameStart == "$".code ||
             (isClosing && nameStart == ">".code);
     }
 
@@ -2694,9 +2664,9 @@ class Token {
                     continue;
                 }
                 if (next == '$'.code) { p += 2; continue; }  // $$: literal dollar
-                if (isIdentifierStart(next)) {
+                if (isNameStartAt(p + 1)) {
                     p++;  // skip $
-                    while (p < length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+                    p = nameEnd(p);
                     p = scanAccessorChain(p, allowTags);
                     if (p == -1) return -1;
                     continue;
@@ -2719,9 +2689,9 @@ class Token {
         while (p < length) {
             final c = input.uCharCodeAt(p);
             // .field
-            if (c == '.'.code && p + 1 < length && isIdentifierStart(input.uCharCodeAt(p + 1))) {
+            if (c == '.'.code && p + 1 < length && isNameStartAt(p + 1)) {
                 p++;
-                while (p < length && isIdentifierPart(input.uCharCodeAt(p))) p++;
+                p = nameEnd(p);
             }
             // [expr] or (args): mirrors readFieldAccessInterpolation()'s bracket/paren loops
             else if (c == '['.code || c == '('.code) {
@@ -2926,7 +2896,7 @@ class Token {
                 if (identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && identifier != 'and' && identifier != 'or' && identifier != 'is' && identifier != 'not' && KEYWORDS.exists(identifier)) return null;
 
                 // Skip if starting with a label
-                if (isColon(pos + identifier.length)) {
+                if (isColon(nameEnd(pos))) {
                     return null;
                 }
             }
@@ -3024,9 +2994,8 @@ class Token {
                 if (isWhenStart(nextLinePos)) return null;
                 if (isIdentifierExpressionStart(nextLinePos, true)) return null;
                 // Check for keywords (beat, state, character, choice, function, etc.)
-                if (isIdentifierStart(nextChar)) {
-                    var wordEnd = nextLinePos;
-                    while (wordEnd < length && isIdentifierPart(input.uCharCodeAt(wordEnd))) wordEnd++;
+                if (isNameStartAt(nextLinePos)) {
+                    final wordEnd = nameEnd(nextLinePos);
                     final kw = input.uSubstr(nextLinePos, wordEnd - nextLinePos);
                     // `is` and `not` also start prose ("not now", "is it?"), as they did before being keywords
                     if (kw != 'null' && kw != 'true' && kw != 'false' && kw != 'is' && kw != 'not' && KEYWORDS.exists(kw)) return null;
@@ -3179,7 +3148,7 @@ class Token {
                     advance();
                     currentColumn += 2;
                 }
-                else if (isIdentifierStart(nextChar) || isDigit(nextChar) || nextChar == "-".code) {
+                else if (isKeyStartAt(pos + 1)) {
                     // #identifier: break out, let main lexer handle as hash comment
                     break;
                 }
@@ -3210,7 +3179,7 @@ class Token {
 
                         buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
-                    else if (isIdentifierStart(input.uCharCodeAt(pos))) {
+                    else if (isNameStartAt(pos)) {
                         final interpPos = new Position(interpLine, interpColumn + 1, pos);
                         final tokens = readFieldAccessInterpolation(interpPos);
                         final interpLength = pos - tokenStartPos;
@@ -3422,7 +3391,7 @@ class Token {
 
                         buf.add(input.uSubstr(tokenStartPos, interpLength));
                     }
-                    else if (isIdentifierStart(input.uCharCodeAt(pos))) {
+                    else if (isNameStartAt(pos)) {
                         final interpPos = new Position(interpLine, interpColumn + 1, pos);
                         final tokens = readFieldAccessInterpolation(interpPos);
                         final interpLength = pos - tokenStartPos;
@@ -3586,17 +3555,13 @@ class Token {
         final tokens = new Tokens();
 
         // Read initial identifier
-        if (!isIdentifierStart(input.uCharCodeAt(pos))) {
+        if (!isNameStartAt(pos)) {
             error("Expected identifier in field access", true);
         }
 
         // Read identifier token
         final idStartPos = pos;
-        while (pos < length) {
-            final c = input.uCharCodeAt(pos);
-            if (!isIdentifierPart(c)) break;
-            advance();
-        }
+        advance(nameEnd(pos) - pos);
         final name = input.uSubstr(idStartPos, pos - idStartPos);
         final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
         tokens.push(new Token(tokenType, new Position(interpStart.line, interpStart.column, idStartPos, pos - idStartPos)));
@@ -3678,17 +3643,13 @@ class Token {
                         error("Unterminated function call in interpolation", true);
                     }
 
-                case ".".code if (pos + 1 < length && isIdentifierStart(input.uCharCodeAt(pos + 1))):
+                case ".".code if (pos + 1 < length && isNameStartAt(pos + 1)):
                     tokens.push(new Token(Dot, new Position(line, column, pos, 1)));
                     advance();
 
                     // Read the identifier after the dot
                     final idStartPos = pos;
-                    while (pos < length) {
-                        final c = input.uCharCodeAt(pos);
-                        if (!isIdentifierPart(c)) break;
-                        advance();
-                    }
+                    advance(nameEnd(pos) - pos);
                     final name = input.uSubstr(idStartPos, pos - idStartPos);
                     final tokenType = KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name);
                     tokens.push(new Token(tokenType, new Position(line, column - (pos - idStartPos), idStartPos)));
@@ -3711,11 +3672,7 @@ class Token {
         final startPos = makePositionRelativeTo(stringStart);
         final startOffset = pos;
 
-        while (pos < length) {
-            final c = input.uCharCodeAt(pos);
-            if (!isIdentifierPart(c)) break;
-            advance();
-        }
+        advance(nameEnd(pos) - pos);
 
         final name = input.uSubstr(startOffset, pos - startOffset);
         final tokenType = mergeIsNot(KEYWORDS.exists(name) ? KEYWORDS.get(name) : Identifier(name));
@@ -3813,8 +3770,10 @@ class Token {
 
         // Only allow tag-syntax chars: identifier chars and dashes
         while (pos < length) {
-            final c = input.uCharCodeAt(pos);
-            if (isIdentifierPart(c) || c == "-".code) {
+            if (isNamePartAt(pos)) {
+                advance(unitsAt(pos));
+            }
+            else if (input.uCharCodeAt(pos) == "-".code) {
                 advance();
             }
             else break;
@@ -3874,7 +3833,7 @@ class Token {
         for (i in 0...word.length) {
             if (input.uCharCodeAt(p + i) != word.charCodeAt(i)) return -1;
         }
-        if (end < length && isIdentifierPart(input.uCharCodeAt(end))) return -1;
+        if (end < length && isNamePartAt(end)) return -1;
         return end;
     }
 
@@ -3891,11 +3850,7 @@ class Token {
         final start = makePosition();
         final startPos = pos;
 
-        while (pos < length) {
-            final c = input.uCharCodeAt(pos);
-            if (!isIdentifierPart(c)) break;
-            advance();
-        }
+        advance(nameEnd(pos) - pos);
 
         final word = input.uSubstr(startPos, pos - startPos);
 
@@ -3942,11 +3897,9 @@ class Token {
 
         // Read function name if present
         var name:Null<String> = null;
-        if (isIdentifierStart(input.uCharCodeAt(pos))) {
+        if (isNameStartAt(pos)) {
             final nameStart = pos;
-            while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
-                advance();
-            }
+            advance(nameEnd(pos) - pos);
             name = input.uSubstr(nameStart, pos - nameStart);
         }
 
@@ -4214,11 +4167,9 @@ class Token {
                         }
                     }
                 }
-                else if (isIdentifierStart(input.uCharCodeAt(pos))) {
+                else if (isNameStartAt(pos)) {
                     // Simple identifier interpolation $identifier
-                    while (pos < length && isIdentifierPart(input.uCharCodeAt(pos))) {
-                        advance();
-                    }
+                    advance(nameEnd(pos) - pos);
                 }
             }
             else {
@@ -4326,29 +4277,57 @@ class Token {
     }
 
     /**
-     * Checks if a character is valid as the start of an identifier.
-     * Valid identifier starts are letters and underscore.
-     * @param c Character code to check
-     * @return Whether the character can start an identifier
+     * The whole character at the given position, a surrogate pair or UTF-8 bytes
+     * read as one (see Identifiers), or -1 past the end.
      */
-    inline function isIdentifierStart(c:Int):Bool {
-        return (c >= "a".code && c <= "z".code) ||
-               (c >= "A".code && c <= "Z".code) ||
-                c == "_".code;
-    }
-
-    inline function isLowerCase(c:Int):Bool {
-        return (c >= "a".code && c <= "z".code);
+    inline function codeAt(pos:Int):Int {
+        return Identifiers.codeAt(input, pos);
     }
 
     /**
-     * Checks if a character is valid as part of an identifier.
-     * Valid identifier parts are letters, numbers, and underscore.
-     * @param c Character code to check
-     * @return Whether the character can be part of an identifier
+     * How many units the character at the given position takes.
      */
-    inline function isIdentifierPart(c:Int):Bool {
-        return isIdentifierStart(c) || isDigit(c);
+    inline function unitsAt(pos:Int):Int {
+        return Identifiers.unitsAt(input, pos);
+    }
+
+    /**
+     * Whether a name (letters of any language, `_` or an emoji) starts at the given position.
+     */
+    inline function isNameStartAt(pos:Int):Bool {
+        return Identifiers.isStart(Identifiers.codeAt(input, pos));
+    }
+
+    /**
+     * Whether the character at the given position can be part of a name.
+     */
+    inline function isNamePartAt(pos:Int):Bool {
+        return Identifiers.isPart(Identifiers.codeAt(input, pos));
+    }
+
+    /**
+     * Where the name parts starting at the given position end (the position itself
+     * if there is none).
+     */
+    inline function nameEnd(pos:Int):Int {
+        return Identifiers.nameEnd(input, pos);
+    }
+
+    /**
+     * Whether a translation key (`#key`) can start at the given position, right
+     * after the `#`: a name start, a digit or a dash. A mark such as the emoji
+     * selector of a keycap (`#️⃣`) can't, so the keycap stays text.
+     */
+    inline function isKeyStartAt(pos:Int):Bool {
+        final c = codeAt(pos);
+        return Identifiers.isStart(c) || isDigit(c) || c == "-".code;
+    }
+
+    /**
+     * Whether a character outside ASCII has no case: a Chinese or Japanese letter, an emoji...
+     */
+    inline function isUncased(c:Int):Bool {
+        return c >= 0x80 && !Identifiers.isLowerCase(c) && !Identifiers.isUpperCase(c);
     }
 
 }
