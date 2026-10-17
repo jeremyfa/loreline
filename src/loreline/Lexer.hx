@@ -772,8 +772,9 @@ class Token {
 
         final startPos = makePosition();
 
-        // If following import keyword, read import value
-        if (tokenized.length > 0 && tokenized[tokenized.length - 1].type == KwImport) {
+        // If following import keyword, read import value. A comment between
+        // `import` and the path is read as a comment first.
+        if (followsImportKeyword() && !(c == "/".code && (peek() == "/".code || peek() == "*".code))) {
             return readImportValue(c, startPos);
         }
 
@@ -939,6 +940,25 @@ class Token {
                 }
         }
 
+    }
+
+    /**
+     * Whether the last token read, comments aside, is the `import` keyword.
+     */
+    function followsImportKeyword():Bool {
+        if (tokenized == null) return false;
+        var i = tokenized.length - 1;
+        while (i >= 0) {
+            switch tokenized[i].type {
+                case CommentLine(_) | CommentMultiLine(_):
+                    i--;
+                case KwImport:
+                    return true;
+                case _:
+                    return false;
+            }
+        }
+        return false;
     }
 
     function countIndentation():Int {

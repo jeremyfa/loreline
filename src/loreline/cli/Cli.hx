@@ -1715,6 +1715,8 @@ class Cli {
             final e:Error = cast err;
             write(e.message.red());
             write(' ');
+            // An error inside an imported file names that file
+            if (e.filePath != null) file = e.filePath;
             if (file != null && file.trim().length > 0) {
                 write(
                     (file.trim() + ':' + e.pos.line + ':' + e.pos.column).gray()

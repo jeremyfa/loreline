@@ -460,11 +460,21 @@ class Server {
                     // Keep track of document imports
                     documentImports.set(uri, [for (path in lens.getImportedPaths(pathFromUri(uri))) uriFromPath(path)]);
 
-                    // Check for parser errors
-                    final errors = parser.getErrors();
-                    if (errors != null && errors.length > 0) {
-                        for (error in errors) {
-                            addDiagnostic(uri, error.pos, error.message, DiagnosticSeverity.Error);
+                    // Check for parser errors, and the lexer errors of imported files
+                    final parseErrors = parser.getErrors();
+                    if (parseErrors != null && parseErrors.length > 0) {
+                        for (error in parseErrors) {
+                            if (error.filePath != null) {
+                                addImportedFileError(uri, ast, error);
+                            }
+                            else {
+                                addDiagnostic(uri, error.pos, error.message, DiagnosticSeverity.Error);
+                            }
+                        }
+                    }
+                    for (e in errors) {
+                        if (e is Error && (cast e:Error).filePath != null) {
+                            addImportedFileError(uri, ast, cast e);
                         }
                     }
 
@@ -552,7 +562,12 @@ class Server {
                         if (e is Error) {
                             // Handle lexer/parser errors
                             final err:Error = cast e;
-                            addDiagnostic(uri, err.pos, err.message, DiagnosticSeverity.Error);
+                            if (err.filePath != null) {
+                                addImportedFileError(uri, null, err);
+                            }
+                            else {
+                                addDiagnostic(uri, err.pos, err.message, DiagnosticSeverity.Error);
+                            }
                         }
                         else {
                             // Handle unexpected errors
@@ -584,6 +599,65 @@ class Server {
                     params: { uri: uri }
                 });
             });
+        }
+    }
+
+    /**
+     * Shows an error found in an imported file on the line of the root's import
+     * that leads to that file, with the file and its line in the message.
+     */
+    function addImportedFileError(uri:String, ast:Null<Script>, error:Error) {
+        final rootPath = pathFromUri(uri);
+        final rootDir = Path.directory(rootPath);
+        var shownPath = error.filePath;
+        if (rootDir != '' && shownPath.startsWith(rootDir + '/')) {
+            shownPath = shownPath.substr(rootDir.length + 1);
+        }
+        final line = error.pos != null ? ':' + error.pos.line : '';
+        addDiagnostic(
+            uri,
+            importPosLeadingTo(ast, rootPath, error.filePath),
+            'Error in $shownPath$line: ${error.message}',
+            DiagnosticSeverity.Error
+        );
+    }
+
+    /**
+     * The position of the root's import that leads to a file, directly or through
+     * the files it imports, or null when there is none.
+     */
+    function importPosLeadingTo(ast:Null<Script>, rootPath:String, filePath:String):Null<loreline.Position> {
+        if (ast == null) return null;
+        final ext = Imports.lorExtension(rootPath);
+        for (node in ast.body) {
+            if (node is NImportStatement) {
+                final imp:NImportStatement = cast node;
+                final path = Imports.resolveImportPath(Path.directory(rootPath), rawImportPath(imp), ext);
+                if (path == filePath || (imp.script != null && importsLeadTo(imp.script, path, filePath, ext))) {
+                    return imp.pos;
+                }
+            }
+        }
+        return null;
+    }
+
+    function importsLeadTo(script:Script, scriptPath:String, filePath:String, ext:String):Bool {
+        for (node in script.body) {
+            if (node is NImportStatement) {
+                final imp:NImportStatement = cast node;
+                final path = Imports.resolveImportPath(Path.directory(scriptPath), rawImportPath(imp), ext);
+                if (path == filePath || (imp.script != null && importsLeadTo(imp.script, path, filePath, ext))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static function rawImportPath(imp:NImportStatement):String {
+        return switch imp.path.parts[0].partType {
+            case Raw(text): text;
+            case _: '';
         }
     }
 
@@ -697,7 +771,9 @@ class Server {
                 final parser = new Parser(tokens, {
                     rootPath: filePath,
                     path: filePath,
-                    imports: resolvedImports
+                    imports: resolvedImports,
+                    // A file that imports the root back finds it already parsed
+                    imported: [Imports.rootImportPath(filePath) => true]
                 });
 
                 result = parser.parse();

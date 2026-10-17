@@ -446,18 +446,11 @@ class Lens {
         var i = importChain.length - 1;
         while (i >= 0) {
             final importStmt = importChain[i];
-            var importPath = switch importStmt.path.parts[0].partType {
+            final rawPath = switch importStmt.path.parts[0].partType {
                 case Raw(text): text;
                 case _: "";
             };
-            if (!Path.isAbsolute(importPath)) {
-                importPath = Path.join([currentDir, importPath]);
-            }
-            importPath = Path.normalize(importPath);
-            if (!Imports.isLorFilePath(importPath)) {
-                importPath += ext;
-            }
-            resolvedPath = importPath;
+            resolvedPath = Imports.resolveImportPath(currentDir, rawPath, ext);
             currentDir = Path.directory(resolvedPath);
             i--;
         }
@@ -571,7 +564,8 @@ class Lens {
     public function getImportedPaths(rootPath:String):Array<String> {
 
         final result:Array<String> = [];
-        _getImportedPaths(rootPath, script, result, new Map<String,Bool>());
+        // The root is not one of its own imports, even when a file imports it back
+        _getImportedPaths(rootPath, script, result, [Imports.rootImportPath(rootPath) => true]);
         return result;
 
     }
@@ -590,20 +584,11 @@ class Lens {
             if (node is NImportStatement) {
                 final importNode:NImportStatement = cast node;
 
-                var importPath:String = switch importNode.path.parts[0].partType {
+                final rawPath:String = switch importNode.path.parts[0].partType {
                     case Raw(text): text;
                     case _: "";
                 };
-
-                if (!Path.isAbsolute(importPath)) {
-                    importPath = Path.join([rootDir, importPath]);
-                }
-
-                importPath = Path.normalize(importPath);
-
-                if (!Imports.isLorFilePath(importPath)) {
-                    importPath += ext;
-                }
+                final importPath = Imports.resolveImportPath(rootDir, rawPath, ext);
 
                 if (!used.exists(importPath)) {
                     used.set(importPath, true);

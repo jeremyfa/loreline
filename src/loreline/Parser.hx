@@ -471,22 +471,12 @@ class ParserContext {
                 s;
             case _: throw new ParseError("Expected string literal for import path", currentPos());
         }
-        var importPath = rawImportPath;
-
         // Relative import paths are resolved against the IMPORTING file's
         // directory, matching how Imports.resolve walks the tree at lex time.
         // For the root script context.path == context.rootPath, so single-level
         // imports behave identically; the distinction only matters for nested
         // imports where context.path is a deeper file.
-        if (!Path.isAbsolute(importPath)) {
-            importPath = Path.join([Path.directory(context.path), importPath]);
-        }
-
-        importPath = Path.normalize(importPath);
-
-        if (!Imports.isLorFilePath(importPath)) {
-            importPath += Imports.lorExtension(context.rootPath);
-        }
+        final importPath = Imports.resolveImportPath(Path.directory(context.path), rawImportPath, Imports.lorExtension(context.rootPath));
 
         if (context.imported.exists(importPath)) {
             advance();
@@ -516,6 +506,13 @@ class ParserContext {
         tempParser.currentNodeId = currentNodeId;
         final importedScript = tempParser.parse();
         currentNodeId = tempParser.currentNodeId;
+
+        // Errors of the imported file (and of the files it imports) are errors of
+        // this parse too, each naming the file it comes from
+        for (error in tempParser.getErrors()) {
+            if (error.filePath == null) error.filePath = importPath;
+            addError(error);
+        }
 
         advance();
         final node = new NImportStatement(nextNodeId(SECTION), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, importedScript);
