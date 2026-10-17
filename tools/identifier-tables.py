@@ -59,7 +59,14 @@ def extended_pictographic():
             result.add(int(cps, 16))
     return result
 
-pictographic = {cp for cp in extended_pictographic() if cp >= 0x2300}
+# Pictographic characters that work as punctuation in text, and must end a name
+# like any other punctuation mark
+not_names = {
+    0x3030,  # wavy dash, used in Japanese text
+    0x303D,  # part alternation mark, a Japanese punctuation mark
+}
+
+pictographic = {cp for cp in extended_pictographic() if cp >= 0x2300 and cp not in not_names}
 flags = set(range(0x1F1E6, 0x1F1FF + 1))
 pieces = {0x200D, 0xFE0E, 0xFE0F} | set(range(0x1F3FB, 0x1F3FF + 1)) | set(range(0xE0020, 0xE007F + 1))
 
