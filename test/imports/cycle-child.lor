@@ -1,0 +1,5 @@
+import ../Imports-CycleBack
+
+beat ChildBeat
+  king: From the child.
+  -> Final

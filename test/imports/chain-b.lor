@@ -1,0 +1,5 @@
+import chain-c
+
+beat ChainB
+  B line.
+  -> ChainC

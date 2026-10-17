@@ -1,0 +1,14 @@
+import sub/broken
+
+beat Start
+  Hi.
+
+/*
+<test>
+- request: diagnostics
+  expected:
+    - message: "Error in sub/broken.lor:2:"
+      line: 1
+      severity: 1
+</test>
+*/

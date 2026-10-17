@@ -558,6 +558,7 @@ class Cli {
         loreline.test.PrepareCachesTests.run(onPass, onFail);
         loreline.test.BuiltinArgumentsTests.run(onPass, onFail);
         loreline.test.IdentifiersTests.run(onPass, onFail);
+        loreline.test.ImportsTests.run(onPass, onFail);
         loreline.test.LspTests.run(onPass, onFail);
 
         print('');

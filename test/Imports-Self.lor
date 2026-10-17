@@ -1,0 +1,13 @@
+// A file that imports itself is parsed once.
+
+import Imports-Self
+
+beat Start
+  Only once.
+
+/*
+<test>
+- expected: |
+    ~ Only once.
+</test>
+*/
