@@ -290,10 +290,16 @@ class AstUtils {
     }
 
     /** Remove all #hash localization keys from source content, using AST positions. */
-    public static function removeLocalizationKeys(content:String, node:AstNode):String {
+    public static function removeLocalizationKeys(content:String, node:AstNode, includeImports:Bool = true):String {
         final removals:Array<{start:Int, end:Int}> = [];
 
-        node.each((child, _) -> {
+        // Imported scripts' positions refer to their own files' contents
+        final eachFn:((Node, Node) -> Void) -> Void =
+            (!includeImports && Std.isOfType(node, Script))
+                ? (cast(node, Script)).eachExcludingImported
+                : node.each;
+
+        eachFn((child, _) -> {
             if (Std.isOfType(child, AstNode)) {
                 final astChild:AstNode = cast child;
                 inline function collectHash(comments:Array<Comment>) {
