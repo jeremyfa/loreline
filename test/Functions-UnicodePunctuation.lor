@@ -1,0 +1,25 @@
+// Operators stuck to a name beyond ASCII in function code work like their
+// ASCII forms: nothing around the name is read as part of it.
+
+state
+  国王: 3
+  已婚: false
+  乙: true
+  x: 2
+
+character 骑士
+  name: Knight
+
+function 运算()
+  var 列表 = [国王]
+  return "${国王+1} ${国王==3} ${x*国王} ${(国王)} ${列表[0]} ${国王?1:2} ${!已婚} ${国王&&乙} ${已婚||乙} ${国王%2} ${骑士.name} $国王!"
+
+beat Start
+  Results are ${运算()}.
+
+/*
+<test>
+- expected: |
+    ~ Results are 4 true 6 3 3 1 true true true 1 Knight 3!.
+</test>
+*/

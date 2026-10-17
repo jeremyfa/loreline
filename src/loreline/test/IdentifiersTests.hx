@@ -59,12 +59,22 @@ class IdentifiersTests {
         for (text in ['a', 'Z', '_', 'é', 'Ж', 'λ', '国', 'ー', '々', 'ラ', '한', 'Ａ', '𠀀', '🐉', '⭐', '❤', '🇫']) {
             check(text, true, true);
         }
-        // Digits, marks and the pieces of emoji sequences only continue it
-        for (text in ['0', '9', '٣', '·', '\u0301', '\u200D', '\uFE0F', '🏽', '\u{E0067}']) {
+        // Digits, marks, middle dots and the pieces of emoji sequences only continue it
+        for (text in ['0', '9', '٣', '·', '・', '\u0301', '\u200D', '\uFE0F', '🏽', '\u{E0067}']) {
             check(text, false, true);
         }
         // Punctuation, spaces and symbols are not part of a name
         for (text in [' ', ':', '：', '，', '（', '。', '-', '$', '#', '©', '™', '‼', '↔', '\u20E3', '\u3000']) {
+            check(text, false, false);
+        }
+        // ASCII punctuation and operators, punctuation of other languages, the
+        // wavy dash and the alternation mark (pictographic, but punctuation in
+        // Japanese text), and the em and en dashes
+        final punctuation = '!?.,;:()[]{}<>+-*/%=&|~^@#\'"`\\';
+        for (i in 0...punctuation.length) {
+            check(punctuation.charAt(i), false, false);
+        }
+        for (text in ['！', '？', '、', '；', '）', '「', '」', '『', '』', '《', '》', '【', '】', '…', '«', '»', '“', '”', '‘', '’', '¿', '¡', '〜', '〰', '〽', Identifiers.textOf(0x2014), Identifiers.textOf(0x2013)]) {
             check(text, false, false);
         }
         if (Identifiers.scriptOf(Identifiers.codeAt('a', 0)) != 'Latin') errors.push('a is Latin');
