@@ -1,20 +1,14 @@
+// A function declared without a body is provided by the game: the test
+// runners provide custom_echo. The declaration doesn't replace it.
 
-function playExplosion()
+function custom_echo(a, b)
 
-sarah: What's this green diamond? Wait, let me touch it...
-james: Nooo don't touch it!
-
-playExplosion()
-
-james: Sarah? Sarah!!
+beat Start
+  Echo gives ${custom_echo("x", "y")}.
 
 /*
 <test>
 - expected: |
-    sarah: What's this green diamond? Wait, let me touch it...
-
-    james: Nooo don't touch it!
-
-    james: Sarah? Sarah!!
+    ~ Echo gives x,y.
 </test>
 */
