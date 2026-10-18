@@ -20,7 +20,8 @@ class ExternalFunctionsTests {
             {name: 'calling it from function code is an error', fn: () -> testFunctionCode()},
             {name: 'using it as a when strategy is an error', fn: () -> testWhenStrategy()},
             {name: 'calling it from a child interpreter is an error', fn: () -> testChild()},
-            {name: 'declaring it without calling it is fine', fn: () -> testNotCalled()}
+            {name: 'declaring it without calling it is fine', fn: () -> testNotCalled()},
+            {name: 'the names of the external functions of a script', fn: () -> testNames()}
         ];
 
         for (test in tests) {
@@ -111,6 +112,12 @@ class ExternalFunctionsTests {
         if (error == null || error.message.indexOf('roll() is declared without a body') == -1) {
             throw 'expected the error of roll in the child, got ' + (error != null ? error.message : 'none') + ' and ' + seen.join(' / ');
         }
+    }
+
+    static function testNames():Void {
+        final script = parse('function roll(sides)\n\nfunction twice()\n  return 2\n\nfunction playSound(name)\n\nbeat Start\n  Hi.\n');
+        final names = Loreline.externalFunctions(script);
+        if (names.join(',') != 'roll,playSound') throw 'expected roll,playSound, got ' + names.join(',');
     }
 
     static function testNotCalled():Void {

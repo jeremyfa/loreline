@@ -1601,6 +1601,16 @@ class Lens {
     }
 
     /**
+     * The functions declared without a body, in the script and its imports: the
+     * game must provide them.
+     */
+    public function getExternalFunctions():Array<NFunctionDecl> {
+
+        return [for (func in getVisibleFunctions()) if (func.external && func.name != null) func];
+
+    }
+
+    /**
      * Gets all state fields visible from a given position.
      * This includes fields from both temporary and permanent states.
      */
