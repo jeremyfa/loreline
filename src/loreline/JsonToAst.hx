@@ -133,6 +133,7 @@ class JsonToAst {
         final comments = extractComments(json);
         final node = new NBeatDecl(id, pos, json.name, body, comments.leading, comments.trailing);
         node.style = blockStyleFromString(json.style);
+        if (json.isPublic == true) node.isPublic = true;
         if (json.params != null) {
             final paramsArr:Array<Dynamic> = json.params;
             node.params = [for (p in paramsArr) new NBeatParam(

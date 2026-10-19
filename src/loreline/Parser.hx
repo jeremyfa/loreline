@@ -411,6 +411,16 @@ class ParserContext {
                 else {
                     parseBeatDecl();
                 }
+            case KwPublic:
+                // A beat the game starts or calls by name: only top-level beats
+                final publicPos = currentPos();
+                if (!topLevel) {
+                    throw new ParseError("A nested beat can't be public", publicPos);
+                }
+                advance();
+                final beat = parseBeatDecl(publicPos);
+                beat.isPublic = true;
+                beat;
             case KwCharacter if (topLevel): parseCharacterDecl();
             case LString(_, _, _): ensureInBeat(parseTextStatement());
             case Identifier(_) if (peek().type == Colon): ensureInBeat(parseDialogueStatement());
@@ -673,8 +683,8 @@ class ParserContext {
      * Parses a beat declaration, which represents a story segment.
      * @return Beat declaration node
      */
-    function parseBeatDecl():NBeatDecl {
-        final startPos = currentPos();
+    function parseBeatDecl(?publicPos:Position):NBeatDecl {
+        final startPos = publicPos ?? currentPos();
         final beatNode = new NBeatDecl(nextNodeId(SECTION), startPos, null, [], []);
 
         expect(KwBeat);
@@ -1107,7 +1117,7 @@ class ParserContext {
      */
     function isKnownNodeStart():Bool {
         return switch (tokens[current].type) {
-            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | Arrow | LString(_): true;
+            case KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Arrow | LString(_): true;
             case Identifier(_) if (peek().type == Colon): true; // Dialogue
             case Identifier(_) if (peek().type == Arrow): true; // Transition
             case _: false;
@@ -2432,7 +2442,7 @@ class ParserContext {
 
         while (!isAtEnd()) {
             switch (tokens[current].type) {
-                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | Indent:
+                case RBrace | KwState | KwBeat | KwCharacter | KwChoice | KwWhen | KwIf | KwPublic | Indent:
                     return;
                 case Arrow:
                     advance();

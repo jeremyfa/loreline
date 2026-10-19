@@ -567,6 +567,7 @@ class Printer {
         writeln();
         writeln();
         printLeadingComments(beat);
+        if (beat.isPublic) write('public ');
         write('beat ${beat.name}');
         if (beat.params != null) {
             final savedComments = enableComments;
