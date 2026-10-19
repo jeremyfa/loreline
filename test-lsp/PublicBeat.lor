@@ -1,0 +1,18 @@
+public beat EnterShop
+  -> Leave
+
+beat Leave
+  Bye.
+
+/*
+<test>
+- request: hover
+  at: "public beat |EnterShop"
+  contains:
+    - "Public beat: **EnterShop**"
+- request: hover
+  at: "-> |Leave"
+  contains:
+    - "Beat: **Leave**"
+</test>
+*/

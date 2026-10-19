@@ -863,6 +863,12 @@ class NBeatDecl extends AstNode {
     public var params:Null<Array<NBeatParam>> = null;
 
     /**
+     * Whether the beat is written `public beat`: the game starts it or calls it
+     * by name. Only top-level beats can be public. The runtime doesn't use it.
+     */
+    public var isPublic:Bool = false;
+
+    /**
      * Creates a new beat declaration node.
      * @param pos Position in source where this beat appears
      * @param name Name of the beat
