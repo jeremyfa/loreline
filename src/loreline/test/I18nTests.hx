@@ -27,6 +27,7 @@ class I18nTests {
             {name: 'a language tag gives its locale', fn: () -> testFromTag()},
             {name: 'a parse error keeps its English message and shows in French', fn: () -> testParseError()},
             {name: 'a comment left open gives one message, in text or between lines', fn: () -> testUnclosedComment()},
+            {name: 'a missing name is called a name, not an identifier', fn: () -> testMissingName()},
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
             {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
             {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()}
@@ -57,7 +58,7 @@ class I18nTests {
     static function testBraces():Void {
         // `{{` and `}}` are braces, and `{ after $` isn't a parameter
         expect(I18n.format("write ${{{before}}}{after}", {before: 'a', after: 'b'}, 'en'), "write ${a}b");
-        expect(I18n.t("Expected identifier or { after $", null, 'en'), "Expected identifier or { after $");
+        expect(I18n.t("Expected name or { after $", null, 'en'), "Expected name or { after $");
         expect(I18n.format('Missing {thing}', null, 'en'), 'Missing {thing}');
     }
 
@@ -120,6 +121,18 @@ class I18nTests {
         }
         expect(messages[0], 'Unterminated multiline comment');
         expect(messages[1], 'Unterminated multiline comment');
+    }
+
+    /** Errors on a missing name speak the words of authors */
+    static function testMissingName():Void {
+        final lexer = new loreline.Lexer('beat Start\n  Price is $!.\n');
+        try lexer.tokenize() catch (e:loreline.Error) {}
+        expect(lexer.getErrors()[0].message, 'Expected name or { after $');
+        var error:Null<loreline.Error> = null;
+        try Loreline.parse('beat Start\n  x = player.\n') catch (e:loreline.Error) error = e;
+        error ??= Loreline.lastError();
+        if (error == null) throw 'expected a parse error after a dot';
+        if (error.message.indexOf('identifier') != -1) throw 'the message still says identifier: ' + error.message;
     }
 
     static function testRuntimeError():Void {
