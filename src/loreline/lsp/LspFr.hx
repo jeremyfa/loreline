@@ -65,7 +65,7 @@ class LspFr {
         'Temporary state' => 'État temporaire',
         'State' => 'État',
         'Constant' => 'Constante',
-        'Identifier' => 'Identifiant',
+        'Name' => 'Nom',
         'Variable' => 'Variable',
         'Parenthesis' => 'Parenthèses',
         'Block' => 'Bloc',

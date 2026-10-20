@@ -332,7 +332,7 @@ class ParserContext {
             case Unindent: I18n.key('unindent§token');
             case LineBreak: I18n.key('line break§token');
             case Eof: I18n.key('end of file');
-            case Identifier(_): I18n.key('identifier§token');
+            case Identifier(_): I18n.key('name§token');
             case LString(_, _, _): I18n.key('string§token');
             case LNumber(_): I18n.key('number§token');
             case LBoolean(_): I18n.key('boolean§token');
@@ -2222,7 +2222,7 @@ class ParserContext {
                 if (checkIdentifier()) {
                     prop = expectIdentifier();
                 } else {
-                    addError(ParseError.of(I18n.text("Expected identifier after '.'"), currentPos()));
+                    addError(ParseError.of(I18n.text("Expected name after '.'"), currentPos()));
                     prop = "";
                 }
 
@@ -2476,7 +2476,7 @@ class ParserContext {
                 advance();
                 name;
             case _:
-                throw ParseError.of(I18n.text('Expected identifier, got {got}', {got: currentTokenWord()}), currentPos());
+                throw ParseError.of(I18n.text('Expected name, got {got}', {got: currentTokenWord()}), currentPos());
         }
     }
 

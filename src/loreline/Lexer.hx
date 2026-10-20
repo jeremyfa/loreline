@@ -3216,7 +3216,7 @@ class Token {
                         currentColumn += 1;
                     }
                     else {
-                        error(I18n.text("Expected identifier or { after $"), false);
+                        error(I18n.text("Expected name or { after $"), false);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, [], interpStart, interpLength));
 
@@ -3428,7 +3428,7 @@ class Token {
                         currentColumn += 1;
                     }
                     else {
-                        error(I18n.text("Expected identifier or { after $"), false);
+                        error(I18n.text("Expected name or { after $"), false);
                         final interpLength = pos - tokenStartPos;
                         attachments.push(Interpolation(false, tagStart != -1, [], interpStart, interpLength));
 
@@ -3578,7 +3578,7 @@ class Token {
 
         // Read initial identifier
         if (!isNameStartAt(pos)) {
-            error(I18n.text('Expected identifier in field access'), true);
+            error(I18n.text('Expected name in field access'), true);
         }
 
         // Read identifier token

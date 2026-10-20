@@ -976,7 +976,7 @@ class Checker {
 				default:
 				}
 				if( isCompletion ) return TDynamic;
-				error(I18n.text('Unknown identifier {name}', {name: v}), expr);
+				error(I18n.text('Unknown name: {name}', {name: v}), expr);
 			}
 		case EBlock(el):
 			var t = TVoid;

@@ -442,7 +442,7 @@ class CodeToLorscript {
                     add("$".code);
                 }
                 else {
-                    error(I18n.text("Expected identifier or { after $"));
+                    error(I18n.text("Expected name or { after $"));
                 }
             }
             else {
@@ -460,7 +460,7 @@ class CodeToLorscript {
     function processFieldAccessInterpolation() {
         // Read initial identifier
         if (!isNameStartAt(index)) {
-            error(I18n.text('Expected identifier in field access'));
+            error(I18n.text('Expected name in field access'));
         }
         processIdentifier();
 

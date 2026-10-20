@@ -2649,7 +2649,7 @@ class Server {
                 case EIdent('false'): I18n.t('Boolean');
                 case EIdent('true'): I18n.t('Boolean');
                 case EIdent('null'): I18n.t('Null');
-                case EIdent(v): I18n.t('Identifier');
+                case EIdent(v): I18n.t('Name');
                 case EVar(n, t, e): I18n.t('Variable');
                 case EParent(e): I18n.t('Parenthesis');
                 case EBlock(e): I18n.t('Block');
