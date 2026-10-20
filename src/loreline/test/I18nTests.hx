@@ -26,6 +26,7 @@ class I18nTests {
             {name: 'plurals follow each language', fn: () -> testCount()},
             {name: 'a language tag gives its locale', fn: () -> testFromTag()},
             {name: 'a parse error keeps its English message and shows in French', fn: () -> testParseError()},
+            {name: 'a comment left open gives one message, in text or between lines', fn: () -> testUnclosedComment()},
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
             {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
             {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()}
@@ -102,6 +103,23 @@ class I18nTests {
         if (error.template == null) throw 'the error has no template: ' + error.message;
         expect(I18n.errorText(error, 'en'), error.message);
         if (I18n.errorText(error, 'fr') == error.message) throw 'the French of "${error.message}" is the English';
+    }
+
+    /** The messages of the lexer for a comment left open, in a text and on its own */
+    static function testUnclosedComment():Void {
+        final messages:Array<String> = [];
+        for (source in ['beat Start\n  Hello /* never closed\n', 'beat Start\n  Hello.\n/* never closed\n']) {
+            final lexer = new loreline.Lexer(source);
+            try {
+                lexer.tokenize();
+            }
+            catch (e:loreline.Error) {}
+            final errors = lexer.getErrors();
+            if (errors.length == 0) throw 'no error for: ' + source;
+            messages.push(errors[0].message);
+        }
+        expect(messages[0], 'Unterminated multiline comment');
+        expect(messages[1], 'Unterminated multiline comment');
     }
 
     static function testRuntimeError():Void {
