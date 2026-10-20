@@ -3776,7 +3776,7 @@ class Token {
             }
         }
 
-        error(I18n.text('Unterminated multi-line comment'), true);
+        error(I18n.text('Unterminated multiline comment'), true);
         return null;
     }
 

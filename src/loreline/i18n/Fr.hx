@@ -22,7 +22,6 @@ class Fr {
         'Expected &' => '& attendu',
         'Expected |' => '| attendu',
         'Unterminated multiline comment' => 'Commentaire sur plusieurs lignes non fermé',
-        'Unterminated multi-line comment' => 'Commentaire sur plusieurs lignes non fermé',
         'Unexpected < inside tag' => '< inattendu dans un tag',
         "Expected identifier or { after $" => "Nom ou { attendu après $",
         'Unterminated string' => 'Guillemets non fermés',
