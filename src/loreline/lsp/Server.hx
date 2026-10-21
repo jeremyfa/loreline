@@ -3199,7 +3199,7 @@ class Server {
 
         final characterDecl = lens.findCharacterFromDialogue(expr);
         if (characterDecl != null) {
-            return makeHover(hoverTitle(I18n.t('Dialogue'), 'of ' + characterLink(characterDecl, uri, lens)), hoverDescriptionForNode(expr), content, expr);
+            return makeHover(hoverTitle(I18n.t('Dialogue'), I18n.t('of {name}', {name: characterLink(characterDecl, uri, lens)})), hoverDescriptionForNode(expr), content, expr);
         }
 
         return makeHover(hoverTitle(I18n.t('Dialogue')), hoverDescriptionForNode(expr), content, expr);
