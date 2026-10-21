@@ -341,7 +341,6 @@ class SymbolPrinter {
         final result:Array<DocumentSymbol> = [];
 
         if (ifStmt.thenBranch != null) {
-            final blockSymbol = printBlock('then', null, ifStmt.thenBranch);
             result.push({
                 name: printValue(ifStmt.condition),
                 detail: I18n.t('condition'),
@@ -349,7 +348,7 @@ class SymbolPrinter {
                 deprecated: false,
                 range: server.rangeFromLorelinePosition(ifStmt.pos, content),
                 selectionRange: server.rangeFromLorelinePosition(ifStmt.pos, content),
-                children: blockSymbol.children
+                children: printChildren(ifStmt.thenBranch)
             });
         }
 
@@ -374,7 +373,7 @@ class SymbolPrinter {
 
         for (i in 0...alt.items.length) {
             final item = alt.items[i];
-            final blockSymbol = printBlock('item ${i + 1}', null, item);
+            final blockSymbol = printBlock(I18n.t('item {n}', {n: i + 1}), null, item);
             children.push(blockSymbol);
         }
 
@@ -397,6 +396,24 @@ class SymbolPrinter {
      * @return Document symbol for the block
      */
     function printBlock(name:String, detail:String, block:NBlock):DocumentSymbol {
+        return {
+            name: name,
+            detail: detail,
+            kind: SymbolKind.Namespace,
+            deprecated: false,
+            range: server.rangeFromLorelinePosition(block.pos, content),
+            selectionRange: server.rangeFromLorelinePosition(block.pos, content),
+            children: printChildren(block)
+        };
+    }
+
+    /**
+     * The symbols of the choices, conditions, alternatives, when blocks and
+     * states found in a block.
+     * @param block Block node to process
+     * @return Document symbols of its children
+     */
+    function printChildren(block:NBlock):Array<DocumentSymbol> {
         final children:Array<DocumentSymbol> = [];
 
         for (node in block.body) {
@@ -418,15 +435,7 @@ class SymbolPrinter {
             }
         }
 
-        return {
-            name: name,
-            detail: detail,
-            kind: SymbolKind.Namespace,
-            deprecated: false,
-            range: server.rangeFromLorelinePosition(block.pos, content),
-            selectionRange: server.rangeFromLorelinePosition(block.pos, content),
-            children: children
-        };
+        return children;
     }
 
     /**

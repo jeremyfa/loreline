@@ -152,6 +152,7 @@ class LspFr {
         '{n} rules' => '{n} règles',
         '{n} item' => '{n} élément',
         '{n} items' => '{n} éléments',
+        'item {n}' => 'élément {n}',
 
         // Metadata keys
 
