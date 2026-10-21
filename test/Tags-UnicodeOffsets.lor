@@ -1,0 +1,38 @@
+// The offset of a tag counts characters of the text shown, the same on every
+// target: an accented letter, a Chinese character or an emoji is one character,
+// whatever its size in UTF-8 or UTF-16. An emoji sequence counts each of its
+// characters (the joiners too). Escapes count as the character they give.
+
+state
+  name: Zoé
+  coins: 3
+  dragon: 🐉
+
+character bob
+  name: Bob
+
+beat Start
+  Café <b>chaud</b>, 你好<i>朋友</i>.
+
+  Dragon 🐉<em>feu</em> et 👩‍👩‍👧<big>famille</big>.
+
+  Prix $$5 et \#1 <b>seulement</b>.
+
+  $name <happy>sourit</happy>, $dragon<s>vole</s>, ${coins} 🪙<u>pièces</u>.
+
+  bob: 😀 Ça <wave>va</wave> très <b>bien</b>!
+
+/*
+<test>
+- expected: |
+    ~ Café <<b>>chaud<</b>>, 你好<<i>>朋友<</i>>.
+
+    ~ Dragon 🐉<<em>>feu<</em>> et 👩‍👩‍👧<<big>>famille<</big>>.
+
+    ~ Prix $5 et #1 <<b>>seulement<</b>>.
+
+    ~ Zoé <<happy>>sourit<</happy>>, 🐉<<s>>vole<</s>>, 3 🪙<<u>>pièces<</u>>.
+
+    Bob: 😀 Ça <<wave>>va<</wave>> très <<b>>bien<</b>>!
+</test>
+*/
