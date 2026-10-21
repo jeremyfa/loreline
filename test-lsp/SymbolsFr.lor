@@ -9,12 +9,16 @@ beat Start
       B.
     Three
       C.
+  sequence
+    First.
+  --
+    Second.
 
 /*
 <test>
 - locale: fr
 - request: symbols
-  includes: [state, gold, Start, choice]
-  details: ["1 champ", "3 options", "beat"]
+  includes: [state, gold, Start, choice, élément 1, élément 2]
+  details: ["1 champ", "3 options", "beat", "2 éléments"]
 </test>
 */
