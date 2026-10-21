@@ -526,7 +526,16 @@ class TextTag {
     public var value:String;
 
     /**
-     * The offset in the text where this tag appears.
+     * Where the tag appears in the text, in characters from its start. A
+     * character is a Unicode code point: an accented letter, a Chinese
+     * character or an emoji counts as one, the same on every target. An emoji
+     * made of several code points, such as a family or a flag, counts each of
+     * them.
+     *
+     * Haxe strings don't use the same units on every target: UTF-16 units on
+     * JS, C#, Java and C++, UTF-8 bytes on Lua, characters elsewhere. Where
+     * they aren't characters, the offset is an index in the text only while
+     * the text before the tag is ASCII.
      */
     public var offset:Int;
 }
@@ -6213,6 +6222,11 @@ class InterpreterContext {
                     #end
                     final len = chars.uLength();
                     if (len > 0) keepWhitespace = true;
+                    // Tags count the characters shown, not the units of the target
+                    inline function addChar(c:Int) {
+                        buf.addChar(c);
+                        if (!Identifiers.isTrailingUnit(c)) offset++;
+                    }
                     var prevIsDollar:Bool = false;
                     var prevIsHash:Bool = false;
                     var escaped:Bool = false;
@@ -6220,16 +6234,16 @@ class InterpreterContext {
                         final c = chars.uCharCodeAt(i);
                         if (escaped) {
                             if (c == "n".code) {
-                                buf.addChar("\n".code);
+                                addChar("\n".code);
                             }
                             else if (c == "r".code) {
-                                buf.addChar("\r".code);
+                                addChar("\r".code);
                             }
                             else if (c == "t".code) {
-                                buf.addChar("\t".code);
+                                addChar("\t".code);
                             }
                             else {
-                                buf.addChar(c);
+                                addChar(c);
                             }
                             escaped = false;
                             prevIsDollar = false;
@@ -6242,7 +6256,7 @@ class InterpreterContext {
                         }
                         else if (c == "$".code) {
                             if (prevIsDollar) {
-                                buf.addChar(c);
+                                addChar(c);
                                 prevIsDollar = false;
                             }
                             else {
@@ -6253,7 +6267,7 @@ class InterpreterContext {
                         else if (c == "#".code) {
                             if (prevIsHash) {
                                 // ## -> single #
-                                buf.addChar(c);
+                                addChar(c);
                                 prevIsHash = false;
                             }
                             else {
@@ -6263,17 +6277,16 @@ class InterpreterContext {
                         }
                         else {
                             if (prevIsHash) {
-                                buf.addChar("#".code);
+                                addChar("#".code);
                                 prevIsHash = false;
                             }
-                            buf.addChar(c);
+                            addChar(c);
                         }
                     }
                     // Flush trailing single #
                     if (prevIsHash) {
-                        buf.addChar("#".code);
+                        addChar("#".code);
                     }
-                    offset += len;
 
                 case Expr(expr):
                     keepWhitespace = true;
@@ -6281,7 +6294,7 @@ class InterpreterContext {
                     // whether referenced directly or through a variable/param
                     final value = evaluateExpression(expr);
                     final text = valueToString(value);
-                    offset += text.uLength();
+                    offset += Identifiers.characterCount(text);
                     buf.add(text);
 
                 case Tag(closing, expr):

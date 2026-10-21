@@ -642,7 +642,13 @@ class Program
             offsetsWithTags.Add(tag.Offset);
         }
 
-        int len = text.Length;
+        // Tag offsets count characters, a C# string holds UTF-16 units
+        var chars = new List<string>();
+        for (int u = 0; u < text.Length; u += char.IsSurrogatePair(text, u) ? 2 : 1)
+        {
+            chars.Add(text.Substring(u, char.IsSurrogatePair(text, u) ? 2 : 1));
+        }
+        int len = chars.Count;
         var result = new StringBuilder();
 
         for (int i = 0; i < len; i++)
@@ -660,8 +666,8 @@ class Program
                     }
                 }
             }
-            char c = text[i];
-            if (multiline && c == '\n')
+            string c = chars[i];
+            if (multiline && c == "\n")
             {
                 result.Append("\n  ");
             }

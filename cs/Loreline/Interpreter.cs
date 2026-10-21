@@ -29,7 +29,11 @@ namespace Loreline
             public string Value;
 
             /// <summary>
-            /// The offset in the text where this tag appears.
+            /// Where the tag appears in the text, in characters (Unicode code points)
+            /// from its start, the same on every target. A C# string counts UTF-16
+            /// units instead, where a character above U+FFFF, such as most emoji, is a
+            /// surrogate pair: count each pair (<c>char.IsSurrogatePair</c>) as one
+            /// character to find the index in the string.
             /// </summary>
             public int Offset;
         }

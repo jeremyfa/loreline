@@ -18,7 +18,9 @@ class TextTag:
     """The value or name of the tag."""
 
     offset: int
-    """The offset in the text where this tag appears."""
+    """Where the tag appears in the text, in characters from its start, the
+    same on every target. Python strings count characters too, so
+    ``text[:tag.offset]`` is the text before the tag."""
 
     closing: bool
     """Whether this is a closing tag."""
