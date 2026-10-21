@@ -1,0 +1,70 @@
+// A line is an assignment only when it starts with what it assigns: a name,
+// followed by fields, indexes or calls, then `=`, `+=`, `-=`, `*=`, `/=` or
+// `:=`. Any other line holding one of those signs is text. A name right
+// before the sign stays an assignment: `Hello = world` is code.
+
+state
+  jeremy: Jérémy
+  gold: 3
+  a: 3
+  b: 1
+  list: [1, 2, 3]
+  grid: [[0, 0], [0, 0]]
+  bag: { apples: 0 }
+  killer: { inventory: { knife: { truc: { bidule: [0, 0, 0] } } } }
+
+character bob
+  name: Bob
+  mood: calm
+
+function findTheKiller()
+  return killer
+
+function resolveWeapon(name)
+  return "knife"
+
+beat Start
+  Salut $jeremy= content de te voir.
+
+  Le score = 3.
+
+  Deux plus deux = quatre, et 5 + 2 = 7.
+
+  ${gold} += rien, $gold -= rien.
+
+  C'est l'heure, x = y n'est qu'une phrase.
+
+  gold = 5
+  gold += 2
+  bob.mood = "angry"
+  bob.name := Robert
+  list[0] = 7
+  list[list[0] - 6] = 9
+  grid[1][0] = 4
+  bag["apples"] *= 3
+  bag.apples = bag.apples + 2
+  findTheKiller().inventory[resolveWeapon("hello")].truc.bidule[a - b] = 42
+  findTheKiller().inventory["knife"].truc.bidule[0] -= 1
+
+  Gold $gold, $bob.name is ${bob.mood}, list ${list[0]} ${list[1]}, grid ${grid[1][0]}, apples ${bag.apples}.
+
+  Killer ${killer.inventory.knife.truc.bidule[2]} ${killer.inventory.knife.truc.bidule[0]}.
+
+/*
+<test>
+- expected: |
+    ~ Salut Jérémy= content de te voir.
+
+    ~ Le score = 3.
+
+    ~ Deux plus deux = quatre, et 5 + 2 = 7.
+
+    ~ 3 += rien, 3 -= rien.
+
+    ~ C'est l'heure, x = y n'est qu'une phrase.
+
+    ~ Gold 7, Robert is angry, list 7 9, grid 4, apples 2.
+
+    ~ Killer 42 -1.
+</test>
+*/
