@@ -1,0 +1,48 @@
+state
+  gold: 10
+  xp: 0
+
+character bob
+  name: Bob
+  mood: 3
+  trust: 1
+
+character carl
+  name: Carl
+
+character dana
+  name: Dana
+
+beat Start
+  bob: Hello there.
+  bob.mood = 5
+  gold = gold + 1
+  Carl is $carl.
+  Trust is ${bob.trust} and xp is $xp.
+  -> Shop
+
+beat Shop
+  gold = 0
+
+beat Quiet
+  Nothing happens here.
+
+/*
+<test>
+- locale: fr
+- request: hover
+  at: "beat |Start"
+  contains:
+    - "**Enchaînement**  \n"
+    - "Vers [Shop]("
+    - "\n\n---\n\n**Personnages**  \n"
+    - "Parlent : [bob](file:///lsp/HoverBeatLinksFr.lor#5,1)"
+    - "Mentionnés : [carl](file:///lsp/HoverBeatLinksFr.lor#10,1)"
+    - "\n\n---\n\n**Données**  \n"
+    - "Modifie : [gold](file:///lsp/HoverBeatLinksFr.lor#2,3), [bob.mood](file:///lsp/HoverBeatLinksFr.lor#7,3)"
+    - "Lit : [xp](file:///lsp/HoverBeatLinksFr.lor#3,3), [bob.trust](file:///lsp/HoverBeatLinksFr.lor#8,3)"
+  excludes:
+    - "Speaking"
+    - "**État**"
+</test>
+*/

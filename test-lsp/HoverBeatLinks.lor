@@ -1,0 +1,62 @@
+state
+  gold: 10
+  xp: 0
+
+character bob
+  name: Bob
+  mood: 3
+  trust: 1
+
+character carl
+  name: Carl
+
+character dana
+  name: Dana
+
+beat Start
+  bob: Hello there.
+  bob.mood = 5
+  gold = gold + 1
+  Carl is $carl.
+  Trust is ${bob.trust} and xp is $xp.
+  -> Shop
+
+beat Shop
+  gold = 0
+
+beat Quiet
+  Nothing happens here.
+
+/*
+<test>
+- request: hover
+  at: "beat |Start"
+  contains:
+    - "**Flow**  \n"
+    - "To [Shop]("
+    - "\n\n---\n\n**Characters**  \n"
+    - "Speaking: [bob](file:///lsp/HoverBeatLinks.lor#5,1)"
+    - "Mentioned: [carl](file:///lsp/HoverBeatLinks.lor#10,1)"
+    - "\n\n---\n\n**Data**  \n"
+    - "Changes: [gold](file:///lsp/HoverBeatLinks.lor#2,3), [bob.mood](file:///lsp/HoverBeatLinks.lor#7,3)"
+    - "Reads: [xp](file:///lsp/HoverBeatLinks.lor#3,3), [bob.trust](file:///lsp/HoverBeatLinks.lor#8,3)"
+  excludes:
+    - "**["
+    - "[Bob]("
+    - "dana"
+    - "**State**"
+- request: hover
+  at: "beat |Shop"
+  contains:
+    - "**Data**  \n"
+    - "Changes: [gold](file:///lsp/HoverBeatLinks.lor#2,3)"
+  excludes:
+    - "**Characters**"
+    - "Reads:"
+- request: hover
+  at: "beat |Quiet"
+  excludes:
+    - "**Characters**"
+    - "**Data**"
+</test>
+*/
