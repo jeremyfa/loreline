@@ -25,8 +25,8 @@ using loreline.Utf8;
  *   `beat Deep`), `file` when it is in another file (relative to the test file),
  *   or `none: true`
  * - `hover`: `contains`, or `none: true`
- * - `completion`: `includes` and `excludes`, lists of labels; `trigger` for a
- *   completion triggered by a character instead of invoked
+ * - `completion`: `includes` and `excludes`, lists of labels, or `none: true`;
+ *   `trigger` for a completion triggered by a character instead of invoked
  * - `symbols`: `includes`, names at any depth
  * - `diagnostics` (no `at`): a list of message extracts, or of `message`,
  *   `line` and `severity`; `none: true` for no diagnostic
@@ -274,6 +274,7 @@ class LspFileTests {
                 }});
                 final list:Array<Dynamic> = result == null ? [] : result is Array ? result : result.items;
                 final labels = [for (entry in list) Std.string(entry.label)];
+                if (none && labels.length > 0) throw 'expected no completion, got: ' + labels.join(', ');
                 for (expected in strings(item.includes)) {
                     if (!labels.contains(expected)) throw 'completion lacks "$expected", got: ' + labels.join(', ');
                 }
