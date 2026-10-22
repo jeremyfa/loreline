@@ -16,7 +16,7 @@ class MetadataKeys {
         {key: 'author', meaning: () -> I18n.t('Who wrote the story: a name, or a list of names.')},
         {key: 'language', meaning: () -> I18n.t('The language of the story, as a code like `en`, `fr` or `pt-BR`.')},
         {key: 'version', meaning: () -> I18n.t('The version of the story.')},
-        {key: 'ifid', meaning: () -> I18n.t('The identifier of the story in interactive fiction archives, a UUID in capitals.')},
+        {key: 'ifid', meaning: () -> I18n.t('The identifier of the story in interactive fiction archives: a UUID in capitals.')},
         {key: 'headline', meaning: () -> I18n.t('A short line shown under the title, like "An interactive mystery".')},
         {key: 'description', meaning: () -> I18n.t('What the story is about, in a few sentences.')},
         {key: 'firstPublished', meaning: () -> I18n.t('When the story was first published: a year, or a date like `2026-03-14`.')},

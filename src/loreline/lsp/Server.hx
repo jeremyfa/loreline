@@ -1102,7 +1102,7 @@ class Server {
                                 items.push({
                                     label: field.name,
                                     kind: CompletionItemKind.Property,
-                                    detail: I18n.t('Character property'),
+                                    detail: I18n.t('Character field'),
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
@@ -1948,7 +1948,7 @@ class Server {
                     return makeHover(hoverTitle(I18n.t('End')), hoverDescriptionForNode(cast node), content, node);
                 }
                 else if (transition.target == '_') {
-                    return makeHover(hoverTitle(I18n.t('Root')), hoverDescriptionForNode(cast node), content, node);
+                    return makeHover(hoverTitle(I18n.t('Top level')), hoverDescriptionForNode(cast node), content, node);
                 }
                 else {
                     final beat = lens.findBeatFromTransition(transition);
@@ -2161,7 +2161,7 @@ class Server {
             case 'and': I18n.t('`a and b` is true when both `a` and `b` are true, like `a && b`.');
             case 'or': I18n.t('`a or b` is true when `a` or `b` is true, like `a || b`.');
             case 'is': I18n.t('`a is b` is true when `a` equals `b`, like `a == b`.');
-            case 'is not': I18n.t('`a is not b` is true when `a` differs from `b`, like `a != b`. It is always a single operator: to compare with a negation, write `a is (not b)`.');
+            case 'is not': I18n.t('`a is not b` is true when `a` differs from `b`, like `a != b`. `is not` is always read as one operator: to compare with a negation, write `a is (not b)`.');
             case _: I18n.t('`not a` is true when `a` is false, like `!a`. It applies to what follows it directly: `not a is b` reads `(not a) is b`, so write `not (a is b)` to negate a comparison.');
         }
     }
@@ -2534,7 +2534,7 @@ class Server {
             final key = Std.string(from.id);
             if (seenIncoming.exists(key)) continue;
             seenIncoming.set(key, true);
-            incoming.push(from.name == "_" ? I18n.t('top level') : makePositionLink(from.name, uri, from, lens));
+            incoming.push(from.name == "_" ? I18n.t('the top level') : makePositionLink(from.name, uri, from, lens));
         }
         if (incoming.length > 0) flow.push(I18n.t('From {list}', {list: hoverList(incoming)}));
 
@@ -2652,7 +2652,7 @@ class Server {
                 case EIdent('null'): I18n.t('Null');
                 case EIdent(v): I18n.t('Name');
                 case EVar(n, t, e): I18n.t('Variable');
-                case EParent(e): I18n.t('Parenthesis');
+                case EParent(e): I18n.t('Parentheses');
                 case EBlock(e): I18n.t('Block');
                 case EField(e, f): I18n.t('Field');
                 case EBinop(op, e1, e2): I18n.t('Binary operation');
@@ -2660,7 +2660,7 @@ class Server {
                 case ECall(e, params): I18n.t('Function');
                 case EIf(cond, e1, e2): I18n.t('Condition');
                 case EWhile(cond, e): I18n.t('Loop');
-                case EFor(v, it, e): I18n.t('Iteration');
+                case EFor(v, it, e): I18n.t('For loop');
                 case EBreak: I18n.t('Break');
                 case EContinue: I18n.t('Continue');
                 case EFunction(args, e, name, ret): I18n.t('Function');
@@ -3070,8 +3070,8 @@ class Server {
         if (description.length > 0) description.push('');
         if (rule.insertion != null) {
             description.push(rule.insertionCondition != null
-                ? I18n.t('Brings the rules of the first when block of the inserted beat. Its condition only decides whether they come in.')
-                : I18n.t('Brings the rules of the first when block of the inserted beat.'));
+                ? I18n.t('Brings in the rules of the first when block of the inserted beat. Its condition only decides whether they are brought in.')
+                : I18n.t('Brings in the rules of the first when block of the inserted beat.'));
         }
         else {
             final criteria = AstUtils.whenRuleScore(rule);
@@ -3183,7 +3183,7 @@ class Server {
                 return makeHover(hoverTitle(I18n.t('Array access'), access.name + '[]'), hoverDescriptionForNode(access), content, access);
             }
 
-            return makeHover(hoverTitle(I18n.t('Access'), access.name), hoverDescriptionForNode(access), content, access);
+            return makeHover(hoverTitle(I18n.t('Name'), access.name), hoverDescriptionForNode(access), content, access);
         }
 
         return null;
