@@ -157,9 +157,9 @@ class IdentifiersTests {
 
     static function testFieldErrors():Void {
         final u = unitsOfBmp();
-        expectError('state\n  金币：10\n', '"：" looks like ":" but isn\'t', 2, 3 + 2 * u);
-        expectError('character 国王\n  name：路易斯\n', '"：" looks like ":" but isn\'t', 2, 7);
-        expectError('state\n  金币（: 10\n', '"（" looks like "(" but isn\'t', 2, 3 + 2 * u);
+        expectError('state\n  金币：10\n', '"：" looks like ":" but is a different character', 2, 3 + 2 * u);
+        expectError('character 国王\n  name：路易斯\n', '"：" looks like ":" but is a different character', 2, 7);
+        expectError('state\n  金币（: 10\n', '"（" looks like "(" but is a different character', 2, 3 + 2 * u);
     }
 
     /**
@@ -189,8 +189,8 @@ class IdentifiersTests {
 
     static function testFunctionErrors():Void {
         final u = unitsOfBmp();
-        expectFunctionError('function f()\n  return { 国王：1 }\n', '"：" looks like ":" but isn\'t', 2, 12 + 2 * u);
-        expectFunctionError('function f()\n  return f（1)\n', '"（" looks like "(" but isn\'t', 2, 11);
+        expectFunctionError('function f()\n  return { 国王：1 }\n', '"：" looks like ":" but is a different character', 2, 12 + 2 * u);
+        expectFunctionError('function f()\n  return f（1)\n', '"（" looks like "(" but is a different character', 2, 11);
         expectFunctionError('function f()\n  return 1 → 2\n', 'Unexpected character: →', 2, 12);
         #if !neko
         // An error of the function parser after a name beyond U+FFFF lands where

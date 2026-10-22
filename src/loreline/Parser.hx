@@ -520,7 +520,7 @@ class ParserContext {
             case LString(q, s, _):
                 quotes = q;
                 s;
-            case _: throw ParseError.of(I18n.text('Expected string literal for import path'), currentPos());
+            case _: throw ParseError.of(I18n.text('Expected the import path between quotes'), currentPos());
         }
         // Relative import paths are resolved against the IMPORTING file's
         // directory, matching how Imports.resolve walks the tree at lex time.
@@ -705,7 +705,7 @@ class ParserContext {
     function parseMetadataDecl():NMetadataDecl {
         final startPos = currentPos();
         if (metadataParsed) {
-            throw ParseError.of(I18n.text('A story has only one metadata block'), startPos);
+            throw ParseError.of(I18n.text('A story can have only one metadata block'), startPos);
         }
         metadataParsed = true;
 
@@ -1305,7 +1305,7 @@ class ParserContext {
             case KwOnce: Once;
             case KwPick: Pick;
             case KwShuffle: Shuffle;
-            case _: throw ParseError.of(I18n.text('Expected alternative keyword'), currentPos());
+            case _: throw ParseError.of(I18n.text('Expected sequence, cycle, once, pick or shuffle'), currentPos());
         };
 
         final altNode = new NAlternative(nextNodeId(BRANCH), startPos, mode, []);
@@ -1377,7 +1377,7 @@ class ParserContext {
             expect(LParen);
             final callArgs = parseCallArguments();
             if (callArgs.length == 0) {
-                addError(ParseError.of(I18n.text('beat() requires a target expression'), targetStart));
+                addError(ParseError.of(I18n.text('beat() needs the name of a beat'), targetStart));
             }
             final node = new NTransition(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
             node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
@@ -1416,7 +1416,7 @@ class ParserContext {
             expect(LParen);
             final callArgs = parseCallArguments();
             if (callArgs.length == 0) {
-                addError(ParseError.of(I18n.text('beat() requires a target expression'), targetStart));
+                addError(ParseError.of(I18n.text('beat() needs the name of a beat'), targetStart));
             }
             final node = new NInsertion(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), null, targetStart.extendedTo(prevNonWhitespaceOrComment().pos));
             node.targetExpr = callArgs.length > 0 ? callArgs[0] : null;
@@ -1450,7 +1450,7 @@ class ParserContext {
         expect(LParen);
         final callArgs = parseCallArguments();
         if (callArgs.length == 0) {
-            addError(ParseError.of(I18n.text('beat() requires a target expression'), startPos));
+            addError(ParseError.of(I18n.text('beat() needs the name of a beat'), startPos));
         }
         final node = new NBeatCall(nextNodeId(NODE), startPos.extendedTo(prevNonWhitespaceOrComment().pos), callArgs.length > 0 ? callArgs[0] : null, startPos.extendedTo(prevNonWhitespaceOrComment().pos));
         if (callArgs.length > 1) {
@@ -2381,7 +2381,7 @@ class ParserContext {
             if (expr != null) {
                 switch Type.getClass(expr) {
                     case NAssign:
-                        addError(ParseError.of(I18n.text("Invalid condition expression: can't assign a variable here. Did you want to use '==' instead?"), expr.pos));
+                        addError(ParseError.of(I18n.text("A condition can't assign a value. To compare, write '=='."), expr.pos));
                     case _:
                 }
             }

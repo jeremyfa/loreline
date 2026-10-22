@@ -884,7 +884,7 @@ class Token {
                         }
                         else {
                             advance();
-                            error(I18n.text('Expected &'), false);
+                            error(I18n.text('Write && (or and), not a single &'), false);
                             makeToken(OpAnd(false), startPos);
                         }
 
@@ -895,7 +895,7 @@ class Token {
                         }
                         else {
                             advance();
-                            error(I18n.text('Expected |'), false);
+                            error(I18n.text('Write || (or or), not a single |'), false);
                             makeToken(OpOr(false), startPos);
                         }
 

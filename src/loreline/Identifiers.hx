@@ -96,7 +96,7 @@ class Identifiers {
         final twin = asciiTwinOf(c);
         final text = Chars.textOf(c);
         if (twin != -1) {
-            return loreline.i18n.I18n.text('"{text}" looks like "{twin}" but isn\'t', {text: text, twin: String.fromCharCode(twin)});
+            return loreline.i18n.I18n.text('"{text}" looks like "{twin}" but is a different character', {text: text, twin: String.fromCharCode(twin)});
         }
         return loreline.i18n.I18n.text('Unexpected character: {text}', {text: text});
     }

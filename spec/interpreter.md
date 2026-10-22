@@ -1580,7 +1580,7 @@ type full-width marks by default, which are never read as their ASCII twins:
   name before `：` is a declared character (`Lens.getNameWarnings`).
 - Where a full-width mark is an error, such as `金币：10` in a `state` block or
   `（` in function code, the message names the ASCII mark it looks like:
-  `"：" looks like ":" but isn't` (`Identifiers.unexpectedCharacterMessage`).
+  `"：" looks like ":" but is a different character` (`Identifiers.unexpectedCharacterMessage`).
 
 ### Warnings
 

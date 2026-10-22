@@ -245,7 +245,7 @@ class CodeToLorscript {
                 processString();
             }
             else if (c == "'".code) {
-                error(I18n.text('Unexpected single quote'));
+                error(I18n.text('Use double quotes for text, not single quotes'));
             }
             else if (c == "/".code) {
                 final cc = input.uCharCodeAt(index + 1);
