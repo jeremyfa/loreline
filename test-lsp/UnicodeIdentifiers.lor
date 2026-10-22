@@ -39,13 +39,13 @@ beat 结局
   includes: [coins, 国王, 心情, 🐉, 场景, 结局]
 - request: diagnostics
   expected:
-    - message: "This name mixes Latin and Cyrillic letters: rаven"
+    - message: "This name mixes Latin and Cyrillic letters, often a lookalike typo: rаven"
       line: 3
       severity: 2
     - message: '"：" looks like ":" but isn''t, so this line is narration. Write 国王: to make 国王 speak.'
       line: 17
       severity: 2
-    - message: 'No name "coins💰" here. To show coins then 💰, write ${coins}💰.'
+    - message: 'No name "coins💰" here. To show the value of coins followed by 💰, write ${coins}💰.'
       line: 18
       severity: 2
     - message: "Unknown character: 🎉"

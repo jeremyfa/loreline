@@ -1343,7 +1343,7 @@ class Lens {
                 final last = scripts.pop();
                 warnings.push({
                     pos: pos,
-                    message: I18n.t('This name mixes {scripts} and {last} letters: {name}', {scripts: scripts.join(', '), last: last, name: name})
+                    message: I18n.t('This name mixes {scripts} and {last} letters, often a lookalike typo: {name}', {scripts: scripts.join(', '), last: last, name: name})
                 });
             }
         }
@@ -1452,7 +1452,7 @@ class Lens {
         if (isKnownName(name, access) || !isKnownName(before, access)) return;
         warnings.push({
             pos: access.pos,
-            message: I18n.t("No name \"{name}\" here. To show {before} then {after}, write ${{{before}}}{after}.", {name: name, before: before, after: after})
+            message: I18n.t("No name \"{name}\" here. To show the value of {before} followed by {after}, write ${{{before}}}{after}.", {name: name, before: before, after: after})
         });
     }
 
@@ -1502,7 +1502,7 @@ class Lens {
         if (strategy != null && strategy != 'first' && strategy != 'pick' && findFunctionByNameFromNode(strategy, when) == null) {
             warnings.push({
                 pos: when.strategyPos ?? when.pos,
-                message: I18n.t('Unknown strategy: {strategy}. Use first, pick, or the name of a function. A function provided by the host can be declared with `function {strategy}(rules)`.', {strategy: strategy}),
+                message: I18n.t('Unknown strategy: {strategy}. Use first, pick, or the name of a function. A function provided by the app running the story can be declared with `function {strategy}(rules)`.', {strategy: strategy}),
                 isWarning: true,
                 kind: 'unknown-strategy'
             });
@@ -1521,7 +1521,7 @@ class Lens {
                     case OpMinus:
                         warnings.push({
                             pos: new Position(first.pos.line, first.pos.column, first.pos.offset, 1),
-                            message: I18n.t('This `-` is a minus sign on the condition. To play this rule only once, write `- ` with a space after it.'),
+                            message: I18n.t('This `-` is read as a minus sign in the condition. To play this rule only once, put a space after it: `- `.'),
                             isWarning: true
                         });
                     case _:
@@ -1537,7 +1537,7 @@ class Lens {
                     if (comparedValues.exists(key)) {
                         warnings.push({
                             pos: clause.pos,
-                            message: I18n.t('Rules comparing `{value}` with a number, with as many criteria, tie with the default strategy: the one played least recently wins, not the first that matches. Use `when first` for thresholds.', {value: value}),
+                            message: I18n.t('With the default strategy, rules that compare `{value}` with a number and have as many criteria tie: the one played longest ago wins, not the first that matches. Use `when first` for thresholds.', {value: value}),
                             isWarning: true
                         });
                         thresholdWarned = true;

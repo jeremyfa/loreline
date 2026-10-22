@@ -608,11 +608,11 @@ class WhenSyntaxTests {
             {lines: ['  when first', '    true', '      Go.'], expected: []},
             {lines: ['  when declared', '    true', '      Go.'], expected: []},
             // A minus sign glued to the condition
-            {lines: ['  when', '    -gold > 0', '      Debt.', '    true', '      Fine.'], expected: ['!This `-` is a minus sign']},
+            {lines: ['  when', '    -gold > 0', '      Debt.', '    true', '      Fine.'], expected: ['!This `-` is read as a minus sign']},
             // With a space it is the mark of a rule played once
             {lines: ['  when', '    - gold > 0', '      Once.', '    true', '      Fine.'], expected: []},
             // Thresholds with the default strategy
-            {lines: ['  when', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: ['!Rules comparing `gold`']},
+            {lines: ['  when', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: ['!With the default strategy, rules that compare `gold`']},
             // With first, thresholds are fine
             {lines: ['  when first', '    gold > 100', '      Rich.', '    gold > 10', '      Fine.', '    true', '      Broke.'], expected: []},
             // Different numbers of criteria don't tie

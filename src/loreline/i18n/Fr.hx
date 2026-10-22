@@ -197,12 +197,12 @@ class Fr {
         'Latin§letters' => 'latines',
         'Greek§letters' => 'grecques',
         'Cyrillic§letters' => 'cyrilliques',
-        'This name mixes {scripts} and {last} letters: {name}' => 'Ce nom mélange des lettres {scripts} et {last} : {name}',
+        'This name mixes {scripts} and {last} letters, often a lookalike typo: {name}' => 'Ce nom mélange des lettres {scripts} et {last} : {name}',
         '"：" looks like ":" but isn\'t, so this line is narration. Write {name}: to make {name} speak.' => "Ce \"：\" n'est pas le \":\" des répliques, donc cette ligne est de la narration. Écrivez {name}: pour faire parler {name}.",
-        "No name \"{name}\" here. To show {before} then {after}, write ${{{before}}}{after}." => "Il n'y a pas de nom \"{name}\" ici. Pour afficher {before} puis {after}, écrivez ${{{before}}}{after}.",
-        'Unknown strategy: {strategy}. Use first, pick, or the name of a function. A function provided by the host can be declared with `function {strategy}(rules)`.' => "Stratégie inconnue : {strategy}. Utilisez first, pick ou le nom d'une fonction. Une fonction fournie par l'application se déclare avec `function {strategy}(rules)`.",
-        'This `-` is a minus sign on the condition. To play this rule only once, write `- ` with a space after it.' => "Ce `-` est un signe moins devant la condition. Pour ne jouer cette règle qu'une fois, écrivez `- ` avec une espace après.",
-        'Rules comparing `{value}` with a number, with as many criteria, tie with the default strategy: the one played least recently wins, not the first that matches. Use `when first` for thresholds.' => "Les règles qui comparent `{value}` à un nombre, avec autant de critères, sont à égalité avec la stratégie par défaut : c'est celle jouée le moins récemment qui gagne, pas la première qui correspond. Utilisez `when first` pour des seuils.",
+        "No name \"{name}\" here. To show the value of {before} followed by {after}, write ${{{before}}}{after}." => "Il n'y a pas de nom \"{name}\" ici. Pour afficher {before} puis {after}, écrivez ${{{before}}}{after}.",
+        'Unknown strategy: {strategy}. Use first, pick, or the name of a function. A function provided by the app running the story can be declared with `function {strategy}(rules)`.' => "Stratégie inconnue : {strategy}. Utilisez first, pick ou le nom d'une fonction. Une fonction fournie par l'application se déclare avec `function {strategy}(rules)`.",
+        'This `-` is read as a minus sign in the condition. To play this rule only once, put a space after it: `- `.' => "Collé à la condition, ce `-` est lu comme un signe moins. Pour ne jouer cette règle qu'une fois, ajoutez une espace après : `- `.",
+        'With the default strategy, rules that compare `{value}` with a number and have as many criteria tie: the one played longest ago wins, not the first that matches. Use `when first` for thresholds.' => "Avec la stratégie par défaut, les règles qui comparent `{value}` à un nombre avec autant de critères sont à égalité : c'est celle jouée il y a le plus longtemps qui gagne, pas la première qui correspond. Pour des seuils, utilisez `when first`.",
 
     ];
 
