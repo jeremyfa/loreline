@@ -116,7 +116,7 @@ final class Loreline
     }
 
     /**
-     * Enable or disable runtime support for an alternate translation file
+     * Enable or disable runtime support for an alternative translation file
      * format. Known names: "po" (.po), "xliff" (.xliff, .xlf), "csv"
      * (.csv, .tsv). Unknown names are accepted silently.
      */
@@ -160,7 +160,7 @@ final class Loreline
     /**
      * Tick pending wait() timers. Call from your game loop every frame.
      *
-     * The first call enables non blocking deferred mode for wait(); before
+     * The first call enables non-blocking deferred mode for wait(); before
      * this is called, wait() falls back to blocking sleep (correct for CLI tools).
      */
     public static function update(float $delta): void

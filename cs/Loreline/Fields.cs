@@ -1,8 +1,8 @@
 namespace Loreline
 {
     /// <summary>
-    /// Base interface to hold loreline values.
-    /// This interface allows to map loreline object fields to game-specific objects.
+    /// Base interface for objects that hold Loreline values.
+    /// It lets you map Loreline object fields to game-specific objects.
     /// </summary>
     public interface IFields
     {
@@ -13,7 +13,7 @@ namespace Loreline
         void LorelineCreate(Interpreter interpreter);
 
         /// <summary>
-        /// Get the value associated to the given field key
+        /// Gets the value associated with the given field key
         /// </summary>
         /// <param name="interpreter">The interpreter instance</param>
         /// <param name="key">The field key</param>
@@ -21,7 +21,7 @@ namespace Loreline
         object LorelineGet(Interpreter interpreter, string key);
 
         /// <summary>
-        /// Set the value associated to the given field key
+        /// Sets the value associated with the given field key
         /// </summary>
         /// <param name="interpreter">The interpreter instance</param>
         /// <param name="key">The field key</param>
@@ -29,7 +29,7 @@ namespace Loreline
         void LorelineSet(Interpreter interpreter, string key, object value);
 
         /// <summary>
-        /// Remove the field associated to the given key
+        /// Removes the field associated with the given key
         /// </summary>
         /// <param name="interpreter">The interpreter instance</param>
         /// <param name="key">The field key to remove</param>

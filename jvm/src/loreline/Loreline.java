@@ -1,8 +1,7 @@
 package loreline;
 
 /**
- * The main public API for Loreline runtime on JVM.
- * Provides easy access to the core functionality for parsing and running Loreline scripts.
+ * The main public API of the Loreline runtime on the JVM, for parsing and running Loreline scripts.
  */
 public final class Loreline {
 
@@ -72,7 +71,7 @@ public final class Loreline {
     }
 
     /**
-     * Resumes a previously saved Loreline script.
+     * Resumes a Loreline script from a saved state.
      *
      * @param script the parsed script
      * @param handleDialogue function to call when displaying dialogue text
@@ -88,7 +87,7 @@ public final class Loreline {
     }
 
     /**
-     * Resumes a previously saved Loreline script with options.
+     * Resumes a Loreline script from a saved state, with options.
      *
      * @param script the parsed script
      * @param handleDialogue function to call when displaying dialogue text
@@ -128,7 +127,7 @@ public final class Loreline {
     }
 
     /**
-     * Enable or disable runtime support for an alternate translation file format.
+     * Enables or disables runtime support for an alternative translation file format.
      *
      * By default only `.<locale>.lor` files are tried by loadLocale. Call this
      * to opt in to additional formats. Known names:
@@ -148,7 +147,7 @@ public final class Loreline {
      *
      * In async mode (callback supplied) the callback fires with {@code null}
      * on failure and this method tells you what went wrong. In sync mode the
-     * call throws, and this field is set to the same error so it can be
+     * call throws, and this method returns the same error so it can be
      * inspected after the catch.
      *
      * Not thread-safe: read immediately after the call returns.

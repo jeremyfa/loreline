@@ -39,7 +39,7 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Represents a choice option presented to the user.
+        /// Represents a choice option presented to the player.
         /// </summary>
         public struct ChoiceOption
         {
@@ -113,11 +113,11 @@ namespace Loreline
         /// <summary>
         /// Callback type for choice selection.
         /// </summary>
-        /// <param name="index">The index of the selected choice</param>
+        /// <param name="index">The index of the selected option</param>
         public delegate void ChoiceCallback(int index);
 
         /// <summary>
-        /// Contains information about choices to be presented to the user.
+        /// Contains information about choices to be presented to the player.
         /// </summary>
         public struct Choice
         {
@@ -132,7 +132,7 @@ namespace Loreline
             public ChoiceOption[] Options;
 
             /// <summary>
-            /// Function to call with the index of the selected choice.
+            /// Function to call with the index of the selected option.
             /// </summary>
             public ChoiceCallback Callback;
         }
@@ -145,7 +145,7 @@ namespace Loreline
         public delegate void ChoiceHandler(Choice choice);
 
         /// <summary>
-        /// A custom instanciator to create fields objects.
+        /// A custom instantiator for the objects that hold fields.
         /// </summary>
         /// <param name="interpreter">The interpreter related to this object creation</param>
         /// <param name="type">The expected type of the object, if there is any known</param>
@@ -167,7 +167,7 @@ namespace Loreline
         public struct InterpreterOptions
         {
             /// <summary>
-            /// Retrieve default interpreter options
+            /// Returns the default interpreter options
             /// </summary>
             public static InterpreterOptions Default()
             {
@@ -193,7 +193,7 @@ namespace Loreline
             public bool StrictAccess;
 
             /// <summary>
-            /// A custom instantiator to create fields objects.
+            /// A custom instantiator for the objects that hold fields.
             /// </summary>
             public CreateFields CustomCreateFields;
 
@@ -469,8 +469,8 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Restores the interpreter state from a previously saved state.
-        /// This allows resuming execution from a previously saved state.
+        /// Restores the interpreter state from a JSON string returned by Save(),
+        /// so execution can resume from that point.
         /// </summary>
         /// <param name="savedData">The JSON string containing the serialized state</param>
         /// <exception cref="Runtime.RuntimeError">Thrown if the save data version is incompatible</exception>

@@ -13,7 +13,7 @@ use Loreline\Internal\loreline\Json as HxJson;
  * State values cross the boundary as native PHP arrays with snapshot
  * semantics: getters return an independent copy, and mutating that copy does
  * not change story state until it is written back through a setter. This is
- * the PHP projection of the cross platform contract (PHP arrays are value
+ * the PHP projection of the cross-platform contract (PHP arrays are value
  * types, so live views are not possible with genuine arrays).
  */
 class Interpreter

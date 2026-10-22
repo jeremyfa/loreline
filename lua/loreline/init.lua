@@ -494,7 +494,7 @@ function M.extract_translations(script)
     return __loreline_Loreline.extractTranslations(script._internal)
 end
 
---- Enable or disable runtime support for an alternate translation file format.
+--- Enable or disable runtime support for an alternative translation file format.
 -- By default only `.<locale>.lor` files are tried by `load_locale`. Call this
 -- to opt in to additional formats. Known names: "po" (.po), "xliff" (.xliff,
 -- .xlf), "csv" (.csv, .tsv). Unknown names are accepted silently for
@@ -509,7 +509,7 @@ end
 -- call, or `nil` on success.
 -- In async mode (callback supplied) the callback fires with `nil` on failure
 -- and this function tells you what went wrong. In sync mode the call throws,
--- and this is set to the same error so it can be inspected after the catch.
+-- and this function returns the same error so it can be inspected after the catch.
 -- Not thread-safe: read immediately after the call returns.
 function M.last_error()
     return __loreline_Loreline.lastError()

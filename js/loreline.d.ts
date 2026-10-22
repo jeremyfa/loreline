@@ -13,7 +13,7 @@ export type ImportsFileHandler = (path: string, callback: (data: string) => void
 export type ImportsErrorHandler = (error: Error) => void;
 
 /**
- * Tokens type
+ * List of tokens produced by the lexer.
  */
 export type Tokens = Array<any>;
 
@@ -130,7 +130,7 @@ export interface Position {
 }
 
 /**
- * Represents a choice option presented to the user.
+ * Represents a choice option presented to the player.
  */
 export interface ChoiceOption {
     /**
@@ -191,7 +191,7 @@ export type DialogueHandler = (interpreter: Interpreter, character: string | nul
  *
  * @param interpreter The interpreter instance
  * @param options The available choice options
- * @param callback Function to call with the index of the selected choice
+ * @param callback Function to call with the index of the selected option
  */
 export type ChoiceHandler = (interpreter: Interpreter, options: Array<ChoiceOption>, callback: (index: number) => void) => void;
 
@@ -218,7 +218,7 @@ export interface InterpreterOptions {
     strictAccess?: boolean;
 
     /**
-     * A custom instantiator to create fields objects.
+     * A custom instantiator for the objects that hold fields.
      */
     customCreateFields?: (interpreter: Interpreter, type: string, node: Node) => any;
 
@@ -240,7 +240,7 @@ export interface InterpreterOptions {
 export type FunctionsMap = Record<string, Function>;
 
 /**
- * The main public API for Loreline runtime.
+ * The main public API for the Loreline runtime.
  * Provides easy access to the core functionality for parsing and running Loreline scripts.
  */
 export class Loreline {
@@ -252,7 +252,7 @@ export class Loreline {
      *
      * @param input The Loreline script content as a string (`.lor` format)
      * @param filePath Optional file path of the input being parsed. If provided, requires `handleFile` as well.
-     * @param handleFile Optional file handler to read imports. If that handler is asynchronous, then `parse()` will return null and `callback` argument should be used
+     * @param handleFile Optional file handler used to read imports. If it is asynchronous, `parse()` returns null and you should use the `callback` argument instead.
      * @param callback If provided, will be called with the resulting script as argument. Mostly useful when reading file imports asynchronously
      * @returns The parsed script as an AST `Script` instance (if loaded synchronously)
      * @throws If the script contains syntax errors or other parsing issues
@@ -268,7 +268,7 @@ export class Loreline {
      *
      * @param script The parsed script (result from `parse()`)
      * @param handleDialogue Function called when dialogue text should be displayed
-     * @param handleChoice Function called when player needs to make a choice
+     * @param handleChoice Function called when the player needs to make a choice
      * @param handleFinish Function called when script execution completes
      * @param beatName Optional name of a specific beat to start from (defaults to first beat)
      * @param options Additional options
@@ -284,18 +284,18 @@ export class Loreline {
     ): Interpreter;
 
     /**
-     * Resumes a previously saved Loreline script from its saved state.
+     * Resumes a Loreline script from a saved state.
      *
      * This allows you to continue a story from the exact point where it was saved,
      * restoring all state variables, choices, and player progress.
      *
      * @param script The parsed script (result from `parse()`)
      * @param handleDialogue Function called when dialogue text should be displayed
-     * @param handleChoice Function called when player needs to make a choice
+     * @param handleChoice Function called when the player needs to make a choice
      * @param handleFinish Function called when script execution completes
      * @param saveData The saved game data (typically from `interpreter.save()`)
      * @param beatName Optional beat name to override where to resume from
-     * @param options Optional options to configure interpreter behavior
+     * @param options Optional interpreter options
      * @returns The interpreter instance that is running the script
      */
     static resume(
@@ -347,7 +347,7 @@ export class Loreline {
     ): Translations | null;
 
     /**
-     * Enable or disable runtime support for an alternate translation file format.
+     * Enables or disables runtime support for an alternative translation file format.
      *
      * By default only `.<locale>.lor` files are tried by `loadLocale`. Call
      * this to opt in to additional formats:
@@ -368,8 +368,8 @@ export class Loreline {
      *
      * In async mode (callback supplied) the callback fires with `null` on
      * failure and this method tells you what went wrong. In sync mode the
-     * call throws, and this is set to the same error so it can be inspected
-     * after the catch.
+     * call throws, and this method returns the same error so it can be
+     * inspected after the catch.
      *
      * Not thread-safe: read immediately after the call returns.
      */
@@ -608,7 +608,7 @@ export class Interpreter {
 }
 
 /**
- * An object to store a Int64 from two `high` and `low` number values.
+ * An object that stores an Int64 as two numbers, `high` and `low`.
  */
 export interface Int64 {
     /**
@@ -713,8 +713,8 @@ export class Script extends Node {
 }
 
 /**
- * Base interface to hold loreline values
- * This interface allows to map loreline object fields to game-specific objects.
+ * Base interface for objects that hold Loreline values.
+ * It lets you map Loreline object fields to game-specific objects.
  */
 export interface Fields {
     /**
@@ -723,12 +723,12 @@ export interface Fields {
     lorelineCreate(interpreter: Interpreter): void;
 
     /**
-     * Get the value associated to the given field key
+     * Gets the value associated with the given field key
      */
     lorelineGet(interpreter: Interpreter, key: string): any;
 
     /**
-     * Set the value associated to the given field key
+     * Sets the value associated with the given field key
      */
     lorelineSet(interpreter: Interpreter, key: string, value: any): void;
 

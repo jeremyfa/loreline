@@ -7,8 +7,9 @@ extends RefCounted
 ## Custom function conventions:
 ## - sync:  func(interp: LorelineInterpreter, args: Array) -> Variant
 ## - async: func(interp: LorelineInterpreter, args: Array, resolve: Callable)
-##   Call resolve.call() to resume execution. Calling resolve twice is a
-##   no-op; dropping it without calling leaves the interpreter paused.
+##
+## Call resolve.call() to resume execution. Calling resolve again is a
+## no-op; dropping it without calling leaves the interpreter paused.
 
 var strict_access: bool = false:
 	set = set_strict_access, get = get_strict_access

@@ -3,7 +3,7 @@
 namespace Loreline;
 
 /**
- * A choice option presented to the user.
+ * A choice option presented to the player.
  */
 final class ChoiceOption
 {

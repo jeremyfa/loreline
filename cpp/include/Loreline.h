@@ -85,7 +85,7 @@ typedef struct Loreline_FileRequest Loreline_FileRequest;
 
 /* -- Continuations -------------------------------------------------------- */
 
-/* Hands control back to an interpreter's pending dialogue or choice. May be
+/* Hands control back to an interpreter waiting on a dialogue or choice. May be
  * called at any point while the interpreter is alive, from a UI event or after
  * an arbitrary delay. Calling with nothing pending is a no-op. */
 LORELINE_PUBLIC void Loreline_advance(Loreline_Interpreter* interp);
@@ -316,7 +316,7 @@ typedef struct Loreline_Retainer Loreline_Retainer;
 typedef Loreline_Retainer *(*Loreline_UserDataRetain)(void *userData);
 
 /* Called when the corresponding retain window closes (after a handler has
- * run, after an exception escapes it, or when a run is delivered/aborted).
+ * run, after an exception escapes it, or when a run completes or is aborted).
  * Host decrements whatever retain bumped. Safe with NULL. */
 typedef void (*Loreline_UserDataRelease)(Loreline_Retainer *retainer);
 
@@ -420,7 +420,7 @@ LORELINE_PUBLIC void Loreline_loadLocaleAsync(
     void* completionHandlerData
 );
 
-/* Enable or disable runtime support for an alternate translation file format.
+/* Enables or disables runtime support for an alternative translation file format.
  *
  * By default, only `.<locale>.lor` files are tried by Loreline_loadLocale.
  * Call this to opt in to additional formats:
@@ -434,15 +434,14 @@ LORELINE_PUBLIC void Loreline_translationFormat(
     bool enabled
 );
 
-/* Returns the error message from the most recent failed Loreline_parse() or
- * Loreline_loadLocale() call, or an empty string when the most recent such
- * call succeeded.
+/* Returns the error message left by the most recent Loreline_parse() or
+ * Loreline_loadLocale() call, or an empty string if that call succeeded.
  *
- * Used when a callback variant was supplied: the callback fires with a null
+ * Useful with the callback variants: the callback fires with a null
  * script/translations to signal failure, and this function tells you what
  * went wrong. Without a callback, errors typically surface as exceptions on
- * supported targets. This still mirrors the same value so it can be read
- * after recovery.
+ * supported targets. This function still holds the same error, so it can be
+ * read after the exception is handled.
  *
  * Not thread-safe: read immediately after the call returns. */
 LORELINE_PUBLIC Loreline_String Loreline_lastError(void);
@@ -468,12 +467,12 @@ LORELINE_PUBLIC void Loreline_optionsAddAsyncFunction(
     Loreline_String name,
     Loreline_AsyncCustomFunction fn,
     void* userData);
-/* Resolve an async custom function call. Can be called from any thread. */
+/* Resolves an async custom function call. Can be called from any thread. */
 LORELINE_PUBLIC void Loreline_resolveAsync(
     Loreline_AsyncResolve* resolve,
     Loreline_Value result);
 
-/* Cancel an async custom function call without resuming the interpreter.
+/* Cancels an async custom function call without resuming the interpreter.
  * Releases the resolve handle and its internal GC root on the done closure,
  * but does not invoke the closure. Use when the host drops the resolve
  * handle without resolving (e.g. the GDScript Callable was released before
@@ -482,7 +481,8 @@ LORELINE_PUBLIC void Loreline_resolveAsync(
 LORELINE_PUBLIC void Loreline_cancelAsync(
     Loreline_AsyncResolve* resolve);
 
-/* Playback. All trailing parameters are optional. */
+/* Playback. The parameters after the handlers are optional, except the save
+ * data of Loreline_resume(). */
 LORELINE_PUBLIC Loreline_Interpreter* Loreline_play(
     Loreline_Script* script,
     Loreline_DialogueHandler onDialogue,

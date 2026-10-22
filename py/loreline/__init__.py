@@ -28,7 +28,7 @@ class TextTag:
 
 @dataclass
 class ChoiceOption:
-    """A choice option presented to the user."""
+    """A choice option presented to the player."""
 
     text: str
     """The text of the choice option."""
@@ -59,7 +59,7 @@ ChoiceHandler = Callable[["Interpreter", List[ChoiceOption], Callable[[int], Non
 Args:
     interpreter: The interpreter instance.
     options: The available choice options.
-    select: Function to call with the index of the selected choice.
+    select: Function to call with the index of the selected option.
 """
 
 FinishHandler = Callable[["Interpreter"], None]
@@ -281,7 +281,7 @@ class Script(Node):
 class Interpreter:
     """A running Loreline script interpreter.
 
-    Provides methods to save/restore state and access character data.
+    Provides methods to save/restore state and access character and state data.
     """
 
     def __init__(self, _internal: Any) -> None:
@@ -655,7 +655,7 @@ class Loreline:
 
     @staticmethod
     def translation_format(name: str, enabled: bool) -> None:
-        """Enable or disable runtime support for an alternate translation file format.
+        """Enable or disable runtime support for an alternative translation file format.
 
         By default only ``.<locale>.lor`` files are tried by ``load_locale``. Call
         this to opt in to additional formats. Known names: ``"po"`` (.po),
@@ -671,8 +671,8 @@ class Loreline:
 
         In async mode (callback supplied) the callback fires with ``None`` on
         failure and this method tells you what went wrong. In sync mode the
-        call throws, and this field is set to the same error so it can be
-        inspected after the catch.
+        call throws, and this method returns the same error, so it can be
+        inspected after the except block.
 
         Not thread-safe: read immediately after the call returns.
         """

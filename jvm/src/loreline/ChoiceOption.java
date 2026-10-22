@@ -3,7 +3,7 @@ package loreline;
 import java.util.List;
 
 /**
- * Represents a choice option presented to the user.
+ * Represents a choice option presented to the player.
  */
 public class ChoiceOption {
     /** The text of the choice option. */

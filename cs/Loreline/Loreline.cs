@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Loreline
 {
     /// <summary>
-    /// The main public API for Loreline runtime.
+    /// The main public API for the Loreline runtime.
     /// Provides easy access to the core functionality for parsing and running Loreline scripts.
     /// </summary>
     public static class Engine
@@ -68,7 +68,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="beatName">Name of a specific beat to start from (defaults to first beat)</param>
         /// <returns>The interpreter instance that is running the script</returns>
@@ -93,7 +93,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="options">Additional options</param>
         /// <returns>The interpreter instance that is running the script</returns>
@@ -118,7 +118,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="beatName">Name of a specific beat to start from (defaults to first beat)</param>
         /// <param name="options">Additional options</param>
@@ -146,7 +146,7 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Resumes a previously saved Loreline script from its saved state.
+        /// Resumes a Loreline script from a saved state.
         /// </summary>
         /// <remarks>
         /// This allows you to continue a story from the exact point where it was saved,
@@ -154,7 +154,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="saveData">The saved game data (typically from <see cref="Interpreter.Save"/>)</param>
         /// <param name="beatName">Optional beat name to override where to resume from</param>
@@ -172,7 +172,7 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Resumes a previously saved Loreline script from its saved state.
+        /// Resumes a Loreline script from a saved state.
         /// </summary>
         /// <remarks>
         /// This allows you to continue a story from the exact point where it was saved,
@@ -180,7 +180,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="saveData">The saved game data (typically from <see cref="Interpreter.Save"/>)</param>
         /// <param name="options">Additional options</param>
@@ -198,7 +198,7 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Resumes a previously saved Loreline script from its saved state.
+        /// Resumes a Loreline script from a saved state.
         /// </summary>
         /// <remarks>
         /// This allows you to continue a story from the exact point where it was saved,
@@ -206,7 +206,7 @@ namespace Loreline
         /// </remarks>
         /// <param name="script">The parsed script (result from <see cref="Parse"/>)</param>
         /// <param name="handleDialogue">Function called when dialogue text should be displayed</param>
-        /// <param name="handleChoice">Function called when player needs to make a choice</param>
+        /// <param name="handleChoice">Function called when the player needs to make a choice</param>
         /// <param name="handleFinish">Function called when script execution completes</param>
         /// <param name="saveData">The saved game data (typically from <see cref="Interpreter.Save"/>)</param>
         /// <param name="beatName">Optional beat name to override where to resume from</param>
@@ -259,7 +259,7 @@ namespace Loreline
         }
 
         /// <summary>
-        /// Enable or disable runtime support for an alternate translation file format.
+        /// Enables or disables runtime support for an alternative translation file format.
         /// </summary>
         /// <remarks>
         /// By default only `.&lt;locale&gt;.lor` files are tried by <see cref="LoadLocale"/>.
@@ -279,7 +279,7 @@ namespace Loreline
         /// <remarks>
         /// In async mode (callback supplied) the callback fires with <c>null</c>
         /// on failure and this method tells you what went wrong. In sync mode
-        /// the call throws, and this field is set to the same error so it can
+        /// the call throws, and this method returns the same error so it can
         /// be inspected after the catch.
         ///
         /// Not thread-safe: read immediately after the call returns.

@@ -14,7 +14,7 @@ public interface ChoiceHandler {
      *
      * @param interpreter the interpreter instance
      * @param options the available choice options
-     * @param select function to call with the index of the selected choice
+     * @param select function to call with the index of the selected option
      */
     void handle(Interpreter interpreter, List<ChoiceOption> options,
                 IntConsumer select);

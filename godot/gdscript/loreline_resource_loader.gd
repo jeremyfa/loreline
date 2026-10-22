@@ -11,7 +11,7 @@ extends ResourceFormatLoader
 ## files are silently missing from every export and the game runs fine in the
 ## editor but shows nothing once exported.
 ##
-## The `class_name` above is load-bearing, not cosmetic: Godot picks custom
+## The class's `class_name` is load-bearing, not cosmetic: Godot picks custom
 ## resource format loaders up from the global script class registry, which is
 ## what makes this work with no plugin enabled and no project setup. Removing
 ## it silently stops `.lor` files from being exported.

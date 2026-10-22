@@ -15,7 +15,7 @@ public class InterpreterOptions {
     /** Optional translations map for localization. */
     public Object translations;
 
-    /** A custom instantiator to create fields objects. */
+    /** A custom instantiator for the objects that hold fields. */
     public CreateFieldsHandler customCreateFields;
 
     /**
