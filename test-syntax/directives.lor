@@ -1,0 +1,22 @@
+// A comment starting with `@word` holds directives for the editor: each
+// `@word` stands out, the rest stays a comment.
+
+// @strict
+// <-- comment.line.double-slash
+// ^^^^^^^ keyword.other.directive
+// @unreachable-beat off
+// ^^^^^^^^^^^^^^^^^ keyword.other.directive
+//                   ^^^ comment.line.double-slash
+//                   ^^^ - keyword.other.directive
+
+beat Start
+  Value is $name. // @ignore unknown-name @ignore shadowing
+//                ^^ comment.line.double-slash
+//                   ^^^^^^^ keyword.other.directive
+//                           ^^^^^^^^^^^^ - keyword.other.directive
+//                                        ^^^^^^^ keyword.other.directive
+  // A comment with an email@example.com is ordinary
+//                          ^^^^^^^^^^^^ - keyword.other.directive
+  // @ignore
+//   ^^^^^^^ keyword.other.directive
+  Done.
