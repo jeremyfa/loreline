@@ -123,6 +123,7 @@ class Fr {
         'Duplicate top level beat: {name}' => 'Le beat {name} est déclaré deux fois',
         'Duplicate top level character: {name}' => 'Le personnage {name} est déclaré deux fois',
         'Beat {name} expects at most {args}, got {count}' => 'Le beat {name} accepte au plus {args}, pas {count}',
+        'Beat {name} takes no arguments, got {count}' => "Le beat {name} n'accepte aucun argument, mais en reçoit {count}",
         '{n} argument' => '{n} argument',
         '{n} arguments' => '{n} arguments',
         'Duplicate beat with name: {name}' => 'Le beat {name} est déclaré deux fois',

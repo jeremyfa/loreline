@@ -4141,6 +4141,9 @@ class InterpreterContext {
         if (args == null || args.length == 0) return null;
 
         final numParams = beat.params != null ? beat.params.length : 0;
+        if (numParams == 0) {
+            throw RuntimeError.of(I18n.text('Beat {name} takes no arguments, got {count}', {name: beat.name, count: args.length}), pos);
+        }
         if (args.length > numParams) {
             throw RuntimeError.of(I18n.text('Beat {name} expects at most {args}, got {count}', {name: beat.name, args: I18n.count(numParams, '{n} argument', '{n} arguments'), count: args.length}), pos);
         }
