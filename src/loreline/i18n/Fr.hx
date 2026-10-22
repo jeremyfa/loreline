@@ -180,7 +180,6 @@ class Fr {
         'Invalid iterator: {name}' => 'Itérateur invalide : {name}',
         'Invalid operator: {op}' => 'Opérateur invalide : {op}',
         'Invalid access to field {field}' => 'Le champ {field} n\'est pas accessible',
-        'Invalid access: {name}' => 'Accès invalide : {name}',
         'Unknown type {path}' => 'Type inconnu : {path}',
         '{a} should be {b}' => 'Attendu : {b}. Trouvé : {a}.',
         "Can't access private field {field} on {type}" => 'Le champ {field} de {type} est privé',

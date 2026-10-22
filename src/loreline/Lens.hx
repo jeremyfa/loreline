@@ -145,7 +145,7 @@ class FuncLorscript {
             case EUnknownVariable(v): I18n.text('Unknown variable: {name}', {name: v});
             case EInvalidIterator(v): I18n.text('Invalid iterator: {name}', {name: v});
             case EInvalidOp(op): I18n.text('Invalid operator: {op}', {op: op});
-            case EInvalidAccess(f): I18n.text('Invalid access: {name}', {name: f});
+            case EInvalidAccess(f): I18n.text('Invalid access to field {field}', {field: f});
             case ECustom(msg): null;
         }
     }
