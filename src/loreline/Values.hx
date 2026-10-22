@@ -516,9 +516,9 @@ class Values {
         if (!isNumberLike(a) || !isNumberLike(b)) {
             final operands = {a: describeForError(a), b: describeForError(b)};
             throw RuntimeError.of(switch op {
-                case '-': I18n.text('Cannot subtract {a} and {b}', operands);
-                case '*': I18n.text('Cannot multiply {a} and {b}', operands);
-                case '/': I18n.text('Cannot divide {a} and {b}', operands);
+                case '-': I18n.text('Cannot subtract {b} from {a}', operands);
+                case '*': I18n.text('Cannot multiply {a} by {b}', operands);
+                case '/': I18n.text('Cannot divide {a} by {b}', operands);
                 case _: I18n.text('Cannot take the modulo of {a} and {b}', operands);
             });
         }

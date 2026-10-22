@@ -599,7 +599,7 @@ joins two texts as soon as one side is a text (the other written as text, see
 below), `+=` included, and adds two numbers. `-`, `*`, `/`, `%` and their
 assignments take numbers or texts written as numbers (`3 * "4"` is 12), and so
 do the unary minus and `++`/`--` in functions. Anything else is a
-`RuntimeError` naming the kinds (`Cannot multiply number and "abc"`), and so is
+`RuntimeError` naming the kinds (`Cannot multiply number by "abc"`), and so is
 a division or a modulo by zero. `number()` turns a text into a number for an
 addition.
 

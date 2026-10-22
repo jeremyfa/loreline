@@ -148,13 +148,13 @@ class I18nTests {
             error = e;
         }
         if (error == null) throw 'expected a runtime error';
-        expect(error.message, 'Cannot subtract "abc" and number');
-        expect(I18n.errorText(error, 'fr'), 'Impossible de soustraire un nombre à "abc"');
+        expect(error.message, 'Cannot subtract number from "abc"');
+        expect(I18n.errorText(error, 'fr'), 'Impossible de calculer "abc" moins un nombre');
     }
 
     /** A value described with its article reads as a sentence wherever the template puts it */
     static function testOperandWithArticle():Void {
-        expect(I18n.errorText(runtimeError('x = 3 - "abc"'), 'fr'), 'Impossible de soustraire "abc" à un nombre');
+        expect(I18n.errorText(runtimeError('x = 3 - "abc"'), 'fr'), 'Impossible de calculer un nombre moins "abc"');
         expect(I18n.errorText(runtimeError('x = 3 % "abc"'), 'fr'), 'Impossible de calculer un nombre modulo "abc"');
         expect(I18n.errorText(runtimeError('x = -"abc"'), 'fr'), 'Impossible d\'appliquer le signe moins à "abc"');
     }

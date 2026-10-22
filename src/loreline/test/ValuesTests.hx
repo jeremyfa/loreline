@@ -114,11 +114,11 @@ class ValuesTests {
 
     /** Operations, and the message of the error each one gives. */
     static final ARITHMETIC_ERRORS:Array<{expr:String, error:String}> = [
-        {expr: '3 * "abc"', error: 'Cannot multiply number and "abc"'},
-        {expr: '"" - 1', error: 'Cannot subtract "" and number'},
-        {expr: 'true - 1', error: 'Cannot subtract bool and number'},
-        {expr: 'null * 2', error: 'Cannot multiply null and number'},
-        {expr: '[1] / 2', error: 'Cannot divide array and number'},
+        {expr: '3 * "abc"', error: 'Cannot multiply number by "abc"'},
+        {expr: '"" - 1', error: 'Cannot subtract number from ""'},
+        {expr: 'true - 1', error: 'Cannot subtract number from bool'},
+        {expr: 'null * 2', error: 'Cannot multiply null by number'},
+        {expr: '[1] / 2', error: 'Cannot divide array by number'},
         {expr: '5 % { a: 1 }', error: 'Cannot take the modulo of number and object'},
         {expr: 'true + 1', error: 'Cannot add bool and number'},
         {expr: 'null + 1', error: 'Cannot add null and number'},
