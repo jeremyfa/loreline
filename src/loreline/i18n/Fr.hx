@@ -174,7 +174,6 @@ class Fr {
         "Invalid character: '{char}' ({code})" => "Caractère invalide : '{char}' ({code})",
         'Invalid character: {code}' => 'Caractère invalide : {code}',
         'Unexpected token: "{token}"' => 'Élément inattendu : "{token}"',
-        'Unterminated comment' => 'Commentaire non fermé',
         'Invalid preprocessor ({text})' => 'Préprocesseur invalide ({text})',
         'Invalid preprocessor: {text}' => 'Préprocesseur invalide : {text}',
         'Unknown variable: {name}' => 'Variable inconnue : {name}',
