@@ -2,6 +2,7 @@ package loreline.test;
 
 import loreline.Loreline;
 import loreline.i18n.I18n;
+import loreline.lorscript.Expr.ErrorDef;
 
 using StringTools;
 
@@ -30,7 +31,8 @@ class I18nTests {
             {name: 'a missing name is called a name, not an identifier', fn: () -> testMissingName()},
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
             {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
-            {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()}
+            {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()},
+            {name: 'an error in function code reads the same in the editors and when it runs', fn: () -> testFunctionCodeMessages()}
         ];
 
         for (test in tests) {
@@ -178,6 +180,15 @@ class I18nTests {
         }
         if (error == null) throw 'expected an error in function code';
         if (I18n.errorText(error, 'fr') == error.message) throw 'the French of "${error.message}" is the English';
+    }
+
+    /** The editors and the interpreter give one English message for each error in function code */
+    static function testFunctionCodeMessages():Void {
+        for (error in [EInvalidChar(8203), EUnterminatedComment, EInvalidPreprocessor('#iff'), EInvalidAccess('secret')]) {
+            final editors = loreline.Lens.FuncLorscript.errorText(error).toString();
+            final running = loreline.lorscript.Printer.errorToString(new loreline.lorscript.Expr.Error(error, 0, 0, 'f', 1));
+            expect(running, 'f:1: ' + editors);
+        }
     }
 
 }
