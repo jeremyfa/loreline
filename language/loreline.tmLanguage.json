@@ -246,6 +246,18 @@
         "comments": {
             "patterns": [
                 {
+                    "comment": "A comment starting with @word holds directives for the editor",
+                    "name": "comment.line.double-slash.loreline",
+                    "begin": "//(?=[ \\t]*@[A-Za-z])",
+                    "end": "$",
+                    "patterns": [
+                        {
+                            "name": "keyword.other.directive.loreline",
+                            "match": "(?<=[\\s,])@[A-Za-z][A-Za-z0-9-]*"
+                        }
+                    ]
+                },
+                {
                     "name": "comment.line.double-slash.loreline",
                     "match": "//.*$"
                 },
