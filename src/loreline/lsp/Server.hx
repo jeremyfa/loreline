@@ -2277,7 +2277,7 @@ class Server {
         return (type != null && type.length > 0 ? type + ', ' : '') + place;
     }
 
-    /** What a name is, as a hover says it: `public beat`, `field`, `text method`, in the language of the tools */
+    /** What a name is, as a hover says it: `public beat`, `field`, `text method`, `translation tag`, in the language of the tools */
     public static function kindText(kind:String):String {
         return switch kind {
             case 'beat': I18n.t('beat');
@@ -2294,6 +2294,7 @@ class Server {
             case 'list method': I18n.t('list method');
             case 'map method': I18n.t('map method');
             case 'beat method': I18n.t('beat method');
+            case 'translation tag': I18n.t('translation tag');
             case _: kind;
         }
 

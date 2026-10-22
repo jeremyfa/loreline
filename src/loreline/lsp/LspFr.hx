@@ -106,6 +106,7 @@ class LspFr {
         'list method' => 'méthode de liste',
         'map method' => 'méthode de dictionnaire',
         'beat method' => 'méthode de beat',
+        'translation tag' => 'tag de traduction',
         'in the state of {owner}' => "dans l'état de {owner}",
         'in the state' => "dans l'état",
         'local in {owner}' => 'locale dans {owner}',
