@@ -2508,12 +2508,14 @@ class Server {
     }
 
     /**
-     * What a beat is linked to, in groups under a short title, each left out
-     * when empty:
+     * What a beat is linked to, in groups under a short title, each line and
+     * each group left out when empty:
      * - **Flow**: the beats leading to it, those it goes to and those it calls;
-     * - **Characters**: one per line, in bold when they speak in it, with
-     *   the fields it uses, in bold when it changes them;
-     * - **State**: the fields it changes, in bold, then those it reads.
+     * - **Characters**: those speaking in it, then the others it mentions or
+     *   whose fields it uses;
+     * - **Data**: the fields it changes, then those it only reads, written
+     *   `bob.mood` for a field of a character and `gold` for one of the state.
+     * Names are written as in the script, each linking to its declaration.
      * @param line Wraps each line under a title, to style it
      */
     function beatLinks(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens, ?line:(text:String)->String):String {
@@ -2555,7 +2557,7 @@ class Server {
         if (calls.length > 0) flow.push(I18n.t('Calls {list}', {list: hoverList(calls)}));
         group(I18n.t('Flow'), flow);
 
-        // The fields it uses, changed ones first: by character, and of the state
+        // The fields it uses, changed ones first: of the state, then of characters
         final changedFields = new NodeIdMap<Bool>();
         final fields:Array<NObjectField> = [];
         final seenFields = new NodeIdMap<Bool>();
@@ -2570,36 +2572,41 @@ class Server {
                 fields.push(ref.target);
             }
         }
-        function fieldLink(field:NObjectField):String {
-            final link = makePositionLink(field.name, uri, field, lens);
-            return changedFields.exists(field.id) ? '**' + link + '**' : link;
-        }
 
-        // The characters speaking in it, then the others it mentions or whose fields it uses
+        // The characters speaking in it, then the others it mentions or whose fields it uses.
+        // A character shows its identifier from the script, to match `bob.mood`.
+        final speaking:Array<String> = [];
+        final mentioned:Array<String> = [];
         final characters:Array<NCharacterDecl> = [];
-        final speaking = new NodeIdMap<Bool>();
         final characterRefs = lens.findBeatCharacters(beatDecl);
         for (speaks in [true, false]) {
             for (ref in characterRefs) {
                 if ((HxType.getClass(ref.origin) == NDialogueStatement) != speaks) continue;
-                if (speaks) speaking.set(ref.target.id, true);
-                if (!characters.contains(ref.target)) characters.push(ref.target);
+                if (characters.contains(ref.target)) continue;
+                characters.push(ref.target);
+                (speaks ? speaking : mentioned).push(makePositionLink(ref.target.name, uri, ref.target, lens));
             }
         }
+        final characterLines:Array<String> = [];
+        final changes:Array<String> = [];
+        final reads:Array<String> = [];
         for (field in fields) {
             final character = lens.getFirstParentOfType(field, NCharacterDecl);
-            if (character != null && !characters.contains(character)) characters.push(character);
+            if (character != null && !characters.contains(character)) {
+                characters.push(character);
+                mentioned.push(makePositionLink(character.name, uri, character, lens));
+            }
+            final name = character != null ? character.name + '.' + field.name : field.name;
+            (changedFields.exists(field.id) ? changes : reads).push(makePositionLink(name, uri, field, lens));
         }
-        final characterLines:Array<String> = [];
-        for (character in characters) {
-            final link = makePositionLink(shownCharacterName(character), uri, character, lens);
-            final own = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == character) fieldLink(field)];
-            characterLines.push((speaking.exists(character.id) ? '**' + link + '**' : link) + (own.length > 0 ? ': ' + hoverList(own) : ''));
-        }
+        if (speaking.length > 0) characterLines.push(I18n.t('Speaking: {list}', {list: hoverList(speaking)}));
+        if (mentioned.length > 0) characterLines.push(I18n.t('Mentioned: {list}', {list: hoverList(mentioned)}));
         group(I18n.t('Characters'), characterLines);
 
-        final stateFields = [for (field in fields) if (lens.getFirstParentOfType(field, NCharacterDecl) == null) fieldLink(field)];
-        if (stateFields.length > 0) group(I18n.t('State§group'), [hoverList(stateFields)]);
+        final dataLines:Array<String> = [];
+        if (changes.length > 0) dataLines.push(I18n.t('Changes: {list}', {list: hoverList(changes)}));
+        if (reads.length > 0) dataLines.push(I18n.t('Reads: {list}', {list: hoverList(reads)}));
+        group(I18n.t('Data'), dataLines);
 
         return groups.join("\n\n---\n\n");
     }

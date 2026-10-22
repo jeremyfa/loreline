@@ -12,7 +12,7 @@ import haxe.macro.Expr;
  * A text is written as its English template, which is also its key in the
  * tables: `I18n.t('Unknown name: {name}', {name: name})`. `{name}` is a
  * parameter, `{{` and `}}` are braces. When the same English needs two French
- * forms, the key carries a context after `§`, like `'State§group'`, which the
+ * forms, the key carries a context after `§`, like `'Metadata§key'`, which the
  * English text leaves out.
  *
  * `t`, `text`, `count` and `key` are macros: they record each template, and a
