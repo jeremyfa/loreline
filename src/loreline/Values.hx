@@ -551,7 +551,7 @@ class Values {
      * A value in an error message: a text quoted, anything else by its kind,
      * as a word the tools can show in another language.
      */
-    static function describeForError(value:Any):Dynamic {
+    public static function describeForError(value:Any):Dynamic {
         if (value is String) return '"' + (value : String) + '"';
         return describeKind(typeOf(value));
     }
@@ -588,24 +588,6 @@ class Values {
             case TInt | TFloat: 'number';
             case TFunction: 'function';
             case _: 'object';
-        }
-    }
-
-    /**
-     * A short name for the kind of a value, for error messages, as a word the
-     * tools can show in another language.
-     */
-    public static function describeKindOf(value:Any):I18nKey {
-        if (value == null) return I18n.key('Null§kind');
-        if (value is String) return I18n.key('String§kind');
-        if (Arrays.isArray(value)) return I18n.key('Array§kind');
-        if (RuntimeBeatRef.beatOf(value) != null) return I18n.key('Beat§kind');
-        if (RuntimeCharacterRef.characterOf(value) != null) return I18n.key('Character§kind');
-        return switch Type.typeof(value) {
-            case TInt: I18n.key('Int§kind');
-            case TFloat: I18n.key('Float§kind');
-            case TBool: I18n.key('Bool§kind');
-            case _: I18n.key('Object§kind');
         }
     }
 

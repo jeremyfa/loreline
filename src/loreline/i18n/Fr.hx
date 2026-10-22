@@ -110,15 +110,6 @@ class Fr {
         'number§value' => 'un nombre',
         'function§value' => 'une fonction',
         'object§value' => 'un objet',
-        'Null§kind' => 'null',
-        'String§kind' => 'un texte',
-        'Array§kind' => 'une liste',
-        'Beat§kind' => 'un beat',
-        'Character§kind' => 'un personnage',
-        'Int§kind' => 'un nombre entier',
-        'Float§kind' => 'un nombre décimal',
-        'Bool§kind' => 'un booléen',
-        'Object§kind' => 'un objet',
 
         // Interpreter
 

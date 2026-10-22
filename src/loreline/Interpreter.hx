@@ -7513,7 +7513,7 @@ class InterpreterContext {
                             case _: throw "Unreachable";
                         }
                     case _:
-                        throw RuntimeError.of(I18n.text('Cannot compare {a} and {b}', {a: Values.describeKindOf(left), b: Values.describeKindOf(right)}), pos ?? currentScope?.node?.pos ?? script.pos);
+                        throw RuntimeError.of(I18n.text('Cannot compare {a} and {b}', {a: Values.describeForError(left), b: Values.describeForError(right)}), pos ?? currentScope?.node?.pos ?? script.pos);
                 }
 
             case OpAnd(_) | OpOr(_):

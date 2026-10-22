@@ -679,7 +679,7 @@ class Interp {
         var v1:Any = expr(e1);
         var v2:Any = expr(e2);
         if( !Values.canCompare(v1, v2) )
-            errorText(I18n.text('Cannot compare {a} and {b}', {a: Values.describeKindOf(v1), b: Values.describeKindOf(v2)}));
+            errorText(I18n.text('Cannot compare {a} and {b}', {a: Values.describeForError(v1), b: Values.describeForError(v2)}));
         return Values.compare(v1, v2);
     }
 
