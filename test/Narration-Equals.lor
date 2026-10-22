@@ -45,10 +45,12 @@ beat Start
   bag.apples = bag.apples + 2
   findTheKiller().inventory[resolveWeapon("hello")].truc.bidule[a - b] = 42
   findTheKiller().inventory["knife"].truc.bidule[0] -= 1
+  findTheKiller().inventory[resolveWeapon("hello )")].truc.bidule[a - b - 1] = 8
+  killer.inventory[resolveWeapon("a ] b ( c")].truc.bidule[a - b - 1] += 1
 
   Gold $gold, $bob.name is ${bob.mood}, list ${list[0]} ${list[1]}, grid ${grid[1][0]}, apples ${bag.apples}.
 
-  Killer ${killer.inventory.knife.truc.bidule[2]} ${killer.inventory.knife.truc.bidule[0]}.
+  Killer ${killer.inventory.knife.truc.bidule[2]} ${killer.inventory.knife.truc.bidule[0]} ${killer.inventory.knife.truc.bidule[1]}.
 
 /*
 <test>
@@ -65,6 +67,6 @@ beat Start
 
     ~ Gold 7, Robert is angry, list 7 9, grid 4, apples 2.
 
-    ~ Killer 42 -1.
+    ~ Killer 42 -1 9.
 </test>
 */
