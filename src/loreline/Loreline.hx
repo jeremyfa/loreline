@@ -20,7 +20,7 @@ import loreline.Parser;
 using loreline.TextUnits;
 
 /**
- * The main public API for Loreline runtime.
+ * The main public API for the Loreline runtime.
  * Provides easy access to the core functionality for parsing and running Loreline scripts.
  */
 #if js
@@ -395,7 +395,7 @@ class Loreline {
      *
      * @param script The parsed script (result from `parse()`)
      * @param handleDialogue Function called when dialogue text should be displayed
-     * @param handleChoice Function called when player needs to make a choice
+     * @param handleChoice Function called when the player needs to make a choice
      * @param handleFinish Function called when script execution completes
      * @param beatName Optional name of a specific beat to start from (defaults to first beat)
      * @param options Additional options
@@ -424,14 +424,14 @@ class Loreline {
     }
 
     /**
-     * Resumes a previously saved Loreline script from its saved state.
+     * Resumes a Loreline script from a saved state.
      *
      * This allows you to continue a story from the exact point where it was saved,
      * restoring all state variables, choices, and player progress.
      *
      * @param script The parsed script (result from `parse()`)
      * @param handleDialogue Function called when dialogue text should be displayed
-     * @param handleChoice Function called when player needs to make a choice
+     * @param handleChoice Function called when the player needs to make a choice
      * @param handleFinish Function called when script execution completes
      * @param saveData The saved game data (typically from `interpreter.save()`)
      * @param beatName Optional beat name to override where to resume from
@@ -484,7 +484,7 @@ class Loreline {
     }
 
     /**
-     * Enable or disable runtime support for an alternate translation file format.
+     * Enables or disables runtime support for an alternative translation file format.
      *
      * By default, only `.<locale>.lor` files are tried by `loadLocale`. Call this
      * to opt in to additional formats. Known names:
@@ -542,14 +542,14 @@ class Loreline {
      * that doesn't already have one. `script` must be the AST parsed
      * from the same `content`. Returns the rewritten content.
      *
-     * When `includeImports` is false, imported scripts are skipped, their
+     * When `includeImports` is false, imported scripts are skipped: their
      * byte offsets refer to other files' contents and would corrupt
      * `content`. Tooling that walks imports externally should pass false.
      *
-     * When `reservedIds` is provided, it's used (and mutated) as the
-     * shared existing-IDs set across calls, useful for coordinating
-     * ID generation across multiple per-file invocations so that file
-     * B's auto-IDs avoid every ID already in file A. Existing IDs from
+     * When `reservedIds` is provided, it is used (and mutated) as the set
+     * of IDs already taken, shared across calls. This lets several
+     * per-file calls coordinate, so that file B's auto-IDs avoid every ID
+     * already in file A. Existing IDs from
      * this file's hash comments are added to the map; newly-generated
      * IDs are added too.
      *

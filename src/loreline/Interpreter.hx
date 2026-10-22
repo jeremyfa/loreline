@@ -18,7 +18,7 @@ using loreline.TextUnitsVector;
 
 
 /**
- * A state during the runtime execution of a loreline script.
+ * A state during the execution of a Loreline script.
  * States hold field values that can be accessed and modified during script execution.
  */
 class RuntimeState {
@@ -82,7 +82,7 @@ class RuntimeState {
 
 /**
  * Runtime state variant specifically used for character states.
- * Characters are special entities in Loreline scripts that can have their own properties
+ * Characters are special entities in Loreline scripts that can have their own fields
  * and can be referenced in dialogue statements.
  */
 class RuntimeCharacter extends RuntimeState {
@@ -163,7 +163,7 @@ enum RuntimeAccess {
 /**
  * Represents a scope in the execution stack of a Loreline script.
  * Every time we enter a new block node, we enter a new scope identified with a unique integer value.
- * When exiting that scope, the related temporary states associated with it are destroyed.
+ * When exiting that scope, its temporary states are destroyed.
  */
 @:structInit
 class RuntimeScope {
@@ -359,8 +359,8 @@ class RuntimeCharacterRef {
 }
 
 /**
- * Data that needs to be hold with a scope when
- * a beat is being inserted within a choice
+ * Data that needs to be held with a scope when
+ * a beat is inserted within a choice
  */
 class RuntimeInsertion {
 
@@ -381,7 +381,7 @@ class RuntimeInsertion {
 
     /**
      * The call stack of this insertion, which is used to resume
-     * the execution at the correct location when a choice of it has been selected
+     * the execution at the correct location when one of its options is selected
      */
     public var stack:Array<RuntimeScope> = [];
 
@@ -552,7 +552,7 @@ class TextTag {
 }
 
 /**
- * Represents a choice option presented to the user.
+ * Represents a choice option presented to the player.
  */
 @:structInit
 #if (loreline_cs_api && !macro)
@@ -607,7 +607,7 @@ typedef DialogueHandler = (interpreter:Interpreter, character:String, text:Strin
  *
  * @param interpreter The interpreter instance
  * @param options The available choice options
- * @param callback Function to call with the index of the selected choice
+ * @param callback Function to call with the index of the selected option
  */
 typedef ChoiceHandler = (interpreter:Interpreter, options:Array<ChoiceOption>, callback:(index:Int)->Void)->Void;
 
@@ -696,7 +696,7 @@ typedef InterpreterOptions = {
     public var strictAccess:Bool #if !loreline_typedef_options = false #end;
 
     /**
-     * A custom instanciator to create fields objects.
+     * A custom instantiator for the objects that hold fields.
      */
     #if loreline_typedef_options @:optional #end
     public var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any #if !loreline_typedef_options = null #end;
@@ -819,7 +819,7 @@ class InterpreterContext {
     final strictAccess:Bool;
 
     /**
-     * The custom instanciator of fields objects given in the root interpreter options.
+     * The custom instantiator of fields objects given in the root interpreter options.
      * Default value for spawned children that don't bring their own.
      */
     final customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
@@ -1208,7 +1208,7 @@ class InterpreterContext {
     var _choiceEvalEnabled:Array<Bool> = [];
 
     /**
-     * A custom instanciator to create fields objects. Bound per interpreter like the
+     * A custom instantiator for the objects that hold fields. Bound per interpreter like the
      * function tables: binding adapters capture the wrapper of their interpreter.
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;

@@ -604,7 +604,7 @@ class NStateDecl extends AstNode {
      * Creates a new state declaration node.
      * @param pos Position in source where this state appears
      * @param temporary Whether this is a temporary state
-     * @param fields Array of property definitions
+     * @param fields Array of field definitions
      * @param leadingComments Optional comments before the state
      * @param trailingComments Optional comments after the state
      */
@@ -812,7 +812,7 @@ class NCharacterDecl extends AstNode {
      * Creates a new character declaration node.
      * @param pos Position in source where this character appears
      * @param name Name of the character
-     * @param fields Array of property definitions
+     * @param fields Array of field definitions
      * @param leadingComments Optional comments before the character
      * @param trailingComments Optional comments after the character
      */
@@ -928,7 +928,7 @@ class NBeatDecl extends AstNode {
     public var style:BlockStyle;
 
     /**
-     * Optional parameters of this beat (null when the declaration has no parens).
+     * Parameters of this beat, if any (null when the declaration has no parens).
      * At runtime they become beat-scoped temporary state fields.
      */
     public var params:Null<Array<NBeatParam>> = null;
@@ -1213,7 +1213,7 @@ class NTextStatement extends AstNode {
     public var condition:Null<NExpr>;
 
     /**
-     * The style of the condition (plain or parentheses).
+     * The style of the condition (without or with parentheses).
      */
     public var conditionStyle:ConditionStyle;
 
@@ -1270,7 +1270,7 @@ class NTextStatement extends AstNode {
 }
 
 /**
- * Represents a dialogue statement in the AST (character: "text").
+ * Represents a dialogue statement in the AST (`character: "text"`).
  */
 class NDialogueStatement extends AstNode {
     /**
@@ -1294,7 +1294,7 @@ class NDialogueStatement extends AstNode {
     public var condition:Null<NExpr>;
 
     /**
-     * The style of the condition (plain or parentheses).
+     * The style of the condition (without or with parentheses).
      */
     public var conditionStyle:ConditionStyle;
 
@@ -1421,7 +1421,7 @@ class NChoiceOption extends AstNode {
     public var text:NStringLiteral;
 
     /**
-     * Alternatively, instead of text, this could be an insertion
+     * Alternatively, this can be an insertion instead of text.
      */
     public var insertion:NInsertion;
 
@@ -1431,7 +1431,7 @@ class NChoiceOption extends AstNode {
     public var condition:Null<NExpr>;
 
     /**
-     * The style of the condition (plain or parentheses).
+     * The style of the condition (without or with parentheses).
      */
     public var conditionStyle:ConditionStyle;
 
@@ -1460,7 +1460,7 @@ class NChoiceOption extends AstNode {
      * @param pos Position in source where this option appears
      * @param text String literal containing the option text
      * @param condition Optional condition for option availability
-     * @param conditionStyle The style of the condition (plain or parentheses)
+     * @param conditionStyle The style of the condition (without or with parentheses)
      * @param body Array of nodes to execute when chosen
      * @param leadingComments Optional comments before the option
      * @param trailingComments Optional comments after the option
@@ -1632,7 +1632,7 @@ class NWhenRule extends AstNode {
     public var insertionCondition:Null<NExpr>;
 
     /**
-     * The style of the insertion condition (plain or parentheses).
+     * The style of the insertion condition (without or with parentheses).
      */
     public var insertionConditionStyle:ConditionStyle;
 
@@ -1722,7 +1722,7 @@ class NWhenRule extends AstNode {
 }
 
 /**
- * Represents a block with a sequence multiple nodes
+ * Represents a block containing a sequence of nodes.
  */
 class NBlock extends AstNode {
 
@@ -1779,7 +1779,7 @@ class NBlock extends AstNode {
 }
 
 /**
- * Represents an if statement in the AST, with optional else branch.
+ * Represents an if statement in the AST, with an optional else branch.
  */
 class NIfStatement extends AstNode {
     /**
@@ -1788,7 +1788,7 @@ class NIfStatement extends AstNode {
     public var condition:NExpr;
 
     /**
-     * The style of the condition (plain or parentheses).
+     * The style of the condition (without or with parentheses).
      */
     public var conditionStyle:ConditionStyle;
 
@@ -1816,7 +1816,7 @@ class NIfStatement extends AstNode {
      * Creates a new if statement node.
      * @param pos Position in source where this if statement appears
      * @param condition Expression to evaluate
-     * @param conditionStyle The style of the condition (plain or parentheses)
+     * @param conditionStyle The style of the condition (without or with parentheses)
      * @param thenBranch Nodes to execute if condition is true
      * @param elseBranch Optional nodes to execute if condition is false
      * @param leadingComments Optional comments before the if
@@ -2042,11 +2042,11 @@ class NCall extends NExpr {
 }
 
 /**
- * Represents a transition to another beat (->).
+ * Represents a transition to another beat (`->`).
  */
 class NTransition extends AstNode {
     /**
-     * Name of the target beat (null when the target is dynamic, see targetExpr).
+     * Name of the target beat (`null` when the target is dynamic, see `targetExpr`).
      */
     public var target:String;
 
@@ -2122,11 +2122,11 @@ class NTransition extends AstNode {
 }
 
 /**
- * Represents an insertion of another beat (+).
+ * Represents an insertion of another beat (`+`).
  */
 class NInsertion extends AstNode {
     /**
-     * Name of the target beat (null when the target is dynamic, see targetExpr).
+     * Name of the target beat (`null` when the target is dynamic, see `targetExpr`).
      */
     public var target:String;
 
@@ -2273,7 +2273,7 @@ class NBeatCall extends AstNode {
 }
 
 /**
- * Represents a callable function in the AST
+ * Represents a function declaration in the AST.
  */
 class NFunctionDecl extends NExpr {
     /**
@@ -2320,8 +2320,8 @@ class NFunctionDecl extends NExpr {
     }
 
     /**
-     * Converts the literal to a JSON representation.
-     * @return Dynamic object containing literal data
+     * Converts the function to a JSON representation.
+     * @return Dynamic object containing function data
      */
     public override function toJson():Dynamic {
         final json:Dynamic = super.toJson();
@@ -2336,7 +2336,7 @@ class NFunctionDecl extends NExpr {
 }
 
 /**
- * Represents literal values in the AST (numbers, booleans, arrays, objects).
+ * Represents literal values in the AST (numbers, booleans, null, arrays, objects).
  */
 class NLiteral extends NExpr {
     /**
@@ -2447,7 +2447,7 @@ enum LiteralType {
 }
 
 /**
- * Represents a field access expression (obj.field).
+ * Represents a field access expression (`obj.field`).
  */
 class NAccess extends NExpr {
     /**
@@ -2500,7 +2500,7 @@ class NAccess extends NExpr {
 }
 
 /**
- * Represents an assignment expression (a = b, a += b, etc).
+ * Represents an assignment expression (`a = b`, `a += b`, etc.).
  */
 class NAssign extends NExpr {
     /**
@@ -2566,7 +2566,7 @@ class NAssign extends NExpr {
 }
 
 /**
- * Represents an array access expression (array[index]).
+ * Represents an array access expression (`array[index]`).
  */
 class NArrayAccess extends NExpr {
     /**
@@ -2624,7 +2624,7 @@ class NArrayAccess extends NExpr {
 }
 
 /**
- * Represents a binary operation expression (a + b, a && b, etc).
+ * Represents a binary operation expression (`a + b`, `a && b`, etc.).
  */
 class NBinary extends NExpr {
     /**
@@ -2690,7 +2690,7 @@ class NBinary extends NExpr {
 }
 
 /**
- * Represents a unary operation expression (!x, -x, etc).
+ * Represents a unary operation expression (`!x`, `-x`, etc.).
  */
 class NUnary extends NExpr {
     /**
@@ -2708,7 +2708,7 @@ class NUnary extends NExpr {
      * @param pos Position in source where this operation appears
      * @param op Unary operator type
      * @param operand Operand expression
-     * @param leadingComments Optional comments before
+     * @param leadingComments Optional comments before the operation
      * @param trailingComments Optional comments after the operation
      */
     public function new(id:NodeId, pos:Position, op:TokenType, operand:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
@@ -2743,7 +2743,7 @@ class NUnary extends NExpr {
 }
 
 /**
- * Represents a ternary conditional expression (condition ? trueExpr : falseExpr).
+ * Represents a ternary conditional expression (`condition ? trueExpr : falseExpr`).
  */
 class NTernary extends NExpr {
     /**
@@ -2763,12 +2763,12 @@ class NTernary extends NExpr {
 
     /**
      * Creates a new ternary expression node.
-     * @param id Node id
+     * @param id The node ID
      * @param pos Position in source where this expression appears
      * @param condition The condition expression
      * @param trueExpr Expression evaluated when condition is true
      * @param falseExpr Expression evaluated when condition is false
-     * @param leadingComments Optional comments before
+     * @param leadingComments Optional comments before the expression
      * @param trailingComments Optional comments after the expression
      */
     public function new(id:NodeId, pos:Position, condition:NExpr, trueExpr:NExpr, falseExpr:NExpr, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
@@ -2813,7 +2813,7 @@ class NTernary extends NExpr {
 }
 
 /**
- * Represents an import statement
+ * Represents an import statement.
  */
 class NImportStatement extends AstNode {
     /**
@@ -2831,8 +2831,8 @@ class NImportStatement extends AstNode {
      * @param pos Position in source where this import appears
      * @param path The relative path of the file to import
      * @param script The imported AST
-     * @param leadingComments Optional comments before
-     * @param trailingComments Optional comments after the operation
+     * @param leadingComments Optional comments before the import
+     * @param trailingComments Optional comments after the import
      */
     public function new(id:NodeId, pos:Position, path:NStringLiteral, script:Script, ?leadingComments:Array<Comment>, ?trailingComments:Array<Comment>) {
         super(id, pos, leadingComments, trailingComments);

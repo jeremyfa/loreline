@@ -1,8 +1,8 @@
 package loreline;
 
 /**
- * Base interface to hold loreline values
- * This interface allows to map loreline object fields to game-specific objects.
+ * Base interface for objects that hold Loreline values.
+ * It lets you map Loreline object fields to game-specific objects.
  */
 #if js
 @:expose
@@ -15,17 +15,17 @@ interface Fields {
     function lorelineCreate(interpreter:Interpreter):Void;
 
     /**
-     * Get the value associated to the given field key
+     * Gets the value associated with the given field key
      */
     function lorelineGet(interpreter:Interpreter, key:String):Any;
 
     /**
-     * Set the value associated to the given field key
+     * Sets the value associated with the given field key
      */
     function lorelineSet(interpreter:Interpreter, key:String, value:Any):Void;
 
     /**
-     * Remove the field associated to the given key
+     * Removes the field associated with the given key
      */
     function lorelineRemove(interpreter:Interpreter, key:String):Bool;
 
