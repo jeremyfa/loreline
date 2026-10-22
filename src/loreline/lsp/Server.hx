@@ -2512,10 +2512,11 @@ class Server {
      * each group left out when empty:
      * - **Flow**: the beats leading to it, those it goes to and those it calls;
      * - **Characters**: those speaking in it, then the others it mentions or
-     *   whose fields it uses;
-     * - **Data**: the fields it changes, then those it only reads, written
-     *   `bob.mood` for a field of a character and `gold` for one of the state.
-     * Names are written as in the script, each linking to its declaration.
+     *   whose fields it uses, by the name the story shows;
+     * - **Data**: the fields it changes, then those it only reads, written as
+     *   in the script: `bob.mood` for a field of a character, `gold` for one
+     *   of the state.
+     * Each name links to its declaration.
      * @param line Wraps each line under a title, to style it
      */
     function beatLinks(beatDecl:NBeatDecl, uri:DocumentUri, lens:Lens, ?line:(text:String)->String):String {
@@ -2574,7 +2575,7 @@ class Server {
         }
 
         // The characters speaking in it, then the others it mentions or whose fields it uses.
-        // A character shows its identifier from the script, to match `bob.mood`.
+        // A character shows its name as the story shows it, like everywhere else in hovers.
         final speaking:Array<String> = [];
         final mentioned:Array<String> = [];
         final characters:Array<NCharacterDecl> = [];
@@ -2584,7 +2585,7 @@ class Server {
                 if ((HxType.getClass(ref.origin) == NDialogueStatement) != speaks) continue;
                 if (characters.contains(ref.target)) continue;
                 characters.push(ref.target);
-                (speaks ? speaking : mentioned).push(makePositionLink(ref.target.name, uri, ref.target, lens));
+                (speaks ? speaking : mentioned).push(makePositionLink(shownCharacterName(ref.target), uri, ref.target, lens));
             }
         }
         final characterLines:Array<String> = [];
@@ -2594,7 +2595,7 @@ class Server {
             final character = lens.getFirstParentOfType(field, NCharacterDecl);
             if (character != null && !characters.contains(character)) {
                 characters.push(character);
-                mentioned.push(makePositionLink(character.name, uri, character, lens));
+                mentioned.push(makePositionLink(shownCharacterName(character), uri, character, lens));
             }
             final name = character != null ? character.name + '.' + field.name : field.name;
             (changedFields.exists(field.id) ? changes : reads).push(makePositionLink(name, uri, field, lens));
