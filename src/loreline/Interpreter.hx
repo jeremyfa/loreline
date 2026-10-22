@@ -3904,7 +3904,7 @@ class InterpreterContext {
             }
         }
         else {
-            throw RuntimeError.of(I18n.text('Top level function must have a name'), func.pos);
+            throw RuntimeError.of(I18n.text('A function outside a beat must have a name'), func.pos);
         }
 
     }
@@ -4028,7 +4028,7 @@ class InterpreterContext {
 
         // Top level states cannot be temporary
         if (state.temporary) {
-            throw RuntimeError.of(I18n.text('Top level temporary states are not allowed'), state.pos);
+            throw RuntimeError.of(I18n.text('new state can only be used inside a beat'), state.pos);
         }
 
         // Evaluate state values
@@ -6052,7 +6052,7 @@ class InterpreterContext {
 
         for (decl in lens.getNodesOfType(NBeatDecl, true)) {
             if (decl.name == name) {
-                return RuntimeError.of(I18n.text('Beat {name} is not visible from this scope. Store a reference (ref = {name}) while it is in scope to use it from elsewhere.', {name: name}), pos);
+                return RuntimeError.of(I18n.text("Beat {name} can't be reached from here. Store a reference (ref = {name}) where it is visible to use it elsewhere.", {name: name}), pos);
             }
         }
 
@@ -6703,7 +6703,7 @@ class InterpreterContext {
         catch (e:Dynamic) {
             if (e is loreline.lorscript.Expr.Error) {
                 final lorscriptErr:loreline.lorscript.Expr.Error = cast e;
-                throw RuntimeError.of(I18n.text('Error when evaluating function ({min}-{max}): {error}', {min: lorscriptErr.pmin, max: lorscriptErr.pmax, error: lorscriptErr.e}), pos);
+                throw RuntimeError.of(I18n.text('Error in function: {error}', {error: lorscriptErr.e}), pos);
             }
             if (e is RuntimeError && (cast e:RuntimeError).pos == null) {
                 // An error of a built-in function about its arguments: its
@@ -7249,7 +7249,7 @@ class InterpreterContext {
                 final targetName = if (Type.getClass(target) == NAccess) (cast target : NAccess).name else null;
                 throw RuntimeError.of(
                     targetName != null
-                        ? I18n.text("Cannot access field '{name}' of undefined variable '{target}'", {name: name, target: targetName})
+                        ? I18n.text("Cannot access field '{name}': '{target}' is null or doesn't exist", {name: name, target: targetName})
                         : I18n.text("Cannot access field '{name}' of null value", {name: name}),
                     target.pos
                 );
@@ -7351,7 +7351,7 @@ class InterpreterContext {
             );
         }
 
-        throw RuntimeError.of(I18n.text('Undefined variable: {name}', {name: name}), access?.pos ?? currentScope?.node?.pos ?? script.pos);
+        throw RuntimeError.of(I18n.text('Unknown name: {name}', {name: name}), access?.pos ?? currentScope?.node?.pos ?? script.pos);
 
     }
 

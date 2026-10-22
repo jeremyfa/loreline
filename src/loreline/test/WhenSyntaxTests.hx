@@ -406,7 +406,7 @@ class WhenSyntaxTests {
             error = (e is loreline.Error) ? (cast e:loreline.Error).message : Std.string(e);
         }
         expectEqual('', seen.join(','), 'nothing played');
-        expectEqual(true, error.indexOf('Undefined variable: unknown_fact') != -1, 'error: ' + error);
+        expectEqual(true, error.indexOf('Unknown name: unknown_fact') != -1, 'error: ' + error);
     }
 
     /**
