@@ -18,7 +18,7 @@ beat Start
   at: "|metadata"
   contains:
     - "**Métadonnées**"
-    - "**Champs**"
+    - "**Propriétés**"
 - request: completion
   at: "x = metadata.|ti"
   includes: [title]
