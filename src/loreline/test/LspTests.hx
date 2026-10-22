@@ -76,7 +76,8 @@ class LspTests {
             {name: 'a request without a document', fn: () -> testShutdown()},
             {name: 'the server declares UTF-16 positions', fn: () -> testPositionEncoding()},
             {name: 'an open file keeps the URI sent by the client', fn: () -> testOpenFileUri()},
-            {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()}
+            {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()},
+            {name: 'a translation tag is named in the language of the tools', fn: () -> testTranslationTagKind()}
         ];
 
         for (test in tests) {
@@ -113,6 +114,19 @@ class LspTests {
         final response:Dynamic = server.handleMessageSync(initialize);
         final encoding:Null<String> = response?.result?.capabilities?.positionEncoding;
         if (encoding != "utf-16") throw 'expected positionEncoding "utf-16", got ' + Std.string(encoding);
+    }
+
+    /** The editors name a `#tag` with the words of the writer, in English and in French */
+    static function testTranslationTagKind() {
+        loreline.lsp.LspFr.register();
+        final previous = loreline.i18n.I18n.locale;
+        final names = [for (locale in ['en', 'fr']) {
+            loreline.i18n.I18n.locale = locale;
+            Server.kindText('translation tag');
+        }];
+        loreline.i18n.I18n.locale = previous;
+        if (names[0] != 'translation tag') throw 'expected "translation tag", got "${names[0]}"';
+        if (names[1] != 'tag de traduction') throw 'expected "tag de traduction", got "${names[1]}"';
     }
 
     static function testOpenFileUri() {
