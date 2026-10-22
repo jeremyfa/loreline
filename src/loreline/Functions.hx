@@ -153,7 +153,7 @@ class Functions {
     }
 
     /**
-     * Returns the positive version of a number, removing any negative sign.
+     * Returns the absolute value of a number: the same number without its minus sign.
      *
      * `abs(-5)` returns `5`, `abs(3)` returns `3`.
      *
@@ -405,9 +405,10 @@ class Functions {
     /**
      * Converts a value to `true` or `false`:
      * - Numbers: `0` is false, everything else is true
-     * - Strings: empty `""` is false, non-empty is true
-     * - Arrays: empty is false, non-empty is true
+     * - Texts: empty `""` is false, non-empty is true
+     * - Lists: empty is false, non-empty is true
      * - `null`: false
+     * - Any other value: true
      *
      * ```lor
      * if bool(item_count)
@@ -419,7 +420,7 @@ class Functions {
     }
 
     /**
-     * Tells what kind of value this is, as a word: `"number"`, `"text"`,
+     * Returns the type of a value, as a word: `"number"`, `"text"`,
      * `"bool"`, `"array"`, `"object"`, `"beat"`, `"character"`, `"function"`
      * or `"null"`. Whole and decimal numbers are both `"number"`.
      *
@@ -435,7 +436,7 @@ class Functions {
     // -- String --------------------------------------------------------
 
     /**
-     * Returns the number of characters in a string.
+     * Returns the number of characters in a text.
      *
      * ```lor
      * name = "Alice"
@@ -470,7 +471,7 @@ class Functions {
     }
 
     /**
-     * Checks if a string contains a given piece of text.
+     * Checks if a text contains a given piece of text.
      *
      * `string_contains("hello world", "world")` returns `true`.
      *
@@ -502,13 +503,13 @@ class Functions {
     }
 
     /**
-     * Splits a string into an array of pieces at each occurrence of a separator.
+     * Splits a text into a list of pieces at each occurrence of a separator.
      *
      * `string_split("a,b,c", ",")` returns `["a", "b", "c"]`.
      *
      * ```lor
      * words = string_split(sentence, " ")
-     * The sentence has $length(words) words.
+     * The sentence has $array_length(words) words.
      * ```
      */
     public function string_split(text:Any, sep:Any):Array<String> {
@@ -520,7 +521,7 @@ class Functions {
     }
 
     /**
-     * Removes any spaces or whitespace from the beginning and end of a string.
+     * Removes spaces, tabs and line breaks from the beginning and end of a text.
      *
      * `string_trim("  hello  ")` returns `"hello"`.
      */
@@ -529,7 +530,7 @@ class Functions {
     }
 
     /**
-     * Finds where a piece of text first appears inside a string.
+     * Finds where a piece of text first appears inside a text.
      * Returns the position (starting from `0`), or `-1` if not found.
      *
      * `string_index("hello", "ll")` returns `2`.
@@ -545,8 +546,8 @@ class Functions {
     }
 
     /**
-     * Extracts a portion of a string starting at position `start` (0-based)
-     * for `length` characters.
+     * Extracts `len` characters of a text, starting at position `start` (0-based).
+     * Without `len`, goes to the end of the text.
      *
      * `string_sub("ABCDEF", 0, 3)` returns `"ABC"`.
      * `string_sub("ABCDEF", 2, 3)` returns `"CDE"`.
@@ -565,7 +566,7 @@ class Functions {
     }
 
     /**
-     * Checks if a string begins with the given prefix.
+     * Checks if a text begins with the given prefix.
      *
      * `string_starts("hello world", "hello")` returns `true`.
      *
@@ -579,7 +580,7 @@ class Functions {
     }
 
     /**
-     * Checks if a string ends with the given suffix.
+     * Checks if a text ends with the given suffix.
      *
      * `string_ends("hello world", "world")` returns `true`.
      *
@@ -618,8 +619,8 @@ class Functions {
 
     /**
      * Returns the form of a word that goes with a count, following the plural
-     * rules of the language of the line: its translation's, else the `language`
-     * of the story's metadata. In English, `singular` for one, `plural_form`
+     * rules of the line's language: the language of its translation, or else the
+     * `language` of the story's metadata. In English, `singular` for one, `plural_form`
      * otherwise. Languages with more forms give the others after, in order:
      * Polish takes three. With no language known, only one is singular.
      *
@@ -659,7 +660,7 @@ class Functions {
     // -- Array ---------------------------------------------------------
 
     /**
-     * Returns the number of elements in an array.
+     * Returns the number of elements in a list.
      *
      * ```lor
      * items = [1, 2, 3]
@@ -672,7 +673,7 @@ class Functions {
     }
 
     /**
-     * Adds an element to the end of an array.
+     * Adds an element to the end of a list.
      *
      * ```lor
      * items = ["sword", "shield"]
@@ -688,8 +689,8 @@ class Functions {
     }
 
     /**
-     * Removes the last element from an array and returns it.
-     * Returns `null` if the array is empty.
+     * Removes the last element from a list and returns it.
+     * Returns `null` if the list is empty.
      *
      * ```lor
      * last = array_pop(items)
@@ -704,7 +705,7 @@ class Functions {
     }
 
     /**
-     * Adds an element to the beginning of an array.
+     * Adds an element to the beginning of a list.
      *
      * ```lor
      * queue = ["Bob", "Carol"]
@@ -720,8 +721,8 @@ class Functions {
     }
 
     /**
-     * Removes the first element from an array and returns it.
-     * Returns `null` if the array is empty.
+     * Removes the first element from a list and returns it.
+     * Returns `null` if the list is empty.
      *
      * ```lor
      * next_in_line = array_shift(queue)
@@ -736,7 +737,7 @@ class Functions {
     }
 
     /**
-     * Finds and removes the first occurrence of a value from an array.
+     * Finds and removes the first occurrence of a value from a list.
      * Returns `true` if the value was found and removed, `false` if not found.
      * Values compare like with `==`.
      *
@@ -759,8 +760,8 @@ class Functions {
     }
 
     /**
-     * Finds the position of a value in an array (starting from `0`).
-     * Returns `-1` if the value is not in the array.
+     * Finds the position of a value in a list (starting from `0`).
+     * Returns `-1` if the value is not in the list.
      * Values compare like with `==`.
      *
      * ```lor
@@ -780,7 +781,7 @@ class Functions {
     }
 
     /**
-     * Checks if an array contains a given value.
+     * Checks if a list contains a given value.
      * Values compare like with `==`.
      *
      * ```lor
@@ -803,7 +804,7 @@ class Functions {
     }
 
     /**
-     * Sorts the array in place and returns it.
+     * Sorts the list in place and returns it.
      * Numbers come first, from smallest to largest, then texts in alphabetical
      * order, then any other value in its original order.
      *
@@ -855,7 +856,7 @@ class Functions {
     }
 
     /**
-     * Reverses the array in place and returns it.
+     * Reverses the list in place and returns it.
      *
      * ```lor
      * steps = ["first", "second", "third"]
@@ -871,7 +872,7 @@ class Functions {
     }
 
     /**
-     * Combines all elements of an array into a single string, placing a separator
+     * Combines all elements of a list into a single text, placing a separator
      * between each element.
      *
      * `array_join(["a", "b", "c"], ", ")` returns `"a, b, c"`.
@@ -895,7 +896,7 @@ class Functions {
     }
 
     /**
-     * Returns a random element from an array. Returns `null` if the array is empty.
+     * Returns a random element from a list. Returns `null` if the list is empty.
      * Affected by `seed_random`.
      *
      * ```lor
@@ -914,7 +915,7 @@ class Functions {
     }
 
     /**
-     * Shuffles the array in place and returns it.
+     * Shuffles the list in place and returns it.
      * Affected by `seed_random`.
      *
      * ```lor
@@ -939,13 +940,13 @@ class Functions {
     }
 
     /**
-     * Returns a shallow copy of the array.
+     * Returns a shallow copy of the list.
      *
      * ```lor
-     * original = [1, 2, 3]
+     * original = [3, 1, 2]
      * backup = array_copy(original)
      * array_sort(original)
-     * // original is now [1, 2, 3] sorted, backup is unchanged
+     * // original is sorted, backup is unchanged
      * ```
      */
     public function array_copy(array:Any):Dynamic {
@@ -972,7 +973,7 @@ class Functions {
     }
 
     /**
-     * Returns an array containing all the keys of a map.
+     * Returns a list containing all the keys of a map.
      *
      * ```lor
      * state
@@ -1168,12 +1169,12 @@ class Functions {
     // -- Choice introspection -------------------------------------------
 
     /**
-     * Returns an array of text strings for all **enabled** choice options
-     * evaluated so far (during option condition evaluation) or all enabled
-     * options (inside the chosen option's body).
+     * Returns the texts of the **enabled** options of the current choice: inside
+     * an option's condition, the ones checked so far; inside the chosen option's
+     * body, all of them.
      *
-     * Returns a new array each time (safe to modify in scripts).
-     * Returns an empty array outside of a choice context.
+     * Returns a new list each time (safe to modify in scripts).
+     * Returns an empty list outside of a choice context.
      *
      * ```lor
      * choice
@@ -1193,12 +1194,12 @@ class Functions {
     }
 
     /**
-     * Returns an array of text strings for all **disabled** choice options
-     * evaluated so far (during option condition evaluation) or all disabled
-     * options (inside the chosen option's body).
+     * Returns the texts of the **disabled** options of the current choice: inside
+     * an option's condition, the ones checked so far; inside the chosen option's
+     * body, all of them.
      *
-     * Returns a new array each time (safe to modify in scripts).
-     * Returns an empty array outside of a choice context.
+     * Returns a new list each time (safe to modify in scripts).
+     * Returns an empty list outside of a choice context.
      *
      * ```lor
      * choice
@@ -1217,11 +1218,11 @@ class Functions {
     }
 
     /**
-     * Returns an array of text strings for **all** choice options evaluated
+     * Returns a list of the texts of **all** choice options evaluated
      * so far, in original order, regardless of enabled/disabled state.
      *
-     * Returns a new array each time (safe to modify in scripts).
-     * Returns an empty array outside of a choice context.
+     * Returns a new list each time (safe to modify in scripts).
+     * Returns an empty list outside of a choice context.
      *
      * ```lor
      * choice
