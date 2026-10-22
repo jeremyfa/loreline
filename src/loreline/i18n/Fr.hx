@@ -172,7 +172,6 @@ class Fr {
         // Function code
 
         "Invalid character: '{char}' ({code})" => "Caractère invalide : '{char}' ({code})",
-        'Invalid character: {code}' => 'Caractère invalide : {code}',
         'Unexpected token: "{token}"' => 'Élément inattendu : "{token}"',
         'Invalid preprocessor: {text}' => 'Préprocesseur invalide : {text}',
         'Unknown variable: {name}' => 'Variable inconnue : {name}',

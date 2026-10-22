@@ -137,7 +137,7 @@ class FuncLorscript {
      */
     public static function errorText(e:loreline.lorscript.Expr.ErrorDef):Null<loreline.i18n.I18nText> {
         return switch e {
-            case EInvalidChar(c): I18n.text('Invalid character: {code}', {code: c});
+            case EInvalidChar(c): I18n.text("Invalid character: '{char}' ({code})", {char: StringTools.isEof(c) ? "EOF" : String.fromCharCode(c), code: c});
             case EUnexpected(s): I18n.text('Unexpected: {token}', {token: s});
             case EUnterminatedString: I18n.text('Unterminated string');
             case EUnterminatedComment: I18n.text('Unterminated multiline comment');
