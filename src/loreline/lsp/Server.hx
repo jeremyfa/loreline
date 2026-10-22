@@ -2513,9 +2513,8 @@ class Server {
      * - **Flow**: the beats leading to it, those it goes to and those it calls;
      * - **Characters**: those speaking in it, then the others it mentions or
      *   whose fields it uses, by the name the story shows;
-     * - **Data**: the fields it changes, then those it only reads, written as
-     *   in the script: `bob.mood` for a field of a character, `gold` for one
-     *   of the state.
+     * - **Data**: the fields it changes, then those it only reads, a field
+     *   of a character followed by that character: `mood (Bob)`.
      * Each name links to its declaration.
      * @param line Wraps each line under a title, to style it
      */
@@ -2597,8 +2596,9 @@ class Server {
                 characters.push(character);
                 mentioned.push(makePositionLink(shownCharacterName(character), uri, character, lens));
             }
-            final name = character != null ? character.name + '.' + field.name : field.name;
-            (changedFields.exists(field.id) ? changes : reads).push(makePositionLink(name, uri, field, lens));
+            final link = makePositionLink(field.name, uri, field, lens);
+            final shown = character != null ? link + ' (' + makePositionLink(shownCharacterName(character), uri, character, lens) + ')' : link;
+            (changedFields.exists(field.id) ? changes : reads).push(shown);
         }
         if (speaking.length > 0) characterLines.push(I18n.t('Speaking: {list}', {list: hoverList(speaking)}));
         if (mentioned.length > 0) characterLines.push(I18n.t('Mentioned: {list}', {list: hoverList(mentioned)}));
