@@ -44,12 +44,8 @@ beat Shop
     - "1 condition"
     - "Jouée une seule fois"
 - request: hover
-  at: "|barista: Hello"
-  contains:
-    - "**Dialogue** de [Alex]"
-- request: hover
   at: "barista: |Hello"
   contains:
-    - "**Dialogue** de [Alex]"
+    - "**Réplique** dite par [Alex]"
 </test>
 */

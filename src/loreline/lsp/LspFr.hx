@@ -43,8 +43,8 @@ class LspFr {
 
         'Text' => 'Texte',
         'Choice option' => 'Option de choix',
-        'Dialogue' => 'Dialogue',
-        'of {name}' => 'de {name}',
+        'Dialogue' => 'Réplique',
+        'of {name}' => 'dite par {name}',
         'End' => 'Fin',
         'Root' => 'Racine',
         'Transition' => 'Transition',
