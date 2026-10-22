@@ -339,7 +339,7 @@ class Printer {
 			case EUnexpected(s): loreline.i18n.I18n.t('Unexpected token: "{token}"', {token: s}, loc);
 			case EUnterminatedString: loreline.i18n.I18n.t('Unterminated string', null, loc);
 			case EUnterminatedComment: loreline.i18n.I18n.t('Unterminated multiline comment', null, loc);
-			case EInvalidPreprocessor(str): loreline.i18n.I18n.t('Invalid preprocessor ({text})', {text: str}, loc);
+			case EInvalidPreprocessor(str): loreline.i18n.I18n.t('Invalid preprocessor: {text}', {text: str}, loc);
 			case EUnknownVariable(v): loreline.i18n.I18n.t('Unknown variable: {name}', {name: v}, loc);
 			case EInvalidIterator(v): loreline.i18n.I18n.t('Invalid iterator: {name}', {name: v}, loc);
 			case EInvalidOp(op): loreline.i18n.I18n.t('Invalid operator: {op}', {op: op}, loc);
