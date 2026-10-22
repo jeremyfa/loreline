@@ -1119,7 +1119,7 @@ class Server {
                                 items.push({
                                     label: field.name,
                                     kind: CompletionItemKind.Property,
-                                    detail: I18n.t('Metadata'),
+                                    detail: I18n.t('Metadata§key'),
                                     insertText: field.name,
                                     insertTextMode: AsIs,
                                     insertTextFormat: PlainText,
@@ -1358,7 +1358,7 @@ class Server {
             items.push({
                 label: known.key,
                 kind: CompletionItemKind.Property,
-                detail: I18n.t('Metadata'),
+                detail: I18n.t('Metadata§key'),
                 insertText: known.key + ': ',
                 insertTextMode: AsIs,
                 insertTextFormat: PlainText,

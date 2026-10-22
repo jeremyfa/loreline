@@ -27,6 +27,7 @@ class LspFr {
         'Object field' => "Champ d'objet",
         'Character property' => 'Propriété de personnage',
         'Metadata' => 'Métadonnées',
+        'Metadata§key' => 'Métadonnée',
         'Local variable' => 'Variable locale',
         'State field' => "Champ d'état",
         'Character' => 'Personnage',
