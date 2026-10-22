@@ -35,14 +35,13 @@ beat Quiet
     - "**Flow**  \n"
     - "To [Shop]("
     - "\n\n---\n\n**Characters**  \n"
-    - "Speaking: [bob](file:///lsp/HoverBeatLinks.lor#5,1)"
-    - "Mentioned: [carl](file:///lsp/HoverBeatLinks.lor#10,1)"
+    - "Speaking: [Bob](file:///lsp/HoverBeatLinks.lor#5,1)"
+    - "Mentioned: [Carl](file:///lsp/HoverBeatLinks.lor#10,1)"
     - "\n\n---\n\n**Data**  \n"
     - "Changes: [gold](file:///lsp/HoverBeatLinks.lor#2,3), [bob.mood](file:///lsp/HoverBeatLinks.lor#7,3)"
     - "Reads: [xp](file:///lsp/HoverBeatLinks.lor#3,3), [bob.trust](file:///lsp/HoverBeatLinks.lor#8,3)"
   excludes:
     - "**["
-    - "[Bob]("
     - "dana"
     - "**State**"
 - request: hover
