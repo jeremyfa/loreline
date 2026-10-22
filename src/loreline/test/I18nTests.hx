@@ -32,6 +32,7 @@ class I18nTests {
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
             {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
             {name: 'a comparison error calls whole and decimal numbers a number', fn: () -> testCompareNumbers()},
+            {name: 'a beat without parameters says it takes no arguments', fn: () -> testBeatWithoutParameters()},
             {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()},
             {name: 'an error in function code reads the same in the editors and when it runs', fn: () -> testFunctionCodeMessages()}
         ];
@@ -176,6 +177,21 @@ class I18nTests {
         }
         if (error == null) throw 'expected an error in function code';
         if (error.message.indexOf('Cannot compare number and array') == -1) throw 'unexpected message: ' + error.message;
+    }
+
+    /** "at most 0 arguments" reads oddly: a beat without parameters says it takes none */
+    static function testBeatWithoutParameters():Void {
+        final script = Loreline.parse('beat Start\n  -> Other(1)\n\nbeat Other\n  Hi.\n');
+        var error:Null<loreline.Error> = null;
+        try {
+            Loreline.play(script, (interp, character, text, tags, advance) -> advance(), (interp, options, select) -> select(0), interp -> {});
+        }
+        catch (e:loreline.Error) {
+            error = e;
+        }
+        if (error == null) throw 'expected an error for an argument given to a beat without parameters';
+        expect(error.message, 'Beat Other takes no arguments, got 1');
+        expect(I18n.errorText(error, 'fr'), 'Le beat Other n\'accepte aucun argument, mais en reçoit 1');
     }
 
     static function runtimeError(line:String):loreline.Error {
