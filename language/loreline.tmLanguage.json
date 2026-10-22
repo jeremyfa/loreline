@@ -1848,10 +1848,32 @@
                             "include": "#paren-group-in-assigns"
                         },
                         {
+                            "include": "#index-in-assigns"
+                        },
+                        {
                             "include": "#unquoted-string-values"
                         },
                         {
                             "include": "#keywords"
+                        },
+                        {
+                            "include": "#expressions"
+                        }
+                    ]
+                }
+            ]
+        },
+        "index-in-assigns": {
+            "patterns": [
+                {
+                    "begin": "(?<=[\\p{L}\\p{Nl}_\\x{2300}-\\x{2BFF}\\x{1F000}-\\x{1FAFF}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\x{200D}\\x{E0020}-\\x{E007F}\\)\\]])\\[",
+                    "end": "\\]",
+                    "patterns": [
+                        {
+                            "include": "#index-in-assigns"
+                        },
+                        {
+                            "include": "#paren-group-in-assigns"
                         },
                         {
                             "include": "#expressions"
