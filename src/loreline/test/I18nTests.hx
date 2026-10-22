@@ -31,6 +31,7 @@ class I18nTests {
             {name: 'a missing name is called a name, not an identifier', fn: () -> testMissingName()},
             {name: 'a runtime error keeps its English message and shows in French', fn: () -> testRuntimeError()},
             {name: 'a value described with its article reads as a sentence in French', fn: () -> testOperandWithArticle()},
+            {name: 'a comparison error calls whole and decimal numbers a number', fn: () -> testCompareNumbers()},
             {name: 'an error in function code shows in French', fn: () -> testFunctionCodeError()},
             {name: 'an error in function code reads the same in the editors and when it runs', fn: () -> testFunctionCodeMessages()}
         ];
@@ -156,6 +157,25 @@ class I18nTests {
         expect(I18n.errorText(runtimeError('x = 3 - "abc"'), 'fr'), 'Impossible de soustraire "abc" à un nombre');
         expect(I18n.errorText(runtimeError('x = 3 % "abc"'), 'fr'), 'Impossible de calculer un nombre modulo "abc"');
         expect(I18n.errorText(runtimeError('x = -"abc"'), 'fr'), 'Impossible d\'appliquer le signe moins à "abc"');
+    }
+
+    /** Whole and decimal numbers are both a number for authors, whatever the target makes of them */
+    static function testCompareNumbers():Void {
+        for (line in ['x = 2 < [1]', 'x = 1.5 < [1]']) {
+            final error = runtimeError(line);
+            expect(error.message, 'Cannot compare number and array');
+            expect(I18n.errorText(error, 'fr'), 'Impossible de comparer un nombre et une liste');
+        }
+        final script = Loreline.parse("function order(x, y)\n  return x < y\n\nbeat Start\n  Value is ${order(1.5, [1])}.\n");
+        var error:Null<loreline.Error> = null;
+        try {
+            Loreline.play(script, (interp, character, text, tags, advance) -> advance(), (interp, options, select) -> select(0), interp -> {});
+        }
+        catch (e:loreline.Error) {
+            error = e;
+        }
+        if (error == null) throw 'expected an error in function code';
+        if (error.message.indexOf('Cannot compare number and array') == -1) throw 'unexpected message: ' + error.message;
     }
 
     static function runtimeError(line:String):loreline.Error {
