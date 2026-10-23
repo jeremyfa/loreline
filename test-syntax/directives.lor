@@ -1,5 +1,6 @@
 // A comment starting with `@word` holds directives for the editor: each
-// `@word` stands out, the rest stays a comment.
+// `@word` stands out, with its level or the rules it names, the rest stays a
+// comment.
 
 // @strict
 // <-- comment.line.double-slash
@@ -7,16 +8,24 @@
 // @unreachable-beat off
 // ^^^^^^^^^^^^^^^^^ keyword.other.directive
 //                   ^^^ comment.line.double-slash
+//                   ^^^ constant.language.directive
 //                   ^^^ - keyword.other.directive
+// @unused-character warning
+//                   ^^^^^^^ constant.language.directive
 
 beat Start
   Value is $name. // @ignore unknown-name @ignore shadowing
 //                ^^ comment.line.double-slash
 //                   ^^^^^^^ keyword.other.directive
+//                           ^^^^^^^^^^^^ variable.parameter.directive
 //                           ^^^^^^^^^^^^ - keyword.other.directive
 //                                        ^^^^^^^ keyword.other.directive
+//                                                ^^^^^^^^^ variable.parameter.directive
   // A comment with an email@example.com is ordinary
 //                          ^^^^^^^^^^^^ - keyword.other.directive
-  // @ignore
-//   ^^^^^^^ keyword.other.directive
+//     ^^^^^^^ - variable.parameter.directive
+  // @ignore-file unknown-name, shadowing
+//   ^^^^^^^^^^^^ keyword.other.directive
+//                ^^^^^^^^^^^^ variable.parameter.directive
+//                              ^^^^^^^^^ variable.parameter.directive
   Done.
