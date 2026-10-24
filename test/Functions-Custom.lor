@@ -1,3 +1,6 @@
+// The test runners provide these functions without the script declaring them,
+// which must work too
+// @ignore-file unknown-function
 
 state
   val: 0
