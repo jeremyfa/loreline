@@ -1,12 +1,12 @@
 // A comment starting with `@word` holds directives for the editor: each
 // `@word` stands out, with the rules it names, the rest stays a comment.
 
-// @ignore-with-imports unreachable-beat
+// @ignore-all unreachable-beat
 // <-- comment.line.double-slash
-// ^^^^^^^^^^^^^^^^^^^^ storage.modifier.metadata.directive
-//                      ^^^^^^^^^^^^^^^^ variable.parameter.directive
-//                      ^^^^^^^^^^^^^^^^ comment.line.double-slash
-//                      ^^^^^^^^^^^^^^^^ - storage.modifier.metadata.directive
+// ^^^^^^^^^^^ storage.modifier.metadata.directive
+//             ^^^^^^^^^^^^^^^^ variable.parameter.directive
+//             ^^^^^^^^^^^^^^^^ comment.line.double-slash
+//             ^^^^^^^^^^^^^^^^ - storage.modifier.metadata.directive
 // @error-in-file unknown-name, undeclared-assignment
 // ^^^^^^^^^^^^^^ storage.modifier.metadata.directive
 //                ^^^^^^^^^^^^ variable.parameter.directive
