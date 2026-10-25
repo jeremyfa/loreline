@@ -1,31 +1,30 @@
 // A comment starting with `@word` holds directives for the editor: each
-// `@word` stands out, with its level or the rules it names, the rest stays a
-// comment.
+// `@word` stands out, with the rules it names, the rest stays a comment.
 
-// @strict
+// @ignore-with-imports unreachable-beat
 // <-- comment.line.double-slash
-// ^^^^^^^ storage.modifier.metadata.directive
-// @unreachable-beat off
-// ^^^^^^^^^^^^^^^^^ storage.modifier.metadata.directive
-//                   ^^^ comment.line.double-slash
-//                   ^^^ constant.language.directive
-//                   ^^^ - storage.modifier.metadata.directive
-// @unused-character warning
-//                   ^^^^^^^ constant.language.directive
+// ^^^^^^^^^^^^^^^^^^^^ storage.modifier.metadata.directive
+//                      ^^^^^^^^^^^^^^^^ variable.parameter.directive
+//                      ^^^^^^^^^^^^^^^^ comment.line.double-slash
+//                      ^^^^^^^^^^^^^^^^ - storage.modifier.metadata.directive
+// @error-in-file unknown-name, undeclared-assignment
+// ^^^^^^^^^^^^^^ storage.modifier.metadata.directive
+//                ^^^^^^^^^^^^ variable.parameter.directive
+//                              ^^^^^^^^^^^^^^^^^^^^^ variable.parameter.directive
+// @ignore-in-file
+// ^^^^^^^^^^^^^^^ storage.modifier.metadata.directive
 
 beat Start
-  Value is $name. // @ignore unknown-name @ignore shadowing
+  Value is $name. // @ignore unknown-name @warn shadowing
 //                ^^ comment.line.double-slash
 //                   ^^^^^^^ storage.modifier.metadata.directive
 //                           ^^^^^^^^^^^^ variable.parameter.directive
 //                           ^^^^^^^^^^^^ - storage.modifier.metadata.directive
-//                                        ^^^^^^^ storage.modifier.metadata.directive
-//                                                ^^^^^^^^^ variable.parameter.directive
+//                                        ^^^^^ storage.modifier.metadata.directive
+//                                              ^^^^^^^^^ variable.parameter.directive
   // A comment with an email@example.com is ordinary
 //                          ^^^^^^^^^^^^ - storage.modifier.metadata.directive
 //     ^^^^^^^ - variable.parameter.directive
-  // @ignore-file unknown-name, shadowing
-//   ^^^^^^^^^^^^ storage.modifier.metadata.directive
-//                ^^^^^^^^^^^^ variable.parameter.directive
-//                              ^^^^^^^^^ variable.parameter.directive
+  // @ignore
+//   ^^^^^^^ storage.modifier.metadata.directive
   Done.
