@@ -256,11 +256,6 @@
                             "match": "(?<=[\\s,])@[A-Za-z][A-Za-z0-9-]*"
                         },
                         {
-                            "comment": "The level given to a rule",
-                            "name": "constant.language.directive.loreline",
-                            "match": "(?<=[\\s,])(?:off|on|hint|info|warning|error)(?=[\\s,]|$)"
-                        },
-                        {
                             "comment": "The rules a directive names",
                             "name": "variable.parameter.directive.loreline",
                             "match": "(?<=[\\s,])[A-Za-z][A-Za-z0-9-]*(?=[\\s,]|$)"
