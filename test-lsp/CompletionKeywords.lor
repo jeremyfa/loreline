@@ -41,6 +41,14 @@ beat Choices
   at: "choi|"
   includes: [choice, Choices]
 - request: completion
+  at: "choi|"
+  incomplete: true
+  includes: [choice, Choices]
+- request: completion
+  at: "else|"
+  incomplete: true
+  none: true
+- request: completion
   at: "choice|"
   occurrence: 1
   none: true

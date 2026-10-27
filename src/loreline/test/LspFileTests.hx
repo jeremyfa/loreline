@@ -28,7 +28,8 @@ using loreline.TextUnits;
  *   `none: true`
  * - `completion`: `includes` and `excludes`, lists of labels, or `none: true`;
  *   `details`, details the items must have; `trigger` for a completion
- *   triggered by a character instead of invoked
+ *   triggered by a character instead of invoked, `incomplete: true` for one
+ *   asked again as the user types on, after an incomplete list
  * - `symbols`: `includes`, names at any depth, and `details`, details of
  *   symbols at any depth
  * - `diagnostics` (no `at`): a list of message extracts, or of `message`,
@@ -281,7 +282,7 @@ class LspFileTests {
             case 'completion':
                 final context:Dynamic = item.trigger != null
                     ? { triggerKind: 2, triggerCharacter: Std.string(item.trigger) }
-                    : { triggerKind: 1 };
+                    : { triggerKind: item.incomplete == true ? 3 : 1 };
                 final result:Dynamic = send(server, { jsonrpc: '2.0', id: 2, method: 'textDocument/completion', params: {
                     textDocument: textDocument, position: cursor(content, item), context: context
                 }});
