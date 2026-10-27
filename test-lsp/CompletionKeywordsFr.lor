@@ -1,0 +1,18 @@
+// A keyword offered by completion says it is a keyword, in French.
+
+beat Start
+  Hello.
+  choi
+
+beat Choices
+  Hey.
+
+/*
+<test>
+- locale: fr
+- request: completion
+  at: "choi|"
+  includes: [choice]
+  details: [Mot-clé]
+</test>
+*/

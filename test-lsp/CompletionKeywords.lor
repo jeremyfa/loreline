@@ -1,0 +1,65 @@
+// Keywords join the names offered on a line of their own, and nothing is
+// offered once one is typed in full, so Enter goes to the next line. (The
+// cases below are found by their first occurrence: keep them out of here.)
+
+state
+  gold: 0
+
+character bob
+  name: Bob
+
+beat Start
+  if gold > 0
+    Rich.
+  else
+    Poor.
+  els
+  choi
+  choice
+    Go
+      -> elsewhere
+  x = gol
+  -> els
+
+beat elsewhere
+  Hi.
+
+beat Choices
+  Hey.
+
+/*
+<test>
+- request: completion
+  at: "els|"
+  occurrence: 2
+  includes: [else, elsewhere, if, choice, pick]
+  excludes: [import, character]
+- request: completion
+  at: "else|"
+  none: true
+- request: completion
+  at: "choi|"
+  includes: [choice, Choices]
+- request: completion
+  at: "choice|"
+  occurrence: 1
+  none: true
+- request: completion
+  at: "sta|te"
+  includes: [state, beat, character, import, function]
+- request: completion
+  at: "gol|d: 0"
+  excludes: [if, beat, state, choice]
+- request: completion
+  at: "na|me: Bob"
+  excludes: [if, beat, state, choice]
+- request: completion
+  at: "x = gol|"
+  includes: [gold, and, or]
+  excludes: [if, choice, beat]
+- request: completion
+  at: "-> els|"
+  includes: [elsewhere]
+  excludes: [else, if]
+</test>
+*/
