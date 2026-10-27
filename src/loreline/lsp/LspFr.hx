@@ -33,6 +33,7 @@ class LspFr {
         'Character' => 'Personnage',
         'Function' => 'Fonction',
         'Operator, like {symbol}' => 'Opérateur, comme {symbol}',
+        'Keyword' => 'Mot-clé',
         'Beat' => 'Beat',
         'Tag' => 'Tag',
         'Used {n} time' => 'Utilisé {n} fois',

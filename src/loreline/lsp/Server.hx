@@ -1209,6 +1209,31 @@ class Server {
             // Return all available completions for CTRL + Space
             final items:Array<CompletionItem> = [];
 
+            // At the start of a statement, the keywords that can go there. One
+            // typed in full gets nothing, so Enter goes to the next line instead
+            // of turning `else` into a name that starts like it.
+            final keywords = statementKeywords(linePrefix(content, lorelinePos.offset), node, lorelinePos, lens);
+            if (keywords != null) {
+                if (keywords.contains(linePrefix(content, lorelinePos.offset).ltrim())) {
+                    return [];
+                }
+                for (word in keywords) {
+                    // `metadata` is offered below, with its doc, when the block exists
+                    if (word == 'metadata' && lens.getMetadata() != null) continue;
+                    items.push({
+                        label: word,
+                        kind: CompletionItemKind.Keyword,
+                        detail: I18n.t('Keyword'),
+                        // Before the names that match as well
+                        sortText: '0' + word,
+                        insertText: word,
+                        insertTextMode: AsIs,
+                        insertTextFormat: PlainText,
+                        textEdit: makeTextEdit(replacementRange, word)
+                    });
+                }
+            }
+
             // Add locals completion (if inside a function)
             if (node is NFunctionDecl) {
                 final func:NFunctionDecl = cast node;
@@ -2147,6 +2172,45 @@ class Server {
     /**
      * Word operators, for completion and hover.
      */
+    /** The keywords that start a declaration, outside of any block */
+    static final DECLARATION_KEYWORDS:Array<String> = ['import', 'state', 'beat', 'character', 'function', 'metadata'];
+
+    /** The keywords that start a statement in a beat */
+    static final STATEMENT_KEYWORDS:Array<String> = ['if', 'else', 'choice', 'state', 'new state', 'beat', 'sequence', 'cycle', 'once', 'pick', 'shuffle'];
+
+    /**
+     * The keywords that can start the line of the cursor, or null when the
+     * text before it on its line is more than a name being typed, or when the
+     * cursor is in a block where names go instead (a state, a character, the
+     * metadata, the options of a choice, the code of a function). Outside of
+     * any beat, statements are allowed as well as declarations: they belong
+     * to the implicit beat of the top level.
+     */
+    function statementKeywords(prefix:String, node:Null<Node>, pos:loreline.Position, lens:Lens):Null<Array<String>> {
+
+        final typed = prefix.ltrim();
+        if (Identifiers.nameEnd(typed, 0) != typed.uLength()) return null;
+
+        var current = node;
+        while (current != null) {
+            if (current is NBeatDecl) {
+                return (cast current:NBeatDecl).name == '_' ? DECLARATION_KEYWORDS.concat(STATEMENT_KEYWORDS) : STATEMENT_KEYWORDS;
+            }
+            if (current is NChoiceOption) {
+                return STATEMENT_KEYWORDS;
+            }
+            // A block on the line of its own keyword is being written where
+            // its parent allows statements: look further out
+            final block = current is NStateDecl || current is NCharacterDecl || current is NMetadataDecl || current is NChoiceStatement || current is NFunctionDecl;
+            if (block && current.pos.line != pos.line) {
+                return null;
+            }
+            current = lens.getParentNode(current);
+        }
+        return DECLARATION_KEYWORDS.concat(STATEMENT_KEYWORDS);
+
+    }
+
     static final WORD_OPERATORS:Array<{word:String, symbol:String}> = [
         {word: 'and', symbol: '&&'},
         {word: 'or', symbol: '||'},
