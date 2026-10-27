@@ -991,9 +991,13 @@ class Server {
             case _: false;
         }
 
+        // Asked again after an incomplete list, as the user types on: the same
+        // as invoked where the cursor now is
+        final invoked = params.context?.triggerKind == CompletionTriggerKind.Invoked || params.context?.triggerKind == CompletionTriggerKind.TriggerForIncompleteCompletions;
+
         // Check if triggered by a special character
         var triggerCharacter = params.context?.triggerCharacter;
-        if (triggerCharacter == null && params.context?.triggerKind == CompletionTriggerKind.Invoked && lorelinePos.offset > 0) {
+        if (triggerCharacter == null && invoked && lorelinePos.offset > 0) {
             final charBefore = content.uCharAt(lorelinePos.offset - 1);
             switch charBefore {
                 case "." | "<" | '"':
@@ -1189,7 +1193,7 @@ class Server {
         }
 
         // Check for CTRL + Space completion
-        if (params.context != null && params.context.triggerKind == CompletionTriggerKind.Invoked) {
+        if (params.context != null && invoked) {
 
             // Get more info of the position
             final prevText = content.uSubstr(0, lorelinePos.offset);
