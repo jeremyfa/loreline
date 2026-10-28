@@ -653,7 +653,7 @@ class Functions {
      */
     public function plural(count:Any, forms:Array<Any>):String {
         // The forms before the first threshold, then each threshold with its form.
-        // A threshold is a number after a form, with a form after it.
+        // A threshold is a number with a form after it.
         final plain:Array<Any> = [];
         final thresholds:Array<{at:Float, form:Any}> = [];
         var i = 0;
@@ -663,7 +663,7 @@ class Functions {
                 case TInt | TFloat: true;
                 case _: false;
             }
-            if (isNumber && i > 0 && i + 1 < forms.length) {
+            if (isNumber && i + 1 < forms.length) {
                 thresholds.push({at: (value : Float), form: forms[i + 1]});
                 i += 2;
             }
