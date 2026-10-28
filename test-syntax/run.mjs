@@ -368,7 +368,7 @@ ${html}
   .lor-text-statement { font-style: italic; }
   .lor-text-content, .lor-text-content span { color: #59bec3 !important; }
   [data-theme="light"] .shiki .lor-text-content, [data-theme="light"] .shiki .lor-text-content span { color: #0b7285 !important; }
-  .lor-plural-pipe, .lor-plural-pipe span { color: #dcdcaa !important; }
+  .lor-plural-pipe, .lor-plural-pipe span { color: #dcdcaa !important; font-style: normal; }
   [data-theme="light"] .shiki .lor-plural-pipe, [data-theme="light"] .shiki .lor-plural-pipe span { color: #986801 !important; }
   .lor-text-content .lor-plural-pipe, .lor-text-content .lor-plural-pipe span,
   .lor-choice-text .lor-plural-pipe, .lor-choice-text .lor-plural-pipe span { color: #dcdcaa !important; }
