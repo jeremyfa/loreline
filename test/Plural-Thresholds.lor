@@ -1,0 +1,46 @@
+// Thresholds pick a form from a count on: `2:` before a form between
+// parentheses, or a number before a form in plural(). The forms before the
+// first threshold follow the rules of the language below it.
+
+metadata
+  language: en
+
+state
+  n: 0
+
+beat Start
+  n = 1
+  $plural(n, "an apple", 2, "a few apples", 3, "many apples")
+
+  n = 2
+  $plural(n, "an apple", 2, "a few apples", 3, "many apples")
+
+  n = 5
+  $plural(n, "an apple", 2, "a few apples", 3, "many apples")
+
+  // Below the first threshold, the only form without one serves, zero too
+  n = 0
+  $plural(n, "an apple", 2, "a few apples", 3, "many apples")
+
+  // A fraction takes the form of the threshold below it
+  $plural(2.5, "apple", "apples", 2, "a few apples", 3, "many apples")
+
+  // A text written as a number is a form, not a threshold
+  $plural(1, "one", "2", "other")
+
+/*
+<test>
+- expected: |
+    ~ an apple
+
+    ~ a few apples
+
+    ~ many apples
+
+    ~ an apple
+
+    ~ a few apples
+
+    ~ one
+</test>
+*/
