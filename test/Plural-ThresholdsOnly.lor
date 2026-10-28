@@ -1,0 +1,33 @@
+// With a threshold on every form, a count below the first one takes its form
+
+metadata
+  language: en
+
+state
+  n: 0
+
+beat Start
+  n = 0
+  $n (2:a few|3:many)
+
+  n = 1
+  $n (2:a few|3:many)
+
+  n = 2
+  $n (2:a few|3:many)
+
+  n = 3
+  $n (2:a few|3:many)
+
+/*
+<test>
+- expected: |
+    ~ 0 a few
+
+    ~ 1 a few
+
+    ~ 2 a few
+
+    ~ 3 many
+</test>
+*/

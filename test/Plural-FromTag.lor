@@ -1,0 +1,38 @@
+// A plural takes its count from the interpolation before it, one inside a tag
+// included, so the count can be given without being shown. The tag still goes
+// to the game. A tag without one is passed over.
+
+metadata
+  language: en
+
+state
+  apples: 0
+  count: 0
+  n: 0
+
+beat Start
+  apples = 1
+  You see <$apples>(an apple|some apples) on the table.
+
+  apples = 4
+  You see <$apples>(an apple|some apples) on the table.
+
+  count = 2
+  $count <b>coin|coins</b>
+
+  // Digits and a colon after a backslash are text, not a threshold
+  n = 1
+  $n (\10:30 slot|\10:30 slots)
+
+/*
+<test>
+- expected: |
+    ~ You see <<1>>an apple on the table.
+
+    ~ You see <<4>>some apples on the table.
+
+    ~ 2 <<b>>coins<</b>>
+
+    ~ 1 10:30 slot
+</test>
+*/

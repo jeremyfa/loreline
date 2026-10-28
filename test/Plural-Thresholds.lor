@@ -28,6 +28,30 @@ beat Start
   // A text written as a number is a form, not a threshold
   $plural(1, "one", "2", "other")
 
+  // The same between parentheses, the forms before the first threshold
+  // following the language
+  n = 0
+  $n (apple|apples|3:many apples)
+
+  n = 1
+  $n (apple|apples|3:many apples)
+
+  n = 2
+  $n (apple|apples|3:many apples)
+
+  n = 3
+  $n (apple|apples|3:many apples)
+
+  n = 22
+  $n (apple|apples|3:many apples)
+
+  n = 2.5
+  $n (apple|apples|2:a few apples)
+
+  // A space after the colon is not part of the form
+  n = 3
+  $n (apple|apples|3: many apples)
+
 /*
 <test>
 - expected: |
@@ -42,5 +66,19 @@ beat Start
     ~ a few apples
 
     ~ one
+
+    ~ 0 apples
+
+    ~ 1 apple
+
+    ~ 2 apples
+
+    ~ 3 many apples
+
+    ~ 22 many apples
+
+    ~ 2.5 a few apples
+
+    ~ 3 many apples
 </test>
 */

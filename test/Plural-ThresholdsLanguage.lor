@@ -1,0 +1,38 @@
+// Thresholds come first, then the forms of the language below the first one
+
+metadata
+  language: pl
+
+state
+  n: 0
+
+beat Start
+  n = 1
+  $n (plik|pliki|plików|10:mnóstwo plików)
+
+  n = 2
+  $n (plik|pliki|plików|10:mnóstwo plików)
+
+  n = 5
+  $n (plik|pliki|plików|10:mnóstwo plików)
+
+  n = 10
+  $n (plik|pliki|plików|10:mnóstwo plików)
+
+  n = 22
+  $n (plik|pliki|plików|10:mnóstwo plików)
+
+/*
+<test>
+- expected: |
+    ~ 1 plik
+
+    ~ 2 pliki
+
+    ~ 5 plików
+
+    ~ 10 mnóstwo plików
+
+    ~ 22 mnóstwo plików
+</test>
+*/
