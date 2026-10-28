@@ -6349,23 +6349,16 @@ class InterpreterContext {
      * into synthetic NCall nodes that invoke the plural() function.
      */
     function pluralPipeProcess(str:NStringLiteral):NStringLiteral {
-        var lastExprPartIndex = -1;
         var changed = false;
         var newParts:Array<NStringPart> = null;
 
         for (i in 0...str.parts.length) {
             final part = str.parts[i];
             switch (part.partType) {
-                case Expr(_):
-                    lastExprPartIndex = i;
-
                 case Raw(text):
-                    if (lastExprPartIndex >= 0 && rawTextHasUnescapedPipe(text)) {
-                        // Get the count expression from the preceding Expr part
-                        final countExpr = switch (str.parts[lastExprPartIndex].partType) {
-                            case Expr(expr): expr;
-                            case _: null;
-                        };
+                    if (rawTextHasUnescapedPipe(text)) {
+                        // The count: the interpolation before, one in a tag included
+                        final countExpr = PluralPipes.countExpr(str.parts, i);
                         if (countExpr != null) {
                             if (!changed) {
                                 // Copy parts up to this point
@@ -6378,7 +6371,7 @@ class InterpreterContext {
                         }
                     }
 
-                case Tag(_, _):
+                case _:
             }
 
             if (changed) {
@@ -6413,7 +6406,7 @@ class InterpreterContext {
             if (pipe.start > segStart) {
                 parts.push(new NStringPart(NodeId.UNDEFINED, pos, Raw(text.uSubstring(segStart, pipe.start))));
             }
-            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, pipe.forms, pos))));
+            parts.push(new NStringPart(NodeId.UNDEFINED, pos, Expr(makePluralCall(countExpr, pipe.forms, pipe.thresholds, pos))));
             segStart = pipe.end;
         }
         // Emit remaining text
@@ -6423,12 +6416,17 @@ class InterpreterContext {
         }
     }
 
-    function makePluralCall(countExpr:NExpr, forms:Array<String>, pos:Position):NCall {
+    /** `plural(count, forms...)`, each threshold a number before its form */
+    function makePluralCall(countExpr:NExpr, forms:Array<String>, thresholds:Array<Null<Int>>, pos:Position):NCall {
         final target = new NAccess(NodeId.UNDEFINED, pos, null, "plural");
         final args:Array<NExpr> = [countExpr];
-        for (form in forms) {
+        for (i in 0...forms.length) {
+            final threshold = thresholds[i];
+            if (threshold != null) {
+                args.push(new NLiteral(NodeId.UNDEFINED, pos, threshold, Number));
+            }
             args.push(new NStringLiteral(NodeId.UNDEFINED, pos, DoubleQuotes,
-                [new NStringPart(NodeId.UNDEFINED, pos, Raw(form))]));
+                [new NStringPart(NodeId.UNDEFINED, pos, Raw(forms[i]))]));
         }
         return new NCall(NodeId.UNDEFINED, pos, target, args);
     }
