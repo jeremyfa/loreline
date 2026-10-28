@@ -20,6 +20,17 @@ beat Start
   $count (apple|apples|3:many apples), and <$count>(one|2:a few|5:many) unseen
 //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
 
+  $count (plik|pliki|plików|10: mnóstwo plików|100:całe góry plików)
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+
+  $count (2:a few|12:a dozen or so) left, but (\10:30 slot|\10:30 slots) stays text
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+
+  You see <$count>(an apple|some apples|3:many apples) and <b>$count coin|coins</b>.
+//       ^ string.unquoted
+
+  $plural(count, "an apple", "some apples", 3, "many apples")
+
   "Quoted narration, with $count items."
 //^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
 //                         ^^^^^ variable.other
