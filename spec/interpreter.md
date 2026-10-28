@@ -635,11 +635,19 @@ position of the call. The array and map functions treat a value that is not an
 array or an object as an empty one, and `plural()` picks the second form for
 any value that is not a number nor a text written as one.
 
-**Plurals** (`Functions.plural`, `PluralRules`): `plural(count, singular,
-plural_form, ...)` takes up to six forms, and a pipe (`coin|coins`,
-`plik|pliki|plików`, `(cold drink|cold drinks)`) is a call of it with the last
-expression before it as the count (`PluralPipes`). Punctuation after the last
-form and quotes before the first one are not part of the forms. The form
+**Plurals** (`Functions.plural`, `PluralRules`): `plural(count, forms...)`
+takes any number of forms, and a pipe (`coin|coins`, `plik|pliki|plików`,
+`(cold drink|cold drinks)`) is a call of it (`PluralPipes`). Its count is the
+first interpolation found going back from the pipe, the last one inside a tag
+counting too (`<$apples>`, which still reaches the game as a tag); a tag
+without one is passed over (`PluralPipes.countExpr`). Punctuation after the
+last form and quotes before the first one are not part of the forms. A number
+before a form in `plural()`, or `N:` at the start of a form between
+parentheses (`(apple|apples|3:many apples)`, a space after the colon left
+out, `\10:30` kept as text), is a threshold: the form goes from that count on,
+the highest threshold the count reaches wins, the forms before the first
+threshold follow the rules below for counts under it, and with none, counts
+under the lowest threshold take its form. The form
 follows the plural rules of the language of the line being evaluated: the
 locale of the translations (`$locale` in the map `Loreline.loadLocale`
 returns) for a translated line, else the `language` of the played script's
