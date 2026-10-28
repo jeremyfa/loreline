@@ -59,14 +59,12 @@ class SyntaxDecorations {
 		script.eachExcludingImported(function(node:Node, parent:Node) {
 			if (node is NStringLiteral) {
 				final stringLit:NStringLiteral = cast node;
-				// A plural counts after any expression of the literal, as when the story plays
-				var afterExpr = false;
-				for (part in stringLit.parts) {
+				// A plural counts where the story finds a count for it, an interpolation in a tag included
+				for (i in 0...stringLit.parts.length) {
+					final part = stringLit.parts[i];
 					switch (part.partType) {
-						case Expr(_):
-							afterExpr = true;
 						case Raw(rawText):
-							if (afterExpr) {
+							if (PluralPipes.countExpr(stringLit.parts, i) != null) {
 								for (pipe in PluralPipes.scan(rawText)) {
 									for (mark in pipe.marks) {
 										result.push({kind: "plural-pipe", offset: part.pos.offset + mark, length: 1});

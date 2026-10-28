@@ -17,6 +17,9 @@ beat Start
   $count plik|pliki|plików, then «$count cat|cats».
 //       ^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
 
+  $count (apple|apples|3:many apples), and <$count>(one|2:a few|5:many) unseen
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted
+
   "Quoted narration, with $count items."
 //^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double
 //                         ^^^^^ variable.other
