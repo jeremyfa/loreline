@@ -21,7 +21,8 @@ class PluralPipesTests {
             {name: 'an escaped pipe or an empty form is no plural', fn: () -> testNotPlurals()},
             {name: 'several plurals in one text', fn: () -> testSeveral()},
             {name: 'positions count accented letters once', fn: () -> testAccents()},
-            {name: 'characters beyond U+FFFF around and inside a plural', fn: () -> testAstral()}
+            {name: 'characters beyond U+FFFF around and inside a plural', fn: () -> testAstral()},
+            {name: 'a form between parentheses may start with a threshold', fn: () -> testThresholds()}
         ];
 
         for (test in tests) {
@@ -38,11 +39,16 @@ class PluralPipesTests {
 
     /**
      * The pipes of a text, written as `start-end forms marks`, with positions
-     * counted in characters: targets count the units of a text differently
+     * counted in characters: targets count the units of a text differently.
+     * A form with a threshold is written with it, `2:a few`.
      */
     static function expect(text:String, expected:Array<String>):Void {
         inline function chars(pos:Int) return characterIndex(text, pos);
-        final actual = [for (pipe in PluralPipes.scan(text)) chars(pipe.start) + '-' + chars(pipe.end) + ' ' + pipe.forms.join('/') + ' ' + [for (mark in pipe.marks) chars(mark)].join(',')];
+        function forms(pipe:PluralPipe):String {
+            final thresholds:Null<Array<Null<Int>>> = Reflect.field(pipe, 'thresholds');
+            return [for (i in 0...pipe.forms.length) (thresholds != null && thresholds[i] != null ? thresholds[i] + ':' : '') + pipe.forms[i]].join('/');
+        }
+        final actual = [for (pipe in PluralPipes.scan(text)) chars(pipe.start) + '-' + chars(pipe.end) + ' ' + forms(pipe) + ' ' + [for (mark in pipe.marks) chars(mark)].join(',')];
         if (actual.join(' ; ') != expected.join(' ; ')) {
             throw 'in "$text", expected [${expected.join(' ; ')}], got [${actual.join(' ; ')}]';
         }
@@ -100,6 +106,22 @@ class PluralPipesTests {
         expect(' 🐉coin|coins…', ['1-12 🐉coin/coins 6']);
         expect(' "😀coin|😀coins", then', ['2-14 😀coin/😀coins 7']);
         expect(' \\😀 cat|cats', ['4-12 cat/cats 7']);
+    }
+
+    static function testThresholds():Void {
+        // The digits and the colon are marks, each of its own
+        expect(' (apple|2:a few apples)', ['1-23 apple/2:a few apples 1,7,8,9,22']);
+        // A space after the colon is not part of the form
+        expect(' (apple|2: a few)', ['1-17 apple/2:a few 1,7,8,9,16']);
+        // Several digits
+        expect(' (apple|12:many)', ['1-16 apple/12:many 1,7,8,9,10,15']);
+        // Every form may have one, the first too
+        expect(' (2:a few|3:many)', ['1-17 2:a few/3:many 1,2,3,9,10,11,16']);
+        // Escaped, or with no colon right after the digits, it is text
+        expect(' (\\10:30 slot|\\10:30 slots)', ['1-27 \\10:30 slot/\\10:30 slots 1,13,26']);
+        expect(' (apple|2 apples)', ['1-17 apple/2 apples 1,7,16']);
+        // Without parentheses, a form has no threshold
+        expect(' apple|2:apples', ['1-15 apple/2:apples 6']);
     }
 
 }
