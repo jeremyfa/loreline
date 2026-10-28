@@ -61,8 +61,9 @@ class Functions {
         target.set("string_ends", this.string_ends);
         target.set("string_repeat", this.string_repeat);
         // Text
-        // Seven arguments, more than a closure takes on some targets (Neko)
-        target.set("plural", VarArgs.make(args -> plural(args[0], args[1], args[2], args[3], args[4], args[5], args[6])));
+        // The count, then every argument after it: forms and thresholds, as many
+        // as given, more than a closure takes on some targets (Neko)
+        target.set("plural", VarArgs.make(args -> plural(args[0], args.slice(1))));
         // Array
         target.set("array_length", this.array_length);
         target.set("array_add", this.array_add);
@@ -620,9 +621,13 @@ class Functions {
     /**
      * Returns the form of a word that goes with a count, following the plural
      * rules of the line's language: the language of its translation, or else the
-     * `language` of the story's metadata. In English, `singular` for one, `plural_form`
-     * otherwise. Languages with more forms give the others after, in order:
-     * Polish takes three. With no language known, only one is singular.
+     * `language` of the story's metadata. In English, the first form for one, the
+     * second otherwise. Languages with more forms give the others after, in order:
+     * Polish takes three. With no language known, only one takes the first form.
+     *
+     * A number before a form is a threshold: that form goes from that count on,
+     * and the forms before the first threshold follow the language below it. With
+     * no form before the first threshold, counts below it take its form.
      *
      * ```lor
      * items = 3
@@ -637,24 +642,63 @@ class Functions {
      * files = 5
      * $files $plural(files, "plik", "pliki", "plików")
      * // "5 plików"
+     *
+     * apples = 2
+     * You see $plural(apples, "an apple", 2, "a few apples", 3, "many apples").
+     * // "You see a few apples."
      * ```
+     *
+     * Zero is below 2 here, so it takes "an apple" too: give the language forms
+     * first, `$plural(apples, "apple", "apples", 2, "a few apples")`.
      */
-    public function plural(count:Any, singular:Any, plural_form:Any, ?form3:Any, ?form4:Any, ?form5:Any, ?form6:Any):String {
-        final forms:Array<Any> = [singular, plural_form];
-        for (form in [form3, form4, form5, form6]) {
-            if (form == null) break;
-            forms.push(form);
+    public function plural(count:Any, forms:Array<Any>):String {
+        // The forms before the first threshold, then each threshold with its form.
+        // A threshold is a number after a form, with a form after it.
+        final plain:Array<Any> = [];
+        final thresholds:Array<{at:Float, form:Any}> = [];
+        var i = 0;
+        while (i < forms.length) {
+            final value = forms[i];
+            final isNumber = switch Type.typeof(value) {
+                case TInt | TFloat: true;
+                case _: false;
+            }
+            if (isNumber && i > 0 && i + 1 < forms.length) {
+                thresholds.push({at: (value : Float), form: forms[i + 1]});
+                i += 2;
+            }
+            else {
+                if (thresholds.length == 0) plain.push(value);
+                i++;
+            }
         }
         final number:Float = switch Type.typeof(count) {
             case TInt | TFloat: (count : Float);
             case _: count is String ? Values.numberOfText(count) : Math.NaN;
         }
+        // The highest threshold the count reaches
+        if (!Math.isNaN(number)) {
+            var reached:Null<{at:Float, form:Any}> = null;
+            for (threshold in thresholds) {
+                if (threshold.at <= number && (reached == null || threshold.at >= reached.at)) reached = threshold;
+            }
+            if (reached != null) return Values.textArg(reached.form, 'plural');
+        }
+        // Below every threshold with no form for it: the form of the lowest one
+        if (plain.length == 0 && thresholds.length > 0) {
+            var lowest = thresholds[0];
+            for (threshold in thresholds) {
+                if (threshold.at < lowest.at) lowest = threshold;
+            }
+            return Values.textArg(lowest.form, 'plural');
+        }
         // Any other value, a name included (`$name thing|things`), takes the
         // second form, and only the number one, or a text written as it, the first
-        final index = Math.isNaN(number)
+        var index = Math.isNaN(number)
             ? (!(count is Bool) && Values.equals(count, 1) ? 0 : 1)
-            : PluralRules.formIndex(interpreter != null ? interpreter.pluralLanguage() : null, number, forms.length);
-        return Values.textArg(forms[index], 'plural');
+            : PluralRules.formIndex(interpreter != null ? interpreter.pluralLanguage() : null, number, plain.length);
+        if (index >= plain.length) index = plain.length - 1;
+        return Values.textArg(index >= 0 ? plain[index] : null, 'plural');
     }
 
     // -- Array ---------------------------------------------------------
