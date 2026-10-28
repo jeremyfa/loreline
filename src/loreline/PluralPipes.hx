@@ -1,10 +1,13 @@
 package loreline;
 
+import loreline.Node;
+
 using loreline.TextUnits;
 
 /**
  * A plural written with pipes in a text: `coin|coins`, `plik|pliki|plików`,
- * or forms holding spaces between parentheses, `(cold drink|cold drinks)`.
+ * or forms holding spaces between parentheses, `(cold drink|cold drinks)`,
+ * which may start with the count they go from, `(apple|apples|3:many apples)`.
  */
 typedef PluralPipe = {
 
@@ -14,10 +17,19 @@ typedef PluralPipe = {
     /** Where it ends, excluded: punctuation after it is not part of it */
     var end:Int;
 
-    /** Its forms, in order */
+    /** Its forms, in order, without their threshold */
     var forms:Array<String>;
 
-    /** The characters marking it, which editors color: its pipes and parentheses */
+    /**
+     * The count each form goes from, `2` for `2:a few`, or null for a form
+     * that follows the language. Only forms between parentheses have one.
+     */
+    var thresholds:Array<Null<Int>>;
+
+    /**
+     * The units marking it, which editors color one by one: its pipes and
+     * parentheses, and the digits and colon of each threshold
+     */
     var marks:Array<Int>;
 
 }
@@ -81,6 +93,38 @@ class PluralPipes {
 
     }
 
+    /**
+     * The expression that gives the count to the plurals of the raw part at
+     * `index` of a string literal: going back through the parts before it,
+     * the first interpolation, or the last one inside a tag (`<$apples>`).
+     * A tag without one is passed over. Null when there is none: the pipes
+     * of that part are then plain text. The interpreter and the editors all
+     * read the count here, so they agree on which pipes are plurals.
+     */
+    public static function countExpr(parts:Array<NStringPart>, index:Int):Null<NExpr> {
+
+        var i = index - 1;
+        while (i >= 0) {
+            switch parts[i].partType {
+                case Expr(expr):
+                    return expr;
+                case Tag(_, literal):
+                    var j = literal.parts.length - 1;
+                    while (j >= 0) {
+                        switch literal.parts[j].partType {
+                            case Expr(expr): return expr;
+                            case _:
+                        }
+                        j--;
+                    }
+                case Raw(_):
+            }
+            i--;
+        }
+        return null;
+
+    }
+
     /** `(a|b|c)` opening at `open`, or null when the parentheses hold no plural */
     static function scanParentheses(text:String, open:Int, len:Int):Null<PluralPipe> {
 
@@ -105,17 +149,33 @@ class PluralPipes {
         if (close == -1 || pipes.length == 0) return null;
 
         final forms:Array<String> = [];
+        final thresholds:Array<Null<Int>> = [];
+        final marks:Array<Int> = [open];
         var formStart = open + 1;
         for (pipe in pipes.concat([close])) {
-            if (pipe == formStart) return null;
-            forms.push(text.uSubstring(formStart, pipe));
+            // A threshold: digits and a colon, then an optional space
+            var digitsEnd = formStart;
+            while (digitsEnd < pipe && isDigit(text.uCharCodeAt(digitsEnd))) digitsEnd++;
+            var start = formStart;
+            var threshold:Null<Int> = null;
+            if (digitsEnd > formStart && digitsEnd < pipe && text.uCharCodeAt(digitsEnd) == ':'.code) {
+                threshold = Std.parseInt(text.uSubstring(formStart, digitsEnd));
+                for (unit in formStart...digitsEnd + 1) marks.push(unit);
+                start = digitsEnd + 1;
+                if (start < pipe && text.uCharCodeAt(start) == ' '.code) start++;
+            }
+            if (pipe == start) return null;
+            forms.push(text.uSubstring(start, pipe));
+            thresholds.push(threshold);
+            marks.push(pipe);
             formStart = pipe + 1;
         }
         return {
             start: open,
             end: close + 1,
             forms: forms,
-            marks: [open].concat(pipes).concat([close])
+            thresholds: thresholds,
+            marks: marks
         };
 
     }
@@ -165,9 +225,13 @@ class PluralPipes {
             }
             if (end == formStart) return null;
             forms.push(text.uSubstring(formStart, end));
-            return {start: start, end: end, forms: forms, marks: pipes};
+            return {start: start, end: end, forms: forms, thresholds: [for (_ in forms) null], marks: pipes};
         }
 
+    }
+
+    static inline function isDigit(c:Int):Bool {
+        return c >= '0'.code && c <= '9'.code;
     }
 
     /** Where a form written without parentheses stops */
