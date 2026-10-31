@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["narrative", "language", "fiction", "writing", "interactive"],
     "description": "Open-source scripting language for writing interactive fiction",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "classPath": "src/",
-    "releasenote": "Beat parameters and dynamic beat calls, PHP support, pure GDScript runtime for Godot, interpreter lifetime fixes.",
+    "releasenote": "When blocks, story metadata and IFID, plurals by language with count thresholds, names in any language, child interpreters and French in the editor tools.",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
