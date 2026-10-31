@@ -61,15 +61,15 @@ For loreline-lua, run `--lua` first.
 Python, Lua, PHP, JS, JVM and GDScript tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests). GDScript tests also need a Godot 4 binary on the PATH (or pointed to by the `GODOT_BIN` environment variable).
 
 ```sh
-node run test ./test                    # Run Neko tests only
-python3 py/test-runner.py ./test        # Run Python tests only
-lua5.4 lua/test-runner.lua ./test       # Run Lua tests only
-php php/test-runner.php ./test          # Run PHP tests only
-php build/php-cli/index.php test ./test # Run PHP CLI tests only
-npx tsx js/test-runner.ts ./test        # Run JS tests only
+node run test ./test --internal                    # Run Neko tests only
+python3 py/test-runner.py ./test                   # Run Python tests only
+lua5.4 lua/test-runner.lua ./test                  # Run Lua tests only
+php php/test-runner.php ./test                     # Run PHP tests only
+php build/php-cli/index.php test ./test --internal # Run PHP CLI tests only
+npx tsx js/test-runner.ts ./test                   # Run JS tests only
 java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
-node ./setup --gdscript-test            # Run GDScript tests only (headless Godot)
-node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
+node ./setup --gdscript-test                       # Run GDScript tests only (headless Godot)
+node ./setup --test                                # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
 ```
 
 Each `test/*.lor` file ends with a `<test>` YAML block describing its test cases (`choices`, `beat`, `expected`, ...). `saveAtDialogue` and `saveAtChoice` take one index or a list of indices (`saveAtDialogue: [2, 5]`), counted over an uninterrupted run: at each one, the runner saves, restores in a new interpreter and continues, so the saved event shows twice in `expected`.

@@ -55,6 +55,9 @@ class Cli {
 
     var showDisabled:Bool = false;
 
+    /** Whether `test` also runs the programmatic suites of the Loreline repository */
+    var internalTests:Bool = false;
+
     var lastCharacter:String = null;
 
     var loadedSave:Bool = false;
@@ -86,6 +89,10 @@ class Cli {
         while (i < args.length) {
             if (args[i] == '--show-disabled') {
                 showDisabled = true;
+                args.splice(i, 1);
+            }
+            else if (args[i] == '--internal') {
+                internalTests = true;
                 args.splice(i, 1);
             }
             else {
@@ -365,6 +372,8 @@ class Cli {
         print(" " + "USAGE".bold());
         print(" loreline " + "[".gray() + "play" + "|".gray() + "json" + "|".gray() + "ast" + "|".gray() + "format" + "|".gray() + "translate" + "|".gray() + "benchmark" + "]".gray() + " " + "story.lor".underline());
         print("");
+        print(" " + "test".bold() + " " + "story.lor".underline() + "|".gray() + "folder".underline() + "  run the test cases written in the stories");
+        print(" " + "version".bold() + "  print the version of loreline");
         print(" " + "benchmark".bold() + " " + "story.lor".underline() + " " + "[iterations]".gray() + "  compare source parsing vs fromJson (AST cache) speed");
         print(" " + "benchmark-when".bold() + " " + "[--variant all]".gray() + " " + "[--concepts N]".gray() + " " + "[--picks N]".gray() + " " + "[--prepare]".gray() + "  measure when blocks on a generated bark system");
         print(" " + "ifid".bold() + "  print a new IFID, the identifier of a story for the Treaty of Babel");
@@ -569,7 +578,30 @@ class Cli {
         }
 
         // Programmatic interpreter tests: child interpreters (spawn, shared state,
-        // multi-playhead save/restore) and the customCreateFields option
+        // multi-playhead save/restore) and the customCreateFields option. They
+        // test Loreline itself, not the stories given, so only with --internal
+        if (internalTests) runInternalTests();
+
+        print('');
+        print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked'.gray());
+
+        print('');
+        if (failCount > 0) {
+            final total = passCount + failCount;
+            print('  $failCount of $total tests failed ($fileFailCount of $fileCount files)'.red().bold());
+        }
+        else {
+            print('  All $passCount tests passed ($fileCount files)'.green().bold());
+        }
+        print('');
+
+        if (hasFailedTest) {
+            Sys.exit(1);
+        }
+    }
+
+    function runInternalTests() {
+
         final onPass = (name:String) -> {
             passCount++;
             print('PASS'.green().bold() + ' - ' + name.gray());
@@ -601,22 +633,6 @@ class Cli {
         loreline.test.PluralPipesTests.run(onPass, onFail);
         loreline.test.LspTests.run(onPass, onFail);
 
-        print('');
-        print('  Save sweep: ${loreline.test.SaveSweep.checkedRuns} save/restore runs checked'.gray());
-
-        print('');
-        if (failCount > 0) {
-            final total = passCount + failCount;
-            print('  $failCount of $total tests failed ($fileFailCount of $fileCount files)'.red().bold());
-        }
-        else {
-            print('  All $passCount tests passed ($fileCount files)'.green().bold());
-        }
-        print('');
-
-        if (hasFailedTest) {
-            Sys.exit(1);
-        }
     }
 
     /**

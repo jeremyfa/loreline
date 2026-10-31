@@ -11,9 +11,9 @@
         {
             "displayName": "✓ Neko tests",
             "type": "shell",
-            "description": "node run test ./test",
+            "description": "node run test ./test --internal",
             "command": "node",
-            "args": ["run", "test", "./test"]
+            "args": ["run", "test", "./test", "--internal"]
         },
         {
             "displayName": "✓ C# tests",

@@ -53,7 +53,7 @@ jobs:
 
       - name: Run unit tests
         shell: cmd
-        run: loreline.exe test ./test
+        run: loreline.exe test ./test --internal
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -108,7 +108,7 @@ jobs:
 
   loreline-mac:
 
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
@@ -173,7 +173,7 @@ jobs:
       - name: Run unit tests
         working-directory: .
         run: |
-          ./loreline test ./test
+          ./loreline test ./test --internal
 
       - name: Build C++ library
         run: node ./setup --cpp-lib
@@ -369,7 +369,7 @@ jobs:
       - name: Run unit tests
         working-directory: .
         run: |
-          ./loreline test ./test
+          ./loreline test ./test --internal
 
       - name: Build C++ library
         run: node ./setup --cpp-lib
@@ -475,7 +475,7 @@ jobs:
           mkdir -p .haxelib
 
       - name: Run Neko tests
-        run: node run test ./test
+        run: node run test ./test --internal
 
       - name: Run CLI integration tests
         run: node run test-cli ./test-cli
@@ -629,13 +629,13 @@ jobs:
         run: node ./setup --cs-generics
 
       - name: Run C# (with generics) tests
-        run: dotnet run --project build/cs-generics -- test ./test
+        run: dotnet run --project build/cs-generics -- test ./test --internal
 
       - name: Publish C# (with generics) AOT
         run: dotnet publish build/cs-generics -c Release -r linux-x64 -p:AotBuild=true
 
       - name: Run C# (with generics) AOT tests
-        run: ./build/cs-generics/bin/Release/net8.0/linux-x64/publish/LorelineGenericsTest test ./test
+        run: ./build/cs-generics/bin/Release/net8.0/linux-x64/publish/LorelineGenericsTest test ./test --internal
 
       - name: Create zip archive
         working-directory: cs
@@ -865,7 +865,7 @@ jobs:
         run: node ./setup --php-cli
 
       - name: Run PHP CLI tests
-        run: php build/php-cli/index.php test ./test
+        run: php build/php-cli/index.php test ./test --internal
 
       - name: Create zip archive
         run: |
@@ -1211,7 +1211,7 @@ jobs:
 
   loreline-ios:
 
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
@@ -1708,7 +1708,7 @@ jobs:
             godot_asset: "Godot_v4.6.1-stable_linux.x86_64.zip"
             godot_bin: "Godot_v4.6.1-stable_linux.x86_64"
             templates_dir: "$HOME/.local/share/godot/export_templates"
-          - os: "macos-14"
+          - os: "macos-15"
             godot_asset: "Godot_v4.6.1-stable_macos.universal.zip"
             godot_bin: "Godot.app/Contents/MacOS/Godot"
             templates_dir: "$HOME/Library/Application Support/Godot/export_templates"
@@ -1818,7 +1818,7 @@ jobs:
   loreline-sdl3:
 
     needs: [loreline-mac, loreline-windows, loreline-linux, loreline-ios, loreline-android]
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       CODESIGN: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
     steps:
@@ -2004,7 +2004,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-14
+          - os: macos-15
             script: ./build-mac.sh
           - os: ubuntu-22.04
             script: ./build-linux.sh

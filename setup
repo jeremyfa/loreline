@@ -2333,7 +2333,7 @@ async function main() {
 
         // 1. Neko tests
         console.log('\n=== Neko tests ===');
-        await command('node', ['run', 'test', './test']);
+        await command('node', ['run', 'test', './test', '--internal']);
 
         // Syntax coloring tests (grammar only, no build needed)
         console.log('\n=== Syntax coloring tests ===');
@@ -2364,7 +2364,7 @@ async function main() {
         console.log('\n=== C# (with generics) build + tests ===');
         await command('node', ['./setup', '--cs-generics']);
         checkStdStringCopies(path.join(__dirname, 'build', 'cs-generics', 'src'));
-        await command('dotnet', ['run', '--project', 'build/cs-generics', '--', 'test', './test']);
+        await command('dotnet', ['run', '--project', 'build/cs-generics', '--', 'test', './test', '--internal']);
 
         // 5. C# (with generics) AOT build + tests
         console.log('\n=== C# (with generics) AOT build + tests ===');
@@ -2374,7 +2374,7 @@ async function main() {
             '-r', rid, '-p:AotBuild=true'
         ]);
         const noeraseAotBin = path.join(noeraseAotPublishDir, process.platform == 'win32' ? 'LorelineGenericsTest.exe' : 'LorelineGenericsTest');
-        await command(noeraseAotBin, ['test', './test']);
+        await command(noeraseAotBin, ['test', './test', '--internal']);
 
         // 6. JS build + tests
         console.log('\n=== JS build + tests ===');
@@ -2395,7 +2395,7 @@ async function main() {
         // which the C++ lib tests above don't run. Same commands as the CI.
         console.log('\n=== C++ CLI build + tests ===');
         await command('node', ['./setup', '--cpp']);
-        await command(process.platform == 'win32' ? 'loreline.exe' : './loreline', ['test', './test']);
+        await command(process.platform == 'win32' ? 'loreline.exe' : './loreline', ['test', './test', '--internal']);
 
         // 8. Python build + tests
         console.log('\n=== Python build + tests ===');
@@ -2415,7 +2415,7 @@ async function main() {
         // 11. PHP CLI build + tests
         console.log('\n=== PHP CLI build + tests ===');
         await command('node', ['./setup', '--php-cli']);
-        await command('php', ['build/php-cli/index.php', 'test', './test']);
+        await command('php', ['build/php-cli/index.php', 'test', './test', '--internal']);
 
         // 12. JVM build + tests
         console.log('\n=== JVM build + tests ===');
