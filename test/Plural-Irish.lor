@@ -1,0 +1,15 @@
+// Irish has five plural forms: one, two, a few (3 to 6), many (7 to 10), and
+// other, which zero takes like any count from 11
+
+metadata
+  language: ga
+
+beat Start
+  ${plural(0, "one", "two", "few", "many", "other")} ${plural(1, "one", "two", "few", "many", "other")} ${plural(2, "one", "two", "few", "many", "other")} ${plural(3, "one", "two", "few", "many", "other")} ${plural(6, "one", "two", "few", "many", "other")} ${plural(7, "one", "two", "few", "many", "other")} ${plural(10, "one", "two", "few", "many", "other")} ${plural(11, "one", "two", "few", "many", "other")}
+
+/*
+<test>
+- expected: |
+    ~ other one two few few many many other
+</test>
+*/

@@ -80,7 +80,7 @@ class PluralRules {
             case Latvian: mod10 == 1 && mod100 != 11 ? 0 : n != 0 ? 1 : 2;
             case Romanian: n == 1 ? 0 : n == 0 || (mod100 > 0 && mod100 < 20) ? 1 : 2;
             case Slovenian: mod100 == 1 ? 0 : mod100 == 2 ? 1 : mod100 == 3 || mod100 == 4 ? 2 : 3;
-            case Irish: n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4;
+            case Irish: n == 1 ? 0 : n == 2 ? 1 : n > 2 && n < 7 ? 2 : n > 6 && n < 11 ? 3 : 4;
             case Arabic:
                 n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2
                 : mod100 >= 3 && mod100 <= 10 ? 3
