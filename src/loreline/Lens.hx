@@ -1823,7 +1823,16 @@ class Lens {
      * @return Array of references to reachable beats
      */
     public function findOutboundBeats(beatDecl:NBeatDecl):Array<Reference<NBeatDecl>> {
-        final targetBeats:NodeIdMap<Reference<NBeatDecl>> = new NodeIdMap();
+        // Beats in reading order: each one once, at its first reference in the body.
+        // A NodeIdMap alone has no stable iteration order across targets.
+        final targetBeats:Array<Reference<NBeatDecl>> = [];
+        final seen:NodeIdMap<Bool> = new NodeIdMap();
+        function add(targetBeat:NBeatDecl, node:Node) {
+            if (!seen.exists(targetBeat.id)) {
+                seen.set(targetBeat.id, true);
+                targetBeats.push(new Reference(targetBeat, node));
+            }
+        }
 
         // Traverse the beat's body looking for transitions and calls
         traverse(beatDecl, (node, parent) -> {
@@ -1833,7 +1842,7 @@ class Lens {
                     if (transition.targetExpr == null) {
                         final targetBeat = findBeatByNameFromNode(transition.target, transition);
                         if (targetBeat != null) {
-                            targetBeats.set(targetBeat.id, new Reference(targetBeat, transition));
+                            add(targetBeat, transition);
                         }
                     }
 
@@ -1842,7 +1851,7 @@ class Lens {
                     if (insertion.targetExpr == null) {
                         final targetBeat = findBeatByNameFromNode(insertion.target, insertion);
                         if (targetBeat != null) {
-                            targetBeats.set(targetBeat.id, new Reference(targetBeat, insertion));
+                            add(targetBeat, insertion);
                         }
                     }
 
@@ -1855,7 +1864,7 @@ class Lens {
                         if (access.target == null) {
                             final targetBeat = findBeatFromAccess(access);
                             if (targetBeat != null) {
-                                targetBeats.set(targetBeat.id, new Reference(targetBeat, call));
+                                add(targetBeat, call);
                             }
                         }
                     }
@@ -1865,7 +1874,7 @@ class Lens {
             return true;
         });
 
-        return [for (ref in targetBeats) ref];
+        return targetBeats;
     }
 
     /**
