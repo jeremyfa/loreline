@@ -23,78 +23,85 @@ class Functions {
 
     /**
      * Registers all built-in functions into the given map, making them
-     * callable by name from Loreline scripts.
+     * callable by name from Loreline scripts. When `order` is given, the
+     * names are also pushed to it in the order they are bound (the order of
+     * a map's keys depends on the target).
      */
-    public function bindAll(target:Map<String, Any>):Void {
+    public function bindAll(target:Map<String, Any>, ?order:Array<String>):Void {
         // Math
-        target.set("floor", this.floor);
-        target.set("ceil", this.ceil);
-        target.set("round", this.round);
-        target.set("abs", this.abs);
-        target.set("min", this.min);
-        target.set("max", this.max);
-        target.set("clamp", this.clamp);
-        target.set("pow", this.pow);
+        bind(target, order, "floor", this.floor);
+        bind(target, order, "ceil", this.ceil);
+        bind(target, order, "round", this.round);
+        bind(target, order, "abs", this.abs);
+        bind(target, order, "min", this.min);
+        bind(target, order, "max", this.max);
+        bind(target, order, "clamp", this.clamp);
+        bind(target, order, "pow", this.pow);
         // Random
-        target.set("random", this.random);
-        target.set("chance", this.chance);
-        target.set("seed_random", this.seed_random);
-        target.set("random_decimal", this.random_decimal);
+        bind(target, order, "random", this.random);
+        bind(target, order, "chance", this.chance);
+        bind(target, order, "seed_random", this.seed_random);
+        bind(target, order, "random_decimal", this.random_decimal);
         // Timing
-        target.set("wait", this.wait);
+        bind(target, order, "wait", this.wait);
         // Type conversion
-        target.set("number", this.number);
-        target.set("string", this.string_);
-        target.set("bool", this.bool);
-        target.set("type_of", this.type_of);
+        bind(target, order, "number", this.number);
+        bind(target, order, "string", this.string_);
+        bind(target, order, "bool", this.bool);
+        bind(target, order, "type_of", this.type_of);
         // String
-        target.set("string_length", this.string_length);
-        target.set("string_upper", this.string_upper);
-        target.set("string_lower", this.string_lower);
-        target.set("string_contains", this.string_contains);
-        target.set("string_replace", this.string_replace);
-        target.set("string_split", this.string_split);
-        target.set("string_trim", this.string_trim);
-        target.set("string_index", this.string_index);
-        target.set("string_sub", this.string_sub);
-        target.set("string_starts", this.string_starts);
-        target.set("string_ends", this.string_ends);
-        target.set("string_repeat", this.string_repeat);
+        bind(target, order, "string_length", this.string_length);
+        bind(target, order, "string_upper", this.string_upper);
+        bind(target, order, "string_lower", this.string_lower);
+        bind(target, order, "string_contains", this.string_contains);
+        bind(target, order, "string_replace", this.string_replace);
+        bind(target, order, "string_split", this.string_split);
+        bind(target, order, "string_trim", this.string_trim);
+        bind(target, order, "string_index", this.string_index);
+        bind(target, order, "string_sub", this.string_sub);
+        bind(target, order, "string_starts", this.string_starts);
+        bind(target, order, "string_ends", this.string_ends);
+        bind(target, order, "string_repeat", this.string_repeat);
         // Text
         // The count, then every argument after it: forms and thresholds, as many
         // as given, more than a closure takes on some targets (Neko)
-        target.set("plural", VarArgs.make(args -> plural(args[0], args.slice(1))));
+        bind(target, order, "plural", VarArgs.make(args -> plural(args[0], args.slice(1))));
         // Array
-        target.set("array_length", this.array_length);
-        target.set("array_add", this.array_add);
-        target.set("array_pop", this.array_pop);
-        target.set("array_prepend", this.array_prepend);
-        target.set("array_shift", this.array_shift);
-        target.set("array_remove", this.array_remove);
-        target.set("array_index", this.array_index);
-        target.set("array_has", this.array_has);
-        target.set("array_sort", this.array_sort);
-        target.set("array_reverse", this.array_reverse);
-        target.set("array_join", this.array_join);
-        target.set("array_pick", this.array_pick);
-        target.set("array_shuffle", this.array_shuffle);
-        target.set("array_copy", this.array_copy);
+        bind(target, order, "array_length", this.array_length);
+        bind(target, order, "array_add", this.array_add);
+        bind(target, order, "array_pop", this.array_pop);
+        bind(target, order, "array_prepend", this.array_prepend);
+        bind(target, order, "array_shift", this.array_shift);
+        bind(target, order, "array_remove", this.array_remove);
+        bind(target, order, "array_index", this.array_index);
+        bind(target, order, "array_has", this.array_has);
+        bind(target, order, "array_sort", this.array_sort);
+        bind(target, order, "array_reverse", this.array_reverse);
+        bind(target, order, "array_join", this.array_join);
+        bind(target, order, "array_pick", this.array_pick);
+        bind(target, order, "array_shuffle", this.array_shuffle);
+        bind(target, order, "array_copy", this.array_copy);
         // Map
-        target.set("map_length", this.map_length);
-        target.set("map_keys", this.map_keys);
-        target.set("map_has", this.map_has);
-        target.set("map_get", this.map_get);
-        target.set("map_set", this.map_set);
-        target.set("map_remove", this.map_remove);
-        target.set("map_copy", this.map_copy);
+        bind(target, order, "map_length", this.map_length);
+        bind(target, order, "map_keys", this.map_keys);
+        bind(target, order, "map_has", this.map_has);
+        bind(target, order, "map_get", this.map_get);
+        bind(target, order, "map_set", this.map_set);
+        bind(target, order, "map_remove", this.map_remove);
+        bind(target, order, "map_copy", this.map_copy);
         // Game state
-        target.set("current_beat", this.current_beat);
-        target.set("has_beat", this.has_beat);
-        target.set("beat_visits", this.beat_visits);
+        bind(target, order, "current_beat", this.current_beat);
+        bind(target, order, "has_beat", this.has_beat);
+        bind(target, order, "beat_visits", this.beat_visits);
         // Choice introspection
-        target.set("choices", this.choices);
-        target.set("choices_disabled", this.choices_disabled);
-        target.set("choices_all", this.choices_all);
+        bind(target, order, "choices", this.choices);
+        bind(target, order, "choices_disabled", this.choices_disabled);
+        bind(target, order, "choices_all", this.choices_all);
+    }
+
+    static inline function bind(target:Map<String, Any>, order:Null<Array<String>>, name:String, value:Any):Void {
+        target.set(name, value);
+        if (order != null) order.push(name);
     }
 
     // -- Private helper ------------------------------------------------

@@ -324,7 +324,7 @@ class CheckerTypes {
 class Checker {
 
 	public var types : CheckerTypes;
-	var locals : Map<String,TType>;
+	var locals : loreline.OrderedStringMap<TType>;
 	var globals : Map<String,TType> = new Map();
 	var events : Map<String,TType> = new Map();
 	var currentFunType : TType;
@@ -385,7 +385,8 @@ class Checker {
 
 	public function check( expr : Expr, ?withType : WithType, ?isCompletion = false ) {
 		if( withType == null ) withType = NoValue;
-		locals = new Map();
+		// Ordered: the locals offered by completion come in the order they are declared
+		locals = new loreline.OrderedStringMap();
 		if( types.t_string == null )
 			types.t_string = types.getType("String");
 		allowDefine = allowGlobalsDefine;
@@ -443,7 +444,7 @@ class Checker {
 	}
 
 	function saveLocals() {
-		return [for( k in locals.keys() ) k => locals.get(k)];
+		return locals.copy();
 	}
 
 	function makeType( t : CType, e : Expr ) : TType {

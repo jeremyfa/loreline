@@ -8,6 +8,7 @@ import loreline.Identifiers;
 import loreline.Imports;
 import loreline.Lexer;
 import loreline.Node;
+import loreline.OrderedStringMap;
 import loreline.Parser;
 import loreline.i18n.I18n;
 import loreline.lsp.Protocol;
@@ -40,8 +41,9 @@ class Server {
 
     /**
      * Maps document URIs to the URIs they are dependent from (importing them).
+     * Ordered: dependent documents are marked dirty in the order they were first read.
      */
-    final documentImports:Map<String, Array<String>> = new Map();
+    final documentImports:OrderedStringMap<Array<String>> = new OrderedStringMap();
 
     /**
      * Maps document URIs to their text content.
@@ -50,8 +52,10 @@ class Server {
 
     /**
      * URIs of the documents opened by the client, as the client sent them.
+     * Ordered: documents are analyzed again (and their diagnostics sent) in
+     * the order they were opened, on every target.
      */
-    final openDocuments:Map<String, Bool> = new Map();
+    final openDocuments:OrderedStringMap<Bool> = new OrderedStringMap();
 
     /**
      * Maps file paths to the text read while resolving imports, so that positions

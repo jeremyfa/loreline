@@ -155,7 +155,7 @@ class FuncLorscript {
 @:structInit
 class LorscriptCompletion {
 
-    public var locals:Map<String, loreline.lorscript.Checker.TType> = null;
+    public var locals:OrderedStringMap<loreline.lorscript.Checker.TType> = null;
 
     public var completion:loreline.lorscript.Checker.Completion = null;
 
@@ -1814,7 +1814,8 @@ class Lens {
      * @return Array of unique tag strings
      */
     public function getAllTags():Array<String> {
-        final tags = new Map<String, Bool>();
+        // Ordered: the tags come in the order they are first written
+        final tags = new OrderedStringMap<Bool>();
 
         // Traverse AST looking for hash comments
         script.each((node, parent) -> {
@@ -1983,7 +1984,7 @@ class Lens {
      * @return Array of references to modified state fields
      */
     public function findModifiedStateFields(beatDecl:NBeatDecl):Array<Reference<NObjectField>> {
-        final modifiedFields:Map<String, Reference<NObjectField>> = new Map();
+        final modifiedFields = new OrderedStringMap<Reference<NObjectField>>();
 
         // Traverse the beat's body looking for assignments
         traverse(beatDecl, (node, parent) -> {
@@ -2021,7 +2022,7 @@ class Lens {
      * @return Array of references to read state fields
      */
     public function findReadStateFields(beatDecl:NBeatDecl):Array<Reference<NObjectField>> {
-        final readFields:Map<String, Reference<NObjectField>> = new Map();
+        final readFields = new OrderedStringMap<Reference<NObjectField>>();
 
         // Traverse the beat's body looking for state field reads
         traverse(beatDecl, (node, parent) -> {
