@@ -618,6 +618,7 @@ class Cli {
         loreline.test.PrinterTests.run(onPass, onFail);
         loreline.test.WhenSyntaxTests.run(onPass, onFail);
         loreline.test.NodeIdMapTests.run(onPass, onFail);
+        loreline.test.SaveCompatTests.run(onPass, onFail);
         loreline.test.ValuesTests.run(onPass, onFail);
         loreline.test.PrepareCachesTests.run(onPass, onFail);
         loreline.test.BuiltinArgumentsTests.run(onPass, onFail);

@@ -2478,7 +2478,12 @@ class InterpreterContext {
     function serializeNodeStates():Dynamic<SaveDataState> {
 
         final result:Dynamic<SaveDataState> = {};
-        for (id => state in nodeStates) {
+        // In id order: the order of the map depends on its hash, and the fields of
+        // the saved object keep the order they are set in on some targets (JS)
+        final ids:Array<NodeId> = [for (id in nodeStates.keys()) id];
+        ids.sort(compareNodeIds);
+        for (id in ids) {
+            final state = nodeStates.get(id);
             final serialized = serializeState(state);
             // A state declared in the script is kept even when nothing changed: the
             // restore rebuilds it from its declaration (see restoreNodeStates), and
@@ -2490,6 +2495,13 @@ class InterpreterContext {
         }
         return result;
 
+    }
+
+    static function compareNodeIds(a:NodeId, b:NodeId):Int {
+        if (a.section != b.section) return a.section - b.section;
+        if (a.branch != b.branch) return a.branch - b.branch;
+        if (a.block != b.block) return a.block - b.block;
+        return a.node - b.node;
     }
 
     /**

@@ -67,30 +67,71 @@ class Int64Map<V> {
         return _used[index];
     }
 
-    #if php
-    // On PHP, ints are native 64-bit values and multiplication overflow
-    // produces floats, which breaks the bitwise mixing below. Emulate a
-    // 32-bit wrapping multiplication and keep the hash within 31 bits.
-    inline function hashCoords(high:Int, low:Int):Int {
-        var h = (high ^ (low >>> 16) ^ (low << 16)) & 0x7FFFFFFF;
-        h = mul32(h ^ (h >>> 16), 0x85ebca6b);
-        h = mul32(h ^ (h >>> 13), 0xc2b2ae35);
-        return (h ^ (h >>> 16)) & 0x7FFFFFFF;
+    /**
+     * Hash of a key. Each half goes through the murmur3 finalizer, the high half
+     * first, then the low half xored with the mixed high half: keys that share
+     * their high half (the section and branch of node ids) never get the same
+     * hash, and their low bits, which pick the slot, depend on every bit of both
+     * halves. The value is the same signed 32 bit integer on every target.
+     */
+    static inline function hashCoords(high:Int, low:Int):Int {
+        return fmix32(fmix32(high) ^ low);
     }
 
-    static inline function mul32(a:Int, b:Int):Int {
-        final aLo = a & 0xFFFF;
-        final aHi = (a >>> 16) & 0xFFFF;
-        final bLo = b & 0xFFFF;
-        final bHi = (b >>> 16) & 0xFFFF;
-        return (aLo * bLo + (((aLo * bHi + aHi * bLo) & 0xFFFF) << 16)) & 0x7FFFFFFF;
+    #if (php || python || lua)
+    /**
+     * The murmur3 32 bit finalizer, on two 16 bit halves. On PHP, Python and Lua
+     * an integer is wider than 32 bits, and on Lua the bit operations of Haxe
+     * only work on values within 32 bits (their result is saturated otherwise,
+     * and with the bit32 shim of Lua 5.4 the shifts are 64 bit shifts). Every
+     * step here works on values from 0 to 2^33 with plain arithmetic and on
+     * 16 bit values with bit operations.
+     */
+    static function fmix32(h:Int):Int {
+        final unsigned:Float = h < 0 ? h + 4294967296.0 : h;
+        var hi = Std.int(unsigned / 65536);
+        var lo = Std.int(unsigned - hi * 65536.0);
+        // h ^= h >>> 16
+        lo = lo ^ hi;
+        // h *= 0x85ebca6b
+        var product = lo * 0xca6b;
+        var carry = Std.int(product / 65536);
+        var newLo = product - carry * 65536;
+        hi = (hi * 0xca6b + lo * 0x85eb + carry) % 65536;
+        lo = newLo;
+        // h ^= h >>> 13
+        lo = lo ^ (((hi & 0x1FFF) << 3) | (lo >> 13));
+        hi = hi ^ (hi >> 13);
+        // h *= 0xc2b2ae35
+        product = lo * 0xae35;
+        carry = Std.int(product / 65536);
+        newLo = product - carry * 65536;
+        hi = (hi * 0xae35 + lo * 0xc2b2 + carry) % 65536;
+        lo = newLo;
+        // h ^= h >>> 16
+        lo = lo ^ hi;
+        return ((hi ^ 0x8000) - 0x8000) * 65536 + lo;
     }
     #else
-    inline function hashCoords(high:Int, low:Int):Int {
-        var h = high ^ (low >>> 16) ^ (low << 16);
-        h = (h ^ (h >>> 16)) * 0x85ebca6b;
-        h = (h ^ (h >>> 13)) * 0xc2b2ae35;
+    /**
+     * The murmur3 32 bit finalizer.
+     */
+    static inline function fmix32(h:Int):Int {
+        h = mul32(h ^ (h >>> 16), 0x85ebca6b);
+        h = mul32(h ^ (h >>> 13), 0xc2b2ae35);
         return h ^ (h >>> 16);
+    }
+
+    /**
+     * Multiplication wrapped to 32 bits: native on the static targets. On JS a
+     * plain product of two large ints is a double that loses its low bits.
+     */
+    static inline function mul32(a:Int, b:Int):Int {
+        #if js
+        return js.lib.Math.imul(a, b);
+        #else
+        return a * b;
+        #end
     }
     #end
 

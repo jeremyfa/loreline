@@ -72,6 +72,7 @@ class PortableTestSuite {
         PrinterTests.run(onPass, onFail);
         WhenSyntaxTests.run(onPass, onFail);
         NodeIdMapTests.run(onPass, onFail);
+        SaveCompatTests.run(onPass, onFail);
         ValuesTests.run(onPass, onFail);
         PrepareCachesTests.run(onPass, onFail);
         BuiltinArgumentsTests.run(onPass, onFail);
