@@ -20,7 +20,7 @@ using loreline.TextUnits;
 class Identifiers {
 
     /** Whether a character can start a name */
-    public static function isStart(c:Int):Bool {
+    public static inline function isStart(c:Int):Bool {
         if (c < 0x80) {
             return (c >= "a".code && c <= "z".code) || (c >= "A".code && c <= "Z".code) || c == "_".code;
         }
@@ -28,7 +28,7 @@ class Identifiers {
     }
 
     /** Whether a character can continue a name */
-    public static function isPart(c:Int):Bool {
+    public static inline function isPart(c:Int):Bool {
         if (c < 0x80) {
             return (c >= "a".code && c <= "z".code) || (c >= "A".code && c <= "Z".code) || c == "_".code || (c >= "0".code && c <= "9".code);
         }
@@ -36,18 +36,21 @@ class Identifiers {
     }
 
     /** Whether a character is an emoji (one that can start a name) */
+    @:noDebug
     public static function isEmoji(c:Int):Bool {
         if (c < 0x2300) return false;
         return inRanges(EMOJI, c);
     }
 
     /** Whether a character is a lower case letter */
+    @:noDebug
     public static function isLowerCase(c:Int):Bool {
         if (c < 0x80) return c >= "a".code && c <= "z".code;
         return inRanges(LOWER, c);
     }
 
     /** Whether a character is an upper case (or title case) letter */
+    @:noDebug
     public static function isUpperCase(c:Int):Bool {
         if (c < 0x80) return c >= "A".code && c <= "Z".code;
         return inRanges(UPPER, c);
@@ -121,6 +124,7 @@ class Identifiers {
 
 
     /** Whether a code point is in a table of ranges, by binary search */
+    @:noDebug
     static function inRanges(table:Array<Int>, c:Int):Bool {
         var low = 0;
         var high = (table.length >> 1) - 1;

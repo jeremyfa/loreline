@@ -262,6 +262,7 @@ class TokenTypeHelpers {
      * @param b Second token type
      * @return Whether the token types are equal
      */
+    @:noDebug
     public static function equals(a:TokenType, b:TokenType):Bool {
         return switch [a, b] {
             case [Arrow, Arrow]: true;
@@ -331,6 +332,7 @@ class TokenTypeHelpers {
      * @param a Token type to check
      * @return Whether the token type is a comment
      */
+    @:noDebug
     public static function isComment(a:TokenType):Bool {
         return switch a {
             case CommentLine(_) | CommentMultiLine(_) | CommentHash(_): true;
@@ -605,6 +607,12 @@ class Token {
     public var keepOrphanExpressions:Bool = false;
 
     /**
+     * Whether keepOrphanExpressions decided how some text was read. When it stays
+     * false after `tokenize`, the tokens are those of a lexer without the option.
+     */
+    public var orphanExpressionsKept(default, null):Bool = false;
+
+    /**
      * Creates a new lexer for the given input.
      * @param input The source code to lex
      */
@@ -636,6 +644,7 @@ class Token {
         this.indentLevel = 0;
         this.indentStack = [0];
         this.indentTokens = [];
+        this.orphanExpressionsKept = false;
     }
 
     /**
@@ -1200,6 +1209,7 @@ class Token {
      * @param pos The position to start matching from
      * @return The matched identifier, or `null` if not matching
      */
+    @:noDebug
     function matchIdentifier(pos:Int):Null<String> {
         if (!isNameStartAt(pos)) {
             return null;
@@ -1224,6 +1234,7 @@ class Token {
         }
     }
 
+    @:noDebug
     function _skipWhitespaceAndComments(pos:Int, stopNextLine:Bool = false):Int {
         if (stopNextLine) {
             return _skipWhitespaceAndCommentsStopNextLine(pos);
@@ -1273,6 +1284,7 @@ class Token {
         }
     }
 
+    @:noDebug
     function _skipWhitespaceAndCommentsStopNextLine(pos:Int):Int {
         final startPos = pos;
         var foundContent = false;
@@ -1408,6 +1420,7 @@ class Token {
      * Whether a condition can end at the given position: end of line or input,
      * a line comment, a transition `->`, a brace block `{` or a hash comment `#`.
      */
+    @:noDebug
     function isConditionEnd(pos:Int):Bool {
         if (pos >= this.length) return true;
         final c = input.uCharCodeAt(pos);
@@ -1420,6 +1433,7 @@ class Token {
     /**
      * Skips spaces, tabs and multiline comments that stay on the current line.
      */
+    @:noDebug
     function skipInlineSpacesAndComments(pos:Int):Int {
         while (pos < this.length) {
             final c = input.uCharCodeAt(pos);
@@ -2556,6 +2570,16 @@ class Token {
         return i >= 0 && strictExprs[i] == Strict;
     }
 
+    /**
+     * Whether tryReadUnquotedString returns null for this first word of a text
+     * that is not a value, as it does for `function` and most keywords.
+     */
+    function startsWithKeyword(identifier:Null<String>):Bool {
+        if (identifier == null) return false;
+        if (identifier == 'function') return true;
+        return identifier != 'if' && identifier != 'null' && identifier != 'true' && identifier != 'false' && identifier != 'and' && identifier != 'or' && identifier != 'is' && identifier != 'not' && KEYWORDS.exists(identifier);
+    }
+
     function readImportValue(c:Int, startPos:Position):Token {
 
         if (c == '"'.code) {
@@ -2864,8 +2888,20 @@ class Token {
             }
         }
         else {
-            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null' && ((keepOrphanExpressions && isIdentifierExpressionStart(pos, true)) || isIfStart(pos) || isCallStart(pos) || isAssignStart(pos))) {
-                return null;
+            if (!isAfterLabel && identifier != 'true' && identifier != 'false' && identifier != 'null') {
+                if (keepOrphanExpressions && isIdentifierExpressionStart(pos, true)) {
+                    // Without keepOrphanExpressions, this text could have been read otherwise,
+                    // unless the checks below return null too: those of a keyword, and
+                    // those of a text that doesn't start its line or follow a label
+                    if (!(isIfStart(pos) || isCallStart(pos) || isAssignStart(pos)) && !startsWithKeyword(identifier)
+                        && (followsOnlyLabelOrCommentsInLine() || followsOnlyWhitespacesOrCommentsInLine() || followsChoiceOncePrefix())) {
+                        orphanExpressionsKept = true;
+                    }
+                    return null;
+                }
+                if (isIfStart(pos) || isCallStart(pos) || isAssignStart(pos)) {
+                    return null;
+                }
             }
         }
 
@@ -3126,8 +3162,9 @@ class Token {
                     error(I18n.text('Unterminated multiline comment'), false);
                 }
             }
-            // Check for trailing if
-            else if (tagStart == -1 && !isValue && isIfStart(pos)) {
+            // Check for trailing if. isIfStart only steps over spaces, tabs and
+            // comments before the `i`: any other character can't start one
+            else if (tagStart == -1 && !isValue && (c == "i".code || c == " ".code || c == "\t".code || c == "/".code) && isIfStart(pos)) {
                 break;
             }
             // Check for arrow start
@@ -3849,16 +3886,18 @@ class Token {
      * @return The position after `word` if the input has that whole word at `p`
      * (not followed by an identifier character), or -1
      */
+    @:noDebug
     function wordEnd(p:Int, word:String):Int {
         final end = p + word.length;
         if (end > length) return -1;
         for (i in 0...word.length) {
-            if (input.uCharCodeAt(p + i) != word.charCodeAt(i)) return -1;
+            if (input.uCharCodeAt(p + i) != word.uCharCodeAt(i)) return -1;
         }
         if (end < length && isNamePartAt(end)) return -1;
         return end;
     }
 
+    @:noDebug
     function skipSpacesAndTabs(p:Int):Int {
         while (p < length && (input.uCharCodeAt(p) == " ".code || input.uCharCodeAt(p) == "\t".code)) p++;
         return p;
@@ -4288,6 +4327,7 @@ class Token {
     /**
      * Skips whitespace characters (space and tab).
      */
+    @:noDebug
     function skipWhitespace() {
         while (pos < length) {
             switch (input.uCharCodeAt(pos)) {

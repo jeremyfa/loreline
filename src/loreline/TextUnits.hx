@@ -61,6 +61,9 @@ class TextUnits {
         #if neko
         if (pos < 0 || pos >= neko.Utf8.length(str)) return -1;
         return neko.Utf8.charCodeAt(str, pos);
+        #elseif cpp
+        // `charCodeAt` answers a Null<Int>, boxed in a Dynamic on hxcpp: read the unit directly
+        return (pos >= 0 && pos < str.length) ? untyped str.cca(pos) : -1;
         #else
         final c = str.charCodeAt(pos);
         return c == null ? -1 : c;
@@ -196,7 +199,18 @@ class TextUnitsBuf {
         buf.add(x);
     }
 
-    public function addChar(c:Int):Void {
+    public inline function addChar(c:Int):Void {
+        // Below the surrogates with nothing pending, as addCharSlow would do, without a call
+        if (c < 0xD800 && pendingHigh == -1) {
+            buf.addChar(c);
+        }
+        else {
+            addCharSlow(c);
+        }
+    }
+
+    @:noDebug
+    function addCharSlow(c:Int):Void {
         if (c >= 0xD800 && c <= 0xDBFF) {
             flushPending();
             pendingHigh = c;
@@ -211,6 +225,7 @@ class TextUnitsBuf {
         }
     }
 
+    @:noDebug
     function flushPending():Void {
         if (pendingHigh != -1) {
             buf.addChar(pendingHigh);

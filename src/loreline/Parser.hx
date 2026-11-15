@@ -168,6 +168,7 @@ class ParserContext {
      * Looks ahead at the next token without consuming it.
      * @return The next token in the stream
      */
+    @:noDebug
     function peek():Token {
         var i = current + 1;
         while (i < tokens.length) {
@@ -357,6 +358,7 @@ class ParserContext {
      * @param type TokenType to check against
      * @return True if the current token matches
      */
+    @:noDebug
     function check(type:TokenType):Bool {
         if (isAtEnd()) return false;
         return switch type {
@@ -380,6 +382,7 @@ class ParserContext {
      * Checks if we've reached the end of the token stream.
      * @return True if at end of input
      */
+    @:noDebug
     function isAtEnd():Bool {
         return current >= tokens.length || tokens[current].type == Eof;
     }
@@ -389,6 +392,7 @@ class ParserContext {
      * @param type TokenType to check
      * @return True if token is a comment
      */
+    @:noDebug
     function isComment(type:TokenType):Bool {
         return switch (type) {
             case CommentLine(_) | CommentMultiLine(_) | CommentHash(_): true;
@@ -2414,6 +2418,7 @@ class ParserContext {
      * @param type TokenType to match
      * @return True if token was matched and consumed
      */
+    @:noDebug
     function match(type:TokenType, advanceLineBreaks:Bool = true):Bool {
         if (check(type)) {
             advance(advanceLineBreaks);
@@ -2426,6 +2431,7 @@ class ParserContext {
      * Checks if we're at a line break in the source.
      * @return True if at a line break
      */
+    @:noDebug
     function isAtLineBreak():Bool {
         return lineBreakAfterToken || tokens[current].type == LineBreak;
     }

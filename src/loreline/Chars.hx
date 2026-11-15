@@ -82,14 +82,18 @@ class Chars {
      * `uCharCodeAt`, or -1 past its end.
      */
     public static overload extern inline function codeAt(text:String, pos:Int):Int {
-        return stringCodeAt(text, pos);
+        // ASCII (and -1 past the end) without a call
+        final c = text.uCharCodeAt(pos);
+        return c < 0x80 ? c : stringCodeAt(text, pos);
     }
 
     /**
      * How many units the character at the given position takes (0 past the end).
      */
     public static overload extern inline function unitsAt(text:String, pos:Int):Int {
-        return stringUnitsAt(text, pos);
+        // ASCII (and 0 past the end) without a call
+        final c = text.uCharCodeAt(pos);
+        return c < 0 ? 0 : c < 0x80 ? 1 : stringUnitsAt(text, pos);
     }
 
     /**
@@ -115,6 +119,7 @@ class Chars {
 
     #end
 
+    @:noDebug
     static function stringCodeAt(text:String, pos:Int):Int {
         final c = text.uCharCodeAt(pos);
         if (c < 0x80) return c;
@@ -141,6 +146,7 @@ class Chars {
         return c;
     }
 
+    @:noDebug
     static function stringUnitsAt(text:String, pos:Int):Int {
         final c = text.uCharCodeAt(pos);
         if (c < 0) return 0;
@@ -161,6 +167,7 @@ class Chars {
         return count;
     }
 
+    @:noDebug
     static function stringStartBefore(text:String, pos:Int):Int {
         if (pos <= 0) return pos - 1;
         if (UNITS == 1) return pos - 1;
