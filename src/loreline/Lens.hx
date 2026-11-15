@@ -194,13 +194,13 @@ class Lens {
     final script:Script;
 
     /** Map of all nodes by their unique ID, built on first use, see buildNodeMaps */
-    var nodesById:Null<NodeIdMap<Node>> = null;
+    var nodesById:Null<NodeIdLookup<Node>> = null;
 
     /** Map of node IDs to their parent nodes */
-    final parentNodes:NodeIdMap<Node> = new NodeIdMap();
+    final parentNodes:NodeIdLookup<Node> = new NodeIdLookup();
 
     /** Map of node IDs to their child nodes, built on first use, see buildNodeMaps */
-    var childNodes:Null<NodeIdMap<Array<Node>>> = null;
+    var childNodes:Null<NodeIdLookup<Array<Node>>> = null;
 
     final lorscriptFunctions:NodeIdMap<FuncLorscript> = new NodeIdMap();
 
@@ -210,7 +210,7 @@ class Lens {
      * holds for the life of this lens. A miss is kept too, as a holder with a
      * null beat.
      */
-    final beatsByNameFromNode:NodeIdMap<Map<String, {beat:Null<NBeatDecl>}>> = new NodeIdMap();
+    final beatsByNameFromNode:NodeIdLookup<Map<String, {beat:Null<NBeatDecl>}>> = new NodeIdLookup();
 
     /**
      * Criteria counts of when rules (AstUtils.whenRuleScore), computed once.
@@ -231,6 +231,19 @@ class Lens {
 
     /** The runs of plain rules of when blocks, by block then start index, see whenRun. */
     final whenRuns:NodeIdMap<Map<Int, WhenRun>> = new NodeIdMap();
+
+    /**
+     * The top-level beats, characters and functions of the script and of the
+     * files it imports, by name, the first met in the order of a walk of the
+     * tree (see buildTopLevelDeclarations). Built on first use: looking one up by
+     * walking the top level for each dialogue or transition costs as many
+     * steps as there are beats, on every line of a large script.
+     */
+    var topLevelBeats:Null<Map<String, NBeatDecl>> = null;
+
+    var topLevelCharacters:Null<Map<String, NCharacterDecl>> = null;
+
+    var topLevelFunctions:Null<Map<String, NFunctionDecl>> = null;
 
     /** The when blocks of the script and its imports, see getWhenStatements. */
     final whenStatements:Array<NWhenStatement> = [];
@@ -293,8 +306,8 @@ class Lens {
      * Builds the maps of the nodes by id and of their children.
      */
     function buildNodeMaps():Void {
-        final byId = new NodeIdMap<Node>();
-        final children = new NodeIdMap<Array<Node>>();
+        final byId = new NodeIdLookup<Node>();
+        final children = new NodeIdLookup<Array<Node>>();
         script.each((node, parent) -> {
             byId.set(node.id, node);
             if (parent != null) {
@@ -1269,7 +1282,11 @@ class Lens {
 
         // If nothing found, look at
         // top level beat declarations
-        if (result == null) {
+        if (result == null && name != null) {
+            if (topLevelBeats == null) buildTopLevelDeclarations();
+            result = topLevelBeats.get(name);
+        }
+        else if (result == null) {
             traverse(script, (child, parent) -> {
                 if (result == null && (child is NBeatDecl)) {
                     final beatDecl:NBeatDecl = cast child;
@@ -1283,6 +1300,35 @@ class Lens {
 
         return result;
 
+    }
+
+    /**
+     * Fills topLevelBeats, topLevelCharacters and topLevelFunctions with one
+     * walk, the walk the searches by name did each time: the children of the
+     * script and of the imported scripts, in order, the first of a name kept.
+     */
+    function buildTopLevelDeclarations():Void {
+        final beats = new Map<String, NBeatDecl>();
+        final characters = new Map<String, NCharacterDecl>();
+        final functions = new Map<String, NFunctionDecl>();
+        traverse(script, (child, parent) -> {
+            if (child is NBeatDecl) {
+                final beatDecl:NBeatDecl = cast child;
+                if (beatDecl.name != null && !beats.exists(beatDecl.name)) beats.set(beatDecl.name, beatDecl);
+            }
+            else if (child is NCharacterDecl) {
+                final characterDecl:NCharacterDecl = cast child;
+                if (characterDecl.name != null && !characters.exists(characterDecl.name)) characters.set(characterDecl.name, characterDecl);
+            }
+            else if (child is NFunctionDecl) {
+                final functionDecl:NFunctionDecl = cast child;
+                if (functionDecl.name != null && !functions.exists(functionDecl.name)) functions.set(functionDecl.name, functionDecl);
+            }
+            return (child is NImportStatement || child is Script);
+        });
+        topLevelBeats = beats;
+        topLevelCharacters = characters;
+        topLevelFunctions = functions;
     }
 
     /**
@@ -1302,6 +1348,11 @@ class Lens {
     public function findCharacterByNameFromNode(name:String, node:Node):Null<NCharacterDecl> {
 
         var result:Null<NCharacterDecl> = null;
+
+        if (name != null) {
+            if (topLevelCharacters == null) buildTopLevelDeclarations();
+            return topLevelCharacters.get(name);
+        }
 
         // Look at top-level character declarations
         traverse(script, (child, parent) -> {
@@ -1602,6 +1653,11 @@ class Lens {
     public function findFunctionByNameFromNode(name:String, node:Node):Null<NFunctionDecl> {
 
         var result:Null<NFunctionDecl> = null;
+
+        if (name != null) {
+            if (topLevelFunctions == null) buildTopLevelDeclarations();
+            return topLevelFunctions.get(name);
+        }
 
         // Look at top-level function declarations
         traverse(script, (child, parent) -> {

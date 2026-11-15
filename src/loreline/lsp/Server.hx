@@ -468,6 +468,30 @@ class Server {
 
     }
 
+    /** The lens lensOf gave last, with its script and the locale of its texts */
+    var lastLens:Null<Lens> = null;
+
+    var lastLensScript:Null<Script> = null;
+
+    var lastLensLocale:Null<String> = null;
+
+    /**
+     * A lens on a parsed script. The lens of the last script asked is kept:
+     * the diagnostics of a document, then each hover, completion and definition
+     * on it read the same tree, and making a lens maps every node of it. A
+     * lens only reads its script, which isn't changed once parsed; the error
+     * texts of function code it keeps are in the locale they were made in, so
+     * a new locale gets a new lens.
+     */
+    function lensOf(script:Script):Lens {
+        if (lastLens == null || lastLensScript != script || lastLensLocale != I18n.locale) {
+            lastLens = new Lens(script);
+            lastLensScript = script;
+            lastLensLocale = I18n.locale;
+        }
+        return lastLens;
+    }
+
     /**
      * Update document content and parse
      */
@@ -484,7 +508,7 @@ class Server {
                     setDocument(uri, ast);
 
                     // Create lens
-                    final lens = new Lens(ast);
+                    final lens = lensOf(ast);
 
                     // Keep track of document imports
                     documentImports.set(uri, [for (path in lens.getImportedPaths(pathFromUri(uri))) uriFromPath(path)]);
@@ -886,8 +910,16 @@ class Server {
         };
 
         // Prevent duplicates
-        for (diag in diagnostics) {
-            if (diag.message == message && diag.severity == severity && rangesEqual(diag.range, range)) return;
+        final key = diagnosticKey(message, severity, range);
+        if (diagnosticKeysList != diagnostics || diagnosticKeysCount != diagnostics.length) {
+            // Another list, or one changed elsewhere: its keys again
+            diagnosticKeys = new Map();
+            for (diag in diagnostics) diagnosticKeys.set(diagnosticKey(diag.message, diag.severity, diag.range), true);
+            diagnosticKeysList = diagnostics;
+        }
+        if (diagnosticKeys.exists(key)) {
+            diagnosticKeysCount = diagnostics.length;
+            return;
         }
 
         final diagnostic:Diagnostic = {
@@ -898,6 +930,25 @@ class Server {
         };
         if (kind != null) diagnostic.data = {kind: kind};
         diagnostics.push(diagnostic);
+        diagnosticKeys.set(key, true);
+        diagnosticKeysCount = diagnostics.length;
+    }
+
+    /**
+     * The keys of the diagnostics of the list addDiagnostic last added to, to
+     * find a duplicate without comparing with each one: a large script can
+     * have thousands of them. Rebuilt when the list is another one, or when
+     * its length isn't the one addDiagnostic left.
+     */
+    var diagnosticKeys:Map<String, Bool> = new Map();
+
+    var diagnosticKeysList:Null<Array<Diagnostic>> = null;
+
+    var diagnosticKeysCount:Int = 0;
+
+    /** What makes two diagnostics the same for addDiagnostic: message, severity and range */
+    static function diagnosticKey(message:String, severity:DiagnosticSeverity, range:Range):String {
+        return (cast severity:Int) + ':' + range.start.line + ':' + range.start.character + ':' + range.end.line + ':' + range.end.character + (message == null ? '!' : '=' + message);
     }
 
     /**
@@ -966,7 +1017,7 @@ class Server {
             return [];
         }
 
-        final lens = new Lens(ast);
+        final lens = lensOf(ast);
 
         var node = lens.getNodeAtPosition(lorelinePos);
         final beforeNode = lens.getClosestNodeAtOrBeforePosition(lorelinePos);
@@ -1588,7 +1639,7 @@ class Server {
         final content = documentContents.get(uri);
         final lorelinePos = toLorelinePosition(params.position, content);
 
-        final lens = new Lens(ast);
+        final lens = lensOf(ast);
         var node = lens.getNodeAtPosition(lorelinePos);
 
         if (node is NLiteral) {
@@ -1914,7 +1965,7 @@ class Server {
         final content = documentContents.get(uri);
         final lorelinePos = toLorelinePosition(params.position, content);
 
-        final lens = new Lens(ast);
+        final lens = lensOf(ast);
         final node = lens.getNodeAtPosition(lorelinePos);
 
         if (node != null) {
