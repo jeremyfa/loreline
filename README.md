@@ -19,6 +19,8 @@ What follows is only needed if you want to modify Loreline from source. If you j
 Building Loreline from source requires [Node.js](https://nodejs.org/) (v18+).
 The resulting outputs (JS library, C# library, native CLI) have no Node.js dependency.
 
+The Go CLI and Go library are built with [hx2go](https://github.com/go2hx/hx2go), which needs [Go](https://go.dev/) and Haxe 5 on the PATH (instead of the bundled Haxe 4). If hx2go is not installed in haxelib, `--go` and `--go-lib` install it from git (`HX2GO_REF` picks the branch or tag, `main` by default).
+
 ```sh
 npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
 ```
@@ -35,6 +37,8 @@ node ./setup --lua         # Build Lua module (lua/loreline/)
 node ./setup --php         # Build PHP package (php/)
 node ./setup --php-cli     # Build PHP CLI (build/php-cli/)
 node ./setup --cpp         # Build native CLI (loreline / loreline.exe)
+node ./setup --go          # Build Go CLI with hx2go (build/go/loreline)
+node ./setup --go-lib      # Build Go package (go/loreline/)
 node ./setup --cpp-lib     # Build C++ shared library
 node ./setup --jvm         # Build JVM jar (jvm/loreline.jar)
 node ./setup --gdscript    # Export pure-GDScript Godot addon (godot/gdscript/)
@@ -49,16 +53,17 @@ node ./setup --sample unity    # Set up loreline-unity only
 node ./setup --sample cpp      # Set up loreline-cpp only
 node ./setup --sample python   # Set up loreline-python only
 node ./setup --sample lua      # Set up loreline-lua only
+node ./setup --sample go       # Set up loreline-go only
 ```
 
 This copies the built runtime and story files into the sample directories.
 For loreline-web, run `--js` first. For loreline-unity, run `--cs` first.
 For loreline-cpp, run `--cpp` first. For loreline-python, run `--py` first.
-For loreline-lua, run `--lua` first.
+For loreline-lua, run `--lua` first. For loreline-go, run `--go-lib` first.
 
 ### Testing
 
-Python, Lua, PHP, JS, JVM and GDScript tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests). GDScript tests also need a Godot 4 binary on the PATH (or pointed to by the `GODOT_BIN` environment variable).
+Python, Lua, PHP, JS, JVM, Go and GDScript tests require running the corresponding build step first (e.g. `node ./setup --py` before Python tests). GDScript tests also need a Godot 4 binary on the PATH (or pointed to by the `GODOT_BIN` environment variable).
 
 ```sh
 node run test ./test                    # Run Neko tests only
@@ -68,13 +73,15 @@ php php/test-runner.php ./test          # Run PHP tests only
 php build/php-cli/index.php test ./test # Run PHP CLI tests only
 npx tsx js/test-runner.ts ./test        # Run JS tests only
 java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
+build/go/loreline test ./test           # Run Go CLI tests only
+(cd go/loreline && go test .)           # Run Go package tests only
 node ./setup --gdscript-test            # Run GDScript tests only (headless Godot)
-node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
+node ./setup --test                     # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM + Go)
 ```
 
 Each `test/*.lor` file ends with a `<test>` YAML block describing its test cases (`choices`, `beat`, `expected`, ...). `saveAtDialogue` and `saveAtChoice` take one index or a list of indices (`saveAtDialogue: [2, 5]`), counted over an uninterrupted run: at each one, the runner saves, restores in a new interpreter and continues, so the saved event shows twice in `expected`.
 
-On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
+On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI, Go, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
 
 ### How Loreline is authored
 

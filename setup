@@ -173,6 +173,8 @@ async function main() {
     let buildPhp = rawArgs.indexOf('--php') != -1;
     let buildPhpCli = rawArgs.indexOf('--php-cli') != -1;
     let buildJvm = rawArgs.indexOf('--jvm') != -1;
+    let buildGo = rawArgs.indexOf('--go') != -1;
+    let buildGoLib = rawArgs.indexOf('--go-lib') != -1;
     let buildIos = rawArgs.indexOf('--ios') != -1;
     let buildAndroid = rawArgs.indexOf('--android') != -1;
     let buildWasm = rawArgs.indexOf('--wasm') != -1;
@@ -191,9 +193,9 @@ async function main() {
     let runTest = rawArgs.indexOf('--test') != -1;
     let debug = false;
 
-    // --sample [web|unity|cpp|python|lua|sdl3|java]: copy built files into sample projects
+    // --sample [web|unity|cpp|python|lua|go|sdl3|java]: copy built files into sample projects
     let setupSample = rawArgs.indexOf('--sample') != -1;
-    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', 'sdl3', or 'java'
+    let sampleTarget = null; // null = all, 'web', 'unity', 'cpp', 'python', 'lua', 'go', 'sdl3', or 'java'
     if (setupSample) {
         const idx = rawArgs.indexOf('--sample');
         if (idx + 1 < rawArgs.length && !rawArgs[idx + 1].startsWith('-')) {
@@ -1466,6 +1468,65 @@ async function main() {
         await command(haxe, ['build-cli.hxml', '--php', 'build/php-cli', '-D', 'loreline_utf8_vector'].concat(haxeBuildArgs));
     }
 
+    // hx2go needs Haxe 5, so the Go builds use the haxe on the PATH instead of the bundled Haxe 4
+    const goHaxe = process.env.LORELINE_GO_HAXE || 'haxe';
+    const goHaxelib = process.env.LORELINE_GO_HAXELIB || 'haxelib';
+    if (buildGo || buildGoLib) {
+        try {
+            execSync(goHaxelib + ' path hx2go', { stdio: 'ignore' });
+        }
+        catch (e) {
+            await command(goHaxelib, ['git', 'hx2go', 'https://github.com/go2hx/hx2go', process.env.HX2GO_REF || 'main', '--always']);
+        }
+    }
+
+    if (buildGoLib) {
+        console.log('Export loreline Go library (hx2go)');
+
+        await command(goHaxe, ['build-go-lib.hxml'].concat(haxeBuildArgs));
+
+        const goGeneratedDir = path.join(__dirname, 'build', 'go-lib', 'main');
+        const goCoreDir = path.join(__dirname, 'go', 'loreline', 'internal', 'core');
+        fs.rmSync(goCoreDir, { recursive: true, force: true });
+        fs.mkdirSync(goCoreDir, { recursive: true });
+        for (const file of fs.readdirSync(goGeneratedDir)) {
+            if (file.endsWith('.go')) {
+                fs.copyFileSync(path.join(goGeneratedDir, file), path.join(goCoreDir, file));
+            }
+        }
+
+        const goModulePath = path.join(__dirname, 'go', 'loreline', 'go.mod');
+        const currentModule = fs.readFileSync(goModulePath, 'utf8').match(/^module\s+(\S+)/m)[1];
+        const targetModule = process.env.LORELINE_GO_MODULE || 'github.com/jeremyfa/loreline/go/loreline';
+        if (currentModule != targetModule) {
+            const moduleFiles = [
+                path.join('go', 'loreline', 'go.mod'),
+                path.join('go', 'loreline', 'loreline.go'),
+                path.join('go', 'loreline', 'loreline_test.go'),
+                path.join('sample', 'loreline-go', 'go.mod'),
+                path.join('sample', 'loreline-go', 'main.go')
+            ];
+            for (const file of moduleFiles) {
+                const filePath = path.join(__dirname, file);
+                fs.writeFileSync(filePath, fs.readFileSync(filePath, 'utf8').split(currentModule).join(targetModule));
+            }
+            console.log('Go module: ' + currentModule + ' -> ' + targetModule);
+        }
+
+        await command('go', ['build', './...'], { cwd: path.join(__dirname, 'go', 'loreline') });
+
+        console.log('Generated: go/loreline/internal/core');
+    }
+
+    if (buildGo) {
+        console.log('Export loreline Go CLI (hx2go)');
+
+        await command(goHaxe, ['build-go.hxml'].concat(haxeBuildArgs));
+        await command('go', ['-C', 'build/go/main', 'build', '-o', path.join('..', process.platform == 'win32' ? 'loreline.exe' : 'loreline'), '.']);
+
+        console.log('Generated: build/go/' + (process.platform == 'win32' ? 'loreline.exe' : 'loreline'));
+    }
+
     if (buildGdscript) {
         console.log('Export loreline for GDScript (Godot)');
 
@@ -1725,6 +1786,7 @@ async function main() {
     //   node ./setup --sample cpp      (loreline-cpp only)
     //   node ./setup --sample python   (loreline-python only)
     //   node ./setup --sample lua      (loreline-lua only)
+    //   node ./setup --sample go       (loreline-go only)
     //   node ./setup --sample java     (loreline-java only)
     //   node ./setup --sample sdl3     (loreline-sdl3 only)
 
@@ -2045,6 +2107,22 @@ async function main() {
             }
         }
 
+        // loreline-go: needs go/loreline/internal/core (from --go-lib) + story files
+        if (sampleTarget == null || sampleTarget == 'go') {
+            console.log('Set up sample: loreline-go');
+
+            const goStoryDir = path.join(__dirname, 'sample', 'loreline-go', 'story');
+            fs.mkdirSync(goStoryDir, { recursive: true });
+
+            for (const name of ['CoffeeShop.lor', 'characters.lor']) {
+                fs.copyFileSync(
+                    path.join(__dirname, 'sample', name),
+                    path.join(goStoryDir, name)
+                );
+                console.log('  sample/' + name + ' -> sample/loreline-go/story/' + name);
+            }
+        }
+
         // loreline-java: needs jvm/loreline.jar (from --jvm) + story files
         if (sampleTarget == null || sampleTarget == 'java') {
             console.log('Set up sample: loreline-java');
@@ -2297,6 +2375,15 @@ async function main() {
             '-cp', [path.join(__dirname, 'jvm', 'loreline.jar'), jvmTestClassesDir].join(jvmCpSep),
             'TestRunner', './test'
         ]);
+
+        // 13. Go (hx2go) build + tests
+        console.log('\n=== Go (hx2go) build + tests ===');
+        await command('node', ['./setup', '--go']);
+        const goBin = path.join(__dirname, 'build', 'go', process.platform == 'win32' ? 'loreline.exe' : 'loreline');
+        await command(goBin, ['test', './test']);
+        await command(goBin, ['test-lsp', './test-lsp']);
+        await command('node', ['./setup', '--go-lib']);
+        await command('go', ['test', '.'], { cwd: path.join(__dirname, 'go', 'loreline') });
 
     }
 

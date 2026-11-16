@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - '**'
+      - '!golang'
     tags:
       - v**
 jobs:
@@ -482,6 +483,94 @@ jobs:
 
       - name: Run language server tests
         run: node run test-lsp ./test-lsp
+
+
+  loreline-go:
+
+    runs-on: "ubuntu-22.04"
+    permissions:
+      contents: write
+    concurrency:
+      group: loreline-go-publish-${{ github.ref }}
+    env:
+      HX2GO_REF: main
+      LORELINE_GO_MODULE: github.com/${{ github.repository }}/go/loreline
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Setup Haxe nightly
+        uses: krdlab/setup-haxe@v2.1.0
+        with:
+          haxe-version: latest
+
+      - name: Install hx2go
+        run: |
+          haxelib git hx2go https://github.com/go2hx/hx2go $HX2GO_REF --always
+          cd "$(haxelib libpath hx2go)" && git submodule update --init --recursive
+
+      - name: Build Go CLI
+        run: node ./setup --go
+
+      - name: Run Go tests
+        run: build/go/loreline test ./test
+
+      - name: Run language server tests
+        run: build/go/loreline test-lsp ./test-lsp
+
+      - name: Build Go library
+        run: node ./setup --go-lib
+
+      - name: Run Go library tests
+        working-directory: go/loreline
+        run: go test .
+
+      - name: Build and run Go sample
+        run: |
+          node ./setup --sample go
+          cd sample/loreline-go
+          go vet .
+          printf '1\n1\n1\n1\n1\n1\n1\n1\n' | go run . | grep -q "Barista:"
+
+      - name: Stage generated Go library
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A go/loreline sample/loreline-go
+          git add -A -f go/loreline/internal/core
+          echo "GO_TREE=$(git write-tree)" >> "$GITHUB_ENV"
+
+      - name: Publish generated Go library to golang branch
+        if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        run: |
+          parents="-p $GITHUB_SHA"
+          if git fetch --depth=1 origin refs/heads/golang:refs/remotes/origin/golang; then
+            if [ "$(git rev-parse 'origin/golang^{tree}')" = "$GO_TREE" ]; then
+              echo "golang branch is up to date"
+              exit 0
+            fi
+            parents="-p origin/golang $parents"
+          fi
+          commit=$(git commit-tree "$GO_TREE" $parents -m "Generated Go library for ${GITHUB_SHA::7}")
+          git push origin "$commit:refs/heads/golang"
+
+      - name: Tag Go module release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          commit=$(git commit-tree "$GO_TREE" -p "$GITHUB_SHA" -m "Generated Go library for ${{ github.ref_name }}")
+          git tag "go/loreline/${{ github.ref_name }}" "$commit"
+          git push origin "go/loreline/${{ github.ref_name }}"
 
 
   loreline-js:
@@ -2052,7 +2141,7 @@ jobs:
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [loreline-windows, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-php, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-test, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web, loreline-godot-test-lifetime, loreline-gdscript]
+    needs: [loreline-windows, loreline-go, loreline-mac, loreline-linux, loreline-ios, loreline-android, loreline-wasm, loreline-js, loreline-csharp, loreline-python, loreline-lua, loreline-php, loreline-unity, loreline-web, loreline-jvm, loreline-cpp, loreline-sdl3, loreline-sdl3-test, loreline-godot, loreline-godot-test-linux, loreline-godot-test-web, loreline-godot-test-lifetime, loreline-gdscript]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6

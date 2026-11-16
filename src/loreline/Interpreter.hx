@@ -581,7 +581,7 @@ typedef InterpreterOptions = {
 @:structInit class InterpreterOptions {
 #end
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api || loreline_go_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -1066,7 +1066,7 @@ class InterpreterContext {
      */
     var customCreateFields:(interpreter:Interpreter, type:String, node:Node)->Any;
 
-    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
+    #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api || loreline_go_api) && !macro)
     /**
      * When using Loreline outside of Haxe, the interpreter can be wrapped by
      * an object more tailored for the host platform. This is that wrapper object.
@@ -1090,7 +1090,7 @@ class InterpreterContext {
         this.handleChoice = handleChoice;
         this.handleFinish = handleFinish;
 
-        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api) && !macro)
+        #if ((loreline_cs_api || loreline_jvm_api || loreline_py_api || loreline_lua_api || loreline_php_api || loreline_gdscript_api || loreline_go_api) && !macro)
         this.wrapper = options?.wrapper;
         #end
 

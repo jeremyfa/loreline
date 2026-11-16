@@ -1,0 +1,4 @@
+build-cli.hxml
+-D loreline_utf8_vector
+-L hx2go
+--custom-target go=build/go

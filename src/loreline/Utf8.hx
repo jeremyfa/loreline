@@ -147,6 +147,14 @@ class Utf8 {
             v[i] = chars[i].charCodeAt(0);
         }
         return v;
+        #elseif (go && !macro)
+        final runes:go.Slice<Int> = go.Syntax.code("[]rune({0})", str);
+        final len:Int = runes.length;
+        final v = new Vector<Int>(len);
+        for (i in 0...len) {
+            v[i] = runes[i];
+        }
+        return v;
         #else
         final len = str.length;
         final v = new Vector<Int>(len);
