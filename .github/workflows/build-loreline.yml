@@ -493,7 +493,7 @@ jobs:
     concurrency:
       group: loreline-go-publish-${{ github.ref }}
     env:
-      HX2GO_REF: result-fix
+      HX2GO_REF: main
       LORELINE_GO_MODULE: github.com/${{ github.repository }}/go/loreline
     steps:
 
