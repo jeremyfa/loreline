@@ -3978,6 +3978,11 @@ class Token {
 
         // Read parameters
         if (pos >= length || input.uCharCodeAt(pos) != "(".code) {
+            // A character that has no place here, such as a non-breaking space
+            // that looks like a regular one, is named where it is
+            if (pos < length && codeAt(pos) >= 0x80 && !isNameStartAt(pos)) {
+                error(Identifiers.unexpectedCharacterMessage(codeAt(pos)), true, new Position(line, column, pos, unitsAt(pos)));
+            }
             error(I18n.text('Expected opening parenthesis after function name'), true);
         }
 
@@ -4301,10 +4306,11 @@ class Token {
     /**
      * Creates and throws a lexer error.
      * @param message Error message
-     * @throws LexerError with the given message and current position
+     * @param at Where the error is, the current position by default
+     * @throws LexerError with the given message and position
      */
-    function error(text:loreline.i18n.I18nText, fatal:Bool):LexerError {
-        final err = LexerError.of(text, makePosition());
+    function error(text:loreline.i18n.I18nText, fatal:Bool, ?at:Position):LexerError {
+        final err = LexerError.of(text, at != null ? at : makePosition());
         if (errors == null) {
             errors = [];
         }

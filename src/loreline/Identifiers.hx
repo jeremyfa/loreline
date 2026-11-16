@@ -96,12 +96,28 @@ class Identifiers {
      * names the ASCII mark to use when it is a full-width lookalike.
      */
     public static function unexpectedCharacterMessage(c:Int):loreline.i18n.I18nText {
+        switch c {
+            case 0x00A0 | 0x202F | 0x2007:
+                // Option + Space types one on a Mac French keyboard
+                return loreline.i18n.I18n.text('Non-breaking space here: use a regular space');
+            case 0x200B | 0x2060 | 0xFEFF:
+                return loreline.i18n.I18n.text('Invisible character ({code}) here: remove it', {code: unicodeName(c)});
+            case _:
+        }
+        if (c == 0x1680 || c == 0x205F || c == 0x3000 || (c >= 0x2000 && c <= 0x200A)) {
+            return loreline.i18n.I18n.text('Special space ({code}) here: use a regular space', {code: unicodeName(c)});
+        }
         final twin = asciiTwinOf(c);
         final text = Chars.textOf(c);
         if (twin != -1) {
             return loreline.i18n.I18n.text('"{text}" looks like "{twin}" but is a different character', {text: text, twin: String.fromCharCode(twin)});
         }
         return loreline.i18n.I18n.text('Unexpected character: {text}', {text: text});
+    }
+
+    /** How Unicode names a character: `U+00A0` */
+    static function unicodeName(c:Int):String {
+        return 'U+' + StringTools.hex(c, 4);
     }
 
     /**

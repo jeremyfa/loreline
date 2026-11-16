@@ -27,6 +27,7 @@ class IdentifiersTests {
             {name: 'tables are sorted and do not overlap', fn: () -> testTables()},
             {name: 'errors point after a name beyond ASCII', fn: () -> testErrorPositions()},
             {name: 'full-width marks give a clear error in fields', fn: () -> testFieldErrors()},
+            {name: 'special spaces give a clear error', fn: () -> testSpaceErrors()},
             {name: 'full-width marks give a clear error in functions', fn: () -> testFunctionErrors()},
             {name: 'the printer keeps the braces a name needs', fn: () -> testPrinterBraces()}
         ];
@@ -160,6 +161,16 @@ class IdentifiersTests {
         expectError('state\n  金币：10\n', '"：" looks like ":" but is a different character', 2, 3 + 2 * u);
         expectError('character 国王\n  name：路易斯\n', '"：" looks like ":" but is a different character', 2, 7);
         expectError('state\n  金币（: 10\n', '"（" looks like "(" but is a different character', 2, 3 + 2 * u);
+    }
+
+    static function testSpaceErrors():Void {
+        // Option + Space types a non-breaking space on a Mac French keyboard
+        expectError('function\u00A0f()\n', 'Non-breaking space here: use a regular space', 1, 9);
+        expectError('function f\u00A0()\n', 'Non-breaking space here: use a regular space', 1, 11);
+        expectError('beat\u00A0Start\n  Hi.\n', 'Non-breaking space here: use a regular space', 1, 5);
+        expectError('function\u200B f()\n', 'Invisible character (U+200B) here: remove it', 1, 9);
+        expectError('function\u2003f()\n', 'Special space (U+2003) here: use a regular space', 1, 9);
+        expectError('function\u3000f()\n', 'Special space (U+3000) here: use a regular space', 1, 9);
     }
 
     /**

@@ -19,6 +19,9 @@ class Fr {
 
         'Unexpected character: {text}' => 'Caractère inattendu : {text}',
         '"{text}" looks like "{twin}" but is a different character' => "\"{text}\" ressemble à \"{twin}\" mais n'est pas le même caractère",
+        'Non-breaking space here: use a regular space' => 'Espace insécable ici : utilisez une espace normale',
+        'Special space ({code}) here: use a regular space' => 'Espace spéciale ({code}) ici : utilisez une espace normale',
+        'Invisible character ({code}) here: remove it' => 'Caractère invisible ({code}) ici : supprimez-le',
         'Write && (or and), not a single &' => 'Écrivez && (ou and), pas un seul &',
         'Write || (or or), not a single |' => 'Écrivez || (ou or), pas un seul |',
         'Unterminated multiline comment' => 'Commentaire non fermé : il manque */',
