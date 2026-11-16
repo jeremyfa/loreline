@@ -1,0 +1,12 @@
+function te
+
+te()
+
+/*
+<test>
+- request: diagnostics
+  expected:
+    - message: "Expected opening parenthesis after function name"
+      line: 1
+</test>
+*/

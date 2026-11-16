@@ -77,7 +77,9 @@ class LspTests {
             {name: 'the server declares UTF-16 positions', fn: () -> testPositionEncoding()},
             {name: 'an open file keeps the URI sent by the client', fn: () -> testOpenFileUri()},
             {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()},
-            {name: 'a translation tag is named in the language of the tools', fn: () -> testTranslationTagKind()}
+            {name: 'a translation tag is named in the language of the tools', fn: () -> testTranslationTagKind()},
+            {name: 'a failure of the client is not thrown back', fn: () -> testFailingClient()},
+            {name: 'an error after an asynchronous read is answered', fn: () -> testAsyncRequestError()}
         ];
 
         for (test in tests) {
@@ -159,6 +161,54 @@ class LspTests {
         };
         server.handleMessageSync(didChange);
         equals(4, definition(server, MAIN_URI, 4, 6).targetSelectionRange.start.line, 'target line after the change');
+    }
+
+    /** What the client does with an answer may throw: the server answers once, and throws nothing */
+    static function testFailingClient() {
+        final server = new Server();
+        server.onLog = (message, ?pos) -> {};
+        var answers = 0;
+        final initialize:RequestMessage = { jsonrpc: "2.0", id: 1, method: "initialize", params: { capabilities: {} } };
+        server.handleMessage(initialize, response -> {
+            answers++;
+            throw 'failure of the client';
+        });
+        equals(1, answers, 'answers');
+    }
+
+    /**
+     * A document is updated before a request when a file it imports changed. When
+     * files are read asynchronously, the request goes on after the read, out of
+     * the catch of handleMessage: its error must still be answered, not thrown.
+     */
+    static function testAsyncRequestError() {
+        final server = createServer();
+        open(server, MAIN_URI);
+        server.handleMessageSync(({
+            jsonrpc: "2.0",
+            method: "textDocument/didChange",
+            params: {
+                textDocument: { uri: "file:///story%20%281%29/sub/b.lor", version: 2 },
+                contentChanges: [{ text: FILES.get('$ROOT/sub/b.lor') + '\n' }]
+            }
+        }:NotificationMessage));
+
+        final reads:Array<()->Void> = [];
+        server.handleFile = (path, callback) -> reads.push(() -> callback(FILES.get(path)));
+        var response:ResponseMessage = null;
+        final request:RequestMessage = {
+            jsonrpc: "2.0",
+            id: 4,
+            method: "loreline/unknownMethod",
+            params: { textDocument: { uri: MAIN_URI } }
+        };
+        server.handleMessage(request, r -> response = r);
+        if (reads.length == 0) throw 'expected an asynchronous read';
+        if (response != null) throw 'answered before the read';
+        while (reads.length > 0) reads.shift()();
+        if (response == null) throw 'no answer after the read';
+        if (response.error == null) throw 'expected an error';
+        equals(ErrorCodes.MethodNotFound, response.error.code, 'error code');
     }
 
     static function createServer(inMemory:Bool = true):Server {

@@ -21,6 +21,7 @@ class LspFr {
         'Unknown beat: {name}' => 'Beat inconnu : {name}',
         'Unknown character: {name}' => 'Personnage inconnu : {name}',
         'Error in {file}{line}: {message}' => 'Erreur dans {file}{line} : {message}',
+        'Internal error of the language server: {message}' => 'Erreur interne du serveur de langage : {message}',
 
         // Completion
 

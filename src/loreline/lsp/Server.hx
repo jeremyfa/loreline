@@ -148,26 +148,54 @@ class Server {
         return result;
     }
 
+    /**
+     * Handles a message of the client. It never throws: an error of the server
+     * is answered as an error, or logged for a notification. The answer is sent
+     * once, maybe later when a file is read asynchronously.
+     */
     public function handleMessage(msg:Message, ?onResponse:(response:Null<ResponseMessage>)->Void):Void {
+        var responded = false;
+        final respond = (response:Null<ResponseMessage>) -> {
+            if (responded) return;
+            responded = true;
+            if (onResponse == null) return;
+            // What the client does with the answer can't fail the server either
+            try {
+                onResponse(response);
+            }
+            catch (e:Dynamic) {
+                logError('Failed to send the answer', e);
+            }
+        };
+
         try {
             // Check message type and dispatch accordingly
             if (Reflect.hasField(msg, "method")) {
                 if (Reflect.hasField(msg, "id")) {
                     // Request message (may be async)
-                    handleRequest(cast msg, onResponse);
+                    handleRequest(cast msg, respond);
                 } else {
                     // Notification message (no response)
                     handleNotification(cast msg);
-                    if (onResponse != null) onResponse(null);
+                    respond(null);
                 }
                 return;
             }
 
-            if (onResponse != null) onResponse(createErrorResponse(null, ErrorCodes.InvalidRequest, "Invalid message"));
+            respond(createErrorResponse(null, ErrorCodes.InvalidRequest, "Invalid message"));
 
         } catch (e:Dynamic) {
-            if (onResponse != null) onResponse(createErrorResponse(null, ErrorCodes.ParseError, Std.string(e)));
+            logError('Failed to handle a message', e);
+            respond(createErrorResponse(null, ErrorCodes.ParseError, Std.string(e)));
         }
+    }
+
+    /** Logs an error caught by the server, even when the log itself fails */
+    function logError(message:String, e:Dynamic) {
+        try {
+            onLog('$message: $e');
+        }
+        catch (_:Dynamic) {}
     }
 
     /**
@@ -207,32 +235,39 @@ class Server {
                 throw { code: ErrorCodes.ServerNotInitialized, message: "Server not initialized" };
             }
 
+            // An error after reading a file asynchronously no longer reaches the
+            // catch below: it is answered through onError
             resolveRequest(request, (result) -> {
                 if (onResponse != null) onResponse(createResponse(request.id, result));
-            });
+            }, e -> respondWithError(request, e, onResponse));
 
         } catch (e:Any) {
-            if (onResponse != null) {
-                if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
-                    final err:ResponseError = e;
-                    onResponse(createErrorResponse(request.id, err.code, err.message));
-                }
-                else {
-                    onResponse(createErrorResponse(request.id, ErrorCodes.InternalError, Std.string(e)));
-                }
-            }
+            respondWithError(request, e, onResponse);
         }
     }
 
-    function resolveRequest(request:RequestMessage, callback:(result:Any)->Void):Void {
+    /** Answers a request with an error, so that the client does not wait for it forever */
+    function respondWithError(request:RequestMessage, e:Any, ?onResponse:(response:ResponseMessage)->Void):Void {
+        if (onResponse == null) return;
+        if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
+            final err:ResponseError = e;
+            onResponse(createErrorResponse(request.id, err.code, err.message));
+        }
+        else {
+            onResponse(createErrorResponse(request.id, ErrorCodes.InternalError, Std.string(e)));
+        }
+    }
+
+    function resolveRequest(request:RequestMessage, callback:(result:Any)->Void, ?onError:(e:Any)->Void):Void {
 
         // Determine which URI needs to be up-to-date before handling
         final uri = getRequestDocumentUri(request);
 
         // Ensure the document is up-to-date (async-safe), then dispatch
         updateDocumentIfNeeded(uri, () -> {
+            var result:Any = null;
             try {
-                final result:Any = switch (request.method) {
+                result = switch (request.method) {
                     case "initialize":
                         handleInitialize(cast request.params);
 
@@ -260,14 +295,16 @@ class Server {
                     case _:
                         throw { code: ErrorCodes.MethodNotFound, message: 'Method not found: ${request.method}'};
                 }
-                callback(result);
             } catch (e:Any) {
-                if (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) {
-                    throw e;
-                } else {
-                    throw { code: ErrorCodes.InternalError, message: Std.string(e) };
+                final err:Any = (Reflect.hasField(e, 'code') && Reflect.hasField(e, 'message')) ? e : { code: ErrorCodes.InternalError, message: Std.string(e) };
+                if (onError != null) {
+                    onError(err);
+                    return;
                 }
+                throw err;
             }
+            // Out of the try: a failure of the answer itself is not an error of the request
+            callback(result);
         });
 
     }
@@ -322,7 +359,8 @@ class Server {
                     // Ignore unknown notifications
             }
         } catch (e:Dynamic) {
-            // Log error but don't respond to notifications
+            // Notifications have no answer: the error is only logged
+            logError('Failed to handle ${notification.method}', e);
         }
     }
 
@@ -507,131 +545,137 @@ class Server {
 
             final errors:Array<Any> = [];
 
-            fetchAst(uri, content, (lexer, parser, ast) -> {
-                if (ast != null) {
-                    setDocument(uri, ast);
+            // Nothing that fails here may leave the previous diagnostics on screen
+            try fetchAst(uri, content, (lexer, parser, ast) -> {
+                try {
+                    if (ast != null) {
+                        setDocument(uri, ast);
 
-                    // Create lens
-                    final lens = lensOf(ast);
+                        // Create lens
+                        final lens = lensOf(ast);
 
-                    // Keep track of document imports
-                    documentImports.set(uri, [for (path in lens.getImportedPaths(pathFromUri(uri))) uriFromPath(path)]);
+                        // Keep track of document imports
+                        documentImports.set(uri, [for (path in lens.getImportedPaths(pathFromUri(uri))) uriFromPath(path)]);
 
-                    // Check for parser errors, and the lexer errors of imported files
-                    final parseErrors = parser.getErrors();
-                    if (parseErrors != null && parseErrors.length > 0) {
-                        for (error in parseErrors) {
-                            if (error.filePath != null) {
-                                addImportedFileError(uri, ast, error);
-                            }
-                            else {
-                                addDiagnostic(uri, error.pos, I18n.errorText(error), DiagnosticSeverity.Error);
-                            }
-                        }
-                    }
-                    for (e in errors) {
-                        if (e is Error && (cast e:Error).filePath != null) {
-                            addImportedFileError(uri, ast, cast e);
-                        }
-                    }
-
-                    // Check for errors in functions
-                    for (func in lens.getNodesOfType(NFunctionDecl, false)) {
-                        if (!func.external) {
-                            final funcLorscript = lens.getFuncLorscript(func);
-                            if (funcLorscript.error != null) {
-                                addDiagnostic(uri, funcLorscript.error.pos, I18n.errorText(funcLorscript.error), DiagnosticSeverity.Error);
+                        // Check for parser errors, and the lexer errors of imported files
+                        final parseErrors = parser.getErrors();
+                        if (parseErrors != null && parseErrors.length > 0) {
+                            for (error in parseErrors) {
+                                if (error.filePath != null) {
+                                    addImportedFileError(uri, ast, error);
+                                }
+                                else {
+                                    addDiagnostic(uri, error.pos, I18n.errorText(error), DiagnosticSeverity.Error);
+                                }
                             }
                         }
-                    }
-
-                    // Look for transitions to unknown beats
-                    // (dynamic targets are resolved at runtime, skip them)
-                    for (transition in lens.getNodesOfType(NTransition, false)) {
-                        if (transition.targetExpr == null && transition.target != '.') {
-                            if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
-                                addDiagnostic(uri, transition.targetPos, I18n.t('Unknown beat: {name}', {name: transition.target}), DiagnosticSeverity.Error, 'unknown-beat');
+                        for (e in errors) {
+                            if (e is Error && (cast e:Error).filePath != null) {
+                                addImportedFileError(uri, ast, cast e);
                             }
                         }
-                    }
 
-                    // Look for insertions of unknown beats
-                    // (dynamic targets are resolved at runtime, skip them)
-                    for (insertion in lens.getNodesOfType(NInsertion, false)) {
-                        if (insertion.targetExpr == null && insertion.target != '.') {
-                            if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
-                                addDiagnostic(uri, insertion.targetPos, I18n.t('Unknown beat: {name}', {name: insertion.target}), DiagnosticSeverity.Error, 'unknown-beat');
+                        // Check for errors in functions
+                        for (func in lens.getNodesOfType(NFunctionDecl, false)) {
+                            if (!func.external) {
+                                final funcLorscript = lens.getFuncLorscript(func);
+                                if (funcLorscript.error != null) {
+                                    addDiagnostic(uri, funcLorscript.error.pos, I18n.errorText(funcLorscript.error), DiagnosticSeverity.Error);
+                                }
                             }
                         }
-                    }
 
-                    // Check for references to unknown characters in dialogue statements
-                    for (dialogue in lens.getNodesOfType(NDialogueStatement, false)) {
-                        final parentBeat = lens.getFirstParentOfType(dialogue, NBeatDecl);
-                        if (parentBeat != null && parentBeat.name != "_") {
-                            final characterDecl = lens.findCharacterFromDialogue(dialogue);
-                            if (characterDecl == null) {
-                                // A speaker matching an enclosing beat param may hold a
-                                // character passed as argument, resolved at runtime
-                                var isBeatParam = false;
-                                var enclosingBeat = parentBeat;
-                                while (enclosingBeat != null && !isBeatParam) {
-                                    if (enclosingBeat.params != null) {
-                                        for (param in enclosingBeat.params) {
-                                            if (param.name == dialogue.character) {
-                                                isBeatParam = true;
-                                                break;
+                        // Look for transitions to unknown beats
+                        // (dynamic targets are resolved at runtime, skip them)
+                        for (transition in lens.getNodesOfType(NTransition, false)) {
+                            if (transition.targetExpr == null && transition.target != '.') {
+                                if (lens.findBeatByNameFromNode(transition.target, transition) == null) {
+                                    addDiagnostic(uri, transition.targetPos, I18n.t('Unknown beat: {name}', {name: transition.target}), DiagnosticSeverity.Error, 'unknown-beat');
+                                }
+                            }
+                        }
+
+                        // Look for insertions of unknown beats
+                        // (dynamic targets are resolved at runtime, skip them)
+                        for (insertion in lens.getNodesOfType(NInsertion, false)) {
+                            if (insertion.targetExpr == null && insertion.target != '.') {
+                                if (lens.findBeatByNameFromNode(insertion.target, insertion) == null) {
+                                    addDiagnostic(uri, insertion.targetPos, I18n.t('Unknown beat: {name}', {name: insertion.target}), DiagnosticSeverity.Error, 'unknown-beat');
+                                }
+                            }
+                        }
+
+                        // Check for references to unknown characters in dialogue statements
+                        for (dialogue in lens.getNodesOfType(NDialogueStatement, false)) {
+                            final parentBeat = lens.getFirstParentOfType(dialogue, NBeatDecl);
+                            if (parentBeat != null && parentBeat.name != "_") {
+                                final characterDecl = lens.findCharacterFromDialogue(dialogue);
+                                if (characterDecl == null) {
+                                    // A speaker matching an enclosing beat param may hold a
+                                    // character passed as argument, resolved at runtime
+                                    var isBeatParam = false;
+                                    var enclosingBeat = parentBeat;
+                                    while (enclosingBeat != null && !isBeatParam) {
+                                        if (enclosingBeat.params != null) {
+                                            for (param in enclosingBeat.params) {
+                                                if (param.name == dialogue.character) {
+                                                    isBeatParam = true;
+                                                    break;
+                                                }
                                             }
                                         }
+                                        enclosingBeat = lens.getFirstParentOfType(enclosingBeat, NBeatDecl);
                                     }
-                                    enclosingBeat = lens.getFirstParentOfType(enclosingBeat, NBeatDecl);
+                                    if (isBeatParam) continue;
+                                    addDiagnostic(
+                                        uri,
+                                        dialogue.characterPos,
+                                        I18n.t('Unknown character: {name}', {name: dialogue.character}),
+                                        DiagnosticSeverity.Warning,
+                                        'unknown-character'
+                                    );
                                 }
-                                if (isBeatParam) continue;
-                                addDiagnostic(
-                                    uri,
-                                    dialogue.characterPos,
-                                    I18n.t('Unknown character: {name}', {name: dialogue.character}),
-                                    DiagnosticSeverity.Warning,
-                                    'unknown-character'
-                                );
                             }
                         }
-                    }
 
-                    // Names that are likely mistakes
-                    for (warning in lens.getNameWarnings()) {
-                        addDiagnostic(uri, warning.pos, warning.message, DiagnosticSeverity.Warning);
-                    }
-
-                    // Things worth pointing out in when blocks
-                    for (when in lens.getNodesOfType(NWhenStatement, false)) {
-                        for (warning in lens.getWhenWarnings(when)) {
-                            addDiagnostic(uri, warning.pos, warning.message, warning.isWarning ? DiagnosticSeverity.Warning : DiagnosticSeverity.Information, warning.kind);
+                        // Names that are likely mistakes
+                        for (warning in lens.getNameWarnings()) {
+                            addDiagnostic(uri, warning.pos, warning.message, DiagnosticSeverity.Warning);
                         }
+
+                        // Things worth pointing out in when blocks
+                        for (when in lens.getNodesOfType(NWhenStatement, false)) {
+                            for (warning in lens.getWhenWarnings(when)) {
+                                addDiagnostic(uri, warning.pos, warning.message, warning.isWarning ? DiagnosticSeverity.Warning : DiagnosticSeverity.Information, warning.kind);
+                            }
+                        }
+
+                        // TODO check references to beat calls and function calls
+
+                        // Add semantic validation
+                        validateDocument(uri, ast);
                     }
-
-                    // TODO check references to beat calls and function calls
-
-                    // Add semantic validation
-                    validateDocument(uri, ast);
-                }
-                else {
-                    for (e in errors) {
-                        if (e is Error) {
-                            // Handle lexer/parser errors
-                            final err:Error = cast e;
-                            if (err.filePath != null) {
-                                addImportedFileError(uri, null, err);
+                    else {
+                        for (e in errors) {
+                            if (e is Error) {
+                                // Handle lexer/parser errors
+                                final err:Error = cast e;
+                                if (err.filePath != null) {
+                                    addImportedFileError(uri, null, err);
+                                }
+                                else {
+                                    addDiagnostic(uri, err.pos, I18n.errorText(err), DiagnosticSeverity.Error);
+                                }
                             }
                             else {
-                                addDiagnostic(uri, err.pos, I18n.errorText(err), DiagnosticSeverity.Error);
+                                // Handle unexpected errors
+                                addDiagnostic(uri, null, Std.string(e), DiagnosticSeverity.Error);
                             }
                         }
-                        else {
-                            // Handle unexpected errors
-                            addDiagnostic(uri, null, Std.string(e), DiagnosticSeverity.Error);
-                        }
                     }
+                }
+                catch (e:Any) {
+                    addInternalError(uri, e);
                 }
 
                 // Notify that document parsing is complete
@@ -640,12 +684,14 @@ class Server {
                     method: "loreline/documentReady",
                     params: { uri: uri }
                 });
-            }, e -> errors.push(e));
+            }, e -> errors.push(e)) catch (e:Any) {
+                addInternalError(uri, e);
+            }
 
             // Publish diagnostics
             publishDiagnostics(uri);
         } else {
-            fetchAst(uri, content, (lexer, parser, ast) -> {
+            try fetchAst(uri, content, (lexer, parser, ast) -> {
                 if (ast != null) {
                     setDocument(uri, ast);
                 }
@@ -656,8 +702,21 @@ class Server {
                     method: "loreline/documentReady",
                     params: { uri: uri }
                 });
-            });
+            }) catch (e:Any) {
+                // Diagnostics are not refreshed here: the next ones will show it
+                logError('Failed to parse $uri', e);
+            }
         }
+    }
+
+    /**
+     * Shows an error that the server did not expect, in place of the diagnostics
+     * of the document: the previous ones would no longer match its content.
+     */
+    function addInternalError(uri:String, e:Any) {
+        logError('Failed to update the diagnostics of $uri', e);
+        documentDiagnostics.set(uri, []);
+        addDiagnostic(uri, null, I18n.t('Internal error of the language server: {message}', {message: Std.string(e)}), DiagnosticSeverity.Error);
     }
 
     /**
@@ -795,7 +854,21 @@ class Server {
 
         final lexer = new Lexer(content);
         lexer.keepOrphanExpressions = true;
-        final tokens = lexer.tokenize();
+        final tokens = try {
+            lexer.tokenize();
+        }
+        catch (e:LexerError) {
+            // A fatal error stops the lexer: there is no tree, and the error is
+            // shown instead. Thrown on, it would leave the previous diagnostics
+            // on screen, and escape the timer that refreshes them while typing.
+            if (handleError != null) {
+                handleError(e);
+            }
+            if (callback != null) {
+                callback(null, null, null);
+            }
+            return null;
+        }
 
         final lexerErrors = lexer.getErrors();
         if (lexerErrors != null && lexerErrors.length > 0) {
