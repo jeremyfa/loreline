@@ -65,11 +65,7 @@ class NodeIdMapTests {
 
         for (i in 0...count) {
             expect(true, map.exists(ids[i]), 'exists $i');
-            // Read into a local first: the C# generator copies an inline call
-            // given to Std.string into both branches of its null check, which
-            // declares its locals twice
-            final value = map.get(ids[i]);
-            expect(values[i], value, 'value $i');
+            expect(values[i], map.get(ids[i]), 'value $i');
         }
 
         // Remove every third entry: the others stay reachable

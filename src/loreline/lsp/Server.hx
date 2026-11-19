@@ -1720,8 +1720,7 @@ class Server {
         var node = lens.getNodeAtPosition(lorelinePos);
 
         if (node is NLiteral) {
-            // The access holding this literal, if any. A plain loop: the C# target
-            // generates invalid code for a break inside a switch inside a do/while.
+            // The access holding this literal, if any
             var parent = lens.getParentNode(node);
             while (parent != null) {
                 final parentClass = HxType.getClass(parent);

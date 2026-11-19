@@ -3,11 +3,8 @@ package loreline;
 /**
  * Array access helpers working on `Any`-held values.
  *
- * The fallback views are typed `Array<Dynamic>` on purpose: on Haxe's C#
- * target without erase-generics, `Array<Dynamic>` compiles to the raw
- * `Array` interface (identity cast), while `Array<Any>` compiles to the
- * concrete `Array<object>` and converts (copies) arrays whose element type
- * is a value type, e.g. `Array<Int>`.
+ * The fallback views are typed `Array<Dynamic>`: the array can hold values
+ * of any type, e.g. be an `Array<Int>`.
  */
 class Arrays {
 

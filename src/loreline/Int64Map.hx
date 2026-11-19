@@ -14,6 +14,9 @@ class Int64Map<V> {
     private var _keys2:Vector<Int> = null;
 
     #if cs
+    // C# stores the values of any V in an `object[]`, which is not the `V[]` that
+    // typed code would read this field as (a C# array of objects is not an array
+    // of a more specific class)
     private var _values:Vector<Any> = null;
     #else
     private var _values:Vector<V> = null;
