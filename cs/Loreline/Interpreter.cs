@@ -263,7 +263,7 @@ namespace Loreline
             Internal.Ds.StringMap functionsWrap = WrapFunctions(this, options.Functions);
             CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
 
-            RuntimeInterpreter = new Runtime.Interpreter(
+            RuntimeInterpreter = Runtime.Interpreter._hx_make(
                 script.RuntimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
@@ -303,7 +303,7 @@ namespace Loreline
             CreateFieldsWrap createFieldsWrap = WrapCreateFields(this, options.CustomCreateFields);
             Internal.Ds.StringMap translationsWrap = WrapTranslations(options.Translations);
 
-            RuntimeInterpreter = new Runtime.Interpreter(
+            RuntimeInterpreter = Runtime.Interpreter._hx_make(
                 script.RuntimeScript,
                 handleDialogueWrap,
                 handleChoiceWrap,
@@ -407,7 +407,7 @@ namespace Loreline
             string[] keys = new string[rawKeys.length];
             for (int i = 0; i < rawKeys.length; i++)
             {
-                keys[i] = (string)rawKeys.__a[i];
+                keys[i] = (string)rawKeys.__getDyn(i);
             }
             return keys;
         }
@@ -420,7 +420,7 @@ namespace Loreline
         /// <param name="seed">The seed of the new sequence, or null for a seed taken from the clock</param>
         public void SeedRandom(double? seed = null)
         {
-            RuntimeInterpreter.seedRandom(seed.HasValue ? (object)seed.Value : null);
+            RuntimeInterpreter.seedRandom(seed.HasValue ? new Internal.Lang.Null<double>(seed.Value, true) : default(Internal.Lang.Null<double>));
         }
 
         /// <summary>
@@ -577,7 +577,7 @@ namespace Loreline
             TextTag[] tags = new TextTag[rawTags.length];
             for (int i = 0; i < rawTags.length; i++)
             {
-                Runtime.TextTag rawTag = (Runtime.TextTag)rawTags.__a[i];
+                Runtime.TextTag rawTag = (Runtime.TextTag)rawTags.__getDyn(i);
                 tags[i] = new TextTag
                 {
                     Closing = rawTag.closing,
@@ -593,7 +593,7 @@ namespace Loreline
             ChoiceOption[] options = new ChoiceOption[rawOptions.length];
             for (int i = 0; i < rawOptions.length; i++)
             {
-                Runtime.ChoiceOption rawOption = (Runtime.ChoiceOption)rawOptions.__a[i];
+                Runtime.ChoiceOption rawOption = (Runtime.ChoiceOption)rawOptions.__getDyn(i);
                 options[i] = new ChoiceOption
                 {
                     Text = rawOption.text,
@@ -638,15 +638,20 @@ namespace Loreline
         {
             private Interpreter interpreter;
             private Function func;
-            public FunctionWrap(Interpreter interpreter, Function func) : base(-1, 1)
+            public FunctionWrap(Interpreter interpreter, Function func)
             {
                 this.interpreter = interpreter;
                 this.func = func;
             }
 
-            public override object __hx_invokeDynamic(object[] __fn_dynargs)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
-                return func(interpreter, __fn_dynargs);
+                object[] values = new object[args.length];
+                for (int i = 0; i < values.Length; i++)
+                {
+                    values[i] = args.__getDyn(i);
+                }
+                return func(interpreter, values);
             }
         }
 
@@ -654,18 +659,19 @@ namespace Loreline
         {
             private Interpreter interpreter;
             private CreateFields createFields;
-            public CreateFieldsWrap(Interpreter interpreter, CreateFields createFields) : base(3, 1)
+            public CreateFieldsWrap(Interpreter interpreter, CreateFields createFields)
             {
                 this.interpreter = interpreter;
                 this.createFields = createFields;
             }
 
-            public override object __hx_invoke3_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2, double __fn_float3, object __fn_dyn3)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
+                object node = args.__getDyn(2);
                 return createFields(
                     interpreter,
-                    (string)__fn_dyn2,
-                    __fn_dyn3 != null ? new Node((Runtime.Node)__fn_dyn3) : null
+                    (string)args.__getDyn(1),
+                    node != null ? new Node((Runtime.Node)node) : null
                 );
             }
         }
@@ -674,22 +680,23 @@ namespace Loreline
         {
             private Interpreter interpreter;
             private DialogueHandler handler;
-            public DialogueHandlerWrap(Interpreter interpreter, DialogueHandler handler) : base(5, 1)
+            public DialogueHandlerWrap(Interpreter interpreter, DialogueHandler handler)
             {
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object __hx_invoke5_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2, double __fn_float3, object __fn_dyn3, double __fn_float4, object __fn_dyn4, double __fn_float5, object __fn_dyn5)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
+                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(4);
                 handler(new Dialogue
                 {
                     Interpreter = interpreter,
-                    Character = (string)__fn_dyn2,
-                    Text = (string)__fn_dyn3,
-                    Tags = WrapTags((Internal.Root.Array)__fn_dyn4),
+                    Character = (string)args.__getDyn(1),
+                    Text = (string)args.__getDyn(2),
+                    Tags = WrapTags((Internal.Root.Array)args.__getDyn(3)),
                     Callback = () =>
                     {
-                        ((Internal.Lang.Function)__fn_dyn5).__hx_invoke0_o();
+                        callback.invoke();
                     }
                 });
 
@@ -701,20 +708,21 @@ namespace Loreline
         {
             private Interpreter interpreter;
             private ChoiceHandler handler;
-            public ChoiceHandlerWrap(Interpreter interpreter, ChoiceHandler handler) : base(3, 1)
+            public ChoiceHandlerWrap(Interpreter interpreter, ChoiceHandler handler)
             {
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object __hx_invoke3_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2, double __fn_float3, object __fn_dyn3)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
+                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(2);
                 handler(new Choice
                 {
                     Interpreter = interpreter,
-                    Options = WrapChoiceOptions((Internal.Root.Array)__fn_dyn2),
+                    Options = WrapChoiceOptions((Internal.Root.Array)args.__getDyn(1)),
                     Callback = (int index) =>
                     {
-                        ((Internal.Lang.Function)__fn_dyn3).__hx_invoke1_o((double)index, Internal.Lang.Runtime.undefined);
+                        callback.invoke1(index);
                     }
                 });
 
@@ -726,12 +734,12 @@ namespace Loreline
         {
             private Interpreter interpreter;
             private FinishHandler handler;
-            public FinishHandlerWrap(Interpreter interpreter, FinishHandler handler) : base(5, 1)
+            public FinishHandlerWrap(Interpreter interpreter, FinishHandler handler)
             {
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
                 handler(new Finish
                 {

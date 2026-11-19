@@ -174,54 +174,6 @@ function checkNoLanguageServer(exportName, found) {
     console.log('No language server in the ' + exportName + ' runtime export');
 }
 
-/**
- * The C# generator of Haxe (in the generics build, not with erase-generics)
- * writes `Std.string(x)` as `x == null ? "null" : Std.string(x)`, copying x
- * instead of evaluating it once. A call in x then runs twice, and an inline call
- * declaring locals no longer compiles (CS0136). Fails when a copied argument
- * holds a call that is not known to be harmless.
- */
-function checkStdStringCopies(dir) {
-    // Calls whose second run is harmless: they only read
-    const harmless = ['global::loreline.Arrays.arrayGet('];
-    const marker = '== null )) ? ("null") : (global::Std.@string(';
-    const found = [];
-    const walk = (current) => {
-        for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-            const full = path.join(current, entry.name);
-            if (entry.isDirectory()) { walk(full); continue; }
-            if (!entry.name.endsWith('.cs')) continue;
-            const text = fs.readFileSync(full, 'utf8');
-            let k = 0;
-            while ((k = text.indexOf(marker, k)) != -1) {
-                // The copied argument, up to its closing parenthesis
-                const start = k + marker.length;
-                let depth = 0, end = start;
-                for (; end < text.length; end++) {
-                    const c = text[end];
-                    if (c == '(') depth++;
-                    else if (c == ')') { if (depth == 0) break; depth--; }
-                }
-                const arg = text.substring(start, end);
-                // A call: a name or a closing bracket followed by an opening parenthesis,
-                // casts like ((object) (x)) excluded
-                const withoutCasts = arg.replace(/\(\((?:object|string|int|long|double|bool)\)\s*/g, '(');
-                const hasCall = /[\w\]>]\s*\(/.test(withoutCasts);
-                if (hasCall && !harmless.some(h => arg.includes(h))) {
-                    const line = text.substring(0, k).split('\n').length;
-                    found.push(path.relative(__dirname, full) + ':' + line + ': ' + arg.replace(/\s+/g, ' ').substring(0, 160));
-                }
-                k = start;
-            }
-        }
-    };
-    walk(dir);
-    if (found.length > 0) {
-        throw new Error('Std.string arguments copied by the C# generator hold a call, which runs twice:\n' + found.join('\n'));
-    }
-    console.log('No call in the Std.string arguments copied by the C# generator');
-}
-
 // Example usage with async/await
 async function main() {
 
@@ -1396,23 +1348,14 @@ async function main() {
 
         await command(haxe, ['build-cs.hxml'].concat(haxeBuildArgs));
 
-        // Remove the generated Library entry point (not part of the public API)
-        for (const f of [
-            'build/cs/src/loreline/lib/_Library/Library_Fields_.cs',
-            'build/cs/src/loreline/lib/Library.cs'
-        ]) {
-            if (fs.existsSync(f)) fs.unlinkSync(f);
-        }
-        //fs.unlinkSync('build/cs/src/loreline/Loreline.cs');
-        if (fs.existsSync('build/cs/hxcs_build.txt')) fs.unlinkSync('build/cs/hxcs_build.txt');
-
         if (fs.existsSync('cs/Loreline/Internal'))
             fs.rmSync('cs/Loreline/Internal', { recursive: true, force: true });
         if (fs.existsSync('cs/Loreline/Runtime'))
             fs.rmSync('cs/Loreline/Runtime', { recursive: true, force: true });
 
         walkDirectory('build/cs/src', (filePath) => {
-            if (filePath.endsWith('.cs')) {
+            const relPath = path.relative('build/cs/src', filePath).split(path.sep);
+            if (filePath.endsWith('.cs') && relPath[0] != 'obj' && relPath[0] != 'bin') {
                 const original = fs.readFileSync(filePath, 'utf8');
                 let content = original;
 
@@ -1436,26 +1379,16 @@ async function main() {
                 content = content.replace(/\bglobal::global::Loreline\.Internal\./g, 'global::Loreline.Internal.');
 
                 // Disable warnings related to AOT (the code is still expected to work in that
-                // situation because it should not rely on actual C# reflection. Uses FieldLookup instead)
-                content = content.split("#pragma warning disable 109, 114, 219, 429, 168, 162").join("#pragma warning disable 109, 114, 219, 429, 168, 162, IL2026, IL2070, IL2072, IL2060, CS0108");
+                // situation because it does not rely on actual C# reflection)
+                content = content.split("#pragma warning disable CA2200, CS0108, CS0162, CS0168, CS0219, CS1717, CS1718, IL2057, IL2072").join("#pragma warning disable CA2200, CS0108, CS0162, CS0168, CS0219, CS1717, CS1718, IL2026, IL2057, IL2060, IL2070, IL2072");
 
-                // Fix Std.string() to use InvariantCulture for floats (prevents locale-dependent decimal separators)
-                content = content.replace(
-                    /return s\.ToString\(\);(\s*\}[\s\S]*?public static int @int)/,
-                    'if (s is double d) return d.ToString(System.Globalization.CultureInfo.InvariantCulture);\n\t\t\tif (s is float f) return f.ToString(System.Globalization.CultureInfo.InvariantCulture);\n\t\t\treturn s.ToString();$1'
-                );
-
-                const namespace = extractCsNamespace(content);
-                if (namespace == null) {
-                    throw 'Failed to extract namespace for file: ' + filePath;
-                }
+                // Assembly attributes have no namespace: they go with the internal code
+                const namespace = extractCsNamespace(content) ?? 'Loreline.Internal';
                 const namespaceParts = namespace.split('.');
 
-                let newPath = path.join('cs', namespaceParts[0], namespaceParts[1], path.basename(filePath));
-
-                if (namespaceParts.length > 2 && namespaceParts[2].charAt(0).toUpperCase() == namespaceParts[2].charAt(0) && namespaceParts[2].charAt(0) != '_' && namespaceParts[2] != 'Cs') {
-                    newPath = path.join('cs', namespaceParts[0], namespaceParts[1], namespaceParts[2], path.basename(filePath));
-                }
+                // One folder for each namespace: two types can have the same name in
+                // different namespaces (a class and a private type of a module)
+                const newPath = path.join('cs', ...namespaceParts, path.basename(filePath));
 
                 if (!fs.existsSync(path.dirname(newPath))) {
                     fs.mkdirSync(path.dirname(newPath), { recursive: true });
@@ -1499,18 +1432,17 @@ async function main() {
     }
 
     if (buildCsGenerics) {
-        console.log('Export loreline test runner for C# without erase-generics (plain Haxe consumer build)');
+        console.log('Export loreline test runner for C# (plain Haxe consumer build)');
 
         fs.rmSync('build/cs-generics', { recursive: true, force: true });
 
         await command(haxe, ['build-cs-generics.hxml'].concat(haxeBuildArgs));
 
-        if (fs.existsSync('build/cs-generics/hxcs_build.txt')) fs.unlinkSync('build/cs-generics/hxcs_build.txt');
+        // The project file of the test below replaces the one Haxe generates
+        if (fs.existsSync('build/cs-generics/Project.csproj')) fs.unlinkSync('build/cs-generics/Project.csproj');
 
         // Transient test project: compiles the raw haxe output as-is (no namespace
-        // rewriting, no loreline_* defines). InvariantGlobalization keeps float
-        // formatting locale-stable (the distribution patches Std.cs instead, which
-        // is not needed for a self-contained test executable).
+        // rewriting, no loreline_* defines).
         fs.writeFileSync('build/cs-generics/LorelineGenericsTest.csproj', `<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -1620,7 +1552,7 @@ async function main() {
         // Language server tests on the targets the server ships on, where the
         // CLI does not run: JS with node (VS Code extension), plain JS (web
         // worker of the web editor) and C++. The test-lsp files are embedded at
-        // compile time. On its own targets (Neko, C# with generics, PHP CLI), the
+        // compile time. On its own targets (Neko, C# plain Haxe, PHP CLI), the
         // CLI runs the protocol tests with `test`, and the files with `test-lsp`.
         // Built on their own (build-lsp-test.hxml), so that the server stays out
         // of the runtime exports.
@@ -2360,14 +2292,13 @@ async function main() {
         const aotBin = path.join(aotPublishDir, process.platform == 'win32' ? 'TestRunner.exe' : 'TestRunner');
         await command(aotBin, ['./test']);
 
-        // 4. C# (with generics) build + tests (plain Haxe consumer mode)
-        console.log('\n=== C# (with generics) build + tests ===');
+        // 4. C# (plain Haxe) build + tests (plain Haxe consumer mode)
+        console.log('\n=== C# (plain Haxe) build + tests ===');
         await command('node', ['./setup', '--cs-generics']);
-        checkStdStringCopies(path.join(__dirname, 'build', 'cs-generics', 'src'));
         await command('dotnet', ['run', '--project', 'build/cs-generics', '--', 'test', './test', '--internal']);
 
-        // 5. C# (with generics) AOT build + tests
-        console.log('\n=== C# (with generics) AOT build + tests ===');
+        // 5. C# (plain Haxe) AOT build + tests
+        console.log('\n=== C# (plain Haxe) AOT build + tests ===');
         const noeraseAotPublishDir = path.join('build', 'cs-generics', 'bin', 'Release', 'net8.0', rid, 'publish');
         await command('dotnet', [
             'publish', 'build/cs-generics', '-c', 'Release',

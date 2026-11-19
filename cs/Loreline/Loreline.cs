@@ -344,16 +344,17 @@ namespace Loreline
         private class ImportsFileHandlerWrap : Internal.Lang.Function
         {
             private ImportsFileHandler handler;
-            public ImportsFileHandlerWrap(ImportsFileHandler handler) : base(2, 1)
+            public ImportsFileHandlerWrap(ImportsFileHandler handler)
             {
                 this.handler = handler;
             }
 
-            public override object __hx_invoke2_o(double __fn_float1, object __fn_dyn1, double __fn_float2, object __fn_dyn2)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
-                handler((string)__fn_dyn1, (string data) =>
+                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(1);
+                handler((string)args.__getDyn(0), (string data) =>
                 {
-                    ((Internal.Lang.Function)__fn_dyn2).__hx_invoke1_o((double)0, data);
+                    callback.invoke1(data);
                 });
                 return null;
             }
@@ -362,14 +363,14 @@ namespace Loreline
         private class ParseCallbackWrap : Internal.Lang.Function
         {
             private ParseCallback callback;
-            public ParseCallbackWrap(ParseCallback callback) : base(1, 1)
+            public ParseCallbackWrap(ParseCallback callback)
             {
                 this.callback = callback;
             }
 
-            public override object __hx_invoke1_o(double __fn_float1, object __fn_dyn1)
+            public override object invokeDynamic(Internal.Root.Array args)
             {
-                callback(new Script((Runtime.Script)__fn_dyn1));
+                callback(new Script((Runtime.Script)args.__getDyn(0)));
                 return null;
             }
         }

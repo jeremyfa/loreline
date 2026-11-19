@@ -625,16 +625,16 @@ jobs:
       - name: Run C# AOT tests
         run: ./build/cs/bin/TestRunner/Release/net8.0/linux-x64/publish/TestRunner ./test
 
-      - name: Build C# (with generics) test runner
+      - name: Build C# (plain Haxe) test runner
         run: node ./setup --cs-generics
 
-      - name: Run C# (with generics) tests
+      - name: Run C# (plain Haxe) tests
         run: dotnet run --project build/cs-generics -- test ./test --internal
 
-      - name: Publish C# (with generics) AOT
+      - name: Publish C# (plain Haxe) AOT
         run: dotnet publish build/cs-generics -c Release -r linux-x64 -p:AotBuild=true
 
-      - name: Run C# (with generics) AOT tests
+      - name: Run C# (plain Haxe) AOT tests
         run: ./build/cs-generics/bin/Release/net8.0/linux-x64/publish/LorelineGenericsTest test ./test --internal
 
       - name: Create zip archive

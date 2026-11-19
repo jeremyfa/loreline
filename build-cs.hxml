@@ -1,9 +1,10 @@
 --class-path src
 --main loreline.lib.Library
---cs build/cs
--D no-compilation
--D no-root
+--library hxcs
+--cs build/cs/src
+-D cs.library
+-D cs.aot
+-D cs.closure-cache
 -D real-position
 -D loreline_use_cs_types
 -D loreline_cs_api
--D erase-generics

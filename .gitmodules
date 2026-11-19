@@ -6,7 +6,7 @@
 	url = https://github.com/ceramic-engine/hxcpp.git
 [submodule "git/hxcs"]
 	path = git/hxcs
-	url = https://github.com/HaxeFoundation/hxcs.git
+	url = https://github.com/jeremyfa/hxcs.git
 [submodule "git/hxjava"]
 	path = git/hxjava
 	url = https://github.com/HaxeFoundation/hxjava.git

@@ -29,7 +29,7 @@ npm install    # Install Node.js dependencies (esbuild, tsx, etc.)
 node ./setup --js          # Build JavaScript library (js/loreline.js)
 node ./setup --cs          # Export C# source files (cs/Loreline/)
 node ./setup --cs --cs-dll # Export C# + build Loreline.dll
-node ./setup --cs-generics # Export C# test runner without erase-generics
+node ./setup --cs-generics # Export the C# test runner (plain Haxe build of the CLI)
 node ./setup --py          # Build Python package (py/loreline/)
 node ./setup --lua         # Build Lua module (lua/loreline/)
 node ./setup --php         # Build PHP package (php/)
@@ -69,12 +69,12 @@ php build/php-cli/index.php test ./test --internal # Run PHP CLI tests only
 npx tsx js/test-runner.ts ./test                   # Run JS tests only
 java -cp jvm/loreline.jar:build/jvm/test TestRunner ./test  # Run JVM tests only
 node ./setup --gdscript-test                       # Run GDScript tests only (headless Godot)
-node ./setup --test                                # Build and run all test suites (Neko + C# + C# AOT + C# (with generics) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
+node ./setup --test                                # Build and run all test suites (Neko + C# + C# AOT + C# (plain Haxe) + JS + C++ lib + Python + Lua + PHP + PHP CLI + JVM)
 ```
 
 Each `test/*.lor` file ends with a `<test>` YAML block describing its test cases (`choices`, `beat`, `expected`, ...). `saveAtDialogue` and `saveAtChoice` take one index or a list of indices (`saveAtDialogue: [2, 5]`), counted over an uninterrupted run: at each one, the runner saves, restores in a new interpreter and continues, so the saved event shows twice in `expected`.
 
-On top of the explicit cases, the Haxe runners (Neko, C# with generics, PHP CLI, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
+On top of the explicit cases, the Haxe runners (Neko, C# plain Haxe, PHP CLI, GDScript) run a save sweep: every test case is saved and restored at each of its events (and at every pair of events in files with insertions), and must give the uninterrupted output with the saved events shown twice. Files relying on randomness are skipped, and a test case can opt out with `saveSweep: false`.
 
 ## How Loreline is authored
 
