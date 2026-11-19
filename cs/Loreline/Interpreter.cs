@@ -665,14 +665,20 @@ namespace Loreline
                 this.createFields = createFields;
             }
 
+            public override Internal.Lang.Value __hx_invoke3(Internal.Lang.Value a1, Internal.Lang.Value type, Internal.Lang.Value a3)
+            {
+                Runtime.Node node = a3.toObject<Runtime.Node>();
+                return Internal.Lang.Value.fromObject(createFields(
+                    interpreter,
+                    type.toStringValue(),
+                    node != null ? new Node(node) : null
+                ));
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke3
             public override object invokeDynamic(Internal.Root.Array args)
             {
-                object node = args.__getDyn(2);
-                return createFields(
-                    interpreter,
-                    (string)args.__getDyn(1),
-                    node != null ? new Node((Runtime.Node)node) : null
-                );
+                return __hx_invoke3(Internal.Lang.Value.fromObject(args.__getDyn(0)), Internal.Lang.Value.fromObject(args.__getDyn(1)), Internal.Lang.Value.fromObject(args.__getDyn(2))).toDynamic();
             }
         }
 
@@ -685,22 +691,28 @@ namespace Loreline
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object invokeDynamic(Internal.Root.Array args)
+            public override Internal.Lang.Value __hx_invoke5(Internal.Lang.Value a1, Internal.Lang.Value character, Internal.Lang.Value text, Internal.Lang.Value tags, Internal.Lang.Value a5)
             {
-                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(4);
+                Internal.Lang.Function callback = a5.toObject<Internal.Lang.Function>();
                 handler(new Dialogue
                 {
                     Interpreter = interpreter,
-                    Character = (string)args.__getDyn(1),
-                    Text = (string)args.__getDyn(2),
-                    Tags = WrapTags((Internal.Root.Array)args.__getDyn(3)),
+                    Character = character.toStringValue(),
+                    Text = text.toStringValue(),
+                    Tags = WrapTags(tags.toObject<Internal.Root.Array>()),
                     Callback = () =>
                     {
-                        callback.invoke();
+                        callback.__hx_invoke0();
                     }
                 });
 
-                return null;
+                return Internal.Lang.Value.missing();
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke5
+            public override object invokeDynamic(Internal.Root.Array args)
+            {
+                return __hx_invoke5(Internal.Lang.Value.fromObject(args.__getDyn(0)), Internal.Lang.Value.fromObject(args.__getDyn(1)), Internal.Lang.Value.fromObject(args.__getDyn(2)), Internal.Lang.Value.fromObject(args.__getDyn(3)), Internal.Lang.Value.fromObject(args.__getDyn(4))).toDynamic();
             }
         }
 
@@ -713,20 +725,27 @@ namespace Loreline
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object invokeDynamic(Internal.Root.Array args)
+            public override Internal.Lang.Value __hx_invoke3(Internal.Lang.Value a1, Internal.Lang.Value options, Internal.Lang.Value a3)
             {
-                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(2);
+                Internal.Lang.Function callback = a3.toObject<Internal.Lang.Function>();
                 handler(new Choice
                 {
                     Interpreter = interpreter,
-                    Options = WrapChoiceOptions((Internal.Root.Array)args.__getDyn(1)),
+                    Options = WrapChoiceOptions(options.toObject<Internal.Root.Array>()),
                     Callback = (int index) =>
                     {
-                        callback.invoke1(index);
+                        // fromInt: the index is not boxed
+                        callback.__hx_invoke1(Internal.Lang.Value.fromInt(index));
                     }
                 });
 
-                return null;
+                return Internal.Lang.Value.missing();
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke3
+            public override object invokeDynamic(Internal.Root.Array args)
+            {
+                return __hx_invoke3(Internal.Lang.Value.fromObject(args.__getDyn(0)), Internal.Lang.Value.fromObject(args.__getDyn(1)), Internal.Lang.Value.fromObject(args.__getDyn(2))).toDynamic();
             }
         }
 
@@ -739,13 +758,19 @@ namespace Loreline
                 this.interpreter = interpreter;
                 this.handler = handler;
             }
-            public override object invokeDynamic(Internal.Root.Array args)
+            public override Internal.Lang.Value __hx_invoke1(Internal.Lang.Value a1)
             {
                 handler(new Finish
                 {
                     Interpreter = interpreter
                 });
-                return null;
+                return Internal.Lang.Value.missing();
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke1
+            public override object invokeDynamic(Internal.Root.Array args)
+            {
+                return __hx_invoke1(Internal.Lang.Value.fromObject(args.__getDyn(0))).toDynamic();
             }
         }
     }

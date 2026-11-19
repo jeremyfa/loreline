@@ -349,14 +349,20 @@ namespace Loreline
                 this.handler = handler;
             }
 
+            public override Internal.Lang.Value __hx_invoke2(Internal.Lang.Value path, Internal.Lang.Value a2)
+            {
+                Internal.Lang.Function callback = a2.toObject<Internal.Lang.Function>();
+                handler(path.toStringValue(), (string data) =>
+                {
+                    callback.__hx_invoke1(Internal.Lang.Value.fromObject(data));
+                });
+                return Internal.Lang.Value.missing();
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke2
             public override object invokeDynamic(Internal.Root.Array args)
             {
-                Internal.Lang.Function callback = (Internal.Lang.Function)args.__getDyn(1);
-                handler((string)args.__getDyn(0), (string data) =>
-                {
-                    callback.invoke1(data);
-                });
-                return null;
+                return __hx_invoke2(Internal.Lang.Value.fromObject(args.__getDyn(0)), Internal.Lang.Value.fromObject(args.__getDyn(1))).toDynamic();
             }
         }
 
@@ -368,10 +374,16 @@ namespace Loreline
                 this.callback = callback;
             }
 
+            public override Internal.Lang.Value __hx_invoke1(Internal.Lang.Value script)
+            {
+                callback(new Script(script.toObject<Runtime.Script>()));
+                return Internal.Lang.Value.missing();
+            }
+
+            // Dynamic calls (Reflect.callMethod); typed calls go through __hx_invoke1
             public override object invokeDynamic(Internal.Root.Array args)
             {
-                callback(new Script((Runtime.Script)args.__getDyn(0)));
-                return null;
+                return __hx_invoke1(Internal.Lang.Value.fromObject(args.__getDyn(0))).toDynamic();
             }
         }
     }
