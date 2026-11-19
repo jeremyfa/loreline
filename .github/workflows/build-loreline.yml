@@ -1495,8 +1495,11 @@ jobs:
           echo 'neko: '$(neko -version)
           echo 'haxe: '$(haxe --version)
 
+      # Pinned: an unpinned "latest" moved from 6.0.13 to 7.0.0 and broke the build
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 6.0.13
 
       - name: Build WASM
         run: node ./setup --wasm
