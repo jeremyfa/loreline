@@ -81,10 +81,10 @@ class Int64Map<V> {
         return fmix32(fmix32(high) ^ low);
     }
 
-    #if (php || python || lua)
+    #if (php || python || lua || gdscript)
     /**
-     * The murmur3 32 bit finalizer, on two 16 bit halves. On PHP, Python and Lua
-     * an integer is wider than 32 bits, and on Lua the bit operations of Haxe
+     * The murmur3 32 bit finalizer, on two 16 bit halves. On PHP, Python, Lua and
+     * GDScript an integer is wider than 32 bits, and on Lua the bit operations of Haxe
      * only work on values within 32 bits (their result is saturated otherwise,
      * and with the bit32 shim of Lua 5.4 the shifts are 64 bit shifts). Every
      * step here works on values from 0 to 2^33 with plain arithmetic and on
