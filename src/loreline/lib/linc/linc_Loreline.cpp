@@ -31,10 +31,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <condition_variable>
 #include <queue>
+#include <stdexcept>
+#include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 /* -- hxcpp runtime entry points ------------------------------------------- */
