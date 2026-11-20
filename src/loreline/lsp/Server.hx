@@ -787,19 +787,21 @@ class Server {
         // Handle file:// protocol
         if (uri.startsWith("file://")) {
             path = uri.uSubstr(7);
-
         }
         else {
             return null;
         }
 
-        // Decode URL encoding (before looking for a drive letter: some clients
-        // encode its colon, file:///c%3A/path)
+        // Decode URL encoding, before looking for a drive letter: clients such
+        // as Monaco and VS Code encode its colon (file:///c%3A/path)
         path = StringTools.urlDecode(path);
 
-        // Windows file URIs look like file:///C:/path/to/file:
-        // the slash before the drive letter is not part of the path
-        if (isWindows && path.uCharCodeAt(0) == "/".code && path.uCharCodeAt(2) == ":".code) {
+        // A Windows file URI has a slash before its drive letter (file:///C:/path
+        // is C:/path). Done on every platform, without relying on isWindows: its
+        // detection can't be tested everywhere, the client may run on Windows
+        // when the server does not, and a path that starts with /C:/ means
+        // nothing elsewhere.
+        if (path.uCharCodeAt(0) == "/".code && hasDriveLetter(path.uSubstr(1))) {
             path = path.uSubstr(1);
         }
 
@@ -813,8 +815,8 @@ class Server {
         // Normalize the path first (handles backslash conversion)
         var normalizedPath = Path.normalize(path);
 
-        // For Windows, handle drive letters
-        if (isWindows && normalizedPath.charAt(1) == ":") {
+        // For Windows, handle drive letters (on any platform, see pathFromUri)
+        if (hasDriveLetter(normalizedPath)) {
             // Add the extra slash for drive letters (file:///C:/path instead of file://C:/path)
             return "file:///" + encodePathComponents(normalizedPath);
         }
@@ -822,12 +824,19 @@ class Server {
         return "file://" + encodePathComponents(normalizedPath);
     }
 
+    /** Whether a path starts with a Windows drive letter: `C:` */
+    static function hasDriveLetter(path:String):Bool {
+        final letter = path.uCharCodeAt(0);
+        return path.uCharCodeAt(1) == ":".code
+            && ((letter >= "a".code && letter <= "z".code) || (letter >= "A".code && letter <= "Z".code));
+    }
+
     function encodePathComponents(path:String):String {
         // Split by slashes, encode each component separately, then rejoin
         var components = path.split("/");
         for (i in 0...components.length) {
             // Don't encode drive letters with colon on Windows
-            if (!(isWindows && i == 0 && components[i].length == 2 && components[i].charAt(1) == ":")) {
+            if (!(i == 0 && components[i].length == 2 && hasDriveLetter(components[i]))) {
                 components[i] = StringTools.urlEncode(components[i]);
             }
         }

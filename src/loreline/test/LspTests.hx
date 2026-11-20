@@ -79,7 +79,8 @@ class LspTests {
             {name: 'unsaved changes of an imported file are used', fn: () -> testUnsavedImport()},
             {name: 'a translation tag is named in the language of the tools', fn: () -> testTranslationTagKind()},
             {name: 'a failure of the client is not thrown back', fn: () -> testFailingClient()},
-            {name: 'an error after an asynchronous read is answered', fn: () -> testAsyncRequestError()}
+            {name: 'an error after an asynchronous read is answered', fn: () -> testAsyncRequestError()},
+            {name: 'a Windows path is read from its URI on any platform', fn: () -> testWindowsUri()}
         ];
 
         for (test in tests) {
@@ -209,6 +210,44 @@ class LspTests {
         if (response == null) throw 'no answer after the read';
         if (response.error == null) throw 'expected an error';
         equals(ErrorCodes.MethodNotFound, response.error.code, 'error code');
+    }
+
+    /**
+     * Monaco and VS Code write a Windows file as file:///c%3A/path. The server
+     * can't always tell it runs on Windows (in the web worker of the writer, it
+     * can't), so the drive letter is recognized on any platform: the file read
+     * for an import is c:/story/b.lor, never /c:/story/b.lor.
+     */
+    static function testWindowsUri() {
+        final files = [
+            'c:/story/main.lor' => 'import "b"\n\nbeat Start\n  -> Other\n',
+            'c:/story/b.lor' => 'beat Other\n  Hi.\n'
+        ];
+        final server = new Server();
+        final asked:Array<String> = [];
+        server.handleFile = (path, callback) -> {
+            asked.push(path);
+            callback(files.get(path));
+        };
+        var diagnostics:Array<Dynamic> = null;
+        server.onNotification = notification -> {
+            if (notification.method == "textDocument/publishDiagnostics") {
+                final params:Dynamic = notification.params;
+                diagnostics = params.diagnostics;
+            }
+        };
+        server.handleMessageSync(({ jsonrpc: "2.0", id: 1, method: "initialize", params: { capabilities: {} } }:RequestMessage));
+        server.handleMessageSync(({ jsonrpc: "2.0", method: "initialized", params: {} }:NotificationMessage));
+        server.handleMessageSync(({
+            jsonrpc: "2.0",
+            method: "textDocument/didOpen",
+            params: {
+                textDocument: { uri: "file:///c%3A/story/main.lor", languageId: "loreline", version: 1, text: files.get('c:/story/main.lor') }
+            }
+        }:NotificationMessage));
+        if (asked.indexOf('c:/story/b.lor') == -1) throw 'expected c:/story/b.lor to be read, got: ' + asked.join(', ');
+        if (diagnostics == null) throw 'no diagnostics';
+        if (diagnostics.length > 0) throw 'unexpected diagnostics: ' + [for (d in diagnostics) d.message].join(', ');
     }
 
     static function createServer(inMemory:Bool = true):Server {
