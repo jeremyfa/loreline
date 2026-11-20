@@ -126,8 +126,9 @@ class Server {
     public function new() {
         #if windows
         isWindows = true;
-        #elseif (js && hxnodejs)
-        isWindows = js.Syntax.code('process.platform === "win32"');
+        #elseif js
+        // Node, Electron (whose web build has no hxnodejs) or a browser
+        isWindows = js.Syntax.code('(typeof process !== "undefined" && process != null && process.platform != null) ? process.platform === "win32" : (typeof navigator !== "undefined" && /^Win/i.test(navigator.platform || ""))');
         #elseif sys
         isWindows = Sys.systemName() == "Windows";
         #else
@@ -787,21 +788,20 @@ class Server {
         if (uri.startsWith("file://")) {
             path = uri.uSubstr(7);
 
-            // Handle Windows paths that start with drive letter
-            if (isWindows) {
-                // Windows file URIs look like file:///C:/path/to/file
-                // The first / after file:// should be removed
-                if (path.uCharCodeAt(1) == ":".code && path.uCharCodeAt(0) == "/".code) {
-                    path = path.uSubstr(1);
-                }
-            }
         }
         else {
             return null;
         }
 
-        // Decode URL encoding
+        // Decode URL encoding (before looking for a drive letter: some clients
+        // encode its colon, file:///c%3A/path)
         path = StringTools.urlDecode(path);
+
+        // Windows file URIs look like file:///C:/path/to/file:
+        // the slash before the drive letter is not part of the path
+        if (isWindows && path.uCharCodeAt(0) == "/".code && path.uCharCodeAt(2) == ":".code) {
+            path = path.uSubstr(1);
+        }
 
         // Normalize path
         path = Path.normalize(path);
